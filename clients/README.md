@@ -34,9 +34,7 @@ Running this command within `admin-ui` will result in only admin-ui being run.
 
 Available commands that exist for every workspace are defined in the root `turbo.json` file, while commands unique to a specific workspace are defined in the `turbo.json` file within the workspace.
 
-Each command maps to the npm command with the same name in the nearest `package.json`, moving up the working dir, ending at `clients/package.json`.
-
-It's also important to use the turbo command because, as you see in the `turbo.json` files, we've defined some dependencies and caching details on some turbo commands. 
+It's important to use the turbo command because, as you see in the `turbo.json` files, we've defined some dependencies and caching details on some turbo commands. 
 
 
 

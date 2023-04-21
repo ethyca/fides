@@ -73,6 +73,12 @@ jobs:
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
 
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: cypress-videos-admin-ui
+          path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
+
       - name: Cypress E2E Privacy-Center
           uses: cypress-io/github-action@v4
           with:
@@ -85,8 +91,8 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: cypress-videos
-          path: /home/runner/work/fides/fides/clients/cypress-e2e/videos/*.mp4
+          name: cypress-videos-privacy-center
+          path: /home/runner/work/fides/fides/clients/privacy-center/cypress/videos/*.mp4
 
       - name: Cypress component tests
         uses: cypress-io/github-action@v4

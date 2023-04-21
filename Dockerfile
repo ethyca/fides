@@ -98,8 +98,7 @@ FROM node:16-alpine as frontend
 RUN apk add --no-cache libc6-compat
 # Build the frontend clients
 WORKDIR /fides/clients
-COPY clients/package.json ./
-COPY clients/package-lock.json ./
+COPY clients/package.json clients/package-lock.json ./
 COPY clients/fides-consent/package.json ./fides-consent/package.json
 COPY clients/admin-ui/package.json ./admin-ui/package.json
 COPY clients/privacy-center/package.json ./privacy-center/package.json
