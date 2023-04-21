@@ -91,7 +91,6 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         if image == "test":
             tag_name = "local"
         session.log("Building extra images:")
-        # prod/test PC is pushed to ethyca/fides-privacy-center image
         privacy_center_image_tag = f"{PRIVACY_CENTER_IMAGE}:{tag_name}"
         session.log(f"  - {privacy_center_image_tag}")
         session.run(
@@ -115,7 +114,6 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         )
 
     # Build the main ethyca/fides image
-    # E.g. of PC command: docker build --target=frontend --platform linux/arm64 --tag ethyca/fides:local-pc .
     target = build_matrix[image]["target"]
     tag = build_matrix[image]["tag"]
     build_command = (

@@ -118,9 +118,9 @@ RUN npm run export-ui
 # Builds privacy-center
 RUN npm run build-pc
 
-#############################
+###################
 ## Production PC ##
-#############################
+###################
 FROM node:16-alpine as prod_pc
 
 WORKDIR /fides/clients
@@ -151,9 +151,9 @@ EXPOSE 3000
 
 CMD ["./start.sh"]
 
-#############################
+############################
 ## Production Application ##
-#############################
+############################
 FROM backend as prod
 
 # Copy frontend build over
