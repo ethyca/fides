@@ -2373,9 +2373,3 @@ def test_create_and_process_erasure_request_dynamodb(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     pr.delete(db=db)
-
-    # stmt = f'select "name", "variant_eg" from "customer" where "email" = {formatted_customer_email};'
-    # res = dynamodb_client.execute(stmt).all()
-    # for row in res:
-    #     assert row.name is None
-    #     assert row.variant_eg is None

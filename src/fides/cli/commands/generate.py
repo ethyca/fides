@@ -121,7 +121,6 @@ def generate_dataset_aws(ctx: click.Context) -> None:
 
 @generate_dataset_aws.command(name="dynamodb")
 @click.pass_context
-# @click.argument("dataset_name", type=str)
 @click.argument("output_filename", type=str)
 @credentials_id_option
 @aws_access_key_id_option
@@ -133,7 +132,6 @@ def generate_dataset_dynamodb(
     ctx: click.Context,
     output_filename: str,
     include_null: bool,
-    # org_key: str,
     credentials_id: str,
     access_key_id: str,
     secret_access_key: str,
