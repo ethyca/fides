@@ -113,8 +113,6 @@ def gorgias_create_erasure_data(
     gorgias_connection_config: ConnectionConfig, gorgias_erasure_identity_email: str
 ) -> None:
 
-    sleep(60)
-
     gorgias_secrets = gorgias_connection_config.secrets
     auth = gorgias_secrets["username"], gorgias_secrets["api_key"]
     base_url = f"https://{gorgias_secrets['domain']}"

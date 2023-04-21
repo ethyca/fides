@@ -73,17 +73,6 @@ async def test_gorgias_access_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:resource_search"],
-        min_size=1,
-        keys=[
-            "data",
-            "object",
-            "uri",
-            "meta",
-        ],
-    )
-
-    assert_rows_match(
         v[f"{dataset_name}:tickets"],
         min_size=1,
         keys=[            
@@ -224,17 +213,6 @@ async def test_gorgias_erasure_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:resource_search"],
-        min_size=1,
-        keys=[
-            "data",
-            "object",
-            "uri",
-            "meta",
-        ],
-    )
-
-    assert_rows_match(
         v[f"{dataset_name}:tickets"],
         min_size=1,
         keys=[            
@@ -321,7 +299,6 @@ async def test_gorgias_erasure_request_task(
 
     assert x == {
         f"{dataset_name}:customer": 1,
-        f"{dataset_name}:resource_search": 0,
         f"{dataset_name}:tickets": 1,
         f"{dataset_name}:ticket_message": 1,
     }

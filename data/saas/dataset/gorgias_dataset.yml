@@ -51,57 +51,6 @@ dataset:
                   data_type: string
           - name: data
           - name: note
-      - name: resource_search
-        fields:
-          - name: data
-            fidesops_meta:
-              data_type: 'object[]'
-            fields:
-              - name: id
-                data_categories: [user.unique_id]
-                fidesops_meta:
-                  data_type: integer
-              - name: address
-                data_categories: [user.contact.address]
-                fidesops_meta:
-                  data_type: string
-              - name: type
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: user
-                fidesops_meta:
-                  data_type: object
-                fields:
-                  - name: id
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: integer
-                  - name: name
-                    data_categories: [user.name]
-                    fidesops_meta:
-                      data_type: string
-              - name: customer
-                fidesops_meta:
-                  data_type: object
-                fields:
-                  - name: id
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: integer
-                  - name: name
-                    data_categories: [user.name]
-                    fidesops_meta:
-                      data_type: string
-          - name: object
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: uri
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: meta
       - name: tickets
         fields:
           - name: id
@@ -201,8 +150,10 @@ dataset:
           - name: snooze_datetime
           - name: trashed_datetime
           - name: integrations
+            data_categories: [system.operations]
             fidesops_meta:
               read_only: True
+              data_type: integer
           - name: messages_count
             data_categories: [system.operations]
             fidesops_meta:

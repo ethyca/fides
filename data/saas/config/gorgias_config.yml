@@ -50,19 +50,6 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-    - name: resource_search
-      requests:
-        read:
-          method: POST
-          path: /api/search
-          body: |
-            {
-              "type": "customer_channel_email",
-              "query": "<email>"
-            }
-          param_values:
-            - name: email
-              identity: email
     - name: tickets
       requests:
         read:
@@ -74,6 +61,11 @@ saas_config:
             - name: limit
               value: '30'
           data_path: data
+          pagination:
+            strategy: cursor
+            configuration:
+              cursor_param: cursor
+              field: meta.next_cursor
           param_values:
             - name: customer_id
               references:
@@ -85,7 +77,7 @@ saas_config:
           path: /api/tickets/<tickets_id>/
           body: |
             {
-               <all_object_fields> 
+            <all_object_fields>
             }
           param_values:
             - name: tickets_id
@@ -102,6 +94,11 @@ saas_config:
             - name: ticket_id
               value: <tickets_id>
           data_path: data
+          pagination:
+            strategy: cursor
+            configuration:
+              cursor_param: cursor
+              field: meta.next_cursor
           param_values:
             - name: tickets_id
               references:
@@ -113,7 +110,7 @@ saas_config:
           path: /api/tickets/<tickets_id>/messages/<ticket_message_id>/
           body: |
             {
-               <all_object_fields> 
+            <all_object_fields>
             }
           param_values:
             - name: tickets_id
