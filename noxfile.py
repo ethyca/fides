@@ -33,7 +33,7 @@ nox.options.reuse_existing_virtualenvs = True
 def open_docs(session: nox.Session) -> None:
     """Open the webpage for the developer/contribution docs."""
     dev_url = "http://localhost:8000/fides/development/developing_fides/"
-    prod_url = "https://ethyca.github.io/fides/stable/development/developing_fides/"
+    prod_url = "https://ethyca.github.io/fides/dev/development/developing_fides/"
 
     if "dev" in session.posargs:
         webbrowser.open(dev_url)

@@ -4,6 +4,8 @@ The primary developer interface for Fides is via a tool called Nox. Nox is a pur
 
 Additionally, much of what `nox` helps abstract is related to Docker. This usually makes it possible to troubleshoot potential `nox` issues by using various Docker commands directly.
 
+If you haven't already, read the [Requirements Installation Guide](overview.md#requirements) to get up and running with the required tools and optimal configurations.
+
 ## Terminology
 
 For the purposes of this documentation, there is some Nox-specific terminology that is used and is helpful to understand before reading the rest of the guide.
