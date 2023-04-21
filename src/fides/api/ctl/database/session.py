@@ -10,11 +10,15 @@ engine = create_async_engine(
     CONFIG.database.async_database_uri,
     echo=False,
     hide_parameters=True,
+    logging_name="AsyncEngine",
 )
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 sync_engine = create_engine(
-    CONFIG.database.sync_database_uri, echo=False, hide_parameters=True
+    CONFIG.database.sync_database_uri,
+    echo=False,
+    hide_parameters=True,
+    logging_name="SyncEngine",
 )
 sync_session = sessionmaker(
     sync_engine,

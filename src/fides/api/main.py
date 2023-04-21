@@ -4,6 +4,7 @@ Contains the code that sets up the API.
 from datetime import datetime, timezone
 from logging import DEBUG, WARNING
 from typing import Callable, List, Optional, Pattern, Union
+import sys
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
@@ -32,7 +33,7 @@ from fides.api.ctl.ui import (
     path_is_in_ui_directory,
 )
 from fides.api.ctl.utils.errors import FidesError
-from fides.api.ctl.utils.logger import setup as setup_logging
+from fides.api.ctl.utils.logger import setup as setup_logging, formatter
 from fides.api.ops.analytics import (
     accessed_through_local_host,
     in_docker_container,
@@ -220,6 +221,7 @@ async def prepare_and_log_request(
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
+    logger.add(sys.stderr, format=formatter)
     logger.info(f"Starting Fides - v{VERSION}")
     logger.info(
         "Startup configuration: reloading = {}, dev_mode = {}",

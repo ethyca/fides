@@ -6,7 +6,8 @@ Defines the logging format to be used throughout the API server code.
 import logging
 import sys
 from types import FrameType
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Union, List
+from fides.core.config import CONFIG
 
 from loguru import logger
 
@@ -105,3 +106,23 @@ def setup(level: str, serialize: str = "", desination: str = "") -> None:
             ).loguru_config(),
         ]
     )
+
+
+def obfuscate_message(message: str) -> str:
+    """Obfuscate specific bits of information that might get logged."""
+
+    # Obfuscate database username/password
+    strings_to_replace: List[str] = [
+        f"{CONFIG.database.user}:{CONFIG.database.password}"
+    ]
+
+    for string in strings_to_replace:
+        result = message.replace(string, "*****")
+
+    return result
+
+
+# Loguru doesn't export the Record type so this can't be properly typed
+def formatter(record) -> str:
+    record["extra"]["obfuscated_message"] = obfuscate_message(record["message"])
+    return "[{level}] {extra[obfuscated_message]}\n{exception}"
