@@ -20,6 +20,7 @@ CONFIG = get_config()
 def test_gorgias_connection_test(gorgias_connection_config) -> None:
     get_connector(gorgias_connection_config).test_connection()
 
+
 @pytest.mark.integration_saas
 @pytest.mark.integration_gorgias
 @pytest.mark.asyncio
@@ -75,7 +76,7 @@ async def test_gorgias_access_request_task(
     assert_rows_match(
         v[f"{dataset_name}:tickets"],
         min_size=1,
-        keys=[            
+        keys=[
             "id",
             "uri",
             "external_id",
@@ -108,7 +109,7 @@ async def test_gorgias_access_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:ticket_message"],
+        v[f"{dataset_name}:ticket_messages"],
         min_size=1,
         keys=[
             "id",
@@ -152,7 +153,7 @@ async def test_gorgias_access_request_task(
     user_id = v[f"{dataset_name}:customer"][0]["id"]
 
     for ticket in v[f"{dataset_name}:tickets"]:
-        assert ticket["customer"]['id'] == user_id
+        assert ticket["customer"]["id"] == user_id
 
 
 @pytest.mark.integration_saas
@@ -215,7 +216,7 @@ async def test_gorgias_erasure_request_task(
     assert_rows_match(
         v[f"{dataset_name}:tickets"],
         min_size=1,
-        keys=[            
+        keys=[
             "id",
             "uri",
             "external_id",
@@ -248,7 +249,7 @@ async def test_gorgias_erasure_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:ticket_message"],
+        v[f"{dataset_name}:ticket_messages"],
         min_size=1,
         keys=[
             "id",
@@ -300,7 +301,7 @@ async def test_gorgias_erasure_request_task(
     assert x == {
         f"{dataset_name}:customer": 1,
         f"{dataset_name}:tickets": 1,
-        f"{dataset_name}:ticket_message": 1,
+        f"{dataset_name}:ticket_messages": 1,
     }
 
     gorgias_secrets = gorgias_connection_config.secrets

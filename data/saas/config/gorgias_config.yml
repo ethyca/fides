@@ -42,7 +42,7 @@ saas_config:
           path: /api/customers/<customer_id>/
           body: |
             {
-               <all_object_fields>  
+               <masked_object_fields>  
             }
           param_values:
             - name: customer_id
@@ -59,7 +59,7 @@ saas_config:
             - name: customer_id
               value: <customer_id>
             - name: limit
-              value: '30'
+              value: "30"
           data_path: data
           pagination:
             strategy: cursor
@@ -77,7 +77,7 @@ saas_config:
           path: /api/tickets/<tickets_id>/
           body: |
             {
-            <all_object_fields>
+              <masked_object_fields>
             }
           param_values:
             - name: tickets_id
@@ -85,7 +85,7 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: tickets.id
                   direction: from
-    - name: ticket_message
+    - name: ticket_messages
       requests:
         read:
           method: GET
@@ -107,19 +107,20 @@ saas_config:
                   direction: from
         update:
           method: PUT
-          path: /api/tickets/<tickets_id>/messages/<ticket_message_id>/
+          path: /api/tickets/<ticket_id>/messages/<ticket_message_id>/
+          grouped_inputs: [ticket_id, ticket_message_id]
           body: |
             {
-            <all_object_fields>
+              <masked_object_fields>
             }
           param_values:
-            - name: tickets_id
+            - name: ticket_id
               references:
                 - dataset: <instance_fides_key>
-                  field: ticket_message.ticket_id
+                  field: ticket_messages.ticket_id
                   direction: from
             - name: ticket_message_id
               references:
                 - dataset: <instance_fides_key>
-                  field: ticket_message.id
+                  field: ticket_messages.id
                   direction: from
