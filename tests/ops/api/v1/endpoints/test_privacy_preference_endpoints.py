@@ -593,6 +593,111 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         assert not mock_verify_identity.called
         assert run_privacy_request_mock.called
 
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required", "automatically_approved"
+    )
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_verify_then_set_privacy_preferences_with_additional_fides_user_device_id(
+        self,
+        run_privacy_request_mock,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        db: Session,
+        request_body,
+        privacy_notice,
+        system,
+    ):
+        """Verify code and then return privacy preferences
+
+        Besides having a verified identity, we also have the fides_user_device_id from the browser
+        """
+        request_body["browser_identity"][
+            "fides_user_device_id"
+        ] = "test_fides_user_device_id"
+        _, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY.format(consent_request_id=consent_request.id)}",
+            json={"code": verification_code},
+        )
+        assert response.status_code == 200
+        # Assert no existing privacy preferences exist for this identity
+        assert response.json() == {"items": [], "total": 0, "page": 1, "size": 50}
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+
+        response_json = response.json()[0]
+        created_privacy_preference_history_id = response_json[
+            "privacy_preference_history_id"
+        ]
+        privacy_preference_history = (
+            db.query(PrivacyPreferenceHistory)
+            .filter(
+                PrivacyPreferenceHistory.id == created_privacy_preference_history_id
+            )
+            .first()
+        )
+        assert response_json["preference"] == "opt_out"
+
+        assert (
+            response_json["privacy_notice_history"]
+            == PrivacyNoticeHistorySchema.from_orm(privacy_notice.histories[0]).dict()
+        )
+        db.refresh(consent_request)
+        assert consent_request.privacy_request_id
+
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY.format(consent_request_id=consent_request.id)}",
+            json={"code": verification_code},
+        )
+        assert response.status_code == 200
+        assert len(response.json()["items"]) == 1
+        response_json = response.json()["items"][0]
+        assert response_json["id"] is not None
+        assert response_json["preference"] == "opt_out"
+        assert (
+            response_json["privacy_notice_history"]
+            == PrivacyNoticeHistorySchema.from_orm(privacy_notice.histories[0]).dict()
+        )
+        assert (
+            privacy_preference_history.fides_user_device == "test_fides_user_device_id"
+        )
+        assert (
+            privacy_preference_history.hashed_fides_user_device
+            == ProvidedIdentity.hash_value("test_fides_user_device_id")
+        )
+        assert (
+            privacy_preference_history.fides_user_device_provided_identity_id
+            is not None
+        )
+        fides_user_device_provided_identity = (
+            privacy_preference_history.fides_user_device_provided_identity
+        )
+        assert (
+            fides_user_device_provided_identity
+            != privacy_preference_history.provided_identity
+        )
+        assert (
+            fides_user_device_provided_identity.encrypted_value["value"]
+            == "test_fides_user_device_id"
+        )
+        assert (
+            fides_user_device_provided_identity.hashed_value
+            == ProvidedIdentity.hash_value("test_fides_user_device_id")
+        )
+
+        privacy_preference_history.delete(db=db)
+        assert run_privacy_request_mock.called
+
 
 class TestPrivacyPreferenceVerify:
     @pytest.fixture(scope="function")

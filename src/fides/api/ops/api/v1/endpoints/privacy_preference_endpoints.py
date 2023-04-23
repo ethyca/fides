@@ -17,6 +17,7 @@ from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.ops.api.deps import get_db
 from fides.api.ops.api.v1.endpoints.consent_request_endpoints import (
     _get_consent_request_and_provided_identity,
+    _get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
@@ -136,12 +137,13 @@ def verify_privacy_notice_and_historical_records(
 
 
 def extract_identity_from_provided_identity(
-    identity: ProvidedIdentity, identity_type: ProvidedIdentityType
+    identity: Optional[ProvidedIdentity], identity_type: ProvidedIdentityType
 ) -> Tuple[Optional[str], Optional[str]]:
     """Pull the identity data off of the ProvidedIdentity given that it's the correct type"""
     value: Optional[str] = None
     hashed_value: Optional[str] = None
-    if identity.encrypted_value and identity.field_name == identity_type:
+
+    if identity and identity.encrypted_value and identity.field_name == identity_type:
         value = identity.encrypted_value["value"]
         hashed_value = identity.hashed_value
 
@@ -153,7 +155,7 @@ def extract_identity_from_provided_identity(
     status_code=HTTP_200_OK,
     response_model=List[CurrentPrivacyPreferenceSchema],
 )
-def save_privacy_preferences(
+def save_privacy_preferences_with_verified_identity(
     *,
     consent_request_id: str,
     db: Session = Depends(get_db),
@@ -178,6 +180,15 @@ def save_privacy_preferences(
             status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
         )
 
+    try:
+        fides_user_provided_identity = (
+            _get_or_create_fides_user_device_id_provided_identity(
+                db=db, identity_data=data.browser_identity
+            )
+        )
+    except HTTPException:
+        fides_user_provided_identity = None
+
     logger.info("Saving privacy preferences")
     created_historical_preferences: List[PrivacyPreferenceHistory] = []
     upserted_current_preferences: List[CurrentPrivacyPreference] = []
@@ -188,13 +199,21 @@ def save_privacy_preferences(
     phone_number, hashed_phone_number = extract_identity_from_provided_identity(
         provided_identity, ProvidedIdentityType.phone_number
     )
+    fides_user_device_id, hashed_device_id = extract_identity_from_provided_identity(
+        fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
+    )
 
     for privacy_preference in data.preferences:
         historical_preference: PrivacyPreferenceHistory = PrivacyPreferenceHistory.create(
             db=db,
             data={
                 "email": email,
+                "fides_user_device": fides_user_device_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id
+                if fides_user_provided_identity
+                else None,
                 "hashed_email": hashed_email,
+                "hashed_fides_user_device": hashed_device_id,
                 "hashed_phone_number": hashed_phone_number,
                 "phone_number": phone_number,
                 "preference": privacy_preference.preference,
