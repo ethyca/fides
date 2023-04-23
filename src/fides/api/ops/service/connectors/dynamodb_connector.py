@@ -80,19 +80,15 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve DynamoDB data"""
-        # potentially move some of this to the query config?
-        # may no longer be required or helpful for this connector
+        query_config = self.query_config(node)
         collection_name = node.address.collection
         client = self.client()
         try:
             describe_table = client.describe_table(TableName=collection_name)
-            attribute_definitions = describe_table["Table"]["AttributeDefinitions"]
-            query_param = {}
-            for attribute_definition in attribute_definitions:
-                attribute_name = attribute_definition["AttributeName"]
-                attribute_type = attribute_definition["AttributeType"]
-                attribute_value = input_data[attribute_name][0]
-                query_param[attribute_name] = {attribute_type: attribute_value}
+            input_data["attribute_definitions"] = describe_table["Table"][
+                "AttributeDefinitions"
+            ]
+            query_param = query_config.generate_query(input_data, policy)
             item = client.get_item(
                 TableName=collection_name,
                 Key=query_param,  # type: ignore

@@ -46,7 +46,7 @@ def dynamodb_connection_config(
     dynamodb_connection_config_without_secrets: ConnectionConfig,
 ) -> Generator:
     """
-    Returns a Snowflake ConectionConfig with secrets attached if secrets are present
+    Returns a DynamoDB ConectionConfig with secrets attached if secrets are present
     in the configuration.
     """
     dynamodb_connection_config = dynamodb_connection_config_without_secrets

@@ -780,10 +780,18 @@ DynamoDBStatement = Dict[str, Dict[str, Any]]
 
 class DynamoDBQueryConfig(QueryConfig[DynamoDBStatement]):
     def generate_query(
-        self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
-    ) -> None:
-        """Not used for this connector at this time"""
-        return None
+        self,
+        input_data: Dict[str, List[Any]],
+        policy: Optional[Policy],
+    ) -> Dict[str, Dict[str, Any]]:
+        """Generate a dictionary for the `get_item` method used for DynamoDB"""
+        query_param = {}
+        for attribute_definition in input_data["attribute_definitions"]:
+            attribute_name = attribute_definition["AttributeName"]
+            attribute_type = attribute_definition["AttributeType"]
+            attribute_value = input_data[attribute_name][0]
+            query_param[attribute_name] = {attribute_type: attribute_value}
+        return query_param
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
