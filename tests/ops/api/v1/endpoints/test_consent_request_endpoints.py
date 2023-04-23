@@ -8,6 +8,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 from requests import Session
 
+from fides.api.ops.api.v1.endpoints.consent_request_endpoints import (
+    _get_fides_user_device_id_provided_identity,
+)
 from fides.api.ops.api.v1.scope_registry import CONNECTION_READ, CONSENT_READ
 from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
@@ -1165,3 +1168,23 @@ class TestGetConsentPreferences:
             },
         ]
         assert response.json()["consent"] == expected_consent_data
+
+
+class TestGetFidesUserProvidedIdentity:
+    def test_no_identifier_supplied(self, db):
+        provided_identity = _get_fides_user_device_id_provided_identity(db, None)
+        assert provided_identity is None
+
+    def test_no_provided_identifier_exists(self, db):
+        provided_identity = _get_fides_user_device_id_provided_identity(
+            db, "fides_user_device_id"
+        )
+        assert provided_identity is None
+
+    def test_get_fides_user_device_id_provided_identity(
+        self, db, fides_user_provided_identity
+    ):
+        provided_identity = _get_fides_user_device_id_provided_identity(
+            db, "FGHIJ_TEST_FIDES"
+        )
+        assert provided_identity == fides_user_provided_identity
