@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Modal,
   ModalBody,
@@ -9,7 +10,7 @@ import {
   SimpleGrid,
   Text,
 } from "@fidesui/react";
-import { ReactNode } from "react";
+import { ReactNode, useRef } from "react";
 import FormSection from "common/form/FormSection";
 import { CustomSelect, CustomTextInput } from "common/form/inputs";
 import {
@@ -34,6 +35,7 @@ import {
 type HeaderProps = {
   children: ReactNode;
 };
+import { CreateCustomLists } from "~/features/common/custom-fields/CreateCustomLists";
 
 const CustomFieldHeader = ({ children }: HeaderProps) => (
   <ModalHeader
@@ -74,6 +76,8 @@ export const CustomFieldModal = ({
   onClose,
   isLoading,
 }: ModalProps) => {
+  const createCustomListsRef = useRef(null);
+
   return (
     <Modal
       id="custom-field-modal-hello-world"
@@ -88,54 +92,70 @@ export const CustomFieldModal = ({
         id="modal-content"
         textAlign="center"
         data-testid="custom-field-modal"
+        maxHeight="80%"
+        overflowY="auto"
       >
         <CustomFieldHeader>Edit Custom Field</CustomFieldHeader>
-        <ModalBody>
+        <ModalBody px={6} py={0}>
           <Formik
             initialValues={initialValuesTemplate}
             onSubmit={async () => {}}
           >
-            <Form>
-              <FormSection title="Field Information">
-                <CustomTextInput label="Name" name="name" />
-                <CustomTextInput label="Description" name="description" />
-                <CustomSelect
-                  label="Location"
-                  name="resource_type"
-                  options={RESOURCE_TYPE_OPTIONS}
-                />
-              </FormSection>
-              <FormSection title="Configuration">
-                <CustomSelect
-                  label="Field Type"
-                  name="field_type"
-                  options={FIELD_TYPE_OPTIONS}
-                />
-              </FormSection>
-            </Form>
+            {({ dirty, isValid, isSubmitting }) => (
+              <Form
+                style={{
+                  paddingTop: "12px",
+                  paddingBottom: "12px",
+                }}
+              >
+                <Box py={3}>
+                  <FormSection title="Field Information">
+                    <CustomTextInput label="Name" name="name" />
+                    <CustomTextInput label="Description" name="description" />
+                    <CustomSelect
+                      label="Location"
+                      name="resource_type"
+                      options={RESOURCE_TYPE_OPTIONS}
+                    />
+                  </FormSection>
+                </Box>
+                <Box py={3}>
+                  <FormSection title="Configuration">
+                    <CustomSelect
+                      label="Field Type"
+                      name="field_type"
+                      options={FIELD_TYPE_OPTIONS}
+                    />
+                    <CreateCustomLists
+                      onSubmitComplete={() => {}}
+                      ref={createCustomListsRef}
+                    />
+                  </FormSection>
+                </Box>
+
+                <SimpleGrid columns={2} width="100%">
+                  <Button
+                    variant="outline"
+                    mr={3}
+                    onClick={onClose}
+                    data-testid="cancel-btn"
+                    isDisabled={isLoading || isSubmitting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    colorScheme="primary"
+                    data-testid="save-btn"
+                    isLoading={isLoading}
+                    isDisabled={!dirty || !isValid || isSubmitting}
+                  >
+                    Save
+                  </Button>
+                </SimpleGrid>
+              </Form>
+            )}
           </Formik>
         </ModalBody>
-        <ModalFooter>
-          <SimpleGrid columns={2} width="100%">
-            <Button
-              variant="outline"
-              mr={3}
-              onClick={onClose}
-              data-testid="cancel-btn"
-              isDisabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme="primary"
-              // onClick={onConfirm}
-              data-testid="save-btn"
-              isLoading={isLoading}
-            >
-              Save
-            </Button>
-          </SimpleGrid>
-        </ModalFooter>
       </ModalContent>
     </Modal>
   );
