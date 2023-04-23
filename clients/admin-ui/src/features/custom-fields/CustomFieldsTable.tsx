@@ -1,4 +1,11 @@
-import { Box, Button, Flex, Spinner, Text, useDisclosure } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Spinner,
+  Text,
+  useDisclosure,
+} from "@fidesui/react";
 import Restrict, { useHasPermission } from "common/Restrict";
 import {
   FidesTable,
@@ -23,7 +30,7 @@ import { CustomFieldModal } from "./CustomFieldModal";
 export const CustomFieldsTable = () => {
   const { isLoading } = useGetAllCustomFieldDefinitionsQuery();
   const customFields = useAppSelector(selectAllCustomFieldDefinitions);
-  const { isOpen, onClose, onOpen} = useDisclosure();
+  const { isOpen, onClose, onOpen } = useDisclosure();
 
   // Permissions
   const userCanUpdate = useHasPermission([
@@ -95,20 +102,22 @@ export const CustomFieldsTable = () => {
           showSearchBar
           footer={
             <FidesTableFooter totalColumns={columns.length}>
-              <Restrict scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DEFINITION_CREATE]}>
-                  <Button
-                    size="xs"
-                    colorScheme="primary"
-                    data-testid="add-custom-field-btn"
-                    onClick={onOpen}
-                  >
-                    Add a custom field +
-                  </Button>
+              <Restrict
+                scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DEFINITION_CREATE]}
+              >
+                <Button
+                  size="xs"
+                  colorScheme="primary"
+                  data-testid="add-custom-field-btn"
+                  onClick={onOpen}
+                >
+                  Add a custom field +
+                </Button>
               </Restrict>
             </FidesTableFooter>
           }
         />
-        <CustomFieldModal isOpen={isOpen} onClose={onClose} isLoading={false}/>
+        <CustomFieldModal isOpen={isOpen} onClose={onClose} isLoading={false} />
       </Box>
     </>
   );
