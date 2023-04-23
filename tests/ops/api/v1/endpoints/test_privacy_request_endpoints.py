@@ -1317,8 +1317,7 @@ class TestGetPrivacyRequests:
             "phone_number": TEST_PHONE,
             "ga_client_id": None,
             "ljt_readerID": None,
-            "fides_user_device_id": None
-
+            "fides_user_device_id": None,
         }
         assert first_row["Request Type"] == "access"
         assert first_row["Status"] == "approved"
