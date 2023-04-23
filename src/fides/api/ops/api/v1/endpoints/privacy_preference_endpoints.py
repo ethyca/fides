@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import List, Optional, Tuple
+from urllib.parse import urlparse
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -11,7 +12,12 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from sqlalchemy import literal
 from sqlalchemy.orm import Query, Session
-from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+)
 
 from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.ops.api.deps import get_db
@@ -30,8 +36,9 @@ from fides.api.ops.api.v1.scope_registry import (
 from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
     CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
-    CURRENT_PRIVACY_PREFERENCES,
-    HISTORICAL_PRIVACY_PREFERENCES,
+    CURRENT_PRIVACY_PREFERENCES_REPORT,
+    HISTORICAL_PRIVACY_PREFERENCES_REPORT,
+    PRIVACY_PREFERENCES,
     V1_URL_PREFIX,
 )
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
@@ -40,6 +47,7 @@ from fides.api.ops.models.privacy_preference import (
     PrivacyPreferenceHistory,
 )
 from fides.api.ops.models.privacy_request import (
+    ConsentRequest,
     PrivacyRequest,
     ProvidedIdentity,
     ProvidedIdentityType,
@@ -58,6 +66,7 @@ from fides.api.ops.schemas.privacy_request import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.models.fides_user import FidesUser
 
@@ -161,13 +170,11 @@ def save_privacy_preferences_with_verified_identity(
     db: Session = Depends(get_db),
     data: PrivacyPreferencesCreateWithCode,
 ) -> List[CurrentPrivacyPreference]:
-    """Verifies the verification code and saves the user's privacy preferences if successful.
+    """Saves privacy preferences with respect to a verified user identity like an email or phone number
+    and optionally a fides user device id.
 
-    Creates a historical record for each privacy preference for record keeping and then upserts the current preference
-    for each privacy notice.  Creates a Privacy Request linked to the historical preferences to
-    propagate these preferences where applicable.
-
-    This workflow is for users saving preferences for privacy notices with a verified identity.
+    Creates historical records for these preferences for record keeping, and also updates current preferences.
+    Creates a privacy request to propagate preferences to third party systems.
     """
     verify_privacy_notice_and_historical_records(db=db, data=data)
     consent_request, provided_identity = _get_consent_request_and_provided_identity(
@@ -190,20 +197,41 @@ def save_privacy_preferences_with_verified_identity(
         fides_user_provided_identity = None
 
     logger.info("Saving privacy preferences")
+    return _save_privacy_preferences_for_identities(
+        db=db,
+        consent_request=consent_request,
+        verified_provided_identity=provided_identity,
+        fides_user_provided_identity=fides_user_provided_identity,
+        request_data=data,
+    )
+
+
+def _save_privacy_preferences_for_identities(
+    db: Session,
+    consent_request: Optional[ConsentRequest],
+    verified_provided_identity: Optional[ProvidedIdentity],
+    fides_user_provided_identity: Optional[ProvidedIdentity],
+    request_data: PrivacyPreferencesCreateWithCode,
+) -> List[CurrentPrivacyPreference]:
+    """
+    Saves privacy preferences (both historical and current records) and creates a privacy request to propagate those
+    preferences for when we have a verified user identity (like email/phone number), just a fides user device from
+    the browser, or both.
+    """
     created_historical_preferences: List[PrivacyPreferenceHistory] = []
     upserted_current_preferences: List[CurrentPrivacyPreference] = []
 
     email, hashed_email = extract_identity_from_provided_identity(
-        provided_identity, ProvidedIdentityType.email
+        verified_provided_identity, ProvidedIdentityType.email
     )
     phone_number, hashed_phone_number = extract_identity_from_provided_identity(
-        provided_identity, ProvidedIdentityType.phone_number
+        verified_provided_identity, ProvidedIdentityType.phone_number
     )
     fides_user_device_id, hashed_device_id = extract_identity_from_provided_identity(
         fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
     )
 
-    for privacy_preference in data.preferences:
+    for privacy_preference in request_data.preferences:
         historical_preference: PrivacyPreferenceHistory = PrivacyPreferenceHistory.create(
             db=db,
             data={
@@ -218,11 +246,13 @@ def save_privacy_preferences_with_verified_identity(
                 "phone_number": phone_number,
                 "preference": privacy_preference.preference,
                 "privacy_notice_history_id": privacy_preference.privacy_notice_history_id,
-                "provided_identity_id": provided_identity.id,
-                "request_origin": data.request_origin,
-                "user_agent": data.user_agent,
-                "user_geography": data.user_geography,
-                "url_recorded": data.url_recorded,
+                "provided_identity_id": verified_provided_identity.id
+                if verified_provided_identity
+                else None,
+                "request_origin": request_data.request_origin,
+                "user_agent": request_data.user_agent,
+                "user_geography": request_data.user_geography,
+                "url_recorded": request_data.url_recorded,
             },
             check_name=False,
         )
@@ -233,12 +263,16 @@ def save_privacy_preferences_with_verified_identity(
         created_historical_preferences.append(historical_preference)
         upserted_current_preferences.append(upserted_current_preference)
 
-    identity = data.browser_identity if data.browser_identity else Identity()
-    setattr(
-        identity,
-        provided_identity.field_name.value,  # type:ignore[attr-defined]
-        provided_identity.encrypted_value["value"],  # type:ignore[index]
-    )  # Pull the information on the ProvidedIdentity for the ConsentRequest to pass along to create a PrivacyRequest
+    identity = (
+        request_data.browser_identity if request_data.browser_identity else Identity()
+    )
+    if verified_provided_identity:
+        # Pull the information on the ProvidedIdentity for the ConsentRequest to pass along to create a PrivacyRequest
+        setattr(
+            identity,
+            verified_provided_identity.field_name.value,  # type:ignore[attr-defined]
+            verified_provided_identity.encrypted_value["value"],  # type:ignore[index]
+        )
 
     # Privacy Request needs to be created with respect to the *historical* privacy preferences
     privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
@@ -247,7 +281,7 @@ def save_privacy_preferences_with_verified_identity(
         data=[
             PrivacyRequestCreate(
                 identity=identity,
-                policy_key=data.policy_key or DEFAULT_CONSENT_POLICY,
+                policy_key=request_data.policy_key or DEFAULT_CONSENT_POLICY,
             )
         ],
         authenticated=True,
@@ -260,14 +294,61 @@ def save_privacy_preferences_with_verified_identity(
             detail=privacy_request_results.failed[0].message,
         )
 
-    consent_request.privacy_request_id = privacy_request_results.succeeded[0].id
-    consent_request.save(db=db)
-
+    if consent_request:
+        # If we have a verified user identity, go ahead and update the associated ConsentRequest for record keeping
+        consent_request.privacy_request_id = privacy_request_results.succeeded[0].id
+        consent_request.save(db=db)
     return upserted_current_preferences
 
 
+@router.patch(
+    PRIVACY_PREFERENCES,
+    status_code=HTTP_200_OK,
+    response_model=List[CurrentPrivacyPreferenceSchema],
+)
+def save_privacy_preferences(
+    *,
+    request: Request,
+    db: Session = Depends(get_db),
+    data: PrivacyPreferencesCreateWithCode,
+) -> List[CurrentPrivacyPreference]:
+    """Saves privacy preferences with respect to a fides user device id.
+
+    Creates historical records for these preferences for record keeping, and also updates current preferences.
+    Creates a privacy request to propagate preferences to third party systems.
+    """
+    verify_privacy_notice_and_historical_records(db=db, data=data)
+    origin = request.headers.get("Origin") or request.headers.get("Referer")
+
+    if origin:
+        parsed_url = urlparse(origin)
+        if (
+            parsed_url.scheme + "://" + parsed_url.netloc
+            not in CONFIG.security.cors_origins
+        ):
+            raise HTTPException(
+                status_code=HTTP_403_FORBIDDEN,
+                detail="Can't save privacy preferences from non-approved addresses",
+            )
+
+    fides_user_provided_identity = (
+        _get_or_create_fides_user_device_id_provided_identity(
+            db=db, identity_data=data.browser_identity
+        )
+    )
+
+    logger.info("Saving privacy preferences with respect to fides user device id")
+    return _save_privacy_preferences_for_identities(
+        db=db,
+        consent_request=None,
+        verified_provided_identity=None,
+        fides_user_provided_identity=fides_user_provided_identity,
+        request_data=data,
+    )
+
+
 @router.get(
-    CURRENT_PRIVACY_PREFERENCES,
+    CURRENT_PRIVACY_PREFERENCES_REPORT,
     status_code=HTTP_200_OK,
     dependencies=[
         Security(verify_oauth_client, scopes=[CURRENT_PRIVACY_PREFERENCE_READ])
@@ -298,7 +379,7 @@ def get_current_privacy_preferences(
 
 
 @router.get(
-    HISTORICAL_PRIVACY_PREFERENCES,
+    HISTORICAL_PRIVACY_PREFERENCES_REPORT,
     status_code=HTTP_200_OK,
     dependencies=[
         Security(verify_oauth_client, scopes=[PRIVACY_PREFERENCE_HISTORY_READ])
