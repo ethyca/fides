@@ -23,6 +23,7 @@ from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.ops.api.deps import get_db
 from fides.api.ops.api.v1.endpoints.consent_request_endpoints import (
     _get_consent_request_and_provided_identity,
+    _get_fides_user_device_id_provided_identity,
     _get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
@@ -301,6 +302,66 @@ def _save_privacy_preferences_for_identities(
     return upserted_current_preferences
 
 
+def verify_address(request: Request) -> None:
+    """Verify request is coming from approved address"""
+    origin = request.headers.get("Origin") or request.headers.get("Referer")
+
+    if origin:
+        parsed_url = urlparse(origin)
+        if (
+            parsed_url.scheme + "://" + parsed_url.netloc
+            not in CONFIG.security.cors_origins
+        ):
+            raise HTTPException(
+                status_code=HTTP_403_FORBIDDEN,
+                detail="Can't save privacy preferences from non-approved addresses",
+            )
+
+
+@router.get(
+    PRIVACY_PREFERENCES,
+    status_code=HTTP_200_OK,
+    response_model=Page[CurrentPrivacyPreferenceSchema],
+)
+def get_privacy_preferences_by_device_id(
+    *,
+    request: Request,
+    fides_user_device_id: str,
+    db: Session = Depends(get_db),
+    params: Params = Depends(),
+) -> AbstractPage[CurrentPrivacyPreference]:
+    """Saves privacy preferences with respect to a fides user device id.
+
+    Creates historical records for these preferences for record keeping, and also updates current preferences.
+    Creates a privacy request to propagate preferences to third party systems.
+    """
+    verify_address(request)
+    fides_user_provided_identity: Optional[
+        ProvidedIdentity
+    ] = _get_fides_user_device_id_provided_identity(
+        db=db, fides_user_device_id=fides_user_device_id
+    )
+
+    if not fides_user_provided_identity:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="Provided identity not found",
+        )
+
+    logger.info(
+        "Getting privacy preferences with respect to fides user provided identity"
+    )
+    query: Query[CurrentPrivacyPreference] = (
+        db.query(CurrentPrivacyPreference)
+        .filter(
+            CurrentPrivacyPreference.fides_user_device_provided_identity_id
+            == fides_user_provided_identity.id
+        )
+        .order_by(CurrentPrivacyPreference.updated_at.desc())
+    )
+    return paginate(query, params)
+
+
 @router.patch(
     PRIVACY_PREFERENCES,
     status_code=HTTP_200_OK,
@@ -318,18 +379,7 @@ def save_privacy_preferences(
     Creates a privacy request to propagate preferences to third party systems.
     """
     verify_privacy_notice_and_historical_records(db=db, data=data)
-    origin = request.headers.get("Origin") or request.headers.get("Referer")
-
-    if origin:
-        parsed_url = urlparse(origin)
-        if (
-            parsed_url.scheme + "://" + parsed_url.netloc
-            not in CONFIG.security.cors_origins
-        ):
-            raise HTTPException(
-                status_code=HTTP_403_FORBIDDEN,
-                detail="Can't save privacy preferences from non-approved addresses",
-            )
+    verify_address(request)
 
     fides_user_provided_identity = (
         _get_or_create_fides_user_device_id_provided_identity(
@@ -355,7 +405,7 @@ def save_privacy_preferences(
     ],
     response_model=Page[CurrentPrivacyPreferenceReportingSchema],
 )
-def get_current_privacy_preferences(
+def get_current_privacy_preferences_report(
     *,
     params: Params = Depends(),
     db: Session = Depends(get_db),
@@ -386,7 +436,7 @@ def get_current_privacy_preferences(
     ],
     response_model=Page[ConsentReportingSchema],
 )
-def get_historical_consent_reporting(
+def get_historical_consent_report(
     *,
     params: Params = Depends(),
     db: Session = Depends(get_db),

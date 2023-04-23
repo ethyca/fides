@@ -1878,6 +1878,20 @@ def provided_identity_and_consent_request(db):
 
 
 @pytest.fixture(scope="function")
+def fides_user_provided_identity(db):
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "fides_user_device_id",
+        "hashed_value": ProvidedIdentity.hash_value("FGHIJ_TEST_FIDES"),
+        "encrypted_value": {"value": "FGHIJ_TEST_FIDES"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+    yield provided_identity
+    provided_identity.delete(db=db)
+
+
+@pytest.fixture(scope="function")
 def executable_consent_request(
     db,
     provided_identity_and_consent_request,
