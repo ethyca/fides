@@ -454,6 +454,7 @@ def get_historical_consent_report(
             PrivacyPreferenceHistory.id,
             PrivacyRequest.id.label("privacy_request_id"),
             PrivacyPreferenceHistory.email.label("user_id"),
+            PrivacyPreferenceHistory.fides_user_device.label("fides_user_device_id"),
             PrivacyPreferenceHistory.secondary_user_ids,
             PrivacyPreferenceHistory.created_at.label("request_timestamp"),
             PrivacyPreferenceHistory.request_origin.label("request_origin"),

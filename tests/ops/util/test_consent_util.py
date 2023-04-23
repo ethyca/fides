@@ -23,6 +23,7 @@ class TestShouldOptIntoService:
         system,
         privacy_request_with_consent_policy,
         privacy_notice,
+        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
@@ -34,6 +35,7 @@ class TestShouldOptIntoService:
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
@@ -43,6 +45,8 @@ class TestShouldOptIntoService:
             system, privacy_request_with_consent_policy
         )
         assert collapsed_opt_in_preference == should_opt_in
+
+        pref.delete(db)
 
     @pytest.mark.parametrize(
         "preference, should_opt_in",
@@ -56,6 +60,7 @@ class TestShouldOptIntoService:
         system,
         privacy_notice_us_ca_provide,
         privacy_request_with_consent_policy,
+        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
@@ -73,6 +78,7 @@ class TestShouldOptIntoService:
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
@@ -82,6 +88,7 @@ class TestShouldOptIntoService:
             system, privacy_request_with_consent_policy
         )
         assert collapsed_opt_in_preference == should_opt_in
+        pref.delete(db)
 
     @pytest.mark.parametrize(
         "preference, should_opt_in",
@@ -95,6 +102,7 @@ class TestShouldOptIntoService:
         system,
         privacy_notice_us_co_provide_service_operations,
         privacy_request_with_consent_policy,
+        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
@@ -112,6 +120,7 @@ class TestShouldOptIntoService:
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice_us_co_provide_service_operations.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
@@ -121,6 +130,7 @@ class TestShouldOptIntoService:
             system, privacy_request_with_consent_policy
         )
         assert collapsed_opt_in_preference == should_opt_in
+        pref.delete(db)
 
     @pytest.mark.parametrize(
         "preference, should_opt_in",
@@ -134,6 +144,7 @@ class TestShouldOptIntoService:
         system,
         privacy_request_with_consent_policy,
         privacy_notice_eu_fr_provide_service_frontend_only,
+        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "frontend"
@@ -145,6 +156,7 @@ class TestShouldOptIntoService:
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
@@ -154,6 +166,7 @@ class TestShouldOptIntoService:
             system, privacy_request_with_consent_policy
         )
         assert collapsed_opt_in_preference == should_opt_in
+        pref.delete(db)
 
     @pytest.mark.parametrize(
         "preference, should_opt_in",
@@ -166,6 +179,7 @@ class TestShouldOptIntoService:
         db,
         privacy_notice_us_co_provide_service_operations,
         privacy_request_with_consent_policy,
+        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
@@ -177,6 +191,7 @@ class TestShouldOptIntoService:
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice_us_co_provide_service_operations.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
@@ -186,12 +201,15 @@ class TestShouldOptIntoService:
             None, privacy_request_with_consent_policy
         )
         assert collapsed_opt_in_preference == should_opt_in
+        pref.delete(db)
 
     def test_conflict_preferences_opt_out_wins(
         self,
         db,
         privacy_request_with_consent_policy,
         privacy_notice,
+        privacy_notice_us_ca_provide,
+        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
@@ -203,6 +221,7 @@ class TestShouldOptIntoService:
             data={
                 "preference": "opt_in",
                 "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
@@ -210,7 +229,8 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": "opt_out",
-                "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
+                "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
@@ -224,6 +244,8 @@ class TestShouldOptIntoService:
         )
         assert collapsed_opt_in_preference is False
         assert filtered_preferences == [pref_2]
+        pref_1.delete(db)
+        pref_2.delete(db)
 
     def test_old_workflow_preferences_saved_with_respect_to_data_use(
         self,

@@ -148,6 +148,10 @@ dataset:
         data_categories:
         - system.operations
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: fides_user_device_provided_identity_id
+        data_categories:
+        - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       - name: id
         data_categories:
         - system.operations
@@ -1878,6 +1882,18 @@ dataset:
       - name: email
         data_categories:
         - user
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: fides_user_device
+        data_categories:
+        - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: fides_user_device_provided_identity_id
+        data_categories:
+        - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: hashed_fides_user_device
+        data_categories:
+        - system.operations
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       - name: id
         data_categories:
