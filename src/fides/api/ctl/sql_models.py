@@ -364,10 +364,12 @@ class PrivacyDeclaration(Base):
     The SQL model for a Privacy Declaration associated with a given System.
     """
 
-    name = Column(String, index=True, nullable=False)  # labeled as Processing Activity in the UI
+    name = Column(
+        String, index=True, nullable=False
+    )  # labeled as Processing Activity in the UI
     ### keep egress/ingress as JSON blobs as they have always been
-    egress = Column(JSON)
-    ingress = Column(JSON)
+    egress = Column(ARRAY(String))
+    ingress = Column(ARRAY(String))
 
     ### references to other tables, but kept as 'soft reference' strings for now
     data_use = Column(String, index=True, nullable=False)
