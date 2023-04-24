@@ -28,7 +28,7 @@ from fides.api.ops.api.v1.urn_registry import (
 from fides.api.ops.common_exceptions import OAuth2TokenException
 from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.core.config import CONFIG
-from fides.lib.cryptography.schemas.jwt import (
+from fides.api.ops.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,

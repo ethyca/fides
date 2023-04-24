@@ -5,12 +5,12 @@ from copy import deepcopy
 import pytest
 
 from fides.api.ops.api.v1.scope_registry import DATASET_CREATE_OR_UPDATE, SCOPE_REGISTRY
-from fides.lib.cryptography.cryptographic_util import (
+from fides.api.ops.cryptography.cryptographic_util import (
     generate_salt,
     generate_secure_random_string,
     hash_with_salt,
 )
-from fides.lib.cryptography.schemas.jwt import (
+from fides.api.ops.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,

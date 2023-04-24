@@ -9,12 +9,12 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
 from fides.core.config import FidesConfig
-from fides.lib.cryptography.cryptographic_util import (
+from fides.api.ops.cryptography.cryptographic_util import (
     generate_salt,
     generate_secure_random_string,
     hash_with_salt,
 )
-from fides.lib.cryptography.schemas.jwt import (
+from fides.api.ops.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,

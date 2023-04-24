@@ -4,7 +4,7 @@ from typing import Optional
 
 from pydantic import validator
 
-from fides.lib.cryptography.cryptographic_util import decode_password
+from fides.api.ops.cryptography.cryptographic_util import decode_password
 from fides.lib.oauth.schemas.oauth import AccessToken
 from fides.lib.schemas.base_class import BaseSchema
 

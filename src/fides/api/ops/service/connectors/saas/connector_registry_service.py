@@ -40,7 +40,7 @@ from fides.api.ops.util.saas_util import (
     replace_version,
 )
 from fides.core.config import CONFIG
-from fides.lib.cryptography.cryptographic_util import str_to_b64_str
+from fides.api.ops.cryptography.cryptographic_util import str_to_b64_str
 
 
 class ConnectorTemplateLoader(ABC):

@@ -16,7 +16,7 @@ from fides.core.utils import (
     read_credentials_file,
     write_credentials_file,
 )
-from fides.lib.cryptography.cryptographic_util import str_to_b64_str
+from fides.api.ops.cryptography.cryptographic_util import str_to_b64_str
 
 CREATE_USER_PATH = "/api/v1/user"
 LOGIN_PATH = "/api/v1/login"

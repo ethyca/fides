@@ -16,7 +16,7 @@ from fides.api.ops.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_request_body,
 )
 from fides.core.config import CONFIG
-from fides.lib.cryptography.schemas.jwt import (
+from fides.api.ops.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,

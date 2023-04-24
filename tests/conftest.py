@@ -33,7 +33,7 @@ from fides.api.ops.util.cache import get_cache
 # from fides.core import api
 from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
-from fides.lib.cryptography.schemas.jwt import (
+from fides.api.ops.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,

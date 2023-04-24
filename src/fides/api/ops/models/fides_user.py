@@ -14,7 +14,7 @@ from fides.api.ops.common_exceptions import SystemManagerException
 from fides.api.ops.models.system_manager import (  # type: ignore[unused-import]
     SystemManager,
 )
-from fides.lib.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.api.ops.cryptography.cryptographic_util import generate_salt, hash_with_salt
 from fides.lib.db.base_class import Base
 from fides.api.ops.models.audit_log import AuditLog
 

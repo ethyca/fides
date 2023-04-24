@@ -6,7 +6,7 @@ from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fides.lib.cryptography.cryptographic_util import bytes_to_b64_str
+from fides.api.ops.cryptography.cryptographic_util import bytes_to_b64_str
 
 
 def test_basic_auth_with_username_and_password():

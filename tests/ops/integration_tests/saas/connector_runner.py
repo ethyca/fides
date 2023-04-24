@@ -25,7 +25,7 @@ from fides.api.ops.util.saas_util import (
     load_dataset_with_replacement,
 )
 from fides.core.config import get_config
-from fides.lib.cryptography import cryptographic_util
+from fides.api.ops.cryptography import cryptographic_util
 
 CONFIG = get_config()
 
