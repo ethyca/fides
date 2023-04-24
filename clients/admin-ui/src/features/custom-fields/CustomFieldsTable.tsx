@@ -15,7 +15,7 @@ import {
 } from "common/table";
 import EmptyTableState from "common/table/EmptyTableState";
 import React, { useMemo, useState } from "react";
-import { Column } from "react-table";
+import { Column, Hooks } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -24,7 +24,7 @@ import {
 } from "~/features/plus/plus.slice";
 import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
 
-import { EnableCustomFieldCell, FieldTypeCell } from "./cells";
+import { EnableCustomFieldCell, FieldTypeCell, MoreActionsCell } from "./cells";
 import { CustomFieldModal } from "./CustomFieldModal";
 
 export const CustomFieldsTable = () => {
@@ -35,6 +35,17 @@ export const CustomFieldsTable = () => {
   const [activeCustomField, setActiveCustomField] = useState<
     CustomFieldDefinitionWithId | undefined
   >(undefined);
+
+  const tableHook = (hooks: Hooks<CustomFieldDefinitionWithId>) => {
+    hooks.visibleColumns.push((visibleColumns) => [
+      ...visibleColumns,
+      {
+        id: "more-actions",
+        Header: <div />,
+        Cell: MoreActionsCell,
+      },
+    ]);
+  };
 
   // Permissions
   const userCanUpdate = useHasPermission([
@@ -116,8 +127,11 @@ export const CustomFieldsTable = () => {
           data={customFields}
           showSearchBar
           onRowClick={userCanUpdate ? handleRowClick : undefined}
+          customHooks={[tableHook]}
           footer={
-            <FidesTableFooter totalColumns={columns.length}>
+            // +1 for total columns because our hook adds a column for the
+            // more actions menu
+            <FidesTableFooter totalColumns={columns.length + 1}>
               <Restrict
                 scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DEFINITION_CREATE]}
               >
