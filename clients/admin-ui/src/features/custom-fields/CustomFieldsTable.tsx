@@ -79,7 +79,7 @@ export const CustomFieldsTable = () => {
       ...visibleColumns,
       {
         id: "more-actions",
-        Header: <div />,
+        Header: () => null,
         Cell: MoreActionsCell,
         width: "50px",
         onEdit: handleRowClick,
