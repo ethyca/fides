@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from fastapi import Depends, HTTPException, Response, Security
 from fastapi_pagination import Page, Params
@@ -158,7 +158,9 @@ async def update(
     return await update_system(resource, db)
 
 
-async def upsert_system(resources: List[SystemSchema], db: AsyncSession):
+async def upsert_system(
+    resources: List[SystemSchema], db: AsyncSession
+) -> Tuple[int, int]:
     """Helper method to abstract system upsert logic from API code"""
     inserted = 0
     updated = 0
