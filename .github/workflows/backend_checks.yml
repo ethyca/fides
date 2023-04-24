@@ -260,8 +260,8 @@ jobs:
           BIGQUERY_DATASET: fidesopstest
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
           DYNAMODB_REGION: ${{ secrets.DYNAMODB_REGION }}
+          DYNAMODB_ACCESS_KEY_ID: ${{ secrets.DYNAMODB_ACCESS_KEY_ID }}
           DYNAMODB_ACCESS_KEY: ${{ secrets.DYNAMODB_ACCESS_KEY }}
-          DYNAMODB_SECRET_ACCESS_KEY: ${{ secrets.DYNAMODB_SECRET_ACCESS_KEY }}
 
         run: nox -s "pytest(ops-external-datastores)"
 
