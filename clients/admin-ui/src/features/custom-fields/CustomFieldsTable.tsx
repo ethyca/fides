@@ -14,7 +14,7 @@ import {
   WrappedCell,
 } from "common/table";
 import EmptyTableState from "common/table/EmptyTableState";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Column } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
@@ -32,10 +32,22 @@ export const CustomFieldsTable = () => {
   const customFields = useAppSelector(selectAllCustomFieldDefinitions);
   const { isOpen, onClose, onOpen } = useDisclosure();
 
+  const [activeCustomField, setActiveCustomField] = useState<
+    CustomFieldDefinitionWithId | undefined
+  >(undefined);
+
   // Permissions
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.CUSTOM_FIELD_UPDATE,
   ]);
+
+  const handleRowClick = (customField: CustomFieldDefinitionWithId) => {
+    if (userCanUpdate) {
+      setActiveCustomField(customField);
+      onOpen();
+    }
+  };
+
   const columns: Column<CustomFieldDefinitionWithId>[] = useMemo(
     () => [
       {
@@ -97,9 +109,8 @@ export const CustomFieldsTable = () => {
         <FidesTable<CustomFieldDefinitionWithId>
           columns={columns}
           data={customFields}
-          userCanUpdate={userCanUpdate}
-          redirectRoute=""
           showSearchBar
+          onRowClick={userCanUpdate ? handleRowClick : undefined}
           footer={
             <FidesTableFooter totalColumns={columns.length}>
               <Restrict
@@ -117,7 +128,12 @@ export const CustomFieldsTable = () => {
             </FidesTableFooter>
           }
         />
-        <CustomFieldModal isOpen={isOpen} onClose={onClose} isLoading={false} />
+        <CustomFieldModal
+          customField={activeCustomField}
+          isOpen={isOpen}
+          onClose={onClose}
+          isLoading={false}
+        />
       </Box>
     </>
   );
