@@ -48,6 +48,11 @@ export const CustomFieldsTable = () => {
     }
   };
 
+  const handleCloseModal = () => {
+    setActiveCustomField(undefined);
+    onClose();
+  };
+
   const columns: Column<CustomFieldDefinitionWithId>[] = useMemo(
     () => [
       {
@@ -131,7 +136,7 @@ export const CustomFieldsTable = () => {
         <CustomFieldModal
           customField={activeCustomField}
           isOpen={isOpen}
-          onClose={onClose}
+          onClose={handleCloseModal}
           isLoading={false}
         />
       </Box>
