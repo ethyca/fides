@@ -1261,7 +1261,7 @@ class TestRuleTargets:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
 
-    def test_create_target_with_invalid_category(
+    def test_create_rule_target_with_invalid_category(
         self,
         api_client: TestClient,
         generate_auth_header,
@@ -1283,8 +1283,8 @@ class TestRuleTargets:
 
         assert resp.status_code == 422
         assert (
-            resp.json()["detail"][0]["msg"]
-            == f"The data category {invalid_data_category} is not supported."
+            resp.json()["detail"]
+            == f"Invalid data categories: ['{invalid_data_category}']"
         )
 
     def test_create_duplicate_rule_targets(
