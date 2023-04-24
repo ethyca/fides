@@ -158,23 +158,8 @@ async def update(
     return await update_system(resource, db)
 
 
-@system_router.post(
-    "/upsert",
-    dependencies=[
-        Security(
-            verify_oauth_client_prod,
-            scopes=[
-                SYSTEM_CREATE,
-                SYSTEM_UPDATE,
-            ],
-        )
-    ],
-)
-async def upsert(
-    resources: List[SystemSchema],
-    response: Response,
-    db: AsyncSession = Depends(get_async_db),
-) -> Dict:
+async def upsert_system(resources: List[SystemSchema], db: AsyncSession):
+    """Helper method to abstract system upsert logic from API code"""
     inserted = 0
     updated = 0
     # first pass to validate privacy declarations before proceeding
@@ -193,7 +178,27 @@ async def upsert(
             continue
         await update_system(resource=resource, db=db)
         updated += 1
+    return (inserted, updated)
 
+
+@system_router.post(
+    "/upsert",
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[
+                SYSTEM_CREATE,
+                SYSTEM_UPDATE,
+            ],
+        )
+    ],
+)
+async def upsert(
+    resources: List[SystemSchema],
+    response: Response,
+    db: AsyncSession = Depends(get_async_db),
+) -> Dict:
+    inserted, updated = await upsert_system(resources, db)
     response.status_code = (
         status.HTTP_201_CREATED if inserted > 0 else response.status_code
     )
