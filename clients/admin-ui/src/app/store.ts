@@ -22,10 +22,7 @@ import {
   REHYDRATE,
 } from "redux-persist";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
-import {
-  reducer as userManagementReducer,
-  userApi,
-} from "user-management/index";
+import { reducer as userManagementReducer } from "user-management/index";
 
 import { STORAGE_ROOT_KEY } from "~/constants";
 import { reducer as authReducer } from "~/features/auth";
@@ -75,7 +72,6 @@ const reducer = {
   [plusApi.reducerPath]: plusApi.reducer,
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
   [taxonomyApi.reducerPath]: taxonomyApi.reducer,
-  [userApi.reducerPath]: userApi.reducer,
   auth: authReducer,
   configWizard: configWizardReducer,
   connectionType: connectionTypeReducer,
@@ -121,7 +117,6 @@ const persistConfig = {
     plusApi.reducerPath,
     privacyRequestApi.reducerPath,
     taxonomyApi.reducerPath,
-    userApi.reducerPath,
     dirtyFormsSlice.name,
   ],
 };
@@ -141,8 +136,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         healthApi.middleware,
         plusApi.middleware,
         privacyRequestApi.middleware,
-        taxonomyApi.middleware,
-        userApi.middleware
+        taxonomyApi.middleware
       ),
     devTools: true,
     preloadedState,

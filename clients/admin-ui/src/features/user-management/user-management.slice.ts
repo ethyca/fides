@@ -1,11 +1,9 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { addCommonHeaders } from "common/CommonHeaders";
 import { utf8ToB64 } from "common/utils";
 
 import type { RootState } from "~/app/store";
-import { BASE_URL } from "~/constants";
-import { selectToken, selectUser } from "~/features/auth";
+import { selectUser } from "~/features/auth";
+import { baseApi } from "~/features/common/api.slice";
 import {
   RoleRegistryEnum,
   ScopeRegistryEnum,
@@ -87,17 +85,7 @@ export const mapFiltersToSearchParams = ({
   ...(username ? { username } : {}),
 });
 
-export const userApi = createApi({
-  reducerPath: "userApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
-      addCommonHeaders(headers, token);
-      return headers;
-    },
-  }),
-  tagTypes: ["User", "Managed Systems"],
+const userApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllUsers: build.query<UsersResponse, UsersListParams>({
       query: (filters) => ({
