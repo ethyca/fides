@@ -5,6 +5,7 @@ import {
   Spinner,
   Text,
   useDisclosure,
+  useToast,
 } from "@fidesui/react";
 import Restrict, { useHasPermission } from "common/Restrict";
 import {
@@ -15,21 +16,27 @@ import {
 } from "common/table";
 import EmptyTableState from "common/table/EmptyTableState";
 import React, { useMemo, useState } from "react";
-import { Column } from "react-table";
+import { Column, Hooks } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
 import {
   selectAllCustomFieldDefinitions,
+  useDeleteCustomFieldDefinitionMutation,
   useGetAllCustomFieldDefinitionsQuery,
 } from "~/features/plus/plus.slice";
 import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
 
-import { EnableCustomFieldCell, FieldTypeCell } from "./cells";
+import { getErrorMessage, isErrorResult } from "../common/helpers";
+import { errorToastParams, successToastParams } from "../common/toast";
+import { EnableCustomFieldCell, FieldTypeCell, MoreActionsCell } from "./cells";
 import { CustomFieldModal } from "./CustomFieldModal";
 
 export const CustomFieldsTable = () => {
+  const toast = useToast();
   const { isLoading } = useGetAllCustomFieldDefinitionsQuery();
   const customFields = useAppSelector(selectAllCustomFieldDefinitions);
+  const [deleteCustomFieldDefinitionMutationTrigger] =
+    useDeleteCustomFieldDefinitionMutation();
   const { isOpen, onClose, onOpen } = useDisclosure();
 
   const [activeCustomField, setActiveCustomField] = useState<
@@ -40,12 +47,45 @@ export const CustomFieldsTable = () => {
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.CUSTOM_FIELD_UPDATE,
   ]);
+  const userCanDelete = useHasPermission([
+    ScopeRegistryEnum.CUSTOM_FIELD_DELETE,
+  ]);
 
   const handleRowClick = (customField: CustomFieldDefinitionWithId) => {
     if (userCanUpdate) {
       setActiveCustomField(customField);
       onOpen();
     }
+  };
+
+  const handleDelete = async (customField: CustomFieldDefinitionWithId) => {
+    if (userCanDelete && customField.id) {
+      const result = await deleteCustomFieldDefinitionMutationTrigger({
+        id: customField.id,
+      });
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
+        return;
+      }
+      toast(successToastParams("Custom field deleted"));
+    }
+  };
+
+  const tableHook = (hooks: Hooks<CustomFieldDefinitionWithId>) => {
+    if (!userCanUpdate && !userCanDelete) {
+      return;
+    }
+    hooks.visibleColumns.push((visibleColumns) => [
+      ...visibleColumns,
+      {
+        id: "more-actions",
+        Header: <div />,
+        Cell: MoreActionsCell,
+        width: "50px",
+        onEdit: handleRowClick,
+        onDelete: handleDelete,
+      },
+    ]);
   };
 
   const handleCloseModal = () => {
@@ -116,8 +156,11 @@ export const CustomFieldsTable = () => {
           data={customFields}
           showSearchBar
           onRowClick={userCanUpdate ? handleRowClick : undefined}
+          customHooks={[tableHook]}
           footer={
-            <FidesTableFooter totalColumns={columns.length}>
+            // +1 for total columns because our hook adds a column for the
+            // more actions menu
+            <FidesTableFooter totalColumns={columns.length + 1}>
               <Restrict
                 scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DEFINITION_CREATE]}
               >

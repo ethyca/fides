@@ -11,8 +11,14 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import React, { ReactNode } from "react";
-import { Column, useGlobalFilter, useSortBy, useTable } from "react-table";
+import React, { ReactNode, useMemo } from "react";
+import {
+  Column,
+  Hooks,
+  useGlobalFilter,
+  useSortBy,
+  useTable,
+} from "react-table";
 
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 
@@ -27,6 +33,7 @@ type Props<T extends FidesObject> = {
   showSearchBar?: boolean;
   footer?: ReactNode;
   onRowClick?: (row: T) => void;
+  customHooks?: Array<(hooks: Hooks<T>) => void>;
 };
 
 export const FidesTable = <T extends FidesObject>({
@@ -35,8 +42,16 @@ export const FidesTable = <T extends FidesObject>({
   showSearchBar,
   footer,
   onRowClick,
+  customHooks,
 }: Props<T>) => {
-  const tableInstance = useTable({ columns, data }, useGlobalFilter, useSortBy);
+  const plugins = useMemo(() => {
+    if (customHooks) {
+      return [useGlobalFilter, useSortBy, ...customHooks];
+    }
+    return [useGlobalFilter, useSortBy];
+  }, [customHooks]);
+
+  const tableInstance = useTable({ columns, data }, ...plugins);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
@@ -119,13 +134,13 @@ export const FidesTable = <T extends FidesObject>({
               >
                 {row.cells.map((cell) => {
                   const { key: cellKey, ...cellProps } = cell.getCellProps();
-
                   return (
                     <Td
                       key={cellKey}
                       {...cellProps}
                       p={5}
                       verticalAlign="baseline"
+                      width={cell.column.width}
                       onClick={
                         cell.column.Header !== "Enable" && onRowClick
                           ? () => {
