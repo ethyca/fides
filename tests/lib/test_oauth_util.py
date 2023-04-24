@@ -31,7 +31,7 @@ from fides.api.ops.util.oauth_util import (
     verify_oauth_client,
 )
 from fides.core.config import CONFIG
-from fides.lib.exceptions import AuthorizationError
+from fides.api.ops.common_exceptions import AuthorizationError
 from fides.api.ops.oauth.jwt import generate_jwe
 from fides.api.ops.oauth.oauth_util import extract_payload, is_token_expired
 from fides.api.ops.oauth.roles import (

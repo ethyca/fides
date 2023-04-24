@@ -22,7 +22,7 @@ from fides.api.ops.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_request_body,
 )
 from fides.core.config import CONFIG
-from fides.lib.exceptions import AuthorizationError
+from fides.api.ops.common_exceptions import AuthorizationError
 from fides.api.ops.oauth.jwt import generate_jwe
 from fides.api.ops.oauth.roles import OWNER, VIEWER
 

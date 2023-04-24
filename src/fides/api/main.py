@@ -46,6 +46,7 @@ from fides.api.ops.common_exceptions import (
     RedisConnectionError,
 )
 from fides.api.ops.models.application_config import ApplicationConfig
+from fides.api.ops.oauth.api.routes.user_endpoints import router as user_router
 from fides.api.ops.schemas.analytics import Event, ExtraData
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     update_saas_configs,
@@ -68,7 +69,6 @@ from fides.api.ops.util.system_manager_oauth_util import (
 )
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.core.config import CONFIG, check_required_webserver_config_values
-from fides.api.ops.oauth.api.routes.user_endpoints import router as user_router
 
 VERSION = fides.__version__
 

@@ -50,6 +50,7 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
+from fides.api.ops.schemas.base_class import FidesBaseSchema as BaseSchema
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     MessagingActionType,
@@ -86,7 +87,6 @@ from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
-from fides.api.ops.schemas.base_class import FidesBaseSchema as BaseSchema
 
 
 class ManualWebhookResults(BaseSchema):

@@ -4,7 +4,7 @@ import pytest
 from fideslang.validation import FidesValidationError  # type: ignore
 
 from fides.api.ops.db.base_class import get_key_from_data
-from fides.lib.exceptions import KeyValidationError
+from fides.api.ops.common_exceptions import KeyValidationError
 
 
 def test_get_key_from_data():

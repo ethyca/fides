@@ -25,16 +25,16 @@ from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.ops.oauth.roles import OWNER
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
     SaasConnectionTemplateValues,
 )
 from fides.api.ops.schemas.dataset import DatasetConfigCtlDataset
 from fides.api.ops.util.connection_util import patch_connection_configs
-from fides.core.config import CONFIG
-from fides.lib.exceptions import KeyOrNameAlreadyExists
-from fides.api.ops.oauth.roles import OWNER
 from fides.api.ops.util.text import to_snake_case
+from fides.core.config import CONFIG
+from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
 
 from .crud import create_resource, get_resource, list_resource, upsert_resources
 from .samples import (

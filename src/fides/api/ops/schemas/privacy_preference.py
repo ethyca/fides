@@ -12,9 +12,9 @@ from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequestStatus,
 )
+from fides.api.ops.schemas.base_class import FidesBaseSchema as BaseSchema
 from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.schemas.base_class import FidesBaseSchema as BaseSchema
 
 
 class ConsentOptionCreate(BaseSchema):

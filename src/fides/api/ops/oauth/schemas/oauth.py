@@ -7,7 +7,7 @@ from fastapi.security.utils import get_authorization_scheme_param
 from pydantic import BaseModel
 from starlette.requests import Request
 
-from fides.lib.exceptions import InvalidAuthorizationSchemeError
+from fides.api.ops.common_exceptions import InvalidAuthorizationSchemeError
 
 
 class AccessToken(BaseModel):

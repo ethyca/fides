@@ -2,12 +2,12 @@ from typing import Any, Dict
 
 from pydantic import EmailStr, root_validator
 
+from fides.api.ops.schemas.base_class import NoValidationSchema
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettings,
     EmailSchema,
     IdentityTypes,
 )
-from fides.api.ops.schemas.base_class import NoValidationSchema
 
 
 class AttentiveSchema(EmailSchema):

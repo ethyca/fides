@@ -26,12 +26,12 @@ from fides.api.ops.cryptography.schemas.jwt import (
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.policy import PolicyPreWebhook
-from fides.api.ops.schemas.external_https import WebhookJWE
-from fides.core.config import CONFIG
-from fides.lib.exceptions import AuthenticationError, AuthorizationError
 from fides.api.ops.oauth.oauth_util import extract_payload, is_token_expired
 from fides.api.ops.oauth.roles import get_scopes_from_roles
 from fides.api.ops.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
+from fides.api.ops.schemas.external_https import WebhookJWE
+from fides.core.config import CONFIG
+from fides.api.ops.common_exceptions import AuthenticationError, AuthorizationError
 
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 

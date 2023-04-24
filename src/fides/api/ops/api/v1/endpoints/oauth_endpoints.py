@@ -41,6 +41,11 @@ from fides.api.ops.common_exceptions import (
 from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.oauth.roles import ROLES_TO_SCOPES_MAPPING
+from fides.api.ops.oauth.schemas.oauth import (
+    AccessToken,
+    OAuth2ClientCredentialsRequestForm,
+)
 from fides.api.ops.schemas.client import ClientCreatedResponse
 from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -51,11 +56,6 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2_authori
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
-from fides.api.ops.oauth.roles import ROLES_TO_SCOPES_MAPPING
-from fides.api.ops.oauth.schemas.oauth import (
-    AccessToken,
-    OAuth2ClientCredentialsRequestForm,
-)
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 

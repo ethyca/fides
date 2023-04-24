@@ -45,6 +45,7 @@ from fides.api.ops.models.policy import (
     WebhookDirection,
     WebhookTypes,
 )
+from fides.api.ops.oauth.jwt import generate_jwe
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.ops.schemas.external_https import SecondPartyResponseFormat, WebhookJWE
@@ -65,7 +66,6 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.constants import API_DATE_FORMAT
 from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.core.config import CONFIG
-from fides.api.ops.oauth.jwt import generate_jwe
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [

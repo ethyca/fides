@@ -3,8 +3,8 @@ from typing import List, Optional
 from pydantic import validator
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY, ScopeRegistryEnum
-from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.oauth.roles import RoleRegistryEnum
+from fides.api.ops.schemas.base_class import BaseSchema
 
 
 class UserPermissionsCreate(BaseSchema):

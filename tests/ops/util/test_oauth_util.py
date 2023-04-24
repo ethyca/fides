@@ -1,7 +1,7 @@
 import pytest
 
 from fides.api.ops.util.oauth_util import get_root_client
-from fides.lib.exceptions import AuthorizationError
+from fides.api.ops.common_exceptions import AuthorizationError
 
 
 class TestGetRootClient:

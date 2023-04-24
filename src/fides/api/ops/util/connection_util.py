@@ -39,7 +39,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
-from fides.lib.exceptions import KeyOrNameAlreadyExists
+from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
 
 # pylint: disable=too-many-nested-blocks,too-many-branches
 

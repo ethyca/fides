@@ -30,7 +30,7 @@ from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.lib.exceptions import KeyOrNameAlreadyExists
+from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["DSR Policy"], prefix=urls.V1_URL_PREFIX)
 

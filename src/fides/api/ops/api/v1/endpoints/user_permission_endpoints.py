@@ -17,6 +17,7 @@ from fides.api.ops.api.v1.scope_registry import (
 from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
 from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
+from fides.api.ops.oauth.roles import APPROVER, OWNER, RoleRegistryEnum
 from fides.api.ops.schemas.user_permission import (
     UserPermissionsCreate,
     UserPermissionsEdit,
@@ -29,7 +30,6 @@ from fides.api.ops.util.oauth_util import (
     verify_oauth_client,
 )
 from fides.core.config import CONFIG
-from fides.api.ops.oauth.roles import APPROVER, OWNER, RoleRegistryEnum
 
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 

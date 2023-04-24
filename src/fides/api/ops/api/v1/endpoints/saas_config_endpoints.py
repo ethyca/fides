@@ -63,7 +63,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.connection_util import validate_secrets
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.lib.exceptions import KeyOrNameAlreadyExists
+from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 

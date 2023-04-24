@@ -22,8 +22,8 @@ from fides.api.ops.cryptography.schemas.jwt import (
 )
 from fides.api.ops.db.base_class import Base
 from fides.api.ops.models.fides_user import FidesUser
-from fides.core.config import FidesConfig
 from fides.api.ops.oauth.jwt import generate_jwe
+from fides.core.config import FidesConfig
 
 DEFAULT_SCOPES: list[str] = []
 DEFAULT_ROLES: list[str] = []
