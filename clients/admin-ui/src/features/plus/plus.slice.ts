@@ -241,6 +241,13 @@ export const plusApi = createApi({
       }),
       invalidatesTags: ["CustomFieldDefinition"],
     }),
+    deleteCustomFieldDefinition: build.mutation<void, { id: string }>({
+      query: ({ id }) => ({
+        url: `custom-metadata/custom-field-definition/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["CustomFieldDefinition"],
+    }),
 
     // Custom Metadata Custom Field Definition By Resource Type
     getCustomFieldDefinitionsByResourceType: build.query<
@@ -261,6 +268,7 @@ export const {
   useAddCustomFieldDefinitionMutation,
   useCreateClassifyInstanceMutation,
   useDeleteCustomFieldMutation,
+  useDeleteCustomFieldDefinitionMutation,
   useGetAllAllowListQuery,
   useGetAllClassifyInstancesQuery,
   useGetClassifyDatasetQuery,

@@ -140,6 +140,7 @@ export const FidesTable = <T extends FidesObject>({
                       {...cellProps}
                       p={5}
                       verticalAlign="baseline"
+                      width={cell.column.width}
                       onClick={
                         cell.column.Header !== "Enable" && onRowClick
                           ? () => {

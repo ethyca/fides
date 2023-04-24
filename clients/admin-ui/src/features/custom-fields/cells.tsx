@@ -9,10 +9,11 @@ import {
 import React from "react";
 import { CellProps } from "react-table";
 
+import Restrict from "~/features/common/Restrict";
 import { EnableCell, MapCell } from "~/features/common/table/";
 import { FIELD_TYPE_MAP } from "~/features/custom-fields/constants";
 import { useUpdateCustomFieldDefinitionMutation } from "~/features/plus/plus.slice";
-import { CustomFieldDefinition } from "~/types/api";
+import { CustomFieldDefinition, ScopeRegistryEnum } from "~/types/api";
 
 export const FieldTypeCell = (
   cellProps: CellProps<typeof FIELD_TYPE_MAP, string>
@@ -44,18 +45,22 @@ export const EnableCustomFieldCell = (
 
 const MENU_ITEM_PROPS = { _hover: { color: "complimentary.500" } };
 
-export const MoreActionsCell = (cellProps: CellProps<any, any>) => {
+export const MoreActionsCell = ({ row, column }: CellProps<any, any>) => {
   // Need to stopPropagation on all button calls here since the table row itself
   // also has a click handler. We want the buttons in this cell to take precedence
   // over the row handler
   const handleDelete = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
-    console.log("delete");
+    // @ts-ignore revisit with react-table v8
+    column.onDelete(row.original);
   };
+
   const handleEdit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
-    console.log("edit");
+    // @ts-ignore revisit with react-table v8
+    column.onEdit(row.original);
   };
+
   return (
     <Menu size="sm">
       <MenuButton
@@ -70,12 +75,16 @@ export const MoreActionsCell = (cellProps: CellProps<any, any>) => {
         <MoreIcon />
       </MenuButton>
       <MenuList>
-        <MenuItem {...MENU_ITEM_PROPS} onClick={handleDelete}>
-          Delete
-        </MenuItem>
-        <MenuItem {...MENU_ITEM_PROPS} onClick={handleEdit}>
-          Edit
-        </MenuItem>
+        <Restrict scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DELETE]}>
+          <MenuItem {...MENU_ITEM_PROPS} onClick={handleDelete}>
+            Delete
+          </MenuItem>
+        </Restrict>
+        <Restrict scopes={[ScopeRegistryEnum.CUSTOM_FIELD_UPDATE]}>
+          <MenuItem {...MENU_ITEM_PROPS} onClick={handleEdit}>
+            Edit
+          </MenuItem>
+        </Restrict>
       </MenuList>
     </Menu>
   );
