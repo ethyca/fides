@@ -47,10 +47,10 @@ from fides.api.ops.cryptography.schemas.jwt import (
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
-from fides.core.config import CONFIG
 from fides.api.ops.oauth.jwt import generate_jwe
 from fides.api.ops.oauth.oauth_util import extract_payload
 from fides.api.ops.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
+from fides.core.config import CONFIG
 from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size

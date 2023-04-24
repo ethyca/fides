@@ -38,7 +38,7 @@ from fides.api.ops.api.v1.urn_registry import (
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from fides.api.ops.common_exceptions import StorageUploadError
+from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists, StorageUploadError
 from fides.api.ops.models.connectionconfig import ConnectionTestStatus
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.models.storage import (
@@ -75,7 +75,6 @@ from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.api.ops.util.storage_util import get_schema_for_secrets
-from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 

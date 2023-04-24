@@ -23,7 +23,6 @@ from fides.api.ops.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
-from fides.core.config import CONFIG
 from fides.api.ops.oauth.roles import (
     APPROVER,
     CONTRIBUTOR,
@@ -32,6 +31,7 @@ from fides.api.ops.oauth.roles import (
     VIEWER,
     VIEWER_AND_APPROVER,
 )
+from fides.core.config import CONFIG
 from tests.conftest import generate_auth_header_for_user, generate_role_header_for_user
 
 

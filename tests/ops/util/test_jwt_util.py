@@ -6,9 +6,9 @@ from fides.api.ops.cryptography.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.core.config import CONFIG
 from fides.api.ops.oauth.jwt import generate_jwe
 from fides.api.ops.oauth.oauth_util import extract_payload, is_token_expired
+from fides.core.config import CONFIG
 
 
 def test_jwe_create_and_extract() -> None:

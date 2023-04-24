@@ -34,10 +34,10 @@ from fides.api.ops.cryptography.schemas.jwt import (
 )
 from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.api.ops.models.client import ClientDetail
-from fides.core.config import CONFIG
 from fides.api.ops.oauth.jwt import generate_jwe
 from fides.api.ops.oauth.oauth_util import extract_payload
 from fides.api.ops.oauth.roles import OWNER
+from fides.core.config import CONFIG
 
 
 class TestCreateClient:

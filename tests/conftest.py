@@ -32,14 +32,6 @@ from fides.api.ops.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SYSTEMS,
 )
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
-from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
-
-# from fides.api.ops.tasks.scheduled.scheduler import scheduler
-from fides.api.ops.util.cache import get_cache
-
-# from fides.core import api
-from fides.core.config import get_config
-from fides.core.config.config_proxy import ConfigProxy
 from fides.api.ops.oauth.jwt import generate_jwe
 from fides.api.ops.oauth.roles import (
     APPROVER,
@@ -48,6 +40,14 @@ from fides.api.ops.oauth.roles import (
     VIEWER,
     VIEWER_AND_APPROVER,
 )
+from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
+
+# from fides.api.ops.tasks.scheduled.scheduler import scheduler
+from fides.api.ops.util.cache import get_cache
+
+# from fides.core import api
+from fides.core.config import get_config
+from fides.core.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
 from tests.fixtures.email_fixtures import *

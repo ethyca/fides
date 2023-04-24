@@ -13,6 +13,7 @@ from starlette.status import (
 
 from fides.api.ctl.sql_models import System  # type: ignore
 from fides.api.ops.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
+from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.ops.common_exceptions import ValidationError as FidesValidationError
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
@@ -39,7 +40,6 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
-from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
 
 # pylint: disable=too-many-nested-blocks,too-many-branches
 

@@ -17,6 +17,7 @@ from starlette.status import HTTP_404_NOT_FOUND
 
 from fides.api.ops.api.deps import get_db
 from fides.api.ops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
+from fides.api.ops.common_exceptions import AuthenticationError, AuthorizationError
 from fides.api.ops.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -31,7 +32,6 @@ from fides.api.ops.oauth.roles import get_scopes_from_roles
 from fides.api.ops.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 from fides.api.ops.schemas.external_https import WebhookJWE
 from fides.core.config import CONFIG
-from fides.api.ops.common_exceptions import AuthenticationError, AuthorizationError
 
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 

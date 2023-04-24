@@ -29,6 +29,7 @@ from fides.api.ops.api.v1.scope_registry import (
     USER_UPDATE,
 )
 from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.ops.common_exceptions import AuthenticationError
 from fides.api.ops.cryptography.cryptographic_util import b64_str_to_str
 from fides.api.ops.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
 from fides.api.ops.models.client import ClientDetail
@@ -48,7 +49,6 @@ from fides.api.ops.util.oauth_util import (
     verify_oauth_client,
 )
 from fides.core.config import CONFIG
-from fides.api.ops.common_exceptions import AuthenticationError
 
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 
