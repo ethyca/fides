@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ops.db import session
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -17,7 +18,6 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.api.ops.db import session
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 from tests.ops.test_helpers.vault_client import get_secrets
 

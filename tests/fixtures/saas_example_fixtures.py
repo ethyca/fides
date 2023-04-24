@@ -7,6 +7,7 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from toml import load as load_toml
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -34,7 +35,6 @@ from fides.api.ops.util.saas_util import (
     load_config,
     load_yaml_as_string,
 )
-from fides.api.ops.models.client import ClientDetail
 from tests.fixtures.application_fixtures import load_dataset
 
 

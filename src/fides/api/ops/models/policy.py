@@ -20,7 +20,8 @@ from fides.api.ops.common_exceptions import (
     StorageConfigNotFoundException,
     WebhookOrderException,
 )
-from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.db.base_class import Base, FidesBase, JSONTypeOverride
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.storage import (
     StorageConfig,
@@ -28,8 +29,6 @@ from fides.api.ops.models.storage import (
 )
 from fides.api.ops.util.data_category import _validate_data_category
 from fides.core.config import CONFIG
-from fides.api.ops.db.base_class import Base, FidesBase
-from fides.api.ops.models.client import ClientDetail
 
 
 class CurrentStep(EnumType):

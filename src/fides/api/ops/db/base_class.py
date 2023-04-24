@@ -3,10 +3,6 @@
 from __future__ import annotations
 
 import json
-from typing import Any
-
-from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy_utils import JSONType
 import re
 from typing import Any, Type, TypeVar
 from uuid import uuid4
@@ -14,9 +10,11 @@ from uuid import uuid4
 from fideslang.models import FidesKey  # type: ignore
 from sqlalchemy import Column, DateTime, String
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql import func
 from sqlalchemy.sql.expression import BinaryExpression, BooleanClauseList
+from sqlalchemy_utils import JSONType
 
 from fides.lib.exceptions import KeyOrNameAlreadyExists, KeyValidationError
 from fides.lib.utils.text import to_snake_case

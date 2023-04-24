@@ -18,12 +18,12 @@ from starlette.status import (
 )
 
 from fides.api.ops.api.v1.scope_registry import USER_CREATE, USER_DELETE, USER_READ
-from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.core.config import FidesConfig, get_config
-from fides.lib.exceptions import AuthorizationError
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
+from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.core.config import FidesConfig, get_config
+from fides.lib.exceptions import AuthorizationError
 from fides.lib.oauth.api import urn_registry as urls
 from fides.lib.oauth.api.deps import get_db
 from fides.lib.oauth.roles import VIEWER

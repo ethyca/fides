@@ -6,8 +6,8 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Session, relationship
 
-from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.db.base_class import Base
+from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.lib.schemas.base_class import BaseSchema
 
 

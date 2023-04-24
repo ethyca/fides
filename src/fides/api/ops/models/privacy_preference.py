@@ -15,6 +15,7 @@ from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
 from fides.api.ops.common_exceptions import PrivacyNoticeHistoryNotFound
+from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.models.privacy_notice import (
     PrivacyNotice,
@@ -27,7 +28,6 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.core.config import CONFIG
-from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
 
 
 class UserConsentPreference(Enum):

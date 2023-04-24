@@ -3,8 +3,8 @@ from typing import Optional
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-from fides.core.config import CONFIG
 from fides.api.ops.cryptography.cryptographic_util import bytes_to_b64_str
+from fides.core.config import CONFIG
 
 
 def encrypt_to_bytes_verify_secrets_length(

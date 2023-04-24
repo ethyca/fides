@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from fides.api.ops.db.base_class import KeyOrNameAlreadyExists
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.storage import (
     StorageConfig,
@@ -20,7 +21,6 @@ from fides.api.ops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.api.ops.db.base_class import KeyOrNameAlreadyExists
 
 
 class TestStorageConfigModel:

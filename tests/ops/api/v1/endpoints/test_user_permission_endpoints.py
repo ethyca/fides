@@ -20,10 +20,10 @@ from fides.api.ops.api.v1.scope_registry import (
     USER_PERMISSION_UPDATE,
 )
 from fides.api.ops.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
-from fides.core.config import CONFIG
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
+from fides.core.config import CONFIG
 from fides.lib.oauth.roles import (
     APPROVER,
     CONTRIBUTOR,

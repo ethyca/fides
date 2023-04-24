@@ -79,6 +79,8 @@ from fides.api.ops.common_exceptions import (
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph, Node
 from fides.api.ops.graph.traversal import Traversal
+from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
@@ -150,8 +152,6 @@ from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
-from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
-from fides.api.ops.models.client import ClientDetail
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 

@@ -9,14 +9,14 @@ from sqlalchemy import Column, DateTime, String
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.ops.common_exceptions import SystemManagerException
+from fides.api.ops.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.api.ops.db.base_class import Base
+from fides.api.ops.models.audit_log import AuditLog
 
 # Intentionally importing SystemManager here to build the FidesUser.systems relationship
 from fides.api.ops.models.system_manager import (  # type: ignore[unused-import]
     SystemManager,
 )
-from fides.api.ops.cryptography.cryptographic_util import generate_salt, hash_with_salt
-from fides.api.ops.db.base_class import Base
-from fides.api.ops.models.audit_log import AuditLog
 
 if TYPE_CHECKING:
     from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]

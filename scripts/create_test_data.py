@@ -7,11 +7,15 @@ from uuid import uuid4
 from sqlalchemy import orm
 
 from fides.api.ctl.database.database import init_db
+from fides.api.ops.db.session import get_db_session
+from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.ops.models.privacy_request import (
     ExecutionLog,
@@ -29,10 +33,6 @@ from fides.api.ops.schemas.storage.storage import (
 )
 from fides.api.ops.util.data_category import DataCategory
 from fides.core.config import get_config
-from fides.api.ops.db.session import get_db_session
-from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.fides_user import FidesUser
 
 CONFIG = get_config()
 

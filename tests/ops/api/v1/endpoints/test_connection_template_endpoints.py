@@ -15,6 +15,7 @@ from fides.api.ops.api.v1.urn_registry import (
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -26,7 +27,6 @@ from fides.api.ops.schemas.connection_configuration.connection_config import Sys
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
-from fides.api.ops.models.client import ClientDetail
 
 
 class TestGetConnections:

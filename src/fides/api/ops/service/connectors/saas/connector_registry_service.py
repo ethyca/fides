@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.ops.api.deps import get_api_session
 from fides.api.ops.common_exceptions import FidesopsException, ValidationError
+from fides.api.ops.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -40,7 +41,6 @@ from fides.api.ops.util.saas_util import (
     replace_version,
 )
 from fides.core.config import CONFIG
-from fides.api.ops.cryptography.cryptographic_util import str_to_b64_str
 
 
 class ConnectorTemplateLoader(ABC):

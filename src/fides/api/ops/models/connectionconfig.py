@@ -13,12 +13,10 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
-from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
+from fides.api.ops.db.base_class import JSONTypeOverride, get_key_from_data
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.core.config import CONFIG
-from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
-from fides.api.ops.db.base_class import get_key_from_data
 from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 
@@ -125,6 +123,10 @@ class ConnectionConfig(Base):
     saas_config = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
     )
+
+    # This is imported here to avoid a circular dependency
+    from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
+
     system_id = Column(
         String, ForeignKey(System.id_field_path), nullable=True, index=True
     )

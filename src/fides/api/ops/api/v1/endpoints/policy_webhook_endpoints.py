@@ -19,6 +19,7 @@ from fides.api.ops.api.v1.endpoints.connection_endpoints import (
 )
 from fides.api.ops.api.v1.endpoints.policy_endpoints import get_policy_or_error
 from fides.api.ops.common_exceptions import WebhookOrderException
+from fides.api.ops.db.base_class import get_key_from_data
 from fides.api.ops.models.policy import (
     Policy,
     PolicyPostWebhook,
@@ -29,7 +30,6 @@ from fides.api.ops.schemas import policy_webhooks as schemas
 from fides.api.ops.schemas.policy_webhooks import PolicyWebhookDeleteResponse
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.api.ops.db.base_class import get_key_from_data
 from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["DSR Policy Webhooks"], prefix=urls.V1_URL_PREFIX)

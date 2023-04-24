@@ -29,6 +29,10 @@ from fides.api.ops.api.v1.scope_registry import (
     USER_UPDATE,
 )
 from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.ops.cryptography.cryptographic_util import b64_str_to_str
+from fides.api.ops.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import (
     get_current_user,
@@ -36,11 +40,7 @@ from fides.api.ops.util.oauth_util import (
     verify_oauth_client,
 )
 from fides.core.config import CONFIG
-from fides.api.ops.cryptography.cryptographic_util import b64_str_to_str
-from fides.api.ops.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
 from fides.lib.exceptions import AuthenticationError
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.fides_user import FidesUser
 from fides.lib.oauth.oauth_util import extract_payload
 from fides.lib.oauth.roles import APPROVER
 from fides.lib.oauth.schemas.user import (

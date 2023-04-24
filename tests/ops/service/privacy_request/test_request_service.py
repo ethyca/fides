@@ -5,13 +5,13 @@ from httpx import HTTPStatusError
 
 from fides.api.ctl.database.seed import create_or_update_parent_user
 from fides.api.ops.api.v1.urn_registry import LOGIN, V1_URL_PREFIX
+from fides.api.ops.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     poll_server_for_completion,
 )
 from fides.core.config import CONFIG
-from fides.api.ops.cryptography.cryptographic_util import str_to_b64_str
 
 
 @pytest.fixture

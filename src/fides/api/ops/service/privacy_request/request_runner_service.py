@@ -21,12 +21,14 @@ from fides.api.ops.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
+from fides.api.ops.db.session import get_db_session
 from fides.api.ops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
 from fides.api.ops.graph.config import CollectionAddress, GraphDataset
 from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -84,8 +86,6 @@ from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
-from fides.api.ops.db.session import get_db_session
-from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.schemas.base_class import BaseSchema
 
 

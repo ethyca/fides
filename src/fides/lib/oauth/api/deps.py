@@ -2,8 +2,8 @@ from typing import Generator
 
 from sqlalchemy.orm import Session
 
-from fides.core.config import get_config
 from fides.api.ops.db.session import get_db_session
+from fides.core.config import get_config
 from fides.lib.oauth.api.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.lib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 

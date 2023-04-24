@@ -6,6 +6,7 @@ import sqlalchemy
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ops.db.session import get_db_engine, get_db_session
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -14,7 +15,6 @@ from fides.api.ops.models.connectionconfig import (
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.service.connectors import MariaDBConnector
 from fides.core.config import CONFIG
-from fides.api.ops.db.session import get_db_engine, get_db_session
 
 from .application_fixtures import integration_secrets
 

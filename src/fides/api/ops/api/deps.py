@@ -4,11 +4,11 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import FunctionalityNotConfigured
+from fides.api.ops.db.session import get_db_engine, get_db_session
 from fides.api.ops.util.cache import get_cache as get_redis_connection
 from fides.core.config import CONFIG, FidesConfig
 from fides.core.config import get_config as get_app_config
 from fides.core.config.config_proxy import ConfigProxy
-from fides.api.ops.db.session import get_db_engine, get_db_session
 
 _engine = None
 

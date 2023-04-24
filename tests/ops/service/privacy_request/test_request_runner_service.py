@@ -16,6 +16,7 @@ from fides.api.ops.common_exceptions import (
 )
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.application_config import ApplicationConfig
+from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
 from fides.api.ops.models.policy import CurrentStep, PolicyPostWebhook
 from fides.api.ops.models.privacy_request import (
     ActionType,
@@ -58,7 +59,6 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
 )
 from fides.api.ops.util.data_category import DataCategory
 from fides.core.config import CONFIG
-from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return

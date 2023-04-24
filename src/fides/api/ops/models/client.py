@@ -8,7 +8,6 @@ from sqlalchemy import ARRAY, Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
-from fides.core.config import FidesConfig
 from fides.api.ops.cryptography.cryptographic_util import (
     generate_salt,
     generate_secure_random_string,
@@ -23,6 +22,7 @@ from fides.api.ops.cryptography.schemas.jwt import (
 )
 from fides.api.ops.db.base_class import Base
 from fides.api.ops.models.fides_user import FidesUser
+from fides.core.config import FidesConfig
 from fides.lib.oauth.jwt import generate_jwe
 
 DEFAULT_SCOPES: list[str] = []

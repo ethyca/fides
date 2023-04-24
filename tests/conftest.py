@@ -24,6 +24,13 @@ from fides.api.ctl.sql_models import DataUse
 # from fides.api.ctl.database.session import sync_engine, sync_session
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.ops.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
+    JWE_PAYLOAD_SCOPES,
+    JWE_PAYLOAD_SYSTEMS,
+)
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
 
@@ -33,13 +40,6 @@ from fides.api.ops.util.cache import get_cache
 # from fides.core import api
 from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
-from fides.api.ops.cryptography.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_ROLES,
-    JWE_PAYLOAD_SCOPES,
-    JWE_PAYLOAD_SYSTEMS,
-)
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.roles import (
     APPROVER,

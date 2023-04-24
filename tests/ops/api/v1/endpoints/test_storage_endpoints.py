@@ -26,6 +26,7 @@ from fides.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.ops.models.application_config import ApplicationConfig
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.storage import StorageConfig, default_storage_config_name
 from fides.api.ops.schemas.storage.data_upload_location_response import DataUpload
 from fides.api.ops.schemas.storage.storage import (
@@ -41,7 +42,6 @@ from fides.api.ops.schemas.storage.storage import (
 from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.exceptions import KeyOrNameAlreadyExists, KeyValidationError
-from fides.api.ops.models.client import ClientDetail
 
 PAGE_SIZE = Params().size
 CONFIG = get_config()

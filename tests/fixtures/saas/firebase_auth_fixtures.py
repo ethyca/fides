@@ -8,6 +8,8 @@ from firebase_admin.auth import UserNotFoundError
 from firebase_admin.exceptions import FirebaseError
 from sqlalchemy.orm import Session
 
+from fides.api.ops.cryptography import cryptographic_util
+from fides.api.ops.db import session
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -21,8 +23,6 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.api.ops.cryptography import cryptographic_util
-from fides.api.ops.db import session
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("firebase_auth")

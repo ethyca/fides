@@ -6,9 +6,9 @@ import pytest
 from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
+from fides.api.ops.db.base_class import get_key_from_data
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.storage.storage import StorageType
-from fides.api.ops.db.base_class import get_key_from_data
 from fides.lib.exceptions import KeyValidationError
 
 

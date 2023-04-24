@@ -4,8 +4,8 @@ from celery import Celery, Task
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.core.config import CONFIG, FidesConfig
 from fides.api.ops.db.session import get_db_engine, get_db_session
+from fides.core.config import CONFIG, FidesConfig
 
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 

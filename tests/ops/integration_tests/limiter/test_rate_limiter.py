@@ -9,6 +9,7 @@ import pytest
 from requests import Session
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ops.db import session
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -29,7 +30,6 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.api.ops.db import session
 
 
 @pytest.fixture

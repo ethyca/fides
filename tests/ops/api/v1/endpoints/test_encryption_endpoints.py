@@ -15,15 +15,15 @@ from fides.api.ops.api.v1.urn_registry import (
     ENCRYPTION_KEY,
     V1_URL_PREFIX,
 )
+from fides.api.ops.cryptography.cryptographic_util import (
+    b64_str_to_bytes,
+    bytes_to_b64_str,
+)
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     encrypt_verify_secret_length,
 )
 from fides.core.config import CONFIG
-from fides.api.ops.cryptography.cryptographic_util import (
-    b64_str_to_bytes,
-    bytes_to_b64_str,
-)
 
 
 class TestGetEncryptionKey:

@@ -18,8 +18,12 @@ from fides.api.ops.api.v1.endpoints.dataset_endpoints import patch_dataset_confi
 from fides.api.ops.api.v1.endpoints.saas_config_endpoints import (
     instantiate_connection_from_template,
 )
+from fides.api.ops.db.base_class import FidesBase
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
@@ -28,11 +32,7 @@ from fides.api.ops.schemas.connection_configuration.connection_config import (
 from fides.api.ops.schemas.dataset import DatasetConfigCtlDataset
 from fides.api.ops.util.connection_util import patch_connection_configs
 from fides.core.config import CONFIG
-from fides.api.ops.db.base_class import FidesBase
 from fides.lib.exceptions import KeyOrNameAlreadyExists
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.fides_user import FidesUser
-from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.roles import OWNER
 from fides.lib.utils.text import to_snake_case
 

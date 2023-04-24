@@ -15,6 +15,13 @@ from fides.api.ops.api.v1.scope_registry import (
     USER_PERMISSION_READ,
     USER_READ,
 )
+from fides.api.ops.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
+    JWE_PAYLOAD_SCOPES,
+)
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.util.oauth_util import (
     _has_direct_scopes,
     _has_scope_via_role,
@@ -24,14 +31,7 @@ from fides.api.ops.util.oauth_util import (
     verify_oauth_client,
 )
 from fides.core.config import CONFIG
-from fides.api.ops.cryptography.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_ROLES,
-    JWE_PAYLOAD_SCOPES,
-)
 from fides.lib.exceptions import AuthorizationError
-from fides.api.ops.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
 from fides.lib.oauth.roles import (

@@ -6,6 +6,7 @@ from fideslang.validation import FidesKey
 from pydantic import Field, validator
 
 from fides.api.custom_types import SafeStr
+from fides.api.ops.models.audit_log import AuditLogAction
 from fides.api.ops.models.policy import ActionType
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
@@ -20,7 +21,6 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )
 from fides.core.config import CONFIG
-from fides.api.ops.models.audit_log import AuditLogAction
 from fides.lib.oauth.schemas.user import PrivacyRequestReviewer
 
 

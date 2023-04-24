@@ -37,7 +37,6 @@ from fides.api.ops.api.v1.urn_registry import (
     USERS,
     V1_URL_PREFIX,
 )
-from fides.core.config import CONFIG
 from fides.api.ops.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.ops.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -48,6 +47,7 @@ from fides.api.ops.cryptography.schemas.jwt import (
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
+from fides.core.config import CONFIG
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload
 from fides.lib.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER

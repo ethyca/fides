@@ -17,6 +17,7 @@ from fides.api.ops.api.v1.scope_registry import (
     STORAGE_DELETE,
 )
 from fides.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -24,7 +25,6 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.privacy_request import PrivacyRequestStatus
-from fides.api.ops.models.client import ClientDetail
 from fides.lib.oauth.roles import APPROVER, OWNER, VIEWER
 from tests.fixtures.application_fixtures import integration_secrets
 
