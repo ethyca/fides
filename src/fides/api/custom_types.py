@@ -1,5 +1,5 @@
 """Logic related to sanitizing and validating user application input."""
-from html import escape
+from html import escape, unescape
 from re import compile as regex
 from typing import Generator
 
@@ -26,6 +26,10 @@ class SafeStr(str):
             raise ValueError("Value must be 500 characters or less.")
 
         return value
+
+    def unescape(self) -> str:
+        """Unescape the safe string"""
+        return unescape(self)
 
 
 class PhoneNumber(str):

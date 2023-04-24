@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Tuple
 
-from fastapi import Depends, Security
+from fastapi import Depends, Request, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -161,10 +161,12 @@ def get_privacy_notice(
     *,
     privacy_notice_id: str,
     db: Session = Depends(deps.get_db),
+    request: Request,
 ) -> PrivacyNotice:
     """
     Return a single PrivacyNotice
     """
+    unescape = request.headers.get("unescape-safestr")
     return get_privacy_notice_or_error(db, privacy_notice_id)  # type: ignore[return-value]
 
 
