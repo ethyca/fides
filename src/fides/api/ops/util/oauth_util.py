@@ -27,8 +27,8 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
 )
 from fides.lib.exceptions import AuthenticationError, AuthorizationError
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.models.fides_user import FidesUser
 from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
 from fides.lib.oauth.roles import get_scopes_from_roles
 from fides.lib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer

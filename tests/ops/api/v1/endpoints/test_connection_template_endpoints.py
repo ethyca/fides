@@ -26,7 +26,7 @@ from fides.api.ops.schemas.connection_configuration.connection_config import Sys
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
-from fides.lib.models.client import ClientDetail
+from fides.api.ops.models.client import ClientDetail
 
 
 class TestGetConnections:

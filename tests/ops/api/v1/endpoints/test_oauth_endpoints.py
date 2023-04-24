@@ -34,7 +34,7 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.lib.models.client import ClientDetail
+from fides.api.ops.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload
 from fides.lib.oauth.roles import OWNER

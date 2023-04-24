@@ -85,7 +85,7 @@ from fides.api.ops.util.wrappers import sync
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.db.session import get_db_session
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
+from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.schemas.base_class import BaseSchema
 
 

@@ -62,9 +62,9 @@ from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.core.config import CONFIG
 from fides.lib.cryptography.cryptographic_util import hash_with_salt
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
-from fides.lib.models.audit_log import AuditLog
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
+from fides.api.ops.models.audit_log import AuditLog
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.models.fides_user import FidesUser
 from fides.lib.oauth.jwt import generate_jwe
 
 # Locations from which privacy request execution can be resumed, in order.

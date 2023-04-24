@@ -17,7 +17,7 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
-from fides.lib.models.client import ClientDetail, _get_root_client_detail
+from fides.api.ops.models.client import ClientDetail, _get_root_client_detail
 from fides.lib.oauth.oauth_util import extract_payload
 from fides.lib.oauth.roles import OWNER, VIEWER
 

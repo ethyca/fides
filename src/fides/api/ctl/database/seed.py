@@ -30,9 +30,9 @@ from fides.api.ops.util.connection_util import patch_connection_configs
 from fides.core.config import CONFIG
 from fides.lib.db.base_class import FidesBase
 from fides.lib.exceptions import KeyOrNameAlreadyExists
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.roles import OWNER
 from fides.lib.utils.text import to_snake_case
 

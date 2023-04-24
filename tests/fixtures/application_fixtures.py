@@ -80,10 +80,10 @@ from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite impo
 from fides.api.ops.util.data_category import DataCategory
 from fides.core.config import CONFIG
 from fides.core.config.helpers import load_file
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.roles import APPROVER, VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)

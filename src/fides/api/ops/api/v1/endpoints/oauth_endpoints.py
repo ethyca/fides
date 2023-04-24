@@ -50,7 +50,7 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2_authori
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
-from fides.lib.models.client import ClientDetail
+from fides.api.ops.models.client import ClientDetail
 from fides.lib.oauth.roles import ROLES_TO_SCOPES_MAPPING
 from fides.lib.oauth.schemas.oauth import (
     AccessToken,

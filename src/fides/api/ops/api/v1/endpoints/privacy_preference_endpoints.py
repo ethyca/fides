@@ -58,7 +58,7 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config.config_proxy import ConfigProxy
-from fides.lib.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user import FidesUser
 
 router = APIRouter(tags=["Privacy Preference"], prefix=V1_URL_PREFIX)
 

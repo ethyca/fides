@@ -20,7 +20,7 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )
 from fides.core.config import CONFIG
-from fides.lib.models.audit_log import AuditLogAction
+from fides.api.ops.models.audit_log import AuditLogAction
 from fides.lib.oauth.schemas.user import PrivacyRequestReviewer
 
 

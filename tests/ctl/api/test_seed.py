@@ -16,7 +16,7 @@ from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.core import api as _api
 from fides.core.config import CONFIG, FidesConfig
-from fides.lib.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user import FidesUser
 
 
 @pytest.fixture(scope="function", name="data_category")

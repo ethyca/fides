@@ -34,7 +34,7 @@ from fides.api.ops.util.saas_util import (
     load_config,
     load_yaml_as_string,
 )
-from fides.lib.models.client import ClientDetail
+from fides.api.ops.models.client import ClientDetail
 from tests.fixtures.application_fixtures import load_dataset
 
 

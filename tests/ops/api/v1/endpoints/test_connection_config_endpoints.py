@@ -24,7 +24,7 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.privacy_request import PrivacyRequestStatus
-from fides.lib.models.client import ClientDetail
+from fides.api.ops.models.client import ClientDetail
 from fides.lib.oauth.roles import APPROVER, OWNER, VIEWER
 from tests.fixtures.application_fixtures import integration_secrets
 

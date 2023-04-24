@@ -19,7 +19,7 @@ from fides.api.ops.util.oauth_util import (
 )
 from fides.lib.cryptography.schemas.jwt import JWE_PAYLOAD_SYSTEMS
 from fides.lib.exceptions import AuthorizationError
-from fides.lib.models.client import ClientDetail
+from fides.api.ops.models.client import ClientDetail
 from fides.lib.oauth.system_manager import SYSTEM_MANAGER_SCOPES
 
 

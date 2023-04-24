@@ -39,8 +39,8 @@ from fides.core.config import CONFIG
 from fides.lib.cryptography.cryptographic_util import b64_str_to_str
 from fides.lib.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
 from fides.lib.exceptions import AuthenticationError
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.models.fides_user import FidesUser
 from fides.lib.oauth.oauth_util import extract_payload
 from fides.lib.oauth.roles import APPROVER
 from fides.lib.oauth.schemas.user import (

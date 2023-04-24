@@ -90,8 +90,8 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
-from fides.lib.models.client import ClientDetail
+from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
+from fides.api.ops.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.roles import APPROVER, VIEWER
 

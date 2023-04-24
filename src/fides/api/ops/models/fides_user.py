@@ -16,7 +16,7 @@ from fides.api.ops.models.system_manager import (  # type: ignore[unused-import]
 )
 from fides.lib.cryptography.cryptographic_util import generate_salt, hash_with_salt
 from fides.lib.db.base_class import Base
-from fides.lib.models.audit_log import AuditLog
+from fides.api.ops.models.audit_log import AuditLog
 
 if TYPE_CHECKING:
     from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]

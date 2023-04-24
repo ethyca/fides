@@ -150,8 +150,8 @@ from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
-from fides.lib.models.client import ClientDetail
+from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
+from fides.api.ops.models.client import ClientDetail
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 

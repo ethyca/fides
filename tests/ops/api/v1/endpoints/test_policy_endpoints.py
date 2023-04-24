@@ -23,7 +23,7 @@ from fides.api.ops.util.data_category import (
     DataCategory,
     generate_fides_data_categories,
 )
-from fides.lib.models.client import ClientDetail
+from fides.api.ops.models.client import ClientDetail
 
 
 class TestGetPolicies:

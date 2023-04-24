@@ -22,7 +22,7 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SYSTEMS,
 )
 from fides.lib.db.base_class import Base
-from fides.lib.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user import FidesUser
 from fides.lib.oauth.jwt import generate_jwe
 
 DEFAULT_SCOPES: list[str] = []

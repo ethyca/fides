@@ -28,7 +28,7 @@ from fides.api.ops.service.connectors.sql_connector import (
     MicrosoftSQLServerConnector,
     MySQLConnector,
 )
-from fides.lib.models.client import ClientDetail
+from fides.api.ops.models.client import ClientDetail
 
 
 @pytest.mark.integration_postgres
