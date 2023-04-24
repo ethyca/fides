@@ -165,6 +165,13 @@ export const plusApi = createApi({
       transformResponse: (allowList: AllowList[]) =>
         allowList.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
     }),
+    getAllowList: build.query<AllowList, string>({
+      query: (id) => ({
+        url: `custom-metadata/allow-list/${id}`,
+        params: { show_values: true },
+      }),
+      providesTags: ["AllowList"],
+    }),
     upsertAllowList: build.mutation<AllowList, AllowListUpdate>({
       query: (params: AllowListUpdate) => ({
         url: `custom-metadata/allow-list`,
@@ -269,6 +276,7 @@ export const {
   useUpsertAllowListMutation,
   useUpsertCustomFieldMutation,
   useGetAllCustomFieldDefinitionsQuery,
+  useGetAllowListQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

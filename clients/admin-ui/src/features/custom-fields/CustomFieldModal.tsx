@@ -30,6 +30,8 @@ import * as Yup from "yup";
 import {
   useAddCustomFieldDefinitionMutation,
   useUpsertAllowListMutation,
+  useGetAllowListQuery,
+  useUpdateCustomFieldDefinitionMutation,
 } from "~/features/plus/plus.slice";
 import {
   AllowedTypes,
@@ -38,7 +40,6 @@ import {
   CustomFieldDefinitionWithId,
   ResourceTypes,
 } from "~/types/api";
-
 
 const CustomFieldLabelStyles = {
   ...CUSTOM_LABEL_STYLES,
@@ -85,17 +86,32 @@ export const CustomFieldModal = ({
 }: ModalProps) => {
   const { errorAlert, successAlert } = useAlert();
   const [addCustomFieldDefinition] = useAddCustomFieldDefinitionMutation();
+  const [updateCustomFieldDefinition] =
+    useUpdateCustomFieldDefinitionMutation();
   const [upsertAllowList] = useUpsertAllowListMutation();
 
-  // QUERY ALLOW LIST if the edited field has a allow list id.
-  // populate initial values with allow list data
+  const { data: allowList, isLoading: isLoadingAllowList } =
+    useGetAllowListQuery(customField?.allow_list_id as string, {
+      skip: !customField?.allow_list_id,
+    });
+
+  if (isLoadingAllowList || !isOpen) {
+    return null;
+  }
+
+  const initialValues = customField
+    ? {
+        ...customField,
+        allow_list: {
+          ...allowList,
+        },
+      }
+    : (initialValuesTemplate as FormValues);
 
   const handleSubmit = async (
     values: FormValues,
     helpers: FormikHelpers<FormValues>
   ) => {
-    console.log("values", values);
-
     if (
       [AllowedTypes.STRING_, AllowedTypes.STRING].includes(values.field_type)
     ) {
@@ -125,9 +141,9 @@ export const CustomFieldModal = ({
       //Add error handling here
     }
 
-    const result = await addCustomFieldDefinition(values);
-
-    // Add custom field edit here. Check if there is an upsert
+    const result = customField
+      ? await updateCustomFieldDefinition(values)
+      : await addCustomFieldDefinition(values);
 
     if ("error" in result) {
       errorAlert(
@@ -135,12 +151,10 @@ export const CustomFieldModal = ({
         `Custom field has failed to save due to the following:`
       );
     } else {
-      helpers.resetForm();
+      onClose();
       successAlert(`Custom field successfully saved`);
     }
   };
-
-  const initialValues = customField ?? initialValuesTemplate;
 
   return (
     <Modal
@@ -178,7 +192,11 @@ export const CustomFieldModal = ({
           Edit Custom Field
         </ModalHeader>
         <ModalBody px={6} py={0}>
-          <Formik initialValues={initialValuesTemplate} onSubmit={handleSubmit}>
+          <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={handleSubmit}
+          >
             {({ dirty, isValid, isSubmitting, values, errors }) => (
               <Form
                 style={{
@@ -241,7 +259,8 @@ export const CustomFieldModal = ({
                         name="allow_list.allowed_values"
                         render={(fieldArrayProps) => {
                           // eslint-disable-next-line @typescript-eslint/naming-convention
-                          const { allowed_values } = values.allow_list!;
+                          const { allowed_values } = values.allow_list;
+                          // @ts-ignore
                           return (
                             <Flex flexDirection="column" gap="24px" pl="24px">
                               <Flex flexDirection="column">
@@ -302,11 +321,12 @@ export const CustomFieldModal = ({
                                   size="xs"
                                   variant="outline"
                                 />
-                                {allowed_values.length === 0 && (
+                                {allowed_values.length === 0 &&
+                                errors?.allow_list ? (
                                   <Text color="red.500" pl="18px" size="sm">
-                                    {errors.allow_list}
+                                    {errors.allow_list.allowed_values}
                                   </Text>
-                                )}
+                                ) : null}
                               </Flex>
                             </Flex>
                           );
