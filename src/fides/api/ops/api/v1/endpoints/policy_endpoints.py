@@ -492,7 +492,7 @@ def create_or_update_rule_targets(
                 },
             )
             logger.debug(
-                "Create/update succeess for rule target {} on rule {}",
+                "Create/update success for rule target {} on rule {}",
                 schema.key,
                 rule_key,
             )
