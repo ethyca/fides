@@ -109,9 +109,13 @@ def setup(level: str, serialize: str = "", desination: str = "") -> None:
 
 
 def obfuscate_message(message: str) -> str:
-    """Obfuscate specific bits of information that might get logged."""
+    """
+    Obfuscate specific bits of information that might get logged.
 
-    # Obfuscate database username/password
+    Currently being obfuscated:
+        - Database username + password
+    """
+
     strings_to_replace: List[str] = [
         f"{CONFIG.database.user}:{CONFIG.database.password}"
     ]

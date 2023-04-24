@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from fides.core.config import CONFIG
 
+# Parameters are hidden for security
 engine = create_async_engine(
     CONFIG.database.async_database_uri,
     echo=False,
