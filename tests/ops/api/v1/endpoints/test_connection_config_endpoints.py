@@ -225,7 +225,7 @@ class TestPatchConnections:
                     },
                     "name": "My Mailchimp Test",
                     "description": "Mailchimp ConnectionConfig description",
-                    "saas_connection_type": "mailchimp",
+                    "saas_connector_type": "mailchimp",
                     "key": "mailchimp_1",
                 },
             ],
