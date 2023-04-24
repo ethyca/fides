@@ -1,7 +1,7 @@
 """add dynamodb to connector list
 
 Revision ID: fc04e3e637c0
-Revises: 8342453518cc
+Revises: 3842d1acac5f
 Create Date: 2023-04-14 10:19:50.681752
 
 """
@@ -9,7 +9,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "fc04e3e637c0"
-down_revision = "8342453518cc"
+down_revision = "3842d1acac5f"
 branch_labels = None
 depends_on = None
 
