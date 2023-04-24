@@ -86,7 +86,7 @@ from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
-from fides.lib.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesBaseSchema as BaseSchema
 
 
 class ManualWebhookResults(BaseSchema):

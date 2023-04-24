@@ -7,7 +7,7 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_email imp
     EmailSchema,
     IdentityTypes,
 )
-from fides.lib.schemas.base_class import NoValidationSchema
+from fides.api.ops.schemas.base_class import NoValidationSchema
 
 
 class AttentiveSchema(EmailSchema):

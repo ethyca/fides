@@ -6,7 +6,7 @@ from typing import Dict, Optional
 from pydantic import Extra, root_validator, validator
 
 from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
-from fides.lib.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesBaseSchema as BaseSchema
 
 
 class StorageTypeApiAccepted(Enum):

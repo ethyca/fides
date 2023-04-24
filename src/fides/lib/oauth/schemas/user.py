@@ -6,7 +6,7 @@ from pydantic import validator
 
 from fides.api.ops.cryptography.cryptographic_util import decode_password
 from fides.lib.oauth.schemas.oauth import AccessToken
-from fides.lib.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesBaseSchema as BaseSchema
 
 
 class PrivacyRequestReviewer(BaseSchema):
