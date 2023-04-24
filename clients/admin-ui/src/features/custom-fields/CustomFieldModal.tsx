@@ -11,33 +11,34 @@ import {
   SimpleGrid,
   Text,
 } from "@fidesui/react";
-import FormSection from "common/form/FormSection";
-import { CustomSelect } from "common/form/inputs";
-import { FieldArray, Form, Formik, FormikHelpers } from "formik";
-import * as Yup from "yup";
-import {
-  AllowedTypes,
-  AllowListUpdate,
-  CustomFieldDefinition,
-  ResourceTypes,
-} from "~/types/api";
 import {
   FIELD_TYPE_OPTIONS,
   RESOURCE_TYPE_OPTIONS,
 } from "common/custom-fields";
-
-import { CreateCustomLists } from "~/features/common/custom-fields/CreateCustomLists";
 import CustomInput, {
   CUSTOM_LABEL_STYLES,
 } from "common/custom-fields/form/CustomInput";
+import { AddIcon } from "common/custom-fields/icons/AddIcon";
+import FormSection from "common/form/FormSection";
+import { CustomSelect } from "common/form/inputs";
+import { getErrorMessage } from "common/helpers";
+import { useAlert } from "common/hooks";
+import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
+import { FieldArray, Form, Formik, FormikHelpers } from "formik";
+import * as Yup from "yup";
+
 import {
   useAddCustomFieldDefinitionMutation,
   useUpsertAllowListMutation,
 } from "~/features/plus/plus.slice";
-import { useAlert } from "common/hooks";
-import { getErrorMessage } from "common/helpers";
-import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
-import { AddIcon } from "common/custom-fields/icons/AddIcon";
+import {
+  AllowedTypes,
+  AllowListUpdate,
+  CustomFieldDefinition,
+  CustomFieldDefinitionWithId,
+  ResourceTypes,
+} from "~/types/api";
+
 
 const CustomFieldLabelStyles = {
   ...CUSTOM_LABEL_STYLES,
@@ -48,6 +49,7 @@ type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
   isLoading: boolean;
+  customField?: CustomFieldDefinitionWithId;
 };
 
 type FormValues = CustomFieldDefinition & {
@@ -79,6 +81,7 @@ export const CustomFieldModal = ({
   isOpen,
   onClose,
   isLoading,
+  customField,
 }: ModalProps) => {
   const { errorAlert, successAlert } = useAlert();
   const [addCustomFieldDefinition] = useAddCustomFieldDefinitionMutation();
@@ -136,6 +139,8 @@ export const CustomFieldModal = ({
       successAlert(`Custom field successfully saved`);
     }
   };
+
+  const initialValues = customField ?? initialValuesTemplate;
 
   return (
     <Modal

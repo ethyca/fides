@@ -11,7 +11,6 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import { useRouter } from "next/router";
 import React, { ReactNode } from "react";
 import { Column, useGlobalFilter, useSortBy, useTable } from "react-table";
 
@@ -25,22 +24,18 @@ interface FidesObject {
 type Props<T extends FidesObject> = {
   columns: Column<T>[];
   data: T[];
-  userCanUpdate: boolean;
-  redirectRoute: string;
   showSearchBar?: boolean;
   footer?: ReactNode;
+  onRowClick?: (row: T) => void;
 };
 
 export const FidesTable = <T extends FidesObject>({
   columns,
   data,
-  userCanUpdate,
-  redirectRoute,
   showSearchBar,
   footer,
+  onRowClick,
 }: Props<T>) => {
-  const router = useRouter();
-
   const tableInstance = useTable({ columns, data }, useGlobalFilter, useSortBy);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
@@ -110,18 +105,13 @@ export const FidesTable = <T extends FidesObject>({
           {rows.map((row) => {
             prepareRow(row);
             const { key: rowKey, ...rowProps } = row.getRowProps();
-            const onClick = () => {
-              if (userCanUpdate) {
-                router.push(`${redirectRoute}/${row.original.id}`);
-              }
-            };
             const rowName = row.original.name;
             return (
               <Tr
                 key={rowKey}
                 {...rowProps}
                 _hover={
-                  userCanUpdate
+                  onRowClick
                     ? { backgroundColor: "gray.50", cursor: "pointer" }
                     : undefined
                 }
@@ -137,7 +127,11 @@ export const FidesTable = <T extends FidesObject>({
                       p={5}
                       verticalAlign="baseline"
                       onClick={
-                        cell.column.Header !== "Enable" ? onClick : undefined
+                        cell.column.Header !== "Enable" && onRowClick
+                          ? () => {
+                              onRowClick(row.original);
+                            }
+                          : undefined
                       }
                     >
                       {cell.render("Cell")}
