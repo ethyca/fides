@@ -17,7 +17,7 @@ from sqlalchemy.sql.expression import BinaryExpression, BooleanClauseList
 from sqlalchemy_utils import JSONType
 
 from fides.lib.exceptions import KeyOrNameAlreadyExists, KeyValidationError
-from fides.lib.utils.text import to_snake_case
+from fides.api.ops.util.text import to_snake_case
 
 
 class JSONTypeOverride(JSONType):  # pylint: disable=W0223

@@ -6,6 +6,7 @@ import unidecode
 def to_snake_case(text: str) -> str:
     """
     Returns a snake-cased str based upon the input text.
+
     E.g. "my example str" becomes "my_example_str"
     """
     text = unidecode.unidecode(text).lower().strip()
