@@ -29,13 +29,13 @@ from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
 from fides.core.config import CONFIG
-from fides.lib.db.base import (  # type: ignore[attr-defined]
+from fides.api.ops.db.base import (  # type: ignore[attr-defined]
     Base,
     ClientDetail,
     FidesUser,
     FidesUserPermissions,
 )
-from fides.lib.db.base_class import FidesBase as FideslibBase
+from fides.api.ops.db.base_class import FidesBase as FideslibBase
 
 
 class FidesBase(FideslibBase):

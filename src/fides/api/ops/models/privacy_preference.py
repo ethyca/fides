@@ -27,7 +27,7 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.core.config import CONFIG
-from fides.lib.db.base import Base  # type: ignore[attr-defined]
+from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
 
 
 class UserConsentPreference(Enum):

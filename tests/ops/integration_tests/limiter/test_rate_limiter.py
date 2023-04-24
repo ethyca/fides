@@ -29,7 +29,7 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.lib.db import session
+from fides.api.ops.db import session
 
 
 @pytest.fixture

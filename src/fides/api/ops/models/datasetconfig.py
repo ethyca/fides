@@ -20,7 +20,7 @@ from fides.api.ops.graph.config import (
 from fides.api.ops.graph.data_type import parse_data_type_string
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.util.saas_util import merge_datasets
-from fides.lib.db.base_class import Base
+from fides.api.ops.db.base_class import Base
 
 
 class DatasetConfig(Base):

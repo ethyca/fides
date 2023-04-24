@@ -17,7 +17,7 @@ from fides.api.ops.service.connectors.sql_connector import SQLConnector
 from fides.api.ops.task.graph_task import GraphTask
 from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.util.collection_util import Row
-from fides.lib.db.base_class import FidesBase
+from fides.api.ops.db.base_class import FidesBase
 from tests.fixtures.application_fixtures import faker
 
 

@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy import ARRAY, Column, ForeignKey, String
 from sqlalchemy.orm import backref, relationship
 
-from fides.lib.db.base_class import Base
+from fides.api.ops.db.base_class import Base
 from fides.api.ops.models.fides_user import FidesUser
 from fides.lib.oauth.roles import ROLES_TO_SCOPES_MAPPING
 

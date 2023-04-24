@@ -28,7 +28,7 @@ from fides.api.ops.models.storage import (
 )
 from fides.api.ops.util.data_category import _validate_data_category
 from fides.core.config import CONFIG
-from fides.lib.db.base_class import Base, FidesBase
+from fides.api.ops.db.base_class import Base, FidesBase
 from fides.api.ops.models.client import ClientDetail
 
 

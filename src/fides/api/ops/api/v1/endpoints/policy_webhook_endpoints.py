@@ -29,7 +29,7 @@ from fides.api.ops.schemas import policy_webhooks as schemas
 from fides.api.ops.schemas.policy_webhooks import PolicyWebhookDeleteResponse
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.lib.db.base_class import get_key_from_data
+from fides.api.ops.db.base_class import get_key_from_data
 from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["DSR Policy Webhooks"], prefix=urls.V1_URL_PREFIX)

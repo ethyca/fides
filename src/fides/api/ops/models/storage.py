@@ -22,7 +22,7 @@ from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.storage_util import get_schema_for_secrets
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
-from fides.lib.db.base_class import Base
+from fides.api.ops.db.base_class import Base
 
 
 class StorageConfig(Base):

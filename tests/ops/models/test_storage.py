@@ -20,7 +20,7 @@ from fides.api.ops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.lib.db.base_class import KeyOrNameAlreadyExists
+from fides.api.ops.db.base_class import KeyOrNameAlreadyExists
 
 
 class TestStorageConfigModel:

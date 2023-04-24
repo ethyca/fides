@@ -21,7 +21,7 @@ from fides.api.ops.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
-from fides.lib.db.base_class import Base
+from fides.api.ops.db.base_class import Base
 from fides.api.ops.models.fides_user import FidesUser
 from fides.lib.oauth.jwt import generate_jwe
 

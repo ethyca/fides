@@ -7,7 +7,7 @@ import requests
 from sqlalchemy.exc import IntegrityError
 
 from fides.api.ops.db.base import Base
-from fides.lib.db.session import get_db_engine, get_db_session
+from fides.api.ops.db.session import get_db_engine, get_db_session
 from tests.conftest import create_citext_extension
 
 

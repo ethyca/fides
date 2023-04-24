@@ -29,7 +29,7 @@ from fides.api.ops.schemas.storage.storage import (
 )
 from fides.api.ops.util.data_category import DataCategory
 from fides.core.config import get_config
-from fides.lib.db.session import get_db_session
+from fides.api.ops.db.session import get_db_session
 from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.fides_user import FidesUser

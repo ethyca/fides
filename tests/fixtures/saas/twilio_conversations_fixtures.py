@@ -19,7 +19,7 @@ from fides.api.ops.util.saas_util import (
     load_dataset_with_replacement,
 )
 from fides.api.ops.cryptography import cryptographic_util
-from fides.lib.db import session
+from fides.api.ops.db import session
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 from tests.ops.test_helpers.vault_client import get_secrets
 
