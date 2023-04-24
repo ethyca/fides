@@ -51,6 +51,16 @@ def test_init_opt_in(test_cli_runner: CliRunner) -> None:
     assert result.exit_code == 0
 
 
+@pytest.mark.unit
+def test_local_flag_invalid_command(test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        ["--local", "export"],
+    )
+    print(result.output)
+    assert result.exit_code == 1
+
+
 class TestView:
     @pytest.mark.unit
     def test_view_config(self, test_cli_runner: CliRunner) -> None:
@@ -470,6 +480,28 @@ class TestScan:
             [
                 "-f",
                 test_config_path,
+                "scan",
+                "dataset",
+                "db",
+                "--credentials-id",
+                "postgres_1",
+                "--coverage-threshold",
+                "0",
+            ],
+        )
+        print(result.output)
+        assert result.exit_code == 0
+
+    @pytest.mark.integration
+    def test_scan_dataset_db_local_flag(
+        self, test_config_path: str, test_cli_runner: CliRunner
+    ) -> None:
+        result = test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "--local",
                 "scan",
                 "dataset",
                 "db",

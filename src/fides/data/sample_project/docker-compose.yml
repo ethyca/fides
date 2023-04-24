@@ -30,7 +30,18 @@ services:
     env_file:
       - ${FIDES_DEPLOY_ENV_FILE:-sample.env}
     environment:
-      FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
+      FIDES__CONFIG_PATH: ${FIDES_DEPLOY_CONFIG_PATH:-/fides/src/fides/data/sample_project/fides.toml}
+      # Configure sample connection secrets for Postgres & Mongo (see services below)
+      FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST: postgres-test
+      FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT: 5432
+      FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME: postgres_example
+      FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME: postgres
+      FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD: postgres
+      FIDES_DEPLOY__CONNECTORS__MONGO_HOST: mongodb-test
+      FIDES_DEPLOY__CONNECTORS__MONGO_PORT: 27017
+      FIDES_DEPLOY__CONNECTORS__MONGO_DEFAULTAUTHDB: mongo_test
+      FIDES_DEPLOY__CONNECTORS__MONGO_USERNAME: mongo_user
+      FIDES_DEPLOY__CONNECTORS__MONGO_PASSWORD: mongo_pass
     # Mount a local volume so the user can see their privacy requests
     volumes:
       - type: bind

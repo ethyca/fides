@@ -8,6 +8,7 @@ colorama>=0.4.3
 cryptography==38.0.3
 dask==2022.9.2
 deepdiff==5.8.1
+expandvars==0.9.0
 fastapi[all]==0.89.1
 fastapi-caching[redis]==0.3.0
 fastapi-pagination[sqlalchemy]~= 0.10.0
@@ -17,6 +18,7 @@ firebase-admin==5.3.0
 GitPython==3.1.27
 httpx==0.23.1
 hvac==0.11.2
+importlib_resources==5.12.0
 Jinja2==3.1.2
 loguru>=0.5,<0.6
 multidimensional_urlencode==0.0.4

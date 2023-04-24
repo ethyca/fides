@@ -49,6 +49,9 @@ export const SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_RIGHTS_AVAILABLE =
 export const SYSTEM_PRIVACY_DECLARATION_NAME =
   "system.privacy_declaration.name";
 
+export const SYSTEM_INGRESS = "system.ingress";
+export const SYSTEM_EGRESS = "system.egress";
+
 type NameMap = {
   [column: string]: string;
 };
@@ -64,7 +67,6 @@ COLUMN_NAME_MAP[DATA_CATEGORY_COLUMN_ID] = "Data Category";
 COLUMN_NAME_MAP[SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME] = "Data Subject";
 COLUMN_NAME_MAP[SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_RIGHTS_AVAILABLE] =
   "Data Subject Rights";
-COLUMN_NAME_MAP[SYSTEM_SYSTEM_DEPENDENCIES] = "Data Flow";
 COLUMN_NAME_MAP[DATASET_NAME] = "Datasets";
 COLUMN_NAME_MAP[SYSTEM_ADMINISTRATING_DEPARTMENT] = "Department";
 COLUMN_NAME_MAP[SYSTEM_DATA_RESPONSIBILITY_TITLE] = "Responsibility";
@@ -86,6 +88,8 @@ COLUMN_NAME_MAP[
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_LEGITIMATE_INTEREST_IMPACT_ASSESSMENT
 ] = "Legitimate Interests Assessment";
 COLUMN_NAME_MAP[SYSTEM_PRIVACY_DECLARATION_NAME] = "Processing Activity";
+COLUMN_NAME_MAP[SYSTEM_INGRESS] = "Source Systems";
+COLUMN_NAME_MAP[SYSTEM_EGRESS] = "Destination Systems";
 // COLUMN_NAME_MAP[] = 'Data Steward'; #  needs to be added in backend
 // COLUMN_NAME_MAP[] = 'Geography'; # needs to be added in backend
 // COLUMN_NAME_MAP[] = 'Tags'; # couldn't find it

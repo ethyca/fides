@@ -17,3 +17,4 @@ export const USER_MANAGEMENT_ROUTE = "/user-management";
 export const ORGANIZATION_MANAGEMENT_ROUTE = "/management/organization";
 export const TAXONOMY_ROUTE = "/taxonomy";
 export const ABOUT_ROUTE = "/management/about";
+export const CUSTOM_FIELDS_ROUTE = "/management/custom-fields";

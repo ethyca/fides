@@ -42,12 +42,9 @@ from fides.api.ops.models.policy import (
 )
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
-from fides.api.ops.schemas.external_https import (
-    SecondPartyResponseFormat,
-    WebhookJWE,
-)
+from fides.api.ops.schemas.external_https import SecondPartyResponseFormat, WebhookJWE
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.redis_cache import Identity, IdentityBase
 from fides.api.ops.tasks import celery_app
 from fides.api.ops.util.cache import (
     FidesopsRedis,
@@ -815,6 +812,7 @@ class ProvidedIdentityType(EnumType):
     phone_number = "phone_number"
     ga_client_id = "ga_client_id"
     ljt_readerID = "ljt_readerID"
+    fides_user_device_id = "fides_user_device_id"
 
 
 class ProvidedIdentity(Base):  # pylint: disable=R0904
@@ -876,6 +874,24 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
             SALT.encode(encoding),
         )
         return hashed_value
+
+    def as_identity_schema(self) -> IdentityBase:
+        """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
+        identity = IdentityBase()
+        if any(
+            [
+                not self.field_name,
+                not self.encrypted_value,
+            ]
+        ):
+            return identity
+
+        setattr(
+            identity,
+            self.field_name.value,  # type:ignore
+            self.encrypted_value.get("value"),  # type:ignore
+        )
+        return identity
 
 
 class Consent(Base):

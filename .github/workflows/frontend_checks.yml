@@ -79,6 +79,13 @@ jobs:
           name: cypress-videos
           path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
 
+      - name: Cypress component tests
+        uses: cypress-io/github-action@v4
+        with:
+          working-directory: clients/admin-ui
+          install: false
+          component: true
+
   Privacy-Center-Unit:
     runs-on: ubuntu-latest
     strategy:

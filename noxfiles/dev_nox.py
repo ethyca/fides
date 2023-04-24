@@ -165,7 +165,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
 
     session.log("Tearing down existing containers & volumes...")
     try:
-        teardown(session)
+        teardown(session, volumes=True)
     except CommandFailed:
         session.error("Failed to cleanly teardown. Please try again!")
     timestamps.append({"time": time.monotonic(), "label": "Docker Teardown"})

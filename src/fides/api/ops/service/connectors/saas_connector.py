@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 import pydash
 from loguru import logger
 from requests import Response
+from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import (
     FidesopsException,
@@ -36,7 +37,11 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
 )
 from fides.api.ops.util.collection_util import Row
-from fides.api.ops.util.consent_util import should_opt_in_to_service
+from fides.api.ops.util.consent_util import (
+    add_complete_system_status_for_consent_reporting,
+    cache_initial_status_and_identities_for_consent_reporting,
+    should_opt_in_to_service,
+)
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 
 
@@ -426,12 +431,30 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.unset_connector_state()
         return rows_updated
 
+    @staticmethod
+    def relevant_consent_identities(
+        matching_consent_requests: List[SaaSRequest], identity_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Pull the identities that are relevant to consent requests on this connector"""
+        related_identities: Dict[str, Any] = {}
+        for consent_request in matching_consent_requests or []:
+            for param_value in consent_request.param_values or []:
+                if not param_value.identity:
+                    continue
+                identity_type: Optional[str] = param_value.identity
+                identity_value: Any = identity_data.get(param_value.identity)
+
+                if identity_type and identity_value:
+                    related_identities[identity_type] = identity_value
+        return related_identities
+
     def run_consent_request(
         self,
         node: TraversalNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         identity_data: Dict[str, Any],
+        session: Session,
     ) -> bool:
         """Execute a consent request. Return whether the consent request to the third party succeeded.
         Should only propagate either the entire set of opt in or opt out requests.
@@ -444,7 +467,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         )
         self.set_privacy_request_state(privacy_request, node)
         query_config = self.query_config(node)
-        should_opt_in: Optional[bool] = should_opt_in_to_service(
+
+        should_opt_in, filtered_preferences = should_opt_in_to_service(
             self.configuration.system, privacy_request
         )
 
@@ -475,6 +499,16 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"Skipping consent propagation for node {node.address.value} -  No '{query_config.action}' requests defined."
             )
 
+        cache_initial_status_and_identities_for_consent_reporting(
+            db=session,
+            privacy_request=privacy_request,
+            connection_config=self.configuration,
+            relevant_preferences=filtered_preferences,
+            relevant_user_identities=self.relevant_consent_identities(
+                matching_consent_requests, identity_data
+            ),
+        )
+
         fired: bool = False
         for consent_request in matching_consent_requests:
             self.set_saas_request_state(consent_request)
@@ -501,6 +535,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             raise SkippingConsentPropagation(
                 "Missing needed values to propagate request."
             )
+        add_complete_system_status_for_consent_reporting(
+            session, privacy_request, self.configuration
+        )
 
         return True
 

@@ -21,7 +21,6 @@ from fides.core.deploy import (
     check_virtualenv,
     print_deploy_success,
     pull_specific_docker_image,
-    seed_example_data,
     start_application,
     teardown_application,
 )
@@ -166,8 +165,6 @@ def up(
         check_fides_uploads_dir()
         print("> Starting application...")
         start_application()
-        print("> Setting up sample data...")
-        seed_example_data()
         click.clear()
 
         # Deployment is ready! Perform the same steps as `fides init` to setup CLI
