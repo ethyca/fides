@@ -11,6 +11,7 @@ import {
 } from "common/table";
 import EmptyTableState from "common/table/EmptyTableState";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 import { Column } from "react-table";
 
@@ -28,6 +29,7 @@ import {
 import { PrivacyNoticeResponse, ScopeRegistryEnum } from "~/types/api";
 
 export const PrivacyNoticesTable = () => {
+  const router = useRouter();
   // Subscribe to get all privacy notices
   const page = useAppSelector(selectPage);
   const pageSize = useAppSelector(selectPageSize);
@@ -38,6 +40,11 @@ export const PrivacyNoticesTable = () => {
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.PRIVACY_NOTICE_UPDATE,
   ]);
+  const handleRowClick = ({ id }: PrivacyNoticeResponse) => {
+    if (userCanUpdate) {
+      router.push(`${PRIVACY_NOTICES_ROUTE}/${id}`);
+    }
+  };
 
   const columns: Column<PrivacyNoticeResponse>[] = useMemo(
     () => [
@@ -94,8 +101,7 @@ export const PrivacyNoticesTable = () => {
     <FidesTable<PrivacyNoticeResponse>
       columns={columns}
       data={privacyNotices}
-      userCanUpdate={userCanUpdate}
-      redirectRoute={PRIVACY_NOTICES_ROUTE}
+      onRowClick={userCanUpdate ? handleRowClick : undefined}
       footer={
         <FidesTableFooter totalColumns={columns.length}>
           <Restrict scopes={[ScopeRegistryEnum.PRIVACY_NOTICE_CREATE]}>

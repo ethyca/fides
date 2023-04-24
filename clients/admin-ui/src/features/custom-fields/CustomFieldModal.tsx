@@ -10,7 +10,10 @@ import {
   SimpleGrid,
   Text,
 } from "@fidesui/react";
-import { ReactNode, useRef } from "react";
+import {
+  FIELD_TYPE_OPTIONS,
+  RESOURCE_TYPE_OPTIONS,
+} from "common/custom-fields";
 import FormSection from "common/form/FormSection";
 import { CustomSelect, CustomTextInput } from "common/form/inputs";
 import {
@@ -21,21 +24,20 @@ import {
   FormikHelpers,
   FormikProps,
 } from "formik";
+import { ReactNode, useRef } from "react";
 import * as Yup from "yup";
+
+import { CreateCustomLists } from "~/features/common/custom-fields/CreateCustomLists";
 import {
   AllowedTypes,
   CustomFieldDefinition,
+  CustomFieldDefinitionWithId,
   ResourceTypes,
 } from "~/types/api";
-import {
-  FIELD_TYPE_OPTIONS,
-  RESOURCE_TYPE_OPTIONS,
-} from "common/custom-fields";
 
 type HeaderProps = {
   children: ReactNode;
 };
-import { CreateCustomLists } from "~/features/common/custom-fields/CreateCustomLists";
 
 const CustomFieldHeader = ({ children }: HeaderProps) => (
   <ModalHeader
@@ -62,6 +64,7 @@ type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
   isLoading: boolean;
+  customField?: CustomFieldDefinitionWithId;
 };
 
 const initialValuesTemplate: CustomFieldDefinition = {
@@ -75,7 +78,9 @@ export const CustomFieldModal = ({
   isOpen,
   onClose,
   isLoading,
+  customField,
 }: ModalProps) => {
+  const initialValues = customField ?? initialValuesTemplate;
   const createCustomListsRef = useRef(null);
 
   return (
@@ -97,10 +102,7 @@ export const CustomFieldModal = ({
       >
         <CustomFieldHeader>Edit Custom Field</CustomFieldHeader>
         <ModalBody px={6} py={0}>
-          <Formik
-            initialValues={initialValuesTemplate}
-            onSubmit={async () => {}}
-          >
+          <Formik initialValues={initialValues} onSubmit={async () => {}}>
             {({ dirty, isValid, isSubmitting }) => (
               <Form
                 style={{
