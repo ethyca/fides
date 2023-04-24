@@ -27,7 +27,7 @@ def pytest_lib(session: Session, coverage_arg: str) -> None:
 
 
 def pytest_nox(session: Session, coverage_arg: str) -> None:
-    """Runs any tests of nox commands themselves"""
+    """Runs any tests of nox commands themselves."""
     # the nox tests don't run with coverage, override the provided arg
     coverage_arg = "--no-cov"
     session.notify("teardown")

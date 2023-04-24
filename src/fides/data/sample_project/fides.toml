@@ -4,6 +4,7 @@ user = "postgres"
 password = "postgres"
 port = "5432"
 db = "fides"
+load_samples = true
 
 [redis]
 host = "redis"

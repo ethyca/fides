@@ -1,9 +1,21 @@
 import { Box, Button, HStack, Text, WarningTwoIcon } from "@fidesui/react";
 import NextLink from "next/link";
+import { ReactNode } from "react";
+import { UrlObject } from "url";
 
-import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
+type Props = {
+  title: string;
+  description: string | ReactNode;
+  buttonHref: string | UrlObject;
+  buttonText: string;
+};
 
-const EmptyState = () => (
+const EmptyTableState = ({
+  title,
+  description,
+  buttonHref,
+  buttonText,
+}: Props) => (
   <HStack
     backgroundColor="gray.50"
     border="1px solid"
@@ -17,21 +29,17 @@ const EmptyState = () => (
     <WarningTwoIcon alignSelf="start" color="blue.400" mt={0.5} />
     <Box>
       <Text fontWeight="bold" fontSize="sm" mb={1}>
-        To start configuring consent, please first add data uses
+        {title}
       </Text>
 
       <Text fontSize="sm" color="gray.600" lineHeight="5">
-        It looks like you have not yet added any data uses to the system. Fides
-        relies on how you use data in your organization to provide intelligent
-        recommendations and pre-built templates for privacy notices you may need
-        to display to your users. To get started with privacy notices, first add
-        your data uses to systems on your data map.
+        {description}
       </Text>
     </Box>
     <Button size="sm" variant="outline" fontWeight="semibold" minWidth="auto">
-      <NextLink href={SYSTEM_ROUTE}>Set up data uses</NextLink>
+      <NextLink href={buttonHref}>{buttonText}</NextLink>
     </Button>
   </HStack>
 );
 
-export default EmptyState;
+export default EmptyTableState;
