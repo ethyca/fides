@@ -58,12 +58,13 @@ type FormValues = CustomFieldDefinition & {
 };
 
 const initialValuesTemplate: FormValues = {
-  description: undefined,
+  description: "",
   field_type: AllowedTypes.STRING,
   name: "",
   resource_type: ResourceTypes.SYSTEM,
   allow_list: {
     name: "",
+    description: "",
     allowed_values: [],
   },
 };
@@ -100,13 +101,13 @@ export const CustomFieldModal = ({
   }
 
   const initialValues = customField
-    ? {
+    ? ({
         ...customField,
         allow_list: {
           ...allowList,
         },
-      }
-    : (initialValuesTemplate as FormValues);
+      } as FormValues)
+    : initialValuesTemplate;
 
   const handleSubmit = async (
     values: FormValues,
@@ -155,7 +156,7 @@ export const CustomFieldModal = ({
       successAlert(`Custom field successfully saved`);
     }
   };
-
+  console.log("initialValues", initialValues);
   return (
     <Modal
       id="custom-field-modal-hello-world"
