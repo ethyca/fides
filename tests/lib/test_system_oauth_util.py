@@ -23,8 +23,8 @@ from fides.api.ops.util.system_manager_oauth_util import (
 )
 from fides.core.config import CONFIG
 from fides.lib.exceptions import AuthorizationError
-from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.roles import OWNER, VIEWER
+from fides.api.ops.oauth.jwt import generate_jwe
+from fides.api.ops.oauth.roles import OWNER, VIEWER
 
 
 class TestHasSystemPermissions:

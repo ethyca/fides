@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import CONTRIBUTOR, ROLES_TO_SCOPES_MAPPING, VIEWER
+from fides.api.ops.oauth.roles import CONTRIBUTOR, ROLES_TO_SCOPES_MAPPING, VIEWER
 
 
 class TestFidesUserPermissions:

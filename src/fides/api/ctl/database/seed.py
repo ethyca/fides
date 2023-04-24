@@ -33,7 +33,7 @@ from fides.api.ops.schemas.dataset import DatasetConfigCtlDataset
 from fides.api.ops.util.connection_util import patch_connection_configs
 from fides.core.config import CONFIG
 from fides.lib.exceptions import KeyOrNameAlreadyExists
-from fides.lib.oauth.roles import OWNER
+from fides.api.ops.oauth.roles import OWNER
 from fides.lib.utils.text import to_snake_case
 
 from .crud import create_resource, get_resource, list_resource, upsert_resources

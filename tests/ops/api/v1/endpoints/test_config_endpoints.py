@@ -10,7 +10,7 @@ from fides.api.ops.api.v1 import scope_registry as scopes
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.schemas.storage.storage import StorageType
-from fides.lib.oauth.roles import CONTRIBUTOR, OWNER, VIEWER
+from fides.api.ops.oauth.roles import CONTRIBUTOR, OWNER, VIEWER
 
 
 class TestPatchApplicationConfig:

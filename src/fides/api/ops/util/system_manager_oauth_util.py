@@ -20,7 +20,7 @@ from fides.api.ops.util.oauth_util import (
     oauth2_scheme,
 )
 from fides.lib.exceptions import AuthorizationError
-from fides.lib.oauth.system_manager import SYSTEM_MANAGER_SCOPES
+from fides.api.ops.oauth.system_manager import SYSTEM_MANAGER_SCOPES
 
 
 class SystemAuthContainer:

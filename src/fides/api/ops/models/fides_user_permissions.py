@@ -5,7 +5,7 @@ from sqlalchemy.orm import backref, relationship
 
 from fides.api.ops.db.base_class import Base
 from fides.api.ops.models.fides_user import FidesUser
-from fides.lib.oauth.roles import ROLES_TO_SCOPES_MAPPING
+from fides.api.ops.oauth.roles import ROLES_TO_SCOPES_MAPPING
 
 
 class FidesUserPermissions(Base):

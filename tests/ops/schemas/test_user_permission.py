@@ -5,7 +5,7 @@ from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.ops.api.v1.scope_registry import USER_DELETE, USER_PERMISSION_CREATE
 from fides.api.ops.schemas.user_permission import UserPermissionsCreate
-from fides.lib.oauth.roles import OWNER
+from fides.api.ops.oauth.roles import OWNER
 
 
 class TestUserPermissionsCreate:

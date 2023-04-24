@@ -19,7 +19,7 @@ from fides.api.ops.service.privacy_request.request_service import (
 )
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.wrappers import sync
-from fides.lib.oauth.schemas.user import UserLogin
+from fides.api.ops.oauth.schemas.user import UserLogin
 
 COMPLETION_STATUSES = [
     PrivacyRequestStatus.complete,

@@ -21,7 +21,7 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )
 from fides.core.config import CONFIG
-from fides.lib.oauth.schemas.user import PrivacyRequestReviewer
+from fides.api.ops.oauth.schemas.user import PrivacyRequestReviewer
 
 
 class PrivacyRequestDRPStatus(EnumType):

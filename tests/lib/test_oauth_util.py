@@ -32,9 +32,9 @@ from fides.api.ops.util.oauth_util import (
 )
 from fides.core.config import CONFIG
 from fides.lib.exceptions import AuthorizationError
-from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
-from fides.lib.oauth.roles import (
+from fides.api.ops.oauth.jwt import generate_jwe
+from fides.api.ops.oauth.oauth_util import extract_payload, is_token_expired
+from fides.api.ops.oauth.roles import (
     APPROVER,
     CONTRIBUTOR,
     OWNER,

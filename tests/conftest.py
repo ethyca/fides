@@ -40,8 +40,8 @@ from fides.api.ops.util.cache import get_cache
 # from fides.core import api
 from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
-from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.roles import (
+from fides.api.ops.oauth.jwt import generate_jwe
+from fides.api.ops.oauth.roles import (
     APPROVER,
     CONTRIBUTOR,
     OWNER,

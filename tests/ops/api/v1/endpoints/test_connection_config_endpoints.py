@@ -25,7 +25,7 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.privacy_request import PrivacyRequestStatus
-from fides.lib.oauth.roles import APPROVER, OWNER, VIEWER
+from fides.api.ops.oauth.roles import APPROVER, OWNER, VIEWER
 from tests.fixtures.application_fixtures import integration_secrets
 
 page_size = Params().size

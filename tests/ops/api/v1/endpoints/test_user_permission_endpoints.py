@@ -24,7 +24,7 @@ from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
 from fides.core.config import CONFIG
-from fides.lib.oauth.roles import (
+from fides.api.ops.oauth.roles import (
     APPROVER,
     CONTRIBUTOR,
     OWNER,

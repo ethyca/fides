@@ -41,9 +41,9 @@ from fides.api.ops.util.oauth_util import (
 )
 from fides.core.config import CONFIG
 from fides.lib.exceptions import AuthenticationError
-from fides.lib.oauth.oauth_util import extract_payload
-from fides.lib.oauth.roles import APPROVER
-from fides.lib.oauth.schemas.user import (
+from fides.api.ops.oauth.oauth_util import extract_payload
+from fides.api.ops.oauth.roles import APPROVER
+from fides.api.ops.oauth.schemas.user import (
     UserForcePasswordReset,
     UserPasswordReset,
     UserResponse,

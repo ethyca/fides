@@ -24,11 +24,11 @@ from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import FidesConfig, get_config
 from fides.lib.exceptions import AuthorizationError
-from fides.lib.oauth.api import urn_registry as urls
-from fides.lib.oauth.api.deps import get_db
-from fides.lib.oauth.roles import VIEWER
-from fides.lib.oauth.schemas.oauth import AccessToken
-from fides.lib.oauth.schemas.user import (
+from fides.api.ops.oauth.api import urn_registry as urls
+from fides.api.ops.oauth.api.deps import get_db
+from fides.api.ops.oauth.roles import VIEWER
+from fides.api.ops.oauth.schemas.oauth import AccessToken
+from fides.api.ops.oauth.schemas.user import (
     UserCreate,
     UserCreateResponse,
     UserLogin,

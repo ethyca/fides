@@ -34,8 +34,8 @@ from fides.api.ops.api.v1.scope_registry import (
 )
 from fides.core import api as _api
 from fides.core.config import FidesConfig, get_config
-from fides.lib.oauth.api.urn_registry import V1_URL_PREFIX
-from fides.lib.oauth.roles import OWNER, VIEWER
+from fides.api.ops.oauth.api.urn_registry import V1_URL_PREFIX
+from fides.api.ops.oauth.roles import OWNER, VIEWER
 
 CONFIG = get_config()
 

@@ -84,7 +84,7 @@ from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite impo
 from fides.api.ops.util.data_category import DataCategory
 from fides.core.config import CONFIG
 from fides.core.config.helpers import load_file
-from fides.lib.oauth.roles import APPROVER, VIEWER
+from fides.api.ops.oauth.roles import APPROVER, VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging

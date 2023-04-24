@@ -92,8 +92,8 @@ from fides.api.ops.util.cache import (
     get_masking_secret_cache_key,
 )
 from fides.core.config import CONFIG
-from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.roles import APPROVER, VIEWER
+from fides.api.ops.oauth.jwt import generate_jwe
+from fides.api.ops.oauth.roles import APPROVER, VIEWER
 
 page_size = Params().size
 

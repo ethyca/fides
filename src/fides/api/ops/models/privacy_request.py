@@ -65,7 +65,7 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.constants import API_DATE_FORMAT
 from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.core.config import CONFIG
-from fides.lib.oauth.jwt import generate_jwe
+from fides.api.ops.oauth.jwt import generate_jwe
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
