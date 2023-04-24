@@ -42,7 +42,7 @@ saas_config:
           path: /api/customers/<customer_id>/
           body: |
             {
-               <masked_object_fields>  
+              <masked_object_fields>  
             }
           param_values:
             - name: customer_id
