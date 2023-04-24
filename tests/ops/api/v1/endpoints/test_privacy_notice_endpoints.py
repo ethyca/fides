@@ -646,6 +646,61 @@ class TestGetPrivacyNoticeDetail:
         assert data["disabled"] == privacy_notice.disabled
         assert data["displayed_in_overlay"] == privacy_notice.displayed_in_overlay
 
+    def test_get_privacy_notice_unescaped(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_NOTICE_READ, scopes.PRIVACY_NOTICE_CREATE]
+        )
+
+        # post a new privacy notice that has some sneaky characters
+        maybe_dangerous_description = "user's description <script />"
+        resp = api_client.post(
+            V1_URL_PREFIX + PRIVACY_NOTICE,
+            headers=auth_header,
+            json=[
+                {
+                    "name": "test privacy notice 1",
+                    "description": maybe_dangerous_description,
+                    "origin": "privacy_notice_template_1",
+                    "regions": [
+                        PrivacyNoticeRegion.eu_be.value,
+                        PrivacyNoticeRegion.us_ca.value,
+                    ],
+                    "consent_mechanism": ConsentMechanism.opt_in.value,
+                    "data_uses": ["advertising"],
+                    "enforcement_level": EnforcementLevel.system_wide.value,
+                }
+            ],
+        )
+        assert resp.status_code == 200
+        created_notice = resp.json()[0]
+
+        url = V1_URL_PREFIX + PRIVACY_NOTICE_DETAIL.format(
+            privacy_notice_id=created_notice["id"]
+        )
+
+        # without the unescaped header, should return the escaped version
+        resp = api_client.get(
+            url,
+            # headers={**auth_header, **unescape_header},
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["description"] == "user&#x27;s description &lt;script /&gt;"
+
+        # now request with the unescape header
+        unescape_header = {"Unescape-Safestr": "yes"}
+        resp = api_client.get(
+            url,
+            headers={**auth_header, **unescape_header},
+        )
+        data = resp.json()
+        assert data["description"] == maybe_dangerous_description
+
 
 class TestGetPrivacyNoticesByDataUse:
     @pytest.fixture(scope="function")
