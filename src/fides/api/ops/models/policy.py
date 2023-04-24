@@ -209,6 +209,7 @@ def _is_ancestor_of_contained_categories(
         return _is_ancestor_of_contained_categories(
             fides_key=ref.parent_key,
             data_categories=data_categories,
+            all_categories=all_categories,
         )
 
     return False, None
