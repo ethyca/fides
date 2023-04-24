@@ -9,13 +9,18 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
+from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import Dataset
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ctl.sql_models import System
+from fides.api.ctl.sql_models import (
+    DataCategory as DataCategoryDbModel,
+    Dataset as CtlDataset,
+    System,
+)
 from fides.api.ops.common_exceptions import SystemManagerException
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.connectionconfig import (
@@ -84,7 +89,7 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import APPROVER, VIEWER
+from fides.lib.oauth.roles import VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -153,6 +158,39 @@ def mock_upload_logic() -> Generator:
         "fides.api.ops.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
         yield _fixture
+
+
+@pytest.fixture(scope="function", autouse=True)
+def fideslang_data_categories(db: Session) -> Generator:
+    """Creates a database record for each data category in the fideslang taxonomy"""
+    cats = []
+    for obj in DEFAULT_TAXONOMY.data_category:
+        try:
+            cats.append(DataCategoryDbModel.from_fideslang_obj(obj).save(db))
+        except IntegrityError:
+            pass
+
+    yield cats
+
+    for cat in cats:
+        try:
+            cat.delete(db)
+        except ObjectDeletedError:
+            pass
+
+
+@pytest.fixture(scope="function")
+def custom_data_category(db: Session) -> Generator:
+    category = DataCategoryDbModel.create(
+        db=db,
+        data={
+            "name": "Example Custom Data Category",
+            "description": "A custom data category for testing",
+            "fides_key": "test_custom_data_category",
+        },
+    )
+    yield category
+    category.delete(db)
 
 
 @pytest.fixture(scope="function")
