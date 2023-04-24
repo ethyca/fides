@@ -1,7 +1,7 @@
 """create privacy declarations table
 
 Revision ID: 48d9caacebd4
-Revises: 8342453518cc
+Revises: 3842d1acac5f
 Create Date: 2023-04-20 20:35:05.377471
 
 """
@@ -16,7 +16,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "48d9caacebd4"
-down_revision = "8342453518cc"
+down_revision = "3842d1acac5f"
 branch_labels = None
 depends_on = None
 
