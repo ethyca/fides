@@ -72,7 +72,8 @@ def db():
 @pytest.fixture(scope="function", autouse=True)
 def load_default_data_uses(db):
     for data_use in DEFAULT_TAXONOMY.data_use:
-        # weirdly, only in some test scenarios, we already have the default taxonomy
-        # loaded, in which case the create will throw an error. so we first check existence.
+        # Default data uses are cleared and not automatically reloaded by `clear_db_tables` fixture.
+        # Here we make sure our default data uses are always available for our tests,
+        # if they're not present already.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
             DataUse.create(db=db, data=data_use.dict())
