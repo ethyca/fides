@@ -4,20 +4,14 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import BaseModel, validator
-from sqlalchemy.orm import Session
 
-from fides.api.ctl.sql_models import DataCategory  # type: ignore[attr-defined]
 from fides.api.ops import common_exceptions
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.util.data_category import (
     DataCategory as DefaultTaxonomyDataCategories,
+    get_data_categories_from_db,
 )
-
-
-def get_data_categories_from_db(db: Session) -> List[FidesKey]:
-    """Query for existing data categories in the db using a synchronous session"""
-    return [cat[0] for cat in db.query(DataCategory.fides_key).all()]
 
 
 def validate_data_categories_against_db(
