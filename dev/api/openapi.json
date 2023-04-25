@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.11.1b1.post0.dev2"
+    "version": "2.11.1b1.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3581,20 +3581,8 @@
           "System"
         ],
         "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
+        "description": "Override `System` create/POST to handle `.privacy_declarations` defined inline,\nfor backward compatibility and ease of use for API users.",
         "operationId": "create_api_v1_system_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "system"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3612,20 +3600,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/System"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "system",
-                    "fides_key": "example.key"
-                  }
                 }
               }
             }
@@ -3768,104 +3742,6 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "system:delete"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/system/upsert": {
-      "post": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "upsert_api_v1_system_upsert_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "system"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "title": "Resources",
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/System"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Upsert Api V1 System Upsert Post",
-                  "type": "object"
-                },
-                "example": {
-                  "message": "Upserted 3 system(s)",
-                  "inserted": 0,
-                  "updated": 3
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "example": {
-                  "message": "Upserted 3 system(s)",
-                  "inserted": 1,
-                  "updated": 2
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "DataCategory",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "system:create",
-              "system:update"
             ]
           }
         ]
@@ -4671,6 +4547,60 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "connection:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/system/upsert": {
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Upsert",
+        "operationId": "upsert_api_v1_system_upsert_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/System"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Upsert Api V1 System Upsert Post",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:create",
+              "system:update"
             ]
           }
         ]
