@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.11.1b2"
+    "version": "2.11.1b2.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3461,292 +3461,6 @@
         ]
       }
     },
-    "/api/v1/system": {
-      "get": {
-        "tags": [
-          "System"
-        ],
-        "summary": "List",
-        "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_system_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "system"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response List Api V1 System Get",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/System"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "system:read"
-            ]
-          }
-        ]
-      },
-      "put": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Update",
-        "description": "Update a System by the fides_key extracted from the request body.  Defined outside of the crud routes\nto add additional \"system manager\" permission checks.",
-        "operationId": "update_api_v1_system_put",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "system",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "system:update"
-            ]
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Create",
-        "description": "Override `System` create/POST to handle `.privacy_declarations` defined inline,\nfor backward compatibility and ease of use for API users.",
-        "operationId": "create_api_v1_system_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "system:create"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/system/{fides_key}": {
-      "get": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Get",
-        "description": "Get a resource by its fides_key.",
-        "operationId": "get_api_v1_system__fides_key__get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "system"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "system:read"
-            ]
-          }
-        ]
-      },
-      "delete": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Delete",
-        "description": "Delete a System by its fides_key. Defined outside of the crud routes\nto add additional \"system manager\" permission checks.",
-        "operationId": "delete_api_v1_system__fides_key__delete",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Delete Api V1 System  Fides Key  Delete",
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "system",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "system:delete"
-            ]
-          }
-        ]
-      }
-    },
     "/api/v1/evaluation": {
       "get": {
         "tags": [
@@ -4552,6 +4266,147 @@
         ]
       }
     },
+    "/api/v1/system": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_api_v1_system_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Api V1 System Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SystemResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:read"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Update",
+        "description": "Update a System by the fides_key extracted from the request body.  Defined outside of the crud routes\nto add additional \"system manager\" permission checks.",
+        "operationId": "update_api_v1_system_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/System"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "system",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:update"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Create",
+        "description": "Override `System` create/POST to handle `.privacy_declarations` defined inline,\nfor backward compatibility and ease of use for API users.",
+        "operationId": "create_api_v1_system_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/System"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:create"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/system/upsert": {
       "post": {
         "tags": [
@@ -4601,6 +4456,119 @@
             "OAuth2ClientCredentialsBearer": [
               "system:create",
               "system:update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/system/{fides_key}": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_api_v1_system__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:read"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Delete",
+        "description": "Delete a System by its fides_key. Defined outside of the crud routes\nto add additional \"system manager\" permission checks.",
+        "operationId": "delete_api_v1_system__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Delete Api V1 System  Fides Key  Delete",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "system",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:delete"
             ]
           }
         ]
@@ -17802,6 +17770,87 @@
         },
         "description": "The PrivacyDeclaration resource model.\n\nStates a function of a system, and describes how it relates\nto the privacy data types."
       },
+      "PrivacyDeclarationResponse": {
+        "title": "PrivacyDeclarationResponse",
+        "required": [
+          "data_categories",
+          "data_use",
+          "data_subjects",
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "The name of the privacy declaration on the system."
+          },
+          "data_categories": {
+            "title": "Data Categories",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "An array of data categories describing a system in a privacy declaration."
+          },
+          "data_use": {
+            "title": "Data Use",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string",
+            "description": "The Data Use describing a system in a privacy declaration."
+          },
+          "data_qualifier": {
+            "title": "Data Qualifier",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string",
+            "description": "The fides key of the data qualifier describing a system in a privacy declaration.",
+            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+          },
+          "data_subjects": {
+            "title": "Data Subjects",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "An array of data subjects describing a system in a privacy declaration."
+          },
+          "dataset_references": {
+            "title": "Dataset References",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "Referenced Dataset fides keys used by the system."
+          },
+          "egress": {
+            "title": "Egress",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "The resources to which data is sent. Any `fides_key`s included in this list reference `DataFlow` entries in the `egress` array of any `System` resources to which this `PrivacyDeclaration` is applied."
+          },
+          "ingress": {
+            "title": "Ingress",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied."
+          },
+          "id": {
+            "title": "Id",
+            "type": "string",
+            "description": "The database-assigned ID of the privacy declaration on the system. This is meant to be a read-only field, returned only in API responses"
+          }
+        },
+        "description": "Extension of base pydantic model to include DB `id` field in the response"
+      },
       "PrivacyNoticeCreation": {
         "title": "PrivacyNoticeCreation",
         "required": [
@@ -19963,6 +20012,152 @@
           }
         },
         "description": "The SystemMetadata resource model.\n\nObject used to hold application specific metadata for a system"
+      },
+      "SystemResponse": {
+        "title": "SystemResponse",
+        "required": [
+          "fides_key",
+          "system_type",
+          "privacy_declarations"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string",
+            "description": "A unique key used to identify this resource."
+          },
+          "organization_fides_key": {
+            "title": "Organization Fides Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string",
+            "description": "Defines the Organization that this resource belongs to.",
+            "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Human-Readable name for this resource."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "A detailed description of what this resource is."
+          },
+          "registry_id": {
+            "title": "Registry Id",
+            "type": "integer",
+            "description": "The id of the system registry, if used."
+          },
+          "meta": {
+            "title": "Meta",
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "An optional property to store any extra information for a system. Not used by fidesctl."
+          },
+          "fidesctl_meta": {
+            "title": "Fidesctl Meta",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemMetadata"
+              }
+            ],
+            "description": "\n    The SystemMetadata resource model.\n\n    Object used to hold application specific metadata for a system\n    "
+          },
+          "system_type": {
+            "title": "System Type",
+            "type": "string",
+            "description": "A required value to describe the type of system being modeled, examples include: Service, Application, Third Party, etc."
+          },
+          "data_responsibility_title": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DataResponsibilityTitle"
+              }
+            ],
+            "description": "\n    The model defining the responsibility or role over\n    the system that processes personal data.\n\n    Used to identify whether the organization is a\n    Controller, Processor, or Sub-Processor of the data\n    ",
+            "default": "Controller"
+          },
+          "egress": {
+            "title": "Egress",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DataFlow"
+            },
+            "description": "The resources to which the System sends data."
+          },
+          "ingress": {
+            "title": "Ingress",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DataFlow"
+            },
+            "description": "The resources from which the System receives data."
+          },
+          "privacy_declarations": {
+            "title": "Privacy Declarations",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyDeclarationResponse"
+            },
+            "description": "Extension of base pydantic model to include DB `id` field in the response"
+          },
+          "system_dependencies": {
+            "title": "System Dependencies",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "A list of fides keys to model dependencies."
+          },
+          "joint_controller": {
+            "title": "Joint Controller",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContactDetails"
+              }
+            ],
+            "description": "\n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
+          },
+          "third_country_transfers": {
+            "title": "Third Country Transfers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1."
+          },
+          "administrating_department": {
+            "title": "Administrating Department",
+            "type": "string",
+            "description": "An optional value to identify the owning department or group of the system within your organization",
+            "default": "Not defined"
+          },
+          "data_protection_impact_assessment": {
+            "title": "Data Protection Impact Assessment",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DataProtectionImpactAssessment"
+              }
+            ],
+            "description": "\n    The DataProtectionImpactAssessment (DPIA) resource model.\n\n    Contains information in regard to the data protection\n    impact assessment exported on a data map or Record of\n    Processing Activities (RoPA).\n\n    A legal requirement under GDPR for any project that\n    introduces a high risk to personal information.\n    ",
+            "default": {
+              "is_required": false
+            }
+          }
+        },
+        "description": "Extension of base pydantic model to include `privacy_declarations.id` fields in responses"
       },
       "SystemType": {
         "title": "SystemType",
