@@ -348,9 +348,7 @@ describe("Custom Fields", () => {
         cy.getByTestId("save-btn").click();
         cy.wait("@postCustomFieldDefinition").then((interception) => {
           const { body } = interception.request;
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          const { allow_list, ...rest } = body;
-          expect(rest).to.eql(payload);
+          expect(body).to.eql(payload);
         });
         cy.wait("@upsertAllowList").then((interception) => {
           const { body } = interception.request;
