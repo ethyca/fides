@@ -57,7 +57,7 @@ def setup_ctl_db(test_config, test_client, config):
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def db():
     create_citext_extension(sync_engine)
 
