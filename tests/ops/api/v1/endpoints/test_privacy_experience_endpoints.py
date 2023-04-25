@@ -150,7 +150,6 @@ class TestGetPrivacyExperiences:
         assert data["items"][0]["regions"] == [
             reg.value for reg in privacy_experience_overlay_link.regions
         ]
-
         resp = api_client.get(
             url + "?region=us_ca",
             headers=auth_header,
