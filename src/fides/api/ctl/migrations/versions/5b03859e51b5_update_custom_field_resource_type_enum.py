@@ -1,7 +1,7 @@
 """update custom field resource type enum
 
 Revision ID: 5b03859e51b5
-Revises: 48d9caacebd4
+Revises: 451684a726a5
 Create Date: 2023-04-19 19:22:47.566852
 
 """
@@ -9,7 +9,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "5b03859e51b5"
-down_revision = "48d9caacebd4"
+down_revision = "451684a726a5"
 branch_labels = None
 depends_on = None
 
