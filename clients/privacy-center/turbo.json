@@ -1,7 +1,7 @@
 {
   "extends": ["//"],
   "pipeline": {
-    "build-privacy-portal": {
+    "dev": {
       "dependsOn": ["build"]
     }
   }

@@ -7,7 +7,7 @@ The clients directory houses all front-end packages and shared code amongst clie
 Dependencies within this directory are managed by Turborepo. Our root `package.json` file defines 3 workspaces (or packages) that are part of the Turbo ecosystem:
 1. admin-ui
 2. privacy-center
-3. fides-consent
+3. fides-js
 
 To run any or all workspaces, you'll have to complete the following setup: 
 

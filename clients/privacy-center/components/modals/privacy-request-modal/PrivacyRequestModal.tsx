@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 
-import { config } from "~/constants";
+import { useConfig } from "~/features/common/config.slice";
 
 import RequestModal from "../RequestModal";
 import PrivacyRequestForm from "./PrivacyRequestForm";
@@ -69,6 +69,7 @@ export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
   isVerificationRequired,
   successHandler,
 }) => {
+  const config = useConfig();
   const action = openAction
     ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
     : null;

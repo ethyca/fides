@@ -13,16 +13,14 @@ import {
   VStack,
   useToast,
 } from "@fidesui/react";
-
-import { useFormik } from "formik";
-import { ErrorToastOptions } from "~/common/toast-options";
-
 import { Headers } from "headers-polyfill";
+import { useFormik } from "formik";
+
+import { usePrivacyCenterEnvironment } from "~/app/server-environment";
+import { ErrorToastOptions } from "~/common/toast-options";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { useLocalStorage } from "~/common/hooks";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
-
-import { hostUrl } from "~/constants";
 import { ModalViews, VerificationType } from "./types";
 
 const useVerificationForm = ({
@@ -40,6 +38,7 @@ const useVerificationForm = ({
   verificationType: VerificationType;
   successHandler: () => void;
 }) => {
+  const environment = usePrivacyCenterEnvironment();
   const toast = useToast();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [verificationCode, setVerificationCode] = useLocalStorage(
@@ -78,7 +77,7 @@ const useVerificationForm = ({
         addCommonHeaders(headers, null);
 
         const response = await fetch(
-          `${hostUrl}/${verificationType}/${requestId}/verify`,
+          `${environment.fidesApiUrl}/${verificationType}/${requestId}/verify`,
           {
             method: "POST",
             headers,

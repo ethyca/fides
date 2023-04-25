@@ -1,5 +1,5 @@
 import { hostUrl } from "~/constants";
-import { CONSENT_COOKIE_NAME } from "fides-consent";
+import { CONSENT_COOKIE_NAME } from "fides-js";
 import { GpcStatus } from "~/features/consent/types";
 import { ConsentPreferencesWithVerificationCode } from "~/types/api";
 
@@ -72,6 +72,14 @@ describe("Consent settings", () => {
 
       cy.visit("/consent");
       cy.getByTestId("consent");
+      // TODO: this previously used the "config/overrideConsentOptions" action
+      // to customize the config, but I removed that action because it mutated
+      // just a small part of the config - and therefore required us to somehow
+      // handle the case where other parts of the consent config were null.o
+      //
+      // This can be replaced with a "config/loadConfig" action to provide a
+      // fully-formed config object to preserve type-safety
+      /*
       cy.dispatch({
         type: "config/overrideConsentOptions",
         payload: [
@@ -115,6 +123,7 @@ describe("Consent settings", () => {
           },
         ],
       });
+      */
     });
 
     it("lets the user update their consent", () => {
@@ -194,7 +203,7 @@ describe("Consent settings", () => {
       });
     });
 
-    it("reflects their choices using fides-consent.js", () => {
+    it("reflects their choices using fides.js", () => {
       // Opt-out of items default to opt-in.
       cy.visit("/consent");
       cy.getByTestId(`consent-item-card-advertising`).within(() => {
@@ -205,7 +214,7 @@ describe("Consent settings", () => {
       });
       cy.getByTestId("save-btn").click();
 
-      cy.visit("/fides-consent-demo.html");
+      cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
       cy.window().then((win) => {
         // Now all of the cookie keys should be populated.
@@ -301,7 +310,7 @@ describe("Consent settings", () => {
 
   describe("when the user hasn't modified their consent", () => {
     it("reflects the defaults from config.json", () => {
-      cy.visit("/fides-consent-demo.html");
+      cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
       cy.window().then((win) => {
         // Before visiting the privacy center the consent object only has the default choices.
@@ -336,7 +345,7 @@ describe("Consent settings", () => {
 
     describe("when globalPrivacyControl is enabled", () => {
       it("uses the globalPrivacyControl default", () => {
-        cy.visit("/fides-consent-demo.html?globalPrivacyControl=true");
+        cy.visit("/fides-js-demo.html?globalPrivacyControl=true");
         cy.get("#consent-json");
         cy.window().then((win) => {
           expect(win).to.have.nested.property("Fides.consent").that.eql({

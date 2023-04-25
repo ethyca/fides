@@ -17,7 +17,6 @@
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",
-    "build-privacy-portal": "",
     "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./types/api --exportCore false --exportServices false --indent 2"
   },
   "dependencies": {
@@ -27,7 +26,7 @@
     "@fidesui/react": "^0.0.23",
     "@fontsource/inter": "^4.5.15",
     "@reduxjs/toolkit": "^1.9.3",
-    "fides-consent": "*",
+    "fides-js": "*",
     "formik": "^2.2.9",
     "framer-motion": "^5",
     "headers-polyfill": "^3.1.2",

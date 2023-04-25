@@ -129,26 +129,22 @@ ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
-
-RUN chown nextjs:nodejs /fides/clients
-
-# We need to copy everything so we can rebuild with the new configs if needed
-COPY --from=built_frontend /fides/clients /fides/clients
-
-WORKDIR /fides/clients/privacy-center
-
-# The config directory is not needed unless it is mounted as a volume because the next
-# build has already been run. By deleteing it we can check if is was added with a volume
-# and we to rebuild with a custom config.
-RUN rm -r config
-
-RUN chmod +x start.sh && chown nextjs:nodejs start.sh
-
 USER nextjs
+
+# TODO: Optimize this to copy the pre-built Privacy Center client files.
+# This requires doing a couple things:
+# 0) Refactor this Dockerfile to have per-client stages (eg admin-ui-builder, privacy-center-builder, etc)
+# 1) Refactor the Privacy Center next.config.js to use `transpilePackages` and `output: "standalone"` (see https://github.com/vercel/turbo/blob/main/examples/with-docker/apps/web/next.config.js)
+# 1) Before building, using `turbo prune --scope=privacy-center --docker` (see https://turbo.build/repo/docs/handbook/deploying-with-docker#the-solution) 
+# 2) Copy the "pruned" source files from ./out/json, ./out/full, etc. and build (see https://turbo.build/repo/docs/handbook/deploying-with-docker#example)
+# 3) Copy the "traced" built output from clients/privacy-center/.next, etc. (see https://github.com/vercel/turbo/blob/main/examples/with-docker/apps/web/Dockerfile#L50)
+# 4) Change the output command to use the built "server.js" output
+COPY --from=built_frontend --chown=nextjs:nodejs /fides/clients .
+WORKDIR /fides/clients/privacy-center
 
 EXPOSE 3000
 
-CMD ["./start.sh"]
+CMD ["npm", "run", "start"]
 
 ############################
 ## Production Application ##
