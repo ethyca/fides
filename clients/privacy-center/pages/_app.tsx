@@ -74,6 +74,9 @@ const SafeHydrate: React.FC = ({ children }) => (
 
 const PrivacyCenterApp = ({ Component, pageProps, serverEnvironment }: PrivacyCenterProps & AppProps) => {
   // Hydrate the environment and the Redux store using the server-side environment
+  // TODO: is this the best practice for this kind of "initialize once per
+  // session" logic, or is there a better pattern that I'm missing? useEffect?
+  // Look into how the nextjs withRedux wrapper works.
   const environment = useMemo(() => hydratePrivacyCenterEnvironment(serverEnvironment), [serverEnvironment]);
   const store = useMemo(() => makeStore({ config: environment.config }), [environment]);
 

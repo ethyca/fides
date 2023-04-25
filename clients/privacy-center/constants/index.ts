@@ -1,4 +1,5 @@
 /* eslint-disable import/prefer-default-export */
+// TODO: remove this, or at least move it fully into the config.slice module, etc.
 import dangerousStaticDefaultConfig from "~/config/config.json";
 import {
   isV1ConsentConfig,
@@ -12,6 +13,7 @@ import {
   ConsentConfig,
 } from "~/types/config";
 
+// TODO: remove this, or at least move it fully into the config.slice module, etc.
 export function getDefaultConfig(): Config {
   return transformConfig(dangerousStaticDefaultConfig);
 }

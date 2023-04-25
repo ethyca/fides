@@ -59,12 +59,12 @@ const init = (config: FidesConfig) => {
   const consent = getConsentCookie(defaults);
 
   // Initialize the window.Fides object
+  // TODO: this shouldn't affect window.Fides, but instead a _Fides internal
   window.Fides.consent = consent;
   window.Fides.initialized = true;
 }
 
-// TODO: come up with a clever-er way to do this? Seems janky!
-// Define the window.Fides object
+// Define the window.Fides object (if running in a browser context)
 if (typeof window !== "undefined") {
   const Fides: Fides = {
     consent: {},

@@ -59,8 +59,6 @@ services:
     command: npm run dev-pc
     expose:
       - 3000
-    environment:
-      - FIDES__PRIVACY_CENTER__TEST=hello
     ports:
       - "3001:3000"
     volumes:
