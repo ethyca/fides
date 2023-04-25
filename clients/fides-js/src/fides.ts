@@ -1,16 +1,36 @@
-/***
- * TODO: description
+/**
+ * Fides.js: Javascript library for Fides (https://github.com/ethyca/fides)
  * 
- * Expected usage of this in an HTML file is:
+ * This JS module provides easy access to interact with Fides from a webpage, including the ability to:
+ * - initialize the page with default consent options (e.g. opt-out of advertising cookies, opt-in to analytics, etc.)
+ * - read/write the current user's consent preferences to their browser as a cookie
+ * - push the current user's consent preferences to other systems via integrations (Google Tag Manager, Meta, etc.)
+ * 
+ * See https://fid.es for more information!
+ * 
+ * Basic usage of this module in an HTML page is:
  * ```
- * <script src="../dist/fides.js"></script>
+ * <script src="https://privacy.{company}.com/fides.js"></script>
  * <script>
  *   window.Fides.init({
  *     consent: {
- *       options: [...(default consent options here)]
+ *       options: [{
+ *         cookieKeys: ["data_sales"],
+ *         default: true,
+ *         fidesDataUseKey: "advertising"
+ *       }]
  *     }
  *   });
  * </script>
+ * ```
+ * 
+ * ...and later:
+ * ```
+ * <script>
+ *   // Query user consent preferences
+ *   if (window.Fides.consent.data_sales) {
+ *     // ...enable advertising scripts
+ *   }
  * ```
  */
 import { gtm } from "./integrations/gtm";
@@ -20,9 +40,6 @@ import { ConsentConfig } from "./lib/consent-config";
 import { getConsentContext } from "./lib/consent-context";
 import { CookieKeyConsent, getConsentCookie, makeDefaults } from "./lib/cookie";
 
-/**
- * Configuration options for the fides.js script
- */
 export interface FidesConfig {
   consent: ConsentConfig;
 }
@@ -42,11 +59,12 @@ declare global {
   }
 }
 
-/**
- * Initialize the Fides object with configuration values
- */
+// The global Fides object; this is bound to window.Fides if available
+// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
+let _Fides: Fides;
+
+// Initialize the global Fides object with the given configuration values
 const init = (config: FidesConfig) => {
-  console.debug("Initializing fides.js...");
   // Configure the default values
   const context = getConsentContext();
   const defaults = makeDefaults({
@@ -58,28 +76,27 @@ const init = (config: FidesConfig) => {
   const consent = getConsentCookie(defaults);
 
   // Initialize the window.Fides object
-  // TODO: this shouldn't affect window.Fides, but instead a _Fides internal
-  window.Fides.consent = consent;
-  window.Fides.initialized = true;
+  _Fides.consent = consent;
+  _Fides.initialized = true;
 }
 
-// Define the window.Fides object (if running in a browser context)
+// The global Fides object; this is bound to window.Fides if available
+_Fides = {
+  consent: {},
+  gtm,
+  init,
+  initialized: false,
+  meta,
+  shopify,
+};
+
 if (typeof window !== "undefined") {
-  const Fides: Fides = {
-    consent: {},
-    gtm,
-    init,
-    initialized: false,
-    meta,
-    shopify,
-  };
-  window.Fides = Fides;
+  window.Fides = _Fides;
 }
 
-// Export everything from ./lib/* to use when importing as a module
+// Export everything from ./lib/* to use when importing fides.mjs as a module
 export * from "./lib/consent-config";
 export * from "./lib/consent-context";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
-
 export default Fides;
