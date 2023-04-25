@@ -19,6 +19,8 @@ import React, { useMemo, useState } from "react";
 import { Column, Hooks } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   selectAllCustomFieldDefinitions,
   useDeleteCustomFieldDefinitionMutation,
@@ -26,8 +28,6 @@ import {
 } from "~/features/plus/plus.slice";
 import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
 
-import { getErrorMessage, isErrorResult } from "../common/helpers";
-import { errorToastParams, successToastParams } from "../common/toast";
 import {
   EnableCustomFieldCell,
   FieldTypeCell,

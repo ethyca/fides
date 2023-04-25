@@ -1,9 +1,6 @@
-import {
-  stubPlus,
-  stubTaxonomyEntities,
-} from "cypress/support/stubs";
+import { stubPlus, stubTaxonomyEntities } from "cypress/support/stubs";
 
-import { CUSTOM_FIELDS_ROUTE  } from "~/features/common/nav/v2/routes";
+import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 const TAXONOMY_SINGLE_SELECT_ID = "plu_1850be9e-fabc-424d-8224-2fc44c84605a";
@@ -12,9 +9,13 @@ const ESSENTIAL_NOTICE_ID = "plu_cce3d8da-1a86-492a-b81e-decb279f7384";
 describe("Custom Fields", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/plus/custom-metadata/custom-field-definition*", {
-      fixture: "custom-fields/list.json",
-    }).as("getCustomFields");
+    cy.intercept(
+      "GET",
+      "/api/v1/plus/custom-metadata/custom-field-definition*",
+      {
+        fixture: "custom-fields/list.json",
+      }
+    ).as("getCustomFields");
     stubPlus(true);
   });
 
@@ -67,9 +68,13 @@ describe("Custom Fields", () => {
   });
 
   it("can show an empty state", () => {
-    cy.intercept("GET", "/api/v1/plus/custom-metadata/custom-field-definition*", {
-      body: [],
-    }).as("getEmptyCustomFields");
+    cy.intercept(
+      "GET",
+      "/api/v1/plus/custom-metadata/custom-field-definition*",
+      {
+        body: [],
+      }
+    ).as("getEmptyCustomFields");
     stubPlus(true);
     cy.visit(CUSTOM_FIELDS_ROUTE);
     cy.wait("@getEmptyCustomFields");
@@ -95,22 +100,80 @@ describe("Custom Fields", () => {
     });
 
     it("can sort", () => {
-      cy.get("tbody > tr").first().should("contain", "Taxonomy - Single select");
+      cy.get("tbody > tr")
+        .first()
+        .should("contain", "Taxonomy - Single select");
       // sort alphabetical
       cy.getByTestId("column-Title").click();
       cy.get("tbody > tr").first().should("contain", "Multiple select list");
 
       // sort reverse
       cy.getByTestId("column-Title").click();
-      cy.get("tbody > tr").first().should("contain", "Taxonomy - Single select");
+      cy.get("tbody > tr")
+        .first()
+        .should("contain", "Taxonomy - Single select");
     });
 
+    it("can click a row to bring up the edit modal", () => {
+      cy.intercept("GET", "/api/v1/plus/custom-metadata/allow-list/*", {
+        fixture: "taxonomy/custom-metadata/allow-list/create.json",
+      }).as("getAllowList");
+      cy.getByTestId("row-Taxonomy - Single select").click();
+      cy.wait("@getAllowList");
+      cy.getByTestId("custom-field-modal");
+    });
+
+    it("can click add button to get to a new form", () => {
+      cy.getByTestId("add-custom-field-btn").click();
+      cy.getByTestId("custom-field-modal");
+    });
+
+    describe("more actions menu", () => {
+      it("can edit from the more actions menu", () => {
+        cy.intercept("GET", "/api/v1/plus/custom-metadata/allow-list/*", {
+          fixture: "taxonomy/custom-metadata/allow-list/create.json",
+        }).as("getAllowList");
+        cy.get("tbody > tr")
+          .first()
+          .within(() => {
+            cy.getByTestId("more-actions-btn").click();
+            cy.getByTestId("edit-btn").click();
+          });
+
+        cy.wait("@getAllowList");
+        cy.getByTestId("custom-field-modal");
+      });
+
+      it("can delete from the more actions menu", () => {
+        cy.intercept(
+          "DELETE",
+          "/api/v1/plus/custom-metadata/custom-field-definition/*",
+          { body: {} }
+        ).as("deleteCustomFieldDefinition");
+        cy.get("tbody > tr")
+          .first()
+          .within(() => {
+            cy.getByTestId("more-actions-btn").click();
+            cy.getByTestId("delete-btn").click();
+          });
+        cy.getByTestId("confirmation-modal");
+        cy.getByTestId("continue-btn").click();
+        cy.wait("@deleteCustomFieldDefinition").then((interception) => {
+          const { url } = interception.request;
+          expect(url).to.contain(TAXONOMY_SINGLE_SELECT_ID);
+        });
+      });
+    });
 
     describe("enabling and disabling", () => {
       beforeEach(() => {
-        cy.intercept("PUT", "/api/v1/plus/custom-metadata/custom-field-definition*", {
-          fixture: "custom-fields/list.json",
-        }).as("patchCustomFields");
+        cy.intercept(
+          "PUT",
+          "/api/v1/plus/custom-metadata/custom-field-definition*",
+          {
+            fixture: "custom-fields/list.json",
+          }
+        ).as("patchCustomFields");
       });
 
       it("can enable a custom field", () => {
@@ -123,8 +186,8 @@ describe("Custom Fields", () => {
 
         cy.wait("@patchCustomFields").then((interception) => {
           const { body } = interception.request;
-          expect(body.id).to.eql( TAXONOMY_SINGLE_SELECT_ID);
-          expect(body.active).to.eql( true);
+          expect(body.id).to.eql(TAXONOMY_SINGLE_SELECT_ID);
+          expect(body.active).to.eql(true);
         });
         // redux should requery after invalidation
         cy.wait("@getCustomFields");
@@ -142,15 +205,12 @@ describe("Custom Fields", () => {
         cy.getByTestId("continue-btn").click();
         cy.wait("@patchCustomFields").then((interception) => {
           const { body } = interception.request;
-          expect(body.id).to.eql( ESSENTIAL_NOTICE_ID);
-          expect(body.active).to.eql( false);
+          expect(body.id).to.eql(ESSENTIAL_NOTICE_ID);
+          expect(body.active).to.eql(false);
         });
         // redux should requery after invalidation
         cy.wait("@getCustomFields");
       });
     });
   });
-
-
-
 });
