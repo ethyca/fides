@@ -160,7 +160,7 @@ def mock_upload_logic() -> Generator:
         yield _fixture
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def fideslang_data_categories(db: Session) -> Generator:
     """Creates a database record for each data category in the fideslang taxonomy"""
     cats = []

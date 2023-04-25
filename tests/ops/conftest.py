@@ -55,9 +55,15 @@ def clear_db_tables(db):
     """
     yield
 
+    SKIP_TABLES = ["ctl_data_categories"]
+
     def delete_data(tables):
         redo = []
         for table in tables:
+            if table.name in SKIP_TABLES:
+                # Don't purge _all_ tables
+                continue
+
             try:
                 db.execute(table.delete())
             except IntegrityError:
