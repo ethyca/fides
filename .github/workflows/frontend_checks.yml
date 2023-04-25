@@ -80,13 +80,13 @@ jobs:
           path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
 
       - name: Cypress E2E Privacy-Center
-          uses: cypress-io/github-action@v4
-          with:
-            working-directory: clients
-            install: false
-            start: npm run cy-pc:start
-            wait-on: "http://localhost:3000"
-            wait-on-timeout: 180
+        uses: cypress-io/github-action@v4
+        with:
+          working-directory: clients
+          install: false
+          start: npm run cy-pc:start
+          wait-on: "http://localhost:3000"
+          wait-on-timeout: 180
 
       - uses: actions/upload-artifact@v3
         if: failure()
