@@ -233,7 +233,16 @@ describe("Custom Fields", () => {
       beforeEach(() => {
         cy.getByTestId("row-Taxonomy - Single select").click();
         cy.wait("@getAllowList");
+        cy.intercept(
+          "PUT",
+          "/api/v1/plus/custom-metadata/custom-field-definition*",
+          { body: {} }
+        ).as("putCustomFieldDefinition");
+        cy.intercept("PUT", "/api/v1/plus/custom-metadata/allow-list*", {
+          body: {},
+        }).as("upsertAllowList");
       });
+
       it("renders existing values", () => {
         // Field information
         cy.getByTestId("custom-input-name").should(
@@ -262,9 +271,26 @@ describe("Custom Fields", () => {
         );
       });
 
-      it("can edit field information", () => {});
+      it("can edit field information", () => {
+        const newDescription = "new description";
+        cy.getByTestId("custom-input-description").clear().type(newDescription);
+        cy.getByTestId("save-btn").click();
+        cy.wait("@putCustomFieldDefinition").then((interception) => {
+          expect(interception.request.body.description).to.eql(newDescription);
+        });
+      });
 
-      it("can add values to the allow list", () => {});
+      it("can add values to the allow list", () => {
+        const newAllowItem = "new item";
+
+        cy.getByTestId("add-list-value-btn").click();
+        cy.getByTestId(`custom-input-allow_list.allowed_values[2]`).type(
+          newAllowItem
+        );
+        cy.getByTestId("save-btn").click();
+
+        cy.wait("@upsertAllowList");
+      });
 
       it("can delete values from the allow list", () => {});
     });
@@ -272,9 +298,49 @@ describe("Custom Fields", () => {
     describe("create modal", () => {
       beforeEach(() => {
         cy.getByTestId("add-custom-field-btn").click();
+        cy.intercept(
+          "POST",
+          "/api/v1/plus/custom-metadata/custom-field-definition*",
+          { body: {} }
+        ).as("postCustomFieldDefinition");
+        cy.intercept("PUT", "/api/v1/plus/custom-metadata/allow-list*", {
+          body: {},
+        }).as("upsertAllowList");
       });
 
-      it("can fill out a form to create a new custom field", () => {});
+      it("can fill out a form to create a new custom field", () => {
+        const payload = {
+          name: "name",
+          description: "description",
+          field_type: "string",
+          resource_type: "system",
+        };
+        // Field info
+        cy.getByTestId("custom-input-name").type(payload.name);
+        cy.getByTestId("custom-input-description").type(payload.description);
+
+        // Configuration
+        const allowList = ["snorlax", "eevee"];
+        cy.selectOption("input-field_type", "Single select");
+        allowList.forEach((item, idx) => {
+          cy.getByTestId("add-list-value-btn").click();
+          cy.getByTestId(`custom-input-allow_list.allowed_values[${idx}]`).type(
+            item
+          );
+        });
+
+        cy.getByTestId("save-btn").click();
+        cy.wait("@postCustomFieldDefinition").then((interception) => {
+          const { body } = interception.request;
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          const { allow_list, ...rest } = body;
+          expect(rest).to.eql(payload);
+        });
+        cy.wait("@upsertAllowList").then((interception) => {
+          const { body } = interception.request;
+          expect(body.allowed_values).to.eql(allowList);
+        });
+      });
     });
   });
 });
