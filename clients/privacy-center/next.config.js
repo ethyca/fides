@@ -10,6 +10,8 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 
 const nextConfig = {
   reactStrictMode: true,
+  // TODO: I think we want this
+  // transpilePackages: ["fides-js"],
   poweredByHeader: false,
   webpack: (config, { isServer }) => {
     // Provide an empty fallback for the "fs" module for the client-side bundle
