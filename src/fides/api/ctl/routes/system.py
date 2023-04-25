@@ -372,7 +372,6 @@ async def create(
     name="List",
 )
 async def ls(  # pylint: disable=invalid-name
-    resource_type: str = "system",
     db: AsyncSession = Depends(get_async_db),
 ) -> List:
     """Get a list of all of the resources of this type."""
@@ -391,7 +390,6 @@ async def ls(  # pylint: disable=invalid-name
 )
 async def get(
     fides_key: str,
-    resource_type: str = "system",
     db: AsyncSession = Depends(get_async_db),
 ) -> Dict:
     """Get a resource by its fides_key."""
