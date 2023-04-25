@@ -6,6 +6,7 @@ from fides.api.ops.util.consent_util import (
     add_complete_system_status_for_consent_reporting,
     add_errored_system_status_for_consent_reporting,
     cache_initial_status_and_identities_for_consent_reporting,
+    get_fides_user_device_id_provided_identity,
     should_opt_in_to_service,
 )
 
@@ -436,3 +437,23 @@ class TestCacheSystemStatusesForConsentReporting:
             connection_config.name: "skipped"
         }
         assert privacy_preference_history.secondary_user_ids is None
+
+
+class TestGetFidesUserProvidedIdentity:
+    def test_no_identifier_supplied(self, db):
+        provided_identity = get_fides_user_device_id_provided_identity(db, None)
+        assert provided_identity is None
+
+    def test_no_provided_identifier_exists(self, db):
+        provided_identity = get_fides_user_device_id_provided_identity(
+            db, "fides_user_device_id"
+        )
+        assert provided_identity is None
+
+    def test_get_fides_user_device_id_provided_identity(
+        self, db, fides_user_provided_identity
+    ):
+        provided_identity = get_fides_user_device_id_provided_identity(
+            db, "FGHIJ_TEST_FIDES"
+        )
+        assert provided_identity == fides_user_provided_identity

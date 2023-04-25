@@ -462,63 +462,6 @@ def set_consent_preferences(
     return consent_preferences
 
 
-def _get_fides_user_device_id_provided_identity(
-    db: Session, fides_user_device_id: Optional[str]
-) -> Optional[ProvidedIdentity]:
-    """Look up a fides user device id that is not attached to a privacy request if it exists
-
-    There can be many fides user device ids attached to privacy requests, but we should try to keep them
-    unique for consent requests.
-    """
-    if not fides_user_device_id:
-        return None
-
-    return ProvidedIdentity.filter(
-        db=db,
-        conditions=(
-            (ProvidedIdentity.field_name == ProvidedIdentityType.fides_user_device_id)
-            & (
-                ProvidedIdentity.hashed_value
-                == ProvidedIdentity.hash_value(fides_user_device_id)
-            )
-            & (ProvidedIdentity.privacy_request_id.is_(None))
-        ),
-    ).first()
-
-
-def _get_or_create_fides_user_device_id_provided_identity(
-    db: Session,
-    identity_data: Identity,
-) -> ProvidedIdentity:
-    """Gets an existing fides user device id provided identity or creates one if it doesn't exist.
-    Raises an error if no fides user device id is supplied.
-    """
-    if not identity_data.fides_user_device_id:
-        raise HTTPException(
-            HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Fides user device id not found in identity data",
-        )
-
-    identity = _get_fides_user_device_id_provided_identity(
-        db, identity_data.fides_user_device_id
-    )
-
-    if not identity:
-        identity = ProvidedIdentity.create(
-            db,
-            data={
-                "privacy_request_id": None,
-                "field_name": ProvidedIdentityType.fides_user_device_id.value,
-                "hashed_value": ProvidedIdentity.hash_value(
-                    identity_data.fides_user_device_id
-                ),
-                "encrypted_value": {"value": identity_data.fides_user_device_id},
-            },
-        )
-
-    return identity  # type: ignore[return-value]
-
-
 def _get_or_create_provided_identity(
     db: Session,
     identity_data: Identity,

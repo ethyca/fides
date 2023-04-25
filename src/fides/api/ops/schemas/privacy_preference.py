@@ -52,7 +52,8 @@ class ConsentReportingSchema(BaseSchema):
     privacy_request_id: Optional[str] = Field(
         title="The Privacy Request id created to propagate preferences"
     )
-    user_id: Optional[str] = Field(title="Email if provided")
+    email: Optional[str] = Field(title="Email if applicable")
+    phone_number: Optional[str] = Field(title="Phone number if applicable")
     fides_user_device_id: Optional[str] = Field(
         title="Fides user device id if applicable"
     )

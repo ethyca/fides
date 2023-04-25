@@ -7,9 +7,6 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.endpoints.consent_request_endpoints import (
-    _get_or_create_fides_user_device_id_provided_identity,
-)
 from fides.api.ops.api.v1.scope_registry import (
     CONSENT_READ,
     CURRENT_PRIVACY_PREFERENCE_READ,
@@ -1172,7 +1169,9 @@ class TestHistoricalPreferences:
             response_body["privacy_request_id"]
             == privacy_request_with_consent_policy.id
         )
-        assert response_body["user_id"] == "test@email.com"
+        assert response_body["email"] == "test@email.com"
+        assert response_body["phone_number"] is None
+        assert response_body["fides_user_device_id"] is None
         assert response_body["secondary_user_ids"] == {
             "ljt_readerID": "preference_history_test"
         }

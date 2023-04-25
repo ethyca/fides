@@ -1,7 +1,7 @@
 """save privacy preferences on device id
 
 Revision ID: 451684a726a5
-Revises: 3842d1acac5f
+Revises: 48d9caacebd4
 Create Date: 2023-04-23 16:06:19.788074
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "451684a726a5"
-down_revision = "3842d1acac5f"
+down_revision = "48d9caacebd4"
 branch_labels = None
 depends_on = None
 

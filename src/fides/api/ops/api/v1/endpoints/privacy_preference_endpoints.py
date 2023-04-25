@@ -23,8 +23,6 @@ from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.ops.api.deps import get_db
 from fides.api.ops.api.v1.endpoints.consent_request_endpoints import (
     _get_consent_request_and_provided_identity,
-    _get_fides_user_device_id_provided_identity,
-    _get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
@@ -66,6 +64,10 @@ from fides.api.ops.schemas.privacy_request import (
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.consent_util import (
+    get_fides_user_device_id_provided_identity,
+    get_or_create_fides_user_device_id_provided_identity,
+)
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
@@ -190,7 +192,7 @@ def save_privacy_preferences_with_verified_identity(
 
     try:
         fides_user_provided_identity = (
-            _get_or_create_fides_user_device_id_provided_identity(
+            get_or_create_fides_user_device_id_provided_identity(
                 db=db, identity_data=data.browser_identity
             )
         )
@@ -330,15 +332,11 @@ def get_privacy_preferences_by_device_id(
     db: Session = Depends(get_db),
     params: Params = Depends(),
 ) -> AbstractPage[CurrentPrivacyPreference]:
-    """Saves privacy preferences with respect to a fides user device id.
-
-    Creates historical records for these preferences for record keeping, and also updates current preferences.
-    Creates a privacy request to propagate preferences to third party systems.
-    """
+    """Retrieves privacy preferences with respect to a fides user device id."""
     verify_address(request)
     fides_user_provided_identity: Optional[
         ProvidedIdentity
-    ] = _get_fides_user_device_id_provided_identity(
+    ] = get_fides_user_device_id_provided_identity(
         db=db, fides_user_device_id=fides_user_device_id
     )
 
@@ -381,10 +379,8 @@ def save_privacy_preferences(
     verify_privacy_notice_and_historical_records(db=db, data=data)
     verify_address(request)
 
-    fides_user_provided_identity = (
-        _get_or_create_fides_user_device_id_provided_identity(
-            db=db, identity_data=data.browser_identity
-        )
+    fides_user_provided_identity = get_or_create_fides_user_device_id_provided_identity(
+        db=db, identity_data=data.browser_identity
     )
 
     logger.info("Saving privacy preferences with respect to fides user device id")
@@ -453,7 +449,8 @@ def get_historical_consent_report(
         db.query(
             PrivacyPreferenceHistory.id,
             PrivacyRequest.id.label("privacy_request_id"),
-            PrivacyPreferenceHistory.email.label("user_id"),
+            PrivacyPreferenceHistory.email.label("email"),
+            PrivacyPreferenceHistory.phone_number.label("phone_number"),
             PrivacyPreferenceHistory.fides_user_device.label("fides_user_device_id"),
             PrivacyPreferenceHistory.secondary_user_ids,
             PrivacyPreferenceHistory.created_at.label("request_timestamp"),
