@@ -215,7 +215,9 @@ export const CustomFieldModal = ({
       values.field_type = AllowedTypes.STRING_ as unknown as FieldTypes;
     }
 
-    const payload = values as unknown as CustomFieldDefinitionWithId;
+    const payload = { ...values } as unknown as CustomFieldDefinitionWithId;
+    // @ts-ignore - allow_list needs to be removed from custom field payload
+    delete payload.allow_list;
     const result = customField
       ? await updateCustomFieldDefinition(payload)
       : await addCustomFieldDefinition(payload);
