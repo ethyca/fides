@@ -7,9 +7,20 @@ Contains all of the SqlAlchemy models for the Fides resources.
 from __future__ import annotations
 
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Set, Type
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Type,
+    TypeVar,
+)
 
-from fideslang.models import Dataset as FideslangDataset
+from fideslang.models import (
+    DataCategory as FideslangDataCategory,
+    Dataset as FideslangDataset,
+)
 from pydantic import BaseModel
 from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
@@ -137,6 +148,8 @@ class ClassificationInstance(Base):
     )
 
 
+DataCategoryType = TypeVar("DataCategoryType", bound="DataCategory")
+
 # Privacy Types
 class DataCategory(Base, FidesBase):
     """
@@ -147,6 +160,20 @@ class DataCategory(Base, FidesBase):
 
     parent_key = Column(Text)
     is_default = Column(BOOLEAN, default=False)
+
+    @classmethod
+    def from_fideslang_obj(
+        cls, data_category: FideslangDataCategory
+    ) -> DataCategoryType:
+        return cls(
+            fides_key=data_category.fides_key,
+            organization_fides_key=data_category.organization_fides_key,
+            tags=data_category.tags,
+            name=data_category.name,
+            description=data_category.description,
+            parent_key=data_category.parent_key,
+            is_default=data_category.is_default,
+        )
 
 
 class DataQualifier(Base, FidesBase):
