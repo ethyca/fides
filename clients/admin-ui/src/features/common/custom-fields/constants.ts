@@ -28,20 +28,23 @@ export const FIELD_TYPE_OPTIONS_NEW = [
 
 export const RESOURCE_TYPE_OPTIONS = [
   {
-    label: capitalize(ResourceTypes.DATA_CATEGORY),
+    label: `Taxonomy - ${capitalize(ResourceTypes.DATA_CATEGORY)}`,
     value: ResourceTypes.DATA_CATEGORY,
   },
   {
-    label: capitalize(ResourceTypes.DATA_SUBJECT),
+    label: `Taxonomy - ${capitalize(ResourceTypes.DATA_SUBJECT)}`,
     value: ResourceTypes.DATA_SUBJECT,
   },
   {
-    label: capitalize(ResourceTypes.DATA_USE),
+    label: `Taxonomy - ${capitalize(ResourceTypes.DATA_USE)}`,
     value: ResourceTypes.DATA_USE,
   },
-
   {
     label: capitalize(ResourceTypes.SYSTEM),
     value: ResourceTypes.SYSTEM,
+  },
+  {
+    label: "System - Data use",
+    value: ResourceTypes.PRIVACY_DECLARATION,
   },
 ];

@@ -10,4 +10,5 @@ export const RESOURCE_TYPE_MAP = new Map([
   [ResourceTypes.DATA_USE, "taxonomy:data use"],
   [ResourceTypes.DATA_CATEGORY, "taxonomy:data category"],
   [ResourceTypes.DATA_SUBJECT, "taxonomy:data subject"],
+  [ResourceTypes.PRIVACY_DECLARATION, "system:data use"],
 ]);
