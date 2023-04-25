@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.11.1b1.post0.dev4"
+    "version": "2.11.1b1.post0.dev5"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -9065,9 +9065,9 @@
         "tags": [
           "Privacy Preference"
         ],
-        "summary": "Save Privacy Preferences",
-        "description": "Verifies the verification code and saves the user's privacy preferences if successful.\n\nCreates a historical record for each privacy preference for record keeping and then upserts the current preference\nfor each privacy notice.  Creates a Privacy Request linked to the historical preferences to\npropagate these preferences where applicable.\n\nThis workflow is for users saving preferences for privacy notices with a verified identity.",
-        "operationId": "save_privacy_preferences_api_v1_consent_request__consent_request_id__privacy_preferences_patch",
+        "summary": "Save Privacy Preferences With Verified Identity",
+        "description": "Saves privacy preferences with respect to a verified user identity like an email or phone number\nand optionally a fides user device id.\n\nCreates historical records for these preferences for record keeping, and also updates current preferences.\nCreates a privacy request to propagate preferences to third party systems.",
+        "operationId": "save_privacy_preferences_with_verified_identity_api_v1_consent_request__consent_request_id__privacy_preferences_patch",
         "parameters": [
           {
             "required": true,
@@ -9095,7 +9095,117 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Save Privacy Preferences Api V1 Consent Request  Consent Request Id  Privacy Preferences Patch",
+                  "title": "Response Save Privacy Preferences With Verified Identity Api V1 Consent Request  Consent Request Id  Privacy Preferences Patch",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/privacy-preferences": {
+      "get": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Get Privacy Preferences By Device Id",
+        "description": "Retrieves privacy preferences with respect to a fides user device id.",
+        "operationId": "get_privacy_preferences_by_device_id_api_v1_privacy_preferences_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides User Device Id",
+              "type": "string"
+            },
+            "name": "fides_user_device_id",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_CurrentPrivacyPreferenceSchema_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Save Privacy Preferences",
+        "description": "Saves privacy preferences with respect to a fides user device id.\n\nCreates historical records for these preferences for record keeping, and also updates current preferences.\nCreates a privacy request to propagate preferences to third party systems.",
+        "operationId": "save_privacy_preferences_api_v1_privacy_preferences_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrivacyPreferencesCreateWithCode"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Save Privacy Preferences Api V1 Privacy Preferences Patch",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
@@ -9122,9 +9232,9 @@
         "tags": [
           "Privacy Preference"
         ],
-        "summary": "Get Current Privacy Preferences",
+        "summary": "Get Current Privacy Preferences Report",
         "description": "Returns the most recently saved privacy preferences for a given privacy notice",
-        "operationId": "get_current_privacy_preferences_api_v1_current_privacy_preferences_get",
+        "operationId": "get_current_privacy_preferences_report_api_v1_current_privacy_preferences_get",
         "parameters": [
           {
             "required": false,
@@ -9206,9 +9316,9 @@
         "tags": [
           "Privacy Preference"
         ],
-        "summary": "Get Historical Consent Reporting",
+        "summary": "Get Historical Consent Report",
         "description": "Endpoint to return a historical record of all privacy preferences saved for consent reporting",
-        "operationId": "get_historical_consent_reporting_api_v1_historical_privacy_preferences_get",
+        "operationId": "get_historical_consent_report_api_v1_historical_privacy_preferences_get",
         "parameters": [
           {
             "required": false,
@@ -14020,8 +14130,16 @@
             "title": "The Privacy Request id created to propagate preferences",
             "type": "string"
           },
-          "user_id": {
-            "title": "Email if provided",
+          "email": {
+            "title": "Email if applicable",
+            "type": "string"
+          },
+          "phone_number": {
+            "title": "Phone number if applicable",
+            "type": "string"
+          },
+          "fides_user_device_id": {
+            "title": "Fides user device id if applicable",
             "type": "string"
           },
           "secondary_user_ids": {
@@ -15905,6 +16023,10 @@
           },
           "ljt_readerID": {
             "title": "Ljt Readerid",
+            "type": "string"
+          },
+          "fides_user_device_id": {
+            "title": "Fides User Device Id",
             "type": "string"
           }
         },
