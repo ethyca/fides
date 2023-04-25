@@ -14,8 +14,8 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
 )
-from fides.api.ctl.sql_models import DataCategory  # type: ignore
 
+from fides.api.ctl.sql_models import DataCategory  # type: ignore
 from fides.api.ops import common_exceptions
 from fides.api.ops.common_exceptions import (
     StorageConfigNotFoundException,

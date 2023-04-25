@@ -19,7 +19,6 @@ from sqlalchemy_utils import JSONType
 from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists, KeyValidationError
 from fides.api.ops.util.text import to_snake_case
 
-
 T = TypeVar("T", bound="OrmWrappedFidesBase")
 ALLOWED_CHARS = re.compile(r"[A-z0-9\-_]")
 

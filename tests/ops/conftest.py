@@ -2,9 +2,9 @@
 tests/conftest.py file.
 """
 
-from fideslang import DEFAULT_TAXONOMY
 import pytest
 import requests
+from fideslang import DEFAULT_TAXONOMY
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import ObjectDeletedError
 
