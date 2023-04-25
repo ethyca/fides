@@ -14,6 +14,8 @@ import {
 import {
   FIELD_TYPE_OPTIONS,
   RESOURCE_TYPE_OPTIONS,
+  FIELD_TYPE_OPTIONS_NEW,
+  FieldTypes,
 } from "common/custom-fields";
 import CustomInput, {
   CUSTOM_LABEL_STYLES,
@@ -40,7 +42,7 @@ import {
   CustomFieldDefinitionWithId,
   ResourceTypes,
 } from "~/types/api";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 const CustomFieldLabelStyles = {
   ...CUSTOM_LABEL_STYLES,
@@ -54,13 +56,14 @@ type ModalProps = {
   customField?: CustomFieldDefinitionWithId;
 };
 
-type FormValues = CustomFieldDefinition & {
+type FormValues = Omit<CustomFieldDefinition, "field_type"> & {
   allow_list: AllowListUpdate;
+  field_type: FieldTypes;
 };
 
 const initialValuesTemplate: FormValues = {
   description: "",
-  field_type: AllowedTypes.STRING,
+  field_type: FieldTypes.OPEN_TEXT,
   name: "",
   resource_type: ResourceTypes.SYSTEM,
   allow_list: {
@@ -70,12 +73,26 @@ const initialValuesTemplate: FormValues = {
   },
 };
 
-const validationSchema = Yup.object().shape({
+const optionalAllowValues = Yup.array(
+  Yup.string().optional().label("allowed_values")
+);
+const requiredAllowedValues = Yup.array(
+  Yup.string().required("List item is required")
+)
+  .min(1, "Must add at least one list value")
+  .label("allowed_values");
+
+const optionalValidationSchema = Yup.object().shape({
   name: Yup.string().required("Name is required").trim(),
   allow_list: Yup.object().shape({
-    allowed_values: Yup.array(Yup.string().required("List item is required"))
-      .min(1, "Must add at least one list value")
-      .label("allowed_values"),
+    allowed_values: optionalAllowValues,
+  }),
+});
+
+const requiredValidationSchema = Yup.object().shape({
+  name: Yup.string().required("Name is required").trim(),
+  allow_list: Yup.object().shape({
+    allowed_values: requiredAllowedValues,
   }),
 });
 
@@ -96,6 +113,10 @@ export const CustomFieldModal = ({
       skip: !customField?.allow_list_id,
     });
 
+  let [validationSchema, setNewValidationSchema] = useState(
+    optionalValidationSchema
+  );
+
   if (isLoadingAllowList || !isOpen) {
     return null;
   }
@@ -106,15 +127,25 @@ export const CustomFieldModal = ({
         allow_list: {
           ...allowList,
         },
-      } as FormValues)
+      } as unknown as FormValues)
     : initialValuesTemplate;
+
+  const handelDropdownChange = (value: string) => {
+    if (value === FieldTypes.OPEN_TEXT) {
+      setNewValidationSchema(optionalValidationSchema);
+    } else {
+      setNewValidationSchema(requiredValidationSchema);
+    }
+  };
 
   const handleSubmit = async (
     values: FormValues,
     helpers: FormikHelpers<FormValues>
   ) => {
     if (
-      [AllowedTypes.STRING_, AllowedTypes.STRING].includes(values.field_type)
+      [FieldTypes.SINGLE_SELECT, FieldTypes.MULTIPLE_SELECT].includes(
+        values.field_type
+      )
     ) {
       const uniqueValues = new Set(
         values.allow_list?.allowed_values
@@ -149,9 +180,29 @@ export const CustomFieldModal = ({
       //Add error handling here
     }
 
+    if (values.field_type === FieldTypes.OPEN_TEXT) {
+      // eslint-disable-next-line no-param-reassign
+      values.allow_list_id = undefined;
+    }
+
+    if (
+      [FieldTypes.SINGLE_SELECT, FieldTypes.OPEN_TEXT].includes(
+        values.field_type
+      )
+    ) {
+      // eslint-disable-next-line no-param-reassign
+      values.field_type = AllowedTypes.STRING as unknown as FieldTypes;
+    }
+
+    if (values.field_type === FieldTypes.MULTIPLE_SELECT) {
+      // eslint-disable-next-line no-param-reassign,no-underscore-dangle
+      values.field_type = AllowedTypes.STRING_ as unknown as FieldTypes;
+    }
+
+    const payload = values as unknown as CustomFieldDefinitionWithId;
     const result = customField
-      ? await updateCustomFieldDefinition(values)
-      : await addCustomFieldDefinition(values);
+      ? await updateCustomFieldDefinition(payload)
+      : await addCustomFieldDefinition(payload);
 
     if ("error" in result) {
       errorAlert(
@@ -205,7 +256,14 @@ export const CustomFieldModal = ({
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            {({ dirty, isValid, isSubmitting, values, errors }) => (
+            {({
+              dirty,
+              isValid,
+              isSubmitting,
+              values,
+              errors,
+              validateForm,
+            }) => (
               <Form
                 style={{
                   paddingTop: "12px",
@@ -240,92 +298,98 @@ export const CustomFieldModal = ({
                     <CustomSelect
                       label="Field Type"
                       name="field_type"
-                      options={FIELD_TYPE_OPTIONS}
+                      options={FIELD_TYPE_OPTIONS_NEW}
+                      onChange={async (e) => {
+                        handelDropdownChange(e.value);
+                        await validateForm();
+                      }}
                     />
-                    <Flex
-                      flexDirection="column"
-                      gap="12px"
-                      paddingTop="6px"
-                      paddingBottom="24px"
-                    >
-                      <FieldArray
-                        name="allow_list.allowed_values"
-                        render={(fieldArrayProps) => {
-                          // eslint-disable-next-line @typescript-eslint/naming-convention
-                          const { allowed_values } = values.allow_list;
-                          // @ts-ignore
-                          return (
-                            <Flex flexDirection="column" gap="24px" pl="24px">
-                              <Flex flexDirection="column">
-                                {allowed_values.map((_value, index) => (
-                                  <Flex
-                                    flexGrow={1}
-                                    gap="12px"
-                                    // eslint-disable-next-line react/no-array-index-key
-                                    key={index}
-                                    mt={index > 0 ? "12px" : undefined}
-                                    // ref={fieldRef}
+                    {values.field_type !== FieldTypes.OPEN_TEXT ? (
+                      <Flex
+                        flexDirection="column"
+                        gap="12px"
+                        paddingTop="6px"
+                        paddingBottom="24px"
+                      >
+                        <FieldArray
+                          name="allow_list.allowed_values"
+                          render={(fieldArrayProps) => {
+                            // eslint-disable-next-line @typescript-eslint/naming-convention
+                            const { allowed_values } = values.allow_list;
+                            // @ts-ignore
+                            return (
+                              <Flex flexDirection="column" gap="24px" pl="24px">
+                                <Flex flexDirection="column">
+                                  {allowed_values.map((_value, index) => (
+                                    <Flex
+                                      flexGrow={1}
+                                      gap="12px"
+                                      // eslint-disable-next-line react/no-array-index-key
+                                      key={index}
+                                      mt={index > 0 ? "12px" : undefined}
+                                      // ref={fieldRef}
+                                    >
+                                      <CustomInput
+                                        customLabelProps={{
+                                          color: "gray.600",
+                                          fontSize: "sm",
+                                          fontWeight: "500",
+                                          lineHeight: "20px",
+                                          minW: "126px",
+                                          pr: "8px",
+                                        }}
+                                        displayHelpIcon={false}
+                                        isRequired
+                                        label={`List item ${index + 1}`}
+                                        name={`allow_list.allowed_values[${index}]`}
+                                      />
+                                      <IconButton
+                                        aria-label="Remove this list value"
+                                        data-testid={`remove-list-value-btn-${index}`}
+                                        icon={<TrashCanSolidIcon />}
+                                        isDisabled={allowed_values.length <= 1}
+                                        onClick={() =>
+                                          fieldArrayProps.remove(index)
+                                        }
+                                        size="sm"
+                                        variant="ghost"
+                                      />
+                                    </Flex>
+                                  ))}
+                                </Flex>
+                                <Flex alignItems="center">
+                                  <Text
+                                    color="gray.600"
+                                    fontSize="xs"
+                                    fontWeight="500"
+                                    lineHeight="16px"
+                                    pr="8px"
                                   >
-                                    <CustomInput
-                                      customLabelProps={{
-                                        color: "gray.600",
-                                        fontSize: "sm",
-                                        fontWeight: "500",
-                                        lineHeight: "20px",
-                                        minW: "126px",
-                                        pr: "8px",
-                                      }}
-                                      displayHelpIcon={false}
-                                      isRequired
-                                      label={`List item ${index + 1}`}
-                                      name={`allow_list.allowed_values[${index}]`}
-                                    />
-                                    <IconButton
-                                      aria-label="Remove this list value"
-                                      data-testid={`remove-list-value-btn-${index}`}
-                                      icon={<TrashCanSolidIcon />}
-                                      isDisabled={allowed_values.length <= 1}
-                                      onClick={() =>
-                                        fieldArrayProps.remove(index)
-                                      }
-                                      size="sm"
-                                      variant="ghost"
-                                    />
-                                  </Flex>
-                                ))}
-                              </Flex>
-                              <Flex alignItems="center">
-                                <Text
-                                  color="gray.600"
-                                  fontSize="xs"
-                                  fontWeight="500"
-                                  lineHeight="16px"
-                                  pr="8px"
-                                >
-                                  Add a list value
-                                </Text>
-                                <IconButton
-                                  aria-label="Add a list value"
-                                  data-testid="add-list-value-btn"
-                                  icon={<AddIcon h="7px" w="7px" />}
-                                  onClick={() => {
-                                    fieldArrayProps.push("");
-                                  }}
-                                  size="xs"
-                                  variant="outline"
-                                />
-                                {allowed_values.length === 0 &&
-                                errors?.allow_list ? (
-                                  <Text color="red.500" pl="18px" size="sm">
-                                    {errors.allow_list.allowed_values}
+                                    Add a list value
                                   </Text>
-                                ) : null}
+                                  <IconButton
+                                    aria-label="Add a list value"
+                                    data-testid="add-list-value-btn"
+                                    icon={<AddIcon h="7px" w="7px" />}
+                                    onClick={() => {
+                                      fieldArrayProps.push("");
+                                    }}
+                                    size="xs"
+                                    variant="outline"
+                                  />
+                                  {allowed_values.length === 0 &&
+                                  errors?.allow_list ? (
+                                    <Text color="red.500" pl="18px" size="sm">
+                                      {errors.allow_list.allowed_values}
+                                    </Text>
+                                  ) : null}
+                                </Flex>
                               </Flex>
-                            </Flex>
-                          );
-                        }}
-                      />
-                    </Flex>
+                            );
+                          }}
+                        />
+                      </Flex>
+                    ) : null}
                   </FormSection>
                 </Box>
 

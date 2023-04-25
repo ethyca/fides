@@ -158,7 +158,11 @@ const SelectInput = ({
   singleValueBlock,
   isDisabled = false,
   menuPosition = "absolute",
-}: { fieldName: string; isMulti?: boolean } & Omit<SelectProps, "label">) => {
+  onChange,
+}: { fieldName: string; isMulti?: boolean; onChange: any } & Omit<
+  SelectProps,
+  "label"
+>) => {
   const [initialField] = useField(fieldName);
   const field = { ...initialField, value: initialField.value ?? "" };
   const selected = isMulti
@@ -184,10 +188,14 @@ const SelectInput = ({
     }
   };
 
-  const handleChange = (newValue: MultiValue<Option> | SingleValue<Option>) =>
+  const handleChange = (newValue: MultiValue<Option> | SingleValue<Option>) => {
+    if (onChange) {
+      onChange(newValue);
+    }
     isMulti
       ? handleChangeMulti(newValue as MultiValue<Option>)
       : handleChangeSingle(newValue as SingleValue<Option>);
+  };
 
   const components = isClearable ? undefined : { ClearIndicator: () => null };
 
@@ -409,6 +417,7 @@ export const CustomSelect = ({
   isMulti,
   variant = "inline",
   singleValueBlock,
+  onChange,
   ...props
 }: SelectProps & StringField) => {
   const [field, meta] = useField(props);
@@ -434,6 +443,7 @@ export const CustomSelect = ({
                 isDisabled={isDisabled}
                 singleValueBlock={singleValueBlock}
                 menuPosition={props.menuPosition}
+                onChange={onChange}
               />
               <ErrorMessage
                 isInvalid={isInvalid}

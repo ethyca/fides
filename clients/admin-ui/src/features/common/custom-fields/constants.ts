@@ -13,6 +13,19 @@ export const FIELD_TYPE_OPTIONS = [
   { label: "Multiple select", value: AllowedTypes.STRING_ },
 ];
 
+export enum FieldTypes {
+  SINGLE_SELECT = "singleSelect",
+  MULTIPLE_SELECT = "multipleSelect",
+  OPEN_TEXT = "openText",
+}
+
+export const FIELD_TYPE_OPTIONS_NEW = [
+  { label: "Single select", value: FieldTypes.SINGLE_SELECT },
+  // eslint-disable-next-line no-underscore-dangle
+  { label: "Multiple select", value: FieldTypes.MULTIPLE_SELECT },
+  { label: "Open Text", value: FieldTypes.OPEN_TEXT },
+];
+
 export const RESOURCE_TYPE_OPTIONS = [
   {
     label: capitalize(ResourceTypes.DATA_CATEGORY),
