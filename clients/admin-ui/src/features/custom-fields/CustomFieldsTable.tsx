@@ -95,7 +95,6 @@ export const CustomFieldsTable = () => {
 
   const handleCloseModal = () => {
     setActiveCustomField(undefined);
-    console.log("closing modal");
     onClose();
   };
 

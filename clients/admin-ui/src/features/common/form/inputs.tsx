@@ -192,9 +192,11 @@ const SelectInput = ({
     if (onChange) {
       onChange(newValue);
     }
-    isMulti
-      ? handleChangeMulti(newValue as MultiValue<Option>)
-      : handleChangeSingle(newValue as SingleValue<Option>);
+    if (isMulti) {
+      handleChangeMulti(newValue as MultiValue<Option>);
+    } else {
+      handleChangeSingle(newValue as SingleValue<Option>);
+    }
   };
 
   const components = isClearable ? undefined : { ClearIndicator: () => null };

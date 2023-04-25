@@ -22,8 +22,8 @@ import {
 import { useUpdateCustomFieldDefinitionMutation } from "~/features/plus/plus.slice";
 import {
   CustomFieldDefinition,
-  ScopeRegistryEnum,
   ResourceTypes,
+  ScopeRegistryEnum,
 } from "~/types/api";
 
 export const ResourceTypeCell = (
