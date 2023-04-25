@@ -10,7 +10,6 @@ from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.util.data_category import (
     DataCategory as DefaultTaxonomyDataCategories,
-    get_data_categories_from_db,
 )
 
 

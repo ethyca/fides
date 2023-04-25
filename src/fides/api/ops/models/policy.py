@@ -14,7 +14,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
 )
-from fides.api.ctl.sql_models import DataCategory
+from fides.api.ctl.sql_models import DataCategory  # type: ignore
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.common_exceptions import (
@@ -171,7 +171,7 @@ class Policy(Base):
 
 def _get_ref_from_taxonomy(
     fides_key: FidesKey,
-    all_categories: Optional[List[DataCategory]] = None,
+    all_categories: List[DataCategory] = [],
 ) -> FideslangDataCategory:
     """Returns the DataCategory model from the DEFAULT_TAXONOMY corresponding to fides_key."""
     if not all_categories:

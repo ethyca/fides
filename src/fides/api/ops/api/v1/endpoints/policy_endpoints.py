@@ -17,7 +17,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.ctl.sql_models import DataCategory
+from fides.api.ctl.sql_models import DataCategory  # type: ignore
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1 import urn_registry as urls

@@ -148,7 +148,7 @@ class ClassificationInstance(Base):
     )
 
 
-DataCategoryType = TypeVar("T", bound="DataCategory")
+DataCategoryType = TypeVar("DataCategoryType", bound="DataCategory")
 
 # Privacy Types
 class DataCategory(Base, FidesBase):
