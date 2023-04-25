@@ -9,10 +9,8 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
-from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import Dataset
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
@@ -158,25 +156,6 @@ def mock_upload_logic() -> Generator:
         "fides.api.ops.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
         yield _fixture
-
-
-@pytest.fixture(scope="session", autouse=True)
-def fideslang_data_categories(db: Session) -> Generator:
-    """Creates a database record for each data category in the fideslang taxonomy"""
-    cats = []
-    for obj in DEFAULT_TAXONOMY.data_category:
-        try:
-            cats.append(DataCategoryDbModel.from_fideslang_obj(obj).save(db))
-        except IntegrityError:
-            pass
-
-    yield cats
-
-    for cat in cats:
-        try:
-            cat.delete(db)
-        except ObjectDeletedError:
-            pass
 
 
 @pytest.fixture(scope="function")
