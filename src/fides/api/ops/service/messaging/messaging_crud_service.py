@@ -13,9 +13,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 def update_messaging_config(
     db: Session, key: FidesKey, config: MessagingConfigRequest
 ) -> MessagingConfigResponse:
-    existing_config_with_key: MessagingConfig = MessagingConfig.get_by(
-        db=db, field="key", value=key
-    )
+    existing_config_with_key = MessagingConfig.get_by(db=db, field="key", value=key)
     if not existing_config_with_key:
         raise MessagingConfigNotFoundException(
             f"No messaging config found with key {key}"
@@ -47,9 +45,7 @@ def create_or_update_messaging_config(
 
 def delete_messaging_config(db: Session, key: FidesKey) -> None:
     logger.info("Finding messaging config with key '{}'", key)
-    messaging_config: MessagingConfig = MessagingConfig.get_by(
-        db, field="key", value=key
-    )
+    messaging_config = MessagingConfig.get_by(db, field="key", value=key)
     if not messaging_config:
         raise MessagingConfigNotFoundException(
             f"No messaging config found with key {key}"

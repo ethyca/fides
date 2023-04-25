@@ -20,6 +20,10 @@ from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists, KeyValidatio
 from fides.api.ops.util.text import to_snake_case
 
 
+T = TypeVar("T", bound="OrmWrappedFidesBase")
+ALLOWED_CHARS = re.compile(r"[A-z0-9\-_]")
+
+
 class JSONTypeOverride(JSONType):  # pylint: disable=W0223
     """
     Temporary override of JSONType with workaround to fix the return type.
@@ -45,10 +49,6 @@ class JSONTypeOverride(JSONType):  # pylint: disable=W0223
         if value is not None:
             return json.loads(value)
         return value
-
-
-T = TypeVar("T", bound="OrmWrappedFidesBase")
-ALLOWED_CHARS = re.compile(r"[A-z0-9\-_]")
 
 
 def get_key_from_data(data: dict[str, Any], cls_name: str) -> str:

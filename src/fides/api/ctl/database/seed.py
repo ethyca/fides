@@ -443,7 +443,7 @@ async def load_samples(async_session: AsyncSession) -> None:
                 # acceptable risk here, so we log an INFO message to provide a
                 # breadcrumb back to this code.
                 connection_config = ConnectionConfig.get_by(
-                    db=db_session, field="key", value=connection.key
+                    db=db_session, field="key", value=connection.key  # type: ignore[arg-type]
                 )
                 if connection_config:
                     log.debug(
@@ -474,7 +474,7 @@ async def load_samples(async_session: AsyncSession) -> None:
 
                     # Check that it succeeded!
                     connection_config = ConnectionConfig.get_by(
-                        db=db_session, field="key", value=connection.key
+                        db=db_session, field="key", value=connection.key  # type: ignore[arg-type]
                     )
                     if not connection_config:
                         log.debug(
@@ -501,7 +501,7 @@ async def load_samples(async_session: AsyncSession) -> None:
 
                 # Check that it succeeded!
                 connection_config = ConnectionConfig.get_by(
-                    db=db_session, field="key", value=connection.key
+                    db=db_session, field="key", value=connection.key  # type: ignore[arg-type]
                 )
                 if not connection_config:
                     log.debug(f"Failed to create sample connection '{connection.key}'")

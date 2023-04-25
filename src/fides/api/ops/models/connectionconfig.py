@@ -14,7 +14,12 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
-from fides.api.ops.db.base_class import Base, JSONTypeOverride, get_key_from_data
+from fides.api.ops.db.base_class import (
+    Base,
+    OrmWrappedFidesBase,
+    JSONTypeOverride,
+    get_key_from_data,
+)
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.core.config import CONFIG
 
@@ -210,7 +215,7 @@ class ConnectionConfig(Base):
         self.last_test_succeeded = test_status == ConnectionTestStatus.succeeded
         self.save(db)
 
-    def delete(self, db: Session) -> Optional[Base]:
+    def delete(self, db: Session) -> Optional[OrmWrappedFidesBase]:
         """Hard deletes datastores that map this ConnectionConfig."""
         for dataset in self.datasets:
             dataset.delete(db=db)

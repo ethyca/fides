@@ -761,10 +761,12 @@ def get_request_preview_queries(
                 )
             dataset_configs.append(dataset_config)
     try:
-        connection_configs: List[ConnectionConfig] = [
+        connection_configs = [
             ConnectionConfig.get(db=db, object_id=dataset.connection_config_id)
             for dataset in dataset_configs
         ]
+        connection_configs = [config for config in connection_configs if config]
+        assert connection_configs
 
         try:
             dataset_graph: DatasetGraph = DatasetGraph(
