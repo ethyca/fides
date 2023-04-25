@@ -10,8 +10,14 @@ from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
-from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
+from fides.api.ctl.sql_models import DataCategory  # type: ignore
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1 import urn_registry as urls
@@ -443,6 +449,29 @@ def get_rule_target(
     return get_rule_target_or_error(db, policy_key, rule_key, rule_target_key)
 
 
+def _validate_data_categories(
+    db: Session,
+    data_categories: List[str],
+) -> None:
+    """
+    Helper method to validate that all data categories supplied to the endpoint
+    exist in the database
+    """
+    from_db = [
+        dc.fides_key
+        for dc in DataCategory.filter(
+            db=db,
+            conditions=DataCategory.fides_key.in_(data_categories),
+        ).all()
+    ]
+    invalid_categories = list(set(data_categories) - set(from_db))
+    if invalid_categories:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid data categories: {invalid_categories}",
+        )
+
+
 @router.patch(
     urls.RULE_TARGET_LIST,
     status_code=HTTP_200_OK,
@@ -473,6 +502,11 @@ def create_or_update_rule_targets(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No Rule found for key {rule_key} on Policy {policy_key}.",
         )
+
+    _validate_data_categories(
+        db=db,
+        data_categories=[schema.data_category for schema in input_data],
+    )
 
     created_or_updated = []
     failed = []

@@ -14,8 +14,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ctl.sql_models import System
+from fides.api.ctl.sql_models import (
+    DataCategory as DataCategoryDbModel,
+    Dataset as CtlDataset,
+    System,
+)
 from fides.api.ops.common_exceptions import SystemManagerException
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
@@ -85,6 +88,11 @@ from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite impo
 from fides.api.ops.util.data_category import DataCategory
 from fides.core.config import CONFIG
 from fides.core.config.helpers import load_file
+from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
+from fides.api.ops.oauth.roles import VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -153,6 +161,20 @@ def mock_upload_logic() -> Generator:
         "fides.api.ops.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
         yield _fixture
+
+
+@pytest.fixture(scope="function")
+def custom_data_category(db: Session) -> Generator:
+    category = DataCategoryDbModel.create(
+        db=db,
+        data={
+            "name": "Example Custom Data Category",
+            "description": "A custom data category for testing",
+            "fides_key": "test_custom_data_category",
+        },
+    )
+    yield category
+    category.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -1453,16 +1475,26 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
 def privacy_preference_history_us_ca_provide(
     db: Session, privacy_notice_us_ca_provide
 ) -> Generator:
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "email",
+        "hashed_value": ProvidedIdentity.hash_value("test2@email.com"),
+        "encrypted_value": {"value": "test2@email.com"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
     pref_1 = PrivacyPreferenceHistory.create(
         db=db,
         data={
             "preference": "opt_in",
+            "provided_identity_id": provided_identity.id,
             "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
         },
         check_name=False,
     )
     yield pref_1
     pref_1.delete(db)
+    provided_identity.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -1523,16 +1555,26 @@ def privacy_notice_eu_fr_provide_service_frontend_only(db: Session) -> Generator
 def privacy_preference_history_eu_fr_provide_service_frontend_only(
     db: Session, privacy_notice_eu_fr_provide_service_frontend_only
 ) -> Generator:
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "email",
+        "hashed_value": ProvidedIdentity.hash_value("test2@email.com"),
+        "encrypted_value": {"value": "test2@email.com"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
     pref_1 = PrivacyPreferenceHistory.create(
         db=db,
         data={
             "preference": "opt_in",
+            "provided_identity_id": provided_identity.id,
             "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.privacy_notice_history_id,
         },
         check_name=False,
     )
     yield pref_1
     pref_1.delete(db)
+    provided_identity.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -1855,6 +1897,20 @@ def provided_identity_and_consent_request(db):
     yield provided_identity, consent_request
     provided_identity.delete(db=db)
     consent_request.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def fides_user_provided_identity(db):
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "fides_user_device_id",
+        "hashed_value": ProvidedIdentity.hash_value("FGHIJ_TEST_FIDES"),
+        "encrypted_value": {"value": "FGHIJ_TEST_FIDES"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+    yield provided_identity
+    provided_identity.delete(db=db)
 
 
 @pytest.fixture(scope="function")
