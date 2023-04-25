@@ -101,7 +101,7 @@ class PrivacyNoticeBase:
         """Privacy Notice applies to System if a data use matches or the Privacy Notice
         Data Use is a parent of a System Data Use
         """
-        for system_data_use in system.get_data_uses(include_parents=True):
+        for system_data_use in System.get_data_uses([system], include_parents=True):
             for privacy_notice_data_use in self.data_uses or []:
                 if system_data_use == privacy_notice_data_use:
                     return True
