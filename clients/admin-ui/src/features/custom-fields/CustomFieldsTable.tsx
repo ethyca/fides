@@ -95,6 +95,7 @@ export const CustomFieldsTable = () => {
 
   const handleCloseModal = () => {
     setActiveCustomField(undefined);
+    console.log("closing modal");
     onClose();
   };
 
@@ -185,12 +186,14 @@ export const CustomFieldsTable = () => {
             </FidesTableFooter>
           }
         />
-        <CustomFieldModal
-          customField={activeCustomField}
-          isOpen={isOpen}
-          onClose={handleCloseModal}
-          isLoading={false}
-        />
+        {isOpen ? (
+          <CustomFieldModal
+            customField={activeCustomField}
+            isOpen={isOpen}
+            onClose={handleCloseModal}
+            isLoading={false}
+          />
+        ) : null}
       </Box>
     </>
   );

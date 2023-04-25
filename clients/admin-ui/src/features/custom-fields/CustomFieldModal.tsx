@@ -40,6 +40,7 @@ import {
   CustomFieldDefinitionWithId,
   ResourceTypes,
 } from "~/types/api";
+import { useMemo } from "react";
 
 const CustomFieldLabelStyles = {
   ...CUSTOM_LABEL_STYLES,
@@ -72,7 +73,6 @@ const initialValuesTemplate: FormValues = {
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("Name is required").trim(),
   allow_list: Yup.object().shape({
-    name: Yup.string().required("Name is required").trim(),
     allowed_values: Yup.array(Yup.string().required("List item is required"))
       .min(1, "Must add at least one list value")
       .label("allowed_values"),
@@ -132,6 +132,13 @@ export const CustomFieldModal = ({
 
       if (values.allow_list_id) {
         allowListPayload.id = values.allow_list_id;
+      }
+
+      if (!allowListPayload.name) {
+        // The UI no longer surfaces this field. It's a required field in the
+        // backend and must be unique. We generate a random name to avoid collisions.
+        allowListPayload.name =
+          Date.now().toString() + Math.random().toString();
       }
 
       const result = await upsertAllowList(allowListPayload);
@@ -241,21 +248,6 @@ export const CustomFieldModal = ({
                       paddingTop="6px"
                       paddingBottom="24px"
                     >
-                      <CustomInput
-                        displayHelpIcon={false}
-                        isRequired
-                        label="Name"
-                        name="allow_list.name"
-                        placeholder=""
-                      />
-                      <CustomInput
-                        displayHelpIcon={false}
-                        height="100px"
-                        label="Description"
-                        name="allow_list.description"
-                        placeholder=""
-                        type="textarea"
-                      />
                       <FieldArray
                         name="allow_list.allowed_values"
                         render={(fieldArrayProps) => {
@@ -334,10 +326,6 @@ export const CustomFieldModal = ({
                         }}
                       />
                     </Flex>
-                    {/* <CreateCustomLists */}
-                    {/*   onSubmitComplete={() => {}} */}
-                    {/*   ref={createCustomListsRef} */}
-                    {/* /> */}
                   </FormSection>
                 </Box>
 
