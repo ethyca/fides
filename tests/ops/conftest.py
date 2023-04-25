@@ -2,10 +2,13 @@
 tests/conftest.py file.
 """
 
+from fideslang import DEFAULT_TAXONOMY
 import pytest
 import requests
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import ObjectDeletedError
 
+from fides.api.ctl.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.ops.db.base import Base
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.lib.db.session import get_db_engine, get_db_session
@@ -55,9 +58,15 @@ def clear_db_tables(db):
     """
     yield
 
+    SKIP_TABLES = ["ctl_data_categories"]
+
     def delete_data(tables):
         redo = []
         for table in tables:
+            if table.name in SKIP_TABLES:
+                # Don't purge _all_ tables
+                continue
+
             try:
                 db.execute(table.delete())
             except IntegrityError:
@@ -70,3 +79,24 @@ def clear_db_tables(db):
 
     db.commit()  # make sure all transactions are closed before starting deletes
     delete_data(Base.metadata.sorted_tables)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def fideslang_data_categories(db):
+    """
+    Creates a database record for each data category in the fideslang taxonomy.
+    """
+    cats = []
+    for obj in DEFAULT_TAXONOMY.data_category:
+        try:
+            cats.append(DataCategoryDbModel.from_fideslang_obj(obj).save(db))
+        except IntegrityError:
+            pass
+
+    yield cats
+
+    for cat in cats:
+        try:
+            cat.delete(db)
+        except ObjectDeletedError:
+            pass
