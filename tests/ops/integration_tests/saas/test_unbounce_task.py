@@ -14,12 +14,14 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 CONFIG = get_config()
 
 
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_unbounce
 def test_unbounce_connection_test(unbounce_connection_config) -> None:
     get_connector(unbounce_connection_config).test_connection()
 
 
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_unbounce
 @pytest.mark.asyncio
@@ -90,6 +92,7 @@ async def test_unbounce_access_request_task(
         assert unbounce_identity_email in leads["form_data"]["email"]
 
 
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_unbounce
 @pytest.mark.asyncio
