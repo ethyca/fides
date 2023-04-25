@@ -2265,33 +2265,42 @@ def dynamodb_resources(
 ):
     dynamodb_connection_config = dynamodb_example_test_dataset_config.connection_config
     dynamodb_client = DynamoDBConnector(dynamodb_connection_config).client()
-    uuid = "test_uuid"
+    uuid = str(uuid4())
     customer_email = f"customer-{uuid}@example.com"
     customer_name = f"{uuid}"
-    table_name = "customer_identifier"
+    # table_name = "customer_identifier"
 
     ## document and remove remaining comments if we can't get the bigger test running
-    # item = {
-    #     "id": {"S": customer_name},
-    #     "name": {"S": customer_name},
-    #     "email": {"S": customer_email},
-    #     "address_id": {"S": customer_name},
-    #     "created": {"S": datetime.now(timezone.utc).isoformat()},
-    # }
-
-    item = {
-        "customer_id": {"S": customer_name},
-        "email": {"S": customer_email},
-        "name": {"S": customer_name},
-        "created": {"S": datetime.now(timezone.utc).isoformat()},
+    items = {
+        "customer_identifier": {
+            "customer_id": {"S": customer_name},
+            "email": {"S": customer_email},
+            "name": {"S": customer_name},
+            "created": {"S": datetime.now(timezone.utc).isoformat()},
+        },
+        "customer": {
+            "id": {"S": customer_name},
+            "name": {"S": customer_name},
+            "email": {"S": customer_email},
+            "address_id": {"S": customer_name},
+            "created": {"S": datetime.now(timezone.utc).isoformat()},
+        },
+        "address": {
+            "id": {"S": customer_name},
+            "city": {"S": "city"},
+            "house": {"S": "house"},
+            "state": {"S": "state"},
+            "street": {"S": "street"},
+            "zip": {"S": "zip"},
+        },
     }
 
-    res = dynamodb_client.put_item(
-        TableName=table_name,
-        Item=item,
-    )
-
-    assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
+    for table_name, item in items.items():
+        res = dynamodb_client.put_item(
+            TableName=table_name,
+            Item=item,
+        )
+        assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
 
     yield {
         "email": customer_email,
@@ -2301,13 +2310,17 @@ def dynamodb_resources(
         "client": dynamodb_client,
     }
     # Remove test data and close Dynamodb connection in teardown
-    # item = {"id": {"S": customer_name}}
-    item = {"email": {"S": customer_email}}
-    res = dynamodb_client.delete_item(
-        TableName=table_name,
-        Key=item,
-    )
-    assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
+    delete_items = {
+        "customer_identifier": {"email": {"S": customer_email}},
+        "customer": {"id": {"S": customer_name}},
+        "address": {"id": {"S": customer_name}},
+    }
+    for table_name, item in delete_items.items():
+        res = dynamodb_client.delete_item(
+            TableName=table_name,
+            Key=item,
+        )
+        assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
 
 
 @pytest.mark.integration_external
