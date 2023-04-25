@@ -4,9 +4,11 @@ tests/conftest.py file.
 
 import pytest
 import requests
+from fideslang import DEFAULT_TAXONOMY
 from pytest import MonkeyPatch
 
 from fides.api.ctl.database.session import sync_engine, sync_session
+from fides.api.ctl.sql_models import DataUse
 from fides.core import api
 from tests.conftest import create_citext_extension
 
@@ -65,3 +67,13 @@ def db():
 
     yield session
     session.close()
+
+
+@pytest.fixture(scope="function", autouse=True)
+def load_default_data_uses(db):
+    for data_use in DEFAULT_TAXONOMY.data_use:
+        # Default data uses are cleared and not automatically reloaded by `clear_db_tables` fixture.
+        # Here we make sure our default data uses are always available for our tests,
+        # if they're not present already.
+        if DataUse.get_by(db, field="name", value=data_use.name) is None:
+            DataUse.create(db=db, data=data_use.dict())

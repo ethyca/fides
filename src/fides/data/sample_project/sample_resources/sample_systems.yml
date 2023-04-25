@@ -20,6 +20,7 @@ system:
         data_subjects:
           - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        name: Store Cookie House eCommerce application user cookie ID
 
   - fides_key: cookie_house_postgres
     name: Cookie House PostgreSQL Database
@@ -39,6 +40,7 @@ system:
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
           - postgres_example_test_dataset
+        name: Cookie House user primary database data
 
   - fides_key: cookie_house_mongo
     name: Cookie House Customer Database
@@ -57,6 +59,7 @@ system:
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
           - mongo_test
+        name: Cookie House user data mongo DB
 
   - fides_key: cookie_house_marketing
     name: Cookie House Marketing System
@@ -73,3 +76,4 @@ system:
         data_subjects:
           - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        name: Store Cookie House marketing application data
