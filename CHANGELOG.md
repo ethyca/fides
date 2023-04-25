@@ -25,10 +25,13 @@ The types of changes are:
 - Side navigation bar can now also have children navigation links [#3099](https://github.com/ethyca/fides/pull/3099)
 - Endpoints for consent reporting [#3095](https://github.com/ethyca/fides/pull/3095)
 - Custom fields table [#3097](https://github.com/ethyca/fides/pull/3097)
+- Endpoints to save the new-style Privacy Preferences with respect to a fides user device id [#3132](https://github.com/ethyca/fides/pull/3132)
+- Support `privacy_declaration` as a resource type for custom fields [#3149](https://github.com/ethyca/fides/pull/3149)
 
 ### Changed
 
 - The `cursor` pagination strategy now also searches for data outside of the `data_path` when determining the cursor value [#3068](https://github.com/ethyca/fides/pull/3068)
+- Moved Privacy Declarations associated with Systems to their own DB table [#3098](https://github.com/ethyca/fides/pull/3098)
 
 ### Removed
 
@@ -38,6 +41,7 @@ The types of changes are:
 ### Fixed
 
 - The `--local` flag is now respected for the `scan dataset db` command [#3096](https://github.com/ethyca/fides/pull/3096)
+- Fixing issue where connectors with external dataset references would fail to save [#3142](https://github.com/ethyca/fides/pull/3142)
 
 ### Developer Experience
 

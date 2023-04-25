@@ -26,6 +26,7 @@ class Identity(IdentityBase):
     email: Optional[EmailStr] = None
     ga_client_id: Optional[str] = None
     ljt_readerID: Optional[str] = None
+    fides_user_device_id: Optional[str] = None
 
     class Config:
         """Only allow phone_number, and email."""

@@ -6,7 +6,6 @@ from fides.api.ops.models.policy import ActionType, DrpAction
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.storage.storage import StorageDestinationResponse
-from fides.api.ops.util.data_category import DataCategory
 
 
 class PolicyMaskingSpec(BaseSchema):
@@ -31,7 +30,9 @@ class RuleTarget(BaseSchema):
 
     name: Optional[str]
     key: Optional[FidesKey]
-    data_category: DataCategory  # type: ignore
+    # `data_category` is type str so that we can validate its contents against the DB records
+    # outside of the schemas
+    data_category: str
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
