@@ -27,6 +27,7 @@ The types of changes are:
 - Custom fields table [#3097](https://github.com/ethyca/fides/pull/3097)
 - Endpoints to save the new-style Privacy Preferences with respect to a fides user device id [#3132](https://github.com/ethyca/fides/pull/3132)
 - Support `privacy_declaration` as a resource type for custom fields [#3149](https://github.com/ethyca/fides/pull/3149)
+- Expose `id` field of embedded `privacy_declarations` on `system` API responses [#3157](https://github.com/ethyca/fides/pull/3157)
 
 ### Changed
 
