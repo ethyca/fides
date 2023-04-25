@@ -26,7 +26,7 @@ import {
   phoneValidation,
 } from "~/components/modals/validation";
 import { ModalViews, VerificationType } from "~/components/modals/types";
-import { useFidesDeviceUUIDCookie } from "~/common/hooks/useCookie";
+import { useFidesUserDeviceIdCookie } from "~/common/hooks/useCookie";
 
 const useConsentRequestForm = ({
   onClose,
@@ -43,7 +43,7 @@ const useConsentRequestForm = ({
 }) => {
   const identityInputs =
     config.consent?.button.identity_inputs ?? defaultIdentityInput;
-  const fidesDeviceUuid = useFidesDeviceUUIDCookie();
+  const fidesUserDeviceId = useFidesUserDeviceIdCookie();
   const toast = useToast();
   const formik = useFormik({
     initialValues: {
@@ -54,7 +54,7 @@ const useConsentRequestForm = ({
       const body = {
         email: values.email,
         phone_number: values.phone,
-        fides_device_uuid: fidesDeviceUuid
+        fides_user_device_id: fidesUserDeviceId
       };
       const handleError = ({
         title,

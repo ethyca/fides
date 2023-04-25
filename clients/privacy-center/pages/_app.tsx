@@ -17,7 +17,7 @@ import "@fontsource/inter/700.css";
 import store, { persistor } from "~/app/store";
 import "~/config/config.css";
 import theme from "~/theme";
-import { useFidesDeviceUUIDCookie } from "~/common/hooks/useCookie";
+import { useFidesUserDeviceIdCookie } from "~/common/hooks/useCookie";
 
 const SafeHydrate: React.FC = ({ children }) => (
   <div suppressHydrationWarning>
@@ -27,7 +27,7 @@ const SafeHydrate: React.FC = ({ children }) => (
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
 
-  useFidesDeviceUUIDCookie();
+  useFidesUserDeviceIdCookie();
 
   return <SafeHydrate>
     <Provider store={store}>
