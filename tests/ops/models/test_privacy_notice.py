@@ -6,6 +6,7 @@ from fides.api.ops.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
+    can_add_new_use,
     check_conflicting_data_uses,
 )
 
@@ -580,6 +581,40 @@ class TestPrivacyNoticeModel:
                 ],
                 [],
             ),
+            (
+                False,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["advertising.first_party.personalized"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.third_party.personalized"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+            ),
+            (
+                False,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["advertising.first_party"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.third_party.personalized"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+            ),
         ],
     )
     def test_conflicting_data_uses(
@@ -653,3 +688,27 @@ class TestPrivacyNoticeModel:
             ].calculate_relevant_systems(db)
             == []
         ), "This is an exact match but this privacy notice is frontend only"
+
+
+class TestCanAddNewUse:
+    @pytest.mark.parametrize(
+        "existing_use,new_use,expected_can_add_result",
+        [
+            ("a", "a", False),
+            ("a", "a.b", False),
+            ("a", "a.b.c", False),
+            ("a.b.c", "a.b.c", False),
+            ("a.b.c", "a.b", False),
+            ("a.b.c", "a", False),
+            ("a.b", "a.b", False),
+            ("a.b", "a", False),
+            ("a", "c", True),
+            ("a.b", "c.d", True),
+            ("a.b", "a.c", True),
+            ("a.b.c", "a.b.d", True),
+            ("a.b", "a.c.d", True),
+            ("a.c.d", "a.b", True),
+        ],
+    )
+    def test_can_add_new_use(self, existing_use, new_use, expected_can_add_result):
+        assert can_add_new_use(existing_use, new_use) == expected_can_add_result

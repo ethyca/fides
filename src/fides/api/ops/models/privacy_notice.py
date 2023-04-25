@@ -247,18 +247,26 @@ def check_conflicting_data_uses(
             # check each of the incoming notice's data uses
             for data_use in privacy_notice.data_uses:
                 for existing_use, notice_name in region_uses:
-                    # we need to check for hierachical overlaps in _both_ directions
-                    # i.e. whether the incoming DataUse is a parent _or_ a child of
-                    # an existing DataUse
-                    if existing_use.startswith(data_use) or data_use.startswith(
-                        existing_use
-                    ):
+                    if not can_add_new_use(existing_use, data_use):
                         raise ValidationError(
                             message=f"Privacy Notice '{notice_name}' has already assigned data use '{existing_use}' to region '{region}'"
                         )
                 # add the data use to our map, to effectively include it in validation against the
                 # following incoming records
                 region_uses.append((data_use, privacy_notice.name))
+
+
+def can_add_new_use(existing_use: str, new_use: str) -> bool:
+    """Data use check that prevents grandparent/parent/child, but allows siblings, aunt/child, etc.
+    Check needs to happen in both directions.
+
+    This assumes the supplied uses are on notices in the same region.
+    """
+    if existing_use == new_use:
+        return False
+    if existing_use.startswith(new_use + ".") or new_use.startswith(existing_use + "."):
+        return False
+    return True
 
 
 class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
