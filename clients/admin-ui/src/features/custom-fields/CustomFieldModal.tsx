@@ -21,6 +21,7 @@ import {
 } from "~/features/plus/plus.slice";
 import {
   AllowedTypes,
+  AllowList,
   AllowListUpdate,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
@@ -74,6 +75,47 @@ const requiredValidationSchema = Yup.object().shape({
   }),
 });
 
+const transformCustomField = (
+  customField: CustomFieldDefinitionWithId | undefined,
+  allowList: AllowList | undefined
+): FormValues | undefined => {
+  if (!customField) {
+    return undefined;
+  }
+
+  let fieldType;
+
+  if (
+    customField.field_type === AllowedTypes.STRING &&
+    !customField.allow_list_id
+  ) {
+    fieldType = FieldTypes.OPEN_TEXT;
+  }
+
+  if (
+    customField.field_type === AllowedTypes.STRING &&
+    customField.allow_list_id
+  ) {
+    fieldType = FieldTypes.SINGLE_SELECT;
+  }
+
+  if (
+    // eslint-disable-next-line no-underscore-dangle
+    customField.field_type === AllowedTypes.STRING_ &&
+    customField.allow_list_id
+  ) {
+    fieldType = FieldTypes.MULTIPLE_SELECT;
+  }
+
+  return {
+    ...customField,
+    field_type: fieldType,
+    allow_list: {
+      ...allowList,
+    },
+  } as unknown as FormValues;
+};
+
 export const CustomFieldModal = ({
   isOpen,
   onClose,
@@ -99,14 +141,8 @@ export const CustomFieldModal = ({
     return null;
   }
 
-  const initialValues = customField
-    ? ({
-        ...customField,
-        allow_list: {
-          ...allowList,
-        },
-      } as unknown as FormValues)
-    : initialValuesTemplate;
+  const transformedCustomField = transformCustomField(customField, allowList);
+  const initialValues = transformedCustomField || initialValuesTemplate;
 
   const handelDropdownChange = (value: FieldTypes) => {
     if (value === FieldTypes.OPEN_TEXT) {
