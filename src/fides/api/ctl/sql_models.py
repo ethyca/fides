@@ -479,6 +479,7 @@ class ResourceTypes(str, EnumType):
     data_use = "data use"
     data_category = "data category"
     data_subject = "data subject"
+    privacy_declaration = "privacy declaration"
 
 
 class CustomFieldValueList(Base):
