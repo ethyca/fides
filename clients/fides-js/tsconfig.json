@@ -1,6 +1,4 @@
 {
-  // TODO: I really am just guessing at this. Find a better example to copypasta from
-  // Adapted from https://turbo.build/repo/docs/handbook/sharing-code/internal-packages
   "compilerOptions": {
     "baseUrl": "./",
     "esModuleInterop": true,
