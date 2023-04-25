@@ -27,7 +27,7 @@ You may configure the appearance of this web application at build time by modify
       - This can be a single boolean which will apply when the user has not modified their consent.
       - Or this can be an object with consent values that depend on the user's consent context, such as whether they are using Global Privacy Control. See [fides-js](../packages/fides-js/README.md#consent-context) for details.
     - The cookie keys that will be available to
-      [fides.js](../packages/fides-js/README.md), which can be used to access a user's consent choices on outside of the Privacy Center.
+      [fides.js](../packages/fides-js/README.md), which can be used to access a user's consent choices outside of the Privacy Center.
     - Whether the user's consent choice should be propagated to any configured third party services (executable). Note that currently, only one option may be marked `executable` at a time.
 
 You can also add any CSS you'd like to the page by adding it to the `config.css` file inside the `config` directory.
@@ -97,6 +97,16 @@ To run the interactive test interface, run:
 
 ```bash
 turbo run test
+```
+
+For a fully-loaded development & test setup of both the Privacy Center and the
+Fides Consent library, run the following commands in three separate terminals:
+
+[//]: # (fixme- turbo doesn't work right now in privacy center)
+```bash
+cd privacy-center && turbo run dev
+cd packages/fides-js && turbo run watch
+npm run cy:open
 ```
 
 ## Deployment

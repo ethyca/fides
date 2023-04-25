@@ -5,7 +5,7 @@ import {
   getOrMakeFidesCookie,
   makeFidesCookie,
   saveFidesCookie,
-} from "~/lib/cookie";
+} from "../../src/lib/cookie";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";

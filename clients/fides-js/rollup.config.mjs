@@ -3,6 +3,7 @@ import dts from "rollup-plugin-dts";
 import esbuild from "rollup-plugin-esbuild";
 import filesize from "rollup-plugin-filesize";
 import nodeResolve from "@rollup/plugin-node-resolve";
+import css from "rollup-plugin-import-css";
 
 const name = "fides";
 const isDev = process.env.NODE_ENV === "development";
@@ -17,6 +18,7 @@ export default [
     input: `src/${name}.ts`,
     plugins: [
       nodeResolve(),
+      css(),
       esbuild({
         minify: !isDev,
       }),
@@ -70,7 +72,7 @@ export default [
   },
   {
     input: `src/${name}.ts`,
-    plugins: [nodeResolve(), esbuild()],
+    plugins: [nodeResolve(), css(), esbuild()],
     output: [
       {
         // Compatible with ES module imports. Apps in this repo may be able to share the code.
@@ -82,7 +84,7 @@ export default [
   },
   {
     input: `src/${name}.ts`,
-    plugins: [dts()],
+    plugins: [dts(), css()],
     output: [
       {
         file: `dist/${name}.d.ts`,

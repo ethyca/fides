@@ -43,11 +43,18 @@ export default async function handler(
   );
   const fidesJSBuffer = await fsPromises.readFile("../fides-js/dist/fides.js");
   const fidesJS: string = fidesJSBuffer.toString();
+  const fidesCSSBuffer = await fsPromises.readFile("../fides-js/dist/fides.css");
+  const fidesCSS: string = JSON.stringify(fidesCSSBuffer.toString());
   if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");
   }
   const script = `
   (function () {
+    // Include default CSS
+    const style = document.createElement('style');
+    style.innerHTML = ${fidesCSS};
+    document.head.append(style);
+
     // Include generic fides.js script
     ${fidesJS}
 

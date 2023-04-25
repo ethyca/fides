@@ -38,6 +38,7 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 import { ConsentConfig } from "./lib/consent-config";
 import { getConsentContext } from "./lib/consent-context";
+import { initFidesConsent } from "./lib/consent";
 import {
   CookieKeyConsent,
   CookieIdentity,
@@ -45,14 +46,19 @@ import {
   getOrMakeFidesCookie,
   makeConsentDefaults,
 } from "./lib/cookie";
+import { ConsentBannerOptions } from "./lib/consent-types";
+import { getBannerOptions } from "./lib/consent-utils";
+import "./lib/banner.module.css";
 
 export interface FidesConfig {
   consent: ConsentConfig;
+  bannerOptions?: ConsentBannerOptions;
 }
 
 type Fides = {
   consent: CookieKeyConsent;
   fides_meta: CookieMeta;
+  getBannerOptions: () => ConsentBannerOptions;
   gtm: typeof gtm;
   identity: CookieIdentity;
   init: typeof init;
@@ -71,8 +77,10 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-// Initialize the global Fides object with the given configuration values
-const init = (config: FidesConfig) => {
+/**
+ * Initialize the global Fides object with the given configuration values
+ */
+const init = async (config: FidesConfig) => {
   // Configure the default values
   const context = getConsentContext();
   const defaults = makeConsentDefaults({
@@ -83,10 +91,13 @@ const init = (config: FidesConfig) => {
   // Load any existing user preferences from the browser cookie
   const cookie = getOrMakeFidesCookie(defaults);
 
+  await initFidesConsent(defaults, config.bannerOptions);
   // Initialize the window.Fides object
   _Fides.consent = cookie.consent;
+  _Fides.getBannerOptions = getBannerOptions();
   _Fides.fides_meta = cookie.fides_meta;
   _Fides.identity = cookie.identity;
+
   _Fides.initialized = true;
 };
 
@@ -94,6 +105,7 @@ const init = (config: FidesConfig) => {
 _Fides = {
   consent: {},
   fides_meta: {},
+  getBannerOptions,
   identity: {},
   gtm,
   init,
@@ -107,8 +119,14 @@ if (typeof window !== "undefined") {
 }
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
+export * from "./lib/consent";
+export * from "./lib/consent-banner";
 export * from "./lib/consent-config";
 export * from "./lib/consent-context";
+export * from "./lib/consent-link";
+export * from "./lib/consent-types";
+export * from "./lib/consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
+
 export default Fides;
