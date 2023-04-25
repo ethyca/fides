@@ -393,3 +393,45 @@ class TestGetPrivacyExperiences:
         assert notices[1]["regions"] == ["us_ca", "us_co"]
         assert notices[1]["id"] == privacy_notice.id
         assert notices[1]["displayed_in_privacy_center"]
+
+    @pytest.mark.usefixtures(
+        "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
+        "privacy_notice_eu_cy_provide_service_frontend_only",  # doesn't overlap with any regions,
+        "privacy_experience_overlay_link",  # eu_fr, not co
+        "privacy_experience_overlay_banner",  # us_ca, not co
+        "privacy_notice_eu_fr_provide_service_frontend_only",  # eu_fr
+        "privacy_notice_us_ca_provide",  # us_ca
+    )
+    def test_filter_on_notices_and_region_and_show_disabled_is_false(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        privacy_experience_privacy_center_link,
+        privacy_notice,
+        privacy_notice_us_co_third_party_sharing,
+    ):
+        """Region filter propagates through to the notices too"""
+        privacy_notice_us_co_third_party_sharing.disabled = True
+        privacy_notice_us_co_third_party_sharing.save(db)
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        resp = api_client.get(
+            url + "?has_notices=True&region=us_co&show_disabled=False",
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
+
+        assert data["items"][0]["id"] == privacy_experience_privacy_center_link.id
+        assert data["items"][0]["regions"] == ["us_ca", "us_co"]
+
+        notices = data["items"][0]["privacy_notices"]
+        assert len(notices) == 1
+        assert notices[0]["regions"] == ["us_ca", "us_co"]
+        assert notices[0]["id"] == privacy_notice.id
+        assert notices[0]["displayed_in_privacy_center"]

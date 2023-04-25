@@ -14,11 +14,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
-from fides.api.ctl.sql_models import (
-    DataCategory as DataCategoryDbModel,
-    Dataset as CtlDataset,
-    System,
-)
+from fides.api.ctl.sql_models import DataCategory as DataCategoryDbModel
+from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ctl.sql_models import System
 from fides.api.ops.common_exceptions import SystemManagerException
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.connectionconfig import (

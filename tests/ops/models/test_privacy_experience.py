@@ -3,7 +3,12 @@ from fides.api.ops.models.privacy_experience import (
     DeliveryMechanism,
     PrivacyExperience,
 )
-from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
+from fides.api.ops.models.privacy_notice import (
+    ConsentMechanism,
+    EnforcementLevel,
+    PrivacyNotice,
+    PrivacyNoticeRegion,
+)
 
 
 class TestPrivacyExperience:
@@ -133,3 +138,77 @@ class TestPrivacyExperience:
         history_2.delete(db)
         history.delete(db)
         exp.delete(db=db)
+
+    def test_get_related_privacy_notices(self, db):
+        privacy_experience = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": ComponentType.overlay,
+                "delivery_mechanism": DeliveryMechanism.link,
+                "regions": [PrivacyNoticeRegion.eu_fr, PrivacyNoticeRegion.eu_at],
+                "component_title": "Manage your consent preferences",
+                "component_description": "On this page you can opt in and out of these data uses cases",
+                "link_label": "Manage your privacy",
+            },
+        )
+
+        # No privacy notices exist
+        assert privacy_experience.get_related_privacy_notices(db) == []
+
+        privacy_notice = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Test privacy notice",
+                "description": "a test sample privacy notice configuration",
+                "regions": [PrivacyNoticeRegion.eu_fr],
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["advertising", "third_party_sharing"],
+                "enforcement_level": EnforcementLevel.system_wide,
+                "displayed_in_overlay": False,
+                "displayed_in_api": True,
+                "displayed_in_privacy_center": True,
+            },
+        )
+
+        # Privacy Notice has a matching region, but is not displayed in overlay
+        assert privacy_experience.get_related_privacy_notices(db) == []
+
+        privacy_notice.displayed_in_overlay = True
+        privacy_notice.save(db)
+
+        # Privacy Notice both has a matching region,and is displayed in overlay
+        assert privacy_experience.get_related_privacy_notices(db) == [privacy_notice]
+
+        privacy_notice.regions = ["us_ca"]
+        privacy_notice.save(db)
+        # While privacy notice is displayed in the overlay, it doesn't have a matching region
+        assert privacy_experience.get_related_privacy_notices(db) == []
+
+        privacy_notice.regions = ["eu_at"]
+        privacy_notice.save(db)
+
+        # Sanity check
+        assert privacy_experience.get_related_privacy_notices(db) == [privacy_notice]
+
+        # France filter returns no notices
+        assert (
+            privacy_experience.get_related_privacy_notices(
+                db, region=PrivacyNoticeRegion.eu_fr
+            )
+            == []
+        )
+
+        # Austria filter returns the one notice
+        assert privacy_experience.get_related_privacy_notices(
+            db, region=PrivacyNoticeRegion.eu_at
+        ) == [privacy_notice]
+
+        privacy_notice.disabled = True
+        privacy_notice.save(db)
+
+        assert privacy_experience.get_related_privacy_notices(db) == [privacy_notice]
+        # Disabled show by default but if show_disable is False, they're removed.
+        assert (
+            privacy_experience.get_related_privacy_notices(db, show_disabled=False)
+            == []
+        )

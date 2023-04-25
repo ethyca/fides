@@ -7,9 +7,7 @@ from pydantic import Extra, conlist
 
 from fides.api.custom_types import SafeStr
 from fides.api.ops.models.privacy_experience import ComponentType, DeliveryMechanism
-from fides.api.ops.models.privacy_notice import (
-    PrivacyNoticeRegion,
-)
+from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.privacy_notice import PrivacyNoticeResponse
 

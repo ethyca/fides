@@ -10,14 +10,13 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.util import hybridproperty
 
-from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.lib.db.base_class import Base
 
 
 class ComponentType(Enum):
     """
-    Enum is not formalized in the DB because it may be subject to frequent change
+    The component type - not formalized in the db
     """
 
     overlay = "overlay"
@@ -26,7 +25,7 @@ class ComponentType(Enum):
 
 class DeliveryMechanism(Enum):
     """
-    Enum is not formalized in the DB because it may be subject to frequent change
+    The delivery mechanism - not formalized in the db
     """
 
     banner = "banner"
@@ -34,7 +33,7 @@ class DeliveryMechanism(Enum):
 
 
 class PrivacyExperienceBase:
-    """Base Privacy Experience fields that are common between templates, experiences, and historcial records"""
+    """Base Privacy Experience fields that are common between templates, experiences, and historical records"""
 
     disabled = Column(Boolean, nullable=False, default=False)
     component = Column(EnumColumn(ComponentType), nullable=False)
@@ -65,13 +64,14 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
         String, ForeignKey(PrivacyExperienceTemplate.id_field_path), nullable=True
     )
 
-    # Attribute that can be added as the result of get_related_privacy_notices
+    # Attribute that can be added as the result of "get_related_privacy_notices". Privacy notices aren't directly
+    # related to experiences.
     privacy_notices: List[PrivacyNotice] = []
 
     def get_related_privacy_notices(
         self,
         db: Session,
-        region: Optional[PrivacyNoticeRegion],
+        region: Optional[PrivacyNoticeRegion] = None,
         show_disabled: Optional[bool] = True,
     ) -> List[PrivacyNotice]:
         """Return privacy notices that overlap on at least one region
@@ -84,7 +84,7 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
 
         if show_disabled is False:
             privacy_notice_query = privacy_notice_query.filter(
-                PrivacyExperience.disabled.is_(False)
+                PrivacyNotice.disabled.is_(False)
             )
 
         if region is not None:
@@ -122,6 +122,7 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
         data: dict[str, Any],
         check_name: bool = False,
     ) -> PrivacyExperience:
+        """Create a privacy experience and the clone this record into the history table for record keeping"""
         privacy_experience = super().create(db=db, data=data, check_name=check_name)
 
         # create the history after the initial object creation succeeds, to avoid
