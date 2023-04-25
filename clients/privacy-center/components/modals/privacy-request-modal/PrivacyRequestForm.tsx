@@ -16,7 +16,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Headers } from "headers-polyfill";
 
-import { usePrivacyCenterEnvironment } from "~/app/server-environment";
+import { getPrivacyCenterEnvironment } from "~/app/server-environment";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { PrivacyRequestStatus } from "~/types";
@@ -45,7 +45,7 @@ const usePrivacyRequestForm = ({
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
 }) => {
-  const environment = usePrivacyCenterEnvironment();
+  const environment = getPrivacyCenterEnvironment();
   const identityInputs = action?.identity_inputs ?? defaultIdentityInput;
   const toast = useToast();
   const formik = useFormik({

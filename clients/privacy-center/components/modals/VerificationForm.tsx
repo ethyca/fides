@@ -16,7 +16,7 @@ import {
 import { Headers } from "headers-polyfill";
 import { useFormik } from "formik";
 
-import { usePrivacyCenterEnvironment } from "~/app/server-environment";
+import { getPrivacyCenterEnvironment } from "~/app/server-environment";
 import { ErrorToastOptions } from "~/common/toast-options";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { useLocalStorage } from "~/common/hooks";
@@ -38,7 +38,7 @@ const useVerificationForm = ({
   verificationType: VerificationType;
   successHandler: () => void;
 }) => {
-  const environment = usePrivacyCenterEnvironment();
+  const environment = getPrivacyCenterEnvironment();
   const toast = useToast();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [verificationCode, setVerificationCode] = useLocalStorage(

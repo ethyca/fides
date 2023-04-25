@@ -16,7 +16,7 @@ import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import * as Yup from "yup";
 
-import { usePrivacyCenterEnvironment } from "~/app/server-environment";
+import { getPrivacyCenterEnvironment } from "~/app/server-environment";
 import { ErrorToastOptions } from "~/common/toast-options";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { defaultIdentityInput } from "~/constants";
@@ -46,7 +46,7 @@ const useConsentRequestForm = ({
   // TODO: this "defaultIdentityInput" feels unnecessary and could be handled in the redux state?
   const identityInputs =
     config.consent?.button.identity_inputs ?? defaultIdentityInput;
-  const environment = usePrivacyCenterEnvironment();
+  const environment = getPrivacyCenterEnvironment();
   const toast = useToast();
   const formik = useFormik({
     initialValues: {

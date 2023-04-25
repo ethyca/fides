@@ -1,11 +1,11 @@
 import { BaseQueryFn, createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { usePrivacyCenterEnvironment } from "~/app/server-environment";
+import { getPrivacyCenterEnvironment } from "~/app/server-environment";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 
 
 // Thin wrapper around fetchBaseQuery() to allow us to inject the configurable baseUrl at runtime
 const baseApiQueryFn: BaseQueryFn = async (args, api, extraOptions) => {
-  const environment = usePrivacyCenterEnvironment();
+  const environment = getPrivacyCenterEnvironment();
   const baseQuery = fetchBaseQuery({
     baseUrl: environment.fidesApiUrl,
     prepareHeaders: (headers) => addCommonHeaders(headers),

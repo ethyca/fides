@@ -1,3 +1,4 @@
+/* eslint-disable no-console,consistent-return */
 /**
  * Utility functions and logic that is designed to exclusively run server-side to configure the environment for the app, e.g.:
  * 1) Securely loading ENV variables for the client to use
@@ -12,9 +13,9 @@ import { URL } from "url";
 
 import { Config } from "~/types/config";
 
-/************************
+/**
  * SERVER-SIDE functions
- ************************/
+ */
 
 /**
  * Settings that can be controlled using ENV vars on the server.
@@ -39,52 +40,50 @@ export interface PrivacyCenterEnvironment {
 }
 
 /**
- * Loads all the ENV variable settings, configuration files, etc. to initialize the environment
- */
-let _environment: PrivacyCenterEnvironment;
-export const loadPrivacyCenterEnvironment = async () => {
-  if (typeof window !== "undefined") {
-    throw new Error("Unexpected error, cannot load server environment from client code!");
-  }
-  console.log("Load Privacy Center environment for session..."); // TODO: version number
-
-  // Load environment variables
-  const settings: PrivacyCenterSettings = {
-    FIDES_API_URL: process.env.FIDES_PRIVACY_CENTER__FIDES_API_URL || "http://localhost:8080/api/v1",
-    CONFIG_JSON_URL: process.env.FIDES_PRIVACY_CENTER__CONFIG_JSON_URL || "file:///app/config/config.json",
-    CONFIG_CSS_URL: process.env.FIDES_PRIVACY_CENTER__CONFIG_CSS_URL || "file:///app/config/config.css",
-  };
-
-  // Load configuration file (if it exists)
-  const config = await loadConfigFromFile(settings.CONFIG_JSON_URL);
-
-  // Load styling file (if it exists)
-  const styles = await loadStylesFromFile(settings.CONFIG_CSS_URL);
-
-  // Initialize the _environment variable, so usePrivacyCenterEnvironment() can be used
-  _environment = {
-    fidesApiUrl: settings.FIDES_API_URL,
-    config: config,
-    styles: styles,
+ * Load a config file from the given list of URLs, trying them in order until one is successfully read.
+ */ 
+const loadConfigFile = async (urls: (string | undefined)[]): Promise<string | undefined> => {
+  // Dynamically import the "fs" module to read from the filesystem. This module
+  // doesn't exist in the browser context, so to allow the bundler to function
+  // we provide a (non-functional) fallback for "fs" in the webpack config (see
+  // next.config.js)
+  const fsPromises = (await import("fs")).promises;
+  if (!fsPromises) {
+    throw new Error("Unable to load 'fs' module!");
   }
 
-  // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present
-  // DEFER: remove backwards compatibility (see https://github.com/ethyca/fides/issues/1264)
-  if (config && (config?.server_url_production || config?.server_url_development || (config as any)?.fidesops_host_production || (config as any)?.fidesops_host_development)) {
-    console.warn(
-      "Using deprecated 'server_url_production' or 'server_url_development' config. " +
-      "Please update to using FIDES_PRIVACY_CENTER__FIDES_API_URL environment variable instead."
-    );
-    const legacyApiUrl =
-      process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
-        ? config.server_url_development || (config as any).fidesops_host_development
-        : config.server_url_production || (config as any).fidesops_host_production;
-
-    _environment.fidesApiUrl = legacyApiUrl;
+  // Loop through the provided URLs, testing each one in order, and return the
+  // first file that loads.
+  /* eslint-disable no-restricted-syntax,no-continue,no-await-in-loop */
+  for (const urlString of urls) {
+    try {
+      if (!urlString) {
+        continue;
+      }
+      const url: URL = new URL(urlString);
+      // DEFER: add support for https:// to fetch remote config files!
+      if (url.protocol !== "file:") {
+        throw new Error(`Config file URLs currently must use the 'file:' protocol: ${urlString}`);
+      }
+      // Relative paths (e.g. "file:./") aren't supported by node's URL class.
+      // So to support this, we just use a path string instead!
+      let path;
+      if (urlString.startsWith("file:.")) {
+         path = urlString.replace("file:", "");
+      }
+      const file = await fsPromises.readFile(path || url, "utf-8");
+      console.log(`Loaded configuration file: ${urlString}`);
+      return file;
+    } catch (err: any) {
+      // Catch "file not found" errors (ENOENT)
+      if (err.code === "ENOENT") {
+        continue;
+      }
+      // Log everything else and continue
+      console.log(`Failed to load configuration file from ${urlString}. Error: `, err);
+    }
   }
-
-
-  return _environment;
+  /* eslint-enable no-restricted-syntax,no-continue,no-await-in-loop */
 }
 
 /**
@@ -99,7 +98,7 @@ export const loadPrivacyCenterEnvironment = async () => {
  * version of ethyca/fides-privacy-center, which expected to always load the
  * configuration file from this well-known path.
  */
-export const loadConfigFromFile: (configJsonUrl?: string) => Promise<Config | undefined> = async (configJsonUrl?: string) => {
+export const loadConfigFromFile = async (configJsonUrl?: string): Promise<Config | undefined> => {
   const urls = [
     configJsonUrl,
     "file:///app/config/config.json",
@@ -125,7 +124,7 @@ export const loadConfigFromFile: (configJsonUrl?: string) => Promise<Config | un
  * version of ethyca/fides-privacy-center, which expected to always load the
  * configuration file from this well-known path.
  */
-export const loadStylesFromFile: (configCssUrl?: string) => Promise<string | undefined> = async (configCssUrl?: string) => {
+export const loadStylesFromFile = async (configCssUrl?: string): Promise<string | undefined> => {
   const urls = [
     configCssUrl,
     "file:///app/config/config.css",
@@ -136,57 +135,64 @@ export const loadStylesFromFile: (configCssUrl?: string) => Promise<string | und
 }
 
 /**
- * Load a config file from the given list of URLs, trying them in order until one is successfully read.
- */ 
-const loadConfigFile: (urls: (string | undefined)[]) => Promise<string | undefined> = async (urls: (string | undefined)[]) => {
-  // Dynamically import the "fs" module to read from the filesystem. This module
-  // doesn't exist in the browser context, so to allow the bundler to function
-  // we provide a (non-functional) fallback for "fs" in the webpack config (see
-  // next.config.js)
-  const fsPromises = (await import("fs")).promises;
-  if (!fsPromises) {
-    throw new Error("Unable to load 'fs' module!");
+ * Loads all the ENV variable settings, configuration files, etc. to initialize the environment
+ */
+// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
+let _environment: PrivacyCenterEnvironment;
+export const loadPrivacyCenterEnvironment = async (): Promise<PrivacyCenterEnvironment> => {
+  if (typeof window !== "undefined") {
+    throw new Error("Unexpected error, cannot load server environment from client code!");
+  }
+  console.log("Load Privacy Center environment for session..."); // TODO: version number
+
+  // Load environment variables
+  const settings: PrivacyCenterSettings = {
+    FIDES_API_URL: process.env.FIDES_PRIVACY_CENTER__FIDES_API_URL || "http://localhost:8080/api/v1",
+    CONFIG_JSON_URL: process.env.FIDES_PRIVACY_CENTER__CONFIG_JSON_URL || "file:///app/config/config.json",
+    CONFIG_CSS_URL: process.env.FIDES_PRIVACY_CENTER__CONFIG_CSS_URL || "file:///app/config/config.css",
+  };
+
+  // Load configuration file (if it exists)
+  const config = await loadConfigFromFile(settings.CONFIG_JSON_URL);
+
+  // Load styling file (if it exists)
+  const styles = await loadStylesFromFile(settings.CONFIG_CSS_URL);
+
+  // Initialize the _environment variable, so usePrivacyCenterEnvironment() can be used
+  _environment = {
+    fidesApiUrl: settings.FIDES_API_URL,
+    config,
+    styles,
   }
 
-  for (const urlString of urls) {
-    try {
-      if (!urlString) {
-        continue;
-      }
-      const url: URL = new URL(urlString);
-      // DEFER: add support for https:// to fetch remote config files!
-      if (url.protocol != "file:") {
-        throw new Error(`Config file URLs currently must use the 'file:' protocol: ${urlString}`);
-      }
-      // Relative paths (e.g. "file:./") aren't supported by node's URL class.
-      // So to support this, we just use a path string instead!
-      let path;
-      if (urlString.startsWith("file:.")) {
-         path = urlString.replace("file:", "");
-      }
-      const file = await fsPromises.readFile(path || url, "utf-8");
-      console.log(`Loaded configuration file: ${urlString}`);
-      return file;
-    } catch (err: any) {
-      // Catch "file not found" errors (ENOENT)
-      if (err.code == "ENOENT") {
-        continue
-      }
-      // Log everything else and continue
-      console.log(`Failed to load configuration file from ${urlString}. Error: `, err);
-    }
+  // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present
+  // DEFER: remove backwards compatibility (see https://github.com/ethyca/fides/issues/1264)
+  if (config && (config?.server_url_production || config?.server_url_development || (config as any)?.fidesops_host_production || (config as any)?.fidesops_host_development)) {
+    console.warn(
+      "Using deprecated 'server_url_production' or 'server_url_development' config. " +
+      "Please update to using FIDES_PRIVACY_CENTER__FIDES_API_URL environment variable instead."
+    );
+    const legacyApiUrl =
+      process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
+        ? config.server_url_development || (config as any).fidesops_host_development
+        : config.server_url_production || (config as any).fidesops_host_production;
+
+    _environment.fidesApiUrl = legacyApiUrl;
   }
+
+
+  return _environment;
 }
 
-/************************
+/**
  * CLIENT-SIDE functions
- ************************/
+ */
 
 /**
  * Hydrate the environment on the client-side, given a serverEnvironment
  * argument that should have been received from - you guessed it - the server!
  */
-export const hydratePrivacyCenterEnvironment = (serverEnvironment?: PrivacyCenterEnvironment) => {
+export const hydratePrivacyCenterEnvironment = (serverEnvironment?: PrivacyCenterEnvironment): PrivacyCenterEnvironment => {
   if (serverEnvironment) {
     _environment = serverEnvironment;
   }
@@ -196,7 +202,7 @@ export const hydratePrivacyCenterEnvironment = (serverEnvironment?: PrivacyCente
 /**
  * Basic hook for client-side code to safely access the configured environment. 
  */
-export const usePrivacyCenterEnvironment = () => {
+export const getPrivacyCenterEnvironment = (): PrivacyCenterEnvironment => {
   if (!_environment) {
     throw new Error("Called usePrivacyCenterEnvironment() prior to initializing with hydratePrivacyCenterEnvironment()!");
   }

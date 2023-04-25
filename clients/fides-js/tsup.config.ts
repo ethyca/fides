@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import { Format, defineConfig } from "tsup";
 
 // Define the configuration used to bundle the fides-js package using `tsup`

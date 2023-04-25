@@ -14,10 +14,6 @@ import {
 } from "~/types/config";
 
 // TODO: remove this, or at least move it fully into the config.slice module, etc.
-export function getDefaultConfig(): Config {
-  return transformConfig(dangerousStaticDefaultConfig);
-}
-
 /**
  * Transform the config to the latest version so that components can
  * reference config variables uniformly.
@@ -32,5 +28,10 @@ const transformConfig = (config: LegacyConfig): Config => {
   }
   return { ...config, consent: config.consent };
 };
+
+// TODO: remove this, or at least move it fully into the config.slice module, etc.
+export function getDefaultConfig(): Config {
+  return transformConfig(dangerousStaticDefaultConfig);
+}
 
 export const defaultIdentityInput: IdentityInputs = { email: "optional" };

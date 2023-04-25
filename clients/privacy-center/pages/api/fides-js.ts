@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next"
 
