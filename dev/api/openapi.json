@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.11.1b1.post0.dev5"
+    "version": "2.11.1b1.post0.dev6"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -15669,68 +15669,6 @@
           }
         }
       },
-      "FidesDataCategory": {
-        "title": "FidesDataCategory",
-        "enum": [
-          "user.payment",
-          "user.payment.financial_account_number",
-          "system",
-          "system.authentication",
-          "system.operations",
-          "user",
-          "user.biometric",
-          "user.biometric_health",
-          "user.browsing_history",
-          "user.demographic",
-          "user.contact",
-          "user.contact.address",
-          "user.device",
-          "user.device.cookie_id",
-          "user.device.device_id",
-          "user.device.ip_address",
-          "user.gender",
-          "user.location",
-          "user.media_consumption",
-          "user.non_specific_age",
-          "user.observed",
-          "user.profiling",
-          "user.race",
-          "user.religious_belief",
-          "user.search_history",
-          "user.sexual_orientation",
-          "user.social",
-          "user.telemetry",
-          "user.unique_id",
-          "user.user_sensor",
-          "user.organization",
-          "user.workplace",
-          "user.sensor",
-          "user.childrens",
-          "user.contact.address.city",
-          "user.contact.address.country",
-          "user.contact.email",
-          "user.contact.phone_number",
-          "user.contact.address.postal_code",
-          "user.contact.address.state",
-          "user.contact.address.street",
-          "user.credentials",
-          "user.credentials.biometric_credentials",
-          "user.credentials.password",
-          "user.date_of_birth",
-          "user.financial",
-          "user.financial.account_number",
-          "user.genetic",
-          "user.government_id",
-          "user.government_id.drivers_license_number",
-          "user.government_id.national_identification_number",
-          "user.government_id.passport_number",
-          "user.health_and_medical",
-          "user.job_title",
-          "user.name",
-          "user.political_opinion"
-        ],
-        "description": "An enumeration."
-      },
       "FidesDatasetReference": {
         "title": "FidesDatasetReference",
         "required": [
@@ -19045,7 +18983,8 @@
             "type": "string"
           },
           "data_category": {
-            "$ref": "#/components/schemas/FidesDataCategory"
+            "title": "Data Category",
+            "type": "string"
           }
         },
         "description": "An external representation of a Rule's target DataCategory within a Fidesops Policy"
