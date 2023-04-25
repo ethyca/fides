@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // TODO: need to get a copy of the file during build stage, not load from ../ paths!
   console.log("Bundling generic fides.js & Privacy Center configuration together...");
-  const fidesJS = await fsPromises.readFile("../fides-js/dist/fides.global.js");
+  const fidesJS = await fsPromises.readFile("../fides-js/dist/fides.js");
   const script = `
   (function () {
     // Include generic fides.js script

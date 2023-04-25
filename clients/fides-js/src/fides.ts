@@ -1,6 +1,5 @@
 /***
  * TODO: description
- * TODO: preferably reconfigure tsup to generate fides.js instead of fides.global.js
  * 
  * Expected usage of this in an HTML file is:
  * ```

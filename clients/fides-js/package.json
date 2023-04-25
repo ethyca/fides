@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Fides Javascript",
   "license": "Apache-2.0",
-  "main": "./dist/fides.global.js",
+  "main": "./dist/fides.js",
   "source": "./src/fides.ts",
   "module": "./dist/fides.mjs",
   "types": "./dist/fides.d.ts",

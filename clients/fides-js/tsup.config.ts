@@ -1,10 +1,20 @@
-import { defineConfig } from "tsup";
+import { Format, defineConfig } from "tsup";
 
 // Define the configuration used to bundle the fides-js package using `tsup`
 export default defineConfig({
     entry: ["src/fides.ts"],
     dts: true,
     format: ["esm", "iife"],
+    outExtension({ format }) {
+        const outfile: Record<Format, string> = {
+            "esm": ".mjs",
+            "iife": ".js",
+            "cjs": ".cjs",
+        }
+        return {
+            js: outfile[format]
+        }
+    },
     // NOTE: tsup behaves differently from other bundlers like rollup in that it
     // *doesn't* bundle dependencies in the ESM module (dist/fides.mjs).
     //
