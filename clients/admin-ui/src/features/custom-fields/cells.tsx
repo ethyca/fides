@@ -1,3 +1,4 @@
+// eslint-disable react/destructuring-assignment
 import {
   Button,
   Menu,
@@ -35,9 +36,18 @@ export const ResourceTypeCell = (
   return <WrappedCell {...cellProps} value={mappedValue} />;
 };
 
+// eslint-disable-fu
 export const FieldTypeCell = (
   cellProps: CellProps<typeof FIELD_TYPE_MAP, string>
-) => <MapCell map={FIELD_TYPE_MAP} {...cellProps} />;
+) => {
+  /* eslint-disable */
+  // @ts-ignore
+  const value = cellProps.row.original["allow_list_id"]
+    ? cellProps.value
+    : "open-text";
+  /* eslint-enable */
+  return <MapCell map={FIELD_TYPE_MAP} {...cellProps} value={value} />;
+};
 
 export const EnableCustomFieldCell = (
   cellProps: CellProps<CustomFieldDefinition, boolean>
