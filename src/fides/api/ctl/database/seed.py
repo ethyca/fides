@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.database.session import sync_session
+from fides.api.ctl.routes.system import upsert_system
 from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     Dataset,
     sql_model_map,
@@ -413,16 +414,20 @@ async def load_default_resources(async_session: AsyncSession) -> None:
 
 
 async def load_samples(async_session: AsyncSession) -> None:
+    # pylint: disable=too-many-branches, too-many-statements
     log.info("Loading sample resources...")
     try:
         sample_resources = dict(load_sample_resources_from_project())
         for resource_type, resources in sample_resources.items():
             if len(resources):
-                await upsert_resources(
-                    sql_model_map[resource_type],
-                    [e.dict() for e in resources],
-                    async_session,
-                )
+                if resource_type == "system":
+                    await upsert_system(resources, async_session)
+                else:
+                    await upsert_resources(
+                        sql_model_map[resource_type],
+                        [e.dict() for e in resources],
+                        async_session,
+                    )
     except QueryError:  # pragma: no cover
         pass  # The upsert_resources function will log any error
 

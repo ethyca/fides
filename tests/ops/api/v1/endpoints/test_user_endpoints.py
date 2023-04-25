@@ -16,7 +16,7 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.ctl.sql_models import System
+from fides.api.ctl.sql_models import PrivacyDeclaration, System
 from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     SCOPE_REGISTRY,
@@ -1407,6 +1407,9 @@ class TestUpdateSystemsManagedByUser:
         db.refresh(viewer_user)
         assert viewer_user.systems == [system]
 
+    @pytest.mark.usefixtures(
+        "load_default_data_uses"
+    )  # privacy declaration requires data uses to be present
     def test_update_system_manager_existing_system_not_in_request_which_removes_system(
         self, api_client: TestClient, generate_auth_header, url, system, viewer_user, db
     ) -> None:
@@ -1419,18 +1422,6 @@ class TestUpdateSystemsManagedByUser:
                 "organization_fides_key": "default_organization",
                 "system_type": "Service",
                 "data_responsibility_title": "Processor",
-                "privacy_declarations": [
-                    {
-                        "name": "Collect data for marketing",
-                        "data_categories": ["user.device.cookie_id"],
-                        "data_use": "advertising",
-                        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                        "data_subjects": ["customer"],
-                        "dataset_references": None,
-                        "egress": None,
-                        "ingress": None,
-                    }
-                ],
                 "data_protection_impact_assessment": {
                     "is_required": False,
                     "progress": None,
@@ -1438,6 +1429,22 @@ class TestUpdateSystemsManagedByUser:
                 },
             },
         )
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Collect data for marketing",
+                "system_id": second_system.id,
+                "data_categories": ["user.device.cookie_id"],
+                "data_use": "advertising",
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "egress": None,
+                "ingress": None,
+            },
+        )
+        db.refresh(second_system)
+
         assert viewer_user.systems == []
         viewer_user.set_as_system_manager(db, system)
         viewer_user.set_as_system_manager(db, second_system)
