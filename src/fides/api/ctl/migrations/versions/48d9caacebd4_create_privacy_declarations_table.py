@@ -38,7 +38,7 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("name", sa.String(), nullable=True),
         sa.Column("egress", sa.ARRAY(sa.String()), nullable=True),
         sa.Column("ingress", sa.ARRAY(sa.String()), nullable=True),
         sa.Column("data_use", sa.String(), nullable=False),
