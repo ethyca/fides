@@ -345,7 +345,7 @@ class PrivacyDeclaration(Base):
     """
 
     name = Column(
-        String, index=True, nullable=False
+        String, index=True, nullable=True
     )  # labeled as Processing Activity in the UI
     ### keep egress/ingress as JSON blobs as they have always been
     egress = Column(ARRAY(String))
