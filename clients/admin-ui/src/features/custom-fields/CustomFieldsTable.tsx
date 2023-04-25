@@ -28,7 +28,12 @@ import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
 
 import { getErrorMessage, isErrorResult } from "../common/helpers";
 import { errorToastParams, successToastParams } from "../common/toast";
-import { EnableCustomFieldCell, FieldTypeCell, MoreActionsCell } from "./cells";
+import {
+  EnableCustomFieldCell,
+  FieldTypeCell,
+  MoreActionsCell,
+  ResourceTypeCell,
+} from "./cells";
 import { CustomFieldModal } from "./CustomFieldModal";
 
 export const CustomFieldsTable = () => {
@@ -106,7 +111,11 @@ export const CustomFieldsTable = () => {
         Cell: WrappedCell,
       },
       { Header: "Field Type", accessor: "field_type", Cell: FieldTypeCell },
-      { Header: "Locations", accessor: "resource_type", Cell: WrappedCell },
+      {
+        Header: "Locations",
+        accessor: "resource_type",
+        Cell: ResourceTypeCell,
+      },
       {
         Header: "Enable",
         accessor: (row) => !row.active,

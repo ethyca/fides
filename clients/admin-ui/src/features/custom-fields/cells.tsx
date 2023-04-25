@@ -14,10 +14,26 @@ import { CellProps } from "react-table";
 
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import Restrict from "~/features/common/Restrict";
-import { EnableCell, MapCell } from "~/features/common/table/";
-import { FIELD_TYPE_MAP } from "~/features/custom-fields/constants";
+import { EnableCell, MapCell, WrappedCell } from "~/features/common/table/";
+import {
+  FIELD_TYPE_MAP,
+  RESOURCE_TYPE_MAP,
+} from "~/features/custom-fields/constants";
 import { useUpdateCustomFieldDefinitionMutation } from "~/features/plus/plus.slice";
-import { CustomFieldDefinition, ScopeRegistryEnum } from "~/types/api";
+import {
+  CustomFieldDefinition,
+  ScopeRegistryEnum,
+  ResourceTypes,
+} from "~/types/api";
+
+export const ResourceTypeCell = (
+  cellProps: CellProps<typeof RESOURCE_TYPE_MAP, string>
+) => {
+  const mappedValue =
+    // eslint-disable-next-line react/destructuring-assignment
+    RESOURCE_TYPE_MAP.get(cellProps.value as ResourceTypes) ?? cellProps.value;
+  return <WrappedCell {...cellProps} value={mappedValue} />;
+};
 
 export const FieldTypeCell = (
   cellProps: CellProps<typeof FIELD_TYPE_MAP, string>
