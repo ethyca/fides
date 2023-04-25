@@ -14,8 +14,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
-from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.db.base_class import Base, JSONTypeOverride
 from fides.api.ops.schemas.messaging.messaging import (
     EMAIL_MESSAGING_SERVICES,
     SMS_MESSAGING_SERVICES,
