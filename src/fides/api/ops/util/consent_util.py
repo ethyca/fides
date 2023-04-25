@@ -1,6 +1,8 @@
 from typing import Any, Dict, List, Optional, Tuple
 
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.models.connectionconfig import ConnectionConfig
@@ -9,7 +11,13 @@ from fides.api.ops.models.privacy_preference import (
     PrivacyPreferenceHistory,
     UserConsentPreference,
 )
-from fides.api.ops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
+from fides.api.ops.models.privacy_request import (
+    ExecutionLogStatus,
+    PrivacyRequest,
+    ProvidedIdentity,
+    ProvidedIdentityType,
+)
+from fides.api.ops.schemas.redis_cache import Identity
 
 
 def filter_privacy_preferences_for_propagation(
@@ -165,3 +173,60 @@ def add_errored_system_status_for_consent_reporting(
                 connection_config.system_key,
                 ExecutionLogStatus.error,
             )
+
+
+def get_fides_user_device_id_provided_identity(
+    db: Session, fides_user_device_id: Optional[str]
+) -> Optional[ProvidedIdentity]:
+    """Look up a fides user device id that is not attached to a privacy request if it exists
+
+    There can be many fides user device ids attached to privacy requests, but we should try to keep them
+    unique for consent requests.
+    """
+    if not fides_user_device_id:
+        return None
+
+    return ProvidedIdentity.filter(
+        db=db,
+        conditions=(
+            (ProvidedIdentity.field_name == ProvidedIdentityType.fides_user_device_id)
+            & (
+                ProvidedIdentity.hashed_value
+                == ProvidedIdentity.hash_value(fides_user_device_id)
+            )
+            & (ProvidedIdentity.privacy_request_id.is_(None))
+        ),
+    ).first()
+
+
+def get_or_create_fides_user_device_id_provided_identity(
+    db: Session,
+    identity_data: Identity,
+) -> ProvidedIdentity:
+    """Gets an existing fides user device id provided identity or creates one if it doesn't exist.
+    Raises an error if no fides user device id is supplied.
+    """
+    if not identity_data.fides_user_device_id:
+        raise HTTPException(
+            HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Fides user device id not found in identity data",
+        )
+
+    identity = get_fides_user_device_id_provided_identity(
+        db, identity_data.fides_user_device_id
+    )
+
+    if not identity:
+        identity = ProvidedIdentity.create(
+            db,
+            data={
+                "privacy_request_id": None,
+                "field_name": ProvidedIdentityType.fides_user_device_id.value,
+                "hashed_value": ProvidedIdentity.hash_value(
+                    identity_data.fides_user_device_id
+                ),
+                "encrypted_value": {"value": identity_data.fides_user_device_id},
+            },
+        )
+
+    return identity  # type: ignore[return-value]

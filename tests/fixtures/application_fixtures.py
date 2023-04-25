@@ -1453,16 +1453,26 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
 def privacy_preference_history_us_ca_provide(
     db: Session, privacy_notice_us_ca_provide
 ) -> Generator:
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "email",
+        "hashed_value": ProvidedIdentity.hash_value("test2@email.com"),
+        "encrypted_value": {"value": "test2@email.com"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
     pref_1 = PrivacyPreferenceHistory.create(
         db=db,
         data={
             "preference": "opt_in",
+            "provided_identity_id": provided_identity.id,
             "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
         },
         check_name=False,
     )
     yield pref_1
     pref_1.delete(db)
+    provided_identity.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -1523,16 +1533,26 @@ def privacy_notice_eu_fr_provide_service_frontend_only(db: Session) -> Generator
 def privacy_preference_history_eu_fr_provide_service_frontend_only(
     db: Session, privacy_notice_eu_fr_provide_service_frontend_only
 ) -> Generator:
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "email",
+        "hashed_value": ProvidedIdentity.hash_value("test2@email.com"),
+        "encrypted_value": {"value": "test2@email.com"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
     pref_1 = PrivacyPreferenceHistory.create(
         db=db,
         data={
             "preference": "opt_in",
+            "provided_identity_id": provided_identity.id,
             "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.privacy_notice_history_id,
         },
         check_name=False,
     )
     yield pref_1
     pref_1.delete(db)
+    provided_identity.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -1855,6 +1875,20 @@ def provided_identity_and_consent_request(db):
     yield provided_identity, consent_request
     provided_identity.delete(db=db)
     consent_request.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def fides_user_provided_identity(db):
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "fides_user_device_id",
+        "hashed_value": ProvidedIdentity.hash_value("FGHIJ_TEST_FIDES"),
+        "encrypted_value": {"value": "FGHIJ_TEST_FIDES"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+    yield provided_identity
+    provided_identity.delete(db=db)
 
 
 @pytest.fixture(scope="function")

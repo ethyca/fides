@@ -34,7 +34,6 @@ def delete_server_systems(test_config: FidesConfig, systems: List[System]) -> No
 
 
 def test_get_system_data_uses(db, system) -> None:
-
     assert sql_System.get_data_uses([system]) == {"advertising"}
 
     system.privacy_declarations[0].update(
