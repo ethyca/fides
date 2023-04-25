@@ -800,8 +800,10 @@ class DynamoDBQueryConfig(QueryConfig[DynamoDBStatement]):
         Generate a Dictionary that contains necessary items to
         run a PUT operation against DynamoDB
         """
-
-        update_clauses = self.update_value_map(row, policy, request)
+        simple_row = {}
+        for key, value in row.items():
+            simple_row[key] = row[key][next(iter(value))]
+        update_clauses = self.update_value_map(simple_row, policy, request)
 
         update_items = row
         for key, value in update_items.items():

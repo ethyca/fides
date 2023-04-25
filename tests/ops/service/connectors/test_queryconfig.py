@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Any, Dict, Set
 
 import pytest
@@ -17,6 +18,7 @@ from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fides.api.ops.service.connectors.query_config import (
+    DynamoDBQueryConfig,
     MongoQueryConfig,
     SQLQueryConfig,
 )
@@ -606,3 +608,99 @@ class TestMongoQueryConfig:
                 ["1988-01-10"], request_id=privacy_request.id
             )[0]
         )
+
+
+class TestDynamoDBQueryConfig:
+    @pytest.fixture(scope="function")
+    def identity(self):
+        identity = {"email": "customer-test_uuid@example.com"}
+        return identity
+
+    @pytest.fixture(scope="function")
+    def dataset_graph(self, integration_dynamodb_config, example_datasets):
+        dataset = Dataset(**example_datasets[11])
+        dataset_graph = convert_dataset_to_graph(
+            dataset, integration_dynamodb_config.key
+        )
+
+        return DatasetGraph(*[dataset_graph])
+
+    @pytest.fixture(scope="function")
+    def traversal(self, identity, dataset_graph):
+        dynamo_traversal = Traversal(dataset_graph, identity)
+        return dynamo_traversal
+
+    @pytest.fixture(scope="function")
+    def customer_node(self, traversal):
+        return traversal.traversal_node_dict[
+            CollectionAddress("dynamodb_example_test_dataset", "customer")
+        ]
+
+    @pytest.fixture(scope="function")
+    def customer_identifier_node(self, traversal):
+        return traversal.traversal_node_dict[
+            CollectionAddress("dynamodb_example_test_dataset", "customer_identifier")
+        ]
+
+    @pytest.fixture(scope="function")
+    def customer_row(self):
+        row = {
+            "customer_email": {"S": "customer-1@example.com"},
+            "name": {"S": "John Customer"},
+            "address_id": {"S": "1"},
+            "id": {"S": "1"},
+        }
+        return row
+
+    @pytest.fixture(scope="function")
+    def customer_identifier_row(self):
+        row = {
+            "customer_id": {"S": "customer-1@example.com"},
+            "email": {"S": "customer-1@example.com"},
+            "name": {"S": "Customer 1"},
+            "created": {"S": datetime.now(timezone.utc).isoformat()},
+        }
+        return row
+
+    def test_get_query_param_formatting_single_key(
+        self,
+        resources_dict,
+        customer_node,
+    ) -> None:
+        input_data = {
+            "fidesops_grouped_inputs": [],
+            "email": ["customer-test_uuid@example.com"],
+        }
+        input_data["attribute_definitions"] = [
+            {"AttributeName": "email", "AttributeType": "S"}
+        ]
+        query_config = DynamoDBQueryConfig(customer_node)
+        item = query_config.generate_query(
+            input_data=input_data, policy=resources_dict["policy"]
+        )
+        assert item == {"email": {"S": "customer-test_uuid@example.com"}}
+
+    def test_put_query_param_formatting_single_key(
+        self,
+        erasure_policy,
+        customer_node,
+        customer_row,
+    ) -> None:
+        input_data = {
+            "fidesops_grouped_inputs": [],
+            "email": ["customer-test_uuid@example.com"],
+        }
+        input_data["attribute_definitions"] = [
+            {"AttributeName": "email", "AttributeType": "S"}
+        ]
+        query_config = DynamoDBQueryConfig(customer_node)
+        update_item = query_config.generate_update_stmt(
+            customer_row, erasure_policy, privacy_request
+        )
+
+        assert update_item == {
+            "customer_email": {"S": "customer-1@example.com"},
+            "name": {"S": None},
+            "address_id": {"S": "1"},
+            "id": {"S": "1"},
+        }
