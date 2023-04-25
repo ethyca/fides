@@ -27,6 +27,7 @@ The types of changes are:
 - Custom fields table [#3097](https://github.com/ethyca/fides/pull/3097)
 - Endpoints to save the new-style Privacy Preferences with respect to a fides user device id [#3132](https://github.com/ethyca/fides/pull/3132)
 - Support `privacy_declaration` as a resource type for custom fields [#3149](https://github.com/ethyca/fides/pull/3149)
+- Access and erasure support for Unbounce [#2697](https://github.com/ethyca/fides/pull/2697)
 
 ### Changed
 
