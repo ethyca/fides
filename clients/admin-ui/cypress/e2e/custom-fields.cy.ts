@@ -39,6 +39,24 @@ describe("Custom Fields", () => {
       });
     });
 
+    it("viewers and approvers cannot edit", () => {
+      [RoleRegistryEnum.VIEWER, RoleRegistryEnum.VIEWER_AND_APPROVER].forEach(
+        (role) => {
+          cy.assumeRole(role);
+          cy.visit(CUSTOM_FIELDS_ROUTE);
+
+          // row should not be clickable
+          cy.getByTestId("row-Taxonomy - Single select").click();
+          cy.getByTestId("custom-field-modal").should("not.exist");
+
+          // also should not see the kebob menu
+          cy.getByTestId("row-Taxonomy - Single select").within(() => {
+            cy.getByTestId("more-actions-btn").should("not.exist");
+          });
+        }
+      );
+    });
+
     it("viewers and approvers cannot toggle the enable toggle", () => {
       [RoleRegistryEnum.VIEWER, RoleRegistryEnum.VIEWER_AND_APPROVER].forEach(
         (role) => {
@@ -114,54 +132,23 @@ describe("Custom Fields", () => {
         .should("contain", "Taxonomy - Single select");
     });
 
-    it("can click a row to bring up the edit modal", () => {
-      cy.intercept("GET", "/api/v1/plus/custom-metadata/allow-list/*", {
-        fixture: "taxonomy/custom-metadata/allow-list/create.json",
-      }).as("getAllowList");
-      cy.getByTestId("row-Taxonomy - Single select").click();
-      cy.wait("@getAllowList");
-      cy.getByTestId("custom-field-modal");
-    });
-
-    it("can click add button to get to a new form", () => {
-      cy.getByTestId("add-custom-field-btn").click();
-      cy.getByTestId("custom-field-modal");
-    });
-
-    describe("more actions menu", () => {
-      it("can edit from the more actions menu", () => {
-        cy.intercept("GET", "/api/v1/plus/custom-metadata/allow-list/*", {
-          fixture: "taxonomy/custom-metadata/allow-list/create.json",
-        }).as("getAllowList");
-        cy.get("tbody > tr")
-          .first()
-          .within(() => {
-            cy.getByTestId("more-actions-btn").click();
-            cy.getByTestId("edit-btn").click();
-          });
-
-        cy.wait("@getAllowList");
-        cy.getByTestId("custom-field-modal");
-      });
-
-      it("can delete from the more actions menu", () => {
-        cy.intercept(
-          "DELETE",
-          "/api/v1/plus/custom-metadata/custom-field-definition/*",
-          { body: {} }
-        ).as("deleteCustomFieldDefinition");
-        cy.get("tbody > tr")
-          .first()
-          .within(() => {
-            cy.getByTestId("more-actions-btn").click();
-            cy.getByTestId("delete-btn").click();
-          });
-        cy.getByTestId("confirmation-modal");
-        cy.getByTestId("continue-btn").click();
-        cy.wait("@deleteCustomFieldDefinition").then((interception) => {
-          const { url } = interception.request;
-          expect(url).to.contain(TAXONOMY_SINGLE_SELECT_ID);
+    it("can delete from the more actions menu", () => {
+      cy.intercept(
+        "DELETE",
+        "/api/v1/plus/custom-metadata/custom-field-definition/*",
+        { body: {} }
+      ).as("deleteCustomFieldDefinition");
+      cy.get("tbody > tr")
+        .first()
+        .within(() => {
+          cy.getByTestId("more-actions-btn").click();
+          cy.getByTestId("delete-btn").click();
         });
+      cy.getByTestId("confirmation-modal");
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@deleteCustomFieldDefinition").then((interception) => {
+        const { url } = interception.request;
+        expect(url).to.contain(TAXONOMY_SINGLE_SELECT_ID);
       });
     });
 
@@ -211,6 +198,83 @@ describe("Custom Fields", () => {
         // redux should requery after invalidation
         cy.wait("@getCustomFields");
       });
+    });
+  });
+
+  describe("editing", () => {
+    beforeEach(() => {
+      cy.visit(CUSTOM_FIELDS_ROUTE);
+      cy.wait("@getCustomFields");
+      stubTaxonomyEntities();
+      cy.intercept("GET", "/api/v1/plus/custom-metadata/allow-list/*", {
+        fixture: "taxonomy/custom-metadata/allow-list/create.json",
+      }).as("getAllowList");
+    });
+
+    it("can edit from the more actions menu", () => {
+      cy.get("tbody > tr")
+        .first()
+        .within(() => {
+          cy.getByTestId("more-actions-btn").click();
+          cy.getByTestId("edit-btn").click();
+        });
+
+      cy.wait("@getAllowList");
+      cy.getByTestId("custom-field-modal");
+    });
+
+    it("can click a row to bring up the edit modal", () => {
+      cy.getByTestId("row-Taxonomy - Single select").click();
+      cy.wait("@getAllowList");
+      cy.getByTestId("custom-field-modal");
+    });
+
+    describe("edit modal", () => {
+      beforeEach(() => {
+        cy.getByTestId("row-Taxonomy - Single select").click();
+        cy.wait("@getAllowList");
+      });
+      it("renders existing values", () => {
+        // Field information
+        cy.getByTestId("custom-input-name").should(
+          "have.value",
+          "Taxonomy - Single select"
+        );
+        cy.getByTestId("custom-input-description").should(
+          "have.value",
+          "Description!!"
+        );
+        cy.getSelectValueContainer("input-resource_type").contains(
+          "Data category"
+        );
+
+        // Configuration
+        cy.getSelectValueContainer("input-field_type").contains(
+          "Single select"
+        );
+        cy.getByTestId("custom-input-allow_list.allowed_values[0]").should(
+          "have.value",
+          "allowed"
+        );
+        cy.getByTestId("custom-input-allow_list.allowed_values[1]").should(
+          "have.value",
+          "values"
+        );
+      });
+
+      it("can edit field information", () => {});
+
+      it("can add values to the allow list", () => {});
+
+      it("can delete values from the allow list", () => {});
+    });
+
+    describe("create modal", () => {
+      beforeEach(() => {
+        cy.getByTestId("add-custom-field-btn").click();
+      });
+
+      it("can fill out a form to create a new custom field", () => {});
     });
   });
 });
