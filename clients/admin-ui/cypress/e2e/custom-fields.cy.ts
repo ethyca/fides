@@ -274,10 +274,14 @@ describe("Custom Fields", () => {
       it("can edit field information", () => {
         const newDescription = "new description";
         cy.getByTestId("custom-input-description").clear().type(newDescription);
+        cy.selectOption("input-field_type", "Multiple select");
         cy.getByTestId("save-btn").click();
         cy.wait("@putCustomFieldDefinition").then((interception) => {
-          expect(interception.request.body.description).to.eql(newDescription);
+          const { body } = interception.request;
+          expect(body.description).to.eql(newDescription);
+          expect(body.field_type).to.eql("string[]");
         });
+        cy.wait("@upsertAllowList");
       });
 
       it("can add values to the allow list", () => {
@@ -289,10 +293,22 @@ describe("Custom Fields", () => {
         );
         cy.getByTestId("save-btn").click();
 
-        cy.wait("@upsertAllowList");
+        cy.wait("@upsertAllowList").then((interception) => {
+          expect(interception.request.body.allowed_values).to.eql([
+            "allowed",
+            "values",
+            newAllowItem,
+          ]);
+        });
       });
 
-      it("can delete values from the allow list", () => {});
+      it("can delete values from the allow list", () => {
+        cy.getByTestId("remove-list-value-btn-1").click();
+        cy.getByTestId("save-btn").click();
+        cy.wait("@upsertAllowList").then((interception) => {
+          expect(interception.request.body.allowed_values).to.eql(["allowed"]);
+        });
+      });
     });
 
     describe("create modal", () => {
@@ -308,7 +324,7 @@ describe("Custom Fields", () => {
         }).as("upsertAllowList");
       });
 
-      it("can fill out a form to create a new custom field", () => {
+      it("can fill out a form to create a new select custom field", () => {
         const payload = {
           name: "name",
           description: "description",
@@ -339,6 +355,30 @@ describe("Custom Fields", () => {
         cy.wait("@upsertAllowList").then((interception) => {
           const { body } = interception.request;
           expect(body.allowed_values).to.eql(allowList);
+        });
+      });
+
+      it("can fill out a form to create a new open text custom field", () => {
+        const payload = {
+          name: "name",
+          description: "description",
+          field_type: "string",
+          resource_type: "data category",
+        };
+        // Field info
+        cy.getByTestId("custom-input-name").type(payload.name);
+        cy.getByTestId("custom-input-description").type(payload.description);
+        cy.selectOption("input-resource_type", "Data category");
+
+        // Configuration
+        cy.selectOption("input-field_type", "Open Text");
+
+        cy.getByTestId("save-btn").click();
+        cy.wait("@postCustomFieldDefinition").then((interception) => {
+          const { body } = interception.request;
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          const { allow_list, ...rest } = body;
+          expect(rest).to.eql(payload);
         });
       });
     });
