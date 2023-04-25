@@ -17,6 +17,7 @@ import "@fontsource/inter/700.css";
 import store, { persistor } from "~/app/store";
 import "~/config/config.css";
 import theme from "~/theme";
+import { useFidesDeviceUUIDCookie } from "~/common/hooks/useCookie";
 
 const SafeHydrate: React.FC = ({ children }) => (
   <div suppressHydrationWarning>
@@ -24,8 +25,11 @@ const SafeHydrate: React.FC = ({ children }) => (
   </div>
 );
 
-const MyApp = ({ Component, pageProps }: AppProps) => (
-  <SafeHydrate>
+const MyApp = ({ Component, pageProps }: AppProps) => {
+
+  useFidesDeviceUUIDCookie();
+
+  return <SafeHydrate>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <ChakraProvider theme={theme}>
@@ -34,6 +38,6 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
       </PersistGate>
     </Provider>
   </SafeHydrate>
-);
+};
 
 export default MyApp;

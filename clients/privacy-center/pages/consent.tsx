@@ -42,6 +42,16 @@ import { ConsentPreferences } from "~/types/api";
 import { GpcBanner } from "~/features/consent/GpcMessages";
 import { GpcStatus } from "~/features/consent/types";
 
+
+// 1. Check fides cookie for device_id
+// 2. if no device_id, create one
+// 3. when the user goes to make a consent request ->
+//   - don't verify the identity
+//   - fetch consent preferences based on the device_id
+// 4. display consent page
+// 5. send new consent preferences up
+
+
 const Consent: NextPage = () => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
   const [verificationCode] = useLocalStorage("verificationCode", "");
