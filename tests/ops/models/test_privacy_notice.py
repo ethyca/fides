@@ -634,7 +634,9 @@ class TestPrivacyNoticeModel:
             == []
         )
 
-        system.privacy_declarations[0]["data_use"] = "provide.service"
+        system.privacy_declarations[0].update(
+            db=db, data={"data_use": "provide.service"}
+        )
         assert privacy_notice.histories[0].calculate_relevant_systems(db) == []
         assert privacy_notice_us_ca_provide.histories[0].calculate_relevant_systems(
             db
