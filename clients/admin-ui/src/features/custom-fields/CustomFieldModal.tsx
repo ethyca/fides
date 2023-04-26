@@ -227,7 +227,7 @@ export const CustomFieldModal = ({
       successAlert(`Custom field successfully saved`);
     }
   };
-  // console.log("initialValues", initialValues);
+
   return (
     <Modal
       id="custom-field-modal-hello-world"
