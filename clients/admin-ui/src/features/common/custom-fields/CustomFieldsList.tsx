@@ -4,7 +4,6 @@ import { Field, FieldInputProps } from "formik";
 import { AllowedTypes, ResourceTypes } from "~/types/api";
 
 import { CustomSelect } from "../form/inputs";
-import { CustomFieldsModal } from "./CustomFieldsModal";
 import { useCustomFields } from "./hooks";
 
 type CustomFieldsListProps = {
@@ -49,7 +48,6 @@ export const CustomFieldsList = ({
             Custom fields
           </Text>
         </Flex>
-        <CustomFieldsModal resourceType={resourceType} />
         {isLoading ? (
           <Center>
             <Spinner />
