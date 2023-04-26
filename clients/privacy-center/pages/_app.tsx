@@ -26,7 +26,8 @@ const SafeHydrate: React.FC = ({ children }) => (
 );
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
-
+  // Ensure each privacy centre has a unique fides_user_device_id
+  // for recording anonymised consent request preferences
   useFidesUserDeviceIdCookie();
 
   return <SafeHydrate>
