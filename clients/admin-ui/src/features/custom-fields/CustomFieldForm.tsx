@@ -98,7 +98,7 @@ export const CustomFieldForm = ({
                   const { allowed_values } = values.allow_list;
 
                   return (
-                    <Flex flexDirection="column" gap="24px" pl="24px">
+                    <Flex flexDirection="column" gap="6" pl="6">
                       <Flex flexDirection="column">
                         {allowed_values.map((_value, index) => (
                           <Flex
