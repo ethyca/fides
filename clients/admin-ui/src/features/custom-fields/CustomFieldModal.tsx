@@ -266,7 +266,7 @@ export const CustomFieldModal = ({
           borderTopLeftRadius="8px"
           boxSizing="border-box"
         >
-          Manage Custom Field
+          {customField ? "Manage Custom Field" : "Add a custom field"}
         </ModalHeader>
         <ModalBody px={6} py={0}>
           <Formik

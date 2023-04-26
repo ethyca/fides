@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  Flex,
-  IconButton,
-  SimpleGrid,
-  Text,
-} from "@fidesui/react";
+import { Box, Button, Flex, IconButton, Text } from "@fidesui/react";
 import {
   FIELD_TYPE_OPTIONS_NEW,
   FieldTypes,
@@ -177,8 +170,9 @@ export const CustomFieldForm = ({
         </FormSection>
       </Box>
 
-      <SimpleGrid columns={2} width="100%">
+      <Flex justifyContent="space-between" width="100%">
         <Button
+          size="sm"
           variant="outline"
           mr={3}
           onClick={onClose}
@@ -188,6 +182,7 @@ export const CustomFieldForm = ({
           Cancel
         </Button>
         <Button
+          size="sm"
           type="submit"
           colorScheme="primary"
           data-testid="save-btn"
@@ -196,7 +191,7 @@ export const CustomFieldForm = ({
         >
           Save
         </Button>
-      </SimpleGrid>
+      </Flex>
     </Form>
   );
 };
