@@ -98,16 +98,15 @@ export const CustomFieldForm = ({
                   const { allowed_values } = values.allow_list;
 
                   return (
-                    <Flex flexDirection="column" gap="24px" pl="24px">
+                    <Flex flexDirection="column" gap="6" pl="6">
                       <Flex flexDirection="column">
                         {allowed_values.map((_value, index) => (
                           <Flex
                             flexGrow={1}
-                            gap="12px"
+                            gap="3"
                             // eslint-disable-next-line react/no-array-index-key
                             key={index}
-                            mt={index > 0 ? "12px" : undefined}
-                            // ref={fieldRef}
+                            mt={index > 0 ? 3 : undefined}
                           >
                             <CustomInput
                               customLabelProps={{
