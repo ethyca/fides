@@ -26,11 +26,14 @@ The types of changes are:
 - Endpoints for consent reporting [#3095](https://github.com/ethyca/fides/pull/3095)
 - Custom fields table [#3097](https://github.com/ethyca/fides/pull/3097)
 - Endpoints to save the new-style Privacy Preferences with respect to a fides user device id [#3132](https://github.com/ethyca/fides/pull/3132)
+- Support `privacy_declaration` as a resource type for custom fields [#3149](https://github.com/ethyca/fides/pull/3149)
+- Expose `id` field of embedded `privacy_declarations` on `system` API responses [#3157](https://github.com/ethyca/fides/pull/3157)
 
 ### Changed
 
 - The `cursor` pagination strategy now also searches for data outside of the `data_path` when determining the cursor value [#3068](https://github.com/ethyca/fides/pull/3068)
 - Merged the `lib` submodule into the `api.ops` submodule [#3134](https://github.com/ethyca/fides/pull/3134)
+- Moved Privacy Declarations associated with Systems to their own DB table [#3098](https://github.com/ethyca/fides/pull/3098)
 
 ### Removed
 

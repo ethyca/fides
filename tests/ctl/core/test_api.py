@@ -425,7 +425,9 @@ class TestCrud:
 class TestSystemCreate:
     @pytest.fixture(scope="function", autouse=True)
     def remove_all_systems(self, db) -> SystemSchema:
-        """Remove any systems before test execution for clean state"""
+        """Remove any systems (and privacy declarations) before test execution for clean state"""
+        for privacy_declaration in PrivacyDeclaration.all(db):
+            privacy_declaration.delete(db)
         for system in System.all(db):
             system.delete(db)
 
@@ -647,7 +649,9 @@ class TestSystemUpdate:
 
     @pytest.fixture(scope="function", autouse=True)
     def remove_all_systems(self, db) -> SystemSchema:
-        """Remove any systems before test execution for clean state"""
+        """Remove any systems (and privacy declarations) before test execution for clean state"""
+        for privacy_declaration in PrivacyDeclaration.all(db):
+            privacy_declaration.delete(db)
         for system in System.all(db):
             system.delete(db)
 
@@ -933,7 +937,12 @@ class TestSystemUpdate:
         )
 
         # assert the declarations in our responses match those in our requests
-        response_decs = result.json()["privacy_declarations"]
+        response_decs: List[dict] = result.json()["privacy_declarations"]
+        # remove the IDs from the response decs for easier matching with request payload
+        # we also are implicitly affirming the response declarations DO have an
+        # 'id' field, as we expect
+        for response_dec in response_decs:
+            response_dec.pop("id")
         for update_dec in update_declarations:
             response_decs.remove(update_dec.dict())
         # and assert we don't have any extra response declarations

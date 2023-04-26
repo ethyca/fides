@@ -80,7 +80,7 @@ for model_type, fides_model in model_map.items():
 
     if (
         model_type != "system"
-    ):  # System Create endpoint defined separately in /routes/system.py
+    ):  # System endpoints defined separately in /routes/system.py
 
         @router.post(
             "/",
@@ -125,47 +125,43 @@ for model_type, fides_model in model_map.items():
                 raise errors.ForbiddenError(resource_type, resource.fides_key)
             return await create_resource(sql_model, resource.dict(), db)
 
-    @router.get(
-        "/",
-        dependencies=[
-            Security(
-                verify_oauth_client_prod,
-                scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
-            )
-        ],
-        response_model=List[fides_model],
-        name="List",
-    )
-    async def ls(  # pylint: disable=invalid-name
-        resource_type: str = get_resource_type(router),
-        db: AsyncSession = Depends(get_async_db),
-    ) -> List:
-        """Get a list of all of the resources of this type."""
-        sql_model = sql_model_map[resource_type]
-        return await list_resource(sql_model, db)
+        @router.get(
+            "/",
+            dependencies=[
+                Security(
+                    verify_oauth_client_prod,
+                    scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
+                )
+            ],
+            response_model=List[fides_model],
+            name="List",
+        )
+        async def ls(  # pylint: disable=invalid-name
+            resource_type: str = get_resource_type(router),
+            db: AsyncSession = Depends(get_async_db),
+        ) -> List:
+            """Get a list of all of the resources of this type."""
+            sql_model = sql_model_map[resource_type]
+            return await list_resource(sql_model, db)
 
-    @router.get(
-        "/{fides_key}",
-        dependencies=[
-            Security(
-                verify_oauth_client_prod,
-                scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
-            )
-        ],
-        response_model=fides_model,
-    )
-    async def get(
-        fides_key: str,
-        resource_type: str = get_resource_type(router),
-        db: AsyncSession = Depends(get_async_db),
-    ) -> Dict:
-        """Get a resource by its fides_key."""
-        sql_model = sql_model_map[resource_type]
-        return await get_resource_with_custom_fields(sql_model, fides_key, db)
-
-    if (
-        model_type != "system"
-    ):  # System Update endpoint defined separately in /routes/system.py
+        @router.get(
+            "/{fides_key}",
+            dependencies=[
+                Security(
+                    verify_oauth_client_prod,
+                    scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
+                )
+            ],
+            response_model=fides_model,
+        )
+        async def get(
+            fides_key: str,
+            resource_type: str = get_resource_type(router),
+            db: AsyncSession = Depends(get_async_db),
+        ) -> Dict:
+            """Get a resource by its fides_key."""
+            sql_model = sql_model_map[resource_type]
+            return await get_resource_with_custom_fields(sql_model, fides_key, db)
 
         @router.put(
             "/",
@@ -209,10 +205,6 @@ for model_type, fides_model in model_map.items():
                 sql_model, resource.fides_key, resource, db
             )
             return await update_resource(sql_model, resource.dict(), db)
-
-    if (
-        model_type != "system"
-    ):  # System upsert endpoint defined separately in /routes/system.py
 
         @router.post(
             "/upsert",
@@ -296,10 +288,6 @@ for model_type, fides_model in model_map.items():
                 "inserted": result[0],
                 "updated": result[1],
             }
-
-    if (
-        model_type != "system"
-    ):  # System Delete endpoint defined separately in /routes/system.py
 
         @router.delete(
             "/{fides_key}",
