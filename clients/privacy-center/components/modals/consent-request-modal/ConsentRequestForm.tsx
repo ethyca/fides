@@ -54,7 +54,7 @@ const useConsentRequestForm = ({
       const body = {
         email: values.email,
         phone_number: values.phone,
-        fides_user_device_id: fidesUserDeviceId
+        fides_user_device_id: fidesUserDeviceId,
       };
       const handleError = ({
         title,

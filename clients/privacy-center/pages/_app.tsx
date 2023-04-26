@@ -30,15 +30,17 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   // for recording anonymised consent request preferences
   useFidesUserDeviceIdCookie();
 
-  return <SafeHydrate>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <ChakraProvider theme={theme}>
-          <Component {...pageProps} />
-        </ChakraProvider>
-      </PersistGate>
-    </Provider>
-  </SafeHydrate>
+  return (
+    <SafeHydrate>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <ChakraProvider theme={theme}>
+            <Component {...pageProps} />
+          </ChakraProvider>
+        </PersistGate>
+      </Provider>
+    </SafeHydrate>
+  );
 };
 
 export default MyApp;
