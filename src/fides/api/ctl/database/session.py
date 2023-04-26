@@ -10,7 +10,7 @@ from fides.core.config import CONFIG
 engine = create_async_engine(
     CONFIG.database.async_database_uri,
     echo=False,
-    hide_parameters=True,
+    hide_parameters=not CONFIG.dev_mode,
     logging_name="AsyncEngine",
 )
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
@@ -18,7 +18,7 @@ async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False
 sync_engine = create_engine(
     CONFIG.database.sync_database_uri,
     echo=False,
-    hide_parameters=True,
+    hide_parameters=not CONFIG.dev_mode,
     logging_name="SyncEngine",
 )
 sync_session = sessionmaker(

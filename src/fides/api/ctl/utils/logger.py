@@ -127,6 +127,8 @@ def obfuscate_message(message: str) -> str:
 
 
 # Loguru doesn't export the Record type so this can't be properly typed
-def formatter(record) -> str:
+# Taken from the following issue:
+# https://github.com/Delgan/loguru/issues/537#issuecomment-986259036
+def format_and_obfuscate(record) -> str:
     record["extra"]["obfuscated_message"] = obfuscate_message(record["message"])
     return "[{level}] {extra[obfuscated_message]}\n{exception}"

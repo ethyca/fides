@@ -33,7 +33,7 @@ from fides.api.ctl.ui import (
     path_is_in_ui_directory,
 )
 from fides.api.ctl.utils.errors import FidesError
-from fides.api.ctl.utils.logger import setup as setup_logging, formatter
+from fides.api.ctl.utils.logger import setup as setup_logging, format_and_obfuscate
 from fides.api.ops.analytics import (
     accessed_through_local_host,
     in_docker_container,
@@ -221,7 +221,8 @@ async def prepare_and_log_request(
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
-    logger.add(sys.stderr, format=formatter)
+    if CONFIG.dev_mode:
+        logger.add(sys.stderr, format=format_and_obfuscate)
     logger.info(f"Starting Fides - v{VERSION}")
     logger.info(
         "Startup configuration: reloading = {}, dev_mode = {}",
