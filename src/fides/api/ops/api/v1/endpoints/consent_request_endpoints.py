@@ -167,10 +167,10 @@ def create_consent_request(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
 
-    if not data.email and not data.phone_number:
+    if not data.email and not data.phone_number and not data.fides_user_device_id:
         raise HTTPException(
             HTTP_400_BAD_REQUEST,
-            detail="An email address or phone number identity is required",
+            detail="An email address, phone number, or fides_user_device_id is required",
         )
 
     identity = _get_or_create_provided_identity(
@@ -468,7 +468,6 @@ def _get_or_create_provided_identity(
 ) -> ProvidedIdentity:
     """Based on target identity type, retrieves or creates associated ProvidedIdentity"""
     target_identity_type: str = infer_target_identity_type(db, identity_data)
-
     if target_identity_type == ProvidedIdentityType.email.value and identity_data.email:
         identity = ProvidedIdentity.filter(
             db=db,
@@ -518,6 +517,36 @@ def _get_or_create_provided_identity(
                     "encrypted_value": {"value": identity_data.phone_number},
                 },
             )
+    elif (
+        target_identity_type == ProvidedIdentityType.fides_user_device_id.value
+        and identity_data.fides_user_device_id
+    ):
+        identity = ProvidedIdentity.filter(
+            db=db,
+            conditions=(
+                (
+                    ProvidedIdentity.field_name
+                    == ProvidedIdentityType.fides_user_device_id
+                )
+                & (
+                    ProvidedIdentity.hashed_value
+                    == ProvidedIdentity.hash_value(identity_data.fides_user_device_id)
+                )
+                & (ProvidedIdentity.privacy_request_id.is_(None))
+            ),
+        ).first()
+        if not identity:
+            identity = ProvidedIdentity.create(
+                db,
+                data={
+                    "privacy_request_id": None,
+                    "field_name": ProvidedIdentityType.fides_user_device_id.value,
+                    "hashed_value": ProvidedIdentity.hash_value(
+                        identity_data.fides_user_device_id
+                    ),
+                    "encrypted_value": {"value": identity_data.fides_user_device_id},
+                },
+            )
     else:
         raise HTTPException(
             HTTP_422_UNPROCESSABLE_ENTITY,
@@ -550,6 +579,10 @@ def infer_target_identity_type(
         target_identity_type = ProvidedIdentityType.email.value
     elif identity_data.phone_number:
         target_identity_type = ProvidedIdentityType.phone_number.value
+    elif identity_data.fides_user_device_id:
+        # If no other identity is provided, use the Fides User Device ID
+        target_identity_type = ProvidedIdentityType.fides_user_device_id.value
+
     return target_identity_type
 
 
