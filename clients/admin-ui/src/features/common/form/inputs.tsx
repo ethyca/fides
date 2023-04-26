@@ -147,6 +147,7 @@ interface SelectProps {
    * similar to how the multi values are rendered
    */
   singleValueBlock?: boolean;
+  isFormikOnChange?: boolean;
 }
 const SelectInput = ({
   options,
@@ -420,6 +421,7 @@ export const CustomSelect = ({
   variant = "inline",
   singleValueBlock,
   onChange,
+  isFormikOnChange,
   ...props
 }: SelectProps & StringField) => {
   const [field, meta] = useField(props);
@@ -445,7 +447,7 @@ export const CustomSelect = ({
                 isDisabled={isDisabled}
                 singleValueBlock={singleValueBlock}
                 menuPosition={props.menuPosition}
-                onChange={onChange}
+                onChange={!isFormikOnChange ? onChange : undefined}
               />
               <ErrorMessage
                 isInvalid={isInvalid}

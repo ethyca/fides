@@ -106,12 +106,12 @@ const transformCustomField = (
   ) {
     fieldType = FieldTypes.MULTIPLE_SELECT;
   }
-
+  const parsedAllowList = allowList || initialValuesTemplate.allow_list;
   return {
     ...customField,
     field_type: fieldType,
     allow_list: {
-      ...allowList,
+      ...parsedAllowList,
     },
   } as unknown as FormValues;
 };

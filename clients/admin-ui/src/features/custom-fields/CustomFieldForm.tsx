@@ -96,7 +96,7 @@ export const CustomFieldForm = ({
                 render={(fieldArrayProps) => {
                   // eslint-disable-next-line @typescript-eslint/naming-convention
                   const { allowed_values } = values.allow_list;
-                  // @ts-ignore
+
                   return (
                     <Flex flexDirection="column" gap="24px" pl="24px">
                       <Flex flexDirection="column">
