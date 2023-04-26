@@ -144,7 +144,7 @@ export const CustomFieldModal = ({
   const transformedCustomField = transformCustomField(customField, allowList);
   const initialValues = transformedCustomField || initialValuesTemplate;
 
-  const handelDropdownChange = (value: FieldTypes) => {
+  const handleDropdownChange = (value: FieldTypes) => {
     if (value === FieldTypes.OPEN_TEXT) {
       setNewValidationSchema(optionalValidationSchema);
     } else {
@@ -276,7 +276,7 @@ export const CustomFieldModal = ({
                 validationSchema={validationSchema}
                 isLoading={isLoading}
                 onClose={onClose}
-                handleDropdownChange={handelDropdownChange}
+                handleDropdownChange={handleDropdownChange}
                 {...props}
               />
             )}
