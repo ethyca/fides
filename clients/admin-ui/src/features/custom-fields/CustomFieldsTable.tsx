@@ -162,8 +162,6 @@ export const CustomFieldsTable = () => {
         </Text>
         <EmptyTableState
           title="It looks like it’s your first time here!"
-          buttonHref=""
-          buttonText="Add a custom field"
           button={addCustomFieldButton}
           description={
             <>

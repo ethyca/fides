@@ -160,7 +160,7 @@ const SelectInput = ({
   isDisabled = false,
   menuPosition = "absolute",
   onChange,
-}: { fieldName: string; isMulti?: boolean; onChange: any } & Omit<
+}: { fieldName: string; isMulti?: boolean; onChange?: any } & Omit<
   SelectProps,
   "label"
 >) => {
