@@ -17,7 +17,6 @@ import "@fontsource/inter/700.css";
 import store, { persistor } from "~/app/store";
 import "~/config/config.css";
 import theme from "~/theme";
-import { useFidesUserDeviceIdCookie } from "~/common/hooks/useCookie";
 
 const SafeHydrate: React.FC = ({ children }) => (
   <div suppressHydrationWarning>
@@ -25,22 +24,16 @@ const SafeHydrate: React.FC = ({ children }) => (
   </div>
 );
 
-const MyApp = ({ Component, pageProps }: AppProps) => {
-  // Ensure each privacy centre has a unique fides_user_device_id
-  // for recording anonymised consent request preferences
-  useFidesUserDeviceIdCookie();
-
-  return (
-    <SafeHydrate>
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <ChakraProvider theme={theme}>
-            <Component {...pageProps} />
-          </ChakraProvider>
-        </PersistGate>
-      </Provider>
-    </SafeHydrate>
-  );
-};
+const MyApp = ({ Component, pageProps }: AppProps) => (
+  <SafeHydrate>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <ChakraProvider theme={theme}>
+          <Component {...pageProps} />
+        </ChakraProvider>
+      </PersistGate>
+    </Provider>
+  </SafeHydrate>
+);
 
 export default MyApp;

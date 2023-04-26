@@ -12,7 +12,7 @@ const CODEC: Types.CookieCodecConfig<string, string> = {
 /**
  * Generates a new `fides_user_device_id` and stores it to the cookie
  */
-export const setFidesUserDeviceIdCookie = () => {
+const setFidesUserDeviceIdCookie = () => {
   if (typeof document === "undefined") {
     return undefined;
   }
@@ -30,21 +30,27 @@ export const setFidesUserDeviceIdCookie = () => {
     CODEC
   );
   return uuid;
-}
+};
 
-export const getFidesUserDeviceIdCookie = () => {
-  // Returns the `fides_user_device_id` from the cookie
+/**
+ * Returns the `fides_user_device_id` from the cookie
+ */
+const getFidesUserDeviceIdCookie = () => {
   if (typeof document === "undefined") {
     return undefined;
   }
 
   return getCookie(FIDES_USER_DEVICE_ID_COOKIE_NAME, CODEC);
-}
+};
 
-export const useFidesUserDeviceIdCookie = () => {
+/**
+ * Retrieves the fides user device UUID as stored in the `fides_user_device_id` cookie
+ * If no cookie is found, sets a new UUID on the cookie and returns the value
+ */
+export const getFidesUserDeviceUuid = () => {
   const cookie = getFidesUserDeviceIdCookie();
   if (!cookie) {
     return setFidesUserDeviceIdCookie();
   }
   return cookie;
-}
+};
