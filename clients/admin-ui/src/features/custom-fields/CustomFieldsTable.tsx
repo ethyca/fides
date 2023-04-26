@@ -101,7 +101,7 @@ export const CustomFieldsTable = () => {
   const columns: Column<CustomFieldDefinitionWithId>[] = useMemo(
     () => [
       {
-        Header: "Title",
+        Header: "Label",
         accessor: "name",
         Cell: TitleCell,
       },
@@ -136,17 +136,27 @@ export const CustomFieldsTable = () => {
 
   if (customFields.length === 0) {
     return (
-      <EmptyTableState
-        title="It looks like it’s your first time here!"
-        buttonHref=""
-        buttonText="Add a custom field"
-        description={
-          <>
-            You haven’t created any custom fields yet. To create a custom field,
-            click on the <strong>&quot;Add a custom field&quot;</strong> button
-          </>
-        }
-      />
+      <Box maxWidth="720px">
+        <Text fontSize="sm" lineHeight={5} fontWeight="medium" marginBottom={6}>
+          Custom fields provide organizations with the capability to capture
+          metrics that are unique to their specific needs, allowing them to
+          create customized reports. These fields can be added to either systems
+          or elements within a taxonomy, and once added, they become reportable
+          fields that are visible on the data map.
+        </Text>
+        <EmptyTableState
+          title="It looks like it’s your first time here!"
+          buttonHref=""
+          buttonText="Add a custom field"
+          description={
+            <>
+              You haven’t created any custom fields yet. To create a custom
+              field, click on the{" "}
+              <strong>&quot;Add a custom field&quot;</strong> button
+            </>
+          }
+        />
+      </Box>
     );
   }
 
@@ -164,6 +174,7 @@ export const CustomFieldsTable = () => {
           columns={columns}
           data={customFields}
           showSearchBar
+          searchBarPlaceHolder="Search for a custom field"
           onRowClick={userCanUpdate ? handleRowClick : undefined}
           customHooks={[tableHook]}
           footer={

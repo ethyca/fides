@@ -46,7 +46,14 @@ export const FieldTypeCell = (
     ? cellProps.value
     : "open-text";
   /* eslint-enable */
-  return <MapCell map={FIELD_TYPE_MAP} {...cellProps} value={value} />;
+  return (
+    <MapCell
+      map={FIELD_TYPE_MAP}
+      backgroundColor="gray.500"
+      {...cellProps}
+      value={value}
+    />
+  );
 };
 
 export const EnableCustomFieldCell = (

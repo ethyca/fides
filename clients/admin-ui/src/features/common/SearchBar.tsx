@@ -13,12 +13,14 @@ interface Props extends Omit<InputProps, "onChange"> {
   onChange: (value: string) => void;
   withIcon?: boolean;
   onClear?: () => void;
+  placeholder?: string;
 }
 const SearchBar = ({
   search,
   onChange,
   withIcon,
   onClear,
+  placeholder,
   ...props
 }: Props) => {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
@@ -40,6 +42,7 @@ const SearchBar = ({
         value={search}
         name="search"
         onChange={handleSearchChange}
+        placeholder={placeholder || ""}
         {...props}
       />
       {onClear ? (

@@ -31,6 +31,7 @@ type Props<T extends FidesObject> = {
   columns: Column<T>[];
   data: T[];
   showSearchBar?: boolean;
+  searchBarPlaceHolder?: string;
   footer?: ReactNode;
   onRowClick?: (row: T) => void;
   customHooks?: Array<(hooks: Hooks<T>) => void>;
@@ -40,6 +41,7 @@ export const FidesTable = <T extends FidesObject>({
   columns,
   data,
   showSearchBar,
+  searchBarPlaceHolder,
   footer,
   onRowClick,
   customHooks,
@@ -63,6 +65,7 @@ export const FidesTable = <T extends FidesObject>({
           <GlobalFilter
             globalFilter={tableInstance.state.globalFilter}
             setGlobalFilter={tableInstance.setGlobalFilter}
+            placeholder={searchBarPlaceHolder}
           />
         </Flex>
       ) : null}
