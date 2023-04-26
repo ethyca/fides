@@ -47,8 +47,8 @@ const useConsentRequestForm = ({
   const toast = useToast();
   const formik = useFormik({
     initialValues: {
-      email: "",
-      phone: "",
+      email: undefined,
+      phone: undefined,
     },
     onSubmit: async (values) => {
       const body = {
@@ -257,7 +257,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
             _active={{ bg: "primary.500" }}
             colorScheme="primary"
             isLoading={isSubmitting}
-            isDisabled={isSubmitting || !(isValid && dirty)}
+            // isDisabled={isSubmitting || !(isValid && dirty)}
             size="sm"
           >
             Continue
