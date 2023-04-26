@@ -1,5 +1,7 @@
-from typing import Any, Dict, List, Optional
+import itertools
+from typing import Any, Dict, Generator, List, Optional
 
+from boto3.dynamodb.types import TypeDeserializer
 from botocore.exceptions import ClientError
 from loguru import logger
 
@@ -79,7 +81,12 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
-        """Retrieve DynamoDB data"""
+        """
+        Retrieve DynamoDB data.
+        In the case of complex objects, returns multiple rows
+        as the product of options to query against.
+        """
+        deserializer = TypeDeserializer()
         query_config = self.query_config(node)
         collection_name = node.address.collection
         client = self.client()
@@ -95,9 +102,15 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
             )
             result = {}
             if "Item" in item:
-                for key in item["Item"]:
-                    result[key] = [*item["Item"][key].values()][0]
-            return [result]
+                for key, value in item["Item"].items():
+                    deserialized_value = deserializer.deserialize(value)
+                    result[key] = (
+                        deserialized_value
+                        if isinstance(deserialized_value, list)
+                        else [deserialized_value]
+                    )
+            product_of_results = product_dict(**result)
+            return list(product_of_results)
         except ClientError as error:
             raise ConnectorFailureException(error.response["Error"]["Message"])
 
@@ -133,3 +146,13 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
                 )
 
         return update_ct
+
+
+def product_dict(**kwargs: List) -> Generator:
+    """
+    Takes a dictionary of lists, returning the product
+    as a list of dictionaries.
+    """
+    keys = kwargs.keys()
+    for instance in itertools.product(*kwargs.values()):
+        yield dict(zip(keys, instance))

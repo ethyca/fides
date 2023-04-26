@@ -2282,7 +2282,7 @@ def dynamodb_resources(
             "id": {"S": customer_name},
             "name": {"S": customer_name},
             "email": {"S": customer_email},
-            "address_id": {"S": customer_name},
+            "address_id": {"L": [{"S": customer_name}, {"S": customer_name}]},
             "created": {"S": datetime.now(timezone.utc).isoformat()},
         },
         "address": {
