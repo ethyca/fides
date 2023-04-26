@@ -81,6 +81,7 @@ class TestGetPrivacyExperiences:
         assert resp["link_label"] == "Manage your privacy"
         assert resp["confirmation_button_label"] is None
         assert resp["reject_button_label"] is None
+        assert resp["acknowledgement_button_label"] is None
         assert resp["id"] is not None
         assert resp["version"] == 1
         assert resp["privacy_experience_history_id"] is not None

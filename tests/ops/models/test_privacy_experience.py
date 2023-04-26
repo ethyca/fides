@@ -40,6 +40,7 @@ class TestPrivacyExperience:
         assert exp.link_label is None
         assert exp.confirmation_button_label == "Approve"
         assert exp.reject_button_label == "Discard"
+        assert exp.acknowledgement_button_label is None
         assert exp.version == 1.0
         assert exp.privacy_experience_template_id is None
 
@@ -56,6 +57,7 @@ class TestPrivacyExperience:
         assert history.link_label is None
         assert history.confirmation_button_label == "Approve"
         assert history.reject_button_label == "Discard"
+        assert history.acknowledgement_button_label is None
         assert history.version == 1.0
         assert history.privacy_experience_template_id is None
         assert history.privacy_experience_id == exp.id
@@ -87,6 +89,8 @@ class TestPrivacyExperience:
         assert exp.link_label == "Go to the privacy center"
         assert exp.version == 1.0
         assert exp.privacy_experience_template_id is None
+        assert exp.acknowledgement_button_label is None
+
         assert exp.id is not None
         exp_created_at = exp.created_at
         exp_updated_at = exp.updated_at

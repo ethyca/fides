@@ -1431,6 +1431,9 @@ dataset:
   - name: privacyexperience
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
+      - name: acknowledgement_button_label
+        data_categories: [ system.operations ]
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       - name: banner_description
         data_categories: [system.operations]
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -1482,6 +1485,9 @@ dataset:
   - name: privacyexperiencehistory
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
+      - name: acknowledgement_button_label
+        data_categories: [ system.operations ]
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       - name: banner_description
         data_categories: [system.operations]
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -1536,6 +1542,9 @@ dataset:
   - name: privacyexperiencetemplate
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
+      - name: acknowledgement_button_label
+        data_categories: [ system.operations ]
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       - name: banner_description
         data_categories: [system.operations]
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

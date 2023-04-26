@@ -43,6 +43,7 @@ def upgrade():
         sa.Column("link_label", sa.String(), nullable=True),
         sa.Column("confirmation_button_label", sa.String(), nullable=True),
         sa.Column("reject_button_label", sa.String(), nullable=True),
+        sa.Column("acknowledgement_button_label", sa.String(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
@@ -83,6 +84,7 @@ def upgrade():
         sa.Column("link_label", sa.String(), nullable=True),
         sa.Column("confirmation_button_label", sa.String(), nullable=True),
         sa.Column("reject_button_label", sa.String(), nullable=True),
+        sa.Column("acknowledgement_button_label", sa.String(), nullable=True),
         sa.Column("version", sa.Float(), nullable=False),
         sa.Column("privacy_experience_template_id", sa.String(), nullable=True),
         sa.ForeignKeyConstraint(
@@ -126,6 +128,7 @@ def upgrade():
         sa.Column("link_label", sa.String(), nullable=True),
         sa.Column("confirmation_button_label", sa.String(), nullable=True),
         sa.Column("reject_button_label", sa.String(), nullable=True),
+        sa.Column("acknowledgement_button_label", sa.String(), nullable=True),
         sa.Column("version", sa.Float(), nullable=False),
         sa.Column("privacy_experience_template_id", sa.String(), nullable=True),
         sa.Column("privacy_experience_id", sa.String(), nullable=False),

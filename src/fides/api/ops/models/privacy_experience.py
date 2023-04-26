@@ -50,6 +50,7 @@ class PrivacyExperienceBase:
     link_label = Column(String)
     confirmation_button_label = Column(String)
     reject_button_label = Column(String)
+    acknowledgement_button_label = Column(String)
 
 
 class PrivacyExperienceTemplate(PrivacyExperienceBase, Base):

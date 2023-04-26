@@ -28,6 +28,7 @@ class PrivacyExperience(BaseSchema):
     link_label: Optional[SafeStr]
     confirmation_button_label: Optional[SafeStr]
     reject_button_label: Optional[SafeStr]
+    acknowledgement_button_label: Optional[SafeStr]
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
