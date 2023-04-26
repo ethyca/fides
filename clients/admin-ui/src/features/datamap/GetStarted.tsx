@@ -22,7 +22,7 @@ const GetStarted = () => (
         <Text>
           Start by scanning your infrastructure. The scanner will connect to
           your infrastructure to automatically scan and create a list of all
-          systems available and then classify each system containg PII.
+          systems available and then classify each system containing PII.
         </Text>
         <Text>Let&apos;s get started!</Text>
         <Box>
