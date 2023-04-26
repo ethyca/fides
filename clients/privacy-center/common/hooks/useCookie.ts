@@ -9,9 +9,10 @@ const CODEC: Types.CookieCodecConfig<string, string> = {
   encodeName: encodeURIComponent,
   encodeValue: encodeURIComponent,
 };
-
+/**
+ * Generates a new `fides_user_device_id` and stores it to the cookie
+ */
 export const setFidesUserDeviceIdCookie = () => {
-  // Generates a new `fides_user_device_id` and stores it to the cookie
   if (typeof document === "undefined") {
     return undefined;
   }
