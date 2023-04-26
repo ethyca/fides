@@ -168,6 +168,8 @@ It may be necessary for a patch release to contain only select commits to the `m
 
 ## Release Checklist
 
+_update for accuracy_
+
 The release checklist is a manual set of checks done before each release to ensure functionality of the most critical components of the application. Some of these steps are redundant with automated tests, while others are _only_ tested here as part of this check.
 
 This checklist should be copy/pasted into the final pre-release PR, and checked off as you complete each step.
