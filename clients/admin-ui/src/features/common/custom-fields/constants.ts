@@ -1,4 +1,3 @@
-import { capitalize } from "~/features/common/utils";
 import { AllowedTypes, ResourceTypes } from "~/types/api";
 
 export enum TabTypes {
@@ -28,23 +27,23 @@ export const FIELD_TYPE_OPTIONS_NEW = [
 
 export const RESOURCE_TYPE_OPTIONS = [
   {
-    label: `Taxonomy - ${capitalize(ResourceTypes.DATA_CATEGORY)}`,
+    label: `taxonomy:${ResourceTypes.DATA_CATEGORY}`,
     value: ResourceTypes.DATA_CATEGORY,
   },
   {
-    label: `Taxonomy - ${capitalize(ResourceTypes.DATA_SUBJECT)}`,
+    label: `taxonomy:${ResourceTypes.DATA_SUBJECT}`,
     value: ResourceTypes.DATA_SUBJECT,
   },
   {
-    label: `Taxonomy - ${capitalize(ResourceTypes.DATA_USE)}`,
+    label: `taxonomy:${ResourceTypes.DATA_USE}`,
     value: ResourceTypes.DATA_USE,
   },
   {
-    label: capitalize(ResourceTypes.SYSTEM),
+    label: `${ResourceTypes.SYSTEM}:information`,
     value: ResourceTypes.SYSTEM,
   },
   {
-    label: "System - Data use",
+    label: "system:data use",
     value: ResourceTypes.PRIVACY_DECLARATION,
   },
 ];
