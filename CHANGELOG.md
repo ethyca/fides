@@ -26,10 +26,15 @@ The types of changes are:
 - Endpoints for consent reporting [#3095](https://github.com/ethyca/fides/pull/3095)
 - Custom fields table [#3097](https://github.com/ethyca/fides/pull/3097)
 - Custom fields form modal [#3165](https://github.com/ethyca/fides/pull/3165)
+- Endpoints to save the new-style Privacy Preferences with respect to a fides user device id [#3132](https://github.com/ethyca/fides/pull/3132)
+- Support `privacy_declaration` as a resource type for custom fields [#3149](https://github.com/ethyca/fides/pull/3149)
+- Expose `id` field of embedded `privacy_declarations` on `system` API responses [#3157](https://github.com/ethyca/fides/pull/3157)
+- Access and erasure support for Unbounce [#2697](https://github.com/ethyca/fides/pull/2697)
 
 ### Changed
 
 - The `cursor` pagination strategy now also searches for data outside of the `data_path` when determining the cursor value [#3068](https://github.com/ethyca/fides/pull/3068)
+- Moved Privacy Declarations associated with Systems to their own DB table [#3098](https://github.com/ethyca/fides/pull/3098)
 
 ### Removed
 
@@ -38,8 +43,14 @@ The types of changes are:
 
 ### Fixed
 
+- Fix a typo in the Admin UI [#3166](https://github.com/ethyca/fides/pull/3166)
 - The `--local` flag is now respected for the `scan dataset db` command [#3096](https://github.com/ethyca/fides/pull/3096)
+- Fixing issue where connectors with external dataset references would fail to save [#3142](https://github.com/ethyca/fides/pull/3142)
 
+### Developer Experience
+
+- Update fides deploy to use a new database.load_samples setting to initialize sample Systems, Datasets, and Connections for testing [#3102](https://github.com/ethyca/fides/pull/3102)
+- Remove support for automatically configuring messaging (Mailgun) & storage (S3) using `.env` with `nox -s "fides_env(test)"` [#3102](https://github.com/ethyca/fides/pull/3102)
 
 ## [2.11.0](https://github.com/ethyca/fides/compare/2.10.0...2.11.0)
 
@@ -67,6 +78,7 @@ The types of changes are:
 
 - Set `privacyDeclarationDeprecatedFields` flags to false and set `userCannotModify` to true [2987](https://github.com/ethyca/fides/pull/2987)
 - Restored `nav-config` back to the admin-ui [#2990](https://github.com/ethyca/fides/pull/2990)
+- Bumped supported Python versions to 3.10.11, 3.9.16, and 3.8.14 [#2936](https://github.com/ethyca/fides/pull/2936)
 - Modify privacy center default config to only request email identities, and add validation preventing requesting both email & phone identities [#2539](https://github.com/ethyca/fides/pull/2539)
 - SaaS connector icons are now dynamically loaded from the connector templates [#3018](https://github.com/ethyca/fides/pull/3018)
 - Updated consentmechanism Enum to rename "necessary" to "notice_only" [#3048](https://github.com/ethyca/fides/pull/3048)
@@ -116,7 +128,6 @@ The types of changes are:
 - Adds confirmation modal when downgrading user to "approver" role via Admin UI [#2924](https://github.com/ethyca/fides/pull/2924)
 - Changed the toast message for new users to include access control info [#2939](https://github.com/ethyca/fides/pull/2939)
 - Add Data Stewards to datamap export [#2962](https://github.com/ethyca/fides/pull/2962)
-- Bumped supported Python versions to 3.10.11, 3.9.16, and 3.8.14 [#2936](https://github.com/ethyca/fides/pull/2936)
 
 ### Fixed
 
