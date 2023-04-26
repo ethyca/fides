@@ -114,12 +114,20 @@ export const MoreActionsCell = ({ row, column }: CellProps<any, any>) => {
         </MenuButton>
         <MenuList>
           <Restrict scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DELETE]}>
-            <MenuItem {...MENU_ITEM_PROPS} onClick={handleDelete}>
+            <MenuItem
+              {...MENU_ITEM_PROPS}
+              onClick={handleDelete}
+              data-testid="delete-btn"
+            >
               Delete
             </MenuItem>
           </Restrict>
           <Restrict scopes={[ScopeRegistryEnum.CUSTOM_FIELD_UPDATE]}>
-            <MenuItem {...MENU_ITEM_PROPS} onClick={handleEdit}>
+            <MenuItem
+              {...MENU_ITEM_PROPS}
+              onClick={handleEdit}
+              data-testid="edit-btn"
+            >
               Edit
             </MenuItem>
           </Restrict>
