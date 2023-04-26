@@ -44,7 +44,6 @@ export const useFidesUserDeviceIdCookie = () => {
   const cookie = getFidesUserDeviceIdCookie();
   if (!cookie) {
     return setFidesUserDeviceIdCookie();
-  } else {
-    return cookie;
   }
+  return cookie;
 }
