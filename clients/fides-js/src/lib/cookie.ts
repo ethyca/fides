@@ -92,7 +92,7 @@ export const setConsentCookie = (cookieKeyConsent: CookieKeyConsent) => {
   //   example.com -> example.com
   //   localhost -> localhost
   //
-  // TODO: This won't second-level domains like co.uk:
+  // DEFER: add support for second-level domains (https://github.com/ethyca/fides/issues/2072) 
   //   privacy.example.co.uk -> co.uk # ERROR
   const rootDomain = window.location.hostname.split(".").slice(-2).join(".");
 
