@@ -34,7 +34,6 @@ from fides.api.ops.cryptography.cryptographic_util import b64_str_to_str
 from fides.api.ops.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.fides_user import FidesUser
-from fides.api.ops.oauth.oauth_util import extract_payload
 from fides.api.ops.oauth.roles import APPROVER
 from fides.api.ops.oauth.schemas.user import (
     UserForcePasswordReset,
@@ -44,6 +43,7 @@ from fides.api.ops.oauth.schemas.user import (
 )
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import (
+    extract_payload,
     get_current_user,
     oauth2_scheme,
     verify_oauth_client,

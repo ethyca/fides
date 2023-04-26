@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, List, Tuple
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
-from jose import exceptions
+from jose import exceptions, jwe
 from jose.constants import ALGORITHMS
 from loguru import logger
 from pydantic import ValidationError
@@ -27,7 +27,6 @@ from fides.api.ops.cryptography.schemas.jwt import (
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.policy import PolicyPreWebhook
-from fides.api.ops.oauth.oauth_util import extract_payload, is_token_expired
 from fides.api.ops.oauth.roles import get_scopes_from_roles
 from fides.api.ops.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 from fides.api.ops.schemas.external_https import WebhookJWE
@@ -41,6 +40,19 @@ JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 oauth2_scheme = OAuth2ClientCredentialsBearer(
     tokenUrl=(V1_URL_PREFIX + TOKEN),
 )
+
+
+def extract_payload(jwe_string: str, encryption_key: str) -> str:
+    """Given a jwe, extracts the payload and returns it in string form."""
+    return jwe.decrypt(jwe_string, encryption_key)
+
+
+def is_token_expired(issued_at: datetime | None, token_duration_min: int) -> bool:
+    """Returns True if the datetime is earlier than token_duration_min ago."""
+    if not issued_at:
+        return True
+
+    return (datetime.now() - issued_at).total_seconds() / 60.0 > token_duration_min
 
 
 def copy_func(source_function: Callable) -> Callable:

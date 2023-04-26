@@ -24,7 +24,6 @@ from fides.api.ops.cryptography.schemas.jwt import (
 )
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.oauth.jwt import generate_jwe
-from fides.api.ops.oauth.oauth_util import extract_payload, is_token_expired
 from fides.api.ops.oauth.roles import (
     APPROVER,
     CONTRIBUTOR,
@@ -37,9 +36,11 @@ from fides.api.ops.oauth.roles import (
 from fides.api.ops.util.oauth_util import (
     _has_direct_scopes,
     _has_scope_via_role,
+    extract_payload,
     get_root_client,
     has_permissions,
     has_scope_subset,
+    is_token_expired,
     verify_oauth_client,
 )
 from fides.core.config import CONFIG
