@@ -40,6 +40,17 @@ export const FieldTypeCell = (
   cellProps: CellProps<typeof FIELD_TYPE_MAP, string>
 ) => {
   /* eslint-disable */
+  /*
+  This value re-assign is here because the `field_type` enum values
+  are `string` and `string[]`. When custom fields were first created,
+  the select and multi-select fields were tied to `string` and `string[]`.
+  Since `open-text` is technically a `string` value the only way to
+  differentiate between the two is to check if the `allow_list_id` is
+  null or not. If it is null, then it is an `open-text` field.
+
+  When more fields are added a dedicated enum with each field type will
+  be created and this hack will be removed.
+   */
   // @ts-ignore
   const value = cellProps.row.original["allow_list_id"]
     ? cellProps.value
