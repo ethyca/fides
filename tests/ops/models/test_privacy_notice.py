@@ -7,6 +7,7 @@ from fides.api.ops.models.privacy_notice import (
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
     check_conflicting_data_uses,
+    new_data_use_conflicts_with_existing_use,
 )
 
 
@@ -689,29 +690,28 @@ class TestPrivacyNoticeModel:
         ), "This is an exact match but this privacy notice is frontend only"
 
 
-class TestCanAddNewUse:
+class TestDataUseConflictFound:
     @pytest.mark.parametrize(
-        "existing_use,new_use,expected_can_add_result",
+        "existing_use,new_use,conflict_found",
         [
-            ("a", "a", False),
-            ("a", "a.b", False),
-            ("a", "a.b.c", False),
-            ("a.b.c", "a.b.c", False),
-            ("a.b.c", "a.b", False),
-            ("a.b.c", "a", False),
-            ("a.b", "a.b", False),
-            ("a.b", "a", False),
-            ("a", "c", True),
-            ("a.b", "c.d", True),
-            ("a.b", "a.c", True),
-            ("a.b.c", "a.b.d", True),
-            ("a.b", "a.c.d", True),
-            ("a.c.d", "a.b", True),
+            ("a", "a", True),
+            ("a", "a.b", True),
+            ("a", "a.b.c", True),
+            ("a.b.c", "a.b.c", True),
+            ("a.b.c", "a.b", True),
+            ("a.b.c", "a", True),
+            ("a.b", "a.b", True),
+            ("a.b", "a", True),
+            ("a", "c", False),
+            ("a.b", "c.d", False),
+            ("a.b", "a.c", False),
+            ("a.b.c", "a.b.d", False),
+            ("a.b", "a.c.d", False),
+            ("a.c.d", "a.b", False),
         ],
     )
-    def test_can_add_new_use(self, existing_use, new_use, expected_can_add_result):
-        can_add = not (
-            existing_use.startswith(new_use) or new_use.startswith(existing_use)
+    def test_new_data_use_conflicts(self, existing_use, new_use, conflict_found):
+        assert (
+            new_data_use_conflicts_with_existing_use(existing_use, new_use)
+            is conflict_found
         )
-
-        assert can_add == expected_can_add_result
