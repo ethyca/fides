@@ -11,19 +11,17 @@ const customJestConfig = {
   setupFilesAfterEnv: ["<rootDir>/__tests__/jest.setup.ts"],
   testEnvironment: "jest-environment-jsdom",
   testPathIgnorePatterns: [ "jest.setup.ts" ],
-  transform: {
-    // Use babel-jest to transpile tests with the next/babel preset
-    // https://jestjs.io/docs/configuration#transform-objectstring-pathtotransformer--pathtotransformer-object
-    "^.+\\.(js|jsx|ts|tsx|mjs)$": ["babel-jest", { presets: ["next/babel"] }],
-  },
-  moduleDirectories: ["node_modules", "../node_modules", "../fides-js/node_modules"],
+  moduleDirectories: ["node_modules"],
   moduleNameMapper: {
     // Handle module aliases
     "^~/(.*)$": "<rootDir>/$1",
+
     // Handle local packages from our npm workspace
+    // NOTE: this is pretty messy, but it's because jest doesn't understand how
+    // npm workspaces work, so it can't find node_modules installed in the
+    // clients/ root directory...
+    // See https://github.com/jestjs/jest/issues/5325
     "^fides-js$": "<rootDir>/../fides-js/dist/fides.mjs",
-    // Handle imported module from fides-js (TODO: this doesn't work, clearly node module resolution isn't working!)
-    "^typescript-cookie$": "<rootDir>/../node_modules/typescript-cookie/index.js",
   },
 }
 
