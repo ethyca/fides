@@ -103,11 +103,10 @@ export const CustomFieldForm = ({
                         {allowed_values.map((_value, index) => (
                           <Flex
                             flexGrow={1}
-                            gap="12px"
+                            gap="3"
                             // eslint-disable-next-line react/no-array-index-key
                             key={index}
-                            mt={index > 0 ? "12px" : undefined}
-                            // ref={fieldRef}
+                            mt={index > 0 ? 3 : undefined}
                           >
                             <CustomInput
                               customLabelProps={{
