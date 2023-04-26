@@ -16,8 +16,8 @@ const GetStarted = () => (
       <Stack spacing={4}>
         <Text color="gray.700" fontWeight="600">
           Privacy engineering can seem like an endlessly complex confluence of
-          legal and data engineering terminology&mdash;fear not&mdash;Fides is here to
-          simplify this.
+          legal and data engineering terminology&mdash;fear not&mdash;Fides is
+          here to simplify this.
         </Text>
         <Text>
           Start by scanning your infrastructure. The scanner will connect to
