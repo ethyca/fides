@@ -20,7 +20,6 @@ export enum FieldTypes {
 
 export const FIELD_TYPE_OPTIONS_NEW = [
   { label: "Single select", value: FieldTypes.SINGLE_SELECT },
-  // eslint-disable-next-line no-underscore-dangle
   { label: "Multiple select", value: FieldTypes.MULTIPLE_SELECT },
   { label: "Open Text", value: FieldTypes.OPEN_TEXT },
 ];
