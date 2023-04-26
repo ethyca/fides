@@ -47,13 +47,14 @@ const useConsentRequestForm = ({
   const toast = useToast();
   const formik = useFormik({
     initialValues: {
-      email: undefined,
-      phone: undefined,
+      email: "",
+      phone: "",
     },
     onSubmit: async (values) => {
       const body = {
-        email: values.email,
-        phone_number: values.phone,
+        // Marshall empty strings back to `undefined` so the backend will not try to validate
+        email: values.email === "" ? undefined : values.email,
+        phone_number: values.phone === "" ? undefined : values.phone,
         fides_user_device_id: fidesUserDeviceId,
       };
       const handleError = ({
@@ -181,6 +182,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
     successHandler,
   });
 
+  console.log({ values });
   const requiredInputs = Object.entries(identityInputs).filter(
     ([, required]) => required === "required"
   );
