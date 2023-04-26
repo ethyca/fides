@@ -122,11 +122,11 @@ describe("Custom Fields", () => {
         .first()
         .should("contain", "Taxonomy - Single select");
       // sort alphabetical
-      cy.getByTestId("column-Title").click();
+      cy.getByTestId("column-Label").click();
       cy.get("tbody > tr").first().should("contain", "Multiple select list");
 
       // sort reverse
-      cy.getByTestId("column-Title").click();
+      cy.getByTestId("column-Label").click();
       cy.get("tbody > tr")
         .first()
         .should("contain", "Taxonomy - Single select");
@@ -254,7 +254,7 @@ describe("Custom Fields", () => {
           "Description!!"
         );
         cy.getSelectValueContainer("input-resource_type").contains(
-          "Data category"
+          "taxonomy:data category"
         );
 
         // Configuration
@@ -366,7 +366,7 @@ describe("Custom Fields", () => {
         // Field info
         cy.getByTestId("custom-input-name").type(payload.name);
         cy.getByTestId("custom-input-description").type(payload.description);
-        cy.selectOption("input-resource_type", "Data category");
+        cy.selectOption("input-resource_type", "taxonomy:data category");
 
         // Configuration
         cy.selectOption("input-field_type", "Open Text");
