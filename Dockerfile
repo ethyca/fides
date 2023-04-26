@@ -99,7 +99,7 @@ RUN apk add --no-cache libc6-compat
 # Build the frontend clients
 WORKDIR /fides/clients
 COPY clients/package.json clients/package-lock.json ./
-COPY clients/fides-consent/package.json ./fides-consent/package.json
+COPY clients/fides-js/package.json ./fides-js/package.json
 COPY clients/admin-ui/package.json ./admin-ui/package.json
 COPY clients/privacy-center/package.json ./privacy-center/package.json
 
