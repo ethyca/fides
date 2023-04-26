@@ -1,10 +1,10 @@
 """
 Contains the code that sets up the API.
 """
+import sys
 from datetime import datetime, timezone
 from logging import DEBUG, WARNING
 from typing import Callable, List, Optional, Pattern, Union
-import sys
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
@@ -33,7 +33,8 @@ from fides.api.ctl.ui import (
     path_is_in_ui_directory,
 )
 from fides.api.ctl.utils.errors import FidesError
-from fides.api.ctl.utils.logger import setup as setup_logging, format_and_obfuscate
+from fides.api.ctl.utils.logger import format_and_obfuscate
+from fides.api.ctl.utils.logger import setup as setup_logging
 from fides.api.ops.analytics import (
     accessed_through_local_host,
     in_docker_container,
@@ -215,15 +216,15 @@ async def prepare_and_log_request(
     )
 
 
-# Configure the routes here so we can generate the openapi json file
-
-
-@app.on_event("startup")
-async def setup_server() -> None:
-    "Run all of the required setup steps for the webserver."
+async def log_startup() -> None:
+    """
+    Configure the logger and log startup values.
+    """
     if CONFIG.dev_mode:
         logger.add(sys.stderr, format=format_and_obfuscate)
+
     logger.info(f"Starting Fides - v{VERSION}")
+
     logger.info(
         "Startup configuration: reloading = {}, dev_mode = {}",
         CONFIG.hot_reloading,
@@ -238,10 +239,16 @@ async def setup_server() -> None:
         )
         CONFIG.log_all_config_values()
 
-    if not CONFIG.database.sync_database_uri:
-        raise FidesError("No database uri provided")
 
-    await configure_db(CONFIG.database.sync_database_uri)
+@app.on_event("startup")
+async def setup_server() -> None:
+    "Run all of the required setup steps for the webserver."
+    await log_startup()
+
+    if CONFIG.database.sync_database_uri:
+        await configure_db(CONFIG.database.sync_database_uri)
+    else:
+        raise FidesError("No database uri provided")
 
     try:
         create_or_update_parent_user()
