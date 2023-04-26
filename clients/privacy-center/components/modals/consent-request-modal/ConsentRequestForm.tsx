@@ -181,6 +181,12 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
     successHandler,
   });
 
+  const requiredInputs = Object.entries(identityInputs).filter(
+    ([, required]) => required === "required"
+  );
+  // it's ok to bypass the dirty check if there are no required inputs
+  const dirtyCheck = requiredInputs.length === 0 ? true : dirty;
+
   useEffect(() => resetForm(), [isOpen, resetForm]);
 
   return (
@@ -257,7 +263,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
             _active={{ bg: "primary.500" }}
             colorScheme="primary"
             isLoading={isSubmitting}
-            // isDisabled={isSubmitting || !(isValid && dirty)}
+            isDisabled={isSubmitting || !(isValid && dirtyCheck)}
             size="sm"
           >
             Continue
