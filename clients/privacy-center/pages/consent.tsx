@@ -51,7 +51,10 @@ const Consent: NextPage = () => {
     selectPersistedFidesKeyToConsent
   );
   const config = useConfig();
-  const consentOptions = useMemo(() => config.consent?.page.consentOptions ?? [], [config]);
+  const consentOptions = useMemo(
+    () => config.consent?.page.consentOptions ?? [],
+    [config]
+  );
 
   const getIdVerificationConfigQueryResult = useGetIdVerificationConfigQuery();
   const [

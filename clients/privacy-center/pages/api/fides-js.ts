@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { promises as fsPromises } from "fs";
-import type { NextApiRequest, NextApiResponse } from "next"
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import { ConsentOption, FidesConfig } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
@@ -8,10 +8,13 @@ import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 /**
  * Server-side API route to generate the customized "fides.js" script
  * based on the current configuration values.
- * 
+ *
  * TODO: if this actually works, make sure we cache the results aggressively!
  */
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await loadPrivacyCenterEnvironment();
   let options: ConsentOption[] = [];
@@ -27,13 +30,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Create the FidesConfig object that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {
     consent: {
-      options
-    }
+      options,
+    },
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
   // TODO: need to get a copy of the file during build stage, not load from ../ paths!
-  console.log("Bundling generic fides.js & Privacy Center configuration together...");
+  console.log(
+    "Bundling generic fides.js & Privacy Center configuration together..."
+  );
   const fidesJS = await fsPromises.readFile("../fides-js/dist/fides.js");
   const script = `
   (function () {
@@ -47,5 +52,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   `;
 
   // Send the bundled script, ready to be loaded directly into a page!
-  res.status(200).setHeader("Content-Type", "application/javascript").send(script);
+  res
+    .status(200)
+    .setHeader("Content-Type", "application/javascript")
+    .send(script);
 }

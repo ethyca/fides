@@ -91,11 +91,14 @@ const usePrivacyRequestForm = ({
         const headers: Headers = new Headers();
         addCommonHeaders(headers, null);
 
-        const response = await fetch(`${environment.fidesApiUrl}/privacy-request`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(body),
-        });
+        const response = await fetch(
+          `${environment.fidesApiUrl}/privacy-request`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(body),
+          }
+        );
         const data = await response.json();
         if (!response.ok) {
           handleError({
