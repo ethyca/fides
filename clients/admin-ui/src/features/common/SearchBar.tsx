@@ -13,7 +13,6 @@ interface Props extends Omit<InputProps, "onChange"> {
   onChange: (value: string) => void;
   withIcon?: boolean;
   onClear?: () => void;
-  placeholder?: string;
 }
 const SearchBar = ({
   search,
