@@ -152,12 +152,7 @@ export const CustomFieldModal = ({
     }
   };
 
-  // const test = useFormikContext<FormValues>()
-  // test.
-  const handleSubmit = async (
-    values: FormValues
-    // helpers: FormikHelpers<FormValues>
-  ) => {
+  const handleSubmit = async (values: FormValues) => {
     if (
       [FieldTypes.SINGLE_SELECT, FieldTypes.MULTIPLE_SELECT].includes(
         values.field_type
