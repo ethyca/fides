@@ -43,6 +43,7 @@ The types of changes are:
 
 - The `--local` flag is now respected for the `scan dataset db` command [#3096](https://github.com/ethyca/fides/pull/3096)
 - Fixing issue where connectors with external dataset references would fail to save [#3142](https://github.com/ethyca/fides/pull/3142)
+- Repoint legacy docs site links to the new and improved docs site [#3167](https://github.com/ethyca/fides/pull/3167)
 
 ### Developer Experience
 
