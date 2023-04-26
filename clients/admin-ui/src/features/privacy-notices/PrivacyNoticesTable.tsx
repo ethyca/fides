@@ -92,8 +92,16 @@ export const PrivacyNoticesTable = () => {
         recommendations and pre-built templates for privacy notices you may need
         to display to your users. To get started with privacy notices, first add
         your data uses to systems on your data map."
-        buttonHref={SYSTEM_ROUTE}
-        buttonText="Set up data uses"
+        button={
+          <Button
+            size="sm"
+            variant="outline"
+            fontWeight="semibold"
+            minWidth="auto"
+          >
+            <NextLink href={SYSTEM_ROUTE}>Set up data uses</NextLink>
+          </Button>
+        }
       />
     );
   }

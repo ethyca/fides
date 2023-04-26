@@ -134,6 +134,22 @@ export const CustomFieldsTable = () => {
     );
   }
 
+  const addCustomFieldButton = (
+    <Restrict scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DEFINITION_CREATE]}>
+      <Button
+        size={customFields.length > 0 ? "xs" : "sm"}
+        colorScheme={customFields.length > 0 ? "primary" : undefined}
+        variant={customFields.length === 0 ? "outline" : undefined}
+        fontWeight={customFields.length === 0 ? "semibold" : undefined}
+        minWidth={customFields.length === 0 ? "auto" : undefined}
+        data-testid="add-custom-field-btn"
+        onClick={onOpen}
+      >
+        Add a custom field +
+      </Button>
+    </Restrict>
+  );
+
   if (customFields.length === 0) {
     return (
       <Box maxWidth="720px">
@@ -148,6 +164,7 @@ export const CustomFieldsTable = () => {
           title="It looks like it’s your first time here!"
           buttonHref=""
           buttonText="Add a custom field"
+          button={addCustomFieldButton}
           description={
             <>
               You haven’t created any custom fields yet. To create a custom
@@ -156,6 +173,15 @@ export const CustomFieldsTable = () => {
             </>
           }
         />
+
+        {isOpen ? (
+          <CustomFieldModal
+            customField={activeCustomField}
+            isOpen={isOpen}
+            onClose={handleCloseModal}
+            isLoading={false}
+          />
+        ) : null}
       </Box>
     );
   }
@@ -181,18 +207,7 @@ export const CustomFieldsTable = () => {
             // +1 for total columns because our hook adds a column for the
             // more actions menu
             <FidesTableFooter totalColumns={columns.length + 1}>
-              <Restrict
-                scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DEFINITION_CREATE]}
-              >
-                <Button
-                  size="xs"
-                  colorScheme="primary"
-                  data-testid="add-custom-field-btn"
-                  onClick={onOpen}
-                >
-                  Add a custom field +
-                </Button>
-              </Restrict>
+              {addCustomFieldButton}
             </FidesTableFooter>
           }
         />
