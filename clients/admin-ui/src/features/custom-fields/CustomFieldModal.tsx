@@ -168,7 +168,7 @@ export const CustomFieldModal = ({
         return;
       }
 
-      const {allow_list: allowListPayload} = values;
+      const { allow_list: allowListPayload } = values;
 
       if (values.allow_list_id) {
         allowListPayload.id = values.allow_list_id;
