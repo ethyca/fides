@@ -137,15 +137,25 @@ async def test_wunderkind_consent_request_task_new_workflow(
     wunderkind_dataset_config,
     wunderkind_identity_email,
     privacy_preference_history,
+    privacy_preference_history_us_ca_provide,
+    system,
 ) -> None:
     """Full consent request based on the Wunderkind SaaS config and new workflow"""
+
+    wunderkind_connection_config.system_id = system.id
+    wunderkind_connection_config.save(db)
 
     privacy_request = PrivacyRequest(
         id=str(uuid4()), status=PrivacyRequestStatus.pending
     )
     privacy_request.save(db)
+    # This preference matches on data use
     privacy_preference_history.privacy_request_id = privacy_request.id
     privacy_preference_history.save(db=db)
+
+    # This preference does not match on data use
+    privacy_preference_history_us_ca_provide.privacy_request_id = privacy_request.id
+    privacy_preference_history_us_ca_provide.save(db=db)
 
     identity = Identity(**{"email": wunderkind_identity_email})
     privacy_request.cache_identity(identity)
@@ -185,6 +195,96 @@ async def test_wunderkind_consent_request_task_new_workflow(
             log.collection_name == dataset_name
         ), "Node-level is given the same name as the dataset name"
         assert log.action_type == ActionType.consent
+
+    # Wunderkind added as completed to relevant privacy preference
+    assert privacy_preference_history.affected_system_status == {
+        wunderkind_connection_config.system_key: ExecutionLogStatus.complete.value
+    }
+    assert privacy_preference_history.secondary_user_ids == {
+        "email": wunderkind_identity_email
+    }
+
+    # Wunderkind added as skipped to privacy preference not matching data use
+    assert privacy_preference_history_us_ca_provide.affected_system_status == {
+        wunderkind_connection_config.system_key: ExecutionLogStatus.skipped.value
+    }
+    assert not privacy_preference_history_us_ca_provide.secondary_user_ids
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_wunderkind
+@pytest.mark.asyncio
+@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+async def test_wunderkind_errored_logging_new_workflow(
+    mocked_client_send,
+    db,
+    consent_policy,
+    wunderkind_connection_config,
+    wunderkind_dataset_config,
+    wunderkind_identity_email,
+    privacy_preference_history,
+    privacy_preference_history_us_ca_provide,
+    system,
+) -> None:
+    """Test wunderkind errors have proper logs created"""
+    mocked_client_send.side_effect = Exception("KeyError")
+    wunderkind_connection_config.system_id = system.id
+    wunderkind_connection_config.save(db)
+
+    privacy_request = PrivacyRequest(
+        id=str(uuid4()), status=PrivacyRequestStatus.pending
+    )
+    privacy_request.save(db)
+    # This preference matches on data use
+    privacy_preference_history.privacy_request_id = privacy_request.id
+    privacy_preference_history.save(db=db)
+
+    # This preference does not match on data use
+    privacy_preference_history_us_ca_provide.privacy_request_id = privacy_request.id
+    privacy_preference_history_us_ca_provide.save(db=db)
+
+    identity = Identity(**{"email": wunderkind_identity_email})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = "wunderkind_instance"
+
+    with pytest.raises(Exception):
+        await graph_task.run_consent_request(
+            privacy_request,
+            consent_policy,
+            build_consent_dataset_graph([wunderkind_dataset_config]),
+            [wunderkind_connection_config],
+            {"email": wunderkind_identity_email},
+            db,
+        )
+
+    execution_logs = db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id
+    )
+
+    wunderkind_logs = execution_logs.filter_by(collection_name=dataset_name).order_by(
+        "created_at"
+    )
+    assert wunderkind_logs.count() == 2
+
+    assert [log.status for log in wunderkind_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.error,
+    ]
+
+    # Wunderkind system added as errored to relevant privacy preference
+    assert privacy_preference_history.affected_system_status == {
+        wunderkind_connection_config.system_key: ExecutionLogStatus.error.value
+    }
+    assert privacy_preference_history.secondary_user_ids == {
+        "email": wunderkind_identity_email
+    }
+
+    # Wunderkind added as skipped to privacy preference not matching data use
+    assert privacy_preference_history_us_ca_provide.affected_system_status == {
+        wunderkind_connection_config.system_key: ExecutionLogStatus.skipped.value
+    }
+    assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
 
 @pytest.mark.integration_saas
@@ -287,3 +387,8 @@ async def test_wunderkind_skipped_new_workflow(
         ExecutionLogStatus.in_processing,
         ExecutionLogStatus.skipped,
     ]
+
+    assert privacy_preference_history_us_ca_provide.affected_system_status == {
+        wunderkind_connection_config.system_key: ExecutionLogStatus.skipped.value
+    }
+    assert not privacy_preference_history_us_ca_provide.secondary_user_ids

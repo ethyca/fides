@@ -26,6 +26,7 @@ from fides.api.ops.api.deps import get_config_proxy, get_db
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
+from fides.api.ops.api.v1.endpoints.utils import validate_start_and_end_filters
 from fides.api.ops.api.v1.scope_registry import CONSENT_READ
 from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
@@ -89,23 +90,12 @@ def _filter_consent(
     if opt_in is not None:
         query = query.filter(Consent.opt_in == opt_in)
 
-    for end, start, field_name in [
-        [created_lt, created_gt, "created"],
-        [updated_lt, updated_gt, "updated"],
-    ]:
-        if end is None or start is None:
-            continue
-
-        if not (isinstance(end, datetime) and isinstance(start, datetime)):
-            continue
-
-        if end < start:
-            # With date fields, if the start date is after the end date, return a 400
-            # because no records will lie within this range.
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
-            )
+    validate_start_and_end_filters(
+        [
+            (created_lt, created_gt, "created"),
+            (updated_lt, updated_gt, "updated"),
+        ]
+    )
 
     if created_lt:
         query = query.filter(Consent.created_at < created_lt)

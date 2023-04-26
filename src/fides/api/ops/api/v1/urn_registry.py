@@ -21,6 +21,11 @@ CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID = (
 CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY = (
     "/consent-request/{consent_request_id}/verify-for-privacy-preferences"
 )
+PRIVACY_PREFERENCES = "/privacy-preferences"
+
+# Reporting endpoints - have records for *all* users
+HISTORICAL_PRIVACY_PREFERENCES_REPORT = "/historical-privacy-preferences"
+CURRENT_PRIVACY_PREFERENCES_REPORT = "/current-privacy-preferences"
 
 
 # Oauth Client URLs

@@ -17,8 +17,37 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.11.0...main)
 
+### Added
+
+- Access and erasure support for Aircall [#2589](https://github.com/ethyca/fides/pull/2589)
+- Access and erasure support for Klaviyo [#2501](https://github.com/ethyca/fides/pull/2501)
+- Page to edit or add privacy notices [#3058](https://github.com/ethyca/fides/pull/3058)
+- Side navigation bar can now also have children navigation links [#3099](https://github.com/ethyca/fides/pull/3099)
+- Endpoints for consent reporting [#3095](https://github.com/ethyca/fides/pull/3095)
+- Custom fields table [#3097](https://github.com/ethyca/fides/pull/3097)
+- Endpoints to save the new-style Privacy Preferences with respect to a fides user device id [#3132](https://github.com/ethyca/fides/pull/3132)
+- Support `privacy_declaration` as a resource type for custom fields [#3149](https://github.com/ethyca/fides/pull/3149)
+- Expose `id` field of embedded `privacy_declarations` on `system` API responses [#3157](https://github.com/ethyca/fides/pull/3157)
+
+### Changed
+
+- The `cursor` pagination strategy now also searches for data outside of the `data_path` when determining the cursor value [#3068](https://github.com/ethyca/fides/pull/3068)
+- Moved Privacy Declarations associated with Systems to their own DB table [#3098](https://github.com/ethyca/fides/pull/3098)
+
 ### Removed
+
 - Removed the warning about access control migration [#3055](https://github.com/ethyca/fides/pull/3055)
+- Remove `customFields` feature flag [#3080](https://github.com/ethyca/fides/pull/3080)
+
+### Fixed
+
+- The `--local` flag is now respected for the `scan dataset db` command [#3096](https://github.com/ethyca/fides/pull/3096)
+- Fixing issue where connectors with external dataset references would fail to save [#3142](https://github.com/ethyca/fides/pull/3142)
+
+### Developer Experience
+
+- Update fides deploy to use a new database.load_samples setting to initialize sample Systems, Datasets, and Connections for testing [#3102](https://github.com/ethyca/fides/pull/3102)
+- Remove support for automatically configuring messaging (Mailgun) & storage (S3) using `.env` with `nox -s "fides_env(test)"` [#3102](https://github.com/ethyca/fides/pull/3102)
 
 ## [2.11.0](https://github.com/ethyca/fides/compare/2.10.0...2.11.0)
 

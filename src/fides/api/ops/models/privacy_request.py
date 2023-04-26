@@ -812,6 +812,7 @@ class ProvidedIdentityType(EnumType):
     phone_number = "phone_number"
     ga_client_id = "ga_client_id"
     ljt_readerID = "ljt_readerID"
+    fides_user_device_id = "fides_user_device_id"
 
 
 class ProvidedIdentity(Base):  # pylint: disable=R0904

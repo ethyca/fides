@@ -148,6 +148,10 @@ dataset:
         data_categories:
         - system.operations
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: fides_user_device_provided_identity_id
+        data_categories:
+        - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       - name: id
         data_categories:
         - system.operations
@@ -1384,6 +1388,46 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: privacydeclaration
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: name
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: data_categories
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: data_qualifier
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: data_subjects
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: dataset_references
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: egress
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: ingress
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: system_id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: data_use
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: privacynotice
     data_categories: []
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -1878,6 +1922,18 @@ dataset:
       - name: email
         data_categories:
         - user
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: fides_user_device
+        data_categories:
+        - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: fides_user_device_provided_identity_id
+        data_categories:
+        - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: hashed_fides_user_device
+        data_categories:
+        - system.operations
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       - name: id
         data_categories:
