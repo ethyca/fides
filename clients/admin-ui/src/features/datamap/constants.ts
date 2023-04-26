@@ -1,41 +1,10 @@
-import { ExportFilterItem } from "./types";
-
 /**
  * Enums
  */
-export enum ExportFilterType {
-  DEFAULT,
-  GROUP_BY_PURPOSE_OF_PROCESSING,
-  GROUP_BY_SYSTEM,
-}
 
 export const CELL_SIZE = 20;
 
 export const DATA_CATEGORY_COLUMN_ID = "unioned_data_categories";
-
-export const EXPORT_FILTER_MAP: ExportFilterItem[] = [
-  {
-    id: ExportFilterType.GROUP_BY_SYSTEM,
-    name: `Group by system`,
-    description: `Export a file grouped by system. All other data within a system will be collapsed in each row.`,
-    key: `system.name`,
-    fileName: `report_systems_[timestamp]`,
-  },
-  {
-    id: ExportFilterType.GROUP_BY_PURPOSE_OF_PROCESSING,
-    name: `Group by purpose of processing`,
-    description: `Export a file grouped by purpose of processing. All other data within a purpose of processing will be collapsed in each row.`,
-    key: `system.privacy_declaration.data_use.name`,
-    fileName: `report_purposes_processing_[timestamp]`,
-  },
-  {
-    id: ExportFilterType.DEFAULT,
-    name: `Default`,
-    description: `Export a file which retains the format of the table within the Fides application. This can be used if you need to filter on a single value like data category.`,
-    key: ``,
-    fileName: `report_[timestamp]`,
-  },
-];
 
 export const GRAY_BACKGROUND = "#F7F7F7";
 
@@ -80,6 +49,9 @@ export const SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_RIGHTS_AVAILABLE =
 export const SYSTEM_PRIVACY_DECLARATION_NAME =
   "system.privacy_declaration.name";
 
+export const SYSTEM_INGRESS = "system.ingress";
+export const SYSTEM_EGRESS = "system.egress";
+
 type NameMap = {
   [column: string]: string;
 };
@@ -95,7 +67,6 @@ COLUMN_NAME_MAP[DATA_CATEGORY_COLUMN_ID] = "Data Category";
 COLUMN_NAME_MAP[SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME] = "Data Subject";
 COLUMN_NAME_MAP[SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_RIGHTS_AVAILABLE] =
   "Data Subject Rights";
-COLUMN_NAME_MAP[SYSTEM_SYSTEM_DEPENDENCIES] = "Data Flow";
 COLUMN_NAME_MAP[DATASET_NAME] = "Datasets";
 COLUMN_NAME_MAP[SYSTEM_ADMINISTRATING_DEPARTMENT] = "Department";
 COLUMN_NAME_MAP[SYSTEM_DATA_RESPONSIBILITY_TITLE] = "Responsibility";
@@ -117,6 +88,8 @@ COLUMN_NAME_MAP[
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_LEGITIMATE_INTEREST_IMPACT_ASSESSMENT
 ] = "Legitimate Interests Assessment";
 COLUMN_NAME_MAP[SYSTEM_PRIVACY_DECLARATION_NAME] = "Processing Activity";
+COLUMN_NAME_MAP[SYSTEM_INGRESS] = "Source Systems";
+COLUMN_NAME_MAP[SYSTEM_EGRESS] = "Destination Systems";
 // COLUMN_NAME_MAP[] = 'Data Steward'; #  needs to be added in backend
 // COLUMN_NAME_MAP[] = 'Geography'; # needs to be added in backend
 // COLUMN_NAME_MAP[] = 'Tags'; # couldn't find it

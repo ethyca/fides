@@ -8,7 +8,7 @@
       "consent_mechanism": "opt_out",
       "data_uses": ["advertising.third_party.personalized"],
       "enforcement_level": "frontend",
-      "disabled": false,
+      "disabled": true,
       "has_gpc_flag": false,
       "displayed_in_privacy_center": true,
       "displayed_in_privacy_modal": true,

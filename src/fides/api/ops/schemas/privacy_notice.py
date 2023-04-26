@@ -24,16 +24,17 @@ class PrivacyNotice(BaseSchema):
 
     name: Optional[SafeStr]
     description: Optional[SafeStr]
+    internal_description: Optional[SafeStr]
     origin: Optional[SafeStr]
     regions: Optional[conlist(PrivacyNoticeRegion, min_items=1)]  # type: ignore
     consent_mechanism: Optional[ConsentMechanism]
     data_uses: Optional[conlist(SafeStr, min_items=1)]  # type: ignore
     enforcement_level: Optional[EnforcementLevel]
     disabled: Optional[bool] = False
-    has_gpc_flag: Optional[bool]
-    displayed_in_privacy_center: Optional[bool]
-    displayed_in_privacy_modal: Optional[bool]
-    displayed_in_banner: Optional[bool]
+    has_gpc_flag: Optional[bool] = False
+    displayed_in_privacy_center: Optional[bool] = True
+    displayed_in_overlay: Optional[bool] = True
+    displayed_in_api: Optional[bool] = True
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -83,3 +84,17 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
     created_at: datetime
     updated_at: datetime
     version: float
+    privacy_notice_history_id: str
+
+
+class PrivacyNoticeHistorySchema(PrivacyNoticeCreation, PrivacyNoticeWithId):
+    """
+    An API representation of a PrivacyNoticeHistory used for response payloads
+    """
+
+    version: float
+    privacy_notice_id: str
+
+    class Config:
+        use_enum_values = True
+        orm_mode = True

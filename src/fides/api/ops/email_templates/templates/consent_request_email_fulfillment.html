@@ -36,6 +36,9 @@
                         {% for consent_option in requested_change.consent_preferences -%}
                            {{consent_option.data_use}}: {{"Opt-in" if consent_option.opt_in else "Opt-out"}}{{", " if loop.index < requested_change.consent_preferences|length else ""}}
                         {%- endfor %}
+                        {% for privacy_preference in requested_change.privacy_preferences -%}
+                           {{privacy_preference.privacy_notice_history.name}}: {{"Opt-in" if privacy_preference.preference.value == "opt_in" else "Opt-out"}}{{", " if loop.index < requested_change.privacy_preferences|length else ""}}
+                        {%- endfor %}
                      </td>
                   </tr>
                {%- endfor %}

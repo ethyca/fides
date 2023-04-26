@@ -1,4 +1,5 @@
 import { Box, Button, Text, useToast } from "@fidesui/react";
+import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
@@ -120,7 +121,11 @@ const SystemFormTabs = ({
   const checkTabChange = (index: number) => {
     // While privacy declarations aren't updated yet, only apply the "unsaved changes" modal logic
     // to the system information tab
-    if (index === 0) {
+    if (
+      index === 0 ||
+      (index === 1 && tabIndex === 2) ||
+      (index === 2 && tabIndex === 1)
+    ) {
       setTabIndex(index);
     } else {
       setQueuedIndex(index);
@@ -178,6 +183,32 @@ const SystemFormTabs = ({
       content: activeSystem ? (
         <Box px={6} width={{ base: "100%", lg: "70%" }}>
           <PrivacyDeclarationStep system={activeSystem as System} />
+        </Box>
+      ) : null,
+      isDisabled: !activeSystem,
+    },
+    {
+      label: "Data flow",
+      content: activeSystem ? (
+        <Box width={{ base: "100%", lg: "70%" }}>
+          <Box px={6} paddingBottom={2}>
+            <Text
+              fontSize="md"
+              lineHeight={6}
+              fontWeight="bold"
+              marginBottom={3}
+            >
+              Data flow
+            </Text>
+            <Text fontSize="sm" lineHeight={5} fontWeight="medium">
+              Data flow describes the flow of data between systems in your Data
+              Map. Below, you can configure Source and Destination systems and
+              the corresponding links will be drawn in the Data Map graph.
+              Source systems are systems that send data to this system while
+              Destination systems receive data from this system.
+            </Text>
+          </Box>
+          <DataFlowAccordion system={activeSystem} isSystemTab />
         </Box>
       ) : null,
       isDisabled: !activeSystem,

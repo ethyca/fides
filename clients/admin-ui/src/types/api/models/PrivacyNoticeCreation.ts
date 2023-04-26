@@ -14,6 +14,7 @@ import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 export type PrivacyNoticeCreation = {
   name: string;
   description?: string;
+  internal_description?: string;
   origin?: string;
   regions: Array<PrivacyNoticeRegion>;
   consent_mechanism: ConsentMechanism;
@@ -22,6 +23,6 @@ export type PrivacyNoticeCreation = {
   disabled?: boolean;
   has_gpc_flag?: boolean;
   displayed_in_privacy_center?: boolean;
-  displayed_in_privacy_modal?: boolean;
-  displayed_in_banner?: boolean;
+  displayed_in_overlay?: boolean;
+  displayed_in_api?: boolean;
 };

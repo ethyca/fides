@@ -22,12 +22,12 @@ CREATE = "create"
 CREATE_OR_UPDATE = "create_or_update"
 CTL_DATASET = "ctl_dataset"
 CTL_POLICY = "ctl_policy"
+CURRENT_PRIVACY_PREFERENCE = "current-privacy-preference"
 DATABASE = "database"
 DATA_CATEGORY = "data_category"
 DATA_QUALIFIER = "data_qualifier"
 DATA_SUBJECT = "data_subject"
 DATA_USE = "data_use"
-DATAMAP = "datamap"
 DATASET = "dataset"
 DELETE = "delete"
 ENCRYPTION = "encryption"
@@ -42,6 +42,7 @@ ORGANIZATION = "organization"
 PASSWORD_RESET = "password-reset"
 POLICY = "policy"
 PRIVACY_NOTICE = "privacy-notice"
+PRIVACY_PREFERENCE_HISTORY = "privacy-preference-history"
 PRIVACY_REQUEST = "privacy-request"
 PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
@@ -100,6 +101,8 @@ CTL_POLICY_READ = f"{CTL_POLICY}:{READ}"
 CTL_POLICY_UPDATE = f"{CTL_POLICY}:{UPDATE}"
 CTL_POLICY_DELETE = f"{CTL_POLICY}:{DELETE}"
 
+CURRENT_PRIVACY_PREFERENCE_READ = f"{CURRENT_PRIVACY_PREFERENCE}:{READ}"
+
 DATABASE_RESET = f"{DATABASE}:{RESET}"
 
 DATA_CATEGORY_CREATE = f"{DATA_CATEGORY}:{CREATE}"
@@ -121,8 +124,6 @@ DATA_USE_CREATE = f"{DATA_USE}:{CREATE}"
 DATA_USE_READ = f"{DATA_USE}:{READ}"
 DATA_USE_UPDATE = f"{DATA_USE}:{UPDATE}"
 DATA_USE_DELETE = f"{DATA_USE}:{DELETE}"
-
-DATAMAP_READ = f"{DATAMAP}:{READ}"
 
 DATASET_CREATE_OR_UPDATE = f"{DATASET}:{CREATE_OR_UPDATE}"
 DATASET_DELETE = f"{DATASET}:{DELETE}"
@@ -158,6 +159,8 @@ POLICY_READ = f"{POLICY}:{READ}"
 PRIVACY_NOTICE_CREATE = f"{PRIVACY_NOTICE}:{CREATE}"
 PRIVACY_NOTICE_UPDATE = f"{PRIVACY_NOTICE}:{UPDATE}"
 PRIVACY_NOTICE_READ = f"{PRIVACY_NOTICE}:{READ}"
+
+PRIVACY_PREFERENCE_HISTORY_READ = f"{PRIVACY_PREFERENCE_HISTORY}:{READ}"
 
 PRIVACY_REQUEST_CALLBACK_RESUME = f"{PRIVACY_REQUEST}:{RESUME}"  # User has permission to restart a paused privacy request
 PRIVACY_REQUEST_CREATE = f"{PRIVACY_REQUEST}:{CREATE}"
@@ -251,6 +254,7 @@ SCOPE_DOCS = {
     CTL_POLICY_READ: "Read ctl policies",
     CTL_POLICY_DELETE: "Delete a ctl policy",
     CTL_POLICY_UPDATE: "Update ctl policies",
+    CURRENT_PRIVACY_PREFERENCE_READ: "Read the current privacy preferences of all users",
     DATABASE_RESET: "Reset the application database",
     DATA_CATEGORY_CREATE: "Create a data category",
     DATA_CATEGORY_DELETE: "Delete data categories",
@@ -268,7 +272,6 @@ SCOPE_DOCS = {
     DATA_USE_READ: "Read data uses",
     DATA_USE_DELETE: "Delete data uses",
     DATA_USE_UPDATE: "Update data uses",
-    DATAMAP_READ: "Read systems on the datamap",
     DATASET_CREATE_OR_UPDATE: "Create or modify datasets",
     DATASET_DELETE: "Delete datasets",
     DATASET_READ: "View datasets",
@@ -294,6 +297,7 @@ SCOPE_DOCS = {
     PRIVACY_NOTICE_CREATE: "Create privacy notices",
     PRIVACY_NOTICE_UPDATE: "Update privacy notices",
     PRIVACY_NOTICE_READ: "View privacy notices",
+    PRIVACY_PREFERENCE_HISTORY_READ: "Read the history of all saved privacy preferences",
     PRIVACY_REQUEST_CREATE: "",
     PRIVACY_REQUEST_CALLBACK_RESUME: "Restart paused privacy requests",
     PRIVACY_REQUEST_DELETE: "Remove privacy requests",

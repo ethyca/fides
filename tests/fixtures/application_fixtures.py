@@ -1,4 +1,5 @@
 import logging
+from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Generator, List, Optional
 from unittest import mock
@@ -13,8 +14,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ctl.sql_models import System
+from fides.api.ctl.sql_models import (
+    DataCategory as DataCategoryDbModel,
+    Dataset as CtlDataset,
+    System,
+)
 from fides.api.ops.common_exceptions import SystemManagerException
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.connectionconfig import (
@@ -38,7 +42,9 @@ from fides.api.ops.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeRegion,
 )
+from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.ops.models.privacy_request import (
+    Consent,
     ConsentRequest,
     PrivacyRequest,
     PrivacyRequestStatus,
@@ -81,7 +87,7 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import APPROVER, VIEWER
+from fides.lib.oauth.roles import VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -150,6 +156,20 @@ def mock_upload_logic() -> Generator:
         "fides.api.ops.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
         yield _fixture
+
+
+@pytest.fixture(scope="function")
+def custom_data_category(db: Session) -> Generator:
+    category = DataCategoryDbModel.create(
+        db=db,
+        data={
+            "name": "Example Custom Data Category",
+            "description": "A custom data category for testing",
+            "fides_key": "test_custom_data_category",
+        },
+    )
+    yield category
+    category.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -729,6 +749,26 @@ def erasure_policy_two_rules(
         pass
     try:
         erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def empty_policy(
+    db: Session,
+    oauth_client: ClientDetail,
+) -> Generator:
+    policy = Policy.create(
+        db=db,
+        data={
+            "name": "example empty policy",
+            "key": "example_empty_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+    yield policy
+    try:
+        policy.delete(db)
     except ObjectDeletedError:
         pass
 
@@ -1427,6 +1467,32 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def privacy_preference_history_us_ca_provide(
+    db: Session, privacy_notice_us_ca_provide
+) -> Generator:
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "email",
+        "hashed_value": ProvidedIdentity.hash_value("test2@email.com"),
+        "encrypted_value": {"value": "test2@email.com"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+    pref_1 = PrivacyPreferenceHistory.create(
+        db=db,
+        data={
+            "preference": "opt_in",
+            "provided_identity_id": provided_identity.id,
+            "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)
+    provided_identity.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
@@ -1442,6 +1508,68 @@ def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
     )
 
     yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice us_co provide.service.operations",
+            "description": "a sample privacy notice configuration",
+            "origin": "privacy_notice_template_2",
+            "regions": [PrivacyNoticeRegion.us_co],
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["provide.service.operations"],
+            "enforcement_level": EnforcementLevel.system_wide,
+        },
+    )
+
+    yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def privacy_notice_eu_fr_provide_service_frontend_only(db: Session) -> Generator:
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice us_co provide.service.operations",
+            "description": "a sample privacy notice configuration",
+            "origin": "privacy_notice_template_2",
+            "regions": [PrivacyNoticeRegion.eu_fr],
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["provide.service"],
+            "enforcement_level": EnforcementLevel.frontend,
+        },
+    )
+
+    yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def privacy_preference_history_eu_fr_provide_service_frontend_only(
+    db: Session, privacy_notice_eu_fr_provide_service_frontend_only
+) -> Generator:
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "email",
+        "hashed_value": ProvidedIdentity.hash_value("test2@email.com"),
+        "encrypted_value": {"value": "test2@email.com"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+    pref_1 = PrivacyPreferenceHistory.create(
+        db=db,
+        data={
+            "preference": "opt_in",
+            "provided_identity_id": provided_identity.id,
+            "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.privacy_notice_history_id,
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)
+    provided_identity.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -1740,6 +1868,13 @@ def system_manager(db: Session, system) -> System:
 
 
 @pytest.fixture(scope="function")
+def empty_provided_identity(db):
+    provided_identity = ProvidedIdentity.create(db, data={"field_name": "email"})
+    yield provided_identity
+    provided_identity.delete(db)
+
+
+@pytest.fixture(scope="function")
 def provided_identity_and_consent_request(db):
     provided_identity_data = {
         "privacy_request_id": None,
@@ -1760,6 +1895,20 @@ def provided_identity_and_consent_request(db):
 
 
 @pytest.fixture(scope="function")
+def fides_user_provided_identity(db):
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "fides_user_device_id",
+        "hashed_value": ProvidedIdentity.hash_value("FGHIJ_TEST_FIDES"),
+        "encrypted_value": {"value": "FGHIJ_TEST_FIDES"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+    yield provided_identity
+    provided_identity.delete(db=db)
+
+
+@pytest.fixture(scope="function")
 def executable_consent_request(
     db,
     provided_identity_and_consent_request,
@@ -1777,3 +1926,62 @@ def executable_consent_request(
     provided_identity.save(db)
     yield privacy_request
     privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_preference_history(
+    db,
+    provided_identity_and_consent_request,
+    privacy_notice,
+):
+    provided_identity, consent_request = provided_identity_and_consent_request
+    privacy_notice_history = privacy_notice.histories[0]
+
+    preference_history_record = PrivacyPreferenceHistory.create(
+        db=db,
+        data={
+            "email": "test@email.com",
+            "preference": "opt_out",
+            "privacy_notice_history_id": privacy_notice_history.id,
+            "provided_identity_id": provided_identity.id,
+            "request_origin": "privacy_center",
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+            "user_geography": "us_ca",
+            "url_recorded": "example.com/privacy_center",
+        },
+        check_name=False,
+    )
+    yield preference_history_record
+    preference_history_record.delete(db)
+
+
+@pytest.fixture(scope="function")
+def consent_records(
+    db,
+    provided_identity_and_consent_request,
+):
+    provided_identity, consent_request = provided_identity_and_consent_request
+    consent_request.cache_identity_verification_code("abcdefg")
+
+    consent_data = [
+        {
+            "data_use": "email",
+            "data_use_description": None,
+            "opt_in": True,
+        },
+        {
+            "data_use": "location",
+            "data_use_description": "Location data",
+            "opt_in": False,
+        },
+    ]
+
+    records = []
+    for data in deepcopy(consent_data):
+        data["provided_identity_id"] = provided_identity.id
+        records.append(Consent.create(db, data=data))
+
+    yield records
+
+    for record in records:
+        record.delete(db)

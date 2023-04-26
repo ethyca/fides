@@ -127,3 +127,24 @@ def reset_mailchimp_transactional_data(
     assert (
         body["email"] == mailchimp_transactional_identity_email
     ), "Identity has been added to allowlist"
+
+
+@pytest.fixture(scope="function")
+def mailchimp_transactional_connection_config_no_secrets(
+    db: session, mailchimp_transactional_config
+) -> Generator:
+    """This test connector cannot not be used to make live requests"""
+    fides_key = mailchimp_transactional_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": {"api_key": "test"},
+            "saas_config": mailchimp_transactional_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)

@@ -286,7 +286,9 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         if system.get("privacy_declarations"):
             for declaration in system["privacy_declarations"]:
                 if not isinstance(declaration, dict):
-                    declaration = declaration.dict()
+                    # this can be an ORM object if invoked via datamap endpoint
+                    # so we convert it to a dict if so
+                    declaration = declaration.__dict__
 
                 data_use = formatted_data_uses[declaration["data_use"]]
                 data_categories = declaration["data_categories"] or []

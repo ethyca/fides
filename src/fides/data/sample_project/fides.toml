@@ -4,16 +4,22 @@ user = "postgres"
 password = "postgres"
 port = "5432"
 db = "fides"
+load_samples = true
 
 [redis]
-enabled = true
 host = "redis"
-password = "redispass"
+password = "redispassword"
 port = 6379
 db_index = 0
 
 [security]
+env = "prod"
 cors_origins = [ "http://localhost:8080", "http://localhost:3001",]
+app_encryption_key = "examplevalidprojectencryptionkey"
+oauth_root_client_id = "fidesadmin"
+oauth_root_client_secret = "fidesadminsecret"
+root_username = "root_user"
+root_password = "Testpassword1!"
 
 [execution]
 require_manual_request_approval = true
@@ -22,5 +28,13 @@ require_manual_request_approval = true
 server_host = "fides"
 server_port = 8080
 
+[credentials]
+app_postgres = {connection_string="postgresql+psycopg2://postgres:postgres@fides-db:5432/fides"}
+
 [user]
 analytics_opt_out = false
+username = "root_user"
+password = "Testpassword1!"
+
+[logging]
+level = "DEBUG"

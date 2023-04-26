@@ -152,7 +152,10 @@ def run_webhooks_and_report_status(
 
     for webhook in webhooks.order_by(webhook_cls.order):  # type: ignore[union-attr]
         try:
-            privacy_request.trigger_policy_webhook(webhook)
+            privacy_request.trigger_policy_webhook(
+                webhook=webhook,
+                policy_action=privacy_request.policy.get_action_type(),
+            )
         except PrivacyRequestPaused:
             logger.info(
                 "Pausing execution of privacy request {}. Halt instruction received from webhook {}.",
@@ -684,15 +687,56 @@ def needs_batch_email_send(
     Delegates the "needs email" check to each configured email or
     generic email consent connector. Returns true if at least one
     connector needs to send an email.
-    """
 
-    erasure_email_configs: Query = get_erasure_email_connection_configs(db)
-    consent_email_configs: Query = get_consent_email_connection_configs(db)
-    combined_configs = erasure_email_configs.union_all(consent_email_configs)
-    for connection_config in combined_configs:
+    If we don't need to send any emails, add skipped logs for any
+    relevant erasure and consent email connectors.
+    """
+    can_skip_erasure_email: List[ConnectionConfig] = []
+    can_skip_consent_email: List[ConnectionConfig] = []
+
+    needs_email_send: bool = False
+
+    for connection_config in get_erasure_email_connection_configs(db):
         if get_connector(connection_config).needs_email(  # type: ignore
             user_identities, privacy_request
         ):
-            return True
+            needs_email_send = True
+        else:
+            can_skip_erasure_email.append(connection_config)
 
-    return False
+    for connection_config in get_consent_email_connection_configs(db):
+        if get_connector(connection_config).needs_email(  # type: ignore
+            user_identities, privacy_request
+        ):
+            needs_email_send = True
+        else:
+            can_skip_consent_email.append(connection_config)
+
+    if not needs_email_send:
+        _create_execution_logs_for_skipped_email_send(
+            db, privacy_request, can_skip_erasure_email, can_skip_consent_email
+        )
+
+    return needs_email_send
+
+
+def _create_execution_logs_for_skipped_email_send(
+    db: Session,
+    privacy_request: PrivacyRequest,
+    can_skip_erasure_email: List[ConnectionConfig],
+    can_skip_consent_email: List[ConnectionConfig],
+) -> None:
+    """Create skipped execution logs for relevant connectors
+    if this privacy request does not need an email send at all.  For consent requests,
+    cache that the system was skipped on any privacy preferences for consent reporting.
+
+    Otherwise, any needed skipped execution logs will be added later
+    in the weekly email send.
+    """
+    for connection_config in can_skip_erasure_email:
+        connector = get_connector(connection_config)
+        connector.add_skipped_log(db, privacy_request)  # type: ignore[attr-defined]
+
+    for connection_config in can_skip_consent_email:
+        connector = get_connector(connection_config)
+        connector.add_skipped_log(db, privacy_request)  # type: ignore[attr-defined]
