@@ -62,6 +62,9 @@ from fides.api.ops.schemas.privacy_request import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.consent_util import (
+    get_or_create_fides_user_device_id_provided_identity,
+)
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
@@ -517,36 +520,11 @@ def _get_or_create_provided_identity(
                     "encrypted_value": {"value": identity_data.phone_number},
                 },
             )
-    elif (
-        target_identity_type == ProvidedIdentityType.fides_user_device_id.value
-        and identity_data.fides_user_device_id
-    ):
-        identity = ProvidedIdentity.filter(
-            db=db,
-            conditions=(
-                (
-                    ProvidedIdentity.field_name
-                    == ProvidedIdentityType.fides_user_device_id
-                )
-                & (
-                    ProvidedIdentity.hashed_value
-                    == ProvidedIdentity.hash_value(identity_data.fides_user_device_id)
-                )
-                & (ProvidedIdentity.privacy_request_id.is_(None))
-            ),
-        ).first()
-        if not identity:
-            identity = ProvidedIdentity.create(
-                db,
-                data={
-                    "privacy_request_id": None,
-                    "field_name": ProvidedIdentityType.fides_user_device_id.value,
-                    "hashed_value": ProvidedIdentity.hash_value(
-                        identity_data.fides_user_device_id
-                    ),
-                    "encrypted_value": {"value": identity_data.fides_user_device_id},
-                },
-            )
+    elif target_identity_type == ProvidedIdentityType.fides_user_device_id.value:
+        identity = get_or_create_fides_user_device_id_provided_identity(
+            db, identity_data
+        )
+
     else:
         raise HTTPException(
             HTTP_422_UNPROCESSABLE_ENTITY,
