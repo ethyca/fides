@@ -73,6 +73,7 @@ The types of changes are:
 - Added Data flow modal [#3008](https://github.com/ethyca/fides/pull/3008)
 - Update datamap table export [#3038](https://github.com/ethyca/fides/pull/3038)
 - Added more advanced privacy center styling [#2943](https://github.com/ethyca/fides/pull/2943)
+- Backend privacy experiences foundation [#3146](https://github.com/ethyca/fides/pull/3146)
 
 ### Changed
 
