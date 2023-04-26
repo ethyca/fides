@@ -185,6 +185,7 @@ export const CustomFieldModal = ({
 
       const result = await upsertAllowList(allowListPayload);
       if (!("error" in result) && !values.allow_list_id) {
+        // Handles the creation case. Only assigns ID if new
         // eslint-disable-next-line no-param-reassign
         values.allow_list_id = result.data?.id;
       }
