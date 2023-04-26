@@ -217,10 +217,10 @@ class ConnectionConfig(Base):
 
     def delete(self, db: Session) -> Optional[OrmWrappedFidesBase]:
         """Hard deletes datastores that map this ConnectionConfig."""
-        for dataset in self.datasets:
+        for dataset in self.datasets:  # type: ignore[attr-defined]
             dataset.delete(db=db)
 
-        return super().delete(db=db)
+        return super().delete(db=db)  # type: ignore[return-value]
 
 
 @event.listens_for(ConnectionConfig.disabled, "set")

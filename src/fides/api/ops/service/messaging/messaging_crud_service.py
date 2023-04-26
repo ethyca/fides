@@ -63,6 +63,6 @@ def get_messaging_config_by_key(db: Session, key: FidesKey) -> MessagingConfigRe
     return MessagingConfigResponse(
         name=config.name,
         key=config.key,
-        service_type=config.service_type.value,
+        service_type=config.service_type.value,  # type: ignore[attr-defined]
         details=config.details,
     )
