@@ -12,8 +12,15 @@ from sqlalchemy.orm import Session
 from starlette import status
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from fides.api.ctl.database.crud import create_resource, get_resource, update_resource
+from fides.api.ctl.database.crud import (
+    create_resource,
+    get_resource,
+    get_resource_with_custom_fields,
+    list_resource,
+    update_resource,
+)
 from fides.api.ctl.database.session import get_async_db
+from fides.api.ctl.schemas.system import SystemResponse
 from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     DataUse,
     PrivacyDeclaration,
@@ -27,6 +34,7 @@ from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_READ,
     SYSTEM_CREATE,
     SYSTEM_DELETE,
+    SYSTEM_READ,
     SYSTEM_UPDATE,
 )
 from fides.api.ops.api.v1.urn_registry import SYSTEM_CONNECTIONS, V1_URL_PREFIX
@@ -125,7 +133,7 @@ def patch_connections(
 
 @system_router.put(
     "/",
-    response_model=SystemSchema,
+    response_model=SystemResponse,
     responses={
         status.HTTP_403_FORBIDDEN: {
             "content": {
@@ -297,7 +305,7 @@ async def delete(
 
 @system_router.post(
     "/",
-    response_model=SystemSchema,
+    response_model=SystemResponse,
     status_code=status.HTTP_201_CREATED,
     dependencies=[
         Security(
@@ -350,3 +358,39 @@ async def create(
         await db.refresh(created_system)
 
     return created_system
+
+
+@system_router.get(
+    "/",
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_READ],
+        )
+    ],
+    response_model=List[SystemResponse],
+    name="List",
+)
+async def ls(  # pylint: disable=invalid-name
+    db: AsyncSession = Depends(get_async_db),
+) -> List:
+    """Get a list of all of the resources of this type."""
+    return await list_resource(System, db)
+
+
+@system_router.get(
+    "/{fides_key}",
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_READ],
+        )
+    ],
+    response_model=SystemResponse,
+)
+async def get(
+    fides_key: str,
+    db: AsyncSession = Depends(get_async_db),
+) -> Dict:
+    """Get a resource by its fides_key."""
+    return await get_resource_with_custom_fields(System, fides_key, db)
