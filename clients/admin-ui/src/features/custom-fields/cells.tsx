@@ -36,7 +36,6 @@ export const ResourceTypeCell = (
   return <WrappedCell {...cellProps} value={mappedValue} />;
 };
 
-// eslint-disable-fu
 export const FieldTypeCell = (
   cellProps: CellProps<typeof FIELD_TYPE_MAP, string>
 ) => {
