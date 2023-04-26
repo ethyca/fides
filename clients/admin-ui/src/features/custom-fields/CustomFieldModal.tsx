@@ -106,14 +106,18 @@ const transformCustomField = (
   ) {
     fieldType = FieldTypes.MULTIPLE_SELECT;
   }
-  const parsedAllowList = allowList || initialValuesTemplate.allow_list;
+  const parsedAllowList = allowList
+    ? {
+        name: allowList.name ?? "",
+        description: allowList.description ?? "",
+        allowed_values: allowList.allowed_values ?? [],
+      }
+    : initialValuesTemplate.allow_list;
   return {
     ...customField,
-    field_type: fieldType,
-    allow_list: {
-      ...parsedAllowList,
-    },
-  } as unknown as FormValues;
+    field_type: fieldType || FieldTypes.OPEN_TEXT,
+    allow_list: parsedAllowList,
+  };
 };
 
 export const CustomFieldModal = ({
