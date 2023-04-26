@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.11.1b3.post0.dev4"
+    "version": "2.11.1b3.post0.dev5"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8662,6 +8662,105 @@
         ]
       }
     },
+    "/api/v1/privacy-experience": {
+      "get": {
+        "tags": [
+          "Privacy Experience"
+        ],
+        "summary": "Privacy Experience List",
+        "description": "Return a paginated list of `PrivacyExperience` records in this system.\nIncludes some query params to help filter the list if needed",
+        "operationId": "privacy_experience_list_api_v1_privacy_experience_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Show Disabled",
+              "type": "boolean",
+              "default": true
+            },
+            "name": "show_disabled",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            },
+            "name": "region",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ComponentType"
+            },
+            "name": "component",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Has Notices",
+              "type": "boolean"
+            },
+            "name": "has_notices",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_PrivacyExperienceResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-experience:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/privacy-notice": {
       "get": {
         "tags": [
@@ -13746,6 +13845,14 @@
         "type": "string",
         "description": "An enumeration."
       },
+      "ComponentType": {
+        "title": "ComponentType",
+        "enum": [
+          "overlay",
+          "privacy_center"
+        ],
+        "description": "The component type - not formalized in the db"
+      },
       "ConnectionConfigurationResponse": {
         "title": "ConnectionConfigurationResponse",
         "required": [
@@ -15192,6 +15299,14 @@
           }
         },
         "description": "Describes whether or not the parent dataset is traversable; if not, includes\nan error message describing the traversal issues."
+      },
+      "DeliveryMechanism": {
+        "title": "DeliveryMechanism",
+        "enum": [
+          "banner",
+          "link"
+        ],
+        "description": "The delivery mechanism - not formalized in the db"
       },
       "DenyPrivacyRequests": {
         "title": "DenyPrivacyRequests",
@@ -17170,6 +17285,40 @@
           }
         }
       },
+      "Page_PrivacyExperienceResponse_": {
+        "title": "Page[PrivacyExperienceResponse]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyExperienceResponse"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
       "Page_PrivacyNoticeResponse_": {
         "title": "Page[PrivacyNoticeResponse]",
         "required": [
@@ -17850,6 +17999,106 @@
           }
         },
         "description": "Extension of base pydantic model to include DB `id` field in the response"
+      },
+      "PrivacyExperienceResponse": {
+        "title": "PrivacyExperienceResponse",
+        "required": [
+          "component",
+          "delivery_mechanism",
+          "id",
+          "created_at",
+          "updated_at",
+          "version",
+          "privacy_experience_history_id"
+        ],
+        "type": "object",
+        "properties": {
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "component": {
+            "$ref": "#/components/schemas/ComponentType"
+          },
+          "delivery_mechanism": {
+            "$ref": "#/components/schemas/DeliveryMechanism"
+          },
+          "regions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          },
+          "component_title": {
+            "title": "Component Title",
+            "type": "string"
+          },
+          "component_description": {
+            "title": "Component Description",
+            "type": "string"
+          },
+          "banner_title": {
+            "title": "Banner Title",
+            "type": "string"
+          },
+          "banner_description": {
+            "title": "Banner Description",
+            "type": "string"
+          },
+          "link_label": {
+            "title": "Link Label",
+            "type": "string"
+          },
+          "confirmation_button_label": {
+            "title": "Confirmation Button Label",
+            "type": "string"
+          },
+          "reject_button_label": {
+            "title": "Reject Button Label",
+            "type": "string"
+          },
+          "acknowledgement_button_label": {
+            "title": "Acknowledgement Button Label",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "title": "Version",
+            "type": "number"
+          },
+          "privacy_experience_history_id": {
+            "title": "Privacy Experience History Id",
+            "type": "string"
+          },
+          "privacy_experience_template_id": {
+            "title": "Privacy Experience Template Id",
+            "type": "string"
+          },
+          "privacy_notices": {
+            "title": "Privacy Notices",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeResponse"
+            }
+          }
+        },
+        "additionalProperties": false,
+        "description": "An API representation of a PrivacyExperience used for response payloads"
       },
       "PrivacyNoticeCreation": {
         "title": "PrivacyNoticeCreation",
@@ -19443,6 +19692,9 @@
           "policy:create_or_update",
           "policy:delete",
           "policy:read",
+          "privacy-experience:create",
+          "privacy-experience:update",
+          "privacy-experience:read",
           "privacy-notice:create",
           "privacy-notice:update",
           "privacy-notice:read",
