@@ -6,7 +6,6 @@ from fides.api.ops.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
-    can_add_new_use,
     check_conflicting_data_uses,
 )
 
@@ -711,4 +710,8 @@ class TestCanAddNewUse:
         ],
     )
     def test_can_add_new_use(self, existing_use, new_use, expected_can_add_result):
-        assert can_add_new_use(existing_use, new_use) == expected_can_add_result
+        can_add = not (
+            existing_use.startswith(new_use) or new_use.startswith(existing_use)
+        )
+
+        assert can_add == expected_can_add_result

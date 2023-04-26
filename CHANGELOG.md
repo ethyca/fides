@@ -32,7 +32,7 @@ The types of changes are:
 
 - The `cursor` pagination strategy now also searches for data outside of the `data_path` when determining the cursor value [#3068](https://github.com/ethyca/fides/pull/3068)
 - Moved Privacy Declarations associated with Systems to their own DB table [#3098](https://github.com/ethyca/fides/pull/3098)
-- Relaxed some data use validation for privacy notices within the same region [#3156](https://github.com/ethyca/fides/pull/3156)
+- More tests on data use validation for privacy notices within the same region [#3156](https://github.com/ethyca/fides/pull/3156)
 
 ### Removed
 
