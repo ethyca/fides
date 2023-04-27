@@ -7,10 +7,7 @@ import {
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 import { reducer as connectionTypeReducer } from "connection-type/index";
 import { reducer as datastoreConnectionReducer } from "datastore-connections/index";
-import {
-  privacyRequestApi,
-  reducer as privacyRequestsReducer,
-} from "privacy-requests/index";
+import { reducer as privacyRequestsReducer } from "privacy-requests/index";
 import {
   FLUSH,
   PAUSE,
@@ -40,7 +37,7 @@ import { reducer as organizationReducer } from "~/features/organization";
 import { plusApi } from "~/features/plus/plus.slice";
 import { reducer as privacyNoticesReducer } from "~/features/privacy-notices/privacy-notices.slice";
 import { reducer as systemReducer } from "~/features/system";
-import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
+import { reducer as taxonomyReducer } from "~/features/taxonomy";
 
 /**
  * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"
@@ -70,8 +67,6 @@ const reducer = {
   [dirtyFormsSlice.name]: dirtyFormsSlice.reducer,
   [healthApi.reducerPath]: healthApi.reducer,
   [plusApi.reducerPath]: plusApi.reducer,
-  [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
-  [taxonomyApi.reducerPath]: taxonomyApi.reducer,
   auth: authReducer,
   configWizard: configWizardReducer,
   connectionType: connectionTypeReducer,
@@ -115,8 +110,6 @@ const persistConfig = {
     baseApi.reducerPath,
     healthApi.reducerPath,
     plusApi.reducerPath,
-    privacyRequestApi.reducerPath,
-    taxonomyApi.reducerPath,
     dirtyFormsSlice.name,
   ],
 };
@@ -131,13 +124,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(
-        baseApi.middleware,
-        healthApi.middleware,
-        plusApi.middleware,
-        privacyRequestApi.middleware,
-        taxonomyApi.middleware
-      ),
+      }).concat(baseApi.middleware, healthApi.middleware, plusApi.middleware),
     devTools: true,
     preloadedState,
   });

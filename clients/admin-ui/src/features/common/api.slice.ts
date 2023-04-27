@@ -20,6 +20,7 @@ export const baseApi = createApi({
     "Auth",
     "Connection Type",
     "Data Category",
+    "Data Categories",
     "Datamap",
     "Data Subjects",
     "Data Qualifiers",

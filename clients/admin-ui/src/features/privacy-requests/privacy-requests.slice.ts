@@ -236,7 +236,7 @@ export const {
 export const { reducer } = subjectRequestsSlice;
 
 // Privacy requests API
-export const privacyRequestApi = baseApi.injectEndpoints({
+const privacyRequestApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     approveRequest: build.mutation<
       PrivacyRequestEntity,
