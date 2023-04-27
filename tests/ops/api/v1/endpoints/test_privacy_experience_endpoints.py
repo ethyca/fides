@@ -15,11 +15,7 @@ from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_EXPERIENCE_DETAIL,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.privacy_experience import (
-    ComponentType,
-    DeliveryMechanism,
-    PrivacyExperience,
-)
+from fides.api.ops.models.privacy_experience import ComponentType, DeliveryMechanism
 from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
 
 
@@ -651,7 +647,6 @@ class TestPrivacyExperienceDetail:
     )
     def test_get_privacy_experience_detail(
         self,
-        db,
         api_client: TestClient,
         generate_auth_header,
         url,
@@ -829,3 +824,170 @@ class TestPrivacyExperienceDetail:
         )
 
         assert resp.json()["privacy_notices"][0]["disabled"] is False
+
+
+class TestUpdatePrivacyExperiences:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + PRIVACY_EXPERIENCE
+
+    @pytest.fixture(scope="function")
+    def request_data(self, privacy_experience_privacy_center_link) -> List[dict]:
+        return [
+            {
+                "component": ComponentType.privacy_center.value,
+                "delivery_mechanism": DeliveryMechanism.link.value,
+                "regions": [
+                    PrivacyNoticeRegion.us_ca.value,
+                    PrivacyNoticeRegion.us_co.value,
+                    PrivacyNoticeRegion.us_va.value,
+                ],
+                "component_title": "Manage your consent preferences with Fides!",
+                "id": privacy_experience_privacy_center_link.id,
+            }
+        ]
+
+    def test_update_privacy_experiences_unauthenticated(self, url, api_client):
+        resp = api_client.patch(url)
+        assert resp.status_code == 401
+
+    def test_update_privacy_experiences_wrong_scope(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        request_data,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        resp = api_client.patch(
+            url,
+            json=request_data,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    @pytest.mark.parametrize(
+        "role,expected_status",
+        [
+            ("owner", HTTP_200_OK),
+            ("contributor", HTTP_200_OK),
+            ("viewer_and_approver", HTTP_403_FORBIDDEN),
+            ("viewer", HTTP_403_FORBIDDEN),
+            ("approver", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_update_privacy_experience_with_roles(
+        self,
+        role,
+        expected_status,
+        api_client: TestClient,
+        url,
+        generate_role_header,
+        request_data,
+    ) -> None:
+        auth_header = generate_role_header(roles=[role])
+        response = api_client.patch(url, json=request_data, headers=auth_header)
+        assert response.status_code == expected_status
+
+    def test_update_privacy_experiences_duplicate_ids(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        request_data,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        dupe = request_data[0]
+        request_data.append(dupe)
+        resp = api_client.patch(url, headers=auth_header, json=request_data)
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"]
+            == "Duplicate privacy experience ids submitted in request."
+        )
+
+    def test_update_privacy_experiences_bad_ids(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        request_data,
+    ):
+        request_data[0]["id"] = "bad_id"
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        resp = api_client.patch(url, headers=auth_header, json=request_data)
+        assert resp.status_code == 404
+        assert resp.json()["detail"] == "No PrivacyExperience found for id bad_id."
+
+    def test_update_privacy_experiences(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        request_data,
+        privacy_notice,
+        privacy_experience_privacy_center_link,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+
+        resp = api_client.patch(url, headers=auth_header, json=request_data)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 1
+        data = data[0]
+        assert data["disabled"] is False
+        assert data["component"] == "privacy_center"
+        assert data["delivery_mechanism"] == "link"
+        assert data["regions"] == ["us_ca", "us_co", "us_va"]
+        assert data["component_title"] == "Manage your consent preferences with Fides!"
+        assert (
+            data["component_description"]
+            == privacy_experience_privacy_center_link.component_description
+        )
+        assert data["banner_title"] is None
+        assert data["banner_description"] is None
+        assert data["link_label"] == "Manage your privacy"
+        assert data["confirmation_button_label"] is None
+        assert data["reject_button_label"] is None
+        assert data["acknowledgement_button_label"] is None
+        assert data["version"] == 2.0
+        assert data["created_at"] is not None
+        assert data["updated_at"] is not None
+
+        assert len(data["privacy_notices"]) == 1
+        assert data["privacy_notices"][0]["id"] == privacy_notice.id
+
+        db.refresh(privacy_experience_privacy_center_link)
+
+        # Assert qualities of associated created experience
+        assert privacy_experience_privacy_center_link.histories.count() == 2
+        history = privacy_experience_privacy_center_link.histories[1]
+        assert data["privacy_experience_history_id"] == history.id
+        assert (
+            history.privacy_experience_id == privacy_experience_privacy_center_link.id
+        )
+        assert history.version == 2.0
+        assert not history.disabled
+        assert history.component == ComponentType.privacy_center
+        assert history.delivery_mechanism == DeliveryMechanism.link
+        assert history.regions == [
+            PrivacyNoticeRegion.us_ca,
+            PrivacyNoticeRegion.us_co,
+            PrivacyNoticeRegion.us_va,
+        ]
+        assert history.component_title == "Manage your consent preferences with Fides!"
+        assert (
+            history.component_description
+            == "On this page you can opt in and out of these data uses cases"
+        )
+        assert history.banner_title is None
+        assert history.link_label == "Manage your privacy"
+        assert history.confirmation_button_label is None
+        assert history.reject_button_label is None
+        assert history.acknowledgement_button_label is None
+        assert history.version == 2.0
+        assert history.created_at is not None
+        assert history.updated_at is not None

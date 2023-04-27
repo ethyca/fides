@@ -38,12 +38,20 @@ class PrivacyExperience(BaseSchema):
         extra = Extra.forbid
 
 
-class PrivacyExperienceResponse(PrivacyExperience):
+class PrivacyExperienceWithId(PrivacyExperience):
+    """
+    An API representation of a PrivacyExperience that includes an `id` field.
+    Used to help model API responses and update payloads
+    """
+
+    id: str
+
+
+class PrivacyExperienceResponse(PrivacyExperienceWithId):
     """
     An API representation of a PrivacyExperience used for response payloads
     """
 
-    id: str
     created_at: datetime
     updated_at: datetime
     version: float

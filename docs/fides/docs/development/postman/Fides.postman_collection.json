@@ -5441,7 +5441,7 @@
 					"response": []
 				},
 				{
-					"name": "Privacy Experience List",
+					"name": "Privacy Experience Bulk Create",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -5455,6 +5455,42 @@
 						},
 						"method": "GET",
 						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-experience",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-experience"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Privacy Experience Bulk Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[{\n    \"component\": \"privacy_center\",\n    \"delivery_mechanism\": \"link\",\n    \"regions\": [\"us_ca\", \"us_co\"],\n    \"component_title\": \"Manage your privacy with Fides\",\n    \"link_label\": \"Go to the privacy center\",\n    \"id\": \"{{privacy_experience_id}}\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{host}}/privacy-experience",
 							"host": [
