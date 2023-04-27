@@ -57,7 +57,7 @@ const plusApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["ClassifyInstancesDatasets"],
+      invalidatesTags: ["Classify Instances Datasets"],
     }),
     updateClassifyInstance: build.mutation<
       void,
@@ -75,9 +75,9 @@ const plusApi = baseApi.injectEndpoints({
       },
       invalidatesTags: (response, errors, args) => {
         if (args.resource_type === GenerateTypes.SYSTEMS) {
-          return ["ClassifyInstancesSystems"];
+          return ["Classify Instances Systems"];
         }
-        return ["ClassifyInstancesDatasets"];
+        return ["Classify Instances Datasets"];
       },
     }),
     getAllClassifyInstances: build.query<
@@ -97,9 +97,9 @@ const plusApi = baseApi.injectEndpoints({
       },
       providesTags: (response, errors, args) => {
         if (args.resource_type === GenerateTypes.SYSTEMS) {
-          return ["ClassifyInstancesSystems"];
+          return ["Classify Instances Systems"];
         }
-        return ["ClassifyInstancesDatasets"];
+        return ["Classify Instances Datasets"];
       },
     }),
     getClassifyDataset: build.query<ClassificationResponse, string>({
@@ -107,14 +107,14 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/classify/details/${dataset_fides_key}`,
         params: { resource_type: GenerateTypes.DATASETS },
       }),
-      providesTags: ["ClassifyInstancesDatasets"],
+      providesTags: ["Classify Instances Datasets"],
     }),
     getClassifySystem: build.query<ClassifySystem | ClassifyEmpty, string>({
       query: (fidesKey: string) => ({
         url: `plus/classify/details/${fidesKey}`,
         params: { resource_type: GenerateTypes.SYSTEMS },
       }),
-      providesTags: ["ClassifyInstancesSystems"],
+      providesTags: ["Classify Instances Systems"],
     }),
 
     // Kubernetes Cluster Scanner
@@ -124,7 +124,7 @@ const plusApi = baseApi.injectEndpoints({
         params,
         method: "PUT",
       }),
-      invalidatesTags: ["ClassifyInstancesSystems", "LatestScan"],
+      invalidatesTags: ["Classify Instances Systems", "Latest Scan"],
     }),
     getLatestScanDiff: build.query<SystemsDiff, void>({
       query: () => ({
@@ -132,7 +132,7 @@ const plusApi = baseApi.injectEndpoints({
         params: { diff: true },
         method: "GET",
       }),
-      providesTags: ["LatestScan"],
+      providesTags: ["Latest Scan"],
     }),
 
     // Custom Metadata Allow List
@@ -141,7 +141,7 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/custom-metadata/allow-list`,
         params: { show_values },
       }),
-      providesTags: ["AllowList"],
+      providesTags: ["Allow List"],
       transformResponse: (allowList: AllowList[]) =>
         allowList.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
     }),
@@ -150,7 +150,7 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/custom-metadata/allow-list/${id}`,
         params: { show_values: true },
       }),
-      providesTags: ["AllowList"],
+      providesTags: ["Allow List"],
     }),
     upsertAllowList: build.mutation<AllowList, AllowListUpdate>({
       query: (params: AllowListUpdate) => ({
@@ -158,7 +158,7 @@ const plusApi = baseApi.injectEndpoints({
         method: "PUT",
         body: params,
       }),
-      invalidatesTags: ["AllowList"],
+      invalidatesTags: ["Allow List"],
     }),
 
     // Custom Metadata Custom Field
@@ -167,13 +167,13 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/custom-metadata/custom-field/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["CustomFields"],
+      invalidatesTags: ["Custom Fields"],
     }),
     getCustomFieldsForResource: build.query<CustomFieldWithId[], string>({
       query: (resource_id: string) => ({
         url: `plus/custom-metadata/custom-field/resource/${resource_id}`,
       }),
-      providesTags: ["CustomFields"],
+      providesTags: ["Custom Fields"],
     }),
     upsertCustomField: build.mutation<CustomFieldWithId, CustomFieldWithId>({
       query: (params) => ({
@@ -186,7 +186,7 @@ const plusApi = baseApi.injectEndpoints({
           value: params.value,
         },
       }),
-      invalidatesTags: ["CustomFields"],
+      invalidatesTags: ["Custom Fields"],
     }),
 
     getAllCustomFieldDefinitions: build.query<
@@ -196,7 +196,7 @@ const plusApi = baseApi.injectEndpoints({
       query: () => ({
         url: `plus/custom-metadata/custom-field-definition`,
       }),
-      providesTags: ["CustomFieldDefinition"],
+      providesTags: ["Custom Field Definition"],
     }),
     // Custom Metadata Custom Field Definition
     addCustomFieldDefinition: build.mutation<
@@ -208,7 +208,7 @@ const plusApi = baseApi.injectEndpoints({
         method: "POST",
         body: params,
       }),
-      invalidatesTags: ["CustomFieldDefinition"],
+      invalidatesTags: ["Custom Field Definition"],
     }),
     updateCustomFieldDefinition: build.mutation<
       CustomFieldDefinitionWithId,
@@ -219,14 +219,14 @@ const plusApi = baseApi.injectEndpoints({
         method: "PUT",
         body: params,
       }),
-      invalidatesTags: ["CustomFieldDefinition"],
+      invalidatesTags: ["Custom Field Definition"],
     }),
     deleteCustomFieldDefinition: build.mutation<void, { id: string }>({
       query: ({ id }) => ({
         url: `plus/custom-metadata/custom-field-definition/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["CustomFieldDefinition"],
+      invalidatesTags: ["Custom Field Definition"],
     }),
 
     // Custom Metadata Custom Field Definition By Resource Type
@@ -237,7 +237,7 @@ const plusApi = baseApi.injectEndpoints({
       query: (resource_type: ResourceTypes) => ({
         url: `plus/custom-metadata/custom-field-definition/resource-type/${resource_type}`,
       }),
-      providesTags: ["CustomFieldDefinition"],
+      providesTags: ["Custom Field Definition"],
       transformResponse: (list: CustomFieldDefinitionWithId[]) =>
         list.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
     }),
