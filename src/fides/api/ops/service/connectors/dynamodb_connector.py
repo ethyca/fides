@@ -54,7 +54,14 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
 
     def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
         """Query wrapper corresponding to the input traversal_node."""
-        return DynamoDBQueryConfig(node)
+        client = self.client()
+        try:
+            describe_table = client.describe_table(TableName=node.address.collection)
+            attribute_definitions = describe_table["Table"]["AttributeDefinitions"]
+        except ClientError as error:
+            raise ConnectorFailureException(error.response["Error"]["Message"])
+
+        return DynamoDBQueryConfig(node, attribute_definitions)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
@@ -87,30 +94,31 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
         as the product of options to query against.
         """
         deserializer = TypeDeserializer()
-        query_config = self.query_config(node)
         collection_name = node.address.collection
         client = self.client()
         try:
-            describe_table = client.describe_table(TableName=collection_name)
-            input_data["attribute_definitions"] = describe_table["Table"][
-                "AttributeDefinitions"
-            ]
-            query_param = query_config.generate_query(input_data, policy)
-            item = client.get_item(
-                TableName=collection_name,
-                Key=query_param,  # type: ignore
-            )
-            result = {}
-            if "Item" in item:
-                for key, value in item["Item"].items():
-                    deserialized_value = deserializer.deserialize(value)
-                    result[key] = (
-                        deserialized_value
-                        if isinstance(deserialized_value, list)
-                        else [deserialized_value]
+            results = []
+            query_config = self.query_config(node)
+            # TODO check this out with a primary key and a sort key
+            for attribute_definition in query_config.attribute_definitions:  # type: ignore
+                attribute_name = attribute_definition["AttributeName"]
+                for identifier in input_data[attribute_name]:
+                    selected_input_data = input_data
+                    selected_input_data[attribute_name] = [identifier]
+                    query_param = query_config.generate_query(
+                        selected_input_data, policy
                     )
-            product_of_results = product_dict(**result)
-            return list(product_of_results)
+                    item = client.get_item(
+                        TableName=collection_name,
+                        Key=query_param,  # type: ignore
+                    )
+                    result = {}
+                    if "Item" in item:
+                        for key, value in item["Item"].items():
+                            deserialized_value = deserializer.deserialize(value)
+                            result[key] = deserialized_value
+                    results.append(result)
+            return results
         except ClientError as error:
             raise ConnectorFailureException(error.response["Error"]["Message"])
 

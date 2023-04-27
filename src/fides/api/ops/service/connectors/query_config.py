@@ -779,6 +779,12 @@ DynamoDBStatement = Dict[str, Dict[str, Any]]
 
 
 class DynamoDBQueryConfig(QueryConfig[DynamoDBStatement]):
+    def __init__(
+        self, node: TraversalNode, attribute_definitions: List[Dict[str, Any]]
+    ):
+        super().__init__(node)
+        self.attribute_definitions = attribute_definitions
+
     def generate_query(
         self,
         input_data: Dict[str, List[Any]],
@@ -786,7 +792,7 @@ class DynamoDBQueryConfig(QueryConfig[DynamoDBStatement]):
     ) -> Dict[str, Dict[str, Any]]:
         """Generate a dictionary for the `get_item` method used for DynamoDB"""
         query_param = {}
-        for attribute_definition in input_data["attribute_definitions"]:
+        for attribute_definition in self.attribute_definitions:
             attribute_name = attribute_definition["AttributeName"]
             attribute_type = attribute_definition["AttributeType"]
             attribute_value = input_data[attribute_name][0]

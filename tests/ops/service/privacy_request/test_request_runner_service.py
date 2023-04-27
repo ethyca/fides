@@ -2334,7 +2334,7 @@ def test_create_and_process_access_request_dynamodb(
 ):
     customer_email = dynamodb_resources["email"]
     customer_name = dynamodb_resources["name"]
-    # customer_id = dynamodb_resources["customer_id"]
+    customer_id = dynamodb_resources["customer_id"]
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": policy.key,
@@ -2350,11 +2350,16 @@ def test_create_and_process_access_request_dynamodb(
     )
     results = pr.get_results()
     customer_table_key = (
-        f"EN_{pr.id}__access_request__dynamodb_example_test_dataset:customer_identifier"
+        f"EN_{pr.id}__access_request__dynamodb_example_test_dataset:customer"
+    )
+    address_table_key = (
+        f"EN_{pr.id}__access_request__dynamodb_example_test_dataset:address"
     )
     assert len(results[customer_table_key]) == 1
+    assert len(results[address_table_key]) == 2
     assert results[customer_table_key][0]["email"] == customer_email
     assert results[customer_table_key][0]["name"] == customer_name
+    assert results[customer_table_key][0]["id"] == customer_id
 
     pr.delete(db=db)
 
