@@ -24,7 +24,6 @@ export const baseApi = createApi({
     "Connection Type",
     "CustomFieldDefinition",
     "CustomFields",
-    "Data Category",
     "Data Categories",
     "Datamap",
     "Data Subjects",
