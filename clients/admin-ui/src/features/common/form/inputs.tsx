@@ -147,6 +147,7 @@ interface SelectProps {
    * similar to how the multi values are rendered
    */
   singleValueBlock?: boolean;
+  isFormikOnChange?: boolean;
 }
 const SelectInput = ({
   options,
@@ -158,7 +159,11 @@ const SelectInput = ({
   singleValueBlock,
   isDisabled = false,
   menuPosition = "absolute",
-}: { fieldName: string; isMulti?: boolean } & Omit<SelectProps, "label">) => {
+  onChange,
+}: { fieldName: string; isMulti?: boolean; onChange?: any } & Omit<
+  SelectProps,
+  "label"
+>) => {
   const [initialField] = useField(fieldName);
   const field = { ...initialField, value: initialField.value ?? "" };
   const selected = isMulti
@@ -184,10 +189,16 @@ const SelectInput = ({
     }
   };
 
-  const handleChange = (newValue: MultiValue<Option> | SingleValue<Option>) =>
-    isMulti
-      ? handleChangeMulti(newValue as MultiValue<Option>)
-      : handleChangeSingle(newValue as SingleValue<Option>);
+  const handleChange = (newValue: MultiValue<Option> | SingleValue<Option>) => {
+    if (onChange) {
+      onChange(newValue);
+    }
+    if (isMulti) {
+      handleChangeMulti(newValue as MultiValue<Option>);
+    } else {
+      handleChangeSingle(newValue as SingleValue<Option>);
+    }
+  };
 
   const components = isClearable ? undefined : { ClearIndicator: () => null };
 
@@ -409,6 +420,8 @@ export const CustomSelect = ({
   isMulti,
   variant = "inline",
   singleValueBlock,
+  onChange,
+  isFormikOnChange,
   ...props
 }: SelectProps & StringField) => {
   const [field, meta] = useField(props);
@@ -434,6 +447,7 @@ export const CustomSelect = ({
                 isDisabled={isDisabled}
                 singleValueBlock={singleValueBlock}
                 menuPosition={props.menuPosition}
+                onChange={!isFormikOnChange ? onChange : undefined}
               />
               <ErrorMessage
                 isInvalid={isInvalid}

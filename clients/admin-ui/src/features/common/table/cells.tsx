@@ -27,10 +27,19 @@ export const DateCell = <T extends object>({ value }: CellProps<T, string>) =>
 
 type MapCellProps<T extends object> = CellProps<T, string> & {
   map: Map<string, string>;
+  backgroundColor?: string;
 };
 
-export const MapCell = <T extends object>({ map, value }: MapCellProps<T>) => (
-  <Tag size="sm" backgroundColor="primary.400" color="white">
+export const MapCell = <T extends object>({
+  map,
+  value,
+  backgroundColor,
+}: MapCellProps<T>) => (
+  <Tag
+    size="sm"
+    backgroundColor={backgroundColor || "primary.400"}
+    color="white"
+  >
     {map.get(value) ?? value}
   </Tag>
 );

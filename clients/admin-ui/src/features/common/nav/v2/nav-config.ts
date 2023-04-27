@@ -144,7 +144,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.CUSTOM_FIELDS_ROUTE,
         scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
         requiresPlus: true,
-        requiresFlag: "customFieldManagement",
       },
       {
         title: "About Fides",

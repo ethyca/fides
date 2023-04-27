@@ -32,12 +32,15 @@ describe("Taxonomy management with Plus features", () => {
       });
   };
 
-  describe("Defining custom lists", () => {
+  // TODO: Inputs are no longer created on this screen.
+  // This should eventually be migrated to the custom fields tests
+  describe.skip("Defining custom lists", () => {
     beforeEach(() => {
       navigateToEditor();
       cy.getByTestId("add-custom-field-btn").click();
       cy.getByTestId("tab-Create custom lists").click();
     });
+
 
     it("can create a list", () => {
       const listValues = ["such", "metadata", "so", "custom"];
@@ -74,7 +77,9 @@ describe("Taxonomy management with Plus features", () => {
     });
   });
 
-  describe("Defining custom fields", () => {
+  // TODO: Inputs are no longer created on this screen.
+  // This should eventually be migrated to the custom fields tests
+  describe.skip("Defining custom fields", () => {
     beforeEach(() => {
       cy.intercept(
         {
@@ -95,6 +100,7 @@ describe("Taxonomy management with Plus features", () => {
 
       cy.wait("@getAllowLists");
     });
+
 
     it("can create a single-select custom field", () => {
       cy.getByTestId("create-custom-fields-form").within(() => {
