@@ -1,13 +1,18 @@
 from typing import List, Optional
 
-from fastapi import Depends, Security
+from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
 from pydantic import conlist
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+)
 
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry
@@ -22,6 +27,23 @@ from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
+
+
+def get_privacy_experience_or_error(
+    db: Session, experience_id: str
+) -> PrivacyExperience:
+    """
+    Helper method to load PrivacyExperience or throw a 404
+    """
+    logger.info("Finding PrivacyExperience with id '{}'", experience_id)
+    privacy_experience = PrivacyExperience.get(db=db, object_id=experience_id)
+    if not privacy_experience:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No PrivacyExperience found for id {experience_id}.",
+        )
+
+    return privacy_experience
 
 
 @router.get(
@@ -101,3 +123,46 @@ def privacy_experience_create(
         experience.privacy_notices = experience.get_related_privacy_notices(db)
         experiences.append(experience)
     return experiences
+
+
+@router.get(
+    urls.PRIVACY_EXPERIENCE_DETAIL,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyExperienceResponse,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[scope_registry.PRIVACY_EXPERIENCE_READ])
+    ],
+)
+def privacy_experience_detail(
+    *,
+    db: Session = Depends(deps.get_db),
+    privacy_experience_id: str,
+    show_disabled: Optional[bool] = True,
+    region: Optional[PrivacyNoticeRegion] = None,
+) -> PrivacyExperience:
+    """
+    Get privacy experience with embedded notices.
+
+    show_disabled and region_query params are passed onto optionally filter the embedded notices.
+    """
+    logger.info("Fetching privacy experience with it {}", privacy_experience_id)
+    experience: PrivacyExperience = get_privacy_experience_or_error(
+        db, privacy_experience_id
+    )
+    if region and region not in experience.regions:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Region query param {region.value} not applicable for privacy experience {privacy_experience_id}.",
+        )
+
+    if show_disabled is False and experience.disabled:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Query param show_disabled=False not applicable for disabled privacy experience {privacy_experience_id}.",
+        )
+
+    # Temporarily stash the privacy notices on the experience for display
+    experience.privacy_notices = experience.get_related_privacy_notices(
+        db, region, show_disabled
+    )
+    return experience
