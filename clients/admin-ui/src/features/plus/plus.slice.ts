@@ -1,9 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { addCommonHeaders } from "common/CommonHeaders";
 
 import type { RootState } from "~/app/store";
-import { selectToken } from "~/features/auth";
+import { baseApi } from "~/features/common/api.slice";
 import {
   selectActiveCollection,
   selectActiveDatasetFidesKey,
@@ -42,28 +40,10 @@ interface ClassifyInstancesParams {
   resource_type: GenerateTypes;
 }
 
-export const plusApi = createApi({
-  reducerPath: "plusApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`,
-    prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
-      addCommonHeaders(headers, token);
-      return headers;
-    },
-  }),
-  tagTypes: [
-    "AllowList",
-    "ClassifyInstancesDatasets",
-    "ClassifyInstancesSystems",
-    "CustomFieldDefinition",
-    "CustomFields",
-    "LatestScan",
-    "Plus",
-  ],
+const plusApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<HealthCheck, void>({
-      query: () => "health",
+      query: () => "plus/health",
     }),
     /**
      * Fidescls endpoints:
@@ -73,7 +53,7 @@ export const plusApi = createApi({
       ClassifyRequestPayload
     >({
       query: (body) => ({
-        url: `classify/`,
+        url: `plus/classify/`,
         method: "POST",
         body,
       }),
@@ -87,7 +67,7 @@ export const plusApi = createApi({
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { resource_type = GenerateTypes.DATASETS, ...body } = payload;
         return {
-          url: `classify/`,
+          url: `plus/classify/`,
           method: "PUT",
           params: { resource_type },
           body,
@@ -111,7 +91,7 @@ export const plusApi = createApi({
           urlParams.append("fides_keys", key);
         });
         return {
-          url: `classify/?${urlParams.toString()}`,
+          url: `plus/classify/?${urlParams.toString()}`,
           method: "GET",
         };
       },
@@ -124,14 +104,14 @@ export const plusApi = createApi({
     }),
     getClassifyDataset: build.query<ClassificationResponse, string>({
       query: (dataset_fides_key: string) => ({
-        url: `classify/details/${dataset_fides_key}`,
+        url: `plus/classify/details/${dataset_fides_key}`,
         params: { resource_type: GenerateTypes.DATASETS },
       }),
       providesTags: ["ClassifyInstancesDatasets"],
     }),
     getClassifySystem: build.query<ClassifySystem | ClassifyEmpty, string>({
       query: (fidesKey: string) => ({
-        url: `classify/details/${fidesKey}`,
+        url: `plus/classify/details/${fidesKey}`,
         params: { resource_type: GenerateTypes.SYSTEMS },
       }),
       providesTags: ["ClassifyInstancesSystems"],
@@ -140,7 +120,7 @@ export const plusApi = createApi({
     // Kubernetes Cluster Scanner
     updateScan: build.mutation<SystemScanResponse, ScanParams>({
       query: (params: ScanParams) => ({
-        url: `scan`,
+        url: `plus/scan`,
         params,
         method: "PUT",
       }),
@@ -148,7 +128,7 @@ export const plusApi = createApi({
     }),
     getLatestScanDiff: build.query<SystemsDiff, void>({
       query: () => ({
-        url: `scan/latest`,
+        url: `plus/scan/latest`,
         params: { diff: true },
         method: "GET",
       }),
@@ -158,7 +138,7 @@ export const plusApi = createApi({
     // Custom Metadata Allow List
     getAllAllowList: build.query<AllowList[], boolean>({
       query: (show_values: boolean) => ({
-        url: `custom-metadata/allow-list`,
+        url: `plus/custom-metadata/allow-list`,
         params: { show_values },
       }),
       providesTags: ["AllowList"],
@@ -174,7 +154,7 @@ export const plusApi = createApi({
     }),
     upsertAllowList: build.mutation<AllowList, AllowListUpdate>({
       query: (params: AllowListUpdate) => ({
-        url: `custom-metadata/allow-list`,
+        url: `plus/custom-metadata/allow-list`,
         method: "PUT",
         body: params,
       }),
@@ -184,20 +164,20 @@ export const plusApi = createApi({
     // Custom Metadata Custom Field
     deleteCustomField: build.mutation<void, { id: string }>({
       query: ({ id }) => ({
-        url: `custom-metadata/custom-field/${id}`,
+        url: `plus/custom-metadata/custom-field/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["CustomFields"],
     }),
     getCustomFieldsForResource: build.query<CustomFieldWithId[], string>({
       query: (resource_id: string) => ({
-        url: `custom-metadata/custom-field/resource/${resource_id}`,
+        url: `plus/custom-metadata/custom-field/resource/${resource_id}`,
       }),
       providesTags: ["CustomFields"],
     }),
     upsertCustomField: build.mutation<CustomFieldWithId, CustomFieldWithId>({
       query: (params) => ({
-        url: `custom-metadata/custom-field`,
+        url: `plus/custom-metadata/custom-field`,
         method: "PUT",
         body: {
           custom_field_definition_id: params.custom_field_definition_id,
@@ -214,7 +194,7 @@ export const plusApi = createApi({
       void
     >({
       query: () => ({
-        url: `custom-metadata/custom-field-definition`,
+        url: `plus/custom-metadata/custom-field-definition`,
       }),
       providesTags: ["CustomFieldDefinition"],
     }),
@@ -224,7 +204,7 @@ export const plusApi = createApi({
       CustomFieldDefinition
     >({
       query: (params) => ({
-        url: `custom-metadata/custom-field-definition`,
+        url: `plus/custom-metadata/custom-field-definition`,
         method: "POST",
         body: params,
       }),
@@ -235,7 +215,7 @@ export const plusApi = createApi({
       CustomFieldDefinition
     >({
       query: (params) => ({
-        url: `custom-metadata/custom-field-definition`,
+        url: `plus/custom-metadata/custom-field-definition`,
         method: "PUT",
         body: params,
       }),
@@ -255,7 +235,7 @@ export const plusApi = createApi({
       ResourceTypes
     >({
       query: (resource_type: ResourceTypes) => ({
-        url: `custom-metadata/custom-field-definition/resource-type/${resource_type}`,
+        url: `plus/custom-metadata/custom-field-definition/resource-type/${resource_type}`,
       }),
       providesTags: ["CustomFieldDefinition"],
       transformResponse: (list: CustomFieldDefinitionWithId[]) =>

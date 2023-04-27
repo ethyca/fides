@@ -34,7 +34,6 @@ import { reducer as dataUseReducer } from "~/features/data-use/data-use.slice";
 import { datamapSlice } from "~/features/datamap";
 import { reducer as datasetReducer } from "~/features/dataset";
 import { reducer as organizationReducer } from "~/features/organization";
-import { plusApi } from "~/features/plus/plus.slice";
 import { reducer as privacyNoticesReducer } from "~/features/privacy-notices/privacy-notices.slice";
 import { reducer as systemReducer } from "~/features/system";
 import { reducer as taxonomyReducer } from "~/features/taxonomy";
@@ -62,11 +61,13 @@ const storage =
     : createNoopStorage();
 
 const reducer = {
+  // API reducers
   [baseApi.reducerPath]: baseApi.reducer,
+  [healthApi.reducerPath]: healthApi.reducer,
+
+  // Slice reducers
   [datamapSlice.name]: datamapSlice.reducer,
   [dirtyFormsSlice.name]: dirtyFormsSlice.reducer,
-  [healthApi.reducerPath]: healthApi.reducer,
-  [plusApi.reducerPath]: plusApi.reducer,
   auth: authReducer,
   configWizard: configWizardReducer,
   connectionType: connectionTypeReducer,
@@ -106,12 +107,7 @@ const persistConfig = {
     and restored which could leave you with phantom subscriptions from components that do not exist any more.
     (https://redux-toolkit.js.org/usage/usage-guide#use-with-redux-persist)
   */
-  blacklist: [
-    baseApi.reducerPath,
-    healthApi.reducerPath,
-    plusApi.reducerPath,
-    dirtyFormsSlice.name,
-  ],
+  blacklist: [baseApi.reducerPath, healthApi.reducerPath],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -124,7 +120,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(baseApi.middleware, healthApi.middleware, plusApi.middleware),
+      }).concat(baseApi.middleware, healthApi.middleware),
     devTools: true,
     preloadedState,
   });
