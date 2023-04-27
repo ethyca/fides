@@ -5,9 +5,6 @@ import {
   StateFromReducersMapObject,
 } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
-import { reducer as connectionTypeReducer } from "connection-type/index";
-import { reducer as datastoreConnectionReducer } from "datastore-connections/index";
-import { reducer as privacyRequestsReducer } from "privacy-requests/index";
 import {
   FLUSH,
   PAUSE,
@@ -19,24 +16,27 @@ import {
   REHYDRATE,
 } from "redux-persist";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
-import { reducer as userManagementReducer } from "user-management/index";
 
 import { STORAGE_ROOT_KEY } from "~/constants";
-import { reducer as authReducer } from "~/features/auth";
+import { authSlice } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
-import { reducer as featuresReducer } from "~/features/common/features";
+import { featuresSlice } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
-import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
-import { reducer as dataQualifierReducer } from "~/features/data-qualifier/data-qualifier.slice";
-import { reducer as dataSubjectsReducer } from "~/features/data-subjects/data-subject.slice";
-import { reducer as dataUseReducer } from "~/features/data-use/data-use.slice";
+import { configWizardSlice } from "~/features/config-wizard/config-wizard.slice";
+import { connectionTypeSlice } from "~/features/connection-type";
+import { dataQualifierSlice } from "~/features/data-qualifier/data-qualifier.slice";
+import { dataSubjectsSlice } from "~/features/data-subjects/data-subject.slice";
+import { dataUseSlice } from "~/features/data-use/data-use.slice";
 import { datamapSlice } from "~/features/datamap";
-import { reducer as datasetReducer } from "~/features/dataset";
-import { reducer as organizationReducer } from "~/features/organization";
-import { reducer as privacyNoticesReducer } from "~/features/privacy-notices/privacy-notices.slice";
-import { reducer as systemReducer } from "~/features/system";
-import { reducer as taxonomyReducer } from "~/features/taxonomy";
+import { datasetSlice } from "~/features/dataset";
+import { datastoreConnectionSlice } from "~/features/datastore-connections";
+import { organizationSlice } from "~/features/organization";
+import { privacyNoticesSlice } from "~/features/privacy-notices/privacy-notices.slice";
+import { subjectRequestsSlice } from "~/features/privacy-requests";
+import { systemSlice } from "~/features/system";
+import { taxonomySlice } from "~/features/taxonomy";
+import { userManagementSlice } from "~/features/user-management";
 
 /**
  * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"
@@ -68,21 +68,21 @@ const reducer = {
   // Slice reducers
   [datamapSlice.name]: datamapSlice.reducer,
   [dirtyFormsSlice.name]: dirtyFormsSlice.reducer,
-  auth: authReducer,
-  configWizard: configWizardReducer,
-  connectionType: connectionTypeReducer,
-  dataQualifier: dataQualifierReducer,
-  dataSubjects: dataSubjectsReducer,
-  dataUse: dataUseReducer,
-  dataset: datasetReducer,
-  datastoreConnections: datastoreConnectionReducer,
-  features: featuresReducer,
-  organization: organizationReducer,
-  privacyNotices: privacyNoticesReducer,
-  subjectRequests: privacyRequestsReducer,
-  system: systemReducer,
-  taxonomy: taxonomyReducer,
-  userManagement: userManagementReducer,
+  [authSlice.name]: authSlice.reducer,
+  [configWizardSlice.name]: configWizardSlice.reducer,
+  [connectionTypeSlice.name]: connectionTypeSlice.reducer,
+  [dataQualifierSlice.name]: dataQualifierSlice.reducer,
+  [dataSubjectsSlice.name]: dataSubjectsSlice.reducer,
+  [dataUseSlice.name]: dataUseSlice.reducer,
+  [datasetSlice.name]: datasetSlice.reducer,
+  [datastoreConnectionSlice.name]: datastoreConnectionSlice.reducer,
+  [featuresSlice.name]: featuresSlice.reducer,
+  [organizationSlice.name]: organizationSlice.reducer,
+  [privacyNoticesSlice.name]: privacyNoticesSlice.reducer,
+  [subjectRequestsSlice.name]: subjectRequestsSlice.reducer,
+  [systemSlice.name]: systemSlice.reducer,
+  [taxonomySlice.name]: taxonomySlice.reducer,
+  [userManagementSlice.name]: userManagementSlice.reducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
