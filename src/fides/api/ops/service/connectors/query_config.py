@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
 
 import pydash
+from boto3.dynamodb.types import TypeSerializer
 from loguru import logger
 from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
@@ -806,15 +807,22 @@ class DynamoDBQueryConfig(QueryConfig[DynamoDBStatement]):
         Generate a Dictionary that contains necessary items to
         run a PUT operation against DynamoDB
         """
-        simple_row = {}
-        for key, value in row.items():
-            simple_row[key] = row[key][next(iter(value))]
-        update_clauses = self.update_value_map(simple_row, policy, request)
+        update_clauses = self.update_value_map(row, policy, request)
 
+        if update_clauses:
+            serializer = TypeSerializer()
+            update_items = row
+            for key, value in update_items.items():
+                if key in update_clauses:
         update_items = row
         for key, value in update_items.items():
             if key in update_clauses:
                 update_items[key][next(iter(value))] = update_clauses[key]
+                    update_items[key] = serializer.serialize(update_clauses[key])
+                else:
+                    update_items[key] = serializer.serialize(value)
+        else:
+            update_items = None
 
         return update_items
 
