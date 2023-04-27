@@ -814,10 +814,6 @@ class DynamoDBQueryConfig(QueryConfig[DynamoDBStatement]):
             update_items = row
             for key, value in update_items.items():
                 if key in update_clauses:
-        update_items = row
-        for key, value in update_items.items():
-            if key in update_clauses:
-                update_items[key][next(iter(value))] = update_clauses[key]
                     update_items[key] = serializer.serialize(update_clauses[key])
                 else:
                     update_items[key] = serializer.serialize(value)
