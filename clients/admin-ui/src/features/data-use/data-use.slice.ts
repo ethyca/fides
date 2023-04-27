@@ -67,8 +67,8 @@ export const { reducer } = dataUseSlice;
 
 const emptyDataUses: DataUse[] = [];
 export const selectDataUses: (state: RootState) => DataUse[] = createSelector(
-  dataUseApi.endpoints.getAllDataUses.select(),
-  ({ data }) => data ?? emptyDataUses
+  [(RootState) => RootState, dataUseApi.endpoints.getAllDataUses.select()],
+  (RootState, { data }) => data ?? emptyDataUses
 );
 
 export const selectDataUsesMap = createSelector(

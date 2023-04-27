@@ -62,8 +62,11 @@ export const dataSubjectsSlice = createSlice({
 const emptyDataSubjects: DataSubject[] = [];
 export const selectDataSubjects: (state: RootState) => DataSubject[] =
   createSelector(
-    dataSubjectsApi.endpoints.getAllDataSubjects.select(),
-    ({ data }) => data ?? emptyDataSubjects
+    [
+      (RootState) => RootState,
+      dataSubjectsApi.endpoints.getAllDataSubjects.select(),
+    ],
+    (RootState, { data }) => data ?? emptyDataSubjects
   );
 
 export const selectDataSubjectsMap = createSelector(

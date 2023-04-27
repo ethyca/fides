@@ -106,7 +106,7 @@ export const selectConnectionTypeFilters = (
   system_type: state.connectionType.system_type,
 });
 
-const connectionTypeApi = baseApi.injectEndpoints({
+export const connectionTypeApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllConnectionTypes: build.query<
       Page_ConnectionSystemTypeMap_,
@@ -135,8 +135,11 @@ export const {
 } = connectionTypeApi;
 
 export const selectConnectionTypes = createSelector(
-  connectionTypeApi.endpoints.getAllConnectionTypes.select({
-    search: "",
-  }),
-  ({ data }) => data?.items ?? []
+  [
+    (RootState) => RootState,
+    connectionTypeApi.endpoints.getAllConnectionTypes.select({
+      search: "",
+    }),
+  ],
+  (RootState, { data }) => data?.items ?? []
 );

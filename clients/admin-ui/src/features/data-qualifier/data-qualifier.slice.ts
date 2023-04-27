@@ -65,6 +65,9 @@ export const { reducer } = dataQualifierSlice;
 const emptyDataQualifiers: DataQualifier[] = [];
 export const selectDataQualifiers: (state: RootState) => DataQualifier[] =
   createSelector(
-    dataQualifierApi.endpoints.getAllDataQualifiers.select(),
-    ({ data }) => data ?? emptyDataQualifiers
+    [
+      (RootState) => RootState,
+      dataQualifierApi.endpoints.getAllDataQualifiers.select(),
+    ],
+    (RootState, { data }) => data ?? emptyDataQualifiers
   );

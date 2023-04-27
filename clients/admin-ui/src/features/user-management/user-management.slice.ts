@@ -231,9 +231,8 @@ export const selectActiveUser = createSelector(
 );
 
 const emptyScopes: ScopeRegistryEnum[] = [];
-export const selectThisUsersScopes = createSelector(
-  [(RootState) => RootState, selectUser],
-  (RootState, user) => {
+export const selectThisUsersScopes: (state: RootState) => ScopeRegistryEnum[] =
+  createSelector([(RootState) => RootState, selectUser], (RootState, user) => {
     if (!user) {
       return emptyScopes;
     }
@@ -242,8 +241,7 @@ export const selectThisUsersScopes = createSelector(
     ).data;
 
     return permissions ? permissions.total_scopes : emptyScopes;
-  }
-);
+  });
 
 const emptyRoles: RoleRegistryEnum[] = [];
 /**

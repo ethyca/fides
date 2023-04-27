@@ -351,8 +351,11 @@ export const INITIAL_CONNECTIONS_FILTERS: DatastoreConnectionParams = {
  * Returns the globally cached datastore connections response.
  */
 export const selectInitialConnections = createSelector(
-  datastoreConnectionApi.endpoints.getAllDatastoreConnections.select(
-    INITIAL_CONNECTIONS_FILTERS
-  ),
-  ({ data }) => data
+  [
+    (RootState) => RootState,
+    datastoreConnectionApi.endpoints.getAllDatastoreConnections.select(
+      INITIAL_CONNECTIONS_FILTERS
+    ),
+  ],
+  (RootState, { data }) => data
 );

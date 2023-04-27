@@ -134,10 +134,15 @@ export const { useGetAllDataCategoriesQuery } = dataCategoriesApi;
 
 // Selectors
 const emptyDataCategories: DataCategory[] = [];
-export const selectDataCategories = createSelector(
-  dataCategoriesApi.endpoints.getAllDataCategories.select(),
-  ({ data }: { data?: DataCategory[] }) => data ?? emptyDataCategories
-);
+export const selectDataCategories: (state: RootState) => DataCategory[] =
+  createSelector(
+    [
+      (RootState) => RootState,
+      dataCategoriesApi.endpoints.getAllDataCategories.select(),
+    ],
+
+    (RootState, { data }) => data ?? emptyDataCategories
+  );
 
 export const selectDataCategoriesMap = createSelector(
   selectDataCategories,
