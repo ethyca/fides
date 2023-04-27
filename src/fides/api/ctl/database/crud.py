@@ -62,7 +62,7 @@ async def create_resource(
 
 async def get_custom_fields_filtered(
     async_session: AsyncSession,
-    resource_types_to_ids: dict[ResourceTypes, List[str]] = defaultdict(list),
+    resource_types_to_ids: Dict[ResourceTypes, List[str]] = defaultdict(list),
 ) -> Base:
     """
     Utility function to construct a filtered query for custom field values based on provided mapping of
