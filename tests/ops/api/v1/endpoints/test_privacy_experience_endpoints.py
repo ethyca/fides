@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import List
+
 import pytest
 from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
@@ -435,3 +437,102 @@ class TestGetPrivacyExperiences:
         assert notices[0]["regions"] == ["us_ca", "us_co"]
         assert notices[0]["id"] == privacy_notice.id
         assert notices[0]["displayed_in_privacy_center"]
+
+
+class TestCreatePrivacyExperiences:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + PRIVACY_EXPERIENCE
+
+    @pytest.fixture(scope="function")
+    def request_data(self) -> List[dict]:
+        return [
+            {
+                "component": "overlay",
+                "delivery_mechanism": "banner",
+                "regions": ["eu_it", "eu_es", "eu_fr"],
+                "component_title": "Control your privacy",
+                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                "banner_title": "Manage your consent",
+                "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
+                "confirmation_button_label": "Accept all",
+                "reject_button_label": "Reject all",
+            }
+        ]
+
+    def test_create_privacy_experiences_unauthenticated(self, url, api_client):
+        resp = api_client.post(url)
+        assert resp.status_code == 401
+
+    def test_create_privacy_experiences_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        resp = api_client.post(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    @pytest.mark.parametrize(
+        "role,expected_status",
+        [
+            ("owner", HTTP_200_OK),
+            ("contributor", HTTP_200_OK),
+            ("viewer_and_approver", HTTP_403_FORBIDDEN),
+            ("viewer", HTTP_403_FORBIDDEN),
+            ("approver", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_create_privacy_experience_with_roles(
+        self,
+        role,
+        expected_status,
+        api_client: TestClient,
+        url,
+        generate_role_header,
+        request_data,
+    ) -> None:
+        auth_header = generate_role_header(roles=[role])
+        response = api_client.post(url, json=request_data, headers=auth_header)
+        assert response.status_code == expected_status
+
+    @pytest.mark.usefixtures("privacy_notice")
+    def test_create_privacy_experiences(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        request_data,
+        privacy_notice_eu_fr_provide_service_frontend_only,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_CREATE])
+
+        resp = api_client.post(url, headers=auth_header, json=request_data)
+        assert resp.status_code == 201
+        data = resp.json()
+        assert len(data) == 1
+        data = data[0]
+        assert data["disabled"] is False
+        assert data["component"] == "overlay"
+        assert data["delivery_mechanism"] == "banner"
+        assert data["regions"] == ["eu_it", "eu_es", "eu_fr"]
+        assert data["component_title"] == "Control your privacy"
+        assert (
+            data["component_description"]
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert data["banner_title"] == "Manage your consent"
+        assert (
+            data["banner_description"]
+            == "By clicking accept you consent to one of these methods by us and our third parties."
+        )
+        assert data["link_label"] is None
+        assert data["confirmation_button_label"] == "Accept all"
+        assert data["reject_button_label"] == "Reject all"
+        assert data["acknowledgement_button_label"] is None
+        assert len(data["privacy_notices"]) == 1
+        assert (
+            data["privacy_notices"][0]["id"]
+            == privacy_notice_eu_fr_provide_service_frontend_only.id
+        )

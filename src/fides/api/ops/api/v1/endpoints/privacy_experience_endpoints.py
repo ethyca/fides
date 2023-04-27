@@ -5,14 +5,18 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
+from pydantic import conlist
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_200_OK
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED
 
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
+from fides.api.ops.schemas.privacy_experience import (
+    PrivacyExperience as PrivacyExperienceSchema,
+)
 from fides.api.ops.schemas.privacy_experience import PrivacyExperienceResponse
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
@@ -69,3 +73,31 @@ def privacy_experience_list(
             results.append(privacy_experience)
 
     return fastapi_paginate(results, params=params)
+
+
+@router.post(
+    urls.PRIVACY_EXPERIENCE,
+    status_code=HTTP_201_CREATED,
+    response_model=List[PrivacyExperienceResponse],
+    dependencies=[
+        Security(verify_oauth_client, scopes=[scope_registry.PRIVACY_EXPERIENCE_CREATE])
+    ],
+)
+def privacy_experience_create(
+    *,
+    db: Session = Depends(deps.get_db),
+    bulk_experience_data: conlist(PrivacyExperienceSchema, max_items=50),  # type: ignore
+) -> List[PrivacyExperience]:
+    """
+    Bulk create Privacy Experiences
+    """
+    logger.info("Creating privacy experiences")
+    experiences: List[PrivacyExperience] = []
+    for experience_data in bulk_experience_data:
+        experience = PrivacyExperience.create(
+            db, data=experience_data.dict(exclude_unset=True), check_name=False
+        )
+        # Temporarily stash the privacy notices on the experience for display
+        experience.privacy_notices = experience.get_related_privacy_notices(db)
+        experiences.append(experience)
+    return experiences
