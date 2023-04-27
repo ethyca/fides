@@ -3,8 +3,7 @@ import { Field, FieldInputProps } from "formik";
 
 import { AllowedTypes, ResourceTypes } from "~/types/api";
 
-import { CustomSelect } from "../form/inputs";
-import { CustomFieldsModal } from "./CustomFieldsModal";
+import { CustomSelect, CustomTextInput } from "../form/inputs";
 import { useCustomFields } from "./hooks";
 
 type CustomFieldsListProps = {
@@ -49,7 +48,6 @@ export const CustomFieldsList = ({
             Custom fields
           </Text>
         </Flex>
-        <CustomFieldsModal resourceType={resourceType} />
         {isLoading ? (
           <Center>
             <Spinner />
@@ -65,6 +63,24 @@ export const CustomFieldsList = ({
                   return null;
                 }
 
+                const name = `customFieldValues.${customFieldDefinition.id}`;
+                if (
+                  !customFieldDefinition.allow_list_id &&
+                  customFieldDefinition.field_type === AllowedTypes.STRING
+                ) {
+                  return (
+                    <Field key={definitionId} name={name}>
+                      {({ field }: { field: FieldInputProps<string> }) => (
+                        <CustomTextInput
+                          {...field}
+                          label={customFieldDefinition.name}
+                          tooltip={customFieldDefinition.description}
+                        />
+                      )}
+                    </Field>
+                  );
+                }
+
                 const allowList = idToAllowListWithOptions.get(
                   customFieldDefinition.allow_list_id!
                 );
@@ -75,7 +91,6 @@ export const CustomFieldsList = ({
                 }
 
                 const { options } = allowList;
-                const name = `customFieldValues.${customFieldDefinition.id}`;
 
                 return (
                   <Field key={definitionId} name={name}>
@@ -87,6 +102,7 @@ export const CustomFieldsList = ({
                       <CustomSelect
                         {...field}
                         isClearable
+                        isFormikOnChange
                         isMulti={
                           customFieldDefinition.field_type !==
                           AllowedTypes.STRING

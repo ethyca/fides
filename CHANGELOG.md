@@ -29,6 +29,7 @@ The types of changes are:
 - Side navigation bar can now also have children navigation links [#3099](https://github.com/ethyca/fides/pull/3099)
 - Endpoints for consent reporting [#3095](https://github.com/ethyca/fides/pull/3095)
 - Custom fields table [#3097](https://github.com/ethyca/fides/pull/3097)
+- Custom fields form modal [#3165](https://github.com/ethyca/fides/pull/3165)
 - Endpoints to save the new-style Privacy Preferences with respect to a fides user device id [#3132](https://github.com/ethyca/fides/pull/3132)
 - Support `privacy_declaration` as a resource type for custom fields [#3149](https://github.com/ethyca/fides/pull/3149)
 - Expose `id` field of embedded `privacy_declarations` on `system` API responses [#3157](https://github.com/ethyca/fides/pull/3157)
