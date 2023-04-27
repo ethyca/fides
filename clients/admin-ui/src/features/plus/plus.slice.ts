@@ -147,7 +147,7 @@ const plusApi = baseApi.injectEndpoints({
     }),
     getAllowList: build.query<AllowList, string>({
       query: (id) => ({
-        url: `custom-metadata/allow-list/${id}`,
+        url: `plus/custom-metadata/allow-list/${id}`,
         params: { show_values: true },
       }),
       providesTags: ["AllowList"],
@@ -223,7 +223,7 @@ const plusApi = baseApi.injectEndpoints({
     }),
     deleteCustomFieldDefinition: build.mutation<void, { id: string }>({
       query: ({ id }) => ({
-        url: `custom-metadata/custom-field-definition/${id}`,
+        url: `plus/custom-metadata/custom-field-definition/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["CustomFieldDefinition"],
