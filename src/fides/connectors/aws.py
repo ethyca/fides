@@ -285,6 +285,7 @@ def create_tagging_dynamodb_system(
             fidesctl_meta=SystemMetadata(
                 resource_id=arn,
             ),
+            privacy_declarations=[],
         )
     return system
 
@@ -310,5 +311,6 @@ def create_tagging_s3_system(
         fidesctl_meta=SystemMetadata(
             resource_id=arn,
         ),
+        privacy_declarations=[],
     )
     return system
