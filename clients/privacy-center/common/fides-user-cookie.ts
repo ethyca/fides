@@ -1,6 +1,6 @@
 import { getCookie, setCookie, Types } from "typescript-cookie";
 
-const FIDES_USER_DEVICE_ID_COOKIE_NAME = "fides_user_device_id";
+export const FIDES_USER_DEVICE_ID_COOKIE_NAME = "fides_user_device_id";
 const MAX_AGE_DAYS = 1;
 
 const CODEC: Types.CookieCodecConfig<string, string> = {

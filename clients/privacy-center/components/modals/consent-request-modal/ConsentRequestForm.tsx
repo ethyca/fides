@@ -43,7 +43,6 @@ const useConsentRequestForm = ({
 }) => {
   const identityInputs =
     config.consent?.button.identity_inputs ?? defaultIdentityInput;
-  const fidesUserDeviceId = getFidesUserDeviceUuid();
   const toast = useToast();
   const formik = useFormik({
     initialValues: {
@@ -55,7 +54,7 @@ const useConsentRequestForm = ({
         // Marshall empty strings back to `undefined` so the backend will not try to validate
         email: values.email === "" ? undefined : values.email,
         phone_number: values.phone === "" ? undefined : values.phone,
-        fides_user_device_id: fidesUserDeviceId,
+        fides_user_device_id: getFidesUserDeviceUuid(),
       };
       const handleError = ({
         title,

@@ -2,6 +2,7 @@ import { hostUrl } from "~/constants";
 import { CONSENT_COOKIE_NAME } from "fides-consent";
 import { GpcStatus } from "~/features/consent/types";
 import { ConsentPreferencesWithVerificationCode } from "~/types/api";
+import { FIDES_USER_DEVICE_ID_COOKIE_NAME } from "~/common/fides-user-cookie";
 
 describe("Consent settings", () => {
   describe("when the user isn't verified", () => {
@@ -42,6 +43,40 @@ describe("Consent settings", () => {
       cy.visit("/consent");
       cy.location("pathname").should("eq", "/");
       cy.getByTestId("home");
+    });
+
+    describe("device uuid", () => {
+      it("can send a device uuid when there is no cookie", () => {
+        cy.visit("/");
+        cy.getCookie(FIDES_USER_DEVICE_ID_COOKIE_NAME).then((uuid) => {
+          expect(uuid).to.eql(null);
+        });
+        cy.getByTestId("card").contains("Manage your consent").click();
+        cy.getByTestId("consent-request-form").within(() => {
+          cy.get("input#email").type("test@example.com");
+          cy.get("button").contains("Continue").click();
+        });
+        cy.getCookie(FIDES_USER_DEVICE_ID_COOKIE_NAME).then((cookie) => {
+          cy.wait("@postConsentRequest").then((interception) => {
+            const { body } = interception.request;
+            expect(body.fides_user_device_id).to.eql(cookie?.value);
+          });
+        });
+      });
+      it("can send a device uuid when a cookie exists", () => {
+        const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+        cy.setCookie(FIDES_USER_DEVICE_ID_COOKIE_NAME, uuid);
+        cy.visit("/");
+        cy.getByTestId("card").contains("Manage your consent").click();
+        cy.getByTestId("consent-request-form").within(() => {
+          cy.get("input#email").type("test@example.com");
+          cy.get("button").contains("Continue").click();
+        });
+        cy.wait("@postConsentRequest").then((interception) => {
+          const { body } = interception.request;
+          expect(body.fides_user_device_id).to.eql(uuid);
+        });
+      });
     });
   });
 
