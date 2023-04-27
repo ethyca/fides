@@ -5,6 +5,7 @@ import React from "react";
 
 import Layout from "~/features/common/Layout";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import PrivacyExperiencesTable from "~/features/privacy-experience/PrivacyExperiencesTable";
 
 const PrivacyExperiencePage = () => (
   <Layout title="Privacy notices">
@@ -31,7 +32,7 @@ const PrivacyExperiencePage = () => (
         </Breadcrumb>
       </Box>
     </Box>
-    <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "50%" }}>
+    <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "70%" }}>
       Based on your privacy notices, Fides has created the overlay and privacy
       experience configuration below. Your privacy notices will be presented by
       region in these components. Edit each component to adjust the text that
@@ -40,7 +41,9 @@ const PrivacyExperiencePage = () => (
       website, copy the javascript using the button on this page and place it on
       your website.
     </Text>
-    <Box data-testid="privacy-experience-page">Work in progress!</Box>
+    <Box data-testid="privacy-experience-page">
+      <PrivacyExperiencesTable />
+    </Box>
   </Layout>
 );
 
