@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import pydash
 import pytest
+from boto3.dynamodb.types import TypeDeserializer
 from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
@@ -65,7 +66,7 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
-PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
+PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 300
 
 
 @pytest.fixture(scope="function")
@@ -2377,7 +2378,7 @@ def test_create_and_process_erasure_request_dynamodb(
 ):
     customer_email = dynamodb_resources["email"]
     dynamodb_client = dynamodb_resources["client"]
-    formatted_customer_email = dynamodb_resources["formatted_email"]
+    customer_id = dynamodb_resources["customer_id"]
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": erasure_policy.key,
@@ -2391,10 +2392,14 @@ def test_create_and_process_erasure_request_dynamodb(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     pr.delete(db=db)
-
-    # stmt = f'select "name", "variant_eg" from "customer" where "email" = {formatted_customer_email};'
-    # dynamodb_client
-    # res = snowflake_client.execute(stmt).all()
-    # for row in res:
-    #     assert row.name is None
-    #     assert row.variant_eg is None
+    deserializer = TypeDeserializer()
+    customer = dynamodb_client.get_item(
+        TableName="customer",
+        Key={"id": {"S": customer_id}},
+    )
+    customer_identifier = dynamodb_client.get_item(
+        TableName="customer_identifier",
+        Key={"email": {"S": customer_email}},
+    )
+    assert deserializer.deserialize(customer["Item"]["name"]) == None
+    assert deserializer.deserialize(customer_identifier["Item"]["name"]) == None
