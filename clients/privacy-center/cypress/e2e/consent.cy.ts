@@ -53,11 +53,16 @@ describe("Consent settings", () => {
           cy.get("input#email").type("test@example.com");
           cy.get("button").contains("Continue").click();
         });
-        cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
-          const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
-          cy.wait("@postConsentRequest").then((interception) => {
-            const { body } = interception.request;
-            expect(body.fides_user_device_id).to.eql(cookie.identity.fides_user_device_id);
+        // The cookie should also have been updated. This may take a moment in CI,
+        // so we `waitUntil` the value becomes what we expect.
+        // https://github.com/cypress-io/cypress/issues/4802#issuecomment-941891554
+        cy.waitUntil(() =>
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
+            const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
+            cy.wait("@postConsentRequest").then((interception) => {
+              const { body } = interception.request;
+              expect(body.fides_user_device_id).to.eql(cookie.identity.fides_user_device_id);
+            });
           });
         });
       });
