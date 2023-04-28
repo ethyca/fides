@@ -2,10 +2,11 @@
 Contains all of the generic CRUD endpoints that can be
 generated programmatically for each resource.
 """
+from collections import defaultdict
 from typing import Any, Dict, List, Tuple
 
 from loguru import logger as log
-from sqlalchemy import column
+from sqlalchemy import and_, column
 from sqlalchemy import delete as _delete
 from sqlalchemy import or_
 from sqlalchemy import update as _update
@@ -17,6 +18,7 @@ from sqlalchemy.future import select
 from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     CustomField,
     CustomFieldDefinition,
+    ResourceTypes,
 )
 from fides.api.ctl.utils import errors
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
@@ -56,6 +58,48 @@ async def create_resource(
                 raise sa_error
 
         return await get_resource(sql_model, resource_dict["fides_key"], async_session)
+
+
+async def get_custom_fields_filtered(
+    async_session: AsyncSession,
+    resource_types_to_ids: Dict[ResourceTypes, List[str]] = defaultdict(list),
+) -> Base:
+    """
+    Utility function to construct a filtered query for custom field values based on provided mapping of
+    resource types to resource IDs.
+
+    This is for use in bulk querying of custom fields, to avoid multiple round trips to the db.
+    """
+    with log.contextualize(model=CustomField):
+        async with async_session.begin():
+            try:
+                log.debug("Fetching resource")
+                query = select(
+                    CustomField.resource_id,
+                    CustomField.value,
+                    CustomFieldDefinition.resource_type,
+                    CustomFieldDefinition.name,
+                ).join(
+                    CustomFieldDefinition,
+                    CustomFieldDefinition.id == CustomField.custom_field_definition_id,
+                )
+
+                criteria = [
+                    and_(
+                        CustomFieldDefinition.resource_type == resource_type.value,
+                        CustomField.resource_id.in_(resource_ids),
+                    )
+                    for resource_type, resource_ids in resource_types_to_ids.items()
+                ]
+                query = query.where(or_(False, *criteria))
+                result = await async_session.execute(query)
+                return result.mappings().all()
+            except SQLAlchemyError:
+                sa_error = errors.QueryError()
+                log.bind(error=sa_error.detail["error"]).error(  # type: ignore[index]
+                    "Failed to fetch custom fields"
+                )
+                raise sa_error
 
 
 async def get_resource(
