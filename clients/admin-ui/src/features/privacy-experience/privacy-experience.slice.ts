@@ -4,12 +4,12 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   Page_PrivacyExperienceResponse_,
+  PrivacyExperience,
   PrivacyExperienceResponse,
   PrivacyNoticeRegion,
 } from "~/types/api";
 
 export interface State {
-  activePrivacyNoticeId?: string;
   page?: number;
   pageSize?: number;
 }
@@ -38,10 +38,42 @@ const privacyExperienceApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Privacy Experiences"],
     }),
+    patchPrivacyExperience: build.mutation<
+      PrivacyExperienceResponse[],
+      Partial<PrivacyExperienceResponse>[]
+    >({
+      query: (payload) => ({
+        method: "PATCH",
+        url: `privacy-experience/`,
+        body: payload,
+      }),
+      invalidatesTags: () => ["Privacy Experiences"],
+    }),
+    getPrivacyExperienceById: build.query<PrivacyExperienceResponse, string>({
+      query: (id) => ({
+        url: `privacy-experience/${id}`,
+      }),
+      providesTags: (result, error, arg) => [
+        { type: "Privacy Experiences", id: arg },
+      ],
+    }),
+    postPrivacyExperience: build.mutation<PrivacyExperience[], void>({
+      query: (payload) => ({
+        method: "POST",
+        url: `privacy-experience/`,
+        body: payload,
+      }),
+      invalidatesTags: () => ["Privacy Experiences"],
+    }),
   }),
 });
 
-export const { useGetAllPrivacyExperiencesQuery } = privacyExperienceApi;
+export const {
+  useGetAllPrivacyExperiencesQuery,
+  usePatchPrivacyExperienceMutation,
+  useGetPrivacyExperienceByIdQuery,
+  usePostPrivacyExperienceMutation,
+} = privacyExperienceApi;
 
 export const privacyExperienceSlice = createSlice({
   name: "privacyExperience",
@@ -62,7 +94,7 @@ export const selectPageSize = createSelector(
   (state) => state.pageSize
 );
 
-const emptyPrivacyNotices: PrivacyExperienceResponse[] = [];
+const emptyPrivacyExperiences: PrivacyExperienceResponse[] = [];
 export const selectAllPrivacyExperiences = createSelector(
   [(RootState) => RootState, selectPage, selectPageSize],
   (RootState, page, pageSize) => {
@@ -72,6 +104,6 @@ export const selectAllPrivacyExperiences = createSelector(
         size: pageSize,
       }
     )(RootState)?.data;
-    return data ? data.items : emptyPrivacyNotices;
+    return data ? data.items : emptyPrivacyExperiences;
   }
 );

@@ -13,7 +13,8 @@ import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
-import { useGetPrivacyNoticeByIdQuery } from "~/features/privacy-notices/privacy-notices.slice";
+import { useGetPrivacyExperienceByIdQuery } from "~/features/privacy-experience/privacy-experience.slice";
+import { ComponentType } from "~/types/api";
 
 const PrivacyExperienceDetailPage = () => {
   const router = useRouter();
@@ -25,8 +26,7 @@ const PrivacyExperienceDetailPage = () => {
       : router.query.id;
   }
 
-  //   TODO: replace with the proper call when it is available
-  const { data, isLoading } = useGetPrivacyNoticeByIdQuery(experienceId);
+  const { data, isLoading } = useGetPrivacyExperienceByIdQuery(experienceId);
 
   if (isLoading) {
     return (
@@ -46,8 +46,13 @@ const PrivacyExperienceDetailPage = () => {
     );
   }
 
+  const header =
+    data.component === ComponentType.OVERLAY
+      ? "Configure your consent overlay"
+      : "Configure your privacy center";
+
   return (
-    <Layout title={`Privacy experience ${data.name}`}>
+    <Layout title={`Privacy experience ${data.component}`}>
       <Box mb={4}>
         <Heading
           fontSize="2xl"
@@ -55,8 +60,7 @@ const PrivacyExperienceDetailPage = () => {
           mb={2}
           data-testid="header"
         >
-          {/* TODO: fill in actual component name here */}
-          Configure your consent overlay
+          {header}
         </Heading>
         <Box>
           <Breadcrumb
