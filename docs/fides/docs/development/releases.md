@@ -168,8 +168,6 @@ It may be necessary for a patch release to contain only select commits to the `m
 
 ## Release Checklist
 
-_update for accuracy_
-
 The release checklist is a manual set of checks done before each release to ensure functionality of the most critical components of the application. Some of these steps are redundant with automated tests, while others are _only_ tested here as part of this check.
 
 This checklist should be copy/pasted into the final pre-release PR, and checked off as you complete each step.
@@ -195,12 +193,13 @@ Next, run the following checks via the test environment:
 
 Run these from within the test environment shell:
 
-* [ ] Make sure to login your CLI user by running `fides user login -u root_user -p Testpassword1!`
-* [ ] Run a `fides push`
-* [ ] Run a `fides pull`
-* [ ] Run a `fides evaluate`
-* [ ] Generate a dataset with `fides generate dataset db --credentials-id app_postgres test.yml`
-* [ ] Scan a database with `fides scan dataset db --credentials-id app_postgres`
+* [ ] `git reset --hard` - **Note: This is required for the `pull` command to work**
+* [ ] `fides user login`
+* [ ] `fides push src/fides/data/sample_project/sample_resources/`
+* [ ] `fides pull src/fides/data/sample_project/sample_resources/`
+* [ ] `fides evaluate src/fides/data/sample_project/sample_resources/`
+* [ ] `fides generate dataset db --credentials-id app_postgres test.yml` - **Note: Because the filesystem isn't mounted, the new file will only show up within the container**
+* [ ] `fides scan dataset db --credentials-id app_postgres`
 
 #### Privacy Center
 
