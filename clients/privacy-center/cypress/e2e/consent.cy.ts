@@ -99,7 +99,12 @@ describe("Consent settings", () => {
         });
         cy.wait("@postConsentRequest").then((interception) => {
           const { body } = interception.request;
-          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
+          // Wait until the cookie is updated to the new format
+          cy.waitUntil(() => 
+            cy.getCookie(CONSENT_COOKIE_NAME)
+              .should("have.property", "value")
+              .should("match", /identity/)
+          );
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
             const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
             expect(body.fides_user_device_id).to.eql(cookie.identity.fides_user_device_id);
