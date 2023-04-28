@@ -110,7 +110,6 @@ const Consent: NextPage = () => {
    * ensures the browser's behavior matches what the server expects.
    */
   useEffect(() => {
-    // TODO: actually think this through!
     const cookie: FidesCookie = getOrCreateFidesCookie();
     const newConsent = makeCookieKeyConsent({
       consentOptions,

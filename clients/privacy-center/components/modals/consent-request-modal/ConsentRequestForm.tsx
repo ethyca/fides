@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   Button,
   chakra,
@@ -12,6 +12,7 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
+import { getOrCreateFidesCookie, setFidesCookie } from "fides-consent";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import * as Yup from "yup";
@@ -26,7 +27,6 @@ import {
   phoneValidation,
 } from "~/components/modals/validation";
 import { ModalViews, VerificationType } from "~/components/modals/types";
-import { getFidesUserDeviceUuid } from "~/common/fides-user-cookie";
 
 const useConsentRequestForm = ({
   onClose,
@@ -44,6 +44,7 @@ const useConsentRequestForm = ({
   const identityInputs =
     config.consent?.button.identity_inputs ?? defaultIdentityInput;
   const toast = useToast();
+  const cookie = useMemo(() => getOrCreateFidesCookie(), []);
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -54,7 +55,7 @@ const useConsentRequestForm = ({
         // Marshall empty strings back to `undefined` so the backend will not try to validate
         email: values.email === "" ? undefined : values.email,
         phone_number: values.phone === "" ? undefined : values.phone,
-        fides_user_device_id: getFidesUserDeviceUuid(),
+        fides_user_device_id: cookie?.identity?.fides_user_device_id,
       };
       const handleError = ({
         title,
@@ -94,6 +95,15 @@ const useConsentRequestForm = ({
 
         if (!data.consent_request_id) {
           handleError({ title: "No consent request id found" });
+          return;
+        }
+
+        // After successfully initializing a consent request, save the current
+        // cookie with our unique fides_user_device_id, etc.
+        try {
+          setFidesCookie(cookie);
+        } catch (error) {
+          handleError({ title: "Could not save consent cookie" });
           return;
         }
 
