@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Set
 
 import pytest
+from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from fideslang.models import Dataset
 
 from fides.api.ops.graph.config import (
@@ -647,10 +648,19 @@ class TestDynamoDBQueryConfig:
         row = {
             "customer_email": {"S": "customer-1@example.com"},
             "name": {"S": "John Customer"},
-            "address_id": {"S": "1"},
+            "address_id": {"L": [{"S": "1"}, {"S": "2"}]},
+            "personal_info": {"M": {"gender": {"S": "male"}, "age": {"S": "99"}}},
             "id": {"S": "1"},
         }
         return row
+
+    @pytest.fixture(scope="function")
+    def deserialized_customer_row(self, customer_row):
+        deserialized_customer_row = {}
+        deserializer = TypeDeserializer()
+        for key, value in customer_row.items():
+            deserialized_customer_row[key] = deserializer.deserialize(value)
+        return deserialized_customer_row
 
     @pytest.fixture(scope="function")
     def customer_identifier_row(self):
@@ -662,6 +672,14 @@ class TestDynamoDBQueryConfig:
         }
         return row
 
+    @pytest.fixture(scope="function")
+    def deserialized_customer_identifier_row(self, customer_identifier_row):
+        deserialized_customer_identifier_row = {}
+        deserializer = TypeDeserializer()
+        for key, value in customer_identifier_row.items():
+            deserialized_customer_identifier_row[key] = deserializer.deserialize(value)
+        return deserialized_customer_identifier_row
+
     def test_get_query_param_formatting_single_key(
         self,
         resources_dict,
@@ -671,10 +689,8 @@ class TestDynamoDBQueryConfig:
             "fidesops_grouped_inputs": [],
             "email": ["customer-test_uuid@example.com"],
         }
-        input_data["attribute_definitions"] = [
-            {"AttributeName": "email", "AttributeType": "S"}
-        ]
-        query_config = DynamoDBQueryConfig(customer_node)
+        attribute_definitions = [{"AttributeName": "email", "AttributeType": "S"}]
+        query_config = DynamoDBQueryConfig(customer_node, attribute_definitions)
         item = query_config.generate_query(
             input_data=input_data, policy=resources_dict["policy"]
         )
@@ -684,23 +700,23 @@ class TestDynamoDBQueryConfig:
         self,
         erasure_policy,
         customer_node,
-        customer_row,
+        deserialized_customer_row,
     ) -> None:
         input_data = {
             "fidesops_grouped_inputs": [],
             "email": ["customer-test_uuid@example.com"],
         }
-        input_data["attribute_definitions"] = [
-            {"AttributeName": "email", "AttributeType": "S"}
-        ]
-        query_config = DynamoDBQueryConfig(customer_node)
+        attribute_definitions = [{"AttributeName": "email", "AttributeType": "S"}]
+        query_config = DynamoDBQueryConfig(customer_node, attribute_definitions)
         update_item = query_config.generate_update_stmt(
-            customer_row, erasure_policy, privacy_request
+            deserialized_customer_row, erasure_policy, privacy_request
         )
 
         assert update_item == {
             "customer_email": {"S": "customer-1@example.com"},
-            "name": {"S": None},
+            "name": {"NULL": True},
             "address_id": {"S": "1"},
+            "address_id": {"L": [{"S": "1"}, {"S": "2"}]},
+            "personal_info": {"M": {"gender": {"S": "male"}, "age": {"S": "99"}}},
             "id": {"S": "1"},
         }
