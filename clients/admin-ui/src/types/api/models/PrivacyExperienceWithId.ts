@@ -5,12 +5,12 @@
 import type { ComponentType } from "./ComponentType";
 import type { DeliveryMechanism } from "./DeliveryMechanism";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
-import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
 
 /**
- * An API representation of a PrivacyExperience used for response payloads
+ * An API representation of a PrivacyExperience that includes an `id` field.
+ * Used to help model API responses and update payloads
  */
-export type PrivacyExperienceResponse = {
+export type PrivacyExperienceWithId = {
   disabled?: boolean;
   component: ComponentType;
   delivery_mechanism: DeliveryMechanism;
@@ -24,10 +24,4 @@ export type PrivacyExperienceResponse = {
   reject_button_label?: string;
   acknowledgement_button_label?: string;
   id: string;
-  created_at: string;
-  updated_at: string;
-  version: number;
-  privacy_experience_history_id: string;
-  privacy_experience_template_id?: string;
-  privacy_notices?: Array<PrivacyNoticeResponse>;
 };
