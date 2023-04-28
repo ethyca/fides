@@ -12,7 +12,7 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
-import { getOrCreateFidesCookie, setFidesCookie } from "fides-consent";
+import { getOrMakeFidesCookie, saveFidesCookie } from "fides-consent";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import * as Yup from "yup";
@@ -44,7 +44,7 @@ const useConsentRequestForm = ({
   const identityInputs =
     config.consent?.button.identity_inputs ?? defaultIdentityInput;
   const toast = useToast();
-  const cookie = useMemo(() => getOrCreateFidesCookie(), []);
+  const cookie = useMemo(() => getOrMakeFidesCookie(), []);
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -101,7 +101,7 @@ const useConsentRequestForm = ({
         // After successfully initializing a consent request, save the current
         // cookie with our unique fides_user_device_id, etc.
         try {
-          setFidesCookie(cookie);
+          saveFidesCookie(cookie);
         } catch (error) {
           handleError({ title: "Could not save consent cookie" });
           return;

@@ -75,7 +75,7 @@ export const generateFidesUserDeviceId = (): string => uuidv4();
 /**
  * Generate a new Fides cookie with default values for the current user.
  */
-export const createFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
+export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
   const now = new Date();
   const userDeviceId = generateFidesUserDeviceId();
   return {
@@ -129,12 +129,20 @@ export const makeConsentDefaults = ({
   return defaults;
 };
 
-export const getOrCreateFidesCookie = (
+/**
+ * Attempt to read, parse, and return the current Fides cookie from the browser.
+ * If one doesn't exist, make a new default cookie (including generating a new
+ * pseudonymous ID) and return the default values.
+ * 
+ * NOTE: This doesn't *save* the cookie to the browser. To do that, call
+ * `saveFidesCookie` with a valid cookie after editing the values.
+ */
+export const getOrMakeFidesCookie = (
   defaults?: CookieKeyConsent
 ): FidesCookie => {
 
   // Create a default cookie and set the configured consent defaults
-  const defaultCookie = createFidesCookie(defaults);
+  const defaultCookie = makeFidesCookie(defaults);
 
   if (typeof document === "undefined") {
     return defaultCookie;
@@ -180,18 +188,24 @@ export const getOrCreateFidesCookie = (
   }
 };
 
-export const setFidesCookie = (cookie: FidesCookie) => {
+/**
+ * Save the given Fides cookie to the browser using the current root domain.
+ * 
+ * This calculates the root domain by using the last two parts of the hostname:
+ *   privacy.example.com -> example.com
+ *   example.com -> example.com
+ *   localhost -> localhost
+ * 
+ * NOTE: This won't handled second-level domains like co.uk:
+ *   privacy.example.co.uk -> co.uk # ERROR
+ * 
+ * (see https://github.com/ethyca/fides/issues/2072)
+ */
+export const saveFidesCookie = (cookie: FidesCookie) => {
   if (typeof document === "undefined") {
     return;
   }
 
-  // Calculate the root domain by taking (up to) the last two parts of the domain:
-  //   privacy.example.com -> example.com
-  //   example.com -> example.com
-  //   localhost -> localhost
-  //
-  // TODO: This won't second-level domains like co.uk:
-  //   privacy.example.co.uk -> co.uk # ERROR
   const rootDomain = window.location.hostname.split(".").slice(-2).join(".");
 
   setCookie(

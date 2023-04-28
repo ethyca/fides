@@ -17,8 +17,8 @@ import {
   FidesCookie,
   getConsentContext,
   resolveConsentValue,
-  setFidesCookie,
-  getOrCreateFidesCookie,
+  saveFidesCookie,
+  getOrMakeFidesCookie,
 } from "fides-consent";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
@@ -110,13 +110,13 @@ const Consent: NextPage = () => {
    * ensures the browser's behavior matches what the server expects.
    */
   useEffect(() => {
-    const cookie: FidesCookie = getOrCreateFidesCookie();
+    const cookie: FidesCookie = getOrMakeFidesCookie();
     const newConsent = makeCookieKeyConsent({
       consentOptions,
       fidesKeyToConsent: persistedFidesKeyToConsent,
       consentContext,
     });
-    setFidesCookie({ ...cookie, consent: newConsent });
+    saveFidesCookie({ ...cookie, consent: newConsent });
   }, [consentOptions, persistedFidesKeyToConsent, consentContext]);
 
   /**
