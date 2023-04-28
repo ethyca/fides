@@ -134,6 +134,30 @@ def export_dataset(
             print(record)
 
 
+def get_custom_field_headers(
+    output_list: List[Tuple[str, ...]],
+    custom_columns: Dict[str, str],
+    custom_keys: List[str],
+    header_type: str,
+) -> Tuple[List, Dict, List]:
+    """
+    Get Custom Field Headers while updating the output_list and custom_columns variables.
+
+    Returns an updated output_list, custom_keys and the custom_field_headers
+    """
+    custom_field_headers = []
+    keys = list(output_list[0])
+
+    for key in custom_keys:
+        key_string = f"system.{header_type}.{key}"
+        custom_columns[key_string] = key
+        keys.append(key_string)
+        output_list[0] = tuple(keys)
+        custom_field_headers.append(key_string)
+
+    return output_list, custom_columns, custom_field_headers
+
+
 def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many-branches, too-many-statements
     server_resources: Dict[str, List],
 ) -> Tuple[List[Tuple[str, ...]], Dict[str, str]]:
@@ -143,19 +167,11 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
     as the first tuple in the result.
     """
 
-    custom_columns = {}
-    (
-        formatted_data_uses,
-        custom_data_use_keys,  # pylint: disable=unused-variable
-    ) = format_data_uses(server_resources["data_use"])
-    (
-        formatted_data_subjects,
-        custom_data_subject_keys,  # pylint: disable=unused-variable
-    ) = format_data_subjects(server_resources["data_subject"])
-
+    formatted_data_uses, _ = format_data_uses(server_resources["data_use"])
+    formatted_data_subjects, _ = format_data_subjects(server_resources["data_subject"])
     formatted_privacy_declarations, custom_privacy_declaration_keys = (
         format_privacy_declarations(server_resources["privacy_declaration"])
-        if "privacy_declaration" in server_resources
+        if server_resources.get("privacy_declaration")
         else ({}, [])
     )
 
@@ -193,45 +209,20 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         )
     ]
 
-    # list to keep track of data_use custom field headers
-    # TODO: for now, we are not processing data use custom fields
-    # but eventually we may want to include these!
-    data_use_custom_field_headers: List[str] = []  # pylint: disable=unused-variable
-    # if custom_data_use_keys:
-    #     keys = list(output_list[0])
-    #     for key in custom_data_use_keys:
-    #         key_string = f"system.privacy_declaration.data_use.{key}"
-    #         custom_columns[key_string] = key
-    #         keys.append(key_string)
-    #         output_list[0] = tuple(keys)
-    #         # also maintain our ordered list of custom field headers
-    #         data_use_custom_field_headers.append(key_string)
+    # This is a long-lived variable that gets continually mutated throughout the codepath
+    custom_columns: Dict[str, str] = {}
 
-    # list to keep track of data_subject custom field headers
-    # TODO: for now, we are not processing data subject custom fields
-    # but eventually we may want to include these!
-    data_subject_custom_field_headers: List[str] = []  # pylint: disable=unused-variable
-    # if custom_data_subject_keys:
-    #     keys = list(output_list[0])
-    #     for key in custom_data_subject_keys:
-    #         key_string = f"system.privacy_declaration.data_subjects.{key}"
-    #         custom_columns[key_string] = key
-    #         keys.append(key_string)
-    #         output_list[0] = tuple(keys)
-    #         # also maintain our ordered list of custom field headers
-    #         data_subject_custom_field_headers.append(key_string)
-
-    # list to keep track of privacy declaration custom field headers
-    privacy_declaration_custom_field_headers: List[str] = []
     if custom_privacy_declaration_keys:
-        keys = list(output_list[0])
-        for key in custom_privacy_declaration_keys:
-            key_string = f"system.privacy_declaration.{key}"
-            custom_columns[key_string] = key
-            keys.append(key_string)
-            output_list[0] = tuple(keys)
-            # also maintain our ordered list of custom field headers
-            privacy_declaration_custom_field_headers.append(key_string)
+        (
+            output_list,
+            custom_columns,
+            privacy_declaration_custom_field_headers,
+        ) = get_custom_field_headers(
+            output_list,
+            custom_columns,
+            custom_privacy_declaration_keys,
+            "privacy_declarations",
+        )
 
     system_known_fields = (
         "fides_key",
@@ -264,7 +255,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         if not isinstance(system, dict):
             system = system.__dict__
 
-        # process system custom columns
+        # Process system custom columns
         for key, value in system.items():
             if key not in system_known_fields:
                 keys = list(output_list[0])
