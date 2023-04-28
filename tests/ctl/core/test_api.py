@@ -24,6 +24,7 @@ from starlette.testclient import TestClient
 from fides.api.ctl.database.crud import get_resource
 from fides.api.ctl.routes import health
 from fides.api.ctl.routes.util import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
+from fides.api.ctl.schemas.system import PrivacyDeclarationResponse
 from fides.api.ctl.sql_models import Dataset, PrivacyDeclaration, System
 from fides.api.ops.api.v1.scope_registry import (
     CREATE,
@@ -1029,12 +1030,33 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # add 2 privacy declarations, one the same data use as existing
+                # add 2 privacy declarations, one the same data use and name as existing
                 [
                     models.PrivacyDeclaration(
                         name="declaration-name",
                         data_categories=[],
-                        data_use="provide",
+                        data_use="third_party_sharing",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                    models.PrivacyDeclaration(
+                        name="Collect data for marketing",
+                        data_categories=[],
+                        data_use="advertising",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                ]
+            ),
+            (
+                # add 2 privacy declarations, one the same data use and name as existing, other same data use
+                [
+                    models.PrivacyDeclaration(
+                        name="Collect data for marketing",
+                        data_categories=[],
+                        data_use="advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1064,6 +1086,14 @@ class TestSystemUpdate:
         system_update_request_body,
         update_declarations,
     ):
+        """
+        Test to assert that our `PUT` endpoint acts in a fully declarative manner, putting the DB state of the
+        system's privacy requests in *exactly* the same state as specified on the request payload.
+
+        This is executed against various different sets of input privacy declarations to ensure it works
+        in a variety of scenarios
+        """
+
         auth_header = generate_auth_header(scopes=[SYSTEM_UPDATE])
         system_update_request_body.privacy_declarations = update_declarations
         result = _api.update(
@@ -1097,6 +1127,172 @@ class TestSystemUpdate:
             db_decs.remove(update_dec.dict())
         # and assert we don't have any extra response declarations
         assert len(db_decs) == 0
+
+    @pytest.mark.parametrize(
+        "update_declarations",
+        [
+            (
+                [  # update a dec matching one existing dec
+                    models.PrivacyDeclaration(
+                        name="Collect data for marketing",
+                        data_categories=[],
+                        data_use="advertising",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    )
+                ]
+            ),
+            (
+                # update 2 privacy declarations both matching existing decs
+                [
+                    models.PrivacyDeclaration(
+                        name="Collect data for marketing",
+                        data_categories=[],
+                        data_use="advertising",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                    models.PrivacyDeclaration(
+                        name="Collect data for third party sharing",
+                        data_categories=[],
+                        data_use="third_party_sharing",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                ]
+            ),
+            (
+                # update 2 privacy declarations, one with matching name and data use, other only data use
+                [
+                    models.PrivacyDeclaration(
+                        name="Collect data for marketing",
+                        data_categories=[],
+                        data_use="advertising",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                    models.PrivacyDeclaration(
+                        name="declaration-name-2",
+                        data_categories=[],
+                        data_use="third_party_sharing",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                ]
+            ),
+            (
+                # update 2 privacy declarations, one with matching name and data use, other only data use but same data use
+                [
+                    models.PrivacyDeclaration(
+                        name="Collect data for marketing",
+                        data_categories=[],
+                        data_use="advertising",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                    models.PrivacyDeclaration(
+                        name="declaration-name-2",
+                        data_categories=[],
+                        data_use="advertising",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                ]
+            ),
+            (
+                # add 2 new privacy declarations
+                [
+                    models.PrivacyDeclaration(
+                        name="declaration-name",
+                        data_categories=[],
+                        data_use="provide",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                    models.PrivacyDeclaration(
+                        name="declaration-name-2",
+                        data_categories=[],
+                        data_use="provide",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                ]
+            ),
+            (
+                # specify no declarations, declarations should be cleared off the system
+                []
+            ),
+        ],
+    )
+    def test_system_update_manages_declaration_records(
+        self,
+        db,
+        test_config,
+        system_multiple_decs: System,
+        generate_auth_header,
+        system_update_request_body,
+        update_declarations,
+    ):
+        """
+        Test to assert that existing privacy declaration records stay constant when necessary
+        """
+        old_db_decs = [
+            PrivacyDeclarationResponse.from_orm(dec)
+            for dec in system_multiple_decs.privacy_declarations
+        ]
+        old_decs_updated = [
+            old_db_dec
+            for old_db_dec in old_db_decs
+            if any(
+                (
+                    old_db_dec.name == update_declaration.name
+                    and old_db_dec.data_use == update_declaration.data_use
+                )
+                for update_declaration in update_declarations
+            )
+        ]
+        auth_header = generate_auth_header(scopes=[SYSTEM_UPDATE])
+        system_update_request_body.privacy_declarations = update_declarations
+        _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+
+        db.refresh(system_multiple_decs)
+        updated_decs: List[
+            PrivacyDeclaration
+        ] = system_multiple_decs.privacy_declarations.copy()
+
+        for old_dec_updated in old_decs_updated:
+            updated_dec = next(
+                updated_dec
+                for updated_dec in updated_decs
+                if updated_dec.name == old_dec_updated.name
+                and updated_dec.data_use == old_dec_updated.data_use
+            )
+            assert updated_dec.id == old_dec_updated.id
+            updated_decs.remove(updated_dec)
+            old_db_decs.remove(old_dec_updated)
+
+        # our old db decs that were _not_ updated should no longer be in the db
+        for old_db_dec in old_db_decs:
+            assert not any(
+                old_db_dec.id == updated_dec.id for updated_dec in updated_decs
+            )
+
+        # and just verify that we have same number of privacy declarations in db as specified in the update request
+        assert len(PrivacyDeclaration.all(db)) == len(update_declarations)
 
 
 @pytest.mark.unit
