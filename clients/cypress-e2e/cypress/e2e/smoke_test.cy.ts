@@ -75,7 +75,6 @@ describe("Smoke test", () => {
     });
   });
 
-  // TODO: add a regression test on fidesplus for legacy cookie format
   it("can manage consent preferences from the Privacy Center", () => {
     cy.visit(PRIVACY_CENTER_URL);
     cy.getCookie("fides_consent").should("not.exist");

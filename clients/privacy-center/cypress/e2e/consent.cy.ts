@@ -82,6 +82,29 @@ describe("Consent settings", () => {
           expect(body.fides_user_device_id).to.eql(uuid);
         });
       });
+
+      it("can read previous versions of the cookie and add a device uuid", () => {
+        const previousCookie = {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        }
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(previousCookie));
+        cy.visit("/");
+        cy.getByTestId("card").contains("Manage your consent").click();
+        cy.getByTestId("consent-request-form").within(() => {
+          cy.get("input#email").type("test@example.com");
+          cy.get("button").contains("Continue").click();
+        });
+        cy.wait("@postConsentRequest").then((interception) => {
+          const { body } = interception.request;
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
+            const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
+            expect(body.fides_user_device_id).to.eql(cookie.identity.fides_user_device_id);
+            expect(cookie.consent).to.eql(previousCookie);
+          });
+        });
+      });
     });
   });
 
