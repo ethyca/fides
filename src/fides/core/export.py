@@ -223,6 +223,8 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
             custom_privacy_declaration_keys,
             "privacy_declarations",
         )
+    else:
+        privacy_declaration_custom_field_headers = []
 
     system_known_fields = (
         "fides_key",
