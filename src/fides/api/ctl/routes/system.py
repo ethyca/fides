@@ -67,15 +67,15 @@ def get_system(db: Session, fides_key: str) -> System:
     return system
 
 
-async def validate_privacy_declarations_data_uses(
-    db: AsyncSession, system: SystemSchema
-) -> None:
+async def validate_privacy_declarations(db: AsyncSession, system: SystemSchema) -> None:
     """
-    Ensure that the `PrivacyDeclaration`s on the provided `System` resource reference
-    valid `DataUse` records.
+    Ensure that the `PrivacyDeclaration`s on the provided `System` resource are valid:
+     - that they reference valid `DataUse` records
+     - that there are not "duplicate" `PrivacyDeclaration`s as defined by their "logical ID"
 
     If not, a `400` is raised
     """
+    logical_ids = set()
     for privacy_declaration in system.privacy_declarations:
         try:
             await get_resource(
@@ -88,6 +88,14 @@ async def validate_privacy_declarations_data_uses(
                 status_code=HTTP_400_BAD_REQUEST,
                 detail=f"Invalid privacy declaration referencing unknown DataUse {privacy_declaration.data_use}",
             )
+        logical_id = privacy_declaration_logical_id(privacy_declaration)
+        if logical_id in logical_ids:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=f"Duplicate privacy declarations specified with data use {privacy_declaration.data_use}",
+            )
+
+        logical_ids.add(logical_id)
 
 
 @system_connections_router.get(
@@ -162,7 +170,7 @@ async def update(
     Update a System by the fides_key extracted from the request body.  Defined outside of the crud routes
     to add additional "system manager" permission checks.
     """
-    await validate_privacy_declarations_data_uses(db, resource)
+    await validate_privacy_declarations(db, resource)
     return await update_system(resource, db)
 
 
@@ -174,7 +182,7 @@ async def upsert_system(
     updated = 0
     # first pass to validate privacy declarations before proceeding
     for resource in resources:
-        await validate_privacy_declarations_data_uses(db, resource)
+        await validate_privacy_declarations(db, resource)
 
     for resource in resources:
         try:
@@ -219,19 +227,20 @@ async def upsert(
     }
 
 
+def privacy_declaration_logical_id(
+    privacy_declaration: PrivacyDeclaration,
+) -> str:
+    """
+    Helper to standardize a logical 'id' for privacy declarations.
+    As of now, this is based on the `data_use` and the `name` of the declaration, if provided.
+    """
+    return f"{privacy_declaration.data_use}:{privacy_declaration.name or ''}"
+
+
 async def upsert_privacy_declarations(
     db: AsyncSession, resource: SystemSchema, system: System
 ) -> None:
     """Helper to handle the specific upsert logic for privacy declarations"""
-
-    def privacy_declaration_logical_id(
-        privacy_declaration: PrivacyDeclaration,
-    ) -> str:
-        """
-        Internal helper to standardize a logical 'id' for privacy declarations.
-        As of now, this is based on the `data_use` and the `name` of the declaration, if provided.
-        """
-        return f"{privacy_declaration.data_use}:{privacy_declaration.name or ''}"
 
     async with db.begin():
         # map existing declarations by their logical identifier
@@ -348,7 +357,7 @@ async def create(
     Override `System` create/POST to handle `.privacy_declarations` defined inline,
     for backward compatibility and ease of use for API users.
     """
-    await validate_privacy_declarations_data_uses(db, resource)
+    await validate_privacy_declarations(db, resource)
     # copy out the declarations to be stored separately
     # as they will be processed AFTER the system is added
     privacy_declarations = resource.privacy_declarations

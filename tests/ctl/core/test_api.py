@@ -842,6 +842,7 @@ class TestSystemUpdate:
         test_config,
         system_update_request_body,
         generate_role_header,
+        db,
     ):
         auth_header = generate_role_header(roles=[OWNER])
         system_update_request_body.privacy_declarations[0].data_use = "invalid_data_use"
@@ -853,7 +854,143 @@ class TestSystemUpdate:
         )
         assert result.status_code == HTTP_400_BAD_REQUEST
         # assert the system's privacy declaration has not been updated
+        db.refresh(system)
         assert system.privacy_declarations[0].data_use == "advertising"
+
+    def test_system_update_privacy_declaration_invalid_duplicate(
+        self,
+        system,
+        test_config,
+        system_update_request_body,
+        generate_role_header,
+        db,
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+
+        # test that 'exact' duplicate fails (data_use and name match)
+        system_update_request_body.privacy_declarations.append(
+            models.PrivacyDeclaration(
+                name="declaration-name",  # same as initial PrivacyDeclaration
+                data_categories=["user.payment"],  # other fields can differ
+                data_use="provide",  # same as initial PrivacyDeclaration
+                data_subjects=["anonymous_user"],  # other fields can differ
+                data_qualifier="aggregated",  # other fields can differ
+                dataset_references=[],
+            )
+        )
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        # assert the system's privacy declaration has not been updated
+        db.refresh(system)
+        assert system.privacy_declarations[0].data_use == "advertising"
+
+        # test that duplicate with no name on either declaration fails
+        system_update_request_body.privacy_declarations = []
+        system_update_request_body.privacy_declarations.append(
+            models.PrivacyDeclaration(
+                name="",  # no name specified
+                data_categories=["user.payment"],  # other fields can differ
+                data_use="provide",  # identical data use
+                data_subjects=["anonymous_user"],  # other fields can differ
+                data_qualifier="aggregated",  # other fields can differ
+                dataset_references=[],
+            )
+        )
+        system_update_request_body.privacy_declarations.append(
+            models.PrivacyDeclaration(
+                name="",  # no name specified
+                data_categories=["user.payment"],  # other fields can differ
+                data_use="provide",  # identicial data use
+                data_subjects=["anonymous_user"],  # other fields can differ
+                data_qualifier="aggregated",  # other fields can differ
+                dataset_references=[],
+            )
+        )
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        # assert the system's privacy declaration has not been updated
+        db.refresh(system)
+        assert system.privacy_declarations[0].data_use == "advertising"
+
+        # test that duplicate data_use with no name on one declaration succeeds
+        system_update_request_body.privacy_declarations = []
+        system_update_request_body.privacy_declarations.append(
+            models.PrivacyDeclaration(
+                name="",  # no name specified
+                data_categories=["user.payment"],  # other fields can differ
+                data_use="provide",  # identical data use
+                data_subjects=["anonymous_user"],  # other fields can differ
+                data_qualifier="aggregated",  # other fields can differ
+                dataset_references=[],
+            )
+        )
+        system_update_request_body.privacy_declarations.append(
+            models.PrivacyDeclaration(
+                name="new declaration",  # this name distinguishes the declaration from the above
+                data_categories=["user.payment"],  # other fields can differ
+                data_use="provide",  # identicial data use
+                data_subjects=["anonymous_user"],  # other fields can differ
+                data_qualifier="aggregated",  # other fields can differ
+                dataset_references=[],
+            )
+        )
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_200_OK
+        # assert the system's privacy declarations have been updated
+        db.refresh(system)
+        # both declarations should have 'provide' data_use since the update was allowed
+        assert system.privacy_declarations[0].data_use == "provide"
+        assert system.privacy_declarations[1].data_use == "provide"
+
+        # test that duplicate data_use with differeing names on declarations succeeds
+        system_update_request_body.privacy_declarations = []
+        system_update_request_body.privacy_declarations.append(
+            models.PrivacyDeclaration(
+                name="new declaration 1",  # specify a unique name here
+                data_categories=["user.payment"],  # other fields can differ
+                data_use="advertising",  # identical data use
+                data_subjects=["anonymous_user"],  # other fields can differ
+                data_qualifier="aggregated",  # other fields can differ
+                dataset_references=[],
+            )
+        )
+        system_update_request_body.privacy_declarations.append(
+            models.PrivacyDeclaration(
+                name="new declaration 2",  # this name distinguishes the declaration from the above
+                data_categories=["user.payment"],  # other fields can differ
+                data_use="advertising",  # identicial data use
+                data_subjects=["anonymous_user"],  # other fields can differ
+                data_qualifier="aggregated",  # other fields can differ
+                dataset_references=[],
+            )
+        )
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_200_OK
+        # assert the system's privacy declarations have been updated
+        db.refresh(system)
+        # both declarations should have 'advertising' data_use since the update was allowed
+        assert system.privacy_declarations[0].data_use == "advertising"
+        assert system.privacy_declarations[1].data_use == "advertising"
 
     @pytest.mark.parametrize(
         "update_declarations",
