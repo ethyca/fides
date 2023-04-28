@@ -221,7 +221,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
             output_list,
             custom_columns,
             custom_privacy_declaration_keys,
-            "privacy_declarations",
+            "privacy_declaration",
         )
     else:
         privacy_declaration_custom_field_headers = []
