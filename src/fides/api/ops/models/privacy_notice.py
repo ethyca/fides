@@ -26,6 +26,8 @@ class PrivacyNoticeRegion(Enum):
     us_co = "us_co"  # colorado
     us_va = "us_va"  # virginia
     us_ut = "us_ut"  # utah
+    us_ia = "us_ia"  # iowa
+    us_ct = "us_ct"  # connecticut
     eu_be = "eu_be"  # belgium
     eu_bg = "eu_bg"  # bulgaria
     eu_cz = "eu_cz"  # czechia

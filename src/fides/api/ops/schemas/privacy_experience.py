@@ -19,8 +19,8 @@ class PrivacyExperience(BaseSchema):
 
     disabled: Optional[bool] = False
     component: ComponentType
-    delivery_mechanism: DeliveryMechanism
-    regions: Optional[conlist(PrivacyNoticeRegion, min_items=1)]  # type: ignore
+    delivery_mechanism: Optional[DeliveryMechanism]
+    regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
     component_title: Optional[SafeStr]
     component_description: Optional[SafeStr]
     banner_title: Optional[SafeStr]
