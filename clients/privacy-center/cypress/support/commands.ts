@@ -17,7 +17,7 @@ Cypress.Commands.add("dispatch", (action) => {
 });
 
 Cypress.Commands.add("waitUntilCookieExists", (cookieName: string, ...args) => {
-  cy.waitUntil(() => cy.getCookie(cookieName).should("exist"));
+  cy.waitUntil(() => cy.getCookie(cookieName).should("exist"), ...args);
 });
 
 declare global {
