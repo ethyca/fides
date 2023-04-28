@@ -90,23 +90,23 @@ describe("Smoke test", () => {
     //  - Product Analytics => true
     cy.getByTestId(`consent-item-card-advertising`).within(() => {
       cy.contains("Data Sales or Sharing");
-      cy.get("input[type='radio'][value='true']").should("be.checked");
-      cy.get("input[type='radio'][value='false']").should("not.be.checked");
+      cy.getRadio("true").should("be.checked");
+      cy.getRadio("false").should("not.be.checked");
     });
     cy.getByTestId(`consent-item-card-advertising.first_party`).within(() => {
       cy.contains("Email Marketing");
-      cy.get("input[type='radio'][value='true']").should("be.checked");
-      cy.get("input[type='radio'][value='false']").should("not.be.checked");
+      cy.getRadio("true").should("be.checked");
+      cy.getRadio("false").should("not.be.checked");
     });
     cy.getByTestId(`consent-item-card-improve`).within(() => {
       cy.contains("Product Analytics");
-      cy.get("input[type='radio'][value='true']").should("be.checked");
-      cy.get("input[type='radio'][value='false']").should("not.be.checked");
+      cy.getRadio("true").should("be.checked");
+      cy.getRadio("false").should("not.be.checked");
     });
 
     // Opt-out of data sales / sharing
     cy.getByTestId(`consent-item-card-advertising`).within(() => {
-      cy.get("input[type='radio'][value='false']").check({ force: true });
+      cy.getRadio("false").check({ force: true });
     });
     cy.contains("Save").click();
     cy.contains("Your consent preferences have been saved");
@@ -120,8 +120,8 @@ describe("Smoke test", () => {
       cy.get("button").contains("Continue").click();
     });
     cy.getByTestId(`consent-item-card-advertising`).within(() => {
-      cy.get("input[type='radio'][value='true']").should("not.be.checked");
-      cy.get("input[type='radio'][value='false']").should("be.checked");
+      cy.getRadio("true").should("not.be.checked");
+      cy.getRadio("false").should("be.checked");
     });
     cy.getCookie("fides_consent").should("exist");
 
