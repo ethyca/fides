@@ -55,7 +55,7 @@ const useConsentRequestForm = ({
         // Marshall empty strings back to `undefined` so the backend will not try to validate
         email: values.email === "" ? undefined : values.email,
         phone_number: values.phone === "" ? undefined : values.phone,
-        fides_user_device_id: cookie?.identity?.fides_user_device_id,
+        fides_user_device_id: cookie.identity.fides_user_device_id,
       };
       const handleError = ({
         title,
