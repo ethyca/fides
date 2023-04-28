@@ -37,7 +37,6 @@ export type CookieIdentity = Record<string, string>;
  */
 export type CookieMeta = Record<string, string>;
 
-// TODO: description
 export interface FidesCookie {
   consent:  CookieKeyConsent;
   identity: CookieIdentity;
