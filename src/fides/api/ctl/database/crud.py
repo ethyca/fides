@@ -68,7 +68,6 @@ async def get_custom_fields_filtered(
     Utility function to construct a filtered query for custom field values based on provided mapping of
     resource types to resource IDs.
 
-
     This is for use in bulk querying of custom fields, to avoid multiple round trips to the db.
     """
     with log.contextualize(model=CustomField):
@@ -85,14 +84,13 @@ async def get_custom_fields_filtered(
                     CustomFieldDefinition.id == CustomField.custom_field_definition_id,
                 )
 
-                criteria = []
-                for resource_type, resource_ids in resource_types_to_ids.items():
-                    criteria.append(
-                        and_(
-                            CustomFieldDefinition.resource_type == resource_type.value,
-                            CustomField.resource_id.in_(resource_ids),
-                        )
+                criteria = [
+                    and_(
+                        CustomFieldDefinition.resource_type == resource_type.value,
+                        CustomField.resource_id.in_(resource_ids),
                     )
+                    for resource_type, resource_ids in resource_types_to_ids.items()
+                ]
                 query = query.where(or_(False, *criteria))
                 result = await async_session.execute(query)
                 return result.mappings().all()
