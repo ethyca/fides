@@ -16,6 +16,10 @@ Cypress.Commands.add("dispatch", (action) => {
   cy.window().its("store").invoke("dispatch", action);
 });
 
+Cypress.Commands.add("waitUntilCookieExists", (cookieName: string, ...args) => {
+  cy.waitUntil(() => cy.getCookie(cookieName).should("exist"));
+});
+
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -59,6 +63,23 @@ declare global {
        * the whole RTK store, which Cypress can't/shouldn't do.
        */
       dispatch: (action: Parameters<AppDispatch>[0]) => void;
+      /**
+       * Custom command to wait until a given cookie name exists. Sometimes this
+       * is delayed, and Cypress' built-in default timeout is not used for
+       * getCookie, surprisingly!
+       * (see * https://github.com/cypress-io/cypress/issues/4802#issuecomment-941891554)
+       * 
+       * @example cy.waitUntilCookieExists("fides_consent");
+       */
+      waitUntilCookieExists(
+        cookieName: string,
+        options?: Partial<
+          Cypress.Loggable &
+            Cypress.Timeoutable &
+            Cypress.Withinable &
+            Cypress.Shadow
+        >
+      ): Chainable<JQuery<HTMLElement>>;
     }
   }
 }

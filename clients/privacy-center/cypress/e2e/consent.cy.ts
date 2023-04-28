@@ -55,6 +55,7 @@ describe("Consent settings", () => {
         });
         cy.wait("@postConsentRequest").then((interception) => {
           const { body } = interception.request;
+          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
             const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
             expect(body.fides_user_device_id).to.eql(cookie.identity.fides_user_device_id);
@@ -98,6 +99,7 @@ describe("Consent settings", () => {
         });
         cy.wait("@postConsentRequest").then((interception) => {
           const { body } = interception.request;
+          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
             const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
             expect(body.fides_user_device_id).to.eql(cookie.identity.fides_user_device_id);
@@ -222,16 +224,11 @@ describe("Consent settings", () => {
         expect(body.browser_identity).to.eql(undefined);
       });
 
-      // The cookie should also have been updated. This may take a moment in CI,
-      // so we `waitUntil` the value becomes what we expect.
-      // https://github.com/cypress-io/cypress/issues/4802#issuecomment-941891554
-      cy.waitUntil(() =>
-        cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
-          const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
-          // `waitUntil` retries until we return a truthy value.
-          return cookie.consent.data_sales === true;
-        })
-      );
+      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
+      cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
+        const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
+        expect(cookie.consent.data_sales).to.eql(true);
+      });
     });
 
     it("can grab cookies and send to a consent request", () => {
