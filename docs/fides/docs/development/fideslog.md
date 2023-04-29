@@ -1,4 +1,4 @@
-# Fideslog Analytics
+# Analytics
 
 Fides includes an implementation of [fideslog](https://github.com/ethyca/fideslog) to provide Ethyca with an understanding of user interactions with fides tooling.
 

@@ -5487,6 +5487,67 @@
 					"response": []
 				},
 				{
+					"name": "Save Privacy Preferences for Device Id",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"browser_identity\": {\n       \"ga_client_id\": \"UA-XXXXXXXXX\",\n       \"ljt_readerID\": \"test_sovrn_id\",\n       \"fides_user_device_id\": \"{{fides_user_device_id}}\"\n   },\n   \"preferences\": [{\n       \"privacy_notice_history_id\": \"{{privacy_notice_history_id}}\",\n       \"preference\": \"opt_out\"\n   }],\n   \"request_origin\": \"privacy_center\",\n   \"url_recorded\": \"example.com/privacy_center\",\n   \"user_agent\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24\",\n   \"user_geography\": \"us_ca\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-preferences",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-preferences"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Privacy Preferences by Fides User Device Id",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-preferences?fides_user_device_id={{fides_user_device_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-preferences"
+							],
+							"query": [
+								{
+									"key": "fides_user_device_id",
+									"value": "{{fides_user_device_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get Historical Preferences",
 					"request": {
 						"auth": {
@@ -5870,6 +5931,11 @@
 		},
 		{
 			"key": "oauth_connector_key",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "fides_user_device_id",
 			"value": "",
 			"type": "string"
 		}

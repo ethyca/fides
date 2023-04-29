@@ -107,7 +107,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         session.run(
             "docker",
             "build",
-            "src/fides/data/sample_project/cookie_house",
+            "clients/sample-app",
             "--tag",
             sample_app_image_tag,
             external=True,

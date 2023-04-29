@@ -38,7 +38,7 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 import { ConsentConfig } from "./lib/consent-config";
 import { getConsentContext } from "./lib/consent-context";
-import { CookieKeyConsent, getConsentCookie, makeDefaults } from "./lib/cookie";
+import { CookieKeyConsent, CookieIdentity, CookieMeta, getOrMakeFidesCookie, makeConsentDefaults } from "./lib/cookie";
 
 export interface FidesConfig {
   consent: ConsentConfig;
@@ -46,7 +46,9 @@ export interface FidesConfig {
 
 type Fides = {
   consent: CookieKeyConsent;
+  fides_meta: CookieMeta;
   gtm: typeof gtm;
+  identity: CookieIdentity;
   init: typeof init;
   initialized: boolean;
   meta: typeof meta;
@@ -67,22 +69,26 @@ let _Fides: Fides;
 const init = (config: FidesConfig) => {
   // Configure the default values
   const context = getConsentContext();
-  const defaults = makeDefaults({
+  const defaults = makeConsentDefaults({
     config: config.consent,
     context,
   });
 
   // Load any existing user preferences from the browser cookie
-  const consent = getConsentCookie(defaults);
+  const cookie = getOrMakeFidesCookie(defaults);
 
   // Initialize the window.Fides object
-  _Fides.consent = consent;
+  _Fides.consent = cookie.consent;
+  _Fides.fides_meta = cookie.fides_meta;
+  _Fides.identity = cookie.identity;
   _Fides.initialized = true;
 }
 
 // The global Fides object; this is bound to window.Fides if available
 _Fides = {
   consent: {},
+  fides_meta: {},
+  identity: {},
   gtm,
   init,
   initialized: false,

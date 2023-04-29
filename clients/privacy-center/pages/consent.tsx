@@ -13,9 +13,11 @@ import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useMemo } from "react";
 
 import {
+  FidesCookie,
   getConsentContext,
   resolveConsentValue,
-  setConsentCookie,
+  saveFidesCookie,
+  getOrMakeFidesCookie,
 } from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
@@ -110,13 +112,13 @@ const Consent: NextPage = () => {
    * ensures the browser's behavior matches what the server expects.
    */
   useEffect(() => {
-    setConsentCookie(
-      makeCookieKeyConsent({
-        consentOptions,
-        fidesKeyToConsent: persistedFidesKeyToConsent,
-        consentContext,
-      })
-    );
+    const cookie: FidesCookie = getOrMakeFidesCookie();
+    const newConsent = makeCookieKeyConsent({
+      consentOptions,
+      fidesKeyToConsent: persistedFidesKeyToConsent,
+      consentContext,
+    });
+    saveFidesCookie({ ...cookie, consent: newConsent });
   }, [consentOptions, persistedFidesKeyToConsent, consentContext]);
 
   /**

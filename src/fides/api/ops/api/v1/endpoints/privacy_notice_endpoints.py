@@ -48,7 +48,7 @@ def generate_notice_query(
     if region is not None:
         notice_query = notice_query.filter(PrivacyNotice.regions.contains([region]))
     if systems_applicable:
-        data_uses = System.get_system_data_uses(db, include_parents=True)
+        data_uses = System.get_data_uses(System.all(db), include_parents=True)
         notice_query = notice_query.filter(PrivacyNotice.data_uses.overlap(data_uses))  # type: ignore
     return notice_query
 
@@ -105,13 +105,13 @@ def get_privacy_notice_by_data_use(*, db: Session = Depends(deps.get_db)) -> Dat
     # get all the data uses associated with a system, and seed our response map
     # with those data uses as keys. no parents returned here since our response map
     # will only have keys corresponding to the the specific data uses associated with systems
-    system_data_uses = System.get_system_data_uses(db, include_parents=False)
+    system_data_uses = System.get_data_uses(System.all(db), include_parents=False)
     notices_by_data_use: DataUseMap = {data_use: [] for data_use in system_data_uses}
     # create a lookup table of parent data uses tied to specific data uses for easy lookups later
     data_uses_by_parents: dict[str, str] = {
         parent: data_use
         for data_use in system_data_uses
-        for parent in DataUse.get_parent_uses(data_use)
+        for parent in DataUse.get_parent_uses_from_key(data_use)
     }
 
     # get all notices that are not disabled and share a data use with a system.

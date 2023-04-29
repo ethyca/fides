@@ -1,56 +1,50 @@
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  Button,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Text,
-  Tfoot,
-  Th,
-  Thead,
-  Tr,
-} from "@fidesui/react";
-import NextLink from "next/link";
-import { useRouter } from "next/router";
-import { ReactNode, useMemo } from "react";
-import { Column, useSortBy, useTable } from "react-table";
-
-import { useAppSelector } from "~/app/hooks";
-import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
-import Restrict, { useHasPermission } from "~/features/common/Restrict";
-import { PrivacyNoticeResponse, ScopeRegistryEnum } from "~/types/api";
-
+import { Button, Flex, Spinner } from "@fidesui/react";
+import { PRIVACY_NOTICES_ROUTE, SYSTEM_ROUTE } from "common/nav/v2/routes";
+import Restrict, { useHasPermission } from "common/Restrict";
 import {
   DateCell,
-  EnablePrivacyNoticeCell,
-  MechanismCell,
+  FidesTable,
+  FidesTableFooter,
   MultiTagCell,
   TitleCell,
   WrappedCell,
-} from "./cells";
-import EmptyState from "./EmptyState";
+} from "common/table";
+import EmptyTableState from "common/table/EmptyTableState";
+import NextLink from "next/link";
+import { useRouter } from "next/router";
+import React, { useMemo } from "react";
+import { Column } from "react-table";
+
+import { useAppSelector } from "~/app/hooks";
+import {
+  EnablePrivacyNoticeCell,
+  MechanismCell,
+} from "~/features/privacy-notices/cells";
 import {
   selectAllPrivacyNotices,
   selectPage,
   selectPageSize,
   useGetAllPrivacyNoticesQuery,
-} from "./privacy-notices.slice";
+} from "~/features/privacy-notices/privacy-notices.slice";
+import { PrivacyNoticeResponse, ScopeRegistryEnum } from "~/types/api";
 
-const PrivacyNoticesTable = () => {
+export const PrivacyNoticesTable = () => {
   const router = useRouter();
   // Subscribe to get all privacy notices
   const page = useAppSelector(selectPage);
   const pageSize = useAppSelector(selectPageSize);
-  useGetAllPrivacyNoticesQuery({ page, size: pageSize });
+  const { isLoading } = useGetAllPrivacyNoticesQuery({ page, size: pageSize });
 
   const privacyNotices = useAppSelector(selectAllPrivacyNotices);
-
   // Permissions
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.PRIVACY_NOTICE_UPDATE,
   ]);
+  const handleRowClick = ({ id }: PrivacyNoticeResponse) => {
+    if (userCanUpdate) {
+      router.push(`${PRIVACY_NOTICES_ROUTE}/${id}`);
+    }
+  };
 
   const columns: Column<PrivacyNoticeResponse>[] = useMemo(
     () => [
@@ -82,127 +76,55 @@ const PrivacyNoticesTable = () => {
     [userCanUpdate]
   );
 
-  const tableInstance = useTable({ columns, data: privacyNotices }, useSortBy);
-
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    tableInstance;
-
-  if (privacyNotices.length === 0) {
-    return <EmptyState />;
+  if (isLoading) {
+    return (
+      <Flex height="100%" justifyContent="center" alignItems="center">
+        <Spinner />
+      </Flex>
+    );
   }
-
+  if (privacyNotices.length === 0) {
+    return (
+      <EmptyTableState
+        title="To start configuring consent, please first add data uses"
+        description="It looks like you have not yet added any data uses to the system. Fides
+        relies on how you use data in your organization to provide intelligent
+        recommendations and pre-built templates for privacy notices you may need
+        to display to your users. To get started with privacy notices, first add
+        your data uses to systems on your data map."
+        button={
+          <Button
+            size="sm"
+            variant="outline"
+            fontWeight="semibold"
+            minWidth="auto"
+          >
+            <NextLink href={SYSTEM_ROUTE}>Set up data uses</NextLink>
+          </Button>
+        }
+      />
+    );
+  }
   return (
-    <TableContainer>
-      <Table
-        {...getTableProps()}
-        borderRadius="6px 6px 0px 0px"
-        border="1px solid"
-        borderColor="gray.200"
-        fontSize="sm"
-      >
-        <Thead backgroundColor="gray.50">
-          {headerGroups.map((headerGroup) => {
-            const { key: headerRowKey, ...headerGroupProps } =
-              headerGroup.getHeaderGroupProps();
-            return (
-              <Tr key={headerRowKey} {...headerGroupProps}>
-                {headerGroup.headers.map((column) => {
-                  const { key: columnKey, ...headerProps } =
-                    column.getHeaderProps(column.getSortByToggleProps());
-                  let sortIcon: ReactNode = null;
-                  if (column.isSorted) {
-                    sortIcon = column.isSortedDesc ? (
-                      <ArrowDownIcon color="gray.500" />
-                    ) : (
-                      <ArrowUpIcon color="gray.500" />
-                    );
-                  }
-
-                  return (
-                    <Th
-                      key={columnKey}
-                      {...headerProps}
-                      textTransform="none"
-                      fontSize="sm"
-                      p={4}
-                      data-testid={`column-${column.Header}`}
-                    >
-                      <Text
-                        _hover={{ backgroundColor: "gray.100" }}
-                        p={1}
-                        borderRadius="4px"
-                        pr={sortIcon ? 0 : 3.5}
-                      >
-                        {column.render("Header")}
-                        {sortIcon}
-                      </Text>
-                    </Th>
-                  );
-                })}
-              </Tr>
-            );
-          })}
-        </Thead>
-        <Tbody {...getTableBodyProps()}>
-          {rows.map((row) => {
-            prepareRow(row);
-            const { key: rowKey, ...rowProps } = row.getRowProps();
-            const onClick = () => {
-              if (userCanUpdate) {
-                router.push(`${PRIVACY_NOTICES_ROUTE}/${row.original.id}`);
-              }
-            };
-            return (
-              <Tr
-                key={rowKey}
-                {...rowProps}
-                _hover={
-                  userCanUpdate
-                    ? { backgroundColor: "gray.50", cursor: "pointer" }
-                    : undefined
-                }
-                data-testid={`row-${row.original.name}`}
+    <FidesTable<PrivacyNoticeResponse>
+      columns={columns}
+      data={privacyNotices}
+      onRowClick={userCanUpdate ? handleRowClick : undefined}
+      footer={
+        <FidesTableFooter totalColumns={columns.length}>
+          <Restrict scopes={[ScopeRegistryEnum.PRIVACY_NOTICE_CREATE]}>
+            <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`}>
+              <Button
+                size="xs"
+                colorScheme="primary"
+                data-testid="add-privacy-notice-btn"
               >
-                {row.cells.map((cell) => {
-                  const { key: cellKey, ...cellProps } = cell.getCellProps();
-                  return (
-                    <Td
-                      key={cellKey}
-                      {...cellProps}
-                      p={5}
-                      verticalAlign="baseline"
-                      onClick={
-                        cell.column.Header !== "Enable" ? onClick : undefined
-                      }
-                    >
-                      {cell.render("Cell")}
-                    </Td>
-                  );
-                })}
-              </Tr>
-            );
-          })}
-        </Tbody>
-        <Tfoot backgroundColor="gray.50">
-          <Tr>
-            <Td colSpan={columns.length} px={4} py={3.5}>
-              <Restrict scopes={[ScopeRegistryEnum.PRIVACY_NOTICE_CREATE]}>
-                <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`}>
-                  <Button
-                    size="xs"
-                    colorScheme="primary"
-                    data-testid="add-privacy-notice-btn"
-                  >
-                    Add a privacy notice +
-                  </Button>
-                </NextLink>
-              </Restrict>
-            </Td>
-          </Tr>
-        </Tfoot>
-      </Table>
-    </TableContainer>
+                Add a privacy notice +
+              </Button>
+            </NextLink>
+          </Restrict>
+        </FidesTableFooter>
+      }
+    />
   );
 };
-
-export default PrivacyNoticesTable;

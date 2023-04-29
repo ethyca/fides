@@ -18,6 +18,7 @@ const FormSection = ({
       px={6}
       backgroundColor="gray.50"
       borderRadius="md"
+      textAlign="left"
     >
       {title}
     </Heading>
