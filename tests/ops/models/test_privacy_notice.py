@@ -7,6 +7,7 @@ from fides.api.ops.models.privacy_notice import (
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
     check_conflicting_data_uses,
+    new_data_use_conflicts_with_existing_use,
 )
 
 
@@ -580,6 +581,40 @@ class TestPrivacyNoticeModel:
                 ],
                 [],
             ),
+            (
+                False,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["advertising.first_party.personalized"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.third_party.personalized"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+            ),
+            (
+                False,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["advertising.first_party"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.third_party.personalized"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+            ),
         ],
     )
     def test_conflicting_data_uses(
@@ -653,3 +688,30 @@ class TestPrivacyNoticeModel:
             ].calculate_relevant_systems(db)
             == []
         ), "This is an exact match but this privacy notice is frontend only"
+
+
+class TestDataUseConflictFound:
+    @pytest.mark.parametrize(
+        "existing_use,new_use,conflict_found",
+        [
+            ("a", "a", True),
+            ("a", "a.b", True),
+            ("a", "a.b.c", True),
+            ("a.b.c", "a.b.c", True),
+            ("a.b.c", "a.b", True),
+            ("a.b.c", "a", True),
+            ("a.b", "a.b", True),
+            ("a.b", "a", True),
+            ("a", "c", False),
+            ("a.b", "c.d", False),
+            ("a.b", "a.c", False),
+            ("a.b.c", "a.b.d", False),
+            ("a.b", "a.c.d", False),
+            ("a.c.d", "a.b", False),
+        ],
+    )
+    def test_new_data_use_conflicts(self, existing_use, new_use, conflict_found):
+        assert (
+            new_data_use_conflicts_with_existing_use(existing_use, new_use)
+            is conflict_found
+        )

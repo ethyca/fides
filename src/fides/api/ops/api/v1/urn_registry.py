@@ -73,6 +73,10 @@ MESSAGING_TEST = "/messaging/config/test"
 POLICY_LIST = "/dsr/policy"
 POLICY_DETAIL = "/dsr/policy/{policy_key}"
 
+# Privacy Experience URLs
+PRIVACY_EXPERIENCE = "/privacy-experience"
+PRIVACY_EXPERIENCE_DETAIL = "/privacy-experience/{privacy_experience_id}"
+
 # Privacy Notice URLs
 PRIVACY_NOTICE = "/privacy-notice"
 PRIVACY_NOTICE_DETAIL = "/privacy-notice/{privacy_notice_id}"
