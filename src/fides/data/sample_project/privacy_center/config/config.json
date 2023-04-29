@@ -71,7 +71,7 @@
           "url": "https://example.com/privacy#analytics",
           "default": true,
           "highlight": false,
-          "cookieKeys": ["tracking"],
+          "cookieKeys": ["analytics"],
           "executable": false
         }
       ],
