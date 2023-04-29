@@ -202,12 +202,23 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
   return (
     <>
       <ModalHeader pt={6} pb={0}>
-        Manage your consent
+        {config.consent?.button.title}
       </ModalHeader>
       <chakra.form onSubmit={handleSubmit} data-testid="consent-request-form">
         <ModalBody>
+          <Text fontSize="sm" color="gray.600" mb={4}>
+            {config.consent?.button.description}
+          </Text>
+          {config.consent?.button.description_subtext?.map(
+            (paragraph, index) => (
+              // eslint-disable-next-line react/no-array-index-key
+              <Text fontSize="sm" color="gray.600" mb={4} key={index}>
+                {paragraph}
+              </Text>
+            )
+          )}
           {isVerificationRequired ? (
-            <Text fontSize="sm" color="gray.500" mb={4}>
+            <Text fontSize="sm" color="gray.600" mb={4}>
               We will send you a verification code.
             </Text>
           ) : null}
@@ -218,7 +229,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                 isInvalid={touched.email && Boolean(errors.email)}
                 isRequired={identityInputs.email === "required"}
               >
-                <FormLabel>Email</FormLabel>
+                <FormLabel fontSize="sm">Email</FormLabel>
                 <Input
                   id="email"
                   name="email"
@@ -245,7 +256,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                   typeof values.email !== "undefined" && values.email
                 )}
               >
-                <FormLabel>Phone</FormLabel>
+                <FormLabel fontSize="sm">Phone</FormLabel>
                 <PhoneInput
                   id="phone"
                   name="phone"

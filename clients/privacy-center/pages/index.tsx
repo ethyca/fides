@@ -5,7 +5,7 @@ import { Flex, Heading, Text, Stack, Image, useToast } from "@fidesui/react";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
 
 import {
-  usePrivactRequestModal,
+  usePrivacyRequestModal,
   PrivacyRequestModal,
 } from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
 import {
@@ -31,7 +31,7 @@ const Home: NextPage = () => {
     privacyRequestId,
     setPrivacyRequestId,
     successHandler: privacyModalSuccessHandler,
-  } = usePrivactRequestModal();
+  } = usePrivacyRequestModal();
 
   const {
     isOpen: isConsentModalOpen,
