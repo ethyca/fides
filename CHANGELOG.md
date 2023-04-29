@@ -34,6 +34,8 @@ The types of changes are:
 - Support `privacy_declaration` as a resource type for custom fields [#3149](https://github.com/ethyca/fides/pull/3149)
 - Expose `id` field of embedded `privacy_declarations` on `system` API responses [#3157](https://github.com/ethyca/fides/pull/3157)
 - Access and erasure support for Unbounce [#2697](https://github.com/ethyca/fides/pull/2697)
+- Support pseudonymous consent requests with `fides_user_device_id` [#3158](https://github.com/ethyca/fides/pull/3158)
+- Update `fides_consent` cookie format [#3158](https://github.com/ethyca/fides/pull/3158)
 
 ### Changed
 
@@ -56,6 +58,7 @@ The types of changes are:
 
 - Update fides deploy to use a new database.load_samples setting to initialize sample Systems, Datasets, and Connections for testing [#3102](https://github.com/ethyca/fides/pull/3102)
 - Remove support for automatically configuring messaging (Mailgun) & storage (S3) using `.env` with `nox -s "fides_env(test)"` [#3102](https://github.com/ethyca/fides/pull/3102)
+- Add smoke tests for consent management [#3158](https://github.com/ethyca/fides/pull/3158)
 
 ## [2.11.0](https://github.com/ethyca/fides/compare/2.10.0...2.11.0)
 
