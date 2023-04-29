@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@fidesui/config": "^0.0.3",
-    "@rollup/plugin-json": "^5.0.2",
+    "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@types/uuid": "^9.0.1",
     "rollup": "^2.67.0",
