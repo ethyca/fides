@@ -84,7 +84,7 @@ describe("Consent settings", () => {
         });
       });
 
-      it.only("can read previous versions of the cookie and add a device uuid", () => {
+      it("can read previous versions of the cookie and add a device uuid", () => {
         const previousCookie = {
           data_sales: false,
           tracking: false,
