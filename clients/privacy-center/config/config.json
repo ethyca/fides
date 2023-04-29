@@ -22,6 +22,7 @@
       "icon_path": "/delete.svg",
       "title": "Erase your data",
       "description": "We will erase all of your personal data. This action cannot be undone.",
+      "description_subtext": [],
       "identity_inputs": {
         "email": "required"
       }
@@ -79,7 +80,7 @@
           "executable": false
         }
       ],
-      "description": "Manage your consent preferences, including the option to select 'Do Not Sell My Personal Information'.",
+      "description": "Manage your consent preferences, including the option to select 'Do Not Sell or Share My Personal Information'.",
       "description_subtext": [
         "When you use our services, you're trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control."
       ],
