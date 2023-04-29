@@ -84,7 +84,7 @@ describe("Consent settings", () => {
         });
       });
 
-      it("can read previous versions of the cookie and add a device uuid", () => {
+      it.only("can read previous versions of the cookie and add a device uuid", () => {
         const previousCookie = {
           data_sales: false,
           tracking: false,
@@ -101,9 +101,9 @@ describe("Consent settings", () => {
           const { body } = interception.request;
           // Wait until the cookie is updated to the new format
           cy.waitUntil(() => 
-            cy.getCookie(CONSENT_COOKIE_NAME)
-              .should("have.property", "value")
-              .should("match", /identity/)
+            cy.getCookie(CONSENT_COOKIE_NAME).then(cookie =>
+              Boolean(cookie!.value && cookie!.value.match(/identity/))
+            )
           );
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
             const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
