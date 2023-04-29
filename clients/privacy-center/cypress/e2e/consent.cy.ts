@@ -1,5 +1,5 @@
 import { hostUrl } from "~/constants";
-import { CONSENT_COOKIE_NAME } from "fides-consent";
+import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-consent";
 import { GpcStatus } from "~/features/consent/types";
 import { ConsentPreferencesWithVerificationCode } from "~/types/api";
 
@@ -42,6 +42,76 @@ describe("Consent settings", () => {
       cy.visit("/consent");
       cy.location("pathname").should("eq", "/");
       cy.getByTestId("home");
+    });
+
+    describe("device uuid", () => {
+      it("can send a device uuid when there is no cookie", () => {
+        cy.visit("/");
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.getByTestId("card").contains("Manage your consent").click();
+        cy.getByTestId("consent-request-form").within(() => {
+          cy.get("input#email").type("test@example.com");
+          cy.get("button").contains("Continue").click();
+        });
+        cy.wait("@postConsentRequest").then((interception) => {
+          const { body } = interception.request;
+          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
+            const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
+            expect(body.fides_user_device_id).to.eql(cookie.identity.fides_user_device_id);
+          });
+        });
+      });
+
+      it("can send a device uuid when a cookie exists", () => {
+        const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+        const now = "2023-04-28T12:00:00.000Z";
+        const cookie = {
+          identity: { fides_user_device_id: uuid },
+          fides_meta: { version: "0.9.0", createdAt: now },
+          consent: {},
+        }
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+        cy.visit("/");
+        cy.getByTestId("card").contains("Manage your consent").click();
+        cy.getByTestId("consent-request-form").within(() => {
+          cy.get("input#email").type("test@example.com");
+          cy.get("button").contains("Continue").click();
+        });
+        cy.wait("@postConsentRequest").then((interception) => {
+          const { body } = interception.request;
+          expect(body.fides_user_device_id).to.eql(uuid);
+        });
+      });
+
+      it("can read previous versions of the cookie and add a device uuid", () => {
+        const previousCookie = {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        }
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(previousCookie));
+        cy.visit("/");
+        cy.getByTestId("card").contains("Manage your consent").click();
+        cy.getByTestId("consent-request-form").within(() => {
+          cy.get("input#email").type("test@example.com");
+          cy.get("button").contains("Continue").click();
+        });
+        cy.wait("@postConsentRequest").then((interception) => {
+          const { body } = interception.request;
+          // Wait until the cookie is updated to the new format
+          cy.waitUntil(() => 
+            cy.getCookie(CONSENT_COOKIE_NAME).then(cookie =>
+              Boolean(cookie!.value && cookie!.value.match(/identity/))
+            )
+          );
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
+            const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
+            expect(body.fides_user_device_id).to.eql(cookie.identity.fides_user_device_id);
+            expect(cookie.consent).to.eql(previousCookie);
+          });
+        });
+      });
     });
   });
 
@@ -118,7 +188,6 @@ describe("Consent settings", () => {
     });
 
     it("lets the user update their consent", () => {
-      cy.visit("/consent");
       cy.getByTestId("consent");
 
       cy.getByTestId(`consent-item-card-advertising.first_party`).within(() => {
@@ -160,18 +229,11 @@ describe("Consent settings", () => {
         expect(body.browser_identity).to.eql(undefined);
       });
 
-      // The cookie should also have been updated. This may take a moment in CI,
-      // so we `waitUntil` the value becomes what we expect.
-      // https://github.com/cypress-io/cypress/issues/4802#issuecomment-941891554
-      cy.waitUntil(() =>
-        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-          const cookieKeyConsent = JSON.parse(
-            decodeURIComponent(cookie!.value)
-          );
-          // `waitUntil` retries until we return a truthy value.
-          return cookieKeyConsent.data_sales === true;
-        })
-      );
+      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
+      cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
+        const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
+        expect(cookie.consent.data_sales).to.eql(true);
+      });
     });
 
     it("can grab cookies and send to a consent request", () => {
@@ -196,7 +258,6 @@ describe("Consent settings", () => {
 
     it("reflects their choices using fides-consent.js", () => {
       // Opt-out of items default to opt-in.
-      cy.visit("/consent");
       cy.getByTestId(`consent-item-card-advertising`).within(() => {
         cy.getRadio("false").check({ force: true });
       });
@@ -212,6 +273,7 @@ describe("Consent settings", () => {
         expect(win).to.have.nested.property("Fides.consent").that.eql({
           data_sales: false,
           tracking: false,
+          analytics: true,
           gpc_test: true,
         });
 
@@ -224,6 +286,7 @@ describe("Consent settings", () => {
                 consent: {
                   data_sales: false,
                   tracking: false,
+                  analytics: true,
                   gpc_test: true,
                 },
               },
@@ -308,6 +371,7 @@ describe("Consent settings", () => {
         expect(win).to.have.nested.property("Fides.consent").that.eql({
           data_sales: true,
           tracking: true,
+          analytics: true,
         });
 
         // GTM configuration
@@ -319,6 +383,7 @@ describe("Consent settings", () => {
                 consent: {
                   data_sales: true,
                   tracking: true,
+                  analytics: true,
                 },
               },
             },
@@ -342,6 +407,7 @@ describe("Consent settings", () => {
           expect(win).to.have.nested.property("Fides.consent").that.eql({
             data_sales: false,
             tracking: false,
+            analytics: true,
           });
         });
       });

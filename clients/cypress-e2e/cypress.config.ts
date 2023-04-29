@@ -22,6 +22,7 @@ export default defineConfig({
     API_URL: "http://localhost:8080/api/v1",
     ADMIN_UI_URL: "http://localhost:8080",
     PRIVACY_CENTER_URL: "http://localhost:3001",
+    SAMPLE_APP_URL: "http://localhost:3000",
 
     // Credentials
     USERNAME: "root_user",
