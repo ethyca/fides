@@ -4,7 +4,7 @@ const { compilerOptions } = require("./tsconfig");
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   preset: "ts-jest",
-  testEnvironment: "jsDom",
+  testEnvironment: "jsdom",
   modulePaths: [compilerOptions.baseUrl],
   moduleNameMapper: {
     ...pathsToModuleNameMapper(compilerOptions.paths),
