@@ -15,8 +15,8 @@
     "dev": "npm run build -- --watch",
     "clean": "rm -rf dist",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "jest --watch",
+    "test:ci": "jest"
   },
   "repository": {
     "type": "git",
