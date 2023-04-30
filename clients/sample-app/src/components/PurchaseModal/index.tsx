@@ -2,19 +2,17 @@ import React, {
   memo, useEffect, useRef, useState,
 } from 'react';
 import { useForm } from 'react-hook-form';
-import { Product, UserData } from '../../types';
+import { UserData } from '../../types';
 import Button from '../Button';
 import css from './style.module.scss';
   
 interface Props {
-  product: Product | null; 
   isOpen: boolean;
   onRequestClose: () => void;
   onSubmit: (data: UserData) => Promise<void>;
 }
   
 const Modal = ({
-  product,
   isOpen,
   onRequestClose,
   onSubmit,
