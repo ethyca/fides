@@ -12,7 +12,7 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
-import { getOrMakeFidesCookie, saveFidesCookie } from "fides-consent";
+import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import * as Yup from "yup";
@@ -44,7 +44,6 @@ const useConsentRequestForm = ({
   successHandler: () => void;
 }) => {
   const config = useConfig();
-  // TODO: this "defaultIdentityInput" feels unnecessary and could be handled in the redux state?
   const identityInputs =
     config.consent?.button.identity_inputs ?? defaultIdentityInput;
   const environment = getPrivacyCenterEnvironment();
@@ -195,6 +194,8 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
     isVerificationRequired,
     successHandler,
   });
+
+  const config = useConfig();
 
   const requiredInputs = Object.entries(identityInputs).filter(
     ([, required]) => required === "required"
