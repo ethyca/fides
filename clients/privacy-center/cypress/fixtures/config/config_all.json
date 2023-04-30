@@ -1,6 +1,6 @@
 {
   "title": "Cypress Test Privacy Center",
-  "description": "This Privacy Center config tests all the configured fields. Edit `cypress/fixtures/config/config_test.json` to make changes to configure what is used for the Cypress tests!",
+  "description": "This Privacy Center config tests all the configured fields. Edit `cypress/fixtures/config/config_all.json` to make changes!",
   "description_subtext": ["The `description_subtext` field supports multiple paragraphs.", "You can see that here!"],
   "addendum": ["The `addendum` field is shown at the bottom of the page."],
   "logo_path": "/logo.svg",

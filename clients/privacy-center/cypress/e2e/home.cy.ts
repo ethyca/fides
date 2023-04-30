@@ -1,7 +1,7 @@
 describe("Home", () => {
   it("renders the configured page info", () => {
     cy.visit("/");
-    cy.loadConfigFixture("config/config_test.json").then((config) => {
+    cy.loadConfigFixture("config/config_all.json").then((config) => {
       // TODO: test *all* the configurable display things
       cy.getByTestId("home");
 

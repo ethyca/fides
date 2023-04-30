@@ -83,7 +83,7 @@ declare global {
       /**
        * Custom command to load a Privacy Center configuration JSON file from a fixture.
        * 
-       * @example cy.loadConfigFixture("config/config_test.json").as("config");
+       * @example cy.loadConfigFixture("config/config_all.json").as("config");
        */
       loadConfigFixture(
         fixtureName: string,

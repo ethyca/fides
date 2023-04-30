@@ -1,25 +1,29 @@
-import { hostUrl } from "~/constants";
+import { API_URL } from "../support/constants";
 import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
 import { GpcStatus } from "~/features/consent/types";
 import { ConsentPreferencesWithVerificationCode } from "~/types/api";
 
 describe("Consent settings", () => {
+  beforeEach(() => {
+      cy.visit("/");
+      cy.loadConfigFixture("config/config_consent.json").as("config");
+  });
+
   describe("when the user isn't verified", () => {
     beforeEach(() => {
-      cy.intercept("POST", `${hostUrl}/consent-request`, {
+      cy.intercept("POST", `${API_URL}/consent-request`, {
         body: {
           consent_request_id: "consent-request-id",
         },
       }).as("postConsentRequest");
       cy.intercept(
         "POST",
-        `${hostUrl}/consent-request/consent-request-id/verify`,
+        `${API_URL}/consent-request/consent-request-id/verify`,
         { fixture: "consent/verify" }
       ).as("postConsentRequestVerify");
     });
 
     it("can verify email and navigate to consent form", () => {
-      cy.visit("/");
       cy.getByTestId("card").contains("Manage your consent").click();
 
       cy.getByTestId("consent-request-form").within(() => {
@@ -46,7 +50,6 @@ describe("Consent settings", () => {
 
     describe("device uuid", () => {
       it("can send a device uuid when there is no cookie", () => {
-        cy.visit("/");
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         cy.getByTestId("card").contains("Manage your consent").click();
         cy.getByTestId("consent-request-form").within(() => {
@@ -72,7 +75,6 @@ describe("Consent settings", () => {
           consent: {},
         }
         cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
-        cy.visit("/");
         cy.getByTestId("card").contains("Manage your consent").click();
         cy.getByTestId("consent-request-form").within(() => {
           cy.get("input#email").type("test@example.com");
@@ -91,7 +93,6 @@ describe("Consent settings", () => {
           analytics: true,
         }
         cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(previousCookie));
-        cy.visit("/");
         cy.getByTestId("card").contains("Manage your consent").click();
         cy.getByTestId("consent-request-form").within(() => {
           cy.get("input#email").type("test@example.com");
@@ -128,13 +129,13 @@ describe("Consent settings", () => {
       // Consent items are returned by the verify endpoint.
       cy.intercept(
         "POST",
-        `${hostUrl}/consent-request/consent-request-id/verify`,
+        `${API_URL}/consent-request/consent-request-id/verify`,
         { fixture: "consent/verify" }
       ).as("postConsentRequestVerify");
 
       cy.intercept(
         "PATCH",
-        `${hostUrl}/consent-request/consent-request-id/preferences`,
+        `${API_URL}/consent-request/consent-request-id/preferences`,
         (req) => {
           req.reply(req.body);
         }
@@ -142,58 +143,7 @@ describe("Consent settings", () => {
 
       cy.visit("/consent");
       cy.getByTestId("consent");
-      // TODO: this previously used the "config/overrideConsentOptions" action
-      // to customize the config, but I removed that action because it mutated
-      // just a small part of the config - and therefore required us to somehow
-      // handle the case where other parts of the consent config were null.o
-      //
-      // This can be replaced with a "config/loadConfig" action to provide a
-      // fully-formed config object to preserve type-safety
-      /*
-      cy.dispatch({
-        type: "config/overrideConsentOptions",
-        payload: [
-          {
-            fidesDataUseKey: "advertising",
-            name: "Test advertising",
-            description: "",
-            url: "https://example.com/privacy#data-sales",
-            default: true,
-            highlight: false,
-            cookieKeys: ["data_sales"],
-          },
-          {
-            fidesDataUseKey: "advertising.first_party",
-            name: "Test advertising.first_party",
-            description: "",
-            url: "https://example.com/privacy#email-marketing",
-            default: true,
-            highlight: false,
-            cookieKeys: ["tracking"],
-          },
-          {
-            fidesDataUseKey: "improve",
-            name: "Test improve",
-            description: "",
-            url: "https://example.com/privacy#analytics",
-            default: true,
-            highlight: false,
-            cookieKeys: ["tracking"],
-          },
-          {
-            fidesDataUseKey: "collect.gpc",
-            name: "GPC test",
-            description: "Just used for testing GPC.",
-            url: "https://example.com/privacy#gpc",
-            default: {
-              value: true,
-              globalPrivacyControl: false,
-            },
-            cookieKeys: ["gpc_test"],
-          },
-        ],
-      });
-      */
+      cy.loadConfigFixture("config/config_consent.json").as("config");
     });
 
     it("lets the user update their consent", () => {
@@ -313,16 +263,17 @@ describe("Consent settings", () => {
     });
 
     describe("when globalPrivacyControl is enabled", () => {
-      it("applies the GPC defaults", () => {
+      beforeEach(() => {
         cy.visit("/consent?globalPrivacyControl=true");
         cy.getByTestId("consent");
+        cy.loadConfigFixture("config/config_consent.json").as("config");
+      });
 
+      it("applies the GPC defaults", () => {
         cy.getByTestId("gpc-banner");
-
         cy.getByTestId(`consent-item-card-collect.gpc`).within(() => {
           cy.contains("GPC test");
           cy.getRadio().should("not.be.checked");
-
           cy.getByTestId("gpc-badge").should("contain", GpcStatus.APPLIED);
         });
 
@@ -342,18 +293,12 @@ describe("Consent settings", () => {
       });
 
       it("lets the user consent to override GPC", () => {
-        cy.visit("/consent?globalPrivacyControl=true");
-        cy.getByTestId("consent");
-
         cy.getByTestId("gpc-banner");
-
         cy.getByTestId(`consent-item-card-collect.gpc`).within(() => {
           cy.contains("GPC test");
           cy.getRadio().should("not.be.checked").check({ force: true });
-
           cy.getByTestId("gpc-badge").should("contain", GpcStatus.OVERRIDDEN);
         });
-
         cy.getByTestId("save-btn").click();
 
         cy.wait("@patchConsentPreferences").then((interception) => {
