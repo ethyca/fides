@@ -85,13 +85,16 @@ const PrivacyCenterApp = ({
     [serverEnvironment]
   );
   const store = useMemo(() => {
-    if (!environment || !(environment.config)) {
+    if (!environment || !environment.config) {
       // TODO: confirm that this happens - I assume so
-      console.warn("makeStore being called with empty env or config", environment);
+      console.warn(
+        "makeStore being called with empty env or config",
+        environment
+      );
       return makeStore();
     }
     // TODO: make state handle empty config
-    const newStore = makeStore({ config: { config: environment.config } })
+    const newStore = makeStore({ config: { config: environment.config } });
 
     // The store is exposed on the window object when running in the Cypress test
     // environment. This enables the custom `cy.dispatch` command.
