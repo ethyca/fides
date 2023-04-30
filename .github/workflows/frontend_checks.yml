@@ -47,8 +47,7 @@ jobs:
         run: npm run build
 
       - name: Unit test (${{ matrix.clients }})
-        with:
-          working-directory: clients/${{ matrix.clients }}
+        working-directory: clients/${{ matrix.clients }}
         run: npm run test:ci
 
   Clients-Cypress:
