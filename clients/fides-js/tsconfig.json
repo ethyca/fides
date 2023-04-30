@@ -12,12 +12,12 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "es6", // TODO: switch to es5 after switching to rollup?
+    "target": "es6",
 
     "baseUrl": "./",
     "paths": {
       "~/*": ["src/*"]
-    },
+    }
   },
   "include": ["**/*.ts", "**/*.d.ts"],
   "exclude": ["node_modules", "dist"]
