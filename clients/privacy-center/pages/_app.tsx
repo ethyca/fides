@@ -86,7 +86,6 @@ const PrivacyCenterApp = ({
   );
   const store = useMemo(() => {
     if (!environment || !(environment.config)) {
-      /* eslint-disable-next-line no-console */
       // TODO: confirm that this happens - I assume so
       console.warn("makeStore being called with empty env or config", environment);
       return makeStore();

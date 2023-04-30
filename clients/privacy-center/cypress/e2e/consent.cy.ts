@@ -1,7 +1,7 @@
-import { API_URL } from "../support/constants";
 import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
 import { GpcStatus } from "~/features/consent/types";
 import { ConsentPreferencesWithVerificationCode } from "~/types/api";
+import { API_URL } from "../support/constants";
 
 describe("Consent settings", () => {
   beforeEach(() => {
