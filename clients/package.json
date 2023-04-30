@@ -1,9 +1,10 @@
 {
   "workspaces": [
-    "admin-ui/",
-    "fides-js/",
+    "admin-ui",
+    "cypress-e2e",
+    "fides-js",
     "sample-app",
-    "privacy-center/"
+    "privacy-center"
   ],
   "scripts": {
     "build": "turbo run build",
