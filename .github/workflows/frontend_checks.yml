@@ -18,6 +18,10 @@ jobs:
     strategy:
       matrix:
         node-version: [16.x]
+        clients:
+          - "admin-ui"
+          - "privacy-center"
+          - "fides-js"
     defaults:
       run:
         working-directory: clients
@@ -42,7 +46,9 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Jest test
+      - name: Unit test (${{ matrix.clients }})
+        with:
+          working-directory: clients/${{ matrix.clients }}
         run: npm run test:ci
 
   Clients-Cypress:
@@ -50,6 +56,9 @@ jobs:
     strategy:
       matrix:
         node-version: [16.x]
+        clients:
+          - "admin-ui"
+          - "privacy-center"
     defaults:
       run:
         working-directory: clients
@@ -68,10 +77,10 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Cypress E2E Admin-UI
+      - name: Cypress E2E Tests (${{ matrix.clients }})
         uses: cypress-io/github-action@v4
         with:
-          working-directory: clients/admin-ui
+          working-directory: clients/${{ matrix.clients }}
           install: false
           start: npm run cy:start
           wait-on: "http://localhost:3000"
@@ -80,28 +89,38 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: cypress-videos-admin-ui
-          path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
+          name: cypress-videos-${{ matrix.clients }}
+          path: /home/runner/work/fides/fides/clients/${{ matrix.clients }}/cypress/videos/*.mp4
 
-      - name: Cypress E2E Privacy-Center
+  Clients-Cypress-Component:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+        clients:
+          - "admin-ui"
+    defaults:
+      run:
+        working-directory: clients
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Cypress Component Tests (${{ matrix.clients }})
         uses: cypress-io/github-action@v4
         with:
-          working-directory: clients/privacy-center
-          install: false
-          start: npm run cy:start
-          wait-on: "http://localhost:3000"
-          wait-on-timeout: 180
-
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: cypress-videos-privacy-center
-          path: /home/runner/work/fides/fides/clients/privacy-center/cypress/videos/*.mp4
-
-      - name: Cypress component tests
-        uses: cypress-io/github-action@v4
-        with:
-          working-directory: clients/admin-ui
+          working-directory: clients/${{ matrix.clients }}
           install: false
           component: true
 
