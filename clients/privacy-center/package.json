@@ -13,7 +13,7 @@
     "test:ci": "tsc --noEmit && jest",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "cy:start": "export NODE_ENV=test FIDES_PRIVACY_CENTER__CONFIG_JSON_URL=file:./cypress/fixtures/config/config_test.json && npm run start",
+    "cy:start": "export NODE_ENV=test && npm run build && npm run start",
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",

@@ -18,13 +18,27 @@ import { Config } from "~/types/config";
 // ```
 //
 // ...and then update all the code to handle that.
-type State = Config
-const initialState: State = getDefaultConfig();
+interface ConfigState {
+  config: Config;
+}
+const initialState: ConfigState = { config: getDefaultConfig() };
 
 export const configSlice = createSlice({
   name: "config",
   initialState,
   reducers: {
+    /**
+     * Load a new configuration, replacing the current state entirely.
+     */
+    loadConfig(draftState, { payload }: PayloadAction<Config>) {
+      draftState.config = payload;
+    },
+    /**
+     * Modify the current configuration, by merging a partial config into the current state.
+     */
+    mergeConfig(draftState, { payload }: PayloadAction<Partial<Config>>) {
+      draftState.config = { ...draftState.config, ...payload };
+    },
     /**
      * When consent preferences are returned from the API, they include the up-to-date description
      * of the related data use. This overrides the currently configured data use info.
@@ -37,7 +51,7 @@ export const configSlice = createSlice({
         (payload.consent ?? []).map((consent) => [consent.data_use, consent])
       );
 
-      draftState?.consent?.page.consentOptions?.forEach((draftOption) => {
+      draftState.config.consent?.page.consentOptions?.forEach((draftOption) => {
         const apiConsent = consentPreferencesMap.get(
           draftOption.fidesDataUseKey
         );
@@ -56,8 +70,5 @@ export const configSlice = createSlice({
 const selectConfig = (state: RootState) => state.config;
 
 export const { reducer } = configSlice;
-export const { updateConsentOptionsFromApi } = configSlice.actions;
-export const useConfig = (): State => { 
-  const config = useAppSelector(selectConfig);
-  return config;
-}
+export const { loadConfig, mergeConfig, updateConsentOptionsFromApi } = configSlice.actions;
+export const useConfig = (): Config => useAppSelector(selectConfig).config;

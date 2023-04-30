@@ -20,6 +20,12 @@ Cypress.Commands.add("waitUntilCookieExists", (cookieName: string, ...args) => {
   cy.waitUntil(() => cy.getCookie(cookieName).then(cookie => Boolean(cookie && cookie.value)), ...args);
 });
 
+Cypress.Commands.add("loadConfigFixture", (fixtureName: string, ...args) => {
+    cy.fixture(fixtureName, ...args).then((config) => {
+      cy.dispatch({ type: "config/loadConfig", payload: config }).then(() => config);
+    });
+});
+
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -56,7 +62,7 @@ declare global {
        *
        * https://www.cypress.io/blog/2018/11/14/testing-redux-store/#dispatch-actions
        */
-      dispatch: (action: Parameters<AppDispatch>[0]) => void;
+      dispatch(action: Parameters<AppDispatch>[0]): Chainable<any>;
       /**
        * Custom command to wait until a given cookie name exists. Sometimes this
        * is delayed, and Cypress' built-in default timeout is not used for
@@ -73,7 +79,18 @@ declare global {
             Cypress.Withinable &
             Cypress.Shadow
         >
-      ): Chainable<JQuery<HTMLElement>>;
+      ): Chainable<boolean>;
+      /**
+       * Custom command to load a Privacy Center configuration JSON file from a fixture.
+       * 
+       * @example cy.loadConfigFixture("config/config_test.json").as("config");
+       */
+      loadConfigFixture(
+        fixtureName: string,
+        options?: Partial<
+          Cypress.Timeoutable
+        >
+      ): Chainable<any>;
     }
   }
 }

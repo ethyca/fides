@@ -54,11 +54,6 @@ export async function getInitialProps(
     // Handle the case where this runs on the client - which we don't *really*
     // want to happen, but since getServerSideProps isn't supported for custom
     // Apps in NextJS 12, we have to guard against this possibility...
-    // NOTE: this *should* be impossible...
-    // eslint-disable-next-line no-console
-    console.warn(
-      "Unexpected App.getInitialProps() call from client-side code!"
-    );
     return ctx;
   }
 
@@ -89,16 +84,24 @@ const PrivacyCenterApp = ({
     () => hydratePrivacyCenterEnvironment(serverEnvironment),
     [serverEnvironment]
   );
-  const store = useMemo(
-    () => makeStore({ config: environment.config }),
-    [environment]
-  );
+  const store = useMemo(() => {
+    if (!environment || !(environment.config)) {
+      /* eslint-disable-next-line no-console */
+      // TODO: confirm that this happens - I assume so
+      console.warn("makeStore being called with empty env or config", environment);
+      return makeStore();
+    }
+    // TODO: make state handle empty config
+    const newStore = makeStore({ config: { config: environment.config } })
 
-  // The store is exposed on the window object when running in the Cypress test
-  // environment. This enables the custom `cy.dispatch` command.
-  if (typeof window !== "undefined" && window.Cypress) {
-    window.store = store;
-  }
+    // The store is exposed on the window object when running in the Cypress test
+    // environment. This enables the custom `cy.dispatch` command.
+    if (typeof window !== "undefined" && window.Cypress) {
+      window.store = newStore;
+    }
+    return newStore;
+  }, [environment]);
+
   return (
     <SafeHydrate>
       <Provider store={store}>
