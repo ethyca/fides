@@ -8,10 +8,10 @@ from constants_nox import (
     IMAGE_DEV,
     IMAGE_LATEST,
     IMAGE_LOCAL,
+    IMAGE_LOCAL_PC,
     IMAGE_LOCAL_UI,
     PRIVACY_CENTER_IMAGE,
     SAMPLE_APP_IMAGE,
-    IMAGE_LOCAL_PC,
 )
 from git_nox import get_current_tag, recognized_tag
 
@@ -79,7 +79,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
         "dev": {"tag": lambda: IMAGE_LOCAL, "target": "dev"},
         "admin_ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
-        "privacy_center": {"tag": lambda: IMAGE_LOCAL_PC, "target": "frontend"}
+        "privacy_center": {"tag": lambda: IMAGE_LOCAL_PC, "target": "frontend"},
     }
 
     # When building for release, there are additional images that need

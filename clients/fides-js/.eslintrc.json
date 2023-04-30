@@ -11,6 +11,7 @@
     "curly": ["error", "all"],
     "nonblock-statement-body-position": ["error", "below"],
     "import/prefer-default-export": "off",
+    "import/extensions": "off",
     "no-param-reassign": [
       "error",
       {
