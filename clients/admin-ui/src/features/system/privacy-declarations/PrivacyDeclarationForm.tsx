@@ -328,6 +328,7 @@ export const PrivacyDeclarationForm = ({
       onSubmit,
       initialValues: passedInInitialValues,
       allDataUses: dataProps.allDataUses,
+      privacyDeclarationId: passedInInitialValues?.id,
     });
 
   return (
