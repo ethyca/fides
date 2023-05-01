@@ -47,8 +47,6 @@ export const useCustomFields = ({
     skip: queryFidesKey !== "" && !(isEnabled && queryFidesKey),
   });
 
-  // console.log("response from getting data", data, resourceFidesKey)
-
   // The `fixedCacheKey` options will ensure that components referencing the same resource will
   // share mutation info. That won't be too useful, though, because `upsertCustomField` can issue
   // multiple requests: one for each field associated with the resource.

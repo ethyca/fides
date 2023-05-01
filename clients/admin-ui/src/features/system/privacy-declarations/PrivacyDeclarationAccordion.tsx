@@ -6,14 +6,14 @@ import {
   AccordionPanel,
   Stack,
 } from "@fidesui/react";
-import { Form, Formik, FormikHelpers } from "formik";
+import { Form, Formik } from "formik";
 
 import {
   DataProps,
+  FormValues,
   PrivacyDeclarationFormComponents,
   usePrivacyDeclarationForm,
   ValidationSchema,
-  FormValues,
 } from "./PrivacyDeclarationForm";
 import { PrivacyDeclarationWithId } from "./types";
 
@@ -22,8 +22,10 @@ interface AccordionProps extends DataProps {
   onEdit: (
     oldDeclaration: PrivacyDeclarationWithId,
     newDeclaration: PrivacyDeclarationWithId
-  ) => Promise<boolean>;
-  onDelete: (declaration: PrivacyDeclarationWithId) => Promise<boolean>;
+  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
+  onDelete: (
+    declaration: PrivacyDeclarationWithId
+  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
 }
 
 const PrivacyDeclarationAccordionItem = ({

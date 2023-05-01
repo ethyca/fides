@@ -62,13 +62,21 @@ const defaultInitialValues: FormValues = {
 };
 
 const transformPrivacyDeclarationToHaveId = (
-  privacyDeclaration: PrivacyDeclarationWithId
-) => ({
-  ...privacyDeclaration,
-  id: privacyDeclaration.id
-    ? privacyDeclaration.id
-    : privacyDeclaration.data_use,
-});
+  privacyDeclaration: PrivacyDeclaration
+) => {
+  // TODO: there's a typing problem here: the backend types still show PrivacyDeclaration
+  // instead of PrivacyDeclarationResponse (which has an id)
+  // @ts-ignore
+  const { id, name, data_use: dataUse } = privacyDeclaration;
+  let declarationId: string | undefined = id;
+  if (!declarationId) {
+    declarationId = name ? `${dataUse} - ${name}` : dataUse;
+  }
+  return {
+    ...privacyDeclaration,
+    id: declarationId,
+  };
+};
 
 export const transformPrivacyDeclarationsToHaveId = (
   privacyDeclarations: PrivacyDeclaration[]
@@ -200,12 +208,12 @@ export const PrivacyDeclarationFormComponents = ({
 
 export const transformPrivacyDeclarationToFormValues = (
   privacyDeclaration?: PrivacyDeclarationWithId,
-  customFieldValues: CustomFieldValues
+  customFieldValues?: CustomFieldValues
 ): FormValues =>
   privacyDeclaration
     ? {
         ...privacyDeclaration,
-        customFieldValues,
+        customFieldValues: customFieldValues || {},
         fides_key: "",
       }
     : defaultInitialValues;
@@ -311,8 +319,10 @@ interface Props {
   onSubmit: (
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
-  ) => Promise<boolean>;
-  onDelete: (declaration: PrivacyDeclarationWithId) => Promise<boolean>;
+  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
+  onDelete: (
+    declaration: PrivacyDeclarationWithId
+  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
   initialValues?: PrivacyDeclarationWithId;
   privacyDeclarationId?: string;
 }
