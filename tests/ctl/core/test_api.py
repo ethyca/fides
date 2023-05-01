@@ -895,20 +895,20 @@ class TestSystemUpdate:
         system_update_request_body.privacy_declarations.append(
             models.PrivacyDeclaration(
                 name="",  # no name specified
-                data_categories=["user.payment"],  # other fields can differ
+                data_categories=["user.payment"],
                 data_use="provide",  # identical data use
                 data_subjects=["anonymous_user"],  # other fields can differ
-                data_qualifier="aggregated",  # other fields can differ
+                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
         system_update_request_body.privacy_declarations.append(
             models.PrivacyDeclaration(
                 name="",  # no name specified
-                data_categories=["user.payment"],  # other fields can differ
+                data_categories=["user.payment"],
                 data_use="provide",  # identicial data use
-                data_subjects=["anonymous_user"],  # other fields can differ
-                data_qualifier="aggregated",  # other fields can differ
+                data_subjects=["anonymous_user"],
+                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -928,20 +928,20 @@ class TestSystemUpdate:
         system_update_request_body.privacy_declarations.append(
             models.PrivacyDeclaration(
                 name="",  # no name specified
-                data_categories=["user.payment"],  # other fields can differ
+                data_categories=["user.payment"],
                 data_use="provide",  # identical data use
-                data_subjects=["anonymous_user"],  # other fields can differ
-                data_qualifier="aggregated",  # other fields can differ
+                data_subjects=["anonymous_user"],
+                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
         system_update_request_body.privacy_declarations.append(
             models.PrivacyDeclaration(
                 name="new declaration",  # this name distinguishes the declaration from the above
-                data_categories=["user.payment"],  # other fields can differ
+                data_categories=["user.payment"],
                 data_use="provide",  # identicial data use
-                data_subjects=["anonymous_user"],  # other fields can differ
-                data_qualifier="aggregated",  # other fields can differ
+                data_subjects=["anonymous_user"],
+                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -963,20 +963,20 @@ class TestSystemUpdate:
         system_update_request_body.privacy_declarations.append(
             models.PrivacyDeclaration(
                 name="new declaration 1",  # specify a unique name here
-                data_categories=["user.payment"],  # other fields can differ
+                data_categories=["user.payment"],
                 data_use="advertising",  # identical data use
-                data_subjects=["anonymous_user"],  # other fields can differ
-                data_qualifier="aggregated",  # other fields can differ
+                data_subjects=["anonymous_user"],
+                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
         system_update_request_body.privacy_declarations.append(
             models.PrivacyDeclaration(
                 name="new declaration 2",  # this name distinguishes the declaration from the above
-                data_categories=["user.payment"],  # other fields can differ
+                data_categories=["user.payment"],
                 data_use="advertising",  # identicial data use
-                data_subjects=["anonymous_user"],  # other fields can differ
-                data_qualifier="aggregated",  # other fields can differ
+                data_subjects=["anonymous_user"],
+                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -992,6 +992,50 @@ class TestSystemUpdate:
         # both declarations should have 'advertising' data_use since the update was allowed
         assert system.privacy_declarations[0].data_use == "advertising"
         assert system.privacy_declarations[1].data_use == "advertising"
+
+        # test that differeing data_use with same names on declarations succeeds
+        system_update_request_body.privacy_declarations = []
+        system_update_request_body.privacy_declarations.append(
+            models.PrivacyDeclaration(
+                name="new declaration 1",  # identical name
+                data_categories=["user.payment"],
+                data_use="advertising",  # differing data use
+                data_subjects=["anonymous_user"],
+                data_qualifier="aggregated",
+                dataset_references=[],
+            )
+        )
+        system_update_request_body.privacy_declarations.append(
+            models.PrivacyDeclaration(
+                name="new declaration 1",  # identical name
+                data_categories=["user.payment"],
+                data_use="provide",  # differing data use
+                data_subjects=["anonymous_user"],
+                data_qualifier="aggregated",
+                dataset_references=[],
+            )
+        )
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_200_OK
+        # assert the system's privacy declarations have been updated
+        db.refresh(system)
+        # should be one declaration with advertising, one with provide
+        assert (
+            system.privacy_declarations[0].data_use == "advertising"
+            and system.privacy_declarations[1].data_use == "provide"
+        ) or (
+            system.privacy_declarations[1].data_use == "advertising"
+            and system.privacy_declarations[0].data_use == "provide"
+        )
+        assert (
+            system.privacy_declarations[0].name == "new declaration 1"
+            and system.privacy_declarations[1].name == "new declaration 1"
+        )
 
     @pytest.mark.parametrize(
         "update_declarations",
@@ -1144,6 +1188,30 @@ class TestSystemUpdate:
                 ]
             ),
             (
+                [  # add a new single dec with same data use
+                    models.PrivacyDeclaration(
+                        name="declaration-name-1",
+                        data_categories=[],
+                        data_use="advertising",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    )
+                ]
+            ),
+            (
+                [  # add a new single dec with same data use, no name
+                    models.PrivacyDeclaration(
+                        name="",
+                        data_categories=[],
+                        data_use="advertising",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    )
+                ]
+            ),
+            (
                 # update 2 privacy declarations both matching existing decs
                 [
                     models.PrivacyDeclaration(
@@ -1207,6 +1275,27 @@ class TestSystemUpdate:
                 ]
             ),
             (
+                # update 2 privacy declarations, one with only matching data use, other totally new
+                [
+                    models.PrivacyDeclaration(
+                        name="declaration-name-1",
+                        data_categories=[],
+                        data_use="advertising",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                    models.PrivacyDeclaration(
+                        name="declaration-name-2",
+                        data_categories=[],
+                        data_use="provide",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                ]
+            ),
+            (
                 # add 2 new privacy declarations
                 [
                     models.PrivacyDeclaration(
@@ -1220,7 +1309,28 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
                         data_categories=[],
-                        data_use="provide",
+                        data_use="improve",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                ]
+            ),
+            (
+                # add 2 new privacy declarations, same data uses as existing decs but no names
+                [
+                    models.PrivacyDeclaration(
+                        name="",
+                        data_categories=[],
+                        data_use="advertising",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                    models.PrivacyDeclaration(
+                        name="",
+                        data_categories=[],
+                        data_use="third_party_sharing",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1281,7 +1391,10 @@ class TestSystemUpdate:
                 if updated_dec.name == old_dec_updated.name
                 and updated_dec.data_use == old_dec_updated.data_use
             )
+            # assert that the updated dec in the DB kept the same ID
             assert updated_dec.id == old_dec_updated.id
+
+            # remove from our lists to check since we've confirmed ID stayed constant
             updated_decs.remove(updated_dec)
             old_db_decs.remove(old_dec_updated)
 
