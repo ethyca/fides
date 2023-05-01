@@ -14,10 +14,10 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 import {
+  CustomFieldsFormValues,
   CustomFieldsList,
   CustomFieldValues,
   useCustomFields,
-  CustomFieldsFormValues,
 } from "common/custom-fields";
 import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import { useMemo, useState } from "react";
@@ -225,8 +225,6 @@ export const usePrivacyDeclarationForm = ({
     resourceFidesKey: privacyDeclarationId,
   });
 
-  // console.log("customFieldValues",customFieldValues)
-
   const initialValues = useMemo(
     () =>
       transformPrivacyDeclarationToFormValues(
@@ -260,8 +258,13 @@ export const usePrivacyDeclarationForm = ({
       formikHelpers
     )) as unknown as PrivacyDeclarationWithId[];
     console.log("result from submitting: ", success);
+    // find the matching resource based on data use and name
     const customFieldResource = success.filter(
-      (pd) => pd.data_use === values.data_use && pd.name === values.name
+      (pd) =>
+        pd.data_use === values.data_use &&
+        // name can be undefined, so avoid comparing undefined == ""
+        // (which we want to be true) - they both mean the PD has no name
+        (pd.name ? pd.name === values.name : true)
     );
     if (customFieldResource.length > 0) {
       const cfRes = await upsertCustomFields({
