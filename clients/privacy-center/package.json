@@ -28,7 +28,7 @@
   "dependencies": {
     "@chakra-ui/react": "^1.8.9",
     "@emotion/react": "^11.10.6",
-    "@emotion/styled": "^11.10.6",
+    "@emotion/styled": "^11.10.8",
     "@fidesui/react": "^0.0.23",
     "@fontsource/inter": "^4.5.15",
     "@reduxjs/toolkit": "^1.9.3",
