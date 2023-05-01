@@ -9,7 +9,7 @@ import RequestSubmitted from "./RequestSubmitted";
 
 import { ModalViews, VerificationType } from "../types";
 
-export const usePrivactRequestModal = () => {
+export const usePrivacyRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [openAction, setOpenAction] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<ModalViews>(

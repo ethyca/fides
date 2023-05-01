@@ -11,11 +11,11 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 import { ConsentConfig } from "./lib/consent-config";
 import { getConsentContext } from "./lib/consent-context";
-import { getConsentCookie, makeDefaults } from "./lib/cookie";
+import { getOrMakeFidesCookie, makeConsentDefaults } from "./lib/cookie";
 
 const config: ConsentConfig = consentConfig;
 const context = getConsentContext();
-const defaults = makeDefaults({
+const defaults = makeConsentDefaults({
   config,
   context,
 });
@@ -23,10 +23,12 @@ const defaults = makeDefaults({
 /**
  * Immediately load the stored consent settings from the browser cookie.
  */
-const consent = getConsentCookie(defaults);
+const cookie = getOrMakeFidesCookie(defaults);
 
 const Fides = {
-  consent,
+  consent: cookie.consent,
+  fides_meta: cookie.fides_meta,
+  identity: cookie.identity,
 
   gtm,
   meta,

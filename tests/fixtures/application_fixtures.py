@@ -38,6 +38,11 @@ from fides.api.ops.models.policy import (
     Rule,
     RuleTarget,
 )
+from fides.api.ops.models.privacy_experience import (
+    ComponentType,
+    DeliveryMechanism,
+    PrivacyExperience,
+)
 from fides.api.ops.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
@@ -1440,6 +1445,7 @@ def privacy_notice(db: Session) -> Generator:
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["advertising", "third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
+            "displayed_in_privacy_center": True,
         },
     )
 
@@ -1458,6 +1464,7 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["provide"],
             "enforcement_level": EnforcementLevel.system_wide,
+            "displayed_in_privacy_center": False,
         },
     )
 
@@ -1520,6 +1527,8 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["provide.service.operations"],
             "enforcement_level": EnforcementLevel.system_wide,
+            "displayed_in_privacy_center": False,
+            "displayed_in_overlay": False,
         },
     )
 
@@ -1536,6 +1545,24 @@ def privacy_notice_eu_fr_provide_service_frontend_only(db: Session) -> Generator
             "origin": "privacy_notice_template_2",
             "regions": [PrivacyNoticeRegion.eu_fr],
             "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["provide.service"],
+            "enforcement_level": EnforcementLevel.frontend,
+            "displayed_in_overlay": True,
+        },
+    )
+
+    yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator:
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice us_co provide.service.operations",
+            "description": "a sample privacy notice configuration",
+            "regions": [PrivacyNoticeRegion.eu_cy],
+            "consent_mechanism": ConsentMechanism.opt_out,
             "data_uses": ["provide.service"],
             "enforcement_level": EnforcementLevel.frontend,
         },
@@ -1983,3 +2010,63 @@ def consent_records(
 
     for record in records:
         record.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_experience_privacy_center_link(db: Session) -> Generator:
+    privacy_experience = PrivacyExperience.create(
+        db=db,
+        data={
+            "component": ComponentType.privacy_center,
+            "delivery_mechanism": DeliveryMechanism.link,
+            "regions": [
+                PrivacyNoticeRegion.us_ca,
+                PrivacyNoticeRegion.us_co,
+            ],
+            "component_title": "Manage your consent preferences",
+            "component_description": "On this page you can opt in and out of these data uses cases",
+            "link_label": "Manage your privacy",
+        },
+    )
+
+    yield privacy_experience
+
+
+@pytest.fixture(scope="function")
+def privacy_experience_overlay_link(db: Session) -> Generator:
+    privacy_experience = PrivacyExperience.create(
+        db=db,
+        data={
+            "component": ComponentType.overlay,
+            "delivery_mechanism": DeliveryMechanism.link,
+            "regions": [PrivacyNoticeRegion.eu_fr],
+            "component_title": "Manage your consent preferences",
+            "component_description": "On this page you can opt in and out of these data uses cases",
+            "link_label": "Manage your privacy",
+        },
+    )
+
+    yield privacy_experience
+
+
+@pytest.fixture(scope="function")
+def privacy_experience_overlay_banner(db: Session) -> Generator:
+    privacy_experience = PrivacyExperience.create(
+        db=db,
+        data={
+            "component": ComponentType.overlay,
+            "delivery_mechanism": DeliveryMechanism.banner,
+            "regions": [
+                PrivacyNoticeRegion.us_ca,
+            ],
+            "component_title": "Manage your consent",
+            "component_description": "On this page you can opt in and out of these data uses cases",
+            "banner_title": "Manage your consent",
+            "banner_description": "We use cookies to recognize visitors and remember their preferences",
+            "confirmation_button_label": "Accept all",
+            "reject_button_label": "Reject all",
+            "disabled": True,
+        },
+    )
+
+    yield privacy_experience
