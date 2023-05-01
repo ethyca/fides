@@ -180,7 +180,7 @@ def ensure_unique_ids(
     if len(request_ids) != len(set(request_ids)):
         raise HTTPException(
             HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Duplicate privacy experience ids submitted in request.",
+            detail="Duplicate privacy experience ids submitted in request.",
         )
 
 

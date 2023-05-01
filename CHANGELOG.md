@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.12.0...main)
 
+### Added
+
+- Privacy Experience Bulk Create, Bulk Update, and Detail Endpoints [#3185](https://github.com/ethyca/fides/pull/3185)
 
 
 ## [2.12.0](https://github.com/ethyca/fides/compare/2.11.0...2.12.0)

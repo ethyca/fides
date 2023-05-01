@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
-from pydantic import Extra, conlist
+from pydantic import Extra, conlist, root_validator, validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.ops.models.privacy_experience import ComponentType, DeliveryMechanism
@@ -36,6 +36,16 @@ class PrivacyExperience(BaseSchema):
         use_enum_values = True
         orm_mode = True
         extra = Extra.forbid
+
+    @validator("regions")
+    @classmethod
+    def validate_regions(
+        cls, regions: List[PrivacyNoticeRegion]
+    ) -> List[PrivacyNoticeRegion]:
+        """Assert regions aren't duplicated.  Without this, duplications get flagged as misleading duplicate data uses"""
+        if len(regions) != len(set(regions)):
+            raise ValueError("Duplicate regions found.")
+        return regions
 
 
 class PrivacyExperienceWithId(PrivacyExperience):

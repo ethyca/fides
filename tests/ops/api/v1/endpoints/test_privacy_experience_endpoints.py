@@ -506,6 +506,24 @@ class TestCreatePrivacyExperiences:
         response = api_client.post(url, json=request_data, headers=auth_header)
         assert response.status_code == expected_status
 
+    def test_post_privacy_experience_duplicate_regions(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        request_data,
+        url,
+    ):
+        """
+        Assert if regions are accidentally duplicated on a notice that this is flagged
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_CREATE])
+        last_region = request_data[0]["regions"][-1]
+        request_data[0]["regions"].append(last_region)
+
+        resp = api_client.post(url, headers=auth_header, json=request_data)
+        assert resp.status_code == 422
+        assert resp.json()["detail"][0]["msg"] == "Duplicate regions found."
+
     @pytest.mark.usefixtures("privacy_notice")
     def test_create_privacy_experiences(
         self,
