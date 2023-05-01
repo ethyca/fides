@@ -9,7 +9,7 @@
 			"policy_key": "default_access_policy",
 			"icon_path": "/download.svg",
 			"title": "Access your data",
-			"description": "We will text you a report of the data related to your account.",
+			"description": "We will send you a copy of all of your personal data within 45 days.",
 			"identity_inputs": {
 				"name": "required",
 				"phone": "required"
