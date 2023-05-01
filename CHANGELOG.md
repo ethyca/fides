@@ -54,6 +54,7 @@ The types of changes are:
 - Fix a typo in the Admin UI [#3166](https://github.com/ethyca/fides/pull/3166)
 - The `--local` flag is now respected for the `scan dataset db` command [#3096](https://github.com/ethyca/fides/pull/3096)
 - Fixing issue where connectors with external dataset references would fail to save [#3142](https://github.com/ethyca/fides/pull/3142)
+- Ensure privacy declaration IDs are stable across updates through system API [#3188](https://github.com/ethyca/fides/pull/3188)
 
 ### Developer Experience
 
