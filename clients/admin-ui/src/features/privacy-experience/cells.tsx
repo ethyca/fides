@@ -1,20 +1,24 @@
 import React from "react";
 import { CellProps } from "react-table";
 
-import { EnableCell } from "~/features/common/table/";
+import { EnableCell, MapCell } from "~/features/common/table/";
 import { PrivacyExperienceResponse } from "~/types/api";
+
+import { COMPONENT_MAP } from "./constants";
+import { usePatchPrivacyExperienceMutation } from "./privacy-experience.slice";
+
+export const ComponentCell = (
+  cellProps: CellProps<PrivacyExperienceResponse, string>
+) => <MapCell map={COMPONENT_MAP} {...cellProps} />;
 
 export const EnablePrivacyExperienceCell = (
   cellProps: CellProps<PrivacyExperienceResponse, boolean>
 ) => {
-  // TODO: replace with real API call once it is ready
-  const mockPatch = (payload: any) => {
-    console.log("patch", payload);
-  };
+  const [patchExperienceMutationTrigger] = usePatchPrivacyExperienceMutation();
 
   const { row } = cellProps;
   const onToggle = async (toggle: boolean) => {
-    await mockPatch([
+    await patchExperienceMutationTrigger([
       {
         id: row.original.id,
         disabled: !toggle,

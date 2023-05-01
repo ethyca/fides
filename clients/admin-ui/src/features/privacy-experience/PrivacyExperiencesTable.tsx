@@ -9,7 +9,10 @@ import React, { useMemo } from "react";
 import { Column } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
-import { EnablePrivacyExperienceCell } from "~/features/privacy-experience/cells";
+import {
+  ComponentCell,
+  EnablePrivacyExperienceCell,
+} from "~/features/privacy-experience/cells";
 import {
   selectAllPrivacyExperiences,
   selectPage,
@@ -27,7 +30,6 @@ const PrivacyExperiencesTable = () => {
     page,
     size: pageSize,
   });
-
   const privacyExperiences = useAppSelector(selectAllPrivacyExperiences);
   // Permissions
   const userCanUpdate = useHasPermission([
@@ -41,12 +43,12 @@ const PrivacyExperiencesTable = () => {
 
   const columns: Column<PrivacyExperienceResponse>[] = useMemo(
     () => [
+      { Header: "Location", accessor: "regions", Cell: MultiTagCell },
       {
         Header: "Component",
         accessor: "component",
-        // Cell: MechanismCell,
+        Cell: ComponentCell,
       },
-      { Header: "Location", accessor: "regions", Cell: MultiTagCell },
       { Header: "Last update", accessor: "updated_at", Cell: DateCell },
       {
         Header: "Enable",
