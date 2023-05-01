@@ -6,13 +6,14 @@ import {
   AccordionPanel,
   Stack,
 } from "@fidesui/react";
-import { Form, Formik } from "formik";
+import { Form, Formik, FormikHelpers } from "formik";
 
 import {
   DataProps,
   PrivacyDeclarationFormComponents,
   usePrivacyDeclarationForm,
   ValidationSchema,
+  FormValues,
 } from "./PrivacyDeclarationForm";
 import { PrivacyDeclarationWithId } from "./types";
 
@@ -34,13 +35,13 @@ const PrivacyDeclarationAccordionItem = ({
   AccordionProps,
   "privacyDeclarations"
 >) => {
-  const handleEdit = (newValues: PrivacyDeclarationWithId) =>
-    onEdit(privacyDeclaration, newValues);
+  const handleEdit = (values: FormValues) => onEdit(privacyDeclaration, values);
 
   const { initialValues, renderHeader, handleSubmit } =
     usePrivacyDeclarationForm({
       initialValues: privacyDeclaration,
       onSubmit: handleEdit,
+      privacyDeclarationId: privacyDeclaration.id,
       ...dataProps,
     });
 
@@ -71,6 +72,7 @@ const PrivacyDeclarationAccordionItem = ({
               <AccordionPanel backgroundColor="gray.50" pt={0}>
                 <Stack spacing={4}>
                   <PrivacyDeclarationFormComponents
+                    privacyDeclarationId={privacyDeclaration.id}
                     onDelete={onDelete}
                     {...dataProps}
                   />

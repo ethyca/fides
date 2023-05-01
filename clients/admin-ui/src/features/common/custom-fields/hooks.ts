@@ -47,6 +47,8 @@ export const useCustomFields = ({
     skip: queryFidesKey !== "" && !(isEnabled && queryFidesKey),
   });
 
+  // console.log("response from getting data", data, resourceFidesKey)
+
   // The `fixedCacheKey` options will ensure that components referencing the same resource will
   // share mutation info. That won't be too useful, though, because `upsertCustomField` can issue
   // multiple requests: one for each field associated with the resource.
@@ -130,29 +132,49 @@ export const useCustomFields = ({
    */
   const upsertCustomFields = useCallback(
     async (formValues: CustomFieldsFormValues) => {
+      console.log(1, "isEnabled", isEnabled);
       if (!isEnabled) {
         return;
       }
 
       // When creating an resource, the fides key may have initially been blank. But by the time the
       // form is submitted it must not be blank (not undefined, not an empty string).
-      const fidesKey = formValues.fides_key || resourceFidesKey;
+      console.log(
+        "formValue Fides key: ",
+        formValues.fides_key,
+        " resourceFidesKey: ",
+        resourceFidesKey
+      );
+      console.log(
+        "fides_key" in formValues,
+        formValues.fides_key !== "",
+        resourceFidesKey
+      );
+      const fidesKey =
+        "fides_key" in formValues && formValues.fides_key !== ""
+          ? formValues.fides_key
+          : resourceFidesKey;
+      console.log("fidesKey", fidesKey);
       if (!fidesKey) {
         return;
       }
+      console.log(2);
 
       const { customFieldValues: customFieldValuesFromForm } = formValues;
 
       // This will be undefined if the form never rendered a `CustomFieldList` that would assign
       // form values.
+
       if (!customFieldValuesFromForm) {
         return;
       }
 
+      console.log("about to save custom fields");
+
       try {
         // This would be a lot simpler (and more efficient) if the API had an endpoint for updating
         // all the metadata associated with a field, including deleting options that weren't passed.
-        await Promise.allSettled(
+        const res = await Promise.allSettled(
           sortedCustomFieldDefinitionIds.map((definitionId) => {
             const customField = definitionIdToCustomField.get(definitionId);
             const value = customFieldValuesFromForm[definitionId];
@@ -181,9 +203,11 @@ export const useCustomFields = ({
           })
         );
 
+        console.log("res", res);
         successAlert(
           `Custom field(s) successfully saved and added to this ${resourceType} form.`
         );
+        return res;
       } catch (e) {
         errorAlert(
           `One or more custom fields have failed to save, please try again.`

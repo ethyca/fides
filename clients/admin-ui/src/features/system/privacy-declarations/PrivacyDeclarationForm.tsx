@@ -13,6 +13,12 @@ import {
   Text,
   useDisclosure,
 } from "@fidesui/react";
+import {
+  CustomFieldsList,
+  CustomFieldValues,
+  useCustomFields,
+  CustomFieldsFormValues,
+} from "common/custom-fields";
 import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
@@ -25,6 +31,7 @@ import {
   DataSubject,
   DataUse,
   PrivacyDeclaration,
+  ResourceTypes,
 } from "~/types/api";
 
 import { PrivacyDeclarationWithId } from "./types";
@@ -39,21 +46,27 @@ export const ValidationSchema = Yup.object().shape({
     .label("Data subjects"),
 });
 
-const defaultInitialValues: PrivacyDeclaration = {
+// type FormValues = typeof defaultInitialValues;
+export type FormValues = PrivacyDeclarationWithId &
+  CustomFieldsFormValues & {
+    customFieldValues: CustomFieldValues;
+  };
+const defaultInitialValues: FormValues = {
   data_categories: [],
   data_subjects: [],
   data_use: "",
   dataset_references: [],
+  customFieldValues: {},
+  id: "",
+  fides_key: "",
 };
 
-type FormValues = typeof defaultInitialValues;
-
 const transformPrivacyDeclarationToHaveId = (
-  privacyDeclaration: PrivacyDeclaration
+  privacyDeclaration: PrivacyDeclarationWithId
 ) => ({
   ...privacyDeclaration,
-  id: privacyDeclaration.name
-    ? `${privacyDeclaration.data_use} - ${privacyDeclaration.name}`
+  id: privacyDeclaration.id
+    ? privacyDeclaration.id
     : privacyDeclaration.data_use,
 });
 
@@ -75,7 +88,8 @@ export const PrivacyDeclarationFormComponents = ({
   allDataSubjects,
   allDatasets,
   onDelete,
-}: DataProps & Pick<Props, "onDelete">) => {
+  privacyDeclarationId,
+}: DataProps & Pick<Props, "onDelete"> & { privacyDeclarationId?: string }) => {
   const { dirty, isSubmitting, isValid, initialValues } =
     useFormikContext<FormValues>();
   const deleteModal = useDisclosure();
@@ -107,6 +121,7 @@ export const PrivacyDeclarationFormComponents = ({
         tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
         variant="stacked"
         singleValueBlock
+        isDisabled={!!privacyDeclarationId}
       />
       <CustomTextInput
         id="name"
@@ -114,6 +129,7 @@ export const PrivacyDeclarationFormComponents = ({
         name="name"
         variant="stacked"
         tooltip="The personal data processing activity or activities associated with this data use."
+        disabled={!!privacyDeclarationId}
       />
       <CustomSelect
         name="data_categories"
@@ -147,6 +163,10 @@ export const PrivacyDeclarationFormComponents = ({
           variant="stacked"
         />
       ) : null}
+      <CustomFieldsList
+        resourceType={ResourceTypes.PRIVACY_DECLARATION}
+        resourceFidesKey={privacyDeclarationId}
+      />
       <ButtonGroup size="sm" display="flex" justifyContent="space-between">
         <Button
           variant="outline"
@@ -178,6 +198,18 @@ export const PrivacyDeclarationFormComponents = ({
   );
 };
 
+export const transformPrivacyDeclarationToFormValues = (
+  privacyDeclaration?: PrivacyDeclarationWithId,
+  customFieldValues: CustomFieldValues
+): FormValues =>
+  privacyDeclaration
+    ? {
+        ...privacyDeclaration,
+        customFieldValues,
+        fides_key: "",
+      }
+    : defaultInitialValues;
+
 /**
  * Hook to supply all data needed for the privacy declaration form
  * Purposefully excludes redux queries so that this can be used across apps
@@ -186,8 +218,24 @@ export const usePrivacyDeclarationForm = ({
   onSubmit,
   initialValues: passedInInitialValues,
   allDataUses,
+  privacyDeclarationId,
 }: Omit<Props, "onDelete"> & Pick<DataProps, "allDataUses">) => {
-  const initialValues = passedInInitialValues ?? defaultInitialValues;
+  const { customFieldValues, upsertCustomFields } = useCustomFields({
+    resourceType: ResourceTypes.PRIVACY_DECLARATION,
+    resourceFidesKey: privacyDeclarationId,
+  });
+
+  // console.log("customFieldValues",customFieldValues)
+
+  const initialValues = useMemo(
+    () =>
+      transformPrivacyDeclarationToFormValues(
+        passedInInitialValues,
+        customFieldValues
+      ),
+    [passedInInitialValues, customFieldValues]
+  );
+
   const [showSaved, setShowSaved] = useState(false);
 
   const title = useMemo(() => {
@@ -206,10 +254,22 @@ export const usePrivacyDeclarationForm = ({
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    const success = await onSubmit(
-      transformPrivacyDeclarationToHaveId(values),
+    console.log("submitting", values);
+    const success = (await onSubmit(
+      values,
       formikHelpers
+    )) as unknown as PrivacyDeclarationWithId[];
+    console.log("result from submitting: ", success);
+    const customFieldResource = success.filter(
+      (pd) => pd.data_use === values.data_use && pd.name === values.name
     );
+    if (customFieldResource.length > 0) {
+      const cfRes = await upsertCustomFields({
+        ...values,
+        fides_key: customFieldResource[0].id,
+      });
+      console.log("result from upserting custom fields: ", cfRes);
+    }
     if (success) {
       // Reset state such that isDirty will be checked again before next save
       formikHelpers.resetForm({ values });
@@ -246,11 +306,12 @@ export const usePrivacyDeclarationForm = ({
 
 interface Props {
   onSubmit: (
-    values: PrivacyDeclarationWithId,
-    formikHelpers: FormikHelpers<PrivacyDeclaration>
+    values: FormValues,
+    formikHelpers: FormikHelpers<FormValues>
   ) => Promise<boolean>;
   onDelete: (declaration: PrivacyDeclarationWithId) => Promise<boolean>;
   initialValues?: PrivacyDeclarationWithId;
+  privacyDeclarationId?: string;
 }
 
 export const PrivacyDeclarationForm = ({

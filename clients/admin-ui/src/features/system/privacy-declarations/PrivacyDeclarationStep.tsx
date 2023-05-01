@@ -11,6 +11,7 @@ import { PrivacyDeclaration, System } from "~/types/api";
 
 import { usePrivacyDeclarationData } from "./hooks";
 import PrivacyDeclarationManager from "./PrivacyDeclarationManager";
+import { PrivacyDeclarationWithId } from "~/features/system/privacy-declarations/types";
 
 interface Props {
   system: System;
@@ -25,7 +26,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
   const handleSave = async (
     updatedDeclarations: PrivacyDeclaration[],
     isDelete?: boolean
-  ) => {
+  ): Promise<PrivacyDeclarationWithId[]> => {
     const systemBodyWithDeclaration = {
       ...system,
       privacy_declarations: updatedDeclarations,
@@ -43,19 +44,20 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         );
 
         toast(errorToastParams(errorMsg));
-        return false;
+        return [];
       }
       toast.closeAll();
       toast(
         successToastParams(isDelete ? "Data use deleted" : "Data use saved")
       );
       dispatch(setActiveSystem(result.data));
-      return true;
+      return result.data.privacy_declarations as PrivacyDeclarationWithId[];
     };
 
     const updateSystemResult = await updateSystemMutationTrigger(
       systemBodyWithDeclaration
     );
+    console.log("updatedSystemResult", updateSystemResult);
 
     return handleResult(updateSystemResult);
   };

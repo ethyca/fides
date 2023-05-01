@@ -1,7 +1,8 @@
 import { Box, Button, Stack, Tooltip, useToast } from "@fidesui/react";
+import { useCustomFields } from "common/custom-fields";
 import { useMemo, useState } from "react";
 
-import { PrivacyDeclaration, System } from "~/types/api";
+import { PrivacyDeclaration, ResourceTypes, System } from "~/types/api";
 
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 import {
@@ -52,7 +53,12 @@ const PrivacyDeclarationManager = ({
     if (!newDeclaration) {
       return declarations;
     }
-    return declarations.filter((pd) => pd.id !== newDeclaration.id);
+
+    return declarations.filter(
+      (pd) =>
+        pd.data_use !== newDeclaration.data_use &&
+        pd.name !== newDeclaration.name
+    );
   }, [newDeclaration, system]);
 
   const checkAlreadyExists = (values: PrivacyDeclaration) => {
@@ -103,9 +109,16 @@ const PrivacyDeclarationManager = ({
     }
 
     toast.closeAll();
-    setNewDeclaration(values);
     const updatedDeclarations = [...accordionDeclarations, values];
-    return handleSave(updatedDeclarations);
+    const res = (await handleSave(
+      updatedDeclarations
+    )) as unknown as PrivacyDeclarationWithId[];
+    const savedDeclaration = res.filter(
+      (pd) => pd.name === values.name && pd.data_use === values.data_use
+    )[0];
+    console.log(res, savedDeclaration);
+    setNewDeclaration(savedDeclaration);
+    return res;
   };
 
   const handleShowNewForm = () => {
