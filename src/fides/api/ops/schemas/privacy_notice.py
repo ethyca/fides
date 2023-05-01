@@ -59,7 +59,7 @@ class PrivacyNotice(BaseSchema):
         """
         Add some validation on where certain consent mechanisms must be displayed
         """
-        consent_mechanism: str = values.get("consent_mechanism")
+        consent_mechanism: Optional[str] = values.get("consent_mechanism")
         displayed_in_overlay: Optional[bool] = values.get("displayed_in_overlay")
         displayed_in_privacy_center: Optional[bool] = values.get(
             "displayed_in_privacy_center"

@@ -18,6 +18,9 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.12.0...main)
 
 
+### Changed
+
+- Restrict where privacy notices of certain consent mechanisms must be displayed [#3195](https://github.com/ethyca/fides/pull/3195)
 
 ## [2.12.0](https://github.com/ethyca/fides/compare/2.11.0...2.12.0)
 
