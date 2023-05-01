@@ -54,11 +54,7 @@ const PrivacyDeclarationManager = ({
       return declarations;
     }
 
-    return declarations.filter(
-      (pd) =>
-        pd.data_use !== newDeclaration.data_use &&
-        pd.name !== newDeclaration.name
-    );
+    return declarations.filter((pd) => pd.id !== newDeclaration.id);
   }, [newDeclaration, system]);
 
   const checkAlreadyExists = (values: PrivacyDeclaration) => {
@@ -114,9 +110,10 @@ const PrivacyDeclarationManager = ({
       updatedDeclarations
     )) as unknown as PrivacyDeclarationWithId[];
     const savedDeclaration = res.filter(
-      (pd) => pd.name === values.name && pd.data_use === values.data_use
+      (pd) =>
+        (pd.name ? pd.name === values.name : true) &&
+        pd.data_use === values.data_use
     )[0];
-    console.log(res, savedDeclaration);
     setNewDeclaration(savedDeclaration);
     return res;
   };
