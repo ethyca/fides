@@ -62,6 +62,9 @@ from fides.api.ops.schemas.privacy_request import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.consent_util import (
+    get_or_create_fides_user_device_id_provided_identity,
+)
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
@@ -167,10 +170,10 @@ def create_consent_request(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
 
-    if not data.email and not data.phone_number:
+    if not data.email and not data.phone_number and not data.fides_user_device_id:
         raise HTTPException(
             HTTP_400_BAD_REQUEST,
-            detail="An email address or phone number identity is required",
+            detail="An email address, phone number, or fides_user_device_id is required",
         )
 
     identity = _get_or_create_provided_identity(
@@ -468,7 +471,6 @@ def _get_or_create_provided_identity(
 ) -> ProvidedIdentity:
     """Based on target identity type, retrieves or creates associated ProvidedIdentity"""
     target_identity_type: str = infer_target_identity_type(db, identity_data)
-
     if target_identity_type == ProvidedIdentityType.email.value and identity_data.email:
         identity = ProvidedIdentity.filter(
             db=db,
@@ -518,6 +520,11 @@ def _get_or_create_provided_identity(
                     "encrypted_value": {"value": identity_data.phone_number},
                 },
             )
+    elif target_identity_type == ProvidedIdentityType.fides_user_device_id.value:
+        identity = get_or_create_fides_user_device_id_provided_identity(
+            db, identity_data
+        )
+
     else:
         raise HTTPException(
             HTTP_422_UNPROCESSABLE_ENTITY,
@@ -550,6 +557,10 @@ def infer_target_identity_type(
         target_identity_type = ProvidedIdentityType.email.value
     elif identity_data.phone_number:
         target_identity_type = ProvidedIdentityType.phone_number.value
+    elif identity_data.fides_user_device_id:
+        # If no other identity is provided, use the Fides User Device ID
+        target_identity_type = ProvidedIdentityType.fides_user_device_id.value
+
     return target_identity_type
 
 
