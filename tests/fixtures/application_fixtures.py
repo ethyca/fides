@@ -1446,6 +1446,8 @@ def privacy_notice(db: Session) -> Generator:
             "data_uses": ["advertising", "third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
             "displayed_in_privacy_center": True,
+            "displayed_in_overlay": True,
+            "displayed_in_api": False,
         },
     )
 
@@ -1464,7 +1466,9 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["provide"],
             "enforcement_level": EnforcementLevel.system_wide,
+            "displayed_in_overlay": True,
             "displayed_in_privacy_center": False,
+            "displayed_in_api": False,
         },
     )
 
@@ -1509,6 +1513,9 @@ def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
+            "displayed_in_overlay": True,
+            "displayed_in_privacy_center": True,
+            "displayed_in_api": False,
         },
     )
 
@@ -1528,7 +1535,8 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
             "data_uses": ["provide.service.operations"],
             "enforcement_level": EnforcementLevel.system_wide,
             "displayed_in_privacy_center": False,
-            "displayed_in_overlay": False,
+            "displayed_in_overlay": True,
+            "displayed_in_api": False,
         },
     )
 
@@ -1548,6 +1556,8 @@ def privacy_notice_eu_fr_provide_service_frontend_only(db: Session) -> Generator
             "data_uses": ["provide.service"],
             "enforcement_level": EnforcementLevel.frontend,
             "displayed_in_overlay": True,
+            "displayed_in_privacy_center": False,
+            "displayed_in_api": False,
         },
     )
 
@@ -1565,6 +1575,9 @@ def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator
             "consent_mechanism": ConsentMechanism.opt_out,
             "data_uses": ["provide.service"],
             "enforcement_level": EnforcementLevel.frontend,
+            "displayed_in_overlay": False,
+            "displayed_in_privacy_center": True,
+            "displayed_in_api": False,
         },
     )
 
