@@ -43,6 +43,7 @@ The types of changes are:
 - Moved Privacy Declarations associated with Systems to their own DB table [#3098](https://github.com/ethyca/fides/pull/3098)
 - More tests on data use validation for privacy notices within the same region [#3156](https://github.com/ethyca/fides/pull/3156)
 - Improvements to export code for bugfixes and privacy declaration custom field support [#3184](https://github.com/ethyca/fides/pull/3184)
+- Enabled privacy notice feature flag [#3192](https://github.com/ethyca/fides/pull/3192)
 
 ### Removed
 
