@@ -165,12 +165,7 @@ export const datamapSlice = createSlice({
     setColumns(draftState, { payload }: PayloadAction<DatamapColumn[]>) {
       draftState.columns = payload;
     },
-    // Load columns for the first time. If columns are already loaded, no-op.
     loadColumns(draftState, { payload }: PayloadAction<DatamapColumn[]>) {
-      if (draftState.columns) {
-        return;
-      }
-
       draftState.columns = payload;
     },
     setView(draftState, { payload }: PayloadAction<View>) {
