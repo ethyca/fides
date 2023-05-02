@@ -15,10 +15,10 @@ saas_config:
     protocol: https
     host: <domain>
     authentication:
-        strategy: basic
-        configuration:
-          username: <api_key>
-          password: <secret_key>
+      strategy: basic
+      configuration:
+        username: <api_key>
+        password: <secret_key>
 
   test_request:
     method: GET
@@ -28,32 +28,6 @@ saas_config:
         value: 12345@gmail.com
 
   endpoints:
-    - name: user_activity
-      requests:
-        read:
-          method: GET
-          path: /api/2/useractivity
-          query_params:
-            - name: user
-              value: <user_matches_amplitude_id>
-          param_values:
-            - name: user_matches_amplitude_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: user.matches.amplitude_id
-                  direction: from
-        delete:
-          method: POST
-          path: /api/2/deletions/users
-          body: |
-            {
-             "user_ids": [
-               "<email>"
-             ]
-            }
-          param_values:
-            - name: email
-              identity: email
     - name: user
       requests:
         read:
@@ -65,3 +39,53 @@ saas_config:
           param_values:
             - name: email
               identity: email
+          data_path: matches
+        delete:
+          method: POST
+          path: /api/2/deletions/users
+          body: |
+            {
+              "user_ids": ["<email>"]
+            }
+          param_values:
+            - name: email
+              identity: email
+    - name: user_details
+      requests:
+        read:
+          method: GET
+          path: /api/2/useractivity
+          query_params:
+            - name: user
+              value: <amplitude_id>
+            - name: offset
+              value: 0
+          param_values:
+            - name: amplitude_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.amplitude_id
+                  direction: from
+          data_path: userData
+    - name: events
+      requests:
+        read:
+          method: GET
+          path: /api/2/useractivity
+          query_params:
+            - name: user
+              value: <amplitude_id>
+            - name: offset
+              value: 0
+          param_values:
+            - name: amplitude_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.amplitude_id
+                  direction: from
+          data_path: events
+          pagination:
+            strategy: offset
+            configuration:
+              incremental_param: offset
+              increment_by: 1000

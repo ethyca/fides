@@ -1,9 +1,11 @@
-from time import sleep
-from typing import Any, Dict, Generator
+import json
+from typing import Any, Dict, Generator, cast
 
 import pydash
 import pytest
 import requests
+from multidimensional_urlencode import urlencode as multidimensional_urlencode
+from requests import Response
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
@@ -18,6 +20,7 @@ from fides.api.ops.util.saas_util import (
     load_dataset_with_replacement,
 )
 from fides.lib.cryptography import cryptographic_util
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("amplitude")
@@ -27,11 +30,11 @@ secrets = get_secrets("amplitude")
 def amplitude_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "amplitude.domain") or secrets["domain"],
-        "secret_key": pydash.get(saas_config, "amplitude.secret_key") or secrets["secret_key"],
+        "identity_domain": pydash.get(saas_config, "amplitude.identity_domain")
+        or secrets["identity_domain"],
         "api_key": pydash.get(saas_config, "amplitude.api_key") or secrets["api_key"],
-        "identity_domain": pydash.get(saas_config, "amplitude.identity_domain") or secrets["identity_domain"],
-
-
+        "secret_key": pydash.get(saas_config, "amplitude.secret_key")
+        or secrets["secret_key"],
     }
 
 
@@ -109,24 +112,63 @@ def amplitude_dataset_config(
     yield dataset
     dataset.delete(db=db)
     ctl_dataset.delete(db=db)
-    
+
+
+class AmplitudeTestClient:
+    def __init__(self, amplitude_connection_config: ConnectionConfig):
+        amplitude_secrets = cast(Dict, amplitude_connection_config.secrets)
+
+        self.headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        self.auth = (
+            amplitude_secrets["api_key"],
+            amplitude_secrets["secret_key"],
+        )
+        self.api_key = amplitude_secrets["api_key"]
+        self.base_url = f"https://{amplitude_secrets['domain']}"
+        self.identity_url = f"https://{amplitude_secrets['identity_domain']}"
+
+    def create_user(self, email_address: str) -> Response:
+        return requests.post(
+            f"{self.identity_url}/identify",
+            headers=self.headers,
+            data=multidimensional_urlencode(
+                {
+                    "api_key": self.api_key,
+                    "identification": json.dumps([{"user_id": email_address}]),
+                }
+            ),
+        )
+
+    def get_user(self, email: str) -> Any:
+        response = requests.get(
+            url=f"{self.base_url}/api/2/usersearch",
+            auth=self.auth,
+            params={"user": email},
+            headers=self.headers,
+        )
+        if response.json().get("matches"):
+            return response
+
+
+@pytest.fixture(scope="function")
+def amplitude_test_client(
+    amplitude_connection_config: ConnectionConfig,
+) -> Generator:
+    test_client = AmplitudeTestClient(
+        amplitude_connection_config=amplitude_connection_config
+    )
+    yield test_client
+
+
 @pytest.fixture(scope="function")
 def amplitude_create_erasure_data(
-    amplitude_connection_config: ConnectionConfig, amplitude_erasure_identity_email: str
+    amplitude_test_client: AmplitudeTestClient,
+    amplitude_erasure_identity_email: str,
 ) -> None:
+    amplitude_test_client.create_user(amplitude_erasure_identity_email)
 
-    amplitude_secrets = amplitude_connection_config.secrets
-    api_key = amplitude_secrets['api_key']
-    base_url = f"https://{amplitude_secrets['identity_domain']}"
-
-
-    # user
-    url_val = '/identify?api_key='+f"{api_key}"+'&identification={"user_id":"'+amplitude_erasure_identity_email+'"}'
-    users_response = requests.get(
-        url=f"{base_url}"+url_val
-        )
-    sleep(30)
-    assert users_response.ok
-    
-    
-    
+    poll_for_existence(
+        amplitude_test_client.get_user, (amplitude_erasure_identity_email,)
+    )

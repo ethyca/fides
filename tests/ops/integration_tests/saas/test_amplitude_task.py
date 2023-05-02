@@ -18,7 +18,8 @@ CONFIG = get_config()
 @pytest.mark.integration_amplitude
 def test_amplitude_connection_test(amplitude_connection_config) -> None:
     get_connector(amplitude_connection_config).test_connection()
-    
+
+
 @pytest.mark.integration_saas
 @pytest.mark.integration_amplitude
 @pytest.mark.asyncio
@@ -54,26 +55,123 @@ async def test_amplitude_access_request_task(
         v[f"{dataset_name}:user"],
         min_size=1,
         keys=[
-            "type",
-            "matches"
+            "user_id",
+            "amplitude_id",
+            "last_device_id",
+            "platform",
+            "country",
+            "last_seen",
         ],
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:user_activity"],
+        v[f"{dataset_name}:user_details"],
         min_size=1,
         keys=[
-            "events",
-            "userData",
-            "metadata"
+            "revenue",
+            "purchases",
+            "user_id",
+            "last_device_id",
+            "canonical_amplitude_id",
+            "merged_amplitude_ids",
+            "merge_times",
+            "version",
+            "country",
+            "language",
+            "library",
+            "ip_address",
+            "platform",
+            "os",
+            "device",
+            "device_type",
+            "carrier",
+            "start_version",
+            "paying",
+            "city",
+            "region",
+            "dma",
+            "properties",
+            "aliasing_user_ids",
+            "aliased_user_id",
+            "aliasing_profiles",
+            "num_events",
+            "num_sessions",
+            "usage_time",
+            "device_ids",
+            "first_used",
+            "last_used",
+            "last_location",
         ],
     )
 
-    
-    # verify we only returned data for our identity email
-    assert v[f"{dataset_name}:user"][0]["matches"][0]['user_id'] == amplitude_identity_email
+    assert_rows_match(
+        v[f"{dataset_name}:events"],
+        min_size=1,
+        keys=[
+            "app",
+            "device_id",
+            "user_id",
+            "client_event_time",
+            "event_id",
+            "session_id",
+            "event_type",
+            "amplitude_event_type",
+            "version_name",
+            "platform",
+            "os_name",
+            "os_version",
+            "data_type",
+            "device_brand",
+            "device_manufacturer",
+            "device_model",
+            "device_family",
+            "device_type",
+            "device_carrier",
+            "location_lat",
+            "location_lng",
+            "ip_address",
+            "country",
+            "language",
+            "library",
+            "city",
+            "region",
+            "dma",
+            "event_properties",
+            "user_properties",
+            "global_user_properties",
+            "group_properties",
+            "event_time",
+            "client_upload_time",
+            "server_upload_time",
+            "server_received_time",
+            "amplitude_id",
+            "idfa",
+            "adid",
+            "data",
+            "paying",
+            "start_version",
+            "user_creation_time",
+            "uuid",
+            "groups",
+            "sample_rate",
+            "$insert_id",
+            "$insert_key",
+            "is_attribution_event",
+            "amplitude_attribution_ids",
+            "plan",
+            "partner_id",
+            "source_id",
+            "$schema",
+            "raw_event_type",
+            "os",
+        ],
+    )
 
-    assert v[f"{dataset_name}:user_activity"][0]["userData"]['user_id'] == amplitude_identity_email
+    # verify we only returned data for our identity email
+    assert v[f"{dataset_name}:user"][0]["user_id"] == amplitude_identity_email
+
+    assert v[f"{dataset_name}:user_details"][0]["user_id"] == amplitude_identity_email
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_amplitude
@@ -115,18 +213,48 @@ async def test_amplitude_erasure_request_task(
         v[f"{dataset_name}:user"],
         min_size=1,
         keys=[
-            "type",
-            "matches"
+            "user_id",
+            "amplitude_id",
+            "last_device_id",
+            "last_seen",
         ],
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:user_activity"],
+        v[f"{dataset_name}:user_details"],
         min_size=1,
         keys=[
-            "events",
-            "userData",
-            "metadata"
+            "revenue",
+            "purchases",
+            "user_id",
+            "last_device_id",
+            "canonical_amplitude_id",
+            "merged_amplitude_ids",
+            "merge_times",
+            "version",
+            "country",
+            "language",
+            "library",
+            "ip_address",
+            "platform",
+            "os",
+            "device",
+            "device_type",
+            "carrier",
+            "start_version",
+            "paying",
+            "city",
+            "region",
+            "dma",
+            "properties",
+            "aliasing_user_ids",
+            "aliased_user_id",
+            "aliasing_profiles",
+            "num_events",
+            "num_sessions",
+            "usage_time",
+            "device_ids",
+            "last_location",
         ],
     )
 
@@ -141,9 +269,9 @@ async def test_amplitude_erasure_request_task(
     )
 
     assert x == {
-        f"{dataset_name}:user": 0,
-        f"{dataset_name}:user_activity": 1
+        f"{dataset_name}:user": 1,
+        f"{dataset_name}:user_details": 0,
+        f"{dataset_name}:events": 0,
     }
 
-    
     CONFIG.execution.masking_strict = masking_strict
