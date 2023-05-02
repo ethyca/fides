@@ -14,7 +14,6 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 import {
-  CustomFieldsFormValues,
   CustomFieldsList,
   CustomFieldValues,
   useCustomFields,
@@ -47,10 +46,10 @@ export const ValidationSchema = Yup.object().shape({
 });
 
 // type FormValues = typeof defaultInitialValues;
-export type FormValues = PrivacyDeclarationWithId &
-  CustomFieldsFormValues & {
-    customFieldValues: CustomFieldValues;
-  };
+export type FormValues = PrivacyDeclarationWithId & {
+  customFieldValues: CustomFieldValues;
+};
+
 const defaultInitialValues: FormValues = {
   data_categories: [],
   data_subjects: [],
@@ -58,7 +57,6 @@ const defaultInitialValues: FormValues = {
   dataset_references: [],
   customFieldValues: {},
   id: "",
-  fides_key: "",
 };
 
 const transformPrivacyDeclarationToHaveId = (
@@ -214,7 +212,6 @@ export const transformPrivacyDeclarationToFormValues = (
     ? {
         ...privacyDeclaration,
         customFieldValues: customFieldValues || {},
-        fides_key: "",
       }
     : defaultInitialValues;
 
@@ -248,6 +245,7 @@ export const usePrivacyDeclarationForm = ({
     const thisDataUse = allDataUses.filter(
       (du) => du.fides_key === initialValues.data_use
     )[0];
+    console.log({ thisDataUse });
     if (thisDataUse) {
       return initialValues.name
         ? `${thisDataUse.name} - ${initialValues.name}`
@@ -256,32 +254,32 @@ export const usePrivacyDeclarationForm = ({
     return undefined;
   }, [allDataUses, initialValues]);
 
+  console.log({ title, initialValues });
+
   const handleSubmit = async (
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
     console.log("submitting", values);
-    const success = (await onSubmit(
-      values,
-      formikHelpers
-    )) as unknown as PrivacyDeclarationWithId[];
-    console.log("result from submitting: ", success);
-    // find the matching resource based on data use and name
-    const customFieldResource = success.filter(
-      (pd) =>
-        pd.data_use === values.data_use &&
-        // name can be undefined, so avoid comparing undefined == ""
-        // (which we want to be true) - they both mean the PD has no name
-        (pd.name ? pd.name === values.name : true)
-    );
-    if (customFieldResource.length > 0) {
-      const cfRes = await upsertCustomFields({
-        ...values,
-        fides_key: customFieldResource[0].id,
-      });
-      console.log("result from upserting custom fields: ", cfRes);
-    }
+    const { customFieldValues: formCustomFieldValues, ...declaration } = values;
+    const success = await onSubmit(declaration, formikHelpers);
     if (success) {
+      console.log("result from submitting: ", success);
+      // find the matching resource based on data use and name
+      const customFieldResource = success.filter(
+        (pd) =>
+          pd.data_use === values.data_use &&
+          // name can be undefined, so avoid comparing undefined == ""
+          // (which we want to be true) - they both mean the PD has no name
+          (pd.name ? pd.name === values.name : true)
+      );
+      if (customFieldResource.length > 0) {
+        console.log({ formCustomFieldValues, values });
+        await upsertCustomFields({
+          customFieldValues: formCustomFieldValues,
+          fides_key: customFieldResource[0].id,
+        });
+      }
       // Reset state such that isDirty will be checked again before next save
       formikHelpers.resetForm({ values });
       setShowSaved(true);
@@ -317,7 +315,7 @@ export const usePrivacyDeclarationForm = ({
 
 interface Props {
   onSubmit: (
-    values: FormValues,
+    values: PrivacyDeclarationWithId,
     formikHelpers: FormikHelpers<FormValues>
   ) => Promise<PrivacyDeclarationWithId[] | undefined>;
   onDelete: (

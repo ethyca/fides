@@ -130,7 +130,6 @@ export const useCustomFields = ({
    */
   const upsertCustomFields = useCallback(
     async (formValues: CustomFieldsFormValues) => {
-      console.log(1, "isEnabled", isEnabled);
       if (!isEnabled) {
         return;
       }
@@ -156,7 +155,7 @@ export const useCustomFields = ({
       if (!fidesKey) {
         return;
       }
-      console.log(2);
+      console.log(2, formValues);
 
       const { customFieldValues: customFieldValuesFromForm } = formValues;
 
@@ -205,7 +204,6 @@ export const useCustomFields = ({
         successAlert(
           `Custom field(s) successfully saved and added to this ${resourceType} form.`
         );
-        return res;
       } catch (e) {
         errorAlert(
           `One or more custom fields have failed to save, please try again.`

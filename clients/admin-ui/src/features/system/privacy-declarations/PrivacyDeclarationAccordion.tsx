@@ -10,7 +10,6 @@ import { Form, Formik } from "formik";
 
 import {
   DataProps,
-  FormValues,
   PrivacyDeclarationFormComponents,
   usePrivacyDeclarationForm,
   ValidationSchema,
@@ -37,7 +36,8 @@ const PrivacyDeclarationAccordionItem = ({
   AccordionProps,
   "privacyDeclarations"
 >) => {
-  const handleEdit = (values: FormValues) => onEdit(privacyDeclaration, values);
+  const handleEdit = (values: PrivacyDeclarationWithId) =>
+    onEdit(privacyDeclaration, values);
 
   const { initialValues, renderHeader, handleSubmit } =
     usePrivacyDeclarationForm({
