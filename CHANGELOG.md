@@ -34,6 +34,7 @@ The types of changes are:
 - Support `privacy_declaration` as a resource type for custom fields [#3149](https://github.com/ethyca/fides/pull/3149)
 - Expose `id` field of embedded `privacy_declarations` on `system` API responses [#3157](https://github.com/ethyca/fides/pull/3157)
 - Access and erasure support for Unbounce [#2697](https://github.com/ethyca/fides/pull/2697)
+- Add custom fields to the data use declaration form [#3197](https://github.com/ethyca/fides/pull/3197)
 
 ### Changed
 
