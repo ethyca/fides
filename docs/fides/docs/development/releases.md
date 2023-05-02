@@ -193,12 +193,13 @@ Next, run the following checks via the test environment:
 
 Run these from within the test environment shell:
 
-* [ ] Make sure to login your CLI user by running `fides user login -u root_user -p Testpassword1!`
-* [ ] Run a `fides push`
-* [ ] Run a `fides pull`
-* [ ] Run a `fides evaluate`
-* [ ] Generate a dataset with `fides generate dataset db --credentials-id app_postgres test.yml`
-* [ ] Scan a database with `fides scan dataset db --credentials-id app_postgres`
+* [ ] `git reset --hard` - **Note: This is required for the `pull` command to work**
+* [ ] `fides user login`
+* [ ] `fides push src/fides/data/sample_project/sample_resources/`
+* [ ] `fides pull src/fides/data/sample_project/sample_resources/`
+* [ ] `fides evaluate src/fides/data/sample_project/sample_resources/`
+* [ ] `fides generate dataset db --credentials-id app_postgres test.yml` - **Note: Because the filesystem isn't mounted, the new file will only show up within the container**
+* [ ] `fides scan dataset db --credentials-id app_postgres`
 
 #### Privacy Center
 
