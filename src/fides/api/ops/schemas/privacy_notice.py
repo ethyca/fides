@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from datetime import datetime
-from html import escape, unescape
+from html import escape
 from typing import List, Optional
 
 from pydantic import Extra, conlist
 
-from fides.api.custom_types import SafeStr
 from fides.api.ops.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
@@ -53,6 +52,11 @@ class PrivacyNotice(BaseSchema):
             if data_use not in valid_data_uses:
                 raise ValueError(f"Unknown data_use '{data_use}'")
 
+    def escaped(self) -> PrivacyNotice:
+        if self.name:
+            self.name = escape(self.name)
+        return self
+
 
 class PrivacyNoticeCreation(PrivacyNotice):
     """
@@ -61,7 +65,7 @@ class PrivacyNoticeCreation(PrivacyNotice):
     It also establishes some fields _required_ for creation
     """
 
-    name: SafeStr
+    name: str
     regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
     consent_mechanism: ConsentMechanism
     data_uses: conlist(str, min_items=1)  # type: ignore
@@ -75,7 +79,6 @@ class PrivacyNoticeWithId(PrivacyNotice):
     """
 
     id: str
-    name: SafeStr
 
 
 class PrivacyNoticeResponse(PrivacyNoticeWithId):
@@ -83,7 +86,6 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
     An API representation of a PrivacyNotice used for response payloads
     """
 
-    name: str
     created_at: datetime
     updated_at: datetime
     version: float

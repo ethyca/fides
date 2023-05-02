@@ -170,6 +170,7 @@ def get_privacy_notice(
     should_unescape = request.headers.get("unescape-safestr")
     notice = get_privacy_notice_or_error(db, privacy_notice_id)
     if should_unescape:
+        print("orig", notice.name)
         notice.name = unescape(notice.name)
     return notice
 
@@ -226,7 +227,9 @@ def create_privacy_notices(
 
     return [
         PrivacyNotice.create(
-            db=db, data=privacy_notice.dict(exclude_unset=True), check_name=False
+            db=db,
+            data=privacy_notice.escaped().dict(exclude_unset=True),
+            check_name=False,
         )
         for privacy_notice in privacy_notices
     ]
@@ -259,7 +262,9 @@ def prepare_privacy_notice_patches(
                 detail=f"No PrivacyNotice found for id {update_data.id}.",
             )
 
-        updates_and_existing.append((update_data, existing_notices[update_data.id]))
+        updates_and_existing.append(
+            (update_data.escaped(), existing_notices[update_data.id])
+        )
 
     # we temporarily store proposed update data in-memory for validation purposes only
     validation_updates = []
