@@ -112,45 +112,37 @@ def gorgias_dataset_config(
 def gorgias_create_erasure_data(
     gorgias_connection_config: ConnectionConfig, gorgias_erasure_identity_email: str
 ) -> None:
-
     gorgias_secrets = gorgias_connection_config.secrets
     auth = gorgias_secrets["username"], gorgias_secrets["api_key"]
     base_url = f"https://{gorgias_secrets['domain']}"
 
     # user
     body = {
-            "name": "Ethyca Test Erasure",
-            "email": gorgias_erasure_identity_email,                    
+        "name": "Ethyca Test Erasure",
+        "email": gorgias_erasure_identity_email,
     }
 
-    users_response = requests.post(url=f"{base_url}/api/customers", auth=auth, json=body)
-    user = users_response.json()    
+    users_response = requests.post(
+        url=f"{base_url}/api/customers", auth=auth, json=body
+    )
+    user = users_response.json()
     user_id = user["id"]
 
     ticket_data = {
-        "customer": {
-            "id": user_id,
-            "email": gorgias_erasure_identity_email
-        },
+        "customer": {"id": user_id, "email": gorgias_erasure_identity_email},
         "messages": [
             {
-                "sender": {
-                        "id": user_id,
-                        "email": gorgias_erasure_identity_email
-                },
+                "sender": {"id": user_id, "email": gorgias_erasure_identity_email},
                 "channel": "twitter-direct-message",
                 "from_agent": "false",
-                "via": "instagram-ad-comment"
+                "via": "instagram-ad-comment",
             }
         ],
         "channel": "api",
         "status": "open",
-        "subject": "Tested"
+        "subject": "Tested",
     }
-    response = requests.post(
-        url=f"{base_url}/api/tickets", auth=auth, json=ticket_data
-    )
-    ticket = response.json()     
-    ticket_id = ticket["id"]
-    sleep(60)    
+    response = requests.post(url=f"{base_url}/api/tickets", auth=auth, json=ticket_data)
+    ticket = response.json()
+    sleep(60)
     yield ticket, user
