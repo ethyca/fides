@@ -66,6 +66,7 @@ from fides.api.ops.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
+from fides.cli.utils import FIDES_ASCII_ART
 from fides.core.config import CONFIG, check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
@@ -93,6 +94,14 @@ def create_fides_app(
     security_env: str = CONFIG.security.env,
 ) -> FastAPI:
     """Return a properly configured application."""
+    setup_logging(
+        CONFIG.logging.level,
+        serialize=CONFIG.logging.serialization,
+        desination=CONFIG.logging.destination,
+    )
+    logger.bind(api_config=CONFIG.logging.json()).debug(
+        "Logger configuration options in use"
+    )
 
     fastapi_app = FastAPI(title="fides", version=app_version)
     fastapi_app.state.limiter = Limiter(
@@ -238,7 +247,9 @@ async def setup_server() -> None:
     if not CONFIG.database.sync_database_uri:
         raise FidesError("No database uri provided")
 
-    await configure_db(CONFIG.database.sync_database_uri)
+    await configure_db(
+        CONFIG.database.sync_database_uri, samples=CONFIG.database.load_samples
+    )
 
     try:
         create_or_update_parent_user()
@@ -296,13 +307,8 @@ async def setup_server() -> None:
         )
     )
 
-    setup_logging(
-        CONFIG.logging.level,
-        serialize=CONFIG.logging.serialization,
-        desination=CONFIG.logging.destination,
-    )
-
-    logger.bind(api_config=CONFIG.logging.json()).debug("Configuration options in use")
+    logger.info(FIDES_ASCII_ART)
+    logger.info(f"Fides startup complete! v{VERSION}")
 
 
 @app.middleware("http")

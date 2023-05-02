@@ -147,6 +147,7 @@ interface SelectProps {
    * similar to how the multi values are rendered
    */
   singleValueBlock?: boolean;
+  isFormikOnChange?: boolean;
 }
 const SelectInput = ({
   options,
@@ -158,7 +159,11 @@ const SelectInput = ({
   singleValueBlock,
   isDisabled = false,
   menuPosition = "absolute",
-}: { fieldName: string; isMulti?: boolean } & Omit<SelectProps, "label">) => {
+  onChange,
+}: { fieldName: string; isMulti?: boolean; onChange?: any } & Omit<
+  SelectProps,
+  "label"
+>) => {
   const [initialField] = useField(fieldName);
   const field = { ...initialField, value: initialField.value ?? "" };
   const selected = isMulti
@@ -184,10 +189,16 @@ const SelectInput = ({
     }
   };
 
-  const handleChange = (newValue: MultiValue<Option> | SingleValue<Option>) =>
-    isMulti
-      ? handleChangeMulti(newValue as MultiValue<Option>)
-      : handleChangeSingle(newValue as SingleValue<Option>);
+  const handleChange = (newValue: MultiValue<Option> | SingleValue<Option>) => {
+    if (onChange) {
+      onChange(newValue);
+    }
+    if (isMulti) {
+      handleChangeMulti(newValue as MultiValue<Option>);
+    } else {
+      handleChangeSingle(newValue as SingleValue<Option>);
+    }
+  };
 
   const components = isClearable ? undefined : { ClearIndicator: () => null };
 
@@ -409,6 +420,8 @@ export const CustomSelect = ({
   isMulti,
   variant = "inline",
   singleValueBlock,
+  onChange,
+  isFormikOnChange,
   ...props
 }: SelectProps & StringField) => {
   const [field, meta] = useField(props);
@@ -434,6 +447,7 @@ export const CustomSelect = ({
                 isDisabled={isDisabled}
                 singleValueBlock={singleValueBlock}
                 menuPosition={props.menuPosition}
+                onChange={!isFormikOnChange ? onChange : undefined}
               />
               <ErrorMessage
                 isInvalid={isInvalid}
@@ -690,34 +704,62 @@ export const CustomRadioGroup = ({
 interface CustomSwitchProps {
   label: string;
   tooltip?: string;
+  variant?: "inline" | "condensed";
+  isDisabled?: boolean;
 }
 export const CustomSwitch = ({
   label,
   tooltip,
+  variant = "inline",
+  isDisabled,
   ...props
 }: CustomSwitchProps & FieldHookConfig<boolean>) => {
   const [field, meta] = useField({ ...props, type: "checkbox" });
   const isInvalid = !!(meta.touched && meta.error);
 
+  const innerSwitch = (
+    <Switch
+      name={field.name}
+      isChecked={field.checked}
+      onChange={field.onChange}
+      onBlur={field.onBlur}
+      colorScheme="secondary"
+      mr={2}
+      data-testid={`input-${field.name}`}
+      disabled={isDisabled}
+    />
+  );
+
+  if (variant === "inline") {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Grid templateColumns="1fr 3fr" justifyContent="center">
+          <Label htmlFor={props.id || props.name} my={0}>
+            {label}
+          </Label>
+          <Box display="flex" alignItems="center">
+            {innerSwitch}
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Box>
+        </Grid>
+      </FormControl>
+    );
+  }
   return (
-    <FormControl isInvalid={isInvalid}>
-      <Grid templateColumns="1fr 3fr" justifyContent="center">
-        <Label htmlFor={props.id || props.name} my={0}>
+    <FormControl isInvalid={isInvalid} width="fit-content">
+      <Box display="flex" alignItems="center">
+        <Label
+          htmlFor={props.id || props.name}
+          fontSize="sm"
+          color="gray.500"
+          my={0}
+          mr={2}
+        >
           {label}
         </Label>
-        <Box display="flex" alignItems="center">
-          <Switch
-            name={field.name}
-            isChecked={field.checked}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            colorScheme="secondary"
-            mr={2}
-            data-testid={`input-${field.name}`}
-          />
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-        </Box>
-      </Grid>
+        {innerSwitch}
+        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+      </Box>
     </FormControl>
   );
 };

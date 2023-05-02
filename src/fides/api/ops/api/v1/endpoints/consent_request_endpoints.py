@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 
 from fastapi import Depends, HTTPException, Security
+from fastapi_pagination import Page, Params
+from fastapi_pagination.bases import AbstractPage
+from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
+from starlette.responses import StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
@@ -21,6 +26,7 @@ from fides.api.ops.api.deps import get_config_proxy, get_db
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
+from fides.api.ops.api.v1.endpoints.utils import validate_start_and_end_filters
 from fides.api.ops.api.v1.scope_registry import CONSENT_READ
 from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
@@ -47,6 +53,7 @@ from fides.api.ops.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.ops.schemas.privacy_request import (
     ConsentPreferences,
     ConsentPreferencesWithVerificationCode,
+    ConsentReport,
     ConsentRequestResponse,
     ConsentWithExecutableStatus,
     PrivacyRequestCreate,
@@ -55,6 +62,9 @@ from fides.api.ops.schemas.privacy_request import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.consent_util import (
+    get_or_create_fides_user_device_id_provided_identity,
+)
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
@@ -64,6 +74,83 @@ router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
 
 CONFIG_JSON_PATH = "clients/privacy-center/config/config.json"
+
+
+def _filter_consent(
+    query: Query,
+    data_use: Optional[str] = None,
+    has_gpc_flag: Optional[bool] = None,
+    opt_in: Optional[bool] = None,
+    created_lt: Optional[datetime] = None,
+    created_gt: Optional[datetime] = None,
+    updated_lt: Optional[datetime] = None,
+    updated_gt: Optional[datetime] = None,
+) -> Query:
+    if data_use:
+        query = query.filter(Consent.data_use == data_use)
+    if has_gpc_flag is not None:
+        query = query.filter(Consent.has_gpc_flag == has_gpc_flag)
+    if opt_in is not None:
+        query = query.filter(Consent.opt_in == opt_in)
+
+    validate_start_and_end_filters(
+        [
+            (created_lt, created_gt, "created"),
+            (updated_lt, updated_gt, "updated"),
+        ]
+    )
+
+    if created_lt:
+        query = query.filter(Consent.created_at < created_lt)
+    if created_gt:
+        query = query.filter(Consent.created_at > created_gt)
+    if updated_lt:
+        query = query.filter(Consent.updated_at < updated_lt)
+    if updated_gt:
+        query = query.filter(Consent.updated_at > updated_gt)
+    return query
+
+
+@router.get(
+    CONSENT_REQUEST_PREFERENCES,
+    dependencies=[Security(verify_oauth_client, scopes=[CONSENT_READ])],
+    status_code=HTTP_200_OK,
+    response_model=Page[ConsentReport],
+)
+def report_consent_requests(
+    *,
+    db: Session = Depends(get_db),
+    params: Params = Depends(),
+    data_use: Optional[str] = None,
+    has_gpc_flag: Optional[bool] = None,
+    opt_in: Optional[bool] = None,
+    created_lt: Optional[datetime] = None,
+    created_gt: Optional[datetime] = None,
+    updated_lt: Optional[datetime] = None,
+    updated_gt: Optional[datetime] = None,
+) -> Union[StreamingResponse, AbstractPage[ConsentReport]]:
+    """Provides a paginated list of all consent requests sorted by the most recently updated."""
+
+    query = Consent.query(db).order_by(Consent.updated_at.desc())
+    query = _filter_consent(
+        query,
+        data_use,
+        has_gpc_flag,
+        opt_in,
+        created_lt,
+        created_gt,
+        updated_lt,
+        updated_gt,
+    )
+    paginated = paginate(query, params)
+    paginated.items = [  # type: ignore
+        _prepare_consent_report(
+            db=db,
+            consent=item,
+        )
+        for item in paginated.items  # type: ignore
+    ]
+    return paginated
 
 
 @router.post(
@@ -83,10 +170,10 @@ def create_consent_request(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
 
-    if not data.email and not data.phone_number:
+    if not data.email and not data.phone_number and not data.fides_user_device_id:
         raise HTTPException(
             HTTP_400_BAD_REQUEST,
-            detail="An email address or phone number identity is required",
+            detail="An email address, phone number, or fides_user_device_id is required",
         )
 
     identity = _get_or_create_provided_identity(
@@ -273,6 +360,14 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
         if pref.data_use in executable_data_uses
     ]
 
+    if not executable_consent_preferences:
+        logger.info(
+            "Skipping propagating consent preferences to third-party services as "
+            "specified consent preferences: {} are not executable.",
+            [pref.data_use for pref in consent_preferences.consent or []],
+        )
+        return None
+
     logger.info("Executable consent options: {}", executable_data_uses)
     privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
         db=db,
@@ -376,7 +471,6 @@ def _get_or_create_provided_identity(
 ) -> ProvidedIdentity:
     """Based on target identity type, retrieves or creates associated ProvidedIdentity"""
     target_identity_type: str = infer_target_identity_type(db, identity_data)
-
     if target_identity_type == ProvidedIdentityType.email.value and identity_data.email:
         identity = ProvidedIdentity.filter(
             db=db,
@@ -426,6 +520,11 @@ def _get_or_create_provided_identity(
                     "encrypted_value": {"value": identity_data.phone_number},
                 },
             )
+    elif target_identity_type == ProvidedIdentityType.fides_user_device_id.value:
+        identity = get_or_create_fides_user_device_id_provided_identity(
+            db, identity_data
+        )
+
     else:
         raise HTTPException(
             HTTP_422_UNPROCESSABLE_ENTITY,
@@ -458,6 +557,10 @@ def infer_target_identity_type(
         target_identity_type = ProvidedIdentityType.email.value
     elif identity_data.phone_number:
         target_identity_type = ProvidedIdentityType.phone_number.value
+    elif identity_data.fides_user_device_id:
+        # If no other identity is provided, use the Fides User Device ID
+        target_identity_type = ProvidedIdentityType.fides_user_device_id.value
+
     return target_identity_type
 
 
@@ -507,14 +610,31 @@ def _get_consent_request_and_provided_identity(
     return consent_request, provided_identity
 
 
+def _prepare_consent_report(
+    db: Session,
+    consent: Consent,
+) -> ConsentReport:
+    """Enhances a consent request with identity, created and updated timestamps."""
+    provided_identity = ProvidedIdentity.get_by(
+        db=db,
+        field="id",
+        value=consent.provided_identity_id,
+    )
+    consent.identity = provided_identity.as_identity_schema()
+    report = ConsentReport.from_orm(consent)
+    return report
+
+
 def _prepare_consent_preferences(
-    db: Session, provided_identity: ProvidedIdentity
+    db: Session,
+    provided_identity: ProvidedIdentity,
 ) -> ConsentPreferences:
-    consent: List[Consent] = Consent.filter(
+    """Returns consent preferences for the identity given."""
+    consent_records: List[Consent] = Consent.filter(
         db=db, conditions=Consent.provided_identity_id == provided_identity.id
     ).all()
 
-    if not consent:
+    if not consent_records:
         return ConsentPreferences(consent=None)
 
     return ConsentPreferences(
@@ -526,6 +646,6 @@ def _prepare_consent_preferences(
                 has_gpc_flag=x.has_gpc_flag,
                 conflicts_with_gpc=x.conflicts_with_gpc,
             )
-            for x in consent
+            for x in consent_records
         ],
     )

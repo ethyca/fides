@@ -22,6 +22,7 @@ CREATE = "create"
 CREATE_OR_UPDATE = "create_or_update"
 CTL_DATASET = "ctl_dataset"
 CTL_POLICY = "ctl_policy"
+CURRENT_PRIVACY_PREFERENCE = "current-privacy-preference"
 DATABASE = "database"
 DATA_CATEGORY = "data_category"
 DATA_QUALIFIER = "data_qualifier"
@@ -40,7 +41,9 @@ MESSAGING = "messaging"
 ORGANIZATION = "organization"
 PASSWORD_RESET = "password-reset"
 POLICY = "policy"
+PRIVACY_EXPERIENCE = "privacy-experience"
 PRIVACY_NOTICE = "privacy-notice"
+PRIVACY_PREFERENCE_HISTORY = "privacy-preference-history"
 PRIVACY_REQUEST = "privacy-request"
 PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
@@ -99,6 +102,8 @@ CTL_POLICY_READ = f"{CTL_POLICY}:{READ}"
 CTL_POLICY_UPDATE = f"{CTL_POLICY}:{UPDATE}"
 CTL_POLICY_DELETE = f"{CTL_POLICY}:{DELETE}"
 
+CURRENT_PRIVACY_PREFERENCE_READ = f"{CURRENT_PRIVACY_PREFERENCE}:{READ}"
+
 DATABASE_RESET = f"{DATABASE}:{RESET}"
 
 DATA_CATEGORY_CREATE = f"{DATA_CATEGORY}:{CREATE}"
@@ -152,9 +157,15 @@ POLICY_CREATE_OR_UPDATE = f"{POLICY}:{CREATE_OR_UPDATE}"
 POLICY_DELETE = f"{POLICY}:{DELETE}"
 POLICY_READ = f"{POLICY}:{READ}"
 
+PRIVACY_EXPERIENCE_CREATE = f"{PRIVACY_EXPERIENCE}:{CREATE}"
+PRIVACY_EXPERIENCE_UPDATE = f"{PRIVACY_EXPERIENCE}:{UPDATE}"
+PRIVACY_EXPERIENCE_READ = f"{PRIVACY_EXPERIENCE}:{READ}"
+
 PRIVACY_NOTICE_CREATE = f"{PRIVACY_NOTICE}:{CREATE}"
 PRIVACY_NOTICE_UPDATE = f"{PRIVACY_NOTICE}:{UPDATE}"
 PRIVACY_NOTICE_READ = f"{PRIVACY_NOTICE}:{READ}"
+
+PRIVACY_PREFERENCE_HISTORY_READ = f"{PRIVACY_PREFERENCE_HISTORY}:{READ}"
 
 PRIVACY_REQUEST_CALLBACK_RESUME = f"{PRIVACY_REQUEST}:{RESUME}"  # User has permission to restart a paused privacy request
 PRIVACY_REQUEST_CREATE = f"{PRIVACY_REQUEST}:{CREATE}"
@@ -248,6 +259,7 @@ SCOPE_DOCS = {
     CTL_POLICY_READ: "Read ctl policies",
     CTL_POLICY_DELETE: "Delete a ctl policy",
     CTL_POLICY_UPDATE: "Update ctl policies",
+    CURRENT_PRIVACY_PREFERENCE_READ: "Read the current privacy preferences of all users",
     DATABASE_RESET: "Reset the application database",
     DATA_CATEGORY_CREATE: "Create a data category",
     DATA_CATEGORY_DELETE: "Delete data categories",
@@ -287,9 +299,13 @@ SCOPE_DOCS = {
     POLICY_CREATE_OR_UPDATE: "Create or modify policies",
     POLICY_DELETE: "Remove policies",
     POLICY_READ: "View policies",
+    PRIVACY_EXPERIENCE_CREATE: "Create privacy experiences",
+    PRIVACY_EXPERIENCE_UPDATE: "Update privacy experiences",
+    PRIVACY_EXPERIENCE_READ: "View privacy experiences",
     PRIVACY_NOTICE_CREATE: "Create privacy notices",
     PRIVACY_NOTICE_UPDATE: "Update privacy notices",
     PRIVACY_NOTICE_READ: "View privacy notices",
+    PRIVACY_PREFERENCE_HISTORY_READ: "Read the history of all saved privacy preferences",
     PRIVACY_REQUEST_CREATE: "",
     PRIVACY_REQUEST_CALLBACK_RESUME: "Restart paused privacy requests",
     PRIVACY_REQUEST_DELETE: "Remove privacy requests",

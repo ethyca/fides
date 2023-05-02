@@ -24,8 +24,7 @@ export const useCustomFields = ({
   resourceType,
 }: UseCustomFieldsOptions) => {
   const { errorAlert, successAlert } = useAlert();
-  const { flags, plus } = useFeatures();
-  const isEnabled = flags.customFields && plus;
+  const { plus: isEnabled } = useFeatures();
 
   // This keeps track of the fides key that was initially passed in. If that key started out blank,
   // then we know the API call will just 404.
@@ -137,7 +136,11 @@ export const useCustomFields = ({
 
       // When creating an resource, the fides key may have initially been blank. But by the time the
       // form is submitted it must not be blank (not undefined, not an empty string).
-      const fidesKey = formValues.fides_key || resourceFidesKey;
+      const fidesKey =
+        "fides_key" in formValues && formValues.fides_key !== ""
+          ? formValues.fides_key
+          : resourceFidesKey;
+
       if (!fidesKey) {
         return;
       }

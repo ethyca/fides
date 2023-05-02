@@ -48,6 +48,7 @@ from fides.core.utils import check_response, echo_green, echo_red
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
 FIDES_ASCII_ART = """
+
 ███████╗██╗██████╗ ███████╗███████╗
 ██╔════╝██║██╔══██╗██╔════╝██╔════╝
 █████╗  ██║██║  ██║█████╗  ███████╗

@@ -2,7 +2,13 @@ import pytest
 from sqlalchemy.orm.attributes import flag_modified
 
 from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
-from fides.api.ops.util.consent_util import should_opt_in_to_service
+from fides.api.ops.util.consent_util import (
+    add_complete_system_status_for_consent_reporting,
+    add_errored_system_status_for_consent_reporting,
+    cache_initial_status_and_identities_for_consent_reporting,
+    get_fides_user_device_id_provided_identity,
+    should_opt_in_to_service,
+)
 
 
 class TestShouldOptIntoService:
@@ -18,6 +24,7 @@ class TestShouldOptIntoService:
         system,
         privacy_request_with_consent_policy,
         privacy_notice,
+        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
@@ -29,15 +36,18 @@ class TestShouldOptIntoService:
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
         pref.privacy_request_id = privacy_request_with_consent_policy.id
         pref.save(db)
-        assert (
-            should_opt_in_to_service(system, privacy_request_with_consent_policy)
-            is should_opt_in
+        collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
+            system, privacy_request_with_consent_policy
         )
+        assert collapsed_opt_in_preference == should_opt_in
+
+        pref.delete(db)
 
     @pytest.mark.parametrize(
         "preference, should_opt_in",
@@ -51,6 +61,7 @@ class TestShouldOptIntoService:
         system,
         privacy_notice_us_ca_provide,
         privacy_request_with_consent_policy,
+        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
@@ -58,7 +69,10 @@ class TestShouldOptIntoService:
         System Data Use = "provide.service.operations"
         """
         privacy_declarations = system.privacy_declarations
-        privacy_declarations[0]["data_use"] = "provide.service.operations"
+        system.privacy_declarations[0].update(
+            db=db, data={"data_use": "provide.service.operations"}
+        )
+
         system.privacy_declarations = privacy_declarations
         flag_modified(system, "privacy_declarations")
         system.save(db)
@@ -68,15 +82,17 @@ class TestShouldOptIntoService:
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
         pref.privacy_request_id = privacy_request_with_consent_policy.id
         pref.save(db)
-        assert (
-            should_opt_in_to_service(system, privacy_request_with_consent_policy)
-            is should_opt_in
+        collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
+            system, privacy_request_with_consent_policy
         )
+        assert collapsed_opt_in_preference == should_opt_in
+        pref.delete(db)
 
     @pytest.mark.parametrize(
         "preference, should_opt_in",
@@ -90,6 +106,7 @@ class TestShouldOptIntoService:
         system,
         privacy_notice_us_co_provide_service_operations,
         privacy_request_with_consent_policy,
+        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
@@ -97,7 +114,7 @@ class TestShouldOptIntoService:
         System Data Use = "provide"
         """
         privacy_declarations = system.privacy_declarations
-        privacy_declarations[0]["data_use"] = "provide"
+        system.privacy_declarations[0].update(db=db, data={"data_use": "provide"})
         system.privacy_declarations = privacy_declarations
         flag_modified(system, "privacy_declarations")
         system.save(db)
@@ -107,15 +124,17 @@ class TestShouldOptIntoService:
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice_us_co_provide_service_operations.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
         pref.privacy_request_id = privacy_request_with_consent_policy.id
         pref.save(db)
-        assert (
-            should_opt_in_to_service(system, privacy_request_with_consent_policy)
-            is should_opt_in
+        collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
+            system, privacy_request_with_consent_policy
         )
+        assert collapsed_opt_in_preference == should_opt_in
+        pref.delete(db)
 
     @pytest.mark.parametrize(
         "preference, should_opt_in",
@@ -129,6 +148,7 @@ class TestShouldOptIntoService:
         system,
         privacy_request_with_consent_policy,
         privacy_notice_eu_fr_provide_service_frontend_only,
+        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "frontend"
@@ -140,15 +160,17 @@ class TestShouldOptIntoService:
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
         pref.privacy_request_id = privacy_request_with_consent_policy.id
         pref.save(db)
-        assert (
-            should_opt_in_to_service(system, privacy_request_with_consent_policy)
-            is should_opt_in
+        collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
+            system, privacy_request_with_consent_policy
         )
+        assert collapsed_opt_in_preference == should_opt_in
+        pref.delete(db)
 
     @pytest.mark.parametrize(
         "preference, should_opt_in",
@@ -161,6 +183,7 @@ class TestShouldOptIntoService:
         db,
         privacy_notice_us_co_provide_service_operations,
         privacy_request_with_consent_policy,
+        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
@@ -172,27 +195,25 @@ class TestShouldOptIntoService:
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice_us_co_provide_service_operations.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
         pref.privacy_request_id = privacy_request_with_consent_policy.id
         pref.save(db)
-        assert (
-            should_opt_in_to_service(None, privacy_request_with_consent_policy)
-            is should_opt_in
+        collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
+            None, privacy_request_with_consent_policy
         )
+        assert collapsed_opt_in_preference == should_opt_in
+        pref.delete(db)
 
-    @pytest.mark.parametrize(
-        "preference, should_opt_in",
-        [("opt_in", True), ("opt_out", False), ("acknowledge", None)],
-    )
     def test_conflict_preferences_opt_out_wins(
         self,
-        preference,
-        should_opt_in,
         db,
         privacy_request_with_consent_policy,
         privacy_notice,
+        privacy_notice_us_ca_provide,
+        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
@@ -204,6 +225,7 @@ class TestShouldOptIntoService:
             data={
                 "preference": "opt_in",
                 "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
@@ -211,7 +233,8 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": "opt_out",
-                "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
+                "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
         )
@@ -220,13 +243,16 @@ class TestShouldOptIntoService:
         pref_2.privacy_request_id = privacy_request_with_consent_policy.id
         pref_2.save(db)
 
-        assert (
-            should_opt_in_to_service(None, privacy_request_with_consent_policy) is False
+        collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
+            None, privacy_request_with_consent_policy
         )
+        assert collapsed_opt_in_preference is False
+        assert filtered_preferences == [pref_2]
+        pref_1.delete(db)
+        pref_2.delete(db)
 
     def test_old_workflow_preferences_saved_with_respect_to_data_use(
         self,
-        db,
         system,
         privacy_request_with_consent_policy,
     ):
@@ -236,24 +262,198 @@ class TestShouldOptIntoService:
         privacy_request_with_consent_policy.consent_preferences = [
             {"data_use": "advertising", "opt_in": False}
         ]
-        assert (
-            should_opt_in_to_service(system, privacy_request_with_consent_policy)
-            is False
+        collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
+            system, privacy_request_with_consent_policy
         )
+        assert collapsed_opt_in_preference is False
+        assert filtered_preferences == []
 
         privacy_request_with_consent_policy.consent_preferences = [
             {"data_use": "advertising", "opt_in": True}
         ]
-        assert (
-            should_opt_in_to_service(system, privacy_request_with_consent_policy)
-            is True
+        collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
+            system, privacy_request_with_consent_policy
         )
+        assert collapsed_opt_in_preference is True
+        assert filtered_preferences == []
 
         privacy_request_with_consent_policy.consent_preferences = [
             {"data_use": "advertising", "opt_in": True},
             {"data_use": "improve", "opt_in": False},
         ]
-        assert (
-            should_opt_in_to_service(system, privacy_request_with_consent_policy)
-            is False
+        collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
+            system, privacy_request_with_consent_policy
         )
+        assert collapsed_opt_in_preference is False
+        assert filtered_preferences == []
+
+
+class TestCacheSystemStatusesForConsentReporting:
+    def test_cache_initial_status_and_identities_for_consent_reporting(
+        self,
+        db,
+        privacy_request_with_consent_policy,
+        connection_config,
+        privacy_preference_history,
+        privacy_preference_history_eu_fr_provide_service_frontend_only,
+    ):
+        privacy_preference_history.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
+
+        privacy_preference_history_eu_fr_provide_service_frontend_only.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
+
+        cache_initial_status_and_identities_for_consent_reporting(
+            db,
+            privacy_request_with_consent_policy,
+            connection_config,
+            relevant_preferences=[
+                privacy_preference_history_eu_fr_provide_service_frontend_only
+            ],
+            relevant_user_identities={"email": "customer-1@example.com"},
+        )
+
+        db.refresh(privacy_preference_history)
+        db.refresh(privacy_preference_history_eu_fr_provide_service_frontend_only)
+
+        # Relevant systems
+        assert (
+            privacy_preference_history_eu_fr_provide_service_frontend_only.affected_system_status
+            == {connection_config.name: "pending"}
+        )
+        assert (
+            privacy_preference_history_eu_fr_provide_service_frontend_only.secondary_user_ids
+            == {"email": "customer-1@example.com"}
+        )
+
+        # non-relevant systems
+        assert privacy_preference_history.affected_system_status == {
+            connection_config.name: "skipped"
+        }
+        assert privacy_preference_history.secondary_user_ids is None
+
+    def test_add_complete_system_status_for_consent_reporting(
+        self,
+        db,
+        privacy_request_with_consent_policy,
+        connection_config,
+        privacy_preference_history,
+        privacy_preference_history_eu_fr_provide_service_frontend_only,
+    ):
+        privacy_preference_history.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
+
+        privacy_preference_history_eu_fr_provide_service_frontend_only.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
+
+        cache_initial_status_and_identities_for_consent_reporting(
+            db,
+            privacy_request_with_consent_policy,
+            connection_config,
+            relevant_preferences=[
+                privacy_preference_history_eu_fr_provide_service_frontend_only
+            ],
+            relevant_user_identities={"email": "customer-1@example.com"},
+        )
+
+        add_complete_system_status_for_consent_reporting(
+            db, privacy_request_with_consent_policy, connection_config
+        )
+
+        db.refresh(privacy_preference_history)
+        db.refresh(privacy_preference_history_eu_fr_provide_service_frontend_only)
+
+        # Relevant systems
+        assert (
+            privacy_preference_history_eu_fr_provide_service_frontend_only.affected_system_status
+            == {connection_config.name: "complete"}
+        )
+        assert (
+            privacy_preference_history_eu_fr_provide_service_frontend_only.secondary_user_ids
+            == {"email": "customer-1@example.com"}
+        )
+
+        # non-relevant systems
+        assert privacy_preference_history.affected_system_status == {
+            connection_config.name: "skipped"
+        }
+        assert privacy_preference_history.secondary_user_ids is None
+
+    def test_add_error_system_status_for_consent_reporting(
+        self,
+        db,
+        privacy_request_with_consent_policy,
+        connection_config,
+        privacy_preference_history,
+        privacy_preference_history_eu_fr_provide_service_frontend_only,
+    ):
+        privacy_preference_history.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
+
+        privacy_preference_history_eu_fr_provide_service_frontend_only.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
+
+        cache_initial_status_and_identities_for_consent_reporting(
+            db,
+            privacy_request_with_consent_policy,
+            connection_config,
+            relevant_preferences=[
+                privacy_preference_history_eu_fr_provide_service_frontend_only
+            ],
+            relevant_user_identities={"email": "customer-1@example.com"},
+        )
+
+        add_errored_system_status_for_consent_reporting(
+            db, privacy_request_with_consent_policy, connection_config
+        )
+
+        db.refresh(privacy_preference_history)
+        db.refresh(privacy_preference_history_eu_fr_provide_service_frontend_only)
+
+        # Relevant systems
+        assert (
+            privacy_preference_history_eu_fr_provide_service_frontend_only.affected_system_status
+            == {connection_config.name: "error"}
+        )
+        assert (
+            privacy_preference_history_eu_fr_provide_service_frontend_only.secondary_user_ids
+            == {"email": "customer-1@example.com"}
+        )
+
+        # non-relevant systems
+        assert privacy_preference_history.affected_system_status == {
+            connection_config.name: "skipped"
+        }
+        assert privacy_preference_history.secondary_user_ids is None
+
+
+class TestGetFidesUserProvidedIdentity:
+    def test_no_identifier_supplied(self, db):
+        provided_identity = get_fides_user_device_id_provided_identity(db, None)
+        assert provided_identity is None
+
+    def test_no_provided_identifier_exists(self, db):
+        provided_identity = get_fides_user_device_id_provided_identity(
+            db, "fides_user_device_id"
+        )
+        assert provided_identity is None
+
+    def test_get_fides_user_device_id_provided_identity(
+        self, db, fides_user_provided_identity
+    ):
+        provided_identity = get_fides_user_device_id_provided_identity(
+            db, "FGHIJ_TEST_FIDES"
+        )
+        assert provided_identity == fides_user_provided_identity

@@ -165,6 +165,13 @@ export const plusApi = createApi({
       transformResponse: (allowList: AllowList[]) =>
         allowList.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
     }),
+    getAllowList: build.query<AllowList, string>({
+      query: (id) => ({
+        url: `custom-metadata/allow-list/${id}`,
+        params: { show_values: true },
+      }),
+      providesTags: ["AllowList"],
+    }),
     upsertAllowList: build.mutation<AllowList, AllowListUpdate>({
       query: (params: AllowListUpdate) => ({
         url: `custom-metadata/allow-list`,
@@ -202,6 +209,15 @@ export const plusApi = createApi({
       invalidatesTags: ["CustomFields"],
     }),
 
+    getAllCustomFieldDefinitions: build.query<
+      CustomFieldDefinitionWithId[],
+      void
+    >({
+      query: () => ({
+        url: `custom-metadata/custom-field-definition`,
+      }),
+      providesTags: ["CustomFieldDefinition"],
+    }),
     // Custom Metadata Custom Field Definition
     addCustomFieldDefinition: build.mutation<
       CustomFieldDefinitionWithId,
@@ -225,6 +241,13 @@ export const plusApi = createApi({
       }),
       invalidatesTags: ["CustomFieldDefinition"],
     }),
+    deleteCustomFieldDefinition: build.mutation<void, { id: string }>({
+      query: ({ id }) => ({
+        url: `custom-metadata/custom-field-definition/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["CustomFieldDefinition"],
+    }),
 
     // Custom Metadata Custom Field Definition By Resource Type
     getCustomFieldDefinitionsByResourceType: build.query<
@@ -245,6 +268,7 @@ export const {
   useAddCustomFieldDefinitionMutation,
   useCreateClassifyInstanceMutation,
   useDeleteCustomFieldMutation,
+  useDeleteCustomFieldDefinitionMutation,
   useGetAllAllowListQuery,
   useGetAllClassifyInstancesQuery,
   useGetClassifyDatasetQuery,
@@ -259,6 +283,8 @@ export const {
   useUpdateScanMutation,
   useUpsertAllowListMutation,
   useUpsertCustomFieldMutation,
+  useGetAllCustomFieldDefinitionsQuery,
+  useGetAllowListQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
@@ -358,4 +384,10 @@ export const selectClassifyInstanceFieldMap = createSelector(
 export const selectClassifyInstanceField = createSelector(
   [selectClassifyInstanceFieldMap, selectActiveField],
   (fieldMap, active) => (active ? fieldMap.get(active.name) : undefined)
+);
+
+const emptySelectAllCustomFields: CustomFieldDefinitionWithId[] = [];
+export const selectAllCustomFieldDefinitions = createSelector(
+  plusApi.endpoints.getAllCustomFieldDefinitions.select(),
+  ({ data }) => data || emptySelectAllCustomFields
 );
