@@ -17,7 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.12.0...main)
 
-
+### Added
+- Access and erasure support for Amplitude [#2569](https://github.com/ethyca/fides/pull/2569)
 
 ## [2.12.0](https://github.com/ethyca/fides/compare/2.11.0...2.12.0)
 
