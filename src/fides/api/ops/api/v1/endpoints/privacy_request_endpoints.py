@@ -34,6 +34,7 @@ from fides.api.ops.api.v1.endpoints.dataset_endpoints import _get_connection_con
 from fides.api.ops.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
 )
+from fides.api.ops.api.v1.endpoints.utils import validate_start_and_end_filters
 from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
@@ -398,25 +399,14 @@ def _filter_privacy_request_queryset(
             detail="Cannot specify both succeeded and failed query params.",
         )
 
-    for end, start, field_name in [
-        [created_lt, created_gt, "created"],
-        [completed_lt, completed_gt, "completed"],
-        [errored_lt, errored_gt, "errored"],
-        [started_lt, started_gt, "started"],
-    ]:
-        if end is None or start is None:
-            continue
-
-        if not (isinstance(end, datetime) and isinstance(start, datetime)):
-            continue
-
-        if end < start:
-            # With date fields, if the start date is after the end date, return a 400
-            # because no records will lie within this range.
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
-            )
+    validate_start_and_end_filters(
+        [
+            (created_lt, created_gt, "created"),
+            (completed_lt, completed_gt, "completed"),
+            (errored_lt, errored_gt, "errored"),
+            (started_lt, started_gt, "started"),
+        ]
+    )
 
     if identity:
         hashed_identity = ProvidedIdentity.hash_value(value=identity)

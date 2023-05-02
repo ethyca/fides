@@ -33,6 +33,31 @@ Cypress.Commands.add("login", () => {
   });
 });
 
+const getSelectOptionList = (selectorId: string) =>
+  cy.getByTestId(selectorId).click().find(`.custom-select__menu-list`);
+
+Cypress.Commands.add("getSelectValueContainer", (selectorId) =>
+  cy.getByTestId(selectorId).find(`.custom-select__value-container`)
+);
+
+Cypress.Commands.add("selectOption", (selectorId, optionText) => {
+  getSelectOptionList(selectorId).contains(optionText).click();
+});
+
+Cypress.Commands.add(
+  "removeMultiValue",
+  (selectorId: string, optionText: string) =>
+    cy
+      .getSelectValueContainer(selectorId)
+      .contains(optionText)
+      .siblings(".custom-select__multi-value__remove")
+      .click()
+);
+
+Cypress.Commands.add("clearSingleValue", (selectorId) =>
+  cy.getByTestId(selectorId).find(".custom-select__clear-indicator").click()
+);
+
 Cypress.Commands.add("assumeRole", (role) => {
   cy.fixture("scopes/roles-to-scopes.json").then((mapping) => {
     const scopes: ScopeRegistryEnum[] = mapping[role];
@@ -89,6 +114,34 @@ declare global {
        * @example cy.assumeRole(RoleRegistryEnum.OWNER)
        */
       assumeRole(role: RoleRegistryEnum): void;
+      /**
+       * Get the container of a CustomSelect
+       * @example cy.selectValueContainer("input-allow_list_id")
+       */
+      getSelectValueContainer(
+        selectorId: string
+      ): Chainable<JQuery<HTMLElement>>;
+      /**
+       * Selects an option from a CustomSelect component
+       *
+       * @example cy.selectOption("input-allow_list_id", "Prime numbers");
+       */
+      selectOption(
+        selectorId: string,
+        optionText: string
+      ): Chainable<JQuery<HTMLElement>>;
+      /**
+       * Removes a value from a CustomSelect that is a multiselect
+       *
+       * @example removeMultiValue("input-multifield", "Eevee");
+       */
+      removeMultiValue(selectorId: string, optionText: string): void;
+      /**
+       * Clears the value of a CustomSelect that is a single select
+       *
+       * @example removeMultiValue("input-singlefield");
+       */
+      clearSingleValue(selectorId: string): void;
     }
   }
 }

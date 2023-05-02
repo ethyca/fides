@@ -138,6 +138,13 @@ class ConnectionConfig(Base):
 
     system = relationship(System)
 
+    @property
+    def system_key(self) -> str:
+        """Property for caching a system identifier for systems (or connector names as a fallback) for consent reporting"""
+        if self.system:
+            return self.system.fides_key
+        return self.name
+
     @classmethod
     def create_without_saving(
         cls: Type[ConnectionConfig], db: Session, *, data: dict[str, Any]

@@ -32,32 +32,15 @@ describe("Taxonomy management with Plus features", () => {
       });
   };
 
-  // TODO: Extract these to a cypress support file.
-  const getSelectValueContainer = (selectorId: string) =>
-    cy.getByTestId(selectorId).find(`.custom-select__value-container`);
-
-  const getSelectOptionList = (selectorId: string) =>
-    cy.getByTestId(selectorId).click().find(`.custom-select__menu-list`);
-
-  const selectOption = (selectorId: string, optionText: string) => {
-    getSelectOptionList(selectorId).contains(optionText).click();
-  };
-
-  const removeMultiValue = (selectorId: string, optionText: string) =>
-    getSelectValueContainer(selectorId)
-      .contains(optionText)
-      .siblings(".custom-select__multi-value__remove")
-      .click();
-
-  const clearSingleValue = (selectorId: string) =>
-    cy.getByTestId(selectorId).find(".custom-select__clear-indicator").click();
-
-  describe("Defining custom lists", () => {
+  // TODO: Inputs are no longer created on this screen.
+  // This should eventually be migrated to the custom fields tests
+  describe.skip("Defining custom lists", () => {
     beforeEach(() => {
       navigateToEditor();
       cy.getByTestId("add-custom-field-btn").click();
       cy.getByTestId("tab-Create custom lists").click();
     });
+
 
     it("can create a list", () => {
       const listValues = ["such", "metadata", "so", "custom"];
@@ -94,7 +77,9 @@ describe("Taxonomy management with Plus features", () => {
     });
   });
 
-  describe("Defining custom fields", () => {
+  // TODO: Inputs are no longer created on this screen.
+  // This should eventually be migrated to the custom fields tests
+  describe.skip("Defining custom fields", () => {
     beforeEach(() => {
       cy.intercept(
         {
@@ -115,6 +100,7 @@ describe("Taxonomy management with Plus features", () => {
 
       cy.wait("@getAllowLists");
     });
+
 
     it("can create a single-select custom field", () => {
       cy.getByTestId("create-custom-fields-form").within(() => {
@@ -143,8 +129,8 @@ describe("Taxonomy management with Plus features", () => {
     it("can create a multi-select custom field", () => {
       cy.getByTestId("create-custom-fields-form").within(() => {
         cy.getByTestId("custom-input-name").type("Multi-select");
-        selectOption("input-field_type", "Multiple select");
-        selectOption("input-allow_list_id", "Prime numbers");
+        cy.selectOption("input-field_type", "Multiple select");
+        cy.selectOption("input-allow_list_id", "Prime numbers");
       });
 
       cy.intercept(
@@ -224,27 +210,27 @@ describe("Taxonomy management with Plus features", () => {
 
     it("initializes form fields with values returned by the API", () => {
       cy.getByTestId("custom-fields-list");
-      getSelectValueContainer(testIdSingle).contains("Squirtle");
+      cy.getSelectValueContainer(testIdSingle).contains("Squirtle");
 
       ["Charmander", "Eevee", "Snorlax"].forEach((value) => {
-        getSelectValueContainer(testIdMulti).contains(value);
+        cy.getSelectValueContainer(testIdMulti).contains(value);
       });
     });
 
     it("allows choosing and changing selections", () => {
       cy.getByTestId("custom-fields-list");
 
-      clearSingleValue(testIdSingle);
-      selectOption(testIdSingle, "Snorlax");
-      getSelectValueContainer(testIdSingle).contains("Snorlax");
-      clearSingleValue(testIdSingle);
+      cy.clearSingleValue(testIdSingle);
+      cy.selectOption(testIdSingle, "Snorlax");
+      cy.getSelectValueContainer(testIdSingle).contains("Snorlax");
+      cy.clearSingleValue(testIdSingle);
 
-      removeMultiValue(testIdMulti, "Eevee");
-      removeMultiValue(testIdMulti, "Snorlax");
-      selectOption(testIdMulti, "Eevee");
+      cy.removeMultiValue(testIdMulti, "Eevee");
+      cy.removeMultiValue(testIdMulti, "Snorlax");
+      cy.selectOption(testIdMulti, "Eevee");
 
       ["Charmander", "Eevee"].forEach((value) => {
-        getSelectValueContainer(testIdMulti).contains(value);
+        cy.getSelectValueContainer(testIdMulti).contains(value);
       });
 
       cy.intercept(

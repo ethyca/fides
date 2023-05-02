@@ -2,10 +2,11 @@
 Contains all of the generic CRUD endpoints that can be
 generated programmatically for each resource.
 """
+from collections import defaultdict
 from typing import Any, Dict, List, Tuple
 
 from loguru import logger as log
-from sqlalchemy import column
+from sqlalchemy import and_, column
 from sqlalchemy import delete as _delete
 from sqlalchemy import or_
 from sqlalchemy import update as _update
@@ -17,6 +18,7 @@ from sqlalchemy.future import select
 from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     CustomField,
     CustomFieldDefinition,
+    ResourceTypes,
 )
 from fides.api.ctl.utils import errors
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
@@ -38,7 +40,7 @@ async def create_resource(
             already_exists_error = errors.AlreadyExistsError(
                 sql_model.__name__, resource_dict["fides_key"]
             )
-            log.bind(error=already_exists_error.detail["error"]).error(  # type: ignore[index]
+            log.bind(error=already_exists_error.detail["error"]).info(  # type: ignore[index]
                 "Failed to insert resource"
             )
             raise already_exists_error
@@ -50,7 +52,7 @@ async def create_resource(
                 await async_session.execute(query)
             except SQLAlchemyError:
                 sa_error = errors.QueryError()
-                log.bind(error=sa_error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=sa_error.detail["error"]).info(  # type: ignore[index]
                     "Failed to create resource"
                 )
                 raise sa_error
@@ -58,8 +60,53 @@ async def create_resource(
         return await get_resource(sql_model, resource_dict["fides_key"], async_session)
 
 
+async def get_custom_fields_filtered(
+    async_session: AsyncSession,
+    resource_types_to_ids: Dict[ResourceTypes, List[str]] = defaultdict(list),
+) -> Base:
+    """
+    Utility function to construct a filtered query for custom field values based on provided mapping of
+    resource types to resource IDs.
+
+    This is for use in bulk querying of custom fields, to avoid multiple round trips to the db.
+    """
+    with log.contextualize(model=CustomField):
+        async with async_session.begin():
+            try:
+                log.debug("Fetching resource")
+                query = select(
+                    CustomField.resource_id,
+                    CustomField.value,
+                    CustomFieldDefinition.resource_type,
+                    CustomFieldDefinition.name,
+                ).join(
+                    CustomFieldDefinition,
+                    CustomFieldDefinition.id == CustomField.custom_field_definition_id,
+                )
+
+                criteria = [
+                    and_(
+                        CustomFieldDefinition.resource_type == resource_type.value,
+                        CustomField.resource_id.in_(resource_ids),
+                    )
+                    for resource_type, resource_ids in resource_types_to_ids.items()
+                ]
+                query = query.where(or_(False, *criteria))
+                result = await async_session.execute(query)
+                return result.mappings().all()
+            except SQLAlchemyError:
+                sa_error = errors.QueryError()
+                log.bind(error=sa_error.detail["error"]).error(  # type: ignore[index]
+                    "Failed to fetch custom fields"
+                )
+                raise sa_error
+
+
 async def get_resource(
-    sql_model: Base, fides_key: str, async_session: AsyncSession
+    sql_model: Base,
+    fides_key: str,
+    async_session: AsyncSession,
+    raise_not_found: bool = True,
 ) -> Base:
     """
     Get a resource from the databse by its FidesKey.
@@ -74,15 +121,15 @@ async def get_resource(
                 result = await async_session.execute(query)
             except SQLAlchemyError:
                 sa_error = errors.QueryError()
-                log.bind(error=sa_error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=sa_error.detail["error"]).info(  # type: ignore[index]
                     "Failed to fetch resource"
                 )
                 raise sa_error
 
             sql_resource = result.scalars().first()
-            if sql_resource is None:
+            if sql_resource is None and raise_not_found:
                 not_found_error = errors.NotFoundError(sql_model.__name__, fides_key)
-                log.bind(error=not_found_error.detail["error"]).error("Resource not found")  # type: ignore[index]
+                log.bind(error=not_found_error.detail["error"]).info("Resource not found")  # type: ignore[index]
                 raise not_found_error
 
             return sql_resource
@@ -120,7 +167,7 @@ async def get_resource_with_custom_fields(
                 result = await async_session.execute(query)
             except SQLAlchemyError:
                 sa_error = errors.QueryError()
-                log.bind(error=sa_error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=sa_error.detail["error"]).info(  # type: ignore[index]
                     "Failed to fetch custom fields"
                 )
                 raise sa_error
@@ -156,7 +203,7 @@ async def list_resource(sql_model: Base, async_session: AsyncSession) -> List[Ba
                 sql_resources = result.scalars().all()
             except SQLAlchemyError:
                 error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=error.detail["error"]).info(  # type: ignore[index]
                     "Failed to fetch resources"
                 )
                 raise error
@@ -184,7 +231,7 @@ async def update_resource(
                 )
             except SQLAlchemyError:
                 error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=error.detail["error"]).info(  # type: ignore[index]
                     "Failed to update resource"
                 )
                 raise error
@@ -237,7 +284,7 @@ async def upsert_resources(
 
             except SQLAlchemyError:
                 error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=error.detail["error"]).info(  # type: ignore[index]
                     "Failed to upsert resources"
                 )
                 raise error
@@ -275,7 +322,7 @@ async def delete_resource(
                 await async_session.execute(query)
             except SQLAlchemyError:
                 error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=error.detail["error"]).info(  # type: ignore[index]
                     "Failed to delete resource"
                 )
                 raise error

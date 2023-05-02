@@ -10,7 +10,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, Query
+from sqlalchemy.orm import Query, Session
 from starlette.responses import StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
@@ -26,6 +26,7 @@ from fides.api.ops.api.deps import get_config_proxy, get_db
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
+from fides.api.ops.api.v1.endpoints.utils import validate_start_and_end_filters
 from fides.api.ops.api.v1.scope_registry import CONSENT_READ
 from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
@@ -47,11 +48,12 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.ops.schemas.messaging.messaging import MessagingMethod
-from fides.api.ops.schemas.privacy_request import BulkPostPrivacyRequests, ConsentReport
+from fides.api.ops.schemas.privacy_request import BulkPostPrivacyRequests
 from fides.api.ops.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.ops.schemas.privacy_request import (
     ConsentPreferences,
     ConsentPreferencesWithVerificationCode,
+    ConsentReport,
     ConsentRequestResponse,
     ConsentWithExecutableStatus,
     PrivacyRequestCreate,
@@ -60,6 +62,9 @@ from fides.api.ops.schemas.privacy_request import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.consent_util import (
+    get_or_create_fides_user_device_id_provided_identity,
+)
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
@@ -88,23 +93,12 @@ def _filter_consent(
     if opt_in is not None:
         query = query.filter(Consent.opt_in == opt_in)
 
-    for end, start, field_name in [
-        [created_lt, created_gt, "created"],
-        [updated_lt, updated_gt, "updated"],
-    ]:
-        if end is None or start is None:
-            continue
-
-        if not (isinstance(end, datetime) and isinstance(start, datetime)):
-            continue
-
-        if end < start:
-            # With date fields, if the start date is after the end date, return a 400
-            # because no records will lie within this range.
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
-            )
+    validate_start_and_end_filters(
+        [
+            (created_lt, created_gt, "created"),
+            (updated_lt, updated_gt, "updated"),
+        ]
+    )
 
     if created_lt:
         query = query.filter(Consent.created_at < created_lt)
@@ -176,10 +170,10 @@ def create_consent_request(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
 
-    if not data.email and not data.phone_number:
+    if not data.email and not data.phone_number and not data.fides_user_device_id:
         raise HTTPException(
             HTTP_400_BAD_REQUEST,
-            detail="An email address or phone number identity is required",
+            detail="An email address, phone number, or fides_user_device_id is required",
         )
 
     identity = _get_or_create_provided_identity(
@@ -477,7 +471,6 @@ def _get_or_create_provided_identity(
 ) -> ProvidedIdentity:
     """Based on target identity type, retrieves or creates associated ProvidedIdentity"""
     target_identity_type: str = infer_target_identity_type(db, identity_data)
-
     if target_identity_type == ProvidedIdentityType.email.value and identity_data.email:
         identity = ProvidedIdentity.filter(
             db=db,
@@ -527,6 +520,11 @@ def _get_or_create_provided_identity(
                     "encrypted_value": {"value": identity_data.phone_number},
                 },
             )
+    elif target_identity_type == ProvidedIdentityType.fides_user_device_id.value:
+        identity = get_or_create_fides_user_device_id_provided_identity(
+            db, identity_data
+        )
+
     else:
         raise HTTPException(
             HTTP_422_UNPROCESSABLE_ENTITY,
@@ -559,6 +557,10 @@ def infer_target_identity_type(
         target_identity_type = ProvidedIdentityType.email.value
     elif identity_data.phone_number:
         target_identity_type = ProvidedIdentityType.phone_number.value
+    elif identity_data.fides_user_device_id:
+        # If no other identity is provided, use the Fides User Device ID
+        target_identity_type = ProvidedIdentityType.fides_user_device_id.value
+
     return target_identity_type
 
 

@@ -214,14 +214,20 @@ class TestConsentEmailBatchSend:
     @mock.patch(
         "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
-    @pytest.mark.usefixtures("sovrn_email_connection_config", "test_fides_org")
+    @pytest.mark.usefixtures("test_fides_org")
     def test_send_consent_email_failure_new_workflow(
         self,
         requeue_privacy_requests,
         db,
         privacy_request_awaiting_consent_email_send,
         privacy_preference_history,
+        privacy_preference_history_us_ca_provide,
+        sovrn_email_connection_config,
+        system,
     ) -> None:
+        sovrn_email_connection_config.system_id = system.id
+        sovrn_email_connection_config.save(db)
+
         with pytest.raises(MessageDispatchException):
             # Assert there's no messaging config hooked up so this consent email send should fail
             MessagingConfig.get_configuration(
@@ -229,26 +235,55 @@ class TestConsentEmailBatchSend:
             )
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
         privacy_request_awaiting_consent_email_send.cache_identity(identity)
+        # This preference matches on data use
         privacy_preference_history.privacy_request_id = (
             privacy_request_awaiting_consent_email_send.id
         )
         privacy_preference_history.save(db)
 
+        # This preference does not match on data use
+        privacy_preference_history_us_ca_provide.privacy_request_id = (
+            privacy_request_awaiting_consent_email_send.id
+        )
+        privacy_preference_history_us_ca_provide.save(db)
+
         exit_state = send_email_batch.delay().get()
         assert exit_state == EmailExitState.email_send_failed
 
         assert not requeue_privacy_requests.called
-        email_execution_log: ExecutionLog = ExecutionLog.filter(
+        execution_logs: ExecutionLog = ExecutionLog.filter(
             db=db,
             conditions=(
                 (
                     ExecutionLog.privacy_request_id
                     == privacy_request_awaiting_consent_email_send.id
                 )
-                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
-        ).first()
-        assert not email_execution_log
+        )
+        assert execution_logs.count() == 1
+        assert execution_logs[0].status == ExecutionLogStatus.error
+
+        db.refresh(privacy_preference_history)
+        # Sovrn error status and identities added to affected systems and secondary user ids because this preference is relevant
+        assert (
+            privacy_preference_history.affected_system_status[
+                sovrn_email_connection_config.system_key
+            ]
+            == "error"
+        )
+        assert privacy_preference_history.secondary_user_ids == {
+            "ljt_readerID": "12345"
+        }
+
+        db.refresh(privacy_preference_history_us_ca_provide)
+        # Sovrn error status and identities not added to affected systems and secondary user ids for irrelevant preference
+        assert (
+            privacy_preference_history_us_ca_provide.affected_system_status[
+                sovrn_email_connection_config.system_key
+            ]
+            == "skipped"
+        )
+        assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
     @mock.patch(
         "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
@@ -363,6 +398,17 @@ class TestConsentEmailBatchSend:
         assert email_execution_logs.count() == 1
         assert email_execution_logs[0].status == ExecutionLogStatus.skipped
 
+        db.refresh(privacy_preference_history_us_ca_provide)
+        # Entire privacy request is skipped, so "skipped" system logs are added in a different location then if
+        # some preferences are propagated and others are not.
+        assert (
+            privacy_preference_history_us_ca_provide.affected_system_status[
+                sovrn_email_connection_config.system_key
+            ]
+            == "skipped"
+        )
+        assert not privacy_preference_history_us_ca_provide.secondary_user_ids
+
     @mock.patch(
         "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
     )
@@ -378,13 +424,28 @@ class TestConsentEmailBatchSend:
         second_privacy_request_awaiting_consent_email_send,
         sovrn_email_connection_config,
         privacy_preference_history,
+        privacy_preference_history_us_ca_provide,
+        system,
     ) -> None:
+        sovrn_email_connection_config.system_id = system.id
+        sovrn_email_connection_config.save(db)
+
+        # This preference matches on data use
         cache_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
             db,
             "12345",
             privacy_preference_history,
         )
+
+        # This preference does not match on data use
+        cache_identity_and_privacy_preferences(
+            privacy_request_awaiting_consent_email_send,
+            db,
+            "12345",
+            privacy_preference_history_us_ca_provide,
+        )
+
         exit_state = send_email_batch.delay().get()
         assert exit_state == EmailExitState.complete
 
@@ -456,6 +517,27 @@ class TestConsentEmailBatchSend:
             logs_for_privacy_request_without_identity[0].status
             == ExecutionLogStatus.skipped
         )
+
+        # Sovrn complete status and identities added to affected systems and secondary user ids because this preference is relevant
+        assert (
+            privacy_preference_history.affected_system_status[
+                sovrn_email_connection_config.system_key
+            ]
+            == "complete"
+        )
+        assert privacy_preference_history.secondary_user_ids == {
+            "ljt_readerID": "12345"
+        }
+
+        # Sovrn skipped status added and identities not added to affected systems and secondary user ids for irrelevant preference
+        db.refresh(privacy_preference_history_us_ca_provide)
+        assert (
+            privacy_preference_history_us_ca_provide.affected_system_status[
+                sovrn_email_connection_config.system_key
+            ]
+            == "skipped"
+        )
+        assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
     @mock.patch(
         "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
