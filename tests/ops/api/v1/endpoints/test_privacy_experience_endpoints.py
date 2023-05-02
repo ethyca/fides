@@ -605,6 +605,54 @@ class TestCreatePrivacyExperiences:
         db.delete(history)
         db.delete(experience)
 
+    @pytest.mark.usefixtures("privacy_notice")
+    def test_create_privacy_experiences_min_fields(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        data = [
+            {
+                "regions": ["us_ca"],
+                "delivery_mechanism": "link",
+                "component": "privacy_center",
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_CREATE])
+
+        resp = api_client.post(url, headers=auth_header, json=data)
+        assert resp.status_code == 201
+        data = resp.json()
+        assert len(data) == 1
+        data = data[0]
+        assert data["disabled"] is False
+        assert data["component"] == "privacy_center"
+        assert data["delivery_mechanism"] == "link"
+        assert data["regions"] == ["us_ca"]
+        assert data["component_title"] is None
+        assert data["component_description"] is None
+        assert data["banner_title"] is None
+        assert data["banner_description"] is None
+        assert data["link_label"] is None
+        assert data["confirmation_button_label"] is None
+        assert data["reject_button_label"] is None
+        assert data["acknowledgement_button_label"] is None
+        assert data["version"] == 1.0
+        assert data["created_at"] is not None
+        assert data["updated_at"] is not None
+
+        created_privacy_experience_id = data["id"]
+        experience = get_privacy_experience_or_error(
+            db, experience_id=created_privacy_experience_id
+        )
+        history = experience.histories[0]
+        assert history.version == 1.0
+
+        db.delete(history)
+        db.delete(experience)
+
 
 class TestPrivacyExperienceDetail:
     @pytest.fixture(scope="function")
@@ -909,7 +957,6 @@ class TestUpdatePrivacyExperiences:
 
     def test_update_privacy_experiences_duplicate_ids(
         self,
-        db,
         api_client: TestClient,
         generate_auth_header,
         url,
@@ -1009,3 +1056,26 @@ class TestUpdatePrivacyExperiences:
         assert history.version == 2.0
         assert history.created_at is not None
         assert history.updated_at is not None
+
+    def test_update_one_field(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        request_data,
+        privacy_experience_privacy_center_link,
+    ):
+        assert privacy_experience_privacy_center_link.disabled is False
+
+        data = {"id": privacy_experience_privacy_center_link.id, "disabled": True}
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+
+        resp = api_client.patch(url, headers=auth_header, json=[data])
+        assert resp.status_code == 200
+        assert resp.json()[0]["id"] == privacy_experience_privacy_center_link.id
+        assert resp.json()[0]["disabled"] is True
+
+        db.refresh(privacy_experience_privacy_center_link)
+
+        assert privacy_experience_privacy_center_link.disabled is True

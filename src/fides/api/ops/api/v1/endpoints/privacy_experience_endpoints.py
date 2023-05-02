@@ -21,9 +21,7 @@ from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.ops.schemas.privacy_experience import (
-    PrivacyExperience as PrivacyExperienceSchema,
-)
-from fides.api.ops.schemas.privacy_experience import (
+    PrivacyExperienceCreate,
     PrivacyExperienceResponse,
     PrivacyExperienceWithId,
 )
@@ -112,7 +110,7 @@ def privacy_experience_list(
 def privacy_experience_create(
     *,
     db: Session = Depends(deps.get_db),
-    bulk_experience_data: conlist(PrivacyExperienceSchema, max_items=50),  # type: ignore
+    bulk_experience_data: conlist(PrivacyExperienceCreate, max_items=50),  # type: ignore
 ) -> List[PrivacyExperience]:
     """
     Bulk create Privacy Experiences

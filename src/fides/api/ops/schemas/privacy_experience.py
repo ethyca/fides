@@ -14,13 +14,14 @@ from fides.api.ops.schemas.privacy_notice import PrivacyNoticeResponse
 
 class PrivacyExperience(BaseSchema):
     """
-    Base for PrivacyExperience API objects
+    Base for PrivacyExperience API objects.  Here all fields are optional since
+    Pydantic allows subclasses to be more strict but not less strict
     """
 
     disabled: Optional[bool] = False
-    component: ComponentType
-    delivery_mechanism: DeliveryMechanism
-    regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
+    component: Optional[ComponentType]
+    delivery_mechanism: Optional[DeliveryMechanism]
+    regions: Optional[conlist(PrivacyNoticeRegion, min_items=1)]  # type: ignore
     component_title: Optional[SafeStr]
     component_description: Optional[SafeStr]
     banner_title: Optional[SafeStr]
@@ -46,6 +47,18 @@ class PrivacyExperience(BaseSchema):
         if len(regions) != len(set(regions)):
             raise ValueError("Duplicate regions found.")
         return regions
+
+
+class PrivacyExperienceCreate(PrivacyExperience):
+    """
+    An API representation of a PrivacyNotice.
+    This model doesn't include an `id` so that it can be used for creation.
+    It also establishes some fields _required_ for creation
+    """
+
+    regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
+    delivery_mechanism: DeliveryMechanism
+    component: ComponentType
 
 
 class PrivacyExperienceWithId(PrivacyExperience):
