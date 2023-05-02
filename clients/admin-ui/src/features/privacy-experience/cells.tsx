@@ -1,15 +1,18 @@
+import { Text } from "@fidesui/react";
 import React from "react";
 import { CellProps } from "react-table";
 
-import { EnableCell, MapCell } from "~/features/common/table/";
+import { EnableCell } from "~/features/common/table/";
 import { PrivacyExperienceResponse } from "~/types/api";
 
 import { COMPONENT_MAP } from "./constants";
 import { usePatchPrivacyExperienceMutation } from "./privacy-experience.slice";
 
-export const ComponentCell = (
-  cellProps: CellProps<PrivacyExperienceResponse, string>
-) => <MapCell map={COMPONENT_MAP} {...cellProps} />;
+export const ComponentCell = ({
+  value,
+}: CellProps<PrivacyExperienceResponse, string>) => (
+  <Text>{COMPONENT_MAP.get(value) ?? value}</Text>
+);
 
 export const EnablePrivacyExperienceCell = (
   cellProps: CellProps<PrivacyExperienceResponse, boolean>

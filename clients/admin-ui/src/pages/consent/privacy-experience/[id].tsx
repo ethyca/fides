@@ -13,6 +13,7 @@ import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import { COMPONENT_MAP } from "~/features/privacy-experience/constants";
 import { useGetPrivacyExperienceByIdQuery } from "~/features/privacy-experience/privacy-experience.slice";
 import { ComponentType } from "~/types/api";
 
@@ -81,7 +82,9 @@ const PrivacyExperienceDetailPage = () => {
               </NextLink>
             </BreadcrumbItem>
             <BreadcrumbItem color="complimentary.500">
-              <NextLink href="#">{data.name}</NextLink>
+              <NextLink href="#">
+                {COMPONENT_MAP.get(data.component) ?? data.component}
+              </NextLink>
             </BreadcrumbItem>
           </Breadcrumb>
         </Box>
