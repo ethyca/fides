@@ -44,6 +44,7 @@ export type V1Consent = {
 export type V2Consent = {
   button: {
     description: string;
+    description_subtext?: string[];
     icon_path: string;
     identity_inputs?: IdentityInputs;
     title: string;
@@ -62,6 +63,7 @@ export type PrivacyRequestOption = {
   icon_path: string;
   title: string;
   description: string;
+  description_subtext?: string[];
   identity_inputs?: IdentityInputs;
 };
 

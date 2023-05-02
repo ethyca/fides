@@ -34,13 +34,18 @@ The types of changes are:
 - Support `privacy_declaration` as a resource type for custom fields [#3149](https://github.com/ethyca/fides/pull/3149)
 - Expose `id` field of embedded `privacy_declarations` on `system` API responses [#3157](https://github.com/ethyca/fides/pull/3157)
 - Access and erasure support for Unbounce [#2697](https://github.com/ethyca/fides/pull/2697)
+- Support pseudonymous consent requests with `fides_user_device_id` [#3158](https://github.com/ethyca/fides/pull/3158)
+- Update `fides_consent` cookie format [#3158](https://github.com/ethyca/fides/pull/3158)
 - Add custom fields to the data use declaration form [#3197](https://github.com/ethyca/fides/pull/3197)
+
 
 ### Changed
 
 - The `cursor` pagination strategy now also searches for data outside of the `data_path` when determining the cursor value [#3068](https://github.com/ethyca/fides/pull/3068)
 - Moved Privacy Declarations associated with Systems to their own DB table [#3098](https://github.com/ethyca/fides/pull/3098)
 - More tests on data use validation for privacy notices within the same region [#3156](https://github.com/ethyca/fides/pull/3156)
+- Improvements to export code for bugfixes and privacy declaration custom field support [#3184](https://github.com/ethyca/fides/pull/3184)
+- Enabled privacy notice feature flag [#3192](https://github.com/ethyca/fides/pull/3192)
 
 ### Removed
 
@@ -52,11 +57,13 @@ The types of changes are:
 - Fix a typo in the Admin UI [#3166](https://github.com/ethyca/fides/pull/3166)
 - The `--local` flag is now respected for the `scan dataset db` command [#3096](https://github.com/ethyca/fides/pull/3096)
 - Fixing issue where connectors with external dataset references would fail to save [#3142](https://github.com/ethyca/fides/pull/3142)
+- Ensure privacy declaration IDs are stable across updates through system API [#3188](https://github.com/ethyca/fides/pull/3188)
 
 ### Developer Experience
 
 - Update fides deploy to use a new database.load_samples setting to initialize sample Systems, Datasets, and Connections for testing [#3102](https://github.com/ethyca/fides/pull/3102)
 - Remove support for automatically configuring messaging (Mailgun) & storage (S3) using `.env` with `nox -s "fides_env(test)"` [#3102](https://github.com/ethyca/fides/pull/3102)
+- Add smoke tests for consent management [#3158](https://github.com/ethyca/fides/pull/3158)
 
 ## [2.11.0](https://github.com/ethyca/fides/compare/2.10.0...2.11.0)
 

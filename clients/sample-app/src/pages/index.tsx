@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-sync-scripts */
 import { Product } from '../types';
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
@@ -24,6 +25,7 @@ const IndexPage = ({
         <meta name="description" content="Sample Project used within Fides (github.com/ethyca/fides)" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css"></link>
+        <script src="http://localhost:3001/fides-consent.js"></script>
       </Head>
 
       <Home products={products} />
