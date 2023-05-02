@@ -245,7 +245,6 @@ export const usePrivacyDeclarationForm = ({
     const thisDataUse = allDataUses.filter(
       (du) => du.fides_key === initialValues.data_use
     )[0];
-    console.log({ thisDataUse });
     if (thisDataUse) {
       return initialValues.name
         ? `${thisDataUse.name} - ${initialValues.name}`
@@ -254,17 +253,13 @@ export const usePrivacyDeclarationForm = ({
     return undefined;
   }, [allDataUses, initialValues]);
 
-  console.log({ title, initialValues });
-
   const handleSubmit = async (
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    console.log("submitting", values);
     const { customFieldValues: formCustomFieldValues, ...declaration } = values;
     const success = await onSubmit(declaration, formikHelpers);
     if (success) {
-      console.log("result from submitting: ", success);
       // find the matching resource based on data use and name
       const customFieldResource = success.filter(
         (pd) =>
@@ -274,7 +269,6 @@ export const usePrivacyDeclarationForm = ({
           (pd.name ? pd.name === values.name : true)
       );
       if (customFieldResource.length > 0) {
-        console.log({ formCustomFieldValues, values });
         await upsertCustomFields({
           customFieldValues: formCustomFieldValues,
           fides_key: customFieldResource[0].id,

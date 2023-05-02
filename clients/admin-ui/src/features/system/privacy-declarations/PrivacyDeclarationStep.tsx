@@ -57,7 +57,6 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
     const updateSystemResult = await updateSystemMutationTrigger(
       systemBodyWithDeclaration
     );
-    console.log("updatedSystemResult", updateSystemResult);
 
     return handleResult(updateSystemResult);
   };

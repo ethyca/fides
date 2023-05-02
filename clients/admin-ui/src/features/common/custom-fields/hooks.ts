@@ -136,26 +136,14 @@ export const useCustomFields = ({
 
       // When creating an resource, the fides key may have initially been blank. But by the time the
       // form is submitted it must not be blank (not undefined, not an empty string).
-      console.log(
-        "formValue Fides key: ",
-        formValues.fides_key,
-        " resourceFidesKey: ",
-        resourceFidesKey
-      );
-      console.log(
-        "fides_key" in formValues,
-        formValues.fides_key !== "",
-        resourceFidesKey
-      );
       const fidesKey =
         "fides_key" in formValues && formValues.fides_key !== ""
           ? formValues.fides_key
           : resourceFidesKey;
-      console.log("fidesKey", fidesKey);
+
       if (!fidesKey) {
         return;
       }
-      console.log(2, formValues);
 
       const { customFieldValues: customFieldValuesFromForm } = formValues;
 
@@ -166,12 +154,10 @@ export const useCustomFields = ({
         return;
       }
 
-      console.log("about to save custom fields");
-
       try {
         // This would be a lot simpler (and more efficient) if the API had an endpoint for updating
         // all the metadata associated with a field, including deleting options that weren't passed.
-        const res = await Promise.allSettled(
+        await Promise.allSettled(
           sortedCustomFieldDefinitionIds.map((definitionId) => {
             const customField = definitionIdToCustomField.get(definitionId);
             const value = customFieldValuesFromForm[definitionId];
@@ -200,7 +186,6 @@ export const useCustomFields = ({
           })
         );
 
-        console.log("res", res);
         successAlert(
           `Custom field(s) successfully saved and added to this ${resourceType} form.`
         );
