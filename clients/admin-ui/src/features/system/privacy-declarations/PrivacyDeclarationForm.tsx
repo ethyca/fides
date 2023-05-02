@@ -45,7 +45,6 @@ export const ValidationSchema = Yup.object().shape({
     .label("Data subjects"),
 });
 
-// type FormValues = typeof defaultInitialValues;
 export type FormValues = PrivacyDeclarationWithId & {
   customFieldValues: CustomFieldValues;
 };

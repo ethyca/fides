@@ -149,7 +149,6 @@ export const useCustomFields = ({
 
       // This will be undefined if the form never rendered a `CustomFieldList` that would assign
       // form values.
-
       if (!customFieldValuesFromForm) {
         return;
       }
