@@ -36,6 +36,8 @@ The types of changes are:
 - Access and erasure support for Unbounce [#2697](https://github.com/ethyca/fides/pull/2697)
 - Support pseudonymous consent requests with `fides_user_device_id` [#3158](https://github.com/ethyca/fides/pull/3158)
 - Update `fides_consent` cookie format [#3158](https://github.com/ethyca/fides/pull/3158)
+- Add custom fields to the data use declaration form [#3197](https://github.com/ethyca/fides/pull/3197)
+
 
 ### Changed
 
