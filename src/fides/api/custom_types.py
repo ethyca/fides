@@ -27,10 +27,6 @@ class SafeStr(str):
 
         return value
 
-    def unescape(self) -> str:
-        """Unescape the safe string"""
-        return unescape(self)
-
 
 class PhoneNumber(str):
     """

@@ -1,3 +1,4 @@
+from html import unescape
 from typing import Dict, List, Optional, Tuple
 
 from fastapi import Depends, Request, Security
@@ -166,8 +167,11 @@ def get_privacy_notice(
     """
     Return a single PrivacyNotice
     """
-    unescape = request.headers.get("unescape-safestr")
-    return get_privacy_notice_or_error(db, privacy_notice_id)  # type: ignore[return-value]
+    should_unescape = request.headers.get("unescape-safestr")
+    notice = get_privacy_notice_or_error(db, privacy_notice_id)
+    if should_unescape:
+        notice.name = unescape(notice.name)
+    return notice
 
 
 def validate_notice_data_uses(

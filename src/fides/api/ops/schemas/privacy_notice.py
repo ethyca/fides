@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from html import escape, unescape
 from typing import List, Optional
 
 from pydantic import Extra, conlist
@@ -22,13 +23,13 @@ class PrivacyNotice(BaseSchema):
     stricter but not less strict
     """
 
-    name: Optional[SafeStr]
-    description: Optional[SafeStr]
-    internal_description: Optional[SafeStr]
-    origin: Optional[SafeStr]
+    name: Optional[str]
+    description: Optional[str]
+    internal_description: Optional[str]
+    origin: Optional[str]
     regions: Optional[conlist(PrivacyNoticeRegion, min_items=1)]  # type: ignore
     consent_mechanism: Optional[ConsentMechanism]
-    data_uses: Optional[conlist(SafeStr, min_items=1)]  # type: ignore
+    data_uses: Optional[conlist(str, min_items=1)]  # type: ignore
     enforcement_level: Optional[EnforcementLevel]
     disabled: Optional[bool] = False
     has_gpc_flag: Optional[bool] = False
@@ -63,7 +64,7 @@ class PrivacyNoticeCreation(PrivacyNotice):
     name: SafeStr
     regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
     consent_mechanism: ConsentMechanism
-    data_uses: conlist(SafeStr, min_items=1)  # type: ignore
+    data_uses: conlist(str, min_items=1)  # type: ignore
     enforcement_level: EnforcementLevel
 
 
@@ -74,6 +75,7 @@ class PrivacyNoticeWithId(PrivacyNotice):
     """
 
     id: str
+    name: SafeStr
 
 
 class PrivacyNoticeResponse(PrivacyNoticeWithId):
@@ -81,6 +83,7 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
     An API representation of a PrivacyNotice used for response payloads
     """
 
+    name: str
     created_at: datetime
     updated_at: datetime
     version: float

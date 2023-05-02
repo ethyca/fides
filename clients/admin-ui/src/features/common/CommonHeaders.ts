@@ -7,5 +7,6 @@ export function addCommonHeaders(headers: Headers, token: string | null) {
   if (token) {
     headers.set("authorization", `Bearer ${token}`);
   }
+  headers.set("Unescape-Safestr", "true");
   return headers;
 }
