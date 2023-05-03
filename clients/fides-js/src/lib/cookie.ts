@@ -38,11 +38,10 @@ export type CookieIdentity = Record<string, string>;
 export type CookieMeta = Record<string, string>;
 
 export interface FidesCookie {
-  consent:  CookieKeyConsent;
+  consent: CookieKeyConsent;
   identity: CookieIdentity;
   fides_meta: CookieMeta;
-};
-
+}
 
 /**
  * Save the cookie under the name "fides_consent" for 365 days
@@ -81,11 +80,11 @@ export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
   return {
     consent: consent || {},
     identity: {
-      "fides_user_device_id": userDeviceId,
+      fides_user_device_id: userDeviceId,
     },
     fides_meta: {
-      "version": "0.9.0",
-      "createdAt": now.toISOString(),
+      version: "0.9.0",
+      createdAt: now.toISOString(),
     },
   };
 };
@@ -96,7 +95,7 @@ export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
  *    default values (e.g. "data_sales" => true)
  * 2) context: browser context, which can automatically override those defaults
  *    in some cases (e.g. global privacy control => false)
- * 
+ *
  * Returns the final set of "defaults" that can then be changed according to the
  * user's preferences.
  */
@@ -133,14 +132,13 @@ export const makeConsentDefaults = ({
  * Attempt to read, parse, and return the current Fides cookie from the browser.
  * If one doesn't exist, make a new default cookie (including generating a new
  * pseudonymous ID) and return the default values.
- * 
+ *
  * NOTE: This doesn't *save* the cookie to the browser. To do that, call
  * `saveFidesCookie` with a valid cookie after editing the values.
  */
 export const getOrMakeFidesCookie = (
   defaults?: CookieKeyConsent
 ): FidesCookie => {
-
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults);
 
@@ -169,7 +167,7 @@ export const getOrMakeFidesCookie = (
       parsedCookie = {
         ...defaultCookie,
         consent: parsedJson,
-      }
+      };
     }
 
     // Re-apply the default consent values to the parsed cookie; they may have
@@ -178,7 +176,7 @@ export const getOrMakeFidesCookie = (
     const updatedConsent: CookieKeyConsent = {
       ...defaults,
       ...parsedCookie.consent,
-    }
+    };
     parsedCookie.consent = updatedConsent;
     return parsedCookie;
   } catch (err) {
@@ -190,15 +188,15 @@ export const getOrMakeFidesCookie = (
 
 /**
  * Save the given Fides cookie to the browser using the current root domain.
- * 
+ *
  * This calculates the root domain by using the last two parts of the hostname:
  *   privacy.example.com -> example.com
  *   example.com -> example.com
  *   localhost -> localhost
- * 
+ *
  * NOTE: This won't handled second-level domains like co.uk:
  *   privacy.example.co.uk -> co.uk # ERROR
- * 
+ *
  * (see https://github.com/ethyca/fides/issues/2072)
  */
 export const saveFidesCookie = (cookie: FidesCookie) => {

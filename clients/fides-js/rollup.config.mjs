@@ -22,7 +22,9 @@ export default [
       }),
       copy({
         // Automatically add the built script to the privacy center's static files for bundling:
-        targets: [{ src: `dist/${name}.js`, dest: "../privacy-center/public/lib/" }],
+        targets: [
+          { src: `dist/${name}.js`, dest: "../privacy-center/public/lib/" },
+        ],
         verbose: true,
         hook: "writeBundle",
       }),
@@ -36,13 +38,13 @@ export default [
             if (gzipSizeKb > GZIP_SIZE_ERROR_KB) {
               console.error(
                 `❌ ERROR: ${fileName} build failed! Gzipped size (${gzipSize}) exceeded maximum size (${GZIP_SIZE_ERROR_KB} KB)!`,
-                `If you must, update GZIP_SIZE_* constants in clients/fides-js/rollup.config.mjs`,
+                `If you must, update GZIP_SIZE_* constants in clients/fides-js/rollup.config.mjs`
               );
               process.exit(1);
             } else if (gzipSizeKb > GZIP_SIZE_WARN_KB) {
               console.warn(
                 `️🚨 WARN: ${fileName} build is getting large! Gzipped size (${gzipSize}) exceeded warning size (${GZIP_SIZE_WARN_KB} KB)!`,
-                `If you must, update GZIP_SIZE_* constants in clients/fides-js/rollup.config.mjs`,
+                `If you must, update GZIP_SIZE_* constants in clients/fides-js/rollup.config.mjs`
               );
               if (isDev) {
                 process.exit(1);
@@ -53,7 +55,7 @@ export default [
               );
             }
           },
-        ]
+        ],
       }),
     ],
     output: [

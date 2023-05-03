@@ -17,6 +17,6 @@ module.exports = {
     // https://github.com/carhartl/typescript-cookie/issues/110#issuecomment-1375408191
     ...{
       "typescript-cookie": "js-cookie",
-    }
+    },
   },
 };

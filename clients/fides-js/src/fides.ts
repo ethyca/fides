@@ -1,13 +1,13 @@
 /**
  * Fides.js: Javascript library for Fides (https://github.com/ethyca/fides)
- * 
+ *
  * This JS module provides easy access to interact with Fides from a webpage, including the ability to:
  * - initialize the page with default consent options (e.g. opt-out of advertising cookies, opt-in to analytics, etc.)
  * - read/write the current user's consent preferences to their browser as a cookie
  * - push the current user's consent preferences to other systems via integrations (Google Tag Manager, Meta, etc.)
- * 
+ *
  * See https://fid.es for more information!
- * 
+ *
  * Basic usage of this module in an HTML page is:
  * ```
  * <script src="https://privacy.{company}.com/fides.js"></script>
@@ -23,7 +23,7 @@
  *   });
  * </script>
  * ```
- * 
+ *
  * ...and later:
  * ```
  * <script>
@@ -38,7 +38,13 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 import { ConsentConfig } from "./lib/consent-config";
 import { getConsentContext } from "./lib/consent-context";
-import { CookieKeyConsent, CookieIdentity, CookieMeta, getOrMakeFidesCookie, makeConsentDefaults } from "./lib/cookie";
+import {
+  CookieKeyConsent,
+  CookieIdentity,
+  CookieMeta,
+  getOrMakeFidesCookie,
+  makeConsentDefaults,
+} from "./lib/cookie";
 
 export interface FidesConfig {
   consent: ConsentConfig;
@@ -53,7 +59,7 @@ type Fides = {
   initialized: boolean;
   meta: typeof meta;
   shopify: typeof shopify;
-}
+};
 
 declare global {
   interface Window {
@@ -82,7 +88,7 @@ const init = (config: FidesConfig) => {
   _Fides.fides_meta = cookie.fides_meta;
   _Fides.identity = cookie.identity;
   _Fides.initialized = true;
-}
+};
 
 // The global Fides object; this is bound to window.Fides if available
 _Fides = {
