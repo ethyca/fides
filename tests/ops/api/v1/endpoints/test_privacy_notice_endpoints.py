@@ -495,6 +495,7 @@ class TestGetPrivacyNotices:
                         "consent_mechanism": ConsentMechanism.opt_in,
                         "data_uses": ["advertising"],
                         "enforcement_level": EnforcementLevel.system_wide,
+                        "displayed_in_overlay": True,
                     },
                 )
             )
@@ -540,6 +541,7 @@ class TestGetPrivacyNotices:
                         "consent_mechanism": ConsentMechanism.opt_in,
                         "data_uses": ["advertising"],
                         "enforcement_level": EnforcementLevel.system_wide,
+                        "displayed_in_overlay": True,
                     },
                 )
             )
