@@ -1,0 +1,35 @@
+import { useFormikContext } from "formik";
+
+import FormSection from "~/features/common/form/FormSection";
+import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
+import { ComponentType, PrivacyExperienceCreate } from "~/types/api";
+
+/**
+ * Banner text form component.
+ * Rules:
+ *   * Only renders on component_type = OVERLAY
+ */
+const BannerTextForm = () => {
+  const { initialValues } = useFormikContext<PrivacyExperienceCreate>();
+
+  if (initialValues.component === ComponentType.PRIVACY_CENTER) {
+    return null;
+  }
+
+  return (
+    <FormSection title="Banner text">
+      <CustomTextInput
+        name="banner_title"
+        label="Banner title"
+        variant="stacked"
+      />
+      <CustomTextArea
+        label="Banner description"
+        name="banner_description"
+        variant="stacked"
+      />
+    </FormSection>
+  );
+};
+
+export default BannerTextForm;

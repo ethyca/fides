@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import { useMemo } from "react";
 
 import FormSection from "~/features/common/form/FormSection";
-import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -17,11 +16,15 @@ import {
   PrivacyExperienceResponse,
 } from "~/types/api";
 
+import BannerActionForm from "./BannerActionForm";
+import BannerTextForm from "./BannerTextForm";
+import DeliveryMechanismForm from "./DeliveryMechanismForm";
 import {
   defaultInitialValues,
   transformPrivacyExperienceResponseToCreation,
   ValidationSchema,
 } from "./helpers";
+import PrivacyCenterMessagingForm from "./PrivacyCenterMessagingForm";
 
 const PrivacyNoticeForm = ({
   privacyExperience: passedInPrivacyExperience,
@@ -64,6 +67,10 @@ const PrivacyNoticeForm = ({
     }
   };
 
+  const associatedNotices = passedInPrivacyExperience
+    ? passedInPrivacyExperience.privacy_notices
+    : undefined;
+
   return (
     <Formik
       initialValues={initialValues}
@@ -73,8 +80,13 @@ const PrivacyNoticeForm = ({
     >
       {({ dirty, isValid, isSubmitting }) => (
         <Form>
+          <pre>
+            notice mechanisms:{" "}
+            {associatedNotices?.map((n) => `${n.consent_mechanism}, `)}
+          </pre>
           <Stack spacing={10}>
             <Stack spacing={6}>
+              {/* Location shows in every form */}
               <FormSection title="Locations">
                 <Box
                   border="1px solid"
@@ -95,35 +107,12 @@ const PrivacyNoticeForm = ({
                   ))}
                 </Box>
               </FormSection>
-              <FormSection title="Banner text">
-                <CustomTextInput
-                  name="banner_title"
-                  label="Banner title"
-                  variant="stacked"
-                />
-                <CustomTextArea
-                  label="Banner description"
-                  name="banner_description"
-                  variant="stacked"
-                />
-              </FormSection>
-              <FormSection title="Banner actions">
-                <CustomTextInput
-                  name="link_label"
-                  label="Link label"
-                  variant="stacked"
-                />
-                <CustomTextInput
-                  label="Confirmation button label"
-                  name="confirmation_button_label"
-                  variant="stacked"
-                />
-                <CustomTextInput
-                  label="Reject button label"
-                  name="reject_button_label"
-                  variant="stacked"
-                />
-              </FormSection>
+              {/* Form subsections are responsible for their own render/don't render logic */}
+              <DeliveryMechanismForm privacyNotices={associatedNotices} />
+              <PrivacyCenterMessagingForm />
+              <BannerTextForm />
+              <BannerActionForm privacyNotices={associatedNotices} />
+              {/* End form subsections */}
             </Stack>
             <ButtonGroup size="sm" spacing={2}>
               <Button
