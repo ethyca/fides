@@ -21,8 +21,10 @@ interface AccordionProps extends DataProps {
   onEdit: (
     oldDeclaration: PrivacyDeclarationWithId,
     newDeclaration: PrivacyDeclarationWithId
-  ) => Promise<boolean>;
-  onDelete: (declaration: PrivacyDeclarationWithId) => Promise<boolean>;
+  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
+  onDelete: (
+    declaration: PrivacyDeclarationWithId
+  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
 }
 
 const PrivacyDeclarationAccordionItem = ({
@@ -34,13 +36,14 @@ const PrivacyDeclarationAccordionItem = ({
   AccordionProps,
   "privacyDeclarations"
 >) => {
-  const handleEdit = (newValues: PrivacyDeclarationWithId) =>
-    onEdit(privacyDeclaration, newValues);
+  const handleEdit = (values: PrivacyDeclarationWithId) =>
+    onEdit(privacyDeclaration, values);
 
   const { initialValues, renderHeader, handleSubmit } =
     usePrivacyDeclarationForm({
       initialValues: privacyDeclaration,
       onSubmit: handleEdit,
+      privacyDeclarationId: privacyDeclaration.id,
       ...dataProps,
     });
 
@@ -71,6 +74,7 @@ const PrivacyDeclarationAccordionItem = ({
               <AccordionPanel backgroundColor="gray.50" pt={0}>
                 <Stack spacing={4}>
                   <PrivacyDeclarationFormComponents
+                    privacyDeclarationId={privacyDeclaration.id}
                     onDelete={onDelete}
                     {...dataProps}
                   />
