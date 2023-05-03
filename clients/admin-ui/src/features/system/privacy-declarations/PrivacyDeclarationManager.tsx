@@ -29,7 +29,7 @@ interface Props {
   onSave: (
     privacyDeclarations: PrivacyDeclaration[],
     isDelete?: boolean
-  ) => Promise<boolean>;
+  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
 }
 
 const PrivacyDeclarationManager = ({
@@ -52,6 +52,7 @@ const PrivacyDeclarationManager = ({
     if (!newDeclaration) {
       return declarations;
     }
+
     return declarations.filter((pd) => pd.id !== newDeclaration.id);
   }, [newDeclaration, system]);
 
@@ -74,8 +75,8 @@ const PrivacyDeclarationManager = ({
     const transformedDeclarations = updatedDeclarations.map((d) =>
       transformDeclarationForSubmission(d)
     );
-    const success = await onSave(transformedDeclarations, isDelete);
-    return success;
+    const res = await onSave(transformedDeclarations, isDelete);
+    return res;
   };
 
   const handleEditDeclaration = async (
@@ -87,7 +88,7 @@ const PrivacyDeclarationManager = ({
       updatedDeclaration.id !== oldDeclaration.id &&
       checkAlreadyExists(updatedDeclaration)
     ) {
-      return false;
+      return undefined;
     }
     // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
@@ -99,13 +100,21 @@ const PrivacyDeclarationManager = ({
 
   const saveNewDeclaration = async (values: PrivacyDeclarationWithId) => {
     if (checkAlreadyExists(values)) {
-      return false;
+      return undefined;
     }
 
     toast.closeAll();
-    setNewDeclaration(values);
     const updatedDeclarations = [...accordionDeclarations, values];
-    return handleSave(updatedDeclarations);
+    const res = await handleSave(updatedDeclarations);
+    if (res) {
+      const savedDeclaration = res.filter(
+        (pd) =>
+          (pd.name ? pd.name === values.name : true) &&
+          pd.data_use === values.data_use
+      )[0];
+      setNewDeclaration(savedDeclaration);
+    }
+    return res;
   };
 
   const handleShowNewForm = () => {
