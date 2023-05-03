@@ -6,7 +6,7 @@
       "outputs": [".next/*", "!.next/cache/*"]
     },
     "dev": {
-      "dependsOn": ["build"],
+      "dependsOn": [],
       "outputs": [".next/*", "!.next/cache/*"]
     },
     "start": {
@@ -32,22 +32,22 @@
       "dependsOn": ["build"]
     },
     "cy:open": {
-      "dependsOn": ["build"]
+      "dependsOn": []
     },
     "cy:run": {
-      "dependsOn": ["build"]
+      "dependsOn": []
     },
     "cy:start": {
-      "dependsOn": ["build"]
+      "dependsOn": []
     },
     "analyze": {
-      "dependsOn": ["build"]
+      "dependsOn": []
     },
     "analyze:browser": {
-      "dependsOn": ["build"]
+      "dependsOn": []
     },
     "analyze:server": {
-      "dependsOn": ["build"]
+      "dependsOn": []
     },
     "openapi:generate": {
       "dependsOn": []
