@@ -25,6 +25,10 @@ The types of changes are:
 
 - Merge instances of RTK `createApi` into one instance for better cache invalidation [#3059](https://github.com/ethyca/fides/pull/3059)
 
+### Fixed
+
+- Datamap export mitigation for deleted taxonomy elements referenced by declarations [#3214](https://github.com/ethyca/fides/pull/3214)
+
 ## [2.12.0](https://github.com/ethyca/fides/compare/2.11.0...2.12.0)
 
 ### Added
