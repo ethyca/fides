@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://ethyca.github.io/fides/development/releases/">
       
       <link rel="icon" href="../../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.2.7">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-8.2.7">
     
     
       
@@ -394,82 +394,12 @@ You're not viewing the latest version.
       
       
         <label class="md-nav__link" for="__nav_1_5">
-          Community
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Community" data-md-level="2">
-        <label class="md-nav__title" for="__nav_1_5">
-          <span class="md-nav__icon md-icon"></span>
-          Community
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../community/overview/" class="md-nav__link">
-        Github, Slack, and Discord
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../community/hints_tips/" class="md-nav__link">
-        Community Hints and Tips
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../community/code_of_conduct/" class="md-nav__link">
-        Code of Conduct
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-    
-  
-  
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5_4" type="checkbox" id="__nav_1_5_4" checked>
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_1_5_4">
           Contributing
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="Contributing" data-md-level="3">
-        <label class="md-nav__title" for="__nav_1_5_4">
+      <nav class="md-nav" aria-label="Contributing" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_5">
           <span class="md-nav__icon md-icon"></span>
           Contributing
         </label>
@@ -495,8 +425,36 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../contributing_details/" class="md-nav__link">
-        Contributing Details
+      <a href="../developing_fides/" class="md-nav__link">
+        Developing Fides
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development_tips/" class="md-nav__link">
+        Development Tips
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        Testing
       </a>
     </li>
   
@@ -537,78 +495,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../fideslog/" class="md-nav__link">
-        Fideslog Analytics
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../database_migration/" class="md-nav__link">
-        Database Migration
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../documentation/" class="md-nav__link">
         Documentation
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../testing/" class="md-nav__link">
-        Writing Tests
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../testing_environment/" class="md-nav__link">
-        Testing Environment
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../dev_deployment/" class="md-nav__link">
-        Local Fides Deploy
       </a>
     </li>
   
@@ -683,13 +571,6 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#planning" class="md-nav__link">
-    Planning
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#branching" class="md-nav__link">
     Branching
   </a>
@@ -723,52 +604,85 @@ You're not viewing the latest version.
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#release-checklist" class="md-nav__link">
+    Release Checklist
+  </a>
+  
+    <nav class="md-nav" aria-label="Release Checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pre-release-steps" class="md-nav__link">
+    Pre-Release Steps
+  </a>
+  
+    <nav class="md-nav" aria-label="Pre-Release Steps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    General
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api" class="md-nav__link">
+    API
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    CLI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#privacy-center" class="md-nav__link">
+    Privacy Center
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admin-ui" class="md-nav__link">
+    Admin UI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    Documentation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-release-steps" class="md-nav__link">
+    Post-Release Steps
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
       
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../release_checklist/" class="md-nav__link">
-        Release Checklist
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../vscode_debugging/" class="md-nav__link">
-        VSCode Debugging
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../jetbrains_debugging/" class="md-nav__link">
-        Jetbrains Debugging
-      </a>
     </li>
   
 
@@ -802,8 +716,90 @@ You're not viewing the latest version.
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fideslog/" class="md-nav__link">
+        User Analytics
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_6" type="checkbox" id="__nav_1_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_6">
+          Community
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Community" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_6">
+          <span class="md-nav__icon md-icon"></span>
+          Community
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../community/overview/" class="md-nav__link">
+        Github, Slack, and Discord
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../community/hints_tips/" class="md-nav__link">
+        Community Hints and Tips
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../community/code_of_conduct/" class="md-nav__link">
+        Code of Conduct
+      </a>
     </li>
   
 
@@ -925,13 +921,6 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#planning" class="md-nav__link">
-    Planning
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#branching" class="md-nav__link">
     Branching
   </a>
@@ -965,6 +954,81 @@ You're not viewing the latest version.
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#release-checklist" class="md-nav__link">
+    Release Checklist
+  </a>
+  
+    <nav class="md-nav" aria-label="Release Checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pre-release-steps" class="md-nav__link">
+    Pre-Release Steps
+  </a>
+  
+    <nav class="md-nav" aria-label="Pre-Release Steps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    General
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api" class="md-nav__link">
+    API
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    CLI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#privacy-center" class="md-nav__link">
+    Privacy Center
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admin-ui" class="md-nav__link">
+    Admin UI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    Documentation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-release-steps" class="md-nav__link">
+    Post-Release Steps
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -985,20 +1049,17 @@ You're not viewing the latest version.
 
 <h1 id="releases">Releases</h1>
 <h2 id="versioning">Versioning</h2>
-<p>Fides uses semantic versioning. Due to the rapid development of the project, some minor versions may also contain minor breaking changes. The best practice is to always pin versions, and carefully test before bumping to a new version. </p>
+<p>Fides uses semantic versioning. Due to the rapid development of the project, some minor versions may also contain minor breaking changes. The best practice is to always pin versions, and carefully test before bumping to a new version.</p>
 <p>Patch versions will never cause breaking changes, and are only used to hotfix critical bugs.</p>
 <h2 id="release-schedule">Release schedule</h2>
-<p>Fides does not follow a set release schedule, and instead ships versions based on the addition of features and functionality. Each release, with the exception of hotfixes, will contain at least one substantial new feature.</p>
-<h2 id="planning">Planning</h2>
-<p>For each release, a corresponding <a href="https://github.com/ethyca/fides/projects">GitHub Project</a> is created. Issues are added to projects as a way to organize what will be included in each release.</p>
-<p>Once a release project is complete and the core team signs off on the readiness of the release, a new version is cut using GitHub releases. You can see all Fides releases <a href="https://github.com/ethyca/fides/releases">here</a>. Each new release triggers a GitHub Action that pushes the new version to PyPI, and a clean version to DockerHub. The release project is then marked as <code>closed</code>.</p>
-<p>Hotfixes are an exception to this, and can be added and pushed as patch versions when needed.</p>
+<p>Fides does not follow a set release schedule, and instead ships versions based on the addition of features and functionality. Each release, with the exception of hotfixes, contains at least one substantial new feature.</p>
 <h2 id="branching">Branching</h2>
-<p>Fides uses continuous delivery with a single <code>main</code> branch. All code changes are merged into this branch. </p>
-<p>When releasing, a new tag is created, and the release process proceeds automatically. </p>
+<p>Fides uses continuous delivery with a single <code>main</code> branch. All code changes are merged into this branch.</p>
+<p>When it comes times to prepare for a new release, a release branch is created for stability and thoroughly tested.</p>
+<p>When releasing, a new tag is created on the release branch and the release process proceeds automatically.</p>
 <p>In the case of patches, a branch is created from the relevant tag. Commits are then cherry-picked into this branch, and a new patch version tag is created.</p>
 <h2 id="release-steps">Release Steps</h2>
-<p>We use GitHub’s <code>release</code> feature to tag releases that then get automatically deployed to DockerHub and PyPi via GitHub Actions pipelines. We also use a <code>CHANGELOG.md</code> to make sure that our users are never surprised about an upcoming change and can plan upgrades accordingly. The release steps are as follows:</p>
+<p>We use GitHub’s <code>release</code> feature to tag releases that then get automatically deployed to DockerHub and PyPi via GitHub Actions. We also use a <code>CHANGELOG.md</code> to mitigate surprises to our users and help them plan updates accordingly. The release steps are as follows:</p>
 <h3 id="major-and-minor">Major and Minor</h3>
 <ol>
 <li>Open a PR that is titled the version of the release (i.e. <code>1.6.0</code>)<ul>
@@ -1198,13 +1259,67 @@ git<span class="w"> </span>pull
 </li>
 <li>
 <p>Merge the new release tag into <code>main</code>:</p>
-<p><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>git<span class="w"> </span>merge<span class="w"> </span>tags/1.2.4
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>git<span class="w"> </span>merge<span class="w"> </span>tags/1.2.4
 </code></pre></div></td></tr></table></div>
-    1. Handle any merge conflicts, and push to the remote <code>main</code> branch</p>
+</li>
+<li>
+<p>Handle any merge conflicts, and push to the remote <code>main</code> branch</p>
 </li>
 </ol>
 </li>
 </ol>
+<h2 id="release-checklist">Release Checklist</h2>
+<p>The release checklist is a manual set of checks done before each release to ensure functionality of the most critical components of the application. Some of these steps are redundant with automated tests, while others are <em>only</em> tested here as part of this check.</p>
+<p>This checklist should be copy/pasted into the final pre-release PR, and checked off as you complete each step.</p>
+<p>Additionally, there is a robust <a href="https://ethyca.atlassian.net/wiki/spaces/EN/pages/2545483802/Release+Process+Fides">Release Process</a> page available in Confluence (<em>internal only</em>).</p>
+<h3 id="pre-release-steps">Pre-Release Steps</h3>
+<h4 id="general">General</h4>
+<p>From the release branch, confirm the following:</p>
+<ul>
+<li>[ ] Quickstart works: <code>nox -s quickstart</code> (verify you can complete the interactive prompts from the command-line)</li>
+<li>[ ] Test environment works: <code>nox -s "fides_env(test)"</code> (verify the admin UI on localhost:8080, privacy center on localhost:3001, CLI and webserver)</li>
+</ul>
+<p>Next, run the following checks via the test environment:</p>
+<h4 id="api">API</h4>
+<ul>
+<li>[ ] Verify that the generated API docs are correct @ <a href="http://localhost:8080/docs">http://localhost:8080/docs</a></li>
+</ul>
+<h4 id="cli">CLI</h4>
+<p>Run these from within the test environment shell:</p>
+<ul>
+<li>[ ] Make sure to login your CLI user by running <code>fides user login -u root_user -p Testpassword1!</code></li>
+<li>[ ] Run a <code>fides push</code></li>
+<li>[ ] Run a <code>fides pull</code></li>
+<li>[ ] Run a <code>fides evaluate</code></li>
+<li>[ ] Generate a dataset with <code>fides generate dataset db --credentials-id app_postgres test.yml</code></li>
+<li>[ ] Scan a database with <code>fides scan dataset db --credentials-id app_postgres</code></li>
+</ul>
+<h4 id="privacy-center">Privacy Center</h4>
+<ul>
+<li>[ ] Every navigation button works</li>
+<li>[ ] DSR submission succeeds</li>
+<li>[ ] Consent request submission succeeds</li>
+</ul>
+<h4 id="admin-ui">Admin UI</h4>
+<ul>
+<li>[ ] Every navigation button works</li>
+<li>[ ] DSR approval succeeds</li>
+<li>[ ] DSR execution succeeds</li>
+</ul>
+<h4 id="documentation">Documentation</h4>
+<ul>
+<li>[ ] Verify that the CHANGELOG is formatted correctly and clean up verbiage where needed</li>
+<li>[ ] Verify that the CHANGELOG is representative of the actual changes</li>
+</ul>
+<h3 id="post-release-steps">Post-Release Steps</h3>
+<ul>
+<li>[ ] Verify the ethyca-fides release is published to PyPi: <a href="https://pypi.org/project/ethyca-fides/#history">https://pypi.org/project/ethyca-fides/#history</a></li>
+<li>[ ] Verify the fides release is published to DockerHub: <a href="https://hub.docker.com/r/ethyca/fides">https://hub.docker.com/r/ethyca/fides</a></li>
+<li>[ ] Verify the fides-privacy-center release is published to DockerHub: <a href="https://hub.docker.com/r/ethyca/fides-privacy-center">https://hub.docker.com/r/ethyca/fides-privacy-center</a></li>
+<li>[ ] Verify the fides-sample-app release is published to DockerHub: <a href="https://hub.docker.com/r/ethyca/fides-sample-app">https://hub.docker.com/r/ethyca/fides-sample-app</a></li>
+<li>[ ] Smoke test the PyPi &amp; DockerHub releases with a clean <code>pip install ethyca-fides</code> and <code>fides deploy up</code></li>
+<li>[ ] Announce the release!</li>
+</ul>
 
               
             </article>
@@ -1279,9 +1394,9 @@ git<span class="w"> </span>pull
       
         
         <a
-          href="../release_checklist/"
+          href="../postman/using_postman/"
           class="md-footer__link md-footer__link--next"
-          aria-label="Next: Release Checklist"
+          aria-label="Next: Using Postman"
           rel="next"
         >
           <div class="md-footer__title">
@@ -1289,7 +1404,7 @@ git<span class="w"> </span>pull
               <span class="md-footer__direction">
                 Next
               </span>
-              Release Checklist
+              Using Postman
             </div>
           </div>
           <div class="md-footer__button md-icon">

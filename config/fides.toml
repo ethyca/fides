@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "eb128336b29287f782d2bb9b957d3ae9" # string
+analytics_id = "63699d9b9a5262fb29d3b03db4b6499c" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -49,6 +49,11 @@ api_engine_max_overflow = 50 # integer
 
 # The name of the application database.
 db = "default_db" # string
+
+# When set to True, initializes the database with sample data for
+# testing (Systems, Datasets, Connectors, etc.) Used by 'fides deploy'
+# to configure the sample project.
+load_samples = false # boolean
 
 # The password with which to login to the application database.
 password = "defaultpassword" # string

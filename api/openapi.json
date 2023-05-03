@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.11.0"
+    "version": "2.12.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3461,416 +3461,6 @@
         ]
       }
     },
-    "/api/v1/system": {
-      "get": {
-        "tags": [
-          "System"
-        ],
-        "summary": "List",
-        "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_system_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "system"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response List Api V1 System Get",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/System"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "system:read"
-            ]
-          }
-        ]
-      },
-      "put": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Update",
-        "description": "Update a System by the fides_key extracted from the request body.  Defined outside of the crud routes\nto add additional \"system manager\" permission checks.",
-        "operationId": "update_api_v1_system_put",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "system",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "system:update"
-            ]
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
-        "operationId": "create_api_v1_system_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "system"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "system",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "system:create"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/system/{fides_key}": {
-      "get": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Get",
-        "description": "Get a resource by its fides_key.",
-        "operationId": "get_api_v1_system__fides_key__get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "system"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "system:read"
-            ]
-          }
-        ]
-      },
-      "delete": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Delete",
-        "description": "Delete a System by its fides_key. Defined outside of the crud routes\nto add additional \"system manager\" permission checks.",
-        "operationId": "delete_api_v1_system__fides_key__delete",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Delete Api V1 System  Fides Key  Delete",
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "system",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "system:delete"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/system/upsert": {
-      "post": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "upsert_api_v1_system_upsert_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "system"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "title": "Resources",
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/System"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Upsert Api V1 System Upsert Post",
-                  "type": "object"
-                },
-                "example": {
-                  "message": "Upserted 3 system(s)",
-                  "inserted": 0,
-                  "updated": 3
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "example": {
-                  "message": "Upserted 3 system(s)",
-                  "inserted": 1,
-                  "updated": 2
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "DataCategory",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "system:create",
-              "system:update"
-            ]
-          }
-        ]
-      }
-    },
     "/api/v1/evaluation": {
       "get": {
         "tags": [
@@ -4671,6 +4261,314 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "connection:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/system": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_api_v1_system_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Api V1 System Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SystemResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:read"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Update",
+        "description": "Update a System by the fides_key extracted from the request body.  Defined outside of the crud routes\nto add additional \"system manager\" permission checks.",
+        "operationId": "update_api_v1_system_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/System"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "system",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:update"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Create",
+        "description": "Override `System` create/POST to handle `.privacy_declarations` defined inline,\nfor backward compatibility and ease of use for API users.",
+        "operationId": "create_api_v1_system_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/System"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:create"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/system/upsert": {
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Upsert",
+        "operationId": "upsert_api_v1_system_upsert_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/System"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Upsert Api V1 System Upsert Post",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:create",
+              "system:update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/system/{fides_key}": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_api_v1_system__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:read"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Delete",
+        "description": "Delete a System by its fides_key. Defined outside of the crud routes\nto add additional \"system manager\" permission checks.",
+        "operationId": "delete_api_v1_system__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Delete Api V1 System  Fides Key  Delete",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "system",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:delete"
             ]
           }
         ]
@@ -8764,6 +8662,105 @@
         ]
       }
     },
+    "/api/v1/privacy-experience": {
+      "get": {
+        "tags": [
+          "Privacy Experience"
+        ],
+        "summary": "Privacy Experience List",
+        "description": "Return a paginated list of `PrivacyExperience` records in this system.\nIncludes some query params to help filter the list if needed",
+        "operationId": "privacy_experience_list_api_v1_privacy_experience_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Show Disabled",
+              "type": "boolean",
+              "default": true
+            },
+            "name": "show_disabled",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            },
+            "name": "region",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ComponentType"
+            },
+            "name": "component",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Has Notices",
+              "type": "boolean"
+            },
+            "name": "has_notices",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_PrivacyExperienceResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-experience:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/privacy-notice": {
       "get": {
         "tags": [
@@ -9135,9 +9132,9 @@
         "tags": [
           "Privacy Preference"
         ],
-        "summary": "Save Privacy Preferences",
-        "description": "Verifies the verification code and saves the user's privacy preferences if successful.\n\nCreates a historical record for each privacy preference for record keeping and then upserts the current preference\nfor each privacy notice.  Creates a Privacy Request linked to the historical preferences to\npropagate these preferences where applicable.\n\nThis workflow is for users saving preferences for privacy notices with a verified identity.",
-        "operationId": "save_privacy_preferences_api_v1_consent_request__consent_request_id__privacy_preferences_patch",
+        "summary": "Save Privacy Preferences With Verified Identity",
+        "description": "Saves privacy preferences with respect to a verified user identity like an email or phone number\nand optionally a fides user device id.\n\nCreates historical records for these preferences for record keeping, and also updates current preferences.\nCreates a privacy request to propagate preferences to third party systems.",
+        "operationId": "save_privacy_preferences_with_verified_identity_api_v1_consent_request__consent_request_id__privacy_preferences_patch",
         "parameters": [
           {
             "required": true,
@@ -9165,7 +9162,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Save Privacy Preferences Api V1 Consent Request  Consent Request Id  Privacy Preferences Patch",
+                  "title": "Response Save Privacy Preferences With Verified Identity Api V1 Consent Request  Consent Request Id  Privacy Preferences Patch",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
@@ -9185,6 +9182,284 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/privacy-preferences": {
+      "get": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Get Privacy Preferences By Device Id",
+        "description": "Retrieves privacy preferences with respect to a fides user device id.",
+        "operationId": "get_privacy_preferences_by_device_id_api_v1_privacy_preferences_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides User Device Id",
+              "type": "string"
+            },
+            "name": "fides_user_device_id",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_CurrentPrivacyPreferenceSchema_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Save Privacy Preferences",
+        "description": "Saves privacy preferences with respect to a fides user device id.\n\nCreates historical records for these preferences for record keeping, and also updates current preferences.\nCreates a privacy request to propagate preferences to third party systems.",
+        "operationId": "save_privacy_preferences_api_v1_privacy_preferences_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrivacyPreferencesCreateWithCode"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Save Privacy Preferences Api V1 Privacy Preferences Patch",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/current-privacy-preferences": {
+      "get": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Get Current Privacy Preferences Report",
+        "description": "Returns the most recently saved privacy preferences for a given privacy notice",
+        "operationId": "get_current_privacy_preferences_report_api_v1_current_privacy_preferences_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Updated Lt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "updated_lt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Updated Gt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "updated_gt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_CurrentPrivacyPreferenceReportingSchema_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "current-privacy-preference:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/historical-privacy-preferences": {
+      "get": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Get Historical Consent Report",
+        "description": "Endpoint to return a historical record of all privacy preferences saved for consent reporting",
+        "operationId": "get_historical_consent_report_api_v1_historical_privacy_preferences_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Request Timestamp Gt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "request_timestamp_gt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Request Timestamp Lt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "request_timestamp_lt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ConsentReportingSchema_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-preference-history:read"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/privacy-request": {
@@ -13570,6 +13845,14 @@
         "type": "string",
         "description": "An enumeration."
       },
+      "ComponentType": {
+        "title": "ComponentType",
+        "enum": [
+          "overlay",
+          "privacy_center"
+        ],
+        "description": "The component type - not formalized in the db"
+      },
       "ConnectionConfigurationResponse": {
         "title": "ConnectionConfigurationResponse",
         "required": [
@@ -13902,6 +14185,120 @@
         },
         "description": "Schema for reporting Consent requests."
       },
+      "ConsentReportingSchema": {
+        "title": "ConsentReportingSchema",
+        "required": [
+          "id",
+          "request_timestamp",
+          "request_type",
+          "privacy_notice_history_id",
+          "preference",
+          "affected_system_status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "The PrivacyPreferenceHistory id",
+            "type": "string"
+          },
+          "privacy_request_id": {
+            "title": "The Privacy Request id created to propagate preferences",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email if applicable",
+            "type": "string"
+          },
+          "phone_number": {
+            "title": "Phone number if applicable",
+            "type": "string"
+          },
+          "fides_user_device_id": {
+            "title": "Fides user device id if applicable",
+            "type": "string"
+          },
+          "secondary_user_ids": {
+            "title": "Other browser identifiers",
+            "type": "object"
+          },
+          "request_timestamp": {
+            "title": "Timestamp when Privacy Preference was saved.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "request_origin": {
+            "title": "Origin of request - privacy center, modal, overlay, API, etc..",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RequestOrigin"
+              }
+            ]
+          },
+          "request_status": {
+            "title": "Status of the Privacy Request created to propagate preferences.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestStatus"
+              }
+            ]
+          },
+          "request_type": {
+            "title": "The Type of Privacy Request.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActionType"
+              }
+            ]
+          },
+          "approver_id": {
+            "title": "The username of the user who approved the Privacy Request if applicable",
+            "type": "string"
+          },
+          "privacy_notice_history_id": {
+            "title": "The id of the specific Privacy Notice History that the user consented to",
+            "type": "string"
+          },
+          "preference": {
+            "title": "The user's preference for the given notice: opt_in, opt_out, or acknowledge",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserConsentPreference"
+              }
+            ]
+          },
+          "user_geography": {
+            "title": "Detected geography of the user",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyNoticeRegion"
+              }
+            ]
+          },
+          "relevant_systems": {
+            "title": "Systems relevant to the given notice by data use.  Note that just because a system is relevant does not mean that a request is necessarily propagated.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "affected_system_status": {
+            "title": "Affected system status",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ExecutionLogStatus"
+            }
+          },
+          "url_recorded": {
+            "title": "URL of page where preference was recorded",
+            "type": "string"
+          },
+          "user_agent": {
+            "title": "User agent",
+            "type": "string"
+          }
+        },
+        "description": "Schema for consent reporting - largely a join of PrivacyPreferenceHistory and PrivacyRequest"
+      },
       "ConsentRequestMap": {
         "title": "ConsentRequestMap",
         "type": "object",
@@ -14142,6 +14539,44 @@
         },
         "additionalProperties": false,
         "description": "Schema for creating a connection configuration including secrets."
+      },
+      "CurrentPrivacyPreferenceReportingSchema": {
+        "title": "CurrentPrivacyPreferenceReportingSchema",
+        "required": [
+          "id",
+          "preference",
+          "privacy_notice_history_id",
+          "privacy_preference_history_id",
+          "created_at"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "privacy_notice_history_id": {
+            "title": "Privacy Notice History Id",
+            "type": "string"
+          },
+          "privacy_preference_history_id": {
+            "title": "Privacy Preference History Id",
+            "type": "string"
+          },
+          "provided_identity_id": {
+            "title": "Provided Identity Id",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Schema to represent the latest saved preference for a given privacy notice\nNote that we return the privacy notice *history* record here though which has the\ncontents of the notice the user consented to at the time."
       },
       "CurrentPrivacyPreferenceSchema": {
         "title": "CurrentPrivacyPreferenceSchema",
@@ -14865,6 +15300,14 @@
         },
         "description": "Describes whether or not the parent dataset is traversable; if not, includes\nan error message describing the traversal issues."
       },
+      "DeliveryMechanism": {
+        "title": "DeliveryMechanism",
+        "enum": [
+          "banner",
+          "link"
+        ],
+        "description": "The delivery mechanism - not formalized in the db"
+      },
       "DenyPrivacyRequests": {
         "title": "DenyPrivacyRequests",
         "required": [
@@ -15309,68 +15752,6 @@
           }
         }
       },
-      "FidesDataCategory": {
-        "title": "FidesDataCategory",
-        "enum": [
-          "user.payment",
-          "user.payment.financial_account_number",
-          "system",
-          "system.authentication",
-          "system.operations",
-          "user",
-          "user.biometric",
-          "user.biometric_health",
-          "user.browsing_history",
-          "user.demographic",
-          "user.contact",
-          "user.contact.address",
-          "user.device",
-          "user.device.cookie_id",
-          "user.device.device_id",
-          "user.device.ip_address",
-          "user.gender",
-          "user.location",
-          "user.media_consumption",
-          "user.non_specific_age",
-          "user.observed",
-          "user.profiling",
-          "user.race",
-          "user.religious_belief",
-          "user.search_history",
-          "user.sexual_orientation",
-          "user.social",
-          "user.telemetry",
-          "user.unique_id",
-          "user.user_sensor",
-          "user.organization",
-          "user.workplace",
-          "user.sensor",
-          "user.childrens",
-          "user.contact.address.city",
-          "user.contact.address.country",
-          "user.contact.email",
-          "user.contact.phone_number",
-          "user.contact.address.postal_code",
-          "user.contact.address.state",
-          "user.contact.address.street",
-          "user.credentials",
-          "user.credentials.biometric_credentials",
-          "user.credentials.password",
-          "user.date_of_birth",
-          "user.financial",
-          "user.financial.account_number",
-          "user.genetic",
-          "user.government_id",
-          "user.government_id.drivers_license_number",
-          "user.government_id.national_identification_number",
-          "user.government_id.passport_number",
-          "user.health_and_medical",
-          "user.job_title",
-          "user.name",
-          "user.political_opinion"
-        ],
-        "description": "An enumeration."
-      },
       "FidesDatasetReference": {
         "title": "FidesDatasetReference",
         "required": [
@@ -15663,6 +16044,10 @@
           },
           "ljt_readerID": {
             "title": "Ljt Readerid",
+            "type": "string"
+          },
+          "fides_user_device_id": {
+            "title": "Fides User Device Id",
             "type": "string"
           }
         },
@@ -16594,6 +16979,74 @@
           }
         }
       },
+      "Page_ConsentReportingSchema_": {
+        "title": "Page[ConsentReportingSchema]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsentReportingSchema"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
+      "Page_CurrentPrivacyPreferenceReportingSchema_": {
+        "title": "Page[CurrentPrivacyPreferenceReportingSchema]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceReportingSchema"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
       "Page_CurrentPrivacyPreferenceSchema_": {
         "title": "Page[CurrentPrivacyPreferenceSchema]",
         "required": [
@@ -16813,6 +17266,40 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PolicyWebhookResponse"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
+      "Page_PrivacyExperienceResponse_": {
+        "title": "Page[PrivacyExperienceResponse]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyExperienceResponse"
             }
           },
           "total": {
@@ -17431,6 +17918,187 @@
           }
         },
         "description": "The PrivacyDeclaration resource model.\n\nStates a function of a system, and describes how it relates\nto the privacy data types."
+      },
+      "PrivacyDeclarationResponse": {
+        "title": "PrivacyDeclarationResponse",
+        "required": [
+          "data_categories",
+          "data_use",
+          "data_subjects",
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "The name of the privacy declaration on the system."
+          },
+          "data_categories": {
+            "title": "Data Categories",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "An array of data categories describing a system in a privacy declaration."
+          },
+          "data_use": {
+            "title": "Data Use",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string",
+            "description": "The Data Use describing a system in a privacy declaration."
+          },
+          "data_qualifier": {
+            "title": "Data Qualifier",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string",
+            "description": "The fides key of the data qualifier describing a system in a privacy declaration.",
+            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+          },
+          "data_subjects": {
+            "title": "Data Subjects",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "An array of data subjects describing a system in a privacy declaration."
+          },
+          "dataset_references": {
+            "title": "Dataset References",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "Referenced Dataset fides keys used by the system."
+          },
+          "egress": {
+            "title": "Egress",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "The resources to which data is sent. Any `fides_key`s included in this list reference `DataFlow` entries in the `egress` array of any `System` resources to which this `PrivacyDeclaration` is applied."
+          },
+          "ingress": {
+            "title": "Ingress",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied."
+          },
+          "id": {
+            "title": "Id",
+            "type": "string",
+            "description": "The database-assigned ID of the privacy declaration on the system. This is meant to be a read-only field, returned only in API responses"
+          }
+        },
+        "description": "Extension of base pydantic model to include DB `id` field in the response"
+      },
+      "PrivacyExperienceResponse": {
+        "title": "PrivacyExperienceResponse",
+        "required": [
+          "component",
+          "delivery_mechanism",
+          "id",
+          "created_at",
+          "updated_at",
+          "version",
+          "privacy_experience_history_id"
+        ],
+        "type": "object",
+        "properties": {
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "component": {
+            "$ref": "#/components/schemas/ComponentType"
+          },
+          "delivery_mechanism": {
+            "$ref": "#/components/schemas/DeliveryMechanism"
+          },
+          "regions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          },
+          "component_title": {
+            "title": "Component Title",
+            "type": "string"
+          },
+          "component_description": {
+            "title": "Component Description",
+            "type": "string"
+          },
+          "banner_title": {
+            "title": "Banner Title",
+            "type": "string"
+          },
+          "banner_description": {
+            "title": "Banner Description",
+            "type": "string"
+          },
+          "link_label": {
+            "title": "Link Label",
+            "type": "string"
+          },
+          "confirmation_button_label": {
+            "title": "Confirmation Button Label",
+            "type": "string"
+          },
+          "reject_button_label": {
+            "title": "Reject Button Label",
+            "type": "string"
+          },
+          "acknowledgement_button_label": {
+            "title": "Acknowledgement Button Label",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "title": "Version",
+            "type": "number"
+          },
+          "privacy_experience_history_id": {
+            "title": "Privacy Experience History Id",
+            "type": "string"
+          },
+          "privacy_experience_template_id": {
+            "title": "Privacy Experience Template Id",
+            "type": "string"
+          },
+          "privacy_notices": {
+            "title": "Privacy Notices",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeResponse"
+            }
+          }
+        },
+        "additionalProperties": false,
+        "description": "An API representation of a PrivacyExperience used for response payloads"
       },
       "PrivacyNoticeCreation": {
         "title": "PrivacyNoticeCreation",
@@ -18613,7 +19281,8 @@
             "type": "string"
           },
           "data_category": {
-            "$ref": "#/components/schemas/FidesDataCategory"
+            "title": "Data Category",
+            "type": "string"
           }
         },
         "description": "An external representation of a Rule's target DataCategory within a Fidesops Policy"
@@ -18983,6 +19652,7 @@
           "ctl_policy:read",
           "ctl_policy:delete",
           "ctl_policy:update",
+          "current-privacy-preference:read",
           "database:reset",
           "data_category:create",
           "data_category:delete",
@@ -19022,9 +19692,13 @@
           "policy:create_or_update",
           "policy:delete",
           "policy:read",
+          "privacy-experience:create",
+          "privacy-experience:update",
+          "privacy-experience:read",
           "privacy-notice:create",
           "privacy-notice:update",
           "privacy-notice:read",
+          "privacy-preference-history:read",
           "privacy-request:create",
           "privacy-request:resume",
           "privacy-request:delete",
@@ -19590,6 +20264,152 @@
           }
         },
         "description": "The SystemMetadata resource model.\n\nObject used to hold application specific metadata for a system"
+      },
+      "SystemResponse": {
+        "title": "SystemResponse",
+        "required": [
+          "fides_key",
+          "system_type",
+          "privacy_declarations"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string",
+            "description": "A unique key used to identify this resource."
+          },
+          "organization_fides_key": {
+            "title": "Organization Fides Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string",
+            "description": "Defines the Organization that this resource belongs to.",
+            "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Human-Readable name for this resource."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "A detailed description of what this resource is."
+          },
+          "registry_id": {
+            "title": "Registry Id",
+            "type": "integer",
+            "description": "The id of the system registry, if used."
+          },
+          "meta": {
+            "title": "Meta",
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "An optional property to store any extra information for a system. Not used by fidesctl."
+          },
+          "fidesctl_meta": {
+            "title": "Fidesctl Meta",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemMetadata"
+              }
+            ],
+            "description": "\n    The SystemMetadata resource model.\n\n    Object used to hold application specific metadata for a system\n    "
+          },
+          "system_type": {
+            "title": "System Type",
+            "type": "string",
+            "description": "A required value to describe the type of system being modeled, examples include: Service, Application, Third Party, etc."
+          },
+          "data_responsibility_title": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DataResponsibilityTitle"
+              }
+            ],
+            "description": "\n    The model defining the responsibility or role over\n    the system that processes personal data.\n\n    Used to identify whether the organization is a\n    Controller, Processor, or Sub-Processor of the data\n    ",
+            "default": "Controller"
+          },
+          "egress": {
+            "title": "Egress",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DataFlow"
+            },
+            "description": "The resources to which the System sends data."
+          },
+          "ingress": {
+            "title": "Ingress",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DataFlow"
+            },
+            "description": "The resources from which the System receives data."
+          },
+          "privacy_declarations": {
+            "title": "Privacy Declarations",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyDeclarationResponse"
+            },
+            "description": "Extension of base pydantic model to include DB `id` field in the response"
+          },
+          "system_dependencies": {
+            "title": "System Dependencies",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "A list of fides keys to model dependencies."
+          },
+          "joint_controller": {
+            "title": "Joint Controller",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContactDetails"
+              }
+            ],
+            "description": "\n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
+          },
+          "third_country_transfers": {
+            "title": "Third Country Transfers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1."
+          },
+          "administrating_department": {
+            "title": "Administrating Department",
+            "type": "string",
+            "description": "An optional value to identify the owning department or group of the system within your organization",
+            "default": "Not defined"
+          },
+          "data_protection_impact_assessment": {
+            "title": "Data Protection Impact Assessment",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DataProtectionImpactAssessment"
+              }
+            ],
+            "description": "\n    The DataProtectionImpactAssessment (DPIA) resource model.\n\n    Contains information in regard to the data protection\n    impact assessment exported on a data map or Record of\n    Processing Activities (RoPA).\n\n    A legal requirement under GDPR for any project that\n    introduces a high risk to personal information.\n    ",
+            "default": {
+              "is_required": false
+            }
+          }
+        },
+        "description": "Extension of base pydantic model to include `privacy_declarations.id` fields in responses"
       },
       "SystemType": {
         "title": "SystemType",

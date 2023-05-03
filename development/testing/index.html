@@ -11,11 +11,11 @@
         <link rel="canonical" href="https://ethyca.github.io/fides/development/testing/">
       
       <link rel="icon" href="../../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.2.7">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-8.2.7">
     
     
       
-        <title>Writing Tests - Fides</title>
+        <title>Testing - Fides</title>
       
     
     
@@ -123,7 +123,7 @@ You're not viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Writing Tests
+              Testing
             
           </span>
         </div>
@@ -394,82 +394,12 @@ You're not viewing the latest version.
       
       
         <label class="md-nav__link" for="__nav_1_5">
-          Community
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Community" data-md-level="2">
-        <label class="md-nav__title" for="__nav_1_5">
-          <span class="md-nav__icon md-icon"></span>
-          Community
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../community/overview/" class="md-nav__link">
-        Github, Slack, and Discord
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../community/hints_tips/" class="md-nav__link">
-        Community Hints and Tips
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../community/code_of_conduct/" class="md-nav__link">
-        Code of Conduct
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-    
-  
-  
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5_4" type="checkbox" id="__nav_1_5_4" checked>
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_1_5_4">
           Contributing
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="Contributing" data-md-level="3">
-        <label class="md-nav__title" for="__nav_1_5_4">
+      <nav class="md-nav" aria-label="Contributing" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_5">
           <span class="md-nav__icon md-icon"></span>
           Contributing
         </label>
@@ -495,8 +425,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../contributing_details/" class="md-nav__link">
-        Contributing Details
+      <a href="../developing_fides/" class="md-nav__link">
+        Developing Fides
       </a>
     </li>
   
@@ -509,64 +439,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../code_style/" class="md-nav__link">
-        Code Style
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../ui/" class="md-nav__link">
-        UI Development
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fideslog/" class="md-nav__link">
-        Fideslog Analytics
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../database_migration/" class="md-nav__link">
-        Database Migration
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../documentation/" class="md-nav__link">
-        Documentation
+      <a href="../development_tips/" class="md-nav__link">
+        Development Tips
       </a>
     </li>
   
@@ -589,12 +463,12 @@ You're not viewing the latest version.
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Writing Tests
+          Testing
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Writing Tests
+        Testing
       </a>
       
         
@@ -641,6 +515,21 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#running-tests-in-a-shell" class="md-nav__link">
+    Running Tests in a Shell
+  </a>
+  
+    <nav class="md-nav" aria-label="Running Tests in a Shell">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#invoking-pytest" class="md-nav__link">
+    Invoking Pytest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#running-specific-tests" class="md-nav__link">
     Running specific tests
   </a>
@@ -648,9 +537,41 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#excluding-external-tests" class="md-nav__link">
-    Excluding external tests
+  <a href="#excluding-tests" class="md-nav__link">
+    Excluding tests
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-test-suites-via-nox" class="md-nav__link">
+    Running Test Suites via Nox
+  </a>
+  
+    <nav class="md-nav" aria-label="Running Test Suites via Nox">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#building-the-test-image" class="md-nav__link">
+    Building the Test Image
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-sessions" class="md-nav__link">
+    Test Sessions
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -660,9 +581,50 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#ci-workflows" class="md-nav__link">
-    CI Workflows
+  <a href="#testing-environment" class="md-nav__link">
+    Testing Environment
   </a>
+  
+    <nav class="md-nav" aria-label="Testing Environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quickstart" class="md-nav__link">
+    Quickstart
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    Configuration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-usage" class="md-nav__link">
+    Advanced Usage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automated-cypress-e2e-tests" class="md-nav__link">
+    Automated Cypress E2E Tests
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -681,8 +643,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../testing_environment/" class="md-nav__link">
-        Testing Environment
+      <a href="../code_style/" class="md-nav__link">
+        Code Style
       </a>
     </li>
   
@@ -695,8 +657,22 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../dev_deployment/" class="md-nav__link">
-        Local Fides Deploy
+      <a href="../ui/" class="md-nav__link">
+        UI Development
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../documentation/" class="md-nav__link">
+        Documentation
       </a>
     </li>
   
@@ -737,48 +713,6 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../release_checklist/" class="md-nav__link">
-        Release Checklist
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../vscode_debugging/" class="md-nav__link">
-        VSCode Debugging
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../jetbrains_debugging/" class="md-nav__link">
-        Jetbrains Debugging
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../postman/using_postman/" class="md-nav__link">
         Using Postman
       </a>
@@ -801,8 +735,90 @@ You're not viewing the latest version.
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fideslog/" class="md-nav__link">
+        User Analytics
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_6" type="checkbox" id="__nav_1_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_6">
+          Community
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Community" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_6">
+          <span class="md-nav__icon md-icon"></span>
+          Community
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../community/overview/" class="md-nav__link">
+        Github, Slack, and Discord
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../community/hints_tips/" class="md-nav__link">
+        Community Hints and Tips
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../community/code_of_conduct/" class="md-nav__link">
+        Code of Conduct
+      </a>
     </li>
   
 
@@ -938,6 +954,21 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#running-tests-in-a-shell" class="md-nav__link">
+    Running Tests in a Shell
+  </a>
+  
+    <nav class="md-nav" aria-label="Running Tests in a Shell">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#invoking-pytest" class="md-nav__link">
+    Invoking Pytest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#running-specific-tests" class="md-nav__link">
     Running specific tests
   </a>
@@ -945,9 +976,41 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#excluding-external-tests" class="md-nav__link">
-    Excluding external tests
+  <a href="#excluding-tests" class="md-nav__link">
+    Excluding tests
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-test-suites-via-nox" class="md-nav__link">
+    Running Test Suites via Nox
+  </a>
+  
+    <nav class="md-nav" aria-label="Running Test Suites via Nox">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#building-the-test-image" class="md-nav__link">
+    Building the Test Image
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-sessions" class="md-nav__link">
+    Test Sessions
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -957,9 +1020,50 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#ci-workflows" class="md-nav__link">
-    CI Workflows
+  <a href="#testing-environment" class="md-nav__link">
+    Testing Environment
   </a>
+  
+    <nav class="md-nav" aria-label="Testing Environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quickstart" class="md-nav__link">
+    Quickstart
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    Configuration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-usage" class="md-nav__link">
+    Advanced Usage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automated-cypress-e2e-tests" class="md-nav__link">
+    Automated Cypress E2E Tests
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1024,27 +1128,167 @@ You're not viewing the latest version.
 <h3 id="integration-tests-vs-mocked-tests">Integration tests vs. mocked tests</h3>
 <p>Generally, tests that include mocking are discouraged. Mocking can create a false sense of security and obfuscate possible errors in the code that only present themselves when integration tested.</p>
 <h2 id="running-tests">Running tests</h2>
-<p>Fides uses <code>pytest</code> for unit testing. To run tests, invoke <code>pytest</code> from the <code>/fides/ctl/</code> directory:</p>
+<p>Given the relative complexity of the setup around Fides and reliance on Docker, test commands should usually be run in a shell or via Nox sessions. The following subsections describe how to execute both.</p>
+<h3 id="running-tests-in-a-shell">Running Tests in a Shell</h3>
+<p>As described in <a href="../developing_fides/">Developing Fides</a>, we'll be running these tests from within a shell. As a reminder, spinning up Fides and opening a shell requires the following commands:</p>
+<ol>
+<li><code>nox -s dev</code></li>
+<li>Once the webserver is running from the previous command, open a new terminal and run <code>nox -s shell</code></li>
+</ol>
+<p>You're now ready to start testing!</p>
+<h4 id="invoking-pytest">Invoking Pytest</h4>
+<p>Fides uses <code>pytest</code> for unit testing. Let's collect all of the available tests to verify pytest is working as expected:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>ctl
-pytest
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Collects all available tests without running anything</span>
+pytest<span class="w"> </span>--collect-only
 </code></pre></div></td></tr></table></div>
-<h3 id="running-specific-tests">Running specific tests</h3>
+<h4 id="running-specific-tests">Running specific tests</h4>
 <p>To run a subset of tests, provide a filename or directory; to match a specific test name, use the <code>-k</code> flag:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># run all tests in the tests/integration directory that contain the word &quot;api&quot; in their title</span>
-pytest<span class="w"> </span>tests/integration/<span class="w"> </span>-k<span class="w"> </span>api
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Run all tests in the tests/ctl/ directory that contain the word &quot;api&quot; in their name</span>
+pytest<span class="w"> </span>tests/ctl/<span class="w"> </span>-k<span class="w"> </span>api
 </code></pre></div></td></tr></table></div>
 <p>The <code>--sw</code> flag will exit <code>pytest</code> the first time it encounters an error; subsequent runs with the same flag will skip any tests that succeeded and run the failed test first.</p>
 <p>For more information on available Pytest invocation options, see the documentation <a href="https://docs.pytest.org/en/6.2.x/usage.html#usage-and-invocations">here</a>.</p>
-<h3 id="excluding-external-tests">Excluding external tests</h3>
-<p>Integration tests also test integration with external services like Snowflake which require internet access and authentication. It is possible to skip these tests by excluding the <code>external</code> mark. </p>
+<h4 id="excluding-tests">Excluding tests</h4>
+<p>Some tests also test integration with external services like Snowflake which require both internet access and authentication credentials. It is possible to skip these tests by excluding tests with the <code>external</code> mark.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># run all tests except external ones</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Run all tests except for external ones</span>
 pytest<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;not external&quot;</span>
 </code></pre></div></td></tr></table></div>
-<h2 id="ci-workflows">CI Workflows</h2>
-<p>CI will run automatically against any PR you open. Please run your tests locally first to avoid "debugging in CI", as this takes up resources that could be used by other contributors and is generally an inefficient usage of your time!</p>
+<p>This is far from the only mark used in the test suite however. To see a full list, they are all documented in the <code>[tool.pytest]</code> section of the <a href="https://github.com/ethyca/fides/blob/main/pyproject.toml">pyproject.toml</a>.</p>
+<h3 id="running-test-suites-via-nox">Running Test Suites via Nox</h3>
+<p>To run tests in a more robust and repeatable way, Nox also has extensive commands for running tests packaged with various marks and infrastructure. However, it is important to note that these commands are not designed for rapid iteration and TDD in mind, but instead for maximum reproducability. To run tests in a more TDD-style, see the section <a href="#running-tests-in-a-shell">Running Tests in a Shell</a>.</p>
+<p>Additionally, these are the exact same Nox sessions that are run in CI. Thus if you are seeing CI failures and are trying to reproduce or remediate them, it is recommended to run those failing tests locally via these Nox sessions as the results will generally always be the same.</p>
+<h4 id="building-the-test-image">Building the Test Image</h4>
+<p>The Nox test sessions assume that all of the required images have already been built. To build the Fides image used for testing, run the following command:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>nox<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;build(test)&quot;</span>
+</code></pre></div></td></tr></table></div>
+<p>Once that is complete, you're ready to start running test sessions.</p>
+<h4 id="test-sessions">Test Sessions</h4>
+<p>The following table describes each pytest-related session:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Session (with Param)</th>
+<th align="center">Mark(s)</th>
+<th align="center">Test Path</th>
+<th align="center">Requires Credentials?</th>
+<th align="center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">pytest(ctl-unit)</td>
+<td align="center">unit</td>
+<td align="center">tests/ctl</td>
+<td align="center">No</td>
+<td align="center">Simplest set of <code>ctl</code> tests Should generally avoid the webserver but not guaranteed.</td>
+</tr>
+<tr>
+<td align="center">pytest(ctl-integration)</td>
+<td align="center">integration</td>
+<td align="center">tests/ctl</td>
+<td align="center">No</td>
+<td align="center">Tests that are known to require the webserver.</td>
+</tr>
+<tr>
+<td align="center">pytest(ctl-not-external)</td>
+<td align="center">not external</td>
+<td align="center">tests/ctl</td>
+<td align="center">No</td>
+<td align="center">Tests unit/integration but without touching external resources.</td>
+</tr>
+<tr>
+<td align="center">pytest(ctl-external)</td>
+<td align="center">external</td>
+<td align="center">tests/ctl</td>
+<td align="center">Yes</td>
+<td align="center">Tests that require external resources such as Snowflake or BigQuery.</td>
+</tr>
+<tr>
+<td align="center">pytest(ops-unit)</td>
+<td align="center">not integration and not integration_external and not integration_saas</td>
+<td align="center">tests/ops</td>
+<td align="center">No</td>
+<td align="center">As there is no "unit" tag within the ops tests, it is instead achieved via numerous "not" marks.</td>
+</tr>
+<tr>
+<td align="center">pytest(ops-integration)</td>
+<td align="center">N/A</td>
+<td align="center">N/A</td>
+<td align="center">No</td>
+<td align="center">This is a special test case, as the handling of test running is done by <code>run_infrastructure.py</code>. More information and logic can be found there.</td>
+</tr>
+<tr>
+<td align="center">pytest(ops-external-datastores)</td>
+<td align="center">integration_external</td>
+<td align="center">tests/ops</td>
+<td align="center">Yes</td>
+<td align="center">Runs tests that connect to external datastores such as Snowflake.</td>
+</tr>
+<tr>
+<td align="center">pytest(ops-saas)</td>
+<td align="center">integration_saas</td>
+<td align="center">tests/ops</td>
+<td align="center">Yes</td>
+<td align="center">Runs tests related to the <code>connectors</code> code. Spins up additional local resources and connects to outside resources.</td>
+</tr>
+<tr>
+<td align="center">pytest(lib)</td>
+<td align="center">N/A</td>
+<td align="center">tests/lib</td>
+<td align="center">No</td>
+<td align="center">Test <code>lib</code> module functionality.</td>
+</tr>
+<tr>
+<td align="center">pytest(nox)</td>
+<td align="center">N/A</td>
+<td align="center">tests/nox</td>
+<td align="center">No</td>
+<td align="center">Tests functionality related to the nox session.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For additional information, you can view the source file <a href="https://github.com/ethyca/fides/blob/main/noxfiles/test_setup_nox.py">test_setup_nox.py</a> that contains all of the code that runs these tests.</p>
+</div>
+<h2 id="testing-environment">Testing Environment</h2>
+<h3 id="quickstart">Quickstart</h3>
+<ol>
+<li>Use <code>nox -s "fides_env(test)"</code> to launch the test environment</li>
+<li>Read the terminal output for details</li>
+<li>Customize Fides ENV variables by editing <code>.env</code></li>
+</ol>
+<h3 id="overview">Overview</h3>
+<p>To facilitate thorough manual testing of the application, there is a comprehensive testing environment that can be set up via a single <code>nox</code> command: <code>nox -s "fides_env(test)"</code>.</p>
+<p>This test environment includes:</p>
+<ul>
+<li>Fides Server</li>
+<li>Fides Admin UI</li>
+<li>Fides Postgres Database &amp; Redis Cache</li>
+<li>Sample "Cookie House" Application</li>
+<li>Test Postgres Database</li>
+<li>Test Redis Database</li>
+<li>Sample Resources</li>
+<li>Sample Connectors</li>
+<li>etc.</li>
+</ul>
+<p>This test environment is exactly the same environment that users can launch themselves using <code>fides deploy up</code>, and you can find all the configuration and settings in <code>src/fides/data/sample_project</code>.</p>
+<h3 id="configuration">Configuration</h3>
+<p>There are two ways to configure the <code>fides</code> server and CLI:</p>
+<ol>
+<li>Editing the ENV file in the project root: <code>.env</code></li>
+<li>Editing the TOML file in the sample project files: <code>src/fides/data/sample_project/fides.toml</code></li>
+</ol>
+<p>The <code>.env</code> file is safest to add secrets and local customizations, since it is <code>.gitignore</code>'d and will not be accidentally committed to version control.</p>
+<p>The <code>fides.toml</code> file should be used for configurations that should be present for all users testing out the application.</p>
+<h3 id="advanced-usage">Advanced Usage</h3>
+<p>The environment will work "out of the box", but can also be configured to enable other features like S3 storage, email notifications, etc.</p>
+<p>To configure these, you'll need to edit the <code>.env</code> file and provide some secrets - see <code>example.env</code> for what is supported.</p>
+<h3 id="automated-cypress-e2e-tests">Automated Cypress E2E Tests</h3>
+<p>The test environment is also used to run automated end-to-end (E2E) tests via Cypress. Use <code>nox -s e2e_test</code> to run this locally.</p>
 
               
             </article>
@@ -1096,9 +1340,9 @@ pytest<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;n
       
         
         <a
-          href="../documentation/"
+          href="../development_tips/"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Documentation"
+          aria-label="Previous: Development Tips"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1109,7 +1353,7 @@ pytest<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;n
               <span class="md-footer__direction">
                 Previous
               </span>
-              Documentation
+              Development Tips
             </div>
           </div>
         </a>
@@ -1119,9 +1363,9 @@ pytest<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;n
       
         
         <a
-          href="../testing_environment/"
+          href="../code_style/"
           class="md-footer__link md-footer__link--next"
-          aria-label="Next: Testing Environment"
+          aria-label="Next: Code Style"
           rel="next"
         >
           <div class="md-footer__title">
@@ -1129,7 +1373,7 @@ pytest<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;n
               <span class="md-footer__direction">
                 Next
               </span>
-              Testing Environment
+              Code Style
             </div>
           </div>
           <div class="md-footer__button md-icon">
