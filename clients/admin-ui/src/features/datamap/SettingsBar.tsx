@@ -9,6 +9,7 @@ import {
   Tag,
   useDisclosure,
 } from "@fidesui/react";
+import { baseApi } from "common/api.slice";
 import React, { useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
@@ -20,7 +21,6 @@ import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accord
 import ExportModal from "~/features/datamap/modals/ExportModal";
 import FilterModal from "~/features/datamap/modals/FilterModal";
 import SettingsModal from "~/features/datamap/modals/SettingsModal";
-import { baseApi } from "common/api.slice";
 
 const useSettingsBar = () => {
   const isMapOpen = useAppSelector(selectIsMapOpen);
