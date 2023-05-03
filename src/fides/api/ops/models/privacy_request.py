@@ -46,7 +46,7 @@ from fides.api.ops.models.policy import (
     WebhookTypes,
 )
 from fides.api.ops.oauth.jwt import generate_jwe
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.ops.schemas.external_https import SecondPartyResponseFormat, WebhookJWE
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
@@ -78,7 +78,7 @@ EXECUTION_CHECKPOINTS = [
 ]
 
 
-class ManualAction(BaseSchema):
+class ManualAction(FidesSchema):
     """Surface how to retrieve or mask data in a database-agnostic way
 
     "locators" are similar to the SQL "WHERE" information.
@@ -91,7 +91,7 @@ class ManualAction(BaseSchema):
     update: Optional[Dict[str, Any]]
 
 
-class CheckpointActionRequired(BaseSchema):
+class CheckpointActionRequired(FidesSchema):
     """Describes actions needed on a particular checkpoint.
 
     Examples are a paused collection that needs manual input, a failed collection that

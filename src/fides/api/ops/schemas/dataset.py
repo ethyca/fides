@@ -7,7 +7,7 @@ from pydantic import BaseModel, validator
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.util.data_category import (
     DataCategory as DefaultTaxonomyDataCategories,
 )
@@ -75,7 +75,7 @@ def _valid_data_categories(
     return proposed_data_categories
 
 
-class DatasetTraversalDetails(BaseSchema):
+class DatasetTraversalDetails(FidesSchema):
     """
     Describes whether or not the parent dataset is traversable; if not, includes
     an error message describing the traversal issues.
@@ -85,7 +85,7 @@ class DatasetTraversalDetails(BaseSchema):
     msg: Optional[str]
 
 
-class ValidateDatasetResponse(BaseSchema):
+class ValidateDatasetResponse(FidesSchema):
     """
     Response model for validating a dataset, which includes both the dataset
     itself (if valid) plus a details object describing if the dataset is
@@ -96,12 +96,12 @@ class ValidateDatasetResponse(BaseSchema):
     traversal_details: DatasetTraversalDetails
 
 
-class DatasetConfigCtlDataset(BaseSchema):
+class DatasetConfigCtlDataset(FidesSchema):
     fides_key: FidesKey  # The fides_key for the DatasetConfig
     ctl_dataset_fides_key: FidesKey  # The fides_key for the ctl_datasets record
 
 
-class DatasetConfigSchema(BaseSchema):
+class DatasetConfigSchema(FidesSchema):
     """Returns the DatasetConfig fides key and the linked Ctl Dataset"""
 
     fides_key: FidesKey
@@ -120,14 +120,14 @@ class BulkPutDataset(BulkResponse):
     failed: List[BulkUpdateFailed]
 
 
-class CollectionAddressResponse(BaseSchema):
+class CollectionAddressResponse(FidesSchema):
     """Schema for the representation of a collection in the graph"""
 
     dataset: Optional[str]
     collection: Optional[str]
 
 
-class DryRunDatasetResponse(BaseSchema):
+class DryRunDatasetResponse(FidesSchema):
     """
     Response model for dataset dry run
     """

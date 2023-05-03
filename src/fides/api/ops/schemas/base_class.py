@@ -3,25 +3,6 @@ from typing import Any, List
 from pydantic import BaseModel
 
 
-class FidesopsSchema(BaseModel):
-    """
-    A base template for all other Fidesops Schemas to inherit from.
-    """
-
-    @classmethod
-    def get_field_names(cls) -> List[str]:
-        """Return a list of all field names specified on this schema"""
-        return list(cls.schema().get("properties", {}).keys())
-
-    class Config:
-        """Allow ORM access on all schemas"""
-
-        orm_mode = True
-
-
-BaseSchema = FidesopsSchema
-
-
 class NoValidationSchema(BaseModel):
     """
     A schema to be used for API documentation only, when validation is
@@ -49,4 +30,4 @@ class FidesSchema(BaseModel):
         orm_mode = True
 
 
-FidesBaseSchema = FidesSchema
+FidesSchema

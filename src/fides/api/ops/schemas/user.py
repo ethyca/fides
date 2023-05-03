@@ -5,18 +5,18 @@ from typing import Optional
 from pydantic import validator
 
 from fides.api.ops.cryptography.cryptographic_util import decode_password
-from fides.api.ops.schemas.base_class import FidesBaseSchema as BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.oauth import AccessToken
 
 
-class PrivacyRequestReviewer(BaseSchema):
+class PrivacyRequestReviewer(FidesSchema):
     """Data we can expose via the PrivacyRequest.reviewer relation"""
 
     id: str
     username: str
 
 
-class UserCreate(BaseSchema):
+class UserCreate(FidesSchema):
     """Data required to create a FidesUser."""
 
     username: str
@@ -52,13 +52,13 @@ class UserCreate(BaseSchema):
         return decoded_password
 
 
-class UserCreateResponse(BaseSchema):
+class UserCreateResponse(FidesSchema):
     """Response after creating a FidesUser"""
 
     id: str
 
 
-class UserLogin(BaseSchema):
+class UserLogin(FidesSchema):
     """Similar to UserCreate except we do not need the extra validation on
     username and password.
     """
@@ -73,7 +73,7 @@ class UserLogin(BaseSchema):
         return decode_password(password)
 
 
-class UserResponse(BaseSchema):
+class UserResponse(FidesSchema):
     """Response after requesting a User"""
 
     id: str
@@ -83,27 +83,27 @@ class UserResponse(BaseSchema):
     last_name: Optional[str]
 
 
-class UserLoginResponse(BaseSchema):
+class UserLoginResponse(FidesSchema):
     """Similar to UserResponse except with an access token"""
 
     user_data: UserResponse
     token_data: AccessToken
 
 
-class UserPasswordReset(BaseSchema):
+class UserPasswordReset(FidesSchema):
     """Contains both old and new passwords when resetting a password"""
 
     old_password: str
     new_password: str
 
 
-class UserForcePasswordReset(BaseSchema):
+class UserForcePasswordReset(FidesSchema):
     """Only a new password, for the case where the user does not remember their password"""
 
     new_password: str
 
 
-class UserUpdate(BaseSchema):
+class UserUpdate(FidesSchema):
     """Data required to update a FidesopsUser"""
 
     first_name: Optional[str]

@@ -50,7 +50,7 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
-from fides.api.ops.schemas.base_class import FidesBaseSchema as BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     MessagingActionType,
@@ -89,7 +89,7 @@ from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 
 
-class ManualWebhookResults(BaseSchema):
+class ManualWebhookResults(FidesSchema):
     """Represents manual webhook data retrieved from the cache and whether privacy request execution should continue"""
 
     manual_data: Dict[str, List[Dict[str, Optional[Any]]]]

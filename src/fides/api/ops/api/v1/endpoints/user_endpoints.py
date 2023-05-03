@@ -66,7 +66,7 @@ from fides.api.ops.schemas.user import (
 from fides.api.ops.util.api_router import APIRouter
 from fides.core.config import CONFIG, FidesConfig, get_config
 
-router = AppAPIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
+router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 
 
 def get_system_by_fides_key(db: Session, system_key: FidesKey) -> System:
