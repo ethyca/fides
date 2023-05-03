@@ -2361,6 +2361,7 @@ def test_create_and_process_access_request_dynamodb(
     assert results[customer_table_key][0]["email"] == customer_email
     assert results[customer_table_key][0]["name"] == customer_name
     assert results[customer_table_key][0]["id"] == customer_id
+    assert results[address_table_key][0]["id"] == customer_id
 
     pr.delete(db=db)
 
