@@ -6,7 +6,7 @@ import { getDefaultConfig } from "~/constants";
 import { Consent, ConsentPreferences } from "~/types/api";
 import { Config } from "~/types/config";
 
-// TODO: by statically loading the config here, we *guarantee* that the initial
+// DEFER: by statically loading the config here, we *guarantee* that the initial
 // state is never undefined. This is convenient for all the Typescript checking,
 // but is probably not wise - do we *really* want to ever show the "default"
 // prebuilt config?
@@ -18,6 +18,8 @@ import { Config } from "~/types/config";
 // ```
 //
 // ...and then update all the code to handle that.
+//
+// (see https://github.com/ethyca/fides/issues/3212)
 interface ConfigState {
   config: Config;
 }

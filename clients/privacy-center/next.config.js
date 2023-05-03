@@ -10,7 +10,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 
 const nextConfig = {
   reactStrictMode: true,
-  // TODO: This is preferable, but requires Next 13
+  // DEFER: This would be preferable, but requires Next 13 (see https://github.com/ethyca/fides/issues/3173)
   // transpilePackages: ["fides-js"],
   poweredByHeader: false,
   webpack: (config, { isServer }) => {

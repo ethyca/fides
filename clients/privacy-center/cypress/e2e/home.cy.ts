@@ -2,7 +2,8 @@ describe("Home", () => {
   it("renders the configured page info", () => {
     cy.visit("/");
     cy.loadConfigFixture("config/config_all.json").then((config) => {
-      // TODO: test *all* the configurable display things
+      // DEFER: Test *all* the configurable display options
+      // (see https://github.com/ethyca/fides/issues/3216)
       cy.getByTestId("home");
 
       cy.getByTestId("heading").contains(config.title);

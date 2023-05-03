@@ -144,7 +144,8 @@ export const loadPrivacyCenterEnvironment = async (): Promise<PrivacyCenterEnvir
   if (typeof window !== "undefined") {
     throw new Error("Unexpected error, cannot load server environment from client code!");
   }
-  console.log("Load Privacy Center environment for session..."); // TODO: version number
+  // DEFER: Log a version number here (see https://github.com/ethyca/fides/issues/3171)
+  console.log("Load Privacy Center environment for session...");
 
   // Load environment variables
   const settings: PrivacyCenterSettings = {
@@ -194,6 +195,10 @@ export const loadPrivacyCenterEnvironment = async (): Promise<PrivacyCenterEnvir
  * argument that should have been received from - you guessed it - the server!
  */
 export const hydratePrivacyCenterEnvironment = (serverEnvironment?: PrivacyCenterEnvironment): PrivacyCenterEnvironment => {
+  // DEFER: handle this (see https://github.com/ethyca/fides/issues/3212)
+  if (_environment) {
+    console.warn("Called hydratePrivacyCenterEnvironment() after environment was already initialized!");
+  }
   if (serverEnvironment) {
     _environment = serverEnvironment;
   }

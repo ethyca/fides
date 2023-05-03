@@ -9,7 +9,8 @@ import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
  * Server-side API route to generate the customized "fides.js" script
  * based on the current configuration values.
  *
- * TODO: if this actually works, make sure we cache the results aggressively!
+ * DEFER: Optimize this route, and ensure it is cacheable
+ * (see https://github.com/ethyca/fides/issues/3170)
  */
 export default async function handler(
   req: NextApiRequest,
@@ -35,11 +36,16 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-  // TODO: need to get a copy of the file during build stage, not load from ../ paths!
+  // DEFER: Optimize this by loading from a vendored asset folder instead
+  // (see https://github.com/ethyca/fides/issues/3170)
   console.log(
     "Bundling generic fides.js & Privacy Center configuration together..."
   );
-  const fidesJS = await fsPromises.readFile("../fides-js/dist/fides.js");
+  const fidesJSBuffer = await fsPromises.readFile("../fides-js/dist/fides.js");
+  const fidesJS: string = fidesJSBuffer.toString();
+  if (!fidesJS || fidesJS == "") {
+    throw new Error("Unable to load latest fides.js script from server!");
+  }
   const script = `
   (function () {
     // Include generic fides.js script
