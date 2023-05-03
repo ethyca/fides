@@ -38,6 +38,7 @@ from fides.api.ops.api.v1.urn_registry import (
 from fides.api.ops.common_exceptions import FidesopsException, KeyOrNameAlreadyExists
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateResponse,
     SaasConnectionTemplateValues,
@@ -62,7 +63,6 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.connection_util import validate_secrets
-from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 

@@ -52,6 +52,7 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentity,
     ProvidedIdentityType,
 )
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.privacy_preference import (
     ConsentReportingSchema,
     CurrentPrivacyPreferenceReportingSchema,
@@ -69,7 +70,6 @@ from fides.api.ops.util.consent_util import (
     get_fides_user_device_id_provided_identity,
     get_or_create_fides_user_device_id_provided_identity,
 )
-from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 

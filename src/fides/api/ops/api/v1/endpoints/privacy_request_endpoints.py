@@ -101,6 +101,7 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentity,
     ProvidedIdentityType,
 )
+from fides.api.ops.oauth.utils import verify_callback_oauth, verify_oauth_client
 from fides.api.ops.schemas.dataset import (
     CollectionAddressResponse,
     DryRunDatasetResponse,
@@ -149,7 +150,6 @@ from fides.api.ops.util.cache import FidesopsRedis
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.enums import ColumnSort
 from fides.api.ops.util.logger import Pii
-from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 

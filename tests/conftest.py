@@ -20,8 +20,6 @@ from toml import load as load_toml
 
 from fides.api.ctl.database.session import sync_engine
 from fides.api.ctl.sql_models import DataUse, PrivacyDeclaration
-
-# from fides.api.ctl.database.session import sync_engine, sync_session
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.cryptography.schemas.jwt import (
@@ -41,11 +39,7 @@ from fides.api.ops.oauth.roles import (
     VIEWER_AND_APPROVER,
 )
 from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
-
-# from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-
-# from fides.core import api
 from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *

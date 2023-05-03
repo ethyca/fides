@@ -19,7 +19,7 @@ from fides.api.ops.cryptography.schemas.jwt import (
 )
 from fides.api.ops.models.client import ClientDetail, _get_root_client_detail
 from fides.api.ops.oauth.roles import OWNER, VIEWER
-from fides.api.ops.util.oauth_util import extract_payload
+from fides.api.ops.oauth.utils import extract_payload
 
 
 def test_create_client_and_secret(db, config):

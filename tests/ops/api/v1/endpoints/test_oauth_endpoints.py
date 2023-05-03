@@ -36,7 +36,7 @@ from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.oauth.jwt import generate_jwe
 from fides.api.ops.oauth.roles import OWNER
-from fides.api.ops.util.oauth_util import extract_payload
+from fides.api.ops.oauth.utils import extract_payload
 from fides.core.config import CONFIG
 
 

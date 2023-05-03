@@ -33,7 +33,7 @@ from fides.api.ops.oauth.roles import (
     VIEWER_AND_APPROVER,
     not_contributor_scopes,
 )
-from fides.api.ops.util.oauth_util import (
+from fides.api.ops.oauth.utils import (
     _has_direct_scopes,
     _has_scope_via_role,
     extract_payload,

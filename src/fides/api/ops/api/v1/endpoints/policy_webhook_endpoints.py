@@ -29,10 +29,10 @@ from fides.api.ops.models.policy import (
     PolicyPreWebhook,
     WebhookTypes,
 )
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas import policy_webhooks as schemas
 from fides.api.ops.schemas.policy_webhooks import PolicyWebhookDeleteResponse
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["DSR Policy Webhooks"], prefix=urls.V1_URL_PREFIX)
 

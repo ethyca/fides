@@ -7,7 +7,7 @@ from fides.api.ops.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
 )
 from fides.api.ops.oauth.jwt import generate_jwe
-from fides.api.ops.util.oauth_util import extract_payload, is_token_expired
+from fides.api.ops.oauth.utils import extract_payload, is_token_expired
 from fides.core.config import CONFIG
 
 

@@ -47,6 +47,7 @@ from fides.api.ops.models.storage import (
     get_active_default_storage_config,
     get_default_storage_config_by_type,
 )
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
@@ -73,7 +74,6 @@ from fides.api.ops.service.storage.storage_authenticator_service import (
 from fides.api.ops.service.storage.storage_uploader_service import upload
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
-from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.api.ops.util.storage_util import get_schema_for_secrets
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)

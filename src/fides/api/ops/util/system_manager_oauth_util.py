@@ -14,7 +14,7 @@ from fides.api.ops.common_exceptions import AuthorizationError
 from fides.api.ops.cryptography.schemas.jwt import JWE_PAYLOAD_SYSTEMS
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.oauth.system_manager import SYSTEM_MANAGER_SCOPES
-from fides.api.ops.util.oauth_util import (
+from fides.api.ops.oauth.utils import (
     copy_func,
     extract_token_and_load_client,
     has_permissions,

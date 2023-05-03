@@ -13,9 +13,9 @@ from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.privacy_experience import PrivacyExperienceResponse
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
 

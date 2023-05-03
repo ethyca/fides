@@ -2,6 +2,9 @@
 V1_URL_PREFIX = "/api/v1"
 YAML = "/yml"
 
+# User Permission URLs
+USER_PERMISSIONS = "/user/{user_id}/permission"
+
 # Config URLs
 CONFIG = "/config"
 

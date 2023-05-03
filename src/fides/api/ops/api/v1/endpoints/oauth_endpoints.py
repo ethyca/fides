@@ -46,6 +46,7 @@ from fides.api.ops.oauth.schemas.oauth import (
     AccessToken,
     OAuth2ClientCredentialsRequestForm,
 )
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.client import ClientCreatedResponse
 from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -54,7 +55,6 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2_authori
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
