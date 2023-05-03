@@ -310,6 +310,11 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 system.get("data_protection_impact_assessment", {})
             )
         )
+
+        # variable to keep track of rows added based on system declarations
+        # used to determine whether we need to add a "placeholder" row for the system generally
+        declaration_rows = []
+
         if system.get("privacy_declarations"):
             for declaration in system["privacy_declarations"]:
                 if isinstance(
@@ -323,10 +328,12 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                     # convert to dict for consistent processing across ORM and pydantic object
                     declaration = declaration.__dict__
 
-                data_use = formatted_data_uses[declaration["data_use"]]
+                data_use = formatted_data_uses.get(declaration["data_use"])
+                if data_use is None:  # this is an invalid data use if it's not found
+                    continue  # skip processing this declaration if the data use is invalid
                 data_categories = declaration["data_categories"] or []
                 data_subjects = [
-                    formatted_data_subjects[data_subject_fides_key]
+                    formatted_data_subjects.get(data_subject_fides_key)
                     for data_subject_fides_key in declaration["data_subjects"]
                 ]
                 dataset_references = declaration["dataset_references"] or [
@@ -363,6 +370,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                     ]
                     for category in data_categories
                     for subject in data_subjects
+                    if subject is not None  # if subject reference is invalid, skip it
                     for dataset_reference in dataset_references
                 ]
                 cartesian_product_of_declaration = []
@@ -392,8 +400,12 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                             )
                     cartesian_product_of_declaration.append(tuple(product))
 
-                output_list += cartesian_product_of_declaration
-        else:
+                declaration_rows += cartesian_product_of_declaration
+            output_list += declaration_rows
+
+        # if we haven't added any output rows for the system based on declarations,
+        # then add a "placholder" generla system row to ensure the system is captured in the output
+        if not declaration_rows:
             system_row = [
                 system["fides_key"],
                 system["name"],
