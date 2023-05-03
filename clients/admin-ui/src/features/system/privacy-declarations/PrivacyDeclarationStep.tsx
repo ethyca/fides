@@ -7,6 +7,7 @@ import { useAppDispatch } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { setActiveSystem, useUpdateSystemMutation } from "~/features/system";
+import { PrivacyDeclarationWithId } from "~/features/system/privacy-declarations/types";
 import { PrivacyDeclaration, System } from "~/types/api";
 
 import { usePrivacyDeclarationData } from "./hooks";
@@ -25,7 +26,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
   const handleSave = async (
     updatedDeclarations: PrivacyDeclaration[],
     isDelete?: boolean
-  ) => {
+  ): Promise<PrivacyDeclarationWithId[] | undefined> => {
     const systemBodyWithDeclaration = {
       ...system,
       privacy_declarations: updatedDeclarations,
@@ -43,14 +44,14 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         );
 
         toast(errorToastParams(errorMsg));
-        return false;
+        return undefined;
       }
       toast.closeAll();
       toast(
         successToastParams(isDelete ? "Data use deleted" : "Data use saved")
       );
       dispatch(setActiveSystem(result.data));
-      return true;
+      return result.data.privacy_declarations as PrivacyDeclarationWithId[];
     };
 
     const updateSystemResult = await updateSystemMutationTrigger(

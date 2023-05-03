@@ -150,10 +150,11 @@ def get_custom_field_headers(
 
     for key in custom_keys:
         key_string = f"system.{header_type}.{key}"
-        custom_columns[key_string] = key
-        keys.append(key_string)
-        output_list[0] = tuple(keys)
-        custom_field_headers.append(key_string)
+        if key_string not in keys:  # if we havent't seen the key yet
+            custom_columns[key_string] = key
+            keys.append(key_string)
+            output_list[0] = tuple(keys)
+            custom_field_headers.append(key_string)
 
     return output_list, custom_columns, custom_field_headers
 

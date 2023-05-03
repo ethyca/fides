@@ -26,6 +26,7 @@ type Props = FormikProps<FormValues> & {
   isLoading: boolean;
   onClose: () => void;
   handleDropdownChange: (value: FieldTypes) => void;
+  isEditing: boolean;
 };
 
 export const CustomFieldForm = ({
@@ -38,6 +39,7 @@ export const CustomFieldForm = ({
   isLoading,
   onClose,
   handleDropdownChange,
+  isEditing,
 }: Props) => {
   const { validateForm } = useFormikContext<FormValues>();
   useEffect(() => {
@@ -71,6 +73,7 @@ export const CustomFieldForm = ({
             name="resource_type"
             options={RESOURCE_TYPE_OPTIONS}
             labelProps={CustomFieldLabelStyles}
+            isDisabled={isEditing}
           />
         </FormSection>
       </Box>

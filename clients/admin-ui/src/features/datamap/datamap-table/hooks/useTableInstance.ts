@@ -18,7 +18,6 @@ import {
   loadColumns,
   selectColumns,
   setIsGettingStarted,
-  useGetAllDataCategoriesQuery,
   useGetDatamapQuery,
 } from "~/features/datamap";
 import {
@@ -30,6 +29,7 @@ import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableCo
 import AccordionMultifieldFilter, {
   accordionMultifieldFilter,
 } from "~/features/datamap/datamap-table/filters/accordion-multifield-filter";
+import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
 
 const DEFAULT_COLUMN = {
   minWidth: 30,

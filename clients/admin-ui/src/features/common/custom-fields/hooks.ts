@@ -136,7 +136,11 @@ export const useCustomFields = ({
 
       // When creating an resource, the fides key may have initially been blank. But by the time the
       // form is submitted it must not be blank (not undefined, not an empty string).
-      const fidesKey = formValues.fides_key || resourceFidesKey;
+      const fidesKey =
+        "fides_key" in formValues && formValues.fides_key !== ""
+          ? formValues.fides_key
+          : resourceFidesKey;
+
       if (!fidesKey) {
         return;
       }

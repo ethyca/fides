@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Depends, HTTPException
 from fastapi.params import Security
 from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
@@ -18,6 +18,7 @@ from fides.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionSystemTypeMap,
     SystemType,
 )
+from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.connection_type import (
     connection_type_secret_schema,
     get_connection_types,
