@@ -51,7 +51,7 @@ class PrivacyExperience(BaseSchema):
 
 class PrivacyExperienceCreate(PrivacyExperience):
     """
-    An API representation of a PrivacyNotice.
+    An API representation of a PrivacyExperience.
     This model doesn't include an `id` so that it can be used for creation.
     It also establishes some fields _required_ for creation
     """
