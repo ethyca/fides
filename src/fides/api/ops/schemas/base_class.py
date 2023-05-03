@@ -28,6 +28,3 @@ class FidesSchema(BaseModel):
         """Allow ORM access on all schemas."""
 
         orm_mode = True
-
-
-FidesSchema
