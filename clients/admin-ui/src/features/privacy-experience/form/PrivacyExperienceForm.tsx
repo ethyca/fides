@@ -22,7 +22,6 @@ import DeliveryMechanismForm from "./DeliveryMechanismForm";
 import {
   defaultInitialValues,
   transformPrivacyExperienceResponseToCreation,
-  ValidationSchema,
 } from "./helpers";
 import PrivacyCenterMessagingForm from "./PrivacyCenterMessagingForm";
 
@@ -76,7 +75,6 @@ const PrivacyNoticeForm = ({
       initialValues={initialValues}
       enableReinitialize
       onSubmit={handleSubmit}
-      validationSchema={ValidationSchema}
     >
       {({ dirty, isValid, isSubmitting }) => (
         <Form>

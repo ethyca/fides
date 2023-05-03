@@ -1,5 +1,3 @@
-import * as Yup from "yup";
-
 import {
   ComponentType,
   DeliveryMechanism,
@@ -21,7 +19,9 @@ export const transformPrivacyExperienceResponseToCreation = (
     created_at: createdAt,
     updated_at: updatedAt,
     privacy_experience_history_id: historyId,
+    privacy_experience_template_id: templateId,
     version,
+    privacy_notices: notices,
     ...rest
   } = experience;
   return {
@@ -33,13 +33,3 @@ export const transformPrivacyExperienceResponseToCreation = (
       experience.delivery_mechanism ?? defaultInitialValues.delivery_mechanism,
   };
 };
-
-export const ValidationSchema = Yup.object().shape({
-  name: Yup.string().required().label("Title"),
-  data_uses: Yup.array(Yup.string())
-    .min(1, "Must assign at least one data use")
-    .label("Data uses"),
-  regions: Yup.array(Yup.string())
-    .min(1, "Must assign at least one location")
-    .label("Locations"),
-});
