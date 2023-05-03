@@ -107,7 +107,8 @@ export const loadConfigFromFile = async (configJsonUrl?: string): Promise<Config
   const file = await loadConfigFile(urls);
   if (file) {
     const config = JSON.parse(file) as Config;
-    // TODO: validate config?
+    // DEFER: validate the configuration here, log helpful warnings, etc.
+    // (see https://github.com/ethyca/fides/issues/3171)
     return config;
   }
 }
