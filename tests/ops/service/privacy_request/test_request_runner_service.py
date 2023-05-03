@@ -66,7 +66,7 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
-PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 300
+PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
 
 
 @pytest.fixture(scope="function")
