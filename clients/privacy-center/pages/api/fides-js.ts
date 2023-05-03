@@ -43,7 +43,7 @@ export default async function handler(
   );
   const fidesJSBuffer = await fsPromises.readFile("../fides-js/dist/fides.js");
   const fidesJS: string = fidesJSBuffer.toString();
-  if (!fidesJS || fidesJS == "") {
+  if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");
   }
   const script = `

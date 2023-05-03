@@ -22,8 +22,8 @@ mockUuid.v4.mockReturnValue(MOCK_UUID);
 // for some mysterious reason (see note in jest.config.js), so we define a
 // minimal mock implementation here
 const mockGetCookie = jest.fn((): string | undefined => "mockGetCookie return");
-/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 const mockSetCookie = jest.fn(
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   (name: string, value: string, attributes: object, encoding: object) =>
     `mock setCookie return (value=${value})`
 );
