@@ -9,12 +9,12 @@ from loguru import logger
 from fides.api.ctl.utils.errors import FidesError
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.models.privacy_request import PrivacyRequestStatus
-from fides.api.ops.oauth.schemas.user import UserLogin
 from fides.api.ops.schemas.privacy_request import (
     PrivacyRequestCreate,
     PrivacyRequestResponse,
 )
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.user import UserLogin
 from fides.api.ops.service.privacy_request.request_service import (
     poll_server_for_completion,
 )

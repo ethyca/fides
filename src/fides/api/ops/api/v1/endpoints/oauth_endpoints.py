@@ -42,12 +42,9 @@ from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.oauth.roles import ROLES_TO_SCOPES_MAPPING
-from fides.api.ops.oauth.schemas.oauth import (
-    AccessToken,
-    OAuth2ClientCredentialsRequestForm,
-)
 from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.client import ClientCreatedResponse
+from fides.api.ops.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
 from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )

@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 
 import jose.exceptions
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -45,10 +45,15 @@ from fides.api.ops.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
 from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
-from fides.api.ops.oauth.api.deps import get_db
 from fides.api.ops.oauth.roles import APPROVER, VIEWER
-from fides.api.ops.oauth.schemas.oauth import AccessToken
-from fides.api.ops.oauth.schemas.user import (
+from fides.api.ops.oauth.utils import (
+    extract_payload,
+    get_current_user,
+    oauth2_scheme,
+    verify_oauth_client,
+)
+from fides.api.ops.schemas.oauth import AccessToken
+from fides.api.ops.schemas.user import (
     UserCreate,
     UserCreateResponse,
     UserForcePasswordReset,
@@ -58,16 +63,10 @@ from fides.api.ops.oauth.schemas.user import (
     UserResponse,
     UserUpdate,
 )
-from fides.api.ops.oauth.utils import (
-    extract_payload,
-    get_current_user,
-    oauth2_scheme,
-    verify_oauth_client,
-)
 from fides.api.ops.util.api_router import APIRouter
 from fides.core.config import CONFIG, FidesConfig, get_config
 
-router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
+router = AppAPIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 
 
 def get_system_by_fides_key(db: Session, system_key: FidesKey) -> System:
@@ -508,7 +507,7 @@ def get_users(
     return paginate(query.order_by(FidesUser.created_at.desc()), params=params)
 
 
-@user_router.post(
+@router.post(
     urls.LOGIN,
     status_code=HTTP_200_OK,
     response_model=UserLoginResponse,
