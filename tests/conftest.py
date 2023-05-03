@@ -970,6 +970,31 @@ def system(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
+def system_multiple_decs(db: Session, system: System) -> System:
+    """
+    Add an additional PrivacyDeclaration onto the base System to test scenarios with
+    multiple PrivacyDeclarations on a given system
+    """
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for third party sharing",
+            "system_id": system.id,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "third_party_sharing",
+            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+            "data_subjects": ["customer"],
+            "dataset_references": None,
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
+    db.refresh(system)
+    return system
+
+
+@pytest.fixture(scope="function")
 def system_third_party_sharing(db: Session) -> System:
     system_third_party_sharing = System.create(
         db=db,

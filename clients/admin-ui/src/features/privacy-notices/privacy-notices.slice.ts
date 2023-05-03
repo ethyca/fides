@@ -38,7 +38,7 @@ const privacyNoticesApi = baseApi.injectEndpoints({
         url: `privacy-notice/`,
         params: { ...params, systems_applicable: true, show_disabled: true },
       }),
-      providesTags: () => ["PrivacyNotices"],
+      providesTags: () => ["Privacy Notices"],
     }),
     patchPrivacyNotices: build.mutation<
       PrivacyNoticeResponse[],
@@ -49,14 +49,14 @@ const privacyNoticesApi = baseApi.injectEndpoints({
         url: `privacy-notice/`,
         body: payload,
       }),
-      invalidatesTags: () => ["PrivacyNotices"],
+      invalidatesTags: () => ["Privacy Notices"],
     }),
     getPrivacyNoticeById: build.query<PrivacyNoticeResponse, string>({
       query: (id) => ({
         url: `privacy-notice/${id}`,
       }),
       providesTags: (result, error, arg) => [
-        { type: "PrivacyNotices", id: arg },
+        { type: "Privacy Notices", id: arg },
       ],
     }),
     postPrivacyNotice: build.mutation<
@@ -68,7 +68,7 @@ const privacyNoticesApi = baseApi.injectEndpoints({
         url: `privacy-notice/`,
         body: payload,
       }),
-      invalidatesTags: () => ["PrivacyNotices"],
+      invalidatesTags: () => ["Privacy Notices"],
     }),
   }),
 });
