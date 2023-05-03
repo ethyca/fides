@@ -6,15 +6,6 @@ import {
 } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 import {
-  connectionTypeApi,
-  reducer as connectionTypeReducer,
-} from "connection-type/index";
-import { reducer as datastoreConnectionReducer } from "datastore-connections/index";
-import {
-  privacyRequestApi,
-  reducer as privacyRequestsReducer,
-} from "privacy-requests/index";
-import {
   FLUSH,
   PAUSE,
   PERSIST,
@@ -25,41 +16,27 @@ import {
   REHYDRATE,
 } from "redux-persist";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
-import {
-  reducer as userManagementReducer,
-  userApi,
-} from "user-management/index";
 
 import { STORAGE_ROOT_KEY } from "~/constants";
-import { authApi, reducer as authReducer } from "~/features/auth";
+import { authSlice } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
-import { reducer as featuresReducer } from "~/features/common/features";
+import { featuresSlice } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
-import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
-import { scannerApi } from "~/features/config-wizard/scanner.slice";
-import {
-  dataQualifierApi,
-  reducer as dataQualifierReducer,
-} from "~/features/data-qualifier/data-qualifier.slice";
-import {
-  dataSubjectsApi,
-  reducer as dataSubjectsReducer,
-} from "~/features/data-subjects/data-subject.slice";
-import {
-  dataUseApi,
-  reducer as dataUseReducer,
-} from "~/features/data-use/data-use.slice";
+import { configWizardSlice } from "~/features/config-wizard/config-wizard.slice";
+import { connectionTypeSlice } from "~/features/connection-type";
+import { dataQualifierSlice } from "~/features/data-qualifier/data-qualifier.slice";
+import { dataSubjectsSlice } from "~/features/data-subjects/data-subject.slice";
+import { dataUseSlice } from "~/features/data-use/data-use.slice";
 import { datamapSlice } from "~/features/datamap";
-import { reducer as datasetReducer } from "~/features/dataset";
-import {
-  organizationApi,
-  reducer as organizationReducer,
-} from "~/features/organization";
-import { plusApi } from "~/features/plus/plus.slice";
-import { reducer as privacyNoticesReducer } from "~/features/privacy-notices/privacy-notices.slice";
-import { reducer as systemReducer } from "~/features/system";
-import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
+import { datasetSlice } from "~/features/dataset";
+import { datastoreConnectionSlice } from "~/features/datastore-connections";
+import { organizationSlice } from "~/features/organization";
+import { privacyNoticesSlice } from "~/features/privacy-notices/privacy-notices.slice";
+import { subjectRequestsSlice } from "~/features/privacy-requests";
+import { systemSlice } from "~/features/system";
+import { taxonomySlice } from "~/features/taxonomy";
+import { userManagementSlice } from "~/features/user-management";
 
 /**
  * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"
@@ -84,36 +61,28 @@ const storage =
     : createNoopStorage();
 
 const reducer = {
-  [authApi.reducerPath]: authApi.reducer,
+  // API reducers
   [baseApi.reducerPath]: baseApi.reducer,
-  [connectionTypeApi.reducerPath]: connectionTypeApi.reducer,
-  [datamapSlice.name]: datamapSlice.reducer,
-  [dataQualifierApi.reducerPath]: dataQualifierApi.reducer,
-  [dataSubjectsApi.reducerPath]: dataSubjectsApi.reducer,
-  [dataUseApi.reducerPath]: dataUseApi.reducer,
-  [dirtyFormsSlice.name]: dirtyFormsSlice.reducer,
   [healthApi.reducerPath]: healthApi.reducer,
-  [organizationApi.reducerPath]: organizationApi.reducer,
-  [plusApi.reducerPath]: plusApi.reducer,
-  [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
-  [scannerApi.reducerPath]: scannerApi.reducer,
-  [taxonomyApi.reducerPath]: taxonomyApi.reducer,
-  [userApi.reducerPath]: userApi.reducer,
-  auth: authReducer,
-  configWizard: configWizardReducer,
-  connectionType: connectionTypeReducer,
-  dataQualifier: dataQualifierReducer,
-  dataSubjects: dataSubjectsReducer,
-  dataUse: dataUseReducer,
-  dataset: datasetReducer,
-  datastoreConnections: datastoreConnectionReducer,
-  features: featuresReducer,
-  organization: organizationReducer,
-  privacyNotices: privacyNoticesReducer,
-  subjectRequests: privacyRequestsReducer,
-  system: systemReducer,
-  taxonomy: taxonomyReducer,
-  userManagement: userManagementReducer,
+
+  // Slice reducers
+  [datamapSlice.name]: datamapSlice.reducer,
+  [dirtyFormsSlice.name]: dirtyFormsSlice.reducer,
+  [authSlice.name]: authSlice.reducer,
+  [configWizardSlice.name]: configWizardSlice.reducer,
+  [connectionTypeSlice.name]: connectionTypeSlice.reducer,
+  [dataQualifierSlice.name]: dataQualifierSlice.reducer,
+  [dataSubjectsSlice.name]: dataSubjectsSlice.reducer,
+  [dataUseSlice.name]: dataUseSlice.reducer,
+  [datasetSlice.name]: datasetSlice.reducer,
+  [datastoreConnectionSlice.name]: datastoreConnectionSlice.reducer,
+  [featuresSlice.name]: featuresSlice.reducer,
+  [organizationSlice.name]: organizationSlice.reducer,
+  [privacyNoticesSlice.name]: privacyNoticesSlice.reducer,
+  [subjectRequestsSlice.name]: subjectRequestsSlice.reducer,
+  [systemSlice.name]: systemSlice.reducer,
+  [taxonomySlice.name]: taxonomySlice.reducer,
+  [userManagementSlice.name]: userManagementSlice.reducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
@@ -138,22 +107,7 @@ const persistConfig = {
     and restored which could leave you with phantom subscriptions from components that do not exist any more.
     (https://redux-toolkit.js.org/usage/usage-guide#use-with-redux-persist)
   */
-  blacklist: [
-    authApi.reducerPath,
-    baseApi.reducerPath,
-    connectionTypeApi.reducerPath,
-    dataQualifierApi.reducerPath,
-    dataSubjectsApi.reducerPath,
-    dataUseApi.reducerPath,
-    healthApi.reducerPath,
-    organizationApi.reducerPath,
-    plusApi.reducerPath,
-    privacyRequestApi.reducerPath,
-    scannerApi.reducerPath,
-    taxonomyApi.reducerPath,
-    userApi.reducerPath,
-    dirtyFormsSlice.name,
-  ],
+  blacklist: [baseApi.reducerPath, healthApi.reducerPath],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -166,21 +120,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(
-        authApi.middleware,
-        baseApi.middleware,
-        connectionTypeApi.middleware,
-        dataQualifierApi.middleware,
-        dataSubjectsApi.middleware,
-        dataUseApi.middleware,
-        healthApi.middleware,
-        organizationApi.middleware,
-        plusApi.middleware,
-        privacyRequestApi.middleware,
-        scannerApi.middleware,
-        taxonomyApi.middleware,
-        userApi.middleware
-      ),
+      }).concat(baseApi.middleware, healthApi.middleware),
     devTools: true,
     preloadedState,
   });

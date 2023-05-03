@@ -30,11 +30,11 @@ import {
   selectDataUses,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
+import { PrivacyDeclarationWithId } from "~/features/datamap/privacy-declarations/types";
 import {
   selectDataCategories,
   useGetAllDataCategoriesQuery,
-} from "~/features/datamap/datamap.slice";
-import { PrivacyDeclarationWithId } from "~/features/datamap/privacy-declarations/types";
+} from "~/features/taxonomy";
 import {
   DataCategory,
   DataSubject,

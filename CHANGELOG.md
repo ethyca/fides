@@ -21,6 +21,10 @@ The types of changes are:
 - Access and erasure support for Amplitude [#2569](https://github.com/ethyca/fides/pull/2569)
 - Access and erasure support for Gorgias [#2444](https://github.com/ethyca/fides/pull/2444)
 
+### Changed
+
+- Merge instances of RTK `createApi` into one instance for better cache invalidation [#3059](https://github.com/ethyca/fides/pull/3059)
+
 ## [2.12.0](https://github.com/ethyca/fides/compare/2.11.0...2.12.0)
 
 ### Added
