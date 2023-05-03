@@ -3,7 +3,7 @@
 import pytest
 
 from fides.api.ops.cryptography.cryptographic_util import str_to_b64_str
-from fides.api.ops.oauth.schemas.user import UserCreate, UserLogin
+from fides.api.ops.schemas.user import UserCreate, UserLogin
 
 
 @pytest.mark.parametrize(
