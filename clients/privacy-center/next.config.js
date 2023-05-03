@@ -10,7 +10,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 
 const nextConfig = {
   reactStrictMode: true,
-  // TODO: I think we want this
+  // TODO: This is preferable, but requires Next 13
   // transpilePackages: ["fides-js"],
   poweredByHeader: false,
   webpack: (config, { isServer }) => {

@@ -1,4 +1,3 @@
-// TODO: this doesn't work right now, conflicting rules...?
 module.exports = {
   extends: [
     'airbnb-typescript',

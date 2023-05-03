@@ -82,7 +82,9 @@ declare global {
       ): Chainable<boolean>;
       /**
        * Custom command to load a Privacy Center configuration JSON file from a fixture.
-       * 
+       * Note that because it is injected into the Redux state, any subsequent page-load resets that with the original
+       * config from the server-side.
+       *
        * @example cy.loadConfigFixture("config/config_all.json").as("config");
        */
       loadConfigFixture(
