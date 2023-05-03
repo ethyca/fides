@@ -7,9 +7,11 @@ import type { DeliveryMechanism } from "./DeliveryMechanism";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
- * Base for PrivacyExperience API objects
+ * An API representation of a PrivacyNotice.
+ * This model doesn't include an `id` so that it can be used for creation.
+ * It also establishes some fields _required_ for creation
  */
-export type PrivacyExperience = {
+export type PrivacyExperienceCreate = {
   disabled?: boolean;
   component: ComponentType;
   delivery_mechanism: DeliveryMechanism;
