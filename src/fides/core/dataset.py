@@ -10,6 +10,7 @@ from sqlalchemy.engine import Engine
 from fides.connectors.aws import (
     create_dynamodb_dataset,
     describe_dynamo_tables,
+    get_aws_client,
     get_dynamo_tables,
 )
 from fides.connectors.bigquery import get_bigquery_engine
@@ -367,9 +368,7 @@ def generate_dynamo_db_datasets(aws_config: Optional[AWSConfig]) -> Dataset:
     """
     Given an AWS config, extract all DynamoDB tables/fields and generate corresponding datasets.
     """
-    import fides.connectors.aws as aws_connector
-
-    client = aws_connector.get_aws_client(service="dynamodb", aws_config=aws_config)
+    client = get_aws_client(service="dynamodb", aws_config=aws_config)
     dynamo_tables = get_dynamo_tables(client)
     described_dynamo_tables = describe_dynamo_tables(client, dynamo_tables)
     dynamo_dataset = create_dynamodb_dataset(described_dynamo_tables)
