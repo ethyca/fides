@@ -49,7 +49,7 @@ export default [
               }
             } else {
               console.log(
-                `✅ ${fileName} gzipped size passed maximum size checks (${gzipSize} < ${GZIP_SIZE_WARN_KB} KB)`
+                `✅ ${fileName} gzipped size passed maximum size checks (${gzipSize} < ${GZIP_SIZE_ERROR_KB} KB)`
               );
             }
           },
