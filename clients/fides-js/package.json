@@ -13,7 +13,7 @@
   "scripts": {
     "build": "NODE_ENV=production rollup -c",
     "dev": "NODE_ENV=development rollup -c -w",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist .turbo",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "jest --watch",
     "test:ci": "jest"
@@ -28,7 +28,6 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@fidesui/config": "^0.0.3",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@types/node": "^18.16.3",
     "@types/uuid": "^9.0.1",
