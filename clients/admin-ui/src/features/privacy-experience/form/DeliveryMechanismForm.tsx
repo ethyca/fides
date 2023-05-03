@@ -53,7 +53,10 @@ const DeliveryMechanismForm = ({
   }
 
   return (
-    <FormSection title="Delivery mechanism">
+    <FormSection
+      title="Delivery mechanism"
+      data-testid="delivery-mechanism-form"
+    >
       <CustomSelect
         name="delivery_mechanism"
         label="Choose your delivery mechanism"

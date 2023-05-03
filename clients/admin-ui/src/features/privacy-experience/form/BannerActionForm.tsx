@@ -27,42 +27,36 @@ const BannerActionForm = ({
   }
 
   // Special rules for if the banner _only_ has notice only notices
-  if (
+  const onlyNoticeOnlyNotices =
     privacyNotices &&
     privacyNotices.length &&
     privacyNotices.every(
       (notice) => notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
-    )
-  ) {
-    return (
-      <FormSection title="Banner actions">
-        <CustomTextInput
-          name="link_label"
-          label="Link label"
-          variant="stacked"
-        />
+    );
+
+  return (
+    <FormSection title="Banner actions" data-testid="banner-action-form">
+      <CustomTextInput name="link_label" label="Link label" variant="stacked" />
+      {onlyNoticeOnlyNotices ? (
         <CustomTextInput
           label="Acknowledgment button label"
           name="acknowledgement_button_label"
           variant="stacked"
         />
-      </FormSection>
-    );
-  }
-
-  return (
-    <FormSection title="Banner actions">
-      <CustomTextInput name="link_label" label="Link label" variant="stacked" />
-      <CustomTextInput
-        label="Confirmation button label"
-        name="confirmation_button_label"
-        variant="stacked"
-      />
-      <CustomTextInput
-        label="Reject button label"
-        name="reject_button_label"
-        variant="stacked"
-      />
+      ) : (
+        <>
+          <CustomTextInput
+            label="Confirmation button label"
+            name="confirmation_button_label"
+            variant="stacked"
+          />
+          <CustomTextInput
+            label="Reject button label"
+            name="reject_button_label"
+            variant="stacked"
+          />
+        </>
+      )}
     </FormSection>
   );
 };

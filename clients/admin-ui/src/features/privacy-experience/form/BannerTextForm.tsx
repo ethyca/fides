@@ -17,7 +17,7 @@ const BannerTextForm = () => {
   }
 
   return (
-    <FormSection title="Banner text">
+    <FormSection title="Banner text" data-testid="banner-text-form">
       <CustomTextInput
         name="banner_title"
         label="Banner title"

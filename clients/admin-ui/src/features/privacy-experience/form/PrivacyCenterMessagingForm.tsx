@@ -17,7 +17,10 @@ const PrivacyCenterMessagingForm = () => {
   }
 
   return (
-    <FormSection title="Privacy center messaging">
+    <FormSection
+      title="Privacy center messaging"
+      data-testid="privacy-center-messaging-form"
+    >
       <CustomTextInput
         name="link_label"
         label="Website link text"
