@@ -11,7 +11,6 @@ import {
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_LEGAL_BASIS,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
 } from "~/features/datamap/constants";
-import { DataCategory } from "~/types/api";
 
 export interface DataCategoryNode {
   value: string;
@@ -120,29 +119,6 @@ const datamapApi = baseApi.injectEndpoints({
 });
 
 export const { useGetDatamapQuery, useLazyGetDatamapQuery } = datamapApi;
-
-const dataCategoriesApi = baseApi.injectEndpoints({
-  endpoints: (build) => ({
-    getAllDataCategories: build.query<DataCategory[], void>({
-      query: () => ({ url: `data_category` }),
-      providesTags: () => ["Data Category"],
-    }),
-  }),
-});
-
-export const { useGetAllDataCategoriesQuery } = dataCategoriesApi;
-
-// Selectors
-const emptyDataCategories: DataCategory[] = [];
-export const selectDataCategories = createSelector(
-  dataCategoriesApi.endpoints.getAllDataCategories.select(),
-  ({ data }: { data?: DataCategory[] }) => data ?? emptyDataCategories
-);
-
-export const selectDataCategoriesMap = createSelector(
-  selectDataCategories,
-  (dataCategories) => new Map(dataCategories.map((c) => [c.fides_key, c]))
-);
 
 export interface SettingsState {
   columns?: DatamapColumn[];
