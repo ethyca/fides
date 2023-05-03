@@ -9,7 +9,7 @@ import {
   Tag,
   useDisclosure,
 } from "@fidesui/react";
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
@@ -20,6 +20,7 @@ import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accord
 import ExportModal from "~/features/datamap/modals/ExportModal";
 import FilterModal from "~/features/datamap/modals/FilterModal";
 import SettingsModal from "~/features/datamap/modals/SettingsModal";
+import { baseApi } from "common/api.slice";
 
 const useSettingsBar = () => {
   const isMapOpen = useAppSelector(selectIsMapOpen);
@@ -77,6 +78,16 @@ const SettingsBar: React.FC = () => {
   } = useSettingsBar();
 
   const { tableInstance } = useContext(DatamapTableContext);
+
+  useEffect(() => {
+    /*
+    The tag needs to be invalided this way because the plusApi
+    is not a part of the baseApi yet. This will be done on the
+    API in the future.
+     */
+    dispatch(baseApi.util.invalidateTags(["Datamap"]));
+  }, [dispatch, tableInstance]);
+
   if (!tableInstance) {
     return null;
   }
