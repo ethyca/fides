@@ -1,3 +1,4 @@
+import re
 import sys
 import webbrowser
 from functools import partial
@@ -89,9 +90,19 @@ def check_docker_version(
             raise DockerCheckException(
                 "Could not determine Docker version from 'docker' commands. Please ensure that Docker is installed and running and try again."
             )
-        parsed_version = (
-            raw_version.stdout.decode("utf-8").rstrip("\n").replace("'", "")
+        stripped_version = (
+            raw_version.stdout.decode("utf-8").rstrip("\n").replace("'", "").strip()
         )
+        version_match = re.match(r"((\d+\.)+\d+)", stripped_version)
+        if (
+            not version_match
+        ):  # if this is empty, we could not find a version # matching the regex
+            raise DockerCheckException(
+                f"Could not parse your Docker version (v{stripped_version})!"
+            )
+        parsed_version = version_match.group(
+            0
+        )  # extract the version # from the regex match
 
         split_docker_version = convert_semver_to_list(parsed_version)
         split_required_docker_version = convert_semver_to_list(required_docker_version)
