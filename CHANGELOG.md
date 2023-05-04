@@ -18,6 +18,10 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.12.0...main)
 
 
+### Changed
+
+- Updated how Docker version checks are handled and added an escape-hatch [#3218](https://github.com/ethyca/fides/pull/3218)
+
 
 ### Fixed
 
