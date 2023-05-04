@@ -14,7 +14,7 @@ from fides.core.exceptions import DockerCheckException
 from fides.core.utils import echo_green, echo_red
 
 FIDES_DEPLOY_UPLOADS_DIR = getcwd() + "/fides_uploads/"
-REQUIRED_DOCKER_VERSION = "20.23.17"
+REQUIRED_DOCKER_VERSION = "20.10.17"
 SAMPLE_PROJECT_DIR = join(
     dirname(__file__),
     "../data/sample_project",
