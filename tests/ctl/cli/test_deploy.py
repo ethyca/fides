@@ -47,6 +47,7 @@ class TestDeploy:
 
 @pytest.mark.unit
 class TestCheckDockerVersion:
-    def test_docker_version_valid(self):
-        result = deploy.check_docker_version("12.1.24")
-        assert result
+    def test_docker_version_exception(self):
+        with pytest.raises(SystemExit):
+            result = deploy.check_docker_version("30.1.24")
+            assert result
