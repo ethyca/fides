@@ -8,8 +8,8 @@ saas_config:
   connector_params:
     - name: domain
       default_value: onesignal.com
-    - name: api_key
     - name: app_id
+    - name: api_key
 
   external_references:
     - name: player_id
@@ -23,16 +23,13 @@ saas_config:
         headers:
           - name: Authorization
             value: Basic <api_key>
+        query_params:
+          - name: app_id
+            value: <app_id>
 
   test_request:
     method: GET
     path: /api/v1/players
-    query_params:
-      - name: app_id
-        value: <app_id>
-    param_values:
-      - name: app_id
-        connector_param: app_id
 
   endpoints:
     - name: devices
@@ -40,24 +37,16 @@ saas_config:
         read:
           method: GET
           path: /api/v1/players/<player_id_value>
-          query_params:
-            - name: app_id
-              value: <app_id>
           param_values:
             - name: player_id_value
               references:
                 - player_id
-            - name: app_id
-              connector_param: app_id
         delete:
           method: DELETE
-          path: /api/v1/players/<player_id_value>
-          query_params:
-            - name: app_id
-              value: <app_id>
+          path: /api/v1/players/<player_id>
           param_values:
-            - name: player_id_value
+            - name: player_id
               references:
-                - player_id
-            - name: app_id
-              connector_param: app_id
+                - dataset: <instance_fides_key>
+                  field: devices.id
+                  direction: from

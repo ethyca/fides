@@ -9,6 +9,7 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: identifier
             data_categories: [system.operations]
             fidesops_meta:
