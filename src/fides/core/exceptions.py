@@ -2,7 +2,7 @@ from rich_click import secho
 
 
 class DockerCheckException(Exception):
-    """Raise an error when `local_mode` is enabled with an incompatible command."""
+    """An exception for use when checking & verifying Docker versions."""
 
     def __init__(self, message: str):
         self.message = message

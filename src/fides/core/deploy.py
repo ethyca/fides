@@ -65,9 +65,14 @@ def compare_semvers(version_a: List[int], version_b: List[int]) -> bool:
     return True
 
 
-def check_docker_version() -> bool:
+def check_docker_version(
+    required_docker_version: str = REQUIRED_DOCKER_VERSION,
+) -> bool:
     """
     Verify the Docker versions for both the client and the server.
+
+    Params:
+        required_docker_version: str = "20.10.10"
     """
 
     for version in ["Client", "Server"]:
@@ -84,13 +89,12 @@ def check_docker_version() -> bool:
             raise DockerCheckException(
                 "Could not determine Docker version from 'docker' commands. Please ensure that Docker is installed and running and try again."
             )
-
         parsed_version = (
             raw_version.stdout.decode("utf-8").rstrip("\n").replace("'", "")
         )
 
         split_docker_version = convert_semver_to_list(parsed_version)
-        split_required_docker_version = convert_semver_to_list(REQUIRED_DOCKER_VERSION)
+        split_required_docker_version = convert_semver_to_list(required_docker_version)
 
         version_is_valid = compare_semvers(
             split_docker_version, split_required_docker_version
