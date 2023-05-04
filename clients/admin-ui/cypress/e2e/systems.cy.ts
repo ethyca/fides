@@ -1,4 +1,8 @@
-import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
+import {
+  stubPlus,
+  stubSystemCrud,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
 
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
@@ -12,6 +16,7 @@ describe("System management page", () => {
     cy.intercept("GET", "/api/v1/system", {
       fixture: "systems/systems.json",
     }).as("getSystems");
+    stubPlus(false);
   });
 
   it("Can navigate to the system management page", () => {
@@ -171,9 +176,6 @@ describe("System management page", () => {
               dataset_references: ["demo_users_dataset_2"],
             });
           });
-          cy.getByTestId("new-declaration-form").within(() => {
-            cy.getByTestId("header").contains("System");
-          });
         });
       });
 
@@ -332,16 +334,18 @@ describe("System management page", () => {
       });
 
       // edit the existing declaration
-      const newDataUse = "collect";
       cy.getByTestId("accordion-header-improve.system").click();
       cy.getByTestId("improve.system-form").within(() => {
-        cy.getByTestId("input-data_use").type(`${newDataUse}{enter}`);
+        cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
         cy.getByTestId("save-btn").click();
       });
       cy.wait("@putSystem").then((interception) => {
         const { body } = interception.request;
         expect(body.privacy_declarations.length).to.eql(1);
-        expect(body.privacy_declarations[0].data_use).to.eql(newDataUse);
+        expect(body.privacy_declarations[0].data_subjects).to.eql([
+          "customer",
+          "anonymous_user",
+        ]);
       });
       cy.getByTestId("saved-indicator");
     });
@@ -470,7 +474,8 @@ describe("System management page", () => {
       cy.getByTestId("toast-success-msg");
     });
 
-    it("warns when a data use is being edited to one that is already used", () => {
+    // Cannot currently edit the data use or name fields—they have been disabled
+    it.skip("warns when a data use is being edited to one that is already used", () => {
       cy.fixture("systems/systems_with_data_uses.json").then((systems) => {
         cy.intercept("GET", "/api/v1/system/*", {
           body: systems[0],
@@ -589,12 +594,12 @@ describe("System management page", () => {
     });
 
     it("Can open both accordion items", () => {
-      cy.getByTestId("data-flow-accordion").within(()=>{
+      cy.getByTestId("data-flow-accordion").within(() => {
         cy.getByTestId("data-flow-button-Source").click();
         cy.getByTestId("data-flow-panel-Source").should("exist");
         cy.getByTestId("data-flow-button-Destination").click();
         cy.getByTestId("data-flow-panel-Destination").should("exist");
-      })
+      });
     });
   });
 });

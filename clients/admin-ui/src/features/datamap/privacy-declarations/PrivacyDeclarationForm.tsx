@@ -30,11 +30,11 @@ import {
   selectDataUses,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
+import { PrivacyDeclarationWithId } from "~/features/datamap/privacy-declarations/types";
 import {
   selectDataCategories,
   useGetAllDataCategoriesQuery,
-} from "~/features/datamap/datamap.slice";
-import { PrivacyDeclarationWithId } from "~/features/datamap/privacy-declarations/types";
+} from "~/features/taxonomy";
 import {
   DataCategory,
   DataSubject,
@@ -79,6 +79,7 @@ export interface DataProps {
   allDataCategories: DataCategory[];
   allDataUses: DataUse[];
   allDataSubjects: DataSubject[];
+  isEditing?: boolean;
 }
 
 export const PrivacyDeclarationFormComponents = ({
@@ -86,6 +87,7 @@ export const PrivacyDeclarationFormComponents = ({
   allDataCategories,
   allDataSubjects,
   onDelete,
+  isEditing,
 }: DataProps & Pick<Props, "onDelete">) => {
   const { dirty, isSubmitting, isValid, initialValues } =
     useFormikContext<PrivacyDeclarationFormValues>();
@@ -110,12 +112,14 @@ export const PrivacyDeclarationFormComponents = ({
         tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
         variant="stacked"
         singleValueBlock
+        isDisabled={isEditing}
       />
       <CustomTextInput
         id="name"
         label="Processing Activity"
         name="name"
         variant="stacked"
+        disabled={isEditing}
         tooltip="The personal data processing activity or activities associated with this data use."
       />
       <CustomSelect
