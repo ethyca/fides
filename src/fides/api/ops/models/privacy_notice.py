@@ -93,9 +93,9 @@ class PrivacyNoticeBase:
     version = Column(Float, nullable=False, default=1.0)
     disabled = Column(Boolean, nullable=False, default=False)
     has_gpc_flag = Column(Boolean, nullable=False, default=False)
-    displayed_in_privacy_center = Column(Boolean, nullable=False, default=True)
-    displayed_in_overlay = Column(Boolean, nullable=False, default=True)
-    displayed_in_api = Column(Boolean, nullable=False, default=True)
+    displayed_in_privacy_center = Column(Boolean, nullable=False, default=False)
+    displayed_in_overlay = Column(Boolean, nullable=False, default=False)
+    displayed_in_api = Column(Boolean, nullable=False, default=False)
 
     def applies_to_system(self, system: System) -> bool:
         """Privacy Notice applies to System if a data use matches or the Privacy Notice

@@ -146,9 +146,18 @@ def up(
     """
 
     check_virtualenv()
-    check_docker_version()
+    try:
+        check_docker_version()
+    except:  # pylint: disable=bare-except
+        response = click.confirm(
+            "WARNING: Encountered an error while checking Docker versions. Would you like to attempt a deploy anyway?"
+        )
+        if not response:
+            raise SystemExit("Deploy aborted!")
+    else:
+        echo_green("Docker version is compatible, starting deploy...")
+
     config = ctx.obj["CONFIG"]
-    echo_green("Docker version is compatible, starting deploy...")
 
     if not no_pull:
         pull_specific_docker_image()

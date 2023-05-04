@@ -1,9 +1,9 @@
 """
 This file aggregates nox commands for various development tasks.
 """
+import platform
 import shutil
 import sys
-import platform
 import webbrowser
 from os.path import isfile
 from subprocess import PIPE, CalledProcessError, run
