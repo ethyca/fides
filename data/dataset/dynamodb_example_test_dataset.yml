@@ -60,3 +60,16 @@ dataset:
               primary_key: True
           - name: name
             data_categories: [user.name]
+      - name: login
+        fields:
+          - name: customer_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              references:
+                - dataset: dynamodb_example_test_dataset
+                  field: customer_identifier.customer_id
+                  direction: from
+          - name: login_date
+            data_categories: [system.operations]
+          - name: name
+            data_categories: [user.name]

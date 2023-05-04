@@ -57,7 +57,14 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
         client = self.client()
         try:
             describe_table = client.describe_table(TableName=node.address.collection)
-            attribute_definitions = describe_table["Table"]["AttributeDefinitions"]
+            for key in describe_table["Table"]["KeySchema"]:
+                if key["KeyType"] == "HASH":
+                    hash_key = key["AttributeName"]
+                    break
+            for key in describe_table["Table"]["AttributeDefinitions"]:
+                if key["AttributeName"] == hash_key:
+                    attribute_definitions = [key]
+                    break
         except ClientError as error:
             raise ConnectorFailureException(error.response["Error"]["Message"])
 
@@ -99,7 +106,6 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
         try:
             results = []
             query_config = self.query_config(node)
-            # TODO check this out with a primary key and a sort key
             for attribute_definition in query_config.attribute_definitions:  # type: ignore
                 attribute_name = attribute_definition["AttributeName"]
                 for identifier in input_data[attribute_name]:
@@ -108,13 +114,16 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
                     query_param = query_config.generate_query(
                         selected_input_data, policy
                     )
-                    item = client.get_item(
+                    items = client.query(
                         TableName=collection_name,
-                        Key=query_param,  # type: ignore
+                        ExpressionAttributeValues=query_param[
+                            "ExpressionAttributeValues"
+                        ],
+                        KeyConditionExpression=query_param["KeyConditionExpression"],
                     )
                     result = {}
-                    if "Item" in item:
-                        for key, value in item["Item"].items():
+                    for item in items.get("Items"):
+                        for key, value in item.items():
                             deserialized_value = deserializer.deserialize(value)
                             result[key] = deserialized_value
                     results.append(result)

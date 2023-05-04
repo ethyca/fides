@@ -793,11 +793,14 @@ class DynamoDBQueryConfig(QueryConfig[DynamoDBStatement]):
     ) -> Dict[str, Dict[str, Any]]:
         """Generate a dictionary for the `get_item` method used for DynamoDB"""
         query_param = {}
+        serializer = TypeSerializer()
         for attribute_definition in self.attribute_definitions:
             attribute_name = attribute_definition["AttributeName"]
-            attribute_type = attribute_definition["AttributeType"]
             attribute_value = input_data[attribute_name][0]
-            query_param[attribute_name] = {attribute_type: attribute_value}
+            query_param["ExpressionAttributeValues"] = {
+                ":value": serializer.serialize(attribute_value)
+            }
+            query_param["KeyConditionExpression"] = f"{attribute_name} = :value"
         return query_param
 
     def generate_update_stmt(

@@ -2272,36 +2272,55 @@ def dynamodb_resources(
 
     ## document and remove remaining comments if we can't get the bigger test running
     items = {
-        "customer_identifier": {
-            "customer_id": {"S": customer_name},
-            "email": {"S": customer_email},
-            "name": {"S": customer_name},
-            "created": {"S": datetime.now(timezone.utc).isoformat()},
-        },
-        "customer": {
-            "id": {"S": customer_name},
-            "name": {"S": customer_name},
-            "email": {"S": customer_email},
-            "address_id": {"L": [{"S": customer_name}, {"S": customer_name}]},
-            "personal_info": {"M": {"gender": {"S": "male"}, "age": {"S": "99"}}},
-            "created": {"S": datetime.now(timezone.utc).isoformat()},
-        },
-        "address": {
-            "id": {"S": customer_name},
-            "city": {"S": "city"},
-            "house": {"S": "house"},
-            "state": {"S": "state"},
-            "street": {"S": "street"},
-            "zip": {"S": "zip"},
-        },
+        "customer_identifier": [
+            {
+                "customer_id": {"S": customer_name},
+                "email": {"S": customer_email},
+                "name": {"S": customer_name},
+                "created": {"S": datetime.now(timezone.utc).isoformat()},
+            }
+        ],
+        "customer": [
+            {
+                "id": {"S": customer_name},
+                "name": {"S": customer_name},
+                "email": {"S": customer_email},
+                "address_id": {"L": [{"S": customer_name}, {"S": customer_name}]},
+                "personal_info": {"M": {"gender": {"S": "male"}, "age": {"S": "99"}}},
+                "created": {"S": datetime.now(timezone.utc).isoformat()},
+            }
+        ],
+        "address": [
+            {
+                "id": {"S": customer_name},
+                "city": {"S": "city"},
+                "house": {"S": "house"},
+                "state": {"S": "state"},
+                "street": {"S": "street"},
+                "zip": {"S": "zip"},
+            }
+        ],
+        "login": [
+            {
+                "customer_id": {"S": customer_name},
+                "login_date": {"S": "2023-01-01"},
+                "name": {"S": customer_name},
+            },
+            {
+                "customer_id": {"S": customer_name},
+                "login_date": {"S": "2023-01-02"},
+                "name": {"S": customer_name},
+            },
+        ],
     }
 
-    for table_name, item in items.items():
-        res = dynamodb_client.put_item(
-            TableName=table_name,
-            Item=item,
-        )
-        assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
+    for table_name, rows in items.items():
+        for item in rows:
+            res = dynamodb_client.put_item(
+                TableName=table_name,
+                Item=item,
+            )
+            assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
 
     yield {
         "email": customer_email,
@@ -2312,16 +2331,27 @@ def dynamodb_resources(
     }
     # Remove test data and close Dynamodb connection in teardown
     delete_items = {
-        "customer_identifier": {"email": {"S": customer_email}},
-        "customer": {"id": {"S": customer_name}},
-        "address": {"id": {"S": customer_name}},
+        "customer_identifier": [{"email": {"S": customer_email}}],
+        "customer": [{"id": {"S": customer_name}}],
+        "address": [{"id": {"S": customer_name}}],
+        "login": [
+            {
+                "customer_id": {"S": customer_name},
+                "login_date": {"S": "2023-01-01"},
+            },
+            {
+                "customer_id": {"S": customer_name},
+                "login_date": {"S": "2023-01-02"},
+            },
+        ],
     }
-    for table_name, item in delete_items.items():
-        res = dynamodb_client.delete_item(
-            TableName=table_name,
-            Key=item,
-        )
-        assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
+    for table_name, rows in delete_items.items():
+        for item in rows:
+            res = dynamodb_client.delete_item(
+                TableName=table_name,
+                Key=item,
+            )
+            assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
 
 
 @pytest.mark.integration_external
