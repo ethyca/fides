@@ -1539,6 +1539,24 @@ class TestPostPrivacyNotices:
         assert response_notice["updated_at"] == db_notice.updated_at.isoformat()
         assert response_notice["disabled"] == db_notice.disabled
 
+    def test_post_privacy_notice_duplicate_regions(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        notice_request: dict[str, Any],
+        url,
+    ):
+        """
+        Assert if regions are accidentally duplicated on a notice that this is flagged
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
+        last_region = notice_request["regions"][-1]
+        notice_request["regions"].append(last_region)
+
+        resp = api_client.post(url, headers=auth_header, json=[notice_request])
+        assert resp.status_code == 422
+        assert resp.json()["detail"][0]["msg"] == "Duplicate regions found."
+
     def test_post_privacy_notice_twice_same_name(
         self,
         api_client: TestClient,
