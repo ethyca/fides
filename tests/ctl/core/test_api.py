@@ -8,7 +8,6 @@ import requests
 from fideslang import DEFAULT_TAXONOMY, model_list, models, parse
 from fideslang.models import System as SystemSchema
 from pytest import MonkeyPatch
-from sqlalchemy.exc import IntegrityError
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
