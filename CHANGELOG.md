@@ -24,6 +24,7 @@ The types of changes are:
 ### Changed
 
 - Merge instances of RTK `createApi` into one instance for better cache invalidation [#3059](https://github.com/ethyca/fides/pull/3059)
+- Update custom field definition uniqueness to be case insensitive name per resource type [#3215](https://github.com/ethyca/fides/pull/3215)
 
 ## [2.12.0](https://github.com/ethyca/fides/compare/2.11.0...2.12.0)
 
