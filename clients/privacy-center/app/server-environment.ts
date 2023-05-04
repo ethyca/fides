@@ -150,13 +150,17 @@ export const loadStylesFromFile = async (
  * Loads all the ENV variable settings, configuration files, etc. to initialize the environment
  */
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
-let _environment: PrivacyCenterEnvironment;
+let _environment: PrivacyCenterEnvironment | undefined;
 export const loadPrivacyCenterEnvironment =
   async (): Promise<PrivacyCenterEnvironment> => {
     if (typeof window !== "undefined") {
       throw new Error(
         "Unexpected error, cannot load server environment from client code!"
       );
+    }
+    if (_environment) {
+      console.log("Privacy Center environment already loaded, returning!");
+      return _environment;
     }
     // DEFER: Log a version number here (see https://github.com/ethyca/fides/issues/3171)
     console.log("Load Privacy Center environment for session...");
@@ -224,12 +228,16 @@ export const loadPrivacyCenterEnvironment =
  */
 export const hydratePrivacyCenterEnvironment = (
   serverEnvironment?: PrivacyCenterEnvironment
-): PrivacyCenterEnvironment => {
+): PrivacyCenterEnvironment | undefined => {
   // DEFER: handle this (see https://github.com/ethyca/fides/issues/3212)
+  console.log(
+    `hydratePrivacyCenterEnvironment(): current=${_environment?.config?.title}, new=${serverEnvironment?.config?.title}`
+  );
   if (_environment) {
     console.warn(
-      "Called hydratePrivacyCenterEnvironment() after environment was already initialized!"
+      "Called hydratePrivacyCenterEnvironment() after environment was already initialized, ignoring!"
     );
+    return _environment;
   }
   if (serverEnvironment) {
     _environment = serverEnvironment;

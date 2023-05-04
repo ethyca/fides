@@ -92,6 +92,7 @@ const hydrateEnvironmentAndStore = (
     );
   }
   // Initialize the environment
+  // TODO: do I even need to do this?
   const environment = hydratePrivacyCenterEnvironment(serverEnvironment);
 
   // Initialize the store

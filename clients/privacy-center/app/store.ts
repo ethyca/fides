@@ -69,6 +69,7 @@ const persistConfig = {
 
 const persistedReducer = persistReducer(persistConfig, allReducers);
 
+// hello
 export const makeStore = (preloadedState?: Partial<RootState>) => {
   const store = configureStore({
     reducer: persistedReducer,

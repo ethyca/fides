@@ -2,28 +2,39 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { useAppSelector } from "~/app/hooks";
 import type { RootState } from "~/app/store";
-import { getDefaultConfig } from "~/constants";
+import {
+  isV1ConsentConfig,
+  translateV1ConfigToV2,
+} from "~/features/consent/helpers";
 import { Consent, ConsentPreferences } from "~/types/api";
-import { Config } from "~/types/config";
+import {
+  LegacyConfig,
+  LegacyConsentConfig,
+  Config,
+  ConsentConfig,
+} from "~/types/config";
 
-// DEFER: by statically loading the config here, we *guarantee* that the initial
-// state is never undefined. This is convenient for all the Typescript checking,
-// but is probably not wise - do we *really* want to ever show the "default"
-// prebuilt config?
-//
-// We should refactor this to initialize the slice when the store is initialized
-// (at runtime) and then set the initial state then. That would allow us to define the type as:
-// ```
-// type State = Config | undefined
-// ```
-//
-// ...and then update all the code to handle that.
-//
-// (see https://github.com/ethyca/fides/issues/3212)
 interface ConfigState {
-  config: Config;
+  config?: Config;
 }
-const initialState: ConfigState = { config: getDefaultConfig() };
+const initialState: ConfigState = {};
+
+/**
+ * Transform the config to the latest version so that components can
+ * reference config variables uniformly.
+ *
+ * DEFER: move this to config.slice as part of removing default config state (see https://github.com/ethyca/fides/issues/3212)
+ */
+const transformConfig = (config: LegacyConfig): Config => {
+  if (isV1ConsentConfig(config.consent)) {
+    const v1ConsentConfig: LegacyConsentConfig = config.consent;
+    const translatedConsent: ConsentConfig = translateV1ConfigToV2({
+      v1ConsentConfig,
+    });
+    return { ...config, consent: translatedConsent };
+  }
+  return { ...config, consent: config.consent };
+};
 
 export const configSlice = createSlice({
   name: "config",
@@ -39,6 +50,11 @@ export const configSlice = createSlice({
      * Modify the current configuration, by merging a partial config into the current state.
      */
     mergeConfig(draftState, { payload }: PayloadAction<Partial<Config>>) {
+      if (!draftState.config) {
+        throw new Error(
+          "Cannot apply mergeConfig into uninitialized Redux state; must use loadConfig first!"
+        );
+      }
       draftState.config = { ...draftState.config, ...payload };
     },
     /**
@@ -49,6 +65,11 @@ export const configSlice = createSlice({
       draftState,
       { payload }: PayloadAction<ConsentPreferences>
     ) {
+      if (!draftState.config) {
+        throw new Error(
+          "Cannot apply updateConsentOptionsFromApi into uninitialized Redux state; must use loadConfig first!"
+        );
+      }
       const consentPreferencesMap = new Map<string, Consent>(
         (payload.consent ?? []).map((consent) => [consent.data_use, consent])
       );
@@ -74,4 +95,10 @@ const selectConfig = (state: RootState) => state.config;
 export const { reducer } = configSlice;
 export const { loadConfig, mergeConfig, updateConsentOptionsFromApi } =
   configSlice.actions;
-export const useConfig = (): Config => useAppSelector(selectConfig).config;
+export const useConfig = (): Config => {
+  const config = useAppSelector(selectConfig).config;
+  if (!config) {
+    throw new Error("WUnable to load Privacy Center configuration!");
+  }
+  return config;
+};
