@@ -26,6 +26,7 @@ The types of changes are:
 
 - Merge instances of RTK `createApi` into one instance for better cache invalidation [#3059](https://github.com/ethyca/fides/pull/3059)
 - Updated how Docker version checks are handled and added an escape-hatch [#3218](https://github.com/ethyca/fides/pull/3218)
+- Restrict where privacy notices of certain consent mechanisms must be displayed [#3195](https://github.com/ethyca/fides/pull/3195)
 
 ### Fixed
 

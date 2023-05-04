@@ -476,7 +476,7 @@ class TestConsentEmailBatchSend:
                             disabled=False,
                             has_gpc_flag=False,
                             displayed_in_privacy_center=True,
-                            displayed_in_api=True,
+                            displayed_in_api=False,
                             displayed_in_overlay=True,
                             id=privacy_preference_history.privacy_notice_history.id,
                             version=1.0,
