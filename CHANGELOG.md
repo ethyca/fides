@@ -19,6 +19,10 @@ The types of changes are:
 
 
 
+### Fixed
+
+- Datamap export mitigation for deleted taxonomy elements referenced by declarations [#3214](https://github.com/ethyca/fides/pull/3214)
+
 ## [2.12.0](https://github.com/ethyca/fides/compare/2.11.0...2.12.0)
 
 ### Added
