@@ -1287,12 +1287,13 @@ git<span class="w"> </span>pull
 <h4 id="cli">CLI</h4>
 <p>Run these from within the test environment shell:</p>
 <ul>
-<li>[ ] Make sure to login your CLI user by running <code>fides user login -u root_user -p Testpassword1!</code></li>
-<li>[ ] Run a <code>fides push</code></li>
-<li>[ ] Run a <code>fides pull</code></li>
-<li>[ ] Run a <code>fides evaluate</code></li>
-<li>[ ] Generate a dataset with <code>fides generate dataset db --credentials-id app_postgres test.yml</code></li>
-<li>[ ] Scan a database with <code>fides scan dataset db --credentials-id app_postgres</code></li>
+<li>[ ] <code>git reset --hard</code> - <strong>Note: This is required for the <code>pull</code> command to work</strong></li>
+<li>[ ] <code>fides user login</code></li>
+<li>[ ] <code>fides push src/fides/data/sample_project/sample_resources/</code></li>
+<li>[ ] <code>fides pull src/fides/data/sample_project/sample_resources/</code></li>
+<li>[ ] <code>fides evaluate src/fides/data/sample_project/sample_resources/</code></li>
+<li>[ ] <code>fides generate dataset db --credentials-id app_postgres test.yml</code> - <strong>Note: Because the filesystem isn't mounted, the new file will only show up within the container</strong></li>
+<li>[ ] <code>fides scan dataset db --credentials-id app_postgres</code></li>
 </ul>
 <h4 id="privacy-center">Privacy Center</h4>
 <ul>
@@ -1317,7 +1318,13 @@ git<span class="w"> </span>pull
 <li>[ ] Verify the fides release is published to DockerHub: <a href="https://hub.docker.com/r/ethyca/fides">https://hub.docker.com/r/ethyca/fides</a></li>
 <li>[ ] Verify the fides-privacy-center release is published to DockerHub: <a href="https://hub.docker.com/r/ethyca/fides-privacy-center">https://hub.docker.com/r/ethyca/fides-privacy-center</a></li>
 <li>[ ] Verify the fides-sample-app release is published to DockerHub: <a href="https://hub.docker.com/r/ethyca/fides-sample-app">https://hub.docker.com/r/ethyca/fides-sample-app</a></li>
-<li>[ ] Smoke test the PyPi &amp; DockerHub releases with a clean <code>pip install ethyca-fides</code> and <code>fides deploy up</code></li>
+<li>[ ] Smoke test the PyPi &amp; DockerHub releases:<ul>
+<li>[ ] Create a fresh venv with <code>python3 -m venv 2_12_0_venv</code></li>
+<li>[ ] Activate the venv <code>source 2_12_0_venv/bin/activate</code></li>
+<li>[ ] <code>pip install ethyca-fides</code> </li>
+<li>[ ] <code>fides deploy up</code></li>
+</ul>
+</li>
 <li>[ ] Announce the release!</li>
 </ul>
 
