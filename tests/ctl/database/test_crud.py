@@ -112,6 +112,7 @@ def custom_fields_data_use(
             "value": ["Test value 2"],
         },
     )
+
     yield field_1, field_2
     db.delete(field_1)
     db.delete(field_2)
@@ -148,12 +149,30 @@ def custom_field_definition_system_2(db):
 
 
 @pytest.fixture(scope="function")
+def custom_field_definition_system_disabled(db):
+    """A disabled custom field on system, to ensure its data is filtered out properly"""
+    custom_field_definition_data = {
+        "name": "disabled custom field",
+        "field_type": "string",
+        "resource_type": "system",
+        "field_definition": "string",
+        "active": False,
+    }
+    custom_field_definition = sql_models.CustomFieldDefinition.create(
+        db=db, data=custom_field_definition_data
+    )
+    yield custom_field_definition
+    db.delete(custom_field_definition)
+
+
+@pytest.fixture(scope="function")
 def custom_fields_system(
     db,
     system,
     system_third_party_sharing,
     custom_field_definition_system,
     custom_field_definition_system_2,
+    custom_field_definition_system_disabled,
 ):
     field_1 = sql_models.CustomField.create(
         db=db,
@@ -194,11 +213,22 @@ def custom_fields_system(
             "value": ["Test value 4"],
         },
     )
-    yield (field_1, field_2, field_3, field_4)
+    field_5 = sql_models.CustomField.create(
+        db=db,
+        data={
+            "resource_type": custom_field_definition_system_disabled.resource_type,
+            "resource_id": system_third_party_sharing.fides_key,
+            "custom_field_definition_id": custom_field_definition_system_disabled.id,
+            "value": ["Disabled value, should be filtered out!"],
+        },
+    )
+
+    yield (field_1, field_2, field_3, field_4, field_5)
     db.delete(field_1)
     db.delete(field_2)
     db.delete(field_3)
     db.delete(field_4)
+    db.delete(field_5)
 
 
 async def test_get_custom_fields_filtered(
@@ -223,12 +253,47 @@ async def test_get_custom_fields_filtered(
             ],
         },
     )
-
     for field in custom_fields_system:
-        assert any([field.resource_id == f["resource_id"] for f in filtered_fields])
+        cfd = sql_models.CustomFieldDefinition.get_by_key_or_id(
+            db=db, data={"id": field.custom_field_definition_id}
+        )
+        if cfd.active:  # only active fields should be in our result
+            assert any(
+                [
+                    (
+                        field.resource_id == f["resource_id"]
+                        and field.value == f["value"]
+                        and cfd.name == f["name"]
+                    )
+                    for f in filtered_fields
+                ]
+            )
+        else:  # inactive fields should NOT be in our result
+            assert not any(
+                [
+                    (
+                        field.resource_id == f["resource_id"]
+                        and field.value == f["value"]
+                        and cfd.name == f["name"]
+                    )
+                    for f in filtered_fields
+                ]
+            )
 
     for field in custom_fields_data_use:
-        assert any([field.resource_id == f["resource_id"] for f in filtered_fields])
+        cfd = sql_models.CustomFieldDefinition.get_by_key_or_id(
+            db=db, data={"id": field.custom_field_definition_id}
+        )
+        assert any(
+            [
+                (
+                    field.resource_id == f["resource_id"]
+                    and field.value == f["value"]
+                    and cfd.name == f["name"]
+                )
+                for f in filtered_fields
+            ]
+        )
 
     # we should get only field 4 because we've specified only its system
     filtered_fields = await get_custom_fields_filtered(
@@ -236,7 +301,10 @@ async def test_get_custom_fields_filtered(
         {sql_models.ResourceTypes.system: [system_third_party_sharing.fides_key]},
     )
     assert len(filtered_fields) == 1
-    assert filtered_fields[0]["resource_id"] == custom_fields_system[3].resource_id
+    assert (
+        filtered_fields[0]["resource_id"] == custom_fields_system[3].resource_id
+        and filtered_fields[0]["value"] == custom_fields_system[3].value
+    )
 
     # we should get only first 3 fields because we've specified only their system
     filtered_fields = await get_custom_fields_filtered(
@@ -244,9 +312,17 @@ async def test_get_custom_fields_filtered(
     )
     assert len(filtered_fields) == 3
     for i in range(0, 3):
+        field = custom_fields_system[i]
+        cfd = sql_models.CustomFieldDefinition.get_by_key_or_id(
+            db=db, data={"id": field.custom_field_definition_id}
+        )
         assert any(
             [
-                custom_fields_system[i].resource_id == f["resource_id"]
+                (
+                    field.resource_id == f["resource_id"]
+                    and field.value == f["value"]
+                    and cfd.name == f["name"]
+                )
                 for f in filtered_fields
             ]
         )
@@ -267,11 +343,18 @@ async def test_get_custom_fields_filtered(
     assert len(filtered_fields) == 2
     # only system field 4 because we've specified only its system
     assert any(
-        custom_fields_system[3].resource_id == f["resource_id"] for f in filtered_fields
+        (
+            custom_fields_system[3].resource_id == f["resource_id"]
+            and custom_fields_system[3].value == f["value"]
+        )
+        for f in filtered_fields
     )
     # only data_use field 2 because we've specified only its data_use
     assert any(
-        custom_fields_data_use[1].resource_id == f["resource_id"]
+        (
+            custom_fields_data_use[1].resource_id == f["resource_id"]
+            and custom_fields_data_use[1].value == f["value"]
+        )
         for f in filtered_fields
     )
 
