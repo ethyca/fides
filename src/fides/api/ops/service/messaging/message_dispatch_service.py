@@ -138,7 +138,7 @@ def dispatch_message(
         raise MessageDispatchException("No notification service type configured.")
 
     logger.info("Retrieving message config")
-    messaging_config = MessagingConfig.get_configuration(
+    messaging_config: MessagingConfig = MessagingConfig.get_configuration(
         db=db, service_type=service_type
     )
     logger.info(

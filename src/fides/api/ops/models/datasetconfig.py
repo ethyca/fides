@@ -41,8 +41,8 @@ class DatasetConfig(Base):
     )
 
     connection_config = relationship(
-        ConnectionConfig,
-        backref="datasets",
+        "ConnectionConfig",
+        back_populates="datasets",
     )
 
     ctl_dataset = relationship(

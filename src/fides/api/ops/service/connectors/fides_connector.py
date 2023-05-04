@@ -182,6 +182,6 @@ def filter_fides_connector_datasets(
     return {
         dataset.fides_key
         for connector_config in connector_configs
-        for dataset in connector_config.datasets  # type: ignore[attr-defined]
+        for dataset in connector_config.datasets
         if connector_config.connection_type == ConnectionType.fides
     }
