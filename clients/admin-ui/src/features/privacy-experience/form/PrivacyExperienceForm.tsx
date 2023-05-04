@@ -78,10 +78,6 @@ const PrivacyNoticeForm = ({
     >
       {({ dirty, isValid, isSubmitting }) => (
         <Form>
-          <pre>
-            notice mechanisms:{" "}
-            {associatedNotices?.map((n) => `${n.consent_mechanism}, `)}
-          </pre>
           <Stack spacing={10}>
             <Stack spacing={6}>
               {/* Location shows in every form */}
