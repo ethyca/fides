@@ -51,6 +51,7 @@ services:
         read_only: False
       # do not volume mount over the node_modules
       - /fides/clients/node_modules
+      - /fides/clients/admin-ui/node_modules
     environment:
       - NEXT_PUBLIC_FIDESCTL_API_SERVER=http://fides:8080
 
@@ -68,6 +69,7 @@ services:
         read_only: False
       # do not volume mount over the node_modules
       - /fides/clients/node_modules
+      - /fides/clients/privacy-center/node_modules
 
   fides-db:
     image: postgres:12
