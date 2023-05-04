@@ -68,10 +68,6 @@ def compare_semvers(version_a: List[int], version_b: List[int]) -> bool:
 def check_docker_version() -> bool:
     """
     Verify the Docker versions for both the client and the server.
-
-    Because this is potentially error-prone and used by the CLI, there
-    are lots of try/excepts here. Additionally, any non-DockerCheckException
-    errors should get handled by the caller function.
     """
 
     for version in ["Client", "Server"]:
