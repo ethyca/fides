@@ -67,7 +67,11 @@ def privacy_experience_list(
 ) -> AbstractPage[PrivacyExperience]:
     """
     Return a paginated list of `PrivacyExperience` records in this system.
-    Includes some query params to help filter the list if needed
+    Includes some query params to help filter the list if needed. Returns
+    relevant privacy notices embedded in the experience response.
+
+    'region' and 'show_disabled' query params are passed along to further filter
+    notices as well.
     """
     logger.info("Finding all Privacy Experiences with pagination params '{}'", params)
     experience_query = db.query(PrivacyExperience)
@@ -113,7 +117,7 @@ def privacy_experience_create(
     bulk_experience_data: conlist(PrivacyExperienceCreate, max_items=50),  # type: ignore
 ) -> List[PrivacyExperience]:
     """
-    Bulk create Privacy Experiences
+    Bulk create Privacy Experiences. Returns related notices in the response.
     """
     logger.info("Creating privacy experiences")
     experiences: List[PrivacyExperience] = []
@@ -196,7 +200,7 @@ def privacy_experience_bulk_update(
     privacy_experience_updates: conlist(PrivacyExperienceWithId, max_items=50),  # type: ignore
 ) -> List[PrivacyExperience]:
     """
-    Bulk update privacy experiences.
+    Bulk update privacy experiences.  Related notices are returned in the response.
     """
     ensure_unique_ids(privacy_experience_updates)
 
