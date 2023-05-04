@@ -12,6 +12,9 @@ dataset:
                 - dataset: dynamodb_example_test_dataset
                   field: customer.id
                   direction: to
+                - dataset: dynamodb_example_test_dataset
+                  field: login.customer_id
+                  direction: to
           - name: created
             data_categories: [system.operations]
           - name: email
@@ -64,12 +67,12 @@ dataset:
         fields:
           - name: customer_id
             data_categories: [user.unique_id]
-            fides_meta:
-              references:
-                - dataset: dynamodb_example_test_dataset
-                  field: customer_identifier.customer_id
-                  direction: from
           - name: login_date
             data_categories: [system.operations]
           - name: name
             data_categories: [user.name]
+          - name: customer_email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string

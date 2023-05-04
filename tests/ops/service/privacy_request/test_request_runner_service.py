@@ -2305,11 +2305,13 @@ def dynamodb_resources(
                 "customer_id": {"S": customer_name},
                 "login_date": {"S": "2023-01-01"},
                 "name": {"S": customer_name},
+                "email": {"S": customer_email},
             },
             {
                 "customer_id": {"S": customer_name},
                 "login_date": {"S": "2023-01-02"},
                 "name": {"S": customer_name},
+                "email": {"S": customer_email},
             },
         ],
     }
@@ -2386,12 +2388,15 @@ def test_create_and_process_access_request_dynamodb(
     address_table_key = (
         f"EN_{pr.id}__access_request__dynamodb_example_test_dataset:address"
     )
+    login_table_key = f"EN_{pr.id}__access_request__dynamodb_example_test_dataset:login"
     assert len(results[customer_table_key]) == 1
     assert len(results[address_table_key]) == 2
+    assert len(results[login_table_key]) == 1
     assert results[customer_table_key][0]["email"] == customer_email
     assert results[customer_table_key][0]["name"] == customer_name
     assert results[customer_table_key][0]["id"] == customer_id
     assert results[address_table_key][0]["id"] == customer_id
+    assert results[login_table_key][0]["name"] == customer_name
 
     pr.delete(db=db)
 
@@ -2410,6 +2415,7 @@ def test_create_and_process_erasure_request_dynamodb(
     customer_email = dynamodb_resources["email"]
     dynamodb_client = dynamodb_resources["client"]
     customer_id = dynamodb_resources["customer_id"]
+    customer_name = dynamodb_resources["name"]
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": erasure_policy.key,
@@ -2432,5 +2438,13 @@ def test_create_and_process_erasure_request_dynamodb(
         TableName="customer_identifier",
         Key={"email": {"S": customer_email}},
     )
+    login = dynamodb_client.get_item(
+        TableName="login",
+        Key={
+            "customer_id": {"S": customer_name},
+            "login_date": {"S": "2023-01-01"},
+        },
+    )
     assert deserializer.deserialize(customer["Item"]["name"]) == None
     assert deserializer.deserialize(customer_identifier["Item"]["name"]) == None
+    assert deserializer.deserialize(login["Item"]["name"]) == None
