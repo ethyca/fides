@@ -33,7 +33,7 @@ def convert_semver_to_list(semver: str) -> List[int]:
     """
     return [int(x) for x in semver.split(".")]
 
-
+# Make this fail gracefully
 def compare_semvers(version_a: List[int], version_b: List[int]) -> bool:
     """
     Determine which semver-style list of integers is larger.
