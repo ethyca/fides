@@ -224,5 +224,9 @@ Run these from within the test environment shell:
 * [ ] Verify the fides release is published to DockerHub: <https://hub.docker.com/r/ethyca/fides>
 * [ ] Verify the fides-privacy-center release is published to DockerHub: <https://hub.docker.com/r/ethyca/fides-privacy-center>
 * [ ] Verify the fides-sample-app release is published to DockerHub: <https://hub.docker.com/r/ethyca/fides-sample-app>
-* [ ] Smoke test the PyPi & DockerHub releases with a clean `pip install ethyca-fides` and `fides deploy up`
+* [ ] Smoke test the PyPi & DockerHub releases:
+    * [ ] Create a fresh venv with `python3 -m venv 2_12_0_venv`
+    * [ ] Activate the venv `source 2_12_0_venv/bin/activate`
+    * [ ] `pip install ethyca-fides` 
+    * [ ] `fides deploy up`
 * [ ] Announce the release!
