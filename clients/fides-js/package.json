@@ -12,12 +12,11 @@
   ],
   "scripts": {
     "build": "NODE_ENV=production rollup -c",
-    "dev": "NODE_ENV=development rollup -c -w",
     "clean": "rm -rf dist .turbo",
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "jest --watch",
+    "test": "jest --watchAll",
     "test:ci": "jest"
   },
   "repository": {

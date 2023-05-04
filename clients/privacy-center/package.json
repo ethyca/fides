@@ -9,7 +9,7 @@
     "lint:fix": "lint-staged --diff=main",
     "format": "prettier --write types/ theme/ pages/ config/ components/ __tests__/",
     "format:ci": "prettier --check types/ theme/ pages/ config/ components/ __tests__/",
-    "test": "jest --watch",
+    "test": "jest --watchAll",
     "test:ci": "tsc --noEmit && jest",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
