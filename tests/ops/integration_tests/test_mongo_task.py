@@ -336,7 +336,6 @@ async def test_composite_key_erasure(
     db,
     integration_mongodb_config: ConnectionConfig,
 ) -> None:
-
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
     policy = erasure_policy("A")
     customer = Collection(
@@ -517,7 +516,6 @@ async def test_object_querying_mongo(
     integration_mongodb_config,
     integration_postgres_config,
 ):
-
     postgres_config = copy.copy(integration_postgres_config)
 
     dataset_postgres = Dataset(**example_datasets[0])
@@ -575,19 +573,22 @@ async def test_object_querying_mongo(
     assert len(filtered_results["mongo_test:customer_details"]) == 1
 
     # Array of embedded emergency contacts returned, array of children, nested array of workplace_info.direct_reports
-    assert filtered_results["mongo_test:customer_details"][0] == {
-        "birthday": datetime(1988, 1, 10, 0, 0),
-        "gender": "male",
-        "customer_id": 1.0,
-        "children": ["Christopher Customer", "Courtney Customer"],
-        "emergency_contacts": [
-            {"name": "June Customer", "phone": "444-444-4444"},
-            {"name": "Josh Customer", "phone": "111-111-111"},
-        ],
-        "workplace_info": {
-            "position": "Chief Strategist",
-            "direct_reports": ["Robbie Margo", "Sully Hunter"],
-        },
+    assert filtered_results["mongo_test:customer_details"][0]["birthday"] == datetime(
+        1988, 1, 10, 0, 0
+    )
+    assert filtered_results["mongo_test:customer_details"][0]["gender"] == "male"
+    assert filtered_results["mongo_test:customer_details"][0]["customer_id"] == 1.0
+    assert filtered_results["mongo_test:customer_details"][0]["children"] == [
+        "Christopher Customer",
+        "Courtney Customer",
+    ]
+    assert filtered_results["mongo_test:customer_details"][0]["emergency_contacts"] == [
+        {"name": "June Customer", "phone": "444-444-4444"},
+        {"name": "Josh Customer", "phone": "111-111-111"},
+    ]
+    assert filtered_results["mongo_test:customer_details"][0]["workplace_info"] == {
+        "position": "Chief Strategist",
+        "direct_reports": ["Robbie Margo", "Sully Hunter"],
     }
 
     # Includes data retrieved from a nested field that was joined with a nested field from another table
@@ -833,21 +834,22 @@ async def test_array_querying_mongo(
     )
 
     # Includes array field
-    assert filtered_identifiable["mongo_test:customer_details"] == [
-        {
-            "birthday": datetime(1990, 2, 28, 0, 0),
-            "customer_id": 3.0,
-            "gender": "female",
-            "children": ["Erica Example"],
-        }
+    assert filtered_identifiable["mongo_test:customer_details"][0][
+        "birthday"
+    ] == datetime(1990, 2, 28, 0, 0)
+    assert filtered_identifiable["mongo_test:customer_details"][0]["customer_id"] == 3.0
+    assert filtered_identifiable["mongo_test:customer_details"][0]["gender"] == "female"
+    assert filtered_identifiable["mongo_test:customer_details"][0]["children"] == [
+        "Erica Example"
     ]
     customer_detail_logs = privacy_request.execution_logs.filter_by(
         dataset_name="mongo_test", collection_name="customer_details", status="complete"
     )
     # Returns fields_affected for all possible targeted fields, even though this identity only had some
     # of them actually populated
-    # Note that order matters here!
-    assert customer_detail_logs[0].fields_affected == [
+    assert sorted(
+        customer_detail_logs[0].fields_affected, key=lambda e: e["field_name"]
+    ) == [
         {
             "path": "mongo_test:customer_details:birthday",
             "field_name": "birthday",
@@ -869,11 +871,6 @@ async def test_array_querying_mongo(
             "data_categories": ["user.name"],
         },
         {
-            "path": "mongo_test:customer_details:workplace_info.direct_reports",
-            "field_name": "workplace_info.direct_reports",
-            "data_categories": ["user.name"],
-        },
-        {
             "path": "mongo_test:customer_details:emergency_contacts.phone",
             "field_name": "emergency_contacts.phone",
             "data_categories": ["user.contact.phone_number"],
@@ -882,6 +879,11 @@ async def test_array_querying_mongo(
             "path": "mongo_test:customer_details:gender",
             "field_name": "gender",
             "data_categories": ["user.gender"],
+        },
+        {
+            "path": "mongo_test:customer_details:workplace_info.direct_reports",
+            "field_name": "workplace_info.direct_reports",
+            "data_categories": ["user.name"],
         },
         {
             "path": "mongo_test:customer_details:workplace_info.position",

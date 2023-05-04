@@ -118,7 +118,6 @@ def stripe_dataset_config(
 def stripe_create_erasure_data(
     stripe_connection_config: ConnectionConfig, stripe_erasure_identity_email
 ) -> Generator:
-
     stripe_secrets = stripe_connection_config.secrets
 
     base_url = f"https://{stripe_secrets['domain']}"

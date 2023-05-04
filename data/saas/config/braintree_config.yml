@@ -1,8 +1,8 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Braintree SaaS Config
+  name: Braintree
   type: braintree
-  description: A sample schema representing the Braintree connector for Fidesops
+  description: A sample schema representing the Braintree connector for Fides
   version: 0.0.1
 
   connector_params:

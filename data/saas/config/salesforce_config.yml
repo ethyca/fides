@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Salesforce Classic SaaS Config
+  name: Salesforce Classic
   type: salesforce
   description: A sample schema representing the Salesforce Classic connector for Fides
   version: 0.0.2

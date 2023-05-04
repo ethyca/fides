@@ -1,12 +1,25 @@
 import { useAppSelector } from "~/app/hooks";
-import { selectThisUsersScopes } from "~/features/user-management";
-import { ScopeRegistryEnum } from "~/types/api";
+import {
+  selectThisUsersRoles,
+  selectThisUsersScopes,
+} from "~/features/user-management";
+import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
 export const useHasPermission = (scopes: ScopeRegistryEnum[]) => {
   const userScopes = useAppSelector(selectThisUsersScopes);
   return (
     userScopes.filter((userScope) => scopes.includes(userScope)).length > 0
   );
+};
+
+/**
+ * In general, the UI should restrict based off of scopes, not roles to allow for flexibility when adding or removing roles.
+ * There are however, some unique cases where it is more useful to restrict off of role than scope.
+ * Make sure you use this hook intentionally!
+ */
+export const useHasRole = (roles: RoleRegistryEnum[]) => {
+  const userRoles = useAppSelector(selectThisUsersRoles);
+  return userRoles.filter((userRole) => roles.includes(userRole)).length > 0;
 };
 
 const Restrict = ({

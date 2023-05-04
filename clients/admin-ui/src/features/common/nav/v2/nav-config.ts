@@ -1,18 +1,22 @@
+import { FlagNames } from "~/features/common/features";
 import { ScopeRegistryEnum } from "~/types/api";
+
+import * as routes from "./routes";
 
 export type NavConfigRoute = {
   title?: string;
   path: string;
   exact?: boolean;
   requiresPlus?: boolean;
+  requiresFlag?: FlagNames;
   /** This route is only available if the user has ANY of these scopes */
   scopes: ScopeRegistryEnum[];
+  /** Child routes which will be rendered in the side nav */
+  routes?: NavConfigRoute[];
 };
 
 export type NavConfigGroup = {
   title: string;
-  requiresSystems?: boolean;
-  requiresConnections?: boolean;
   routes: NavConfigRoute[];
 };
 
@@ -30,61 +34,74 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   },
   {
     title: "Privacy requests",
-    requiresConnections: true,
     routes: [
       {
         title: "Request manager",
-        path: "/privacy-requests",
+        path: routes.PRIVACY_REQUESTS_ROUTE,
         scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
       },
       {
         title: "Connection manager",
-        path: "/datastore-connection",
+        path: routes.DATASTORE_CONNECTION_ROUTE,
         scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
       },
       {
         title: "Configuration",
-        path: "/privacy-requests/configure",
+        path: routes.PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
+        requiresFlag: "privacyRequestsConfiguration",
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
+      },
+      {
+        title: "Consent",
+        // For now, we don't have a full Consent page, so just use the privacy notice route
+        path: routes.PRIVACY_NOTICES_ROUTE,
+        requiresFlag: "privacyNotices",
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+        routes: [
+          {
+            title: "Privacy notices",
+            path: routes.PRIVACY_NOTICES_ROUTE,
+            requiresFlag: "privacyNotices",
+            requiresPlus: true,
+            scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+          },
+        ],
       },
     ],
   },
   {
     title: "Data map",
-    requiresSystems: true,
     routes: [
       {
         title: "View map",
-        path: "/datamap",
+        path: routes.DATAMAP_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
       },
       {
         title: "View systems",
-        path: "/system",
-        scopes: [ScopeRegistryEnum.CLI_OBJECTS_READ],
+        path: routes.SYSTEM_ROUTE,
+        scopes: [ScopeRegistryEnum.SYSTEM_READ],
       },
       {
         title: "Add systems",
-        path: "/add-systems",
-        scopes: [
-          ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-          ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
-        ],
+        path: routes.ADD_SYSTEMS_ROUTE,
+        scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
       },
       {
         title: "Manage datasets",
-        path: "/dataset",
+        path: routes.DATASET_ROUTE,
         scopes: [
-          ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-          ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
+          ScopeRegistryEnum.CTL_DATASET_CREATE,
+          ScopeRegistryEnum.CTL_DATASET_UPDATE,
         ],
       },
       {
         title: "Classify systems",
-        path: "/classify-systems",
+        path: routes.CLASSIFY_SYSTEMS_ROUTE,
         requiresPlus: true,
-        scopes: [ScopeRegistryEnum.CLI_OBJECTS_UPDATE], // temporary scope until we decide what to do here
+        scopes: [ScopeRegistryEnum.SYSTEM_UPDATE], // temporary scope until we decide what to do here
       },
     ],
   },
@@ -92,16 +109,47 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Management",
     routes: [
       {
-        title: "Taxonomy",
-        path: "/taxonomy",
-        scopes: [ScopeRegistryEnum.CLI_OBJECTS_READ],
+        title: "Users",
+        path: routes.USER_MANAGEMENT_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.USER_UPDATE,
+          ScopeRegistryEnum.USER_CREATE,
+          ScopeRegistryEnum.USER_PERMISSION_UPDATE,
+          ScopeRegistryEnum.USER_READ,
+        ],
       },
       {
-        title: "Users",
-        path: "/user-management",
-        scopes: [ScopeRegistryEnum.USER_READ],
+        title: "Organization",
+        path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
+        requiresFlag: "organizationManagement",
+        scopes: [
+          ScopeRegistryEnum.ORGANIZATION_READ,
+          ScopeRegistryEnum.ORGANIZATION_UPDATE,
+        ],
       },
-      { title: "About Fides", path: "/management/about", scopes: [] },
+      {
+        title: "Taxonomy",
+        path: routes.TAXONOMY_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.DATA_CATEGORY_CREATE,
+          ScopeRegistryEnum.DATA_CATEGORY_UPDATE,
+          ScopeRegistryEnum.DATA_USE_CREATE,
+          ScopeRegistryEnum.DATA_USE_UPDATE,
+          ScopeRegistryEnum.DATA_SUBJECT_CREATE,
+          ScopeRegistryEnum.DATA_SUBJECT_UPDATE,
+        ],
+      },
+      {
+        title: "Custom fields",
+        path: routes.CUSTOM_FIELDS_ROUTE,
+        scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
+        requiresPlus: true,
+      },
+      {
+        title: "About Fides",
+        path: routes.ABOUT_ROUTE,
+        scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features
+      },
     ],
   },
 ];
@@ -110,6 +158,7 @@ export type NavGroupChild = {
   title: string;
   path: string;
   exact?: boolean;
+  children: Array<NavGroupChild>;
 };
 
 export type NavGroup = {
@@ -166,32 +215,76 @@ const navRouteInScope = (
   return true;
 };
 
+interface ConfigureNavProps {
+  config: NavConfigGroup[];
+  userScopes: ScopeRegistryEnum[];
+  hasPlus?: boolean;
+  flags?: Record<string, boolean>;
+}
+
+const configureNavRoute = ({
+  route,
+  hasPlus,
+  flags,
+  userScopes,
+  navGroupTitle,
+}: Omit<ConfigureNavProps, "config"> & {
+  route: NavConfigRoute;
+  navGroupTitle: string;
+}): NavGroupChild | undefined => {
+  // If the target route would require plus in a non-plus environment,
+  // exclude it from the group.
+  if (route.requiresPlus && !hasPlus) {
+    return undefined;
+  }
+
+  // If the target route is protected by a feature flag that is not enabled,
+  // exclude it from the group
+  if (route.requiresFlag && (!flags || !flags[route.requiresFlag])) {
+    return undefined;
+  }
+
+  // If the target route is protected by a scope that the user does not
+  // have, exclude it from the group
+  if (!navRouteInScope(route, userScopes)) {
+    return undefined;
+  }
+
+  const children: NavGroupChild["children"] = [];
+  if (route.routes) {
+    route.routes.forEach((childRoute) => {
+      const configuredChildRoute = configureNavRoute({
+        route: childRoute,
+        userScopes,
+        hasPlus,
+        flags,
+        navGroupTitle,
+      });
+      if (configuredChildRoute) {
+        children.push(configuredChildRoute);
+      }
+    });
+  }
+
+  const groupChild: NavGroupChild = {
+    title: route.title ?? navGroupTitle,
+    path: route.path,
+    exact: route.exact,
+    children,
+  };
+
+  return groupChild;
+};
+
 export const configureNavGroups = ({
   config,
   userScopes,
   hasPlus = false,
-  hasSystems = false,
-  hasConnections = false,
-  hasAccessToPrivacyRequestConfigurations = false,
-}: {
-  config: NavConfigGroup[];
-  userScopes: ScopeRegistryEnum[];
-  hasPlus?: boolean;
-  hasSystems?: boolean;
-  hasConnections?: boolean;
-  hasAccessToPrivacyRequestConfigurations?: boolean;
-}): NavGroup[] => {
+  flags,
+}: ConfigureNavProps): NavGroup[] => {
   const navGroups: NavGroup[] = [];
 
   config.forEach((group) => {
-    // Skip groups with unmet requirements.
-    if (
-      (group.requiresConnections && !hasConnections) ||
-      (group.requiresSystems && !hasSystems)
-    ) {
-      return;
-    }
-
     if (!navGroupInScope(group, userScopes)) {
       return;
     }
@@ -203,28 +296,16 @@ export const configureNavGroups = ({
     navGroups.push(navGroup);
 
     group.routes.forEach((route) => {
-      // If the target route would require plus in a non-plus environment,
-      // exclude it from the group.
-      if (route.requiresPlus && !hasPlus) {
-        return;
-      }
-
-      if (
-        route.path === "/privacy-requests/configure" &&
-        !hasAccessToPrivacyRequestConfigurations
-      ) {
-        return;
-      }
-
-      if (!navRouteInScope(route, userScopes)) {
-        return;
-      }
-
-      navGroup.children.push({
-        title: route.title ?? navGroup.title,
-        path: route.path,
-        exact: route.exact,
+      const routeConfig = configureNavRoute({
+        route,
+        hasPlus,
+        flags,
+        userScopes,
+        navGroupTitle: group.title,
       });
+      if (routeConfig) {
+        navGroup.children.push(routeConfig);
+      }
     });
   });
 
@@ -262,39 +343,4 @@ export const findActiveNav = ({
     ...groupMatch,
     path: activePath,
   };
-};
-
-/**
- * Similar to findActiveNav, but using NavConfig instead of a NavGroup
- * This may not be needed once we remove the progressive nav, since then we can
- * just check what navs are available (they would all be restricted by scope)
- */
-export const canAccessRoute = ({
-  path,
-  userScopes,
-}: {
-  path: string;
-  userScopes: ScopeRegistryEnum[];
-}) => {
-  let childMatch: NavConfigRoute | undefined;
-  const groupMatch = NAV_CONFIG.find((group) => {
-    childMatch = group.routes.find((child) =>
-      child.exact ? path === child.path : path.startsWith(child.path)
-    );
-    return childMatch;
-  });
-
-  if (!(groupMatch && childMatch)) {
-    return false;
-  }
-
-  // Special case of empty scopes
-  if (childMatch.scopes.length === 0) {
-    return true;
-  }
-
-  const scopeOverlaps = childMatch.scopes.filter((scope) =>
-    userScopes.includes(scope)
-  );
-  return scopeOverlaps.length > 0;
 };

@@ -13,8 +13,6 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     ConnectorTemplate,
     create_connection_config_from_template_no_save,
-    load_registry,
-    registry_file,
     upsert_dataset_config_from_template,
 )
 from fides.api.ops.util.connection_util import validate_secrets
@@ -104,10 +102,9 @@ def instantiate_connector(
     """
     Helper to genericize instantiation of a SaaS connector
     """
-    registry: ConnectorRegistry = load_registry(registry_file)
-    connector_template: Optional[ConnectorTemplate] = registry.get_connector_template(
-        connector_type
-    )
+    connector_template: Optional[
+        ConnectorTemplate
+    ] = ConnectorRegistry.get_connector_template(connector_type)
     template_vals = SaasConnectionTemplateValues(
         name=key,
         key=key,

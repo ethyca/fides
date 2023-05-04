@@ -1,8 +1,8 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Firebase Auth SaaS Config
+  name: Firebase Auth
   type: firebase_auth
-  description: A sample schema representing the Firebase Auth connector for Fidesops
+  description: A sample schema representing the Firebase Auth connector for Fides
   version: 0.0.3
 
   connector_params:

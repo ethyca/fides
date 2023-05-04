@@ -3,28 +3,16 @@ import platform
 from typing import List
 
 import nox
-
 from constants_nox import (
     IMAGE,
     IMAGE_DEV,
     IMAGE_LATEST,
     IMAGE_LOCAL,
     IMAGE_LOCAL_UI,
-    IMAGE_SAMPLE,
     PRIVACY_CENTER_IMAGE,
     SAMPLE_APP_IMAGE,
 )
-
-
-def get_current_tag() -> str:
-    """Get the current git tag."""
-    from git.repo import Repo
-
-    repo = Repo()
-    git_session = repo.git()
-    git_session.fetch("--force", "--tags")
-    current_tag = git_session.describe("--tags", "--dirty", "--always")
-    return current_tag
+from git_nox import get_current_tag, recognized_tag
 
 
 def get_current_image() -> str:
@@ -58,7 +46,6 @@ def get_platform(posargs: List[str]) -> str:
         nox.param("dev", id="dev"),
         nox.param("privacy_center", id="privacy-center"),
         nox.param("prod", id="prod"),
-        nox.param("sample", id="sample"),
         nox.param("test", id="test"),
     ],
 )
@@ -71,8 +58,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         dev = Build the fides webserver/CLI, tagged as `local`.
         privacy-center = Build the Next.js Privacy Center application.
         prod = Build the fides webserver/CLI and tag it as the current application version.
-        sample = Builds all components required for the sample application.
-        test = Build the fides webserver/CLI the same as `prod`, but tag is as `local`.
+        test = Build the fides webserver/CLI the same as `prod`, but tag it as `local`.
     """
     build_platform = get_platform(session.posargs)
 
@@ -89,20 +75,19 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     # This allows the dev deployment to run without requirements
     build_matrix = {
         "prod": {"tag": get_current_image, "target": "prod"},
-        "dev": {"tag": lambda: IMAGE_LOCAL, "target": "dev"},
-        "sample": {"tag": lambda: IMAGE_SAMPLE, "target": "prod"},
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
+        "dev": {"tag": lambda: IMAGE_LOCAL, "target": "dev"},
         "admin_ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }
 
     # When building for release, there are additional images that need
     # to get built. These images are outside of the primary `ethyca/fides`
     # image so some additional logic is required.
-    if image in ("sample", "prod"):
+    if image in ("test", "prod"):
         if image == "prod":
             tag_name = get_current_tag()
-        if image == "sample":
-            tag_name = "sample"
+        if image == "test":
+            tag_name = "local"
         privacy_center_image_tag = f"{PRIVACY_CENTER_IMAGE}:{tag_name}"
         sample_app_image_tag = f"{SAMPLE_APP_IMAGE}:{tag_name}"
 
@@ -120,7 +105,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         session.run(
             "docker",
             "build",
-            "src/fides/data/sample_project/cookie_house",
+            "clients/sample-app",
             "--tag",
             sample_app_image_tag,
             external=True,
@@ -163,6 +148,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     [
         nox.param("prod", id="prod"),
         nox.param("dev", id="dev"),
+        nox.param("git-tag", id="git-tag"),
     ],
 )
 def push(session: nox.Session, tag: str) -> None:
@@ -176,6 +162,7 @@ def push(session: nox.Session, tag: str) -> None:
 
     prod - Tags images with the current version of the application
     dev - Tags images with `dev`
+    git-tag - Tags images with the git tag of the current commit, if it exists
 
     NOTE: Expects these to first be built via 'build(prod)'
     """
@@ -193,6 +180,44 @@ def push(session: nox.Session, tag: str) -> None:
         #   - ethyca/fides-sample-app:dev
         privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:dev"
         sample_app_dev = f"{SAMPLE_APP_IMAGE}:dev"
+        session.run(
+            "docker", "tag", privacy_center_prod, privacy_center_dev, external=True
+        )
+        session.run("docker", "push", privacy_center_dev, external=True)
+        session.run("docker", "tag", sample_app_prod, sample_app_dev, external=True)
+        session.run("docker", "push", sample_app_dev, external=True)
+
+    if tag == "git-tag":
+        # if we have an existing git tag on the current commit, we push up
+        # a set of images that's tagged specifically with this git tag.
+        # this publishes images that correspond to commits that have been explicitly tagged,
+        # e.g. RC builds, `beta` tags on `main`, `alpha` tags for feature branch builds.
+        existing_commit_tag = get_current_tag(existing=True)
+        if existing_commit_tag is None:
+            session.log(
+                "Did not find an existing git tag on the current commit, not pushing git-tag images"
+            )
+            return
+
+        if not recognized_tag(existing_commit_tag):
+            session.log(
+                f"Existing git tag {existing_commit_tag} is not a recognized tag, not pushing git-tag images"
+            )
+            return
+
+        session.log(
+            f"Found git tag {existing_commit_tag} on the current commit, pushing corresponding git-tag images!"
+        )
+        custom_image_tag = f"{IMAGE}:{existing_commit_tag}"
+        # Push the ethyca/fides image, tagging with :{current_head_git_tag}
+        session.run("docker", "tag", fides_image_prod, custom_image_tag, external=True)
+        session.run("docker", "push", custom_image_tag, external=True)
+
+        # Push the extra images, tagging with :{current_head_git_tag}
+        #   - ethyca/fides-privacy-center:{current_head_git_tag}
+        #   - ethyca/fides-sample-app:{current_head_git_tag}
+        privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:{existing_commit_tag}"
+        sample_app_dev = f"{SAMPLE_APP_IMAGE}:{existing_commit_tag}"
         session.run(
             "docker", "tag", privacy_center_prod, privacy_center_dev, external=True
         )

@@ -2,7 +2,7 @@ from unittest import mock
 
 from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.ops.api.v1.endpoints.consent_request_endpoints import (
-    queue_privacy_request_to_propagate_consent,
+    queue_privacy_request_to_propagate_consent_old_workflow,
 )
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.models.privacy_request import (
@@ -19,7 +19,6 @@ from fides.api.ops.schemas.privacy_request import (
     PrivacyRequestResponse,
 )
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.core.config import CONFIG
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
@@ -148,15 +147,15 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             ConsentWithExecutableStatus(data_use="advertising", executable=True)
         ]
 
-        queue_privacy_request_to_propagate_consent(
+        queue_privacy_request_to_propagate_consent_old_workflow(
             db=db,
             provided_identity=provided_identity,
             policy=DEFAULT_CONSENT_POLICY,
             consent_preferences=consent_preferences,
             executable_consents=executable_consents,
         )
-
         assert mock_create_privacy_request.called
+
         call_kwargs = mock_create_privacy_request.call_args[1]
         assert call_kwargs["db"] == db
         assert call_kwargs["data"][0].identity.email == "test@email.com"
@@ -196,7 +195,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             consent=[{"data_use": "advertising", "opt_in": False}]
         )
 
-        queue_privacy_request_to_propagate_consent(
+        queue_privacy_request_to_propagate_consent_old_workflow(
             db=db,
             provided_identity=provided_identity,
             policy=DEFAULT_CONSENT_POLICY,
@@ -236,7 +235,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             consent=[{"data_use": "advertising", "opt_in": False}]
         )
 
-        queue_privacy_request_to_propagate_consent(
+        queue_privacy_request_to_propagate_consent_old_workflow(
             db=db,
             provided_identity=provided_identity,
             policy=DEFAULT_CONSENT_POLICY,

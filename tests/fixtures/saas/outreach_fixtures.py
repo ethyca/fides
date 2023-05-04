@@ -120,7 +120,6 @@ def outreach_dataset_config(
 def outreach_create_erasure_data(
     outreach_connection_config: ConnectionConfig, outreach_erasure_identity_email: str
 ) -> None:
-
     outreach_secrets = outreach_connection_config.secrets
     base_url = f"https://{outreach_secrets['domain']}"
     headers = {

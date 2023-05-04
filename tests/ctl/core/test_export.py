@@ -157,7 +157,6 @@ def test_system_records_to_export(
 def test_system_records_to_export_with_custom_fields(
     test_sample_system_taxonomy_with_custom_fields,
 ):
-
     output_list, _ = export.generate_system_records(
         test_sample_system_taxonomy_with_custom_fields
     )

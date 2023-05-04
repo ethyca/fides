@@ -29,28 +29,39 @@ const About: NextPage = () => {
 
         <Box>
           <Text as="span" fontWeight="bold">
-            Version:{" "}
+            Fides Core Version:{" "}
           </Text>
           <Text as="pre" display="inline">
             {features.version}
           </Text>
         </Box>
 
+        {features.plusVersion ? (
+          <Box>
+            <Text as="span" fontWeight="bold">
+              Fides Plus Version:{" "}
+            </Text>
+            <Text as="pre" display="inline">
+              {features.plusVersion}
+            </Text>
+          </Box>
+        ) : null}
+
         <Divider />
 
-        <Grid gridTemplateColumns="1fr 1fr 3fr">
+        <Flex alignItems="center" gap={4}>
           <Heading as="h2" fontSize="xl">
             Beta Features
           </Heading>
-
-          <Box mb={2}>
-            <Button size="sm" onClick={() => reset()}>
-              Reset
-            </Button>
-          </Box>
-
-          <Box />
-
+          <Button size="sm" onClick={() => reset()}>
+            Reset
+          </Button>
+        </Flex>
+        <Grid
+          gridTemplateColumns="1fr 2fr 6fr"
+          gridRowGap={2}
+          alignItems="center"
+        >
           {FLAG_NAMES.map((flag) => (
             <FlagControl
               key={flag}

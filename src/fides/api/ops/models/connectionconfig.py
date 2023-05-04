@@ -46,8 +46,8 @@ class ConnectionType(enum.Enum):
     mariadb = "mariadb"
     bigquery = "bigquery"
     manual = "manual"  # Run as part of the traversal
-    email = "email"
     sovrn = "sovrn"
+    attentive = "attentive"
     manual_webhook = "manual_webhook"  # Run before the traversal
     timescale = "timescale"
     fides = "fides"
@@ -58,22 +58,22 @@ class ConnectionType(enum.Enum):
         Add to this mapping if you add a new ConnectionType
         """
         readable_mapping: Dict[str, str] = {
-            ConnectionType.postgres.value: "PostgreSQL",
-            ConnectionType.mongodb.value: "MongoDB",
-            ConnectionType.mysql.value: "MySQL",
-            ConnectionType.https.value: "Policy Webhook",
-            ConnectionType.saas.value: "SaaS",
-            ConnectionType.redshift.value: "Amazon Redshift",
-            ConnectionType.snowflake.value: "Snowflake",
-            ConnectionType.mssql.value: "Microsoft SQL Server",
-            ConnectionType.mariadb.value: "MariaDB",
+            ConnectionType.attentive.value: "Attentive",
             ConnectionType.bigquery.value: "BigQuery",
-            ConnectionType.manual.value: "Manual Connector",
-            ConnectionType.email.value: "Email Connector",
-            ConnectionType.manual_webhook.value: "Manual Process",
-            ConnectionType.timescale.value: "TimescaleDB",
             ConnectionType.fides.value: "Fides Connector",
+            ConnectionType.https.value: "Policy Webhook",
+            ConnectionType.manual.value: "Manual Connector",
+            ConnectionType.manual_webhook.value: "Manual Process",
+            ConnectionType.mariadb.value: "MariaDB",
+            ConnectionType.mongodb.value: "MongoDB",
+            ConnectionType.mssql.value: "Microsoft SQL Server",
+            ConnectionType.mysql.value: "MySQL",
+            ConnectionType.postgres.value: "PostgreSQL",
+            ConnectionType.redshift.value: "Amazon Redshift",
+            ConnectionType.saas.value: "SaaS",
+            ConnectionType.snowflake.value: "Snowflake",
             ConnectionType.sovrn.value: "Sovrn",
+            ConnectionType.timescale.value: "TimescaleDB",
         }
         try:
             return readable_mapping[self.value]
@@ -135,6 +135,15 @@ class ConnectionConfig(Base):
         cascade="delete",
         uselist=False,
     )
+
+    system = relationship(System)
+
+    @property
+    def system_key(self) -> str:
+        """Property for caching a system identifier for systems (or connector names as a fallback) for consent reporting"""
+        if self.system:
+            return self.system.fides_key
+        return self.name
 
     @classmethod
     def create_without_saving(

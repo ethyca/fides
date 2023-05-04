@@ -4,12 +4,17 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 import pydash
 from loguru import logger
 from requests import Response
+from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import FidesopsException, PostProcessingException
+from fides.api.ops.common_exceptions import (
+    FidesopsException,
+    PostProcessingException,
+    SkippingConsentPropagation,
+)
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import Consent, PrivacyRequest
+from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.ops.schemas.saas.saas_config import (
     ClientConfig,
@@ -32,6 +37,11 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
 )
 from fides.api.ops.util.collection_util import Row
+from fides.api.ops.util.consent_util import (
+    add_complete_system_status_for_consent_reporting,
+    cache_initial_status_and_identities_for_consent_reporting,
+    should_opt_in_to_service,
+)
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 
 
@@ -421,16 +431,35 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.unset_connector_state()
         return rows_updated
 
+    @staticmethod
+    def relevant_consent_identities(
+        matching_consent_requests: List[SaaSRequest], identity_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Pull the identities that are relevant to consent requests on this connector"""
+        related_identities: Dict[str, Any] = {}
+        for consent_request in matching_consent_requests or []:
+            for param_value in consent_request.param_values or []:
+                if not param_value.identity:
+                    continue
+                identity_type: Optional[str] = param_value.identity
+                identity_value: Any = identity_data.get(param_value.identity)
+
+                if identity_type and identity_value:
+                    related_identities[identity_type] = identity_value
+        return related_identities
+
     def run_consent_request(
         self,
         node: TraversalNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         identity_data: Dict[str, Any],
-        consent_preferences: List[Consent],
+        session: Session,
     ) -> bool:
         """Execute a consent request. Return whether the consent request to the third party succeeded.
-        Return True if 200 OK
+        Should only propagate either the entire set of opt in or opt out requests.
+        Return True if 200 OK. Raises a SkippingConsentPropagation exception if no action is taken
+        against the service.
         """
         logger.info(
             "Starting consent request for node: '{}'",
@@ -439,44 +468,77 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.set_privacy_request_state(privacy_request, node)
         query_config = self.query_config(node)
 
-        for consent_options in consent_preferences:
-            query_config.action = (
-                "opt_in" if consent_options.opt_in else "opt_out"
-            )  # For logging purposes
+        should_opt_in, filtered_preferences = should_opt_in_to_service(
+            self.configuration.system, privacy_request
+        )
 
-            consent_requests: List[
-                SaaSRequest
-            ] = self._get_consent_requests_by_preference(consent_options.opt_in)
+        if should_opt_in is None:
+            logger.info(
+                "Skipping consent requests on node {}: No actionable consent preferences to propagate",
+                node.address.value,
+            )
+            raise SkippingConsentPropagation(
+                f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
+            )
 
-            if not consent_requests:
-                logger.info(
-                    "Skipping consent requests on node {}: No '{}' requests defined",
-                    node.address.value,
-                    query_config.action,
-                )
-                continue
+        matching_consent_requests: List[
+            SaaSRequest
+        ] = self._get_consent_requests_by_preference(should_opt_in)
 
-            for consent_request in consent_requests:
-                self.set_saas_request_state(consent_request)
+        query_config.action = (
+            "opt_in" if should_opt_in else "opt_out"
+        )  # For logging purposes
 
-                try:
-                    prepared_request: SaaSRequestParams = (
-                        query_config.generate_consent_stmt(
-                            policy, privacy_request, consent_request
-                        )
+        if not matching_consent_requests:
+            logger.info(
+                "Skipping consent requests on node {}: No '{}' requests defined",
+                node.address.value,
+                query_config.action,
+            )
+            raise SkippingConsentPropagation(
+                f"Skipping consent propagation for node {node.address.value} -  No '{query_config.action}' requests defined."
+            )
+
+        cache_initial_status_and_identities_for_consent_reporting(
+            db=session,
+            privacy_request=privacy_request,
+            connection_config=self.configuration,
+            relevant_preferences=filtered_preferences,
+            relevant_user_identities=self.relevant_consent_identities(
+                matching_consent_requests, identity_data
+            ),
+        )
+
+        fired: bool = False
+        for consent_request in matching_consent_requests:
+            self.set_saas_request_state(consent_request)
+            try:
+                prepared_request: SaaSRequestParams = (
+                    query_config.generate_consent_stmt(
+                        policy, privacy_request, consent_request
                     )
-                except ValueError as exc:
-                    if consent_request.skip_missing_param_values:
-                        logger.info(
-                            "Skipping optional consent request on node {}: {}",
-                            node.address.value,
-                            exc,
-                        )
-                        continue
-                    raise exc
-                client: AuthenticatedClient = self.create_client()
-                client.send(prepared_request)
+                )
+            except ValueError as exc:
+                if consent_request.skip_missing_param_values:
+                    logger.info(
+                        "Skipping optional consent request on node {}: {}",
+                        node.address.value,
+                        exc,
+                    )
+                    continue
+                raise exc
+            client: AuthenticatedClient = self.create_client()
+            client.send(prepared_request)
+            fired = True
         self.unset_connector_state()
+        if not fired:
+            raise SkippingConsentPropagation(
+                "Missing needed values to propagate request."
+            )
+        add_complete_system_status_for_consent_reporting(
+            session, privacy_request, self.configuration
+        )
+
         return True
 
     def close(self) -> None:

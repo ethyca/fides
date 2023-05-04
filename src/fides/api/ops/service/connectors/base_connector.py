@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
+from sqlalchemy.orm import Session
+
 from fides.api.ops.common_exceptions import NotSupportedForCollection
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import Consent, PrivacyRequest
+from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.service.connectors.query_config import QueryConfig
 from fides.api.ops.util.collection_util import Row
 from fides.core.config import CONFIG
@@ -93,7 +95,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         policy: Policy,
         privacy_request: PrivacyRequest,
         identity_data: Dict[str, Any],
-        consent_preferences: List[Consent],
+        session: Session,
     ) -> bool:
         """
         Base method for executing a consent request. Override on a given connector if functionality
@@ -111,23 +113,3 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
     @abstractmethod
     def close(self) -> None:
         """Close any held resources"""
-
-
-class LimitedConnector(Generic[DB_CONNECTOR_TYPE], ABC):
-    """Abstract Connector that operates at the Dataset Level, not the Collection level.
-
-    Only supports a subset of functionality that the Connector class supports
-    """
-
-    def __init__(self, configuration: ConnectionConfig):
-        self.configuration = configuration
-        self.hide_parameters = not CONFIG.dev_mode
-        self.db_client: Optional[DB_CONNECTOR_TYPE] = None
-
-    @abstractmethod
-    def test_connection(self) -> Optional[ConnectionTestStatus]:
-        """Used to make a trivial query with the client to ensure secrets are correct.
-
-        If no issues are encountered, this should run without error, otherwise a ConnectionException
-        will be raised.
-        """

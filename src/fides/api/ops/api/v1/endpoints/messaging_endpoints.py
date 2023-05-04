@@ -180,7 +180,7 @@ def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> Messagin
                 "application/json": {
                     "example": {
                         "config_status": "configured",
-                        "detail": "Active default messaging service of type MAILGUN is fully configured",
+                        "detail": "Active default messaging service of type mailgun is fully configured",
                     }
                 }
             }
@@ -327,7 +327,6 @@ def update_config_secrets(
     messaging_config: MessagingConfig,
     unvalidated_messaging_secrets: possible_messaging_secrets,
 ) -> TestMessagingStatusMessage:
-
     try:
         secrets_schema = get_schema_for_secrets(
             service_type=messaging_config.service_type,  # type: ignore

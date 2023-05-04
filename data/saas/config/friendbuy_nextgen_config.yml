@@ -1,8 +1,8 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Frienddbuy Nextgen SaaS Config
+  name: Friendbuy Nextgen
   type: friendbuy_nextgen
-  description: A sample schema representing the Frienddbuy Nextgen connector for Fidesops
+  description: A sample schema representing the Friendbuy Nextgen connector for Fides
   version: 0.0.1
 
   connector_params:

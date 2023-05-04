@@ -9,10 +9,10 @@ import {
   useGetCustomFieldsForResourceQuery,
   useUpsertCustomFieldMutation,
 } from "~/features/plus/plus.slice";
-import { ResourceTypes } from "~/types/api";
+import { CustomFieldWithId, ResourceTypes } from "~/types/api";
 
 import { filterWithId } from "./helpers";
-import { CustomFieldsFormValues } from "./types";
+import { CustomFieldsFormValues, CustomFieldValues } from "./types";
 
 type UseCustomFieldsOptions = {
   resourceFidesKey?: string;
@@ -24,8 +24,7 @@ export const useCustomFields = ({
   resourceType,
 }: UseCustomFieldsOptions) => {
   const { errorAlert, successAlert } = useAlert();
-  const { flags, plus } = useFeatures();
-  const isEnabled = flags.customFields && plus;
+  const { plus: isEnabled } = useFeatures();
 
   // This keeps track of the fides key that was initially passed in. If that key started out blank,
   // then we know the API call will just 404.
@@ -39,12 +38,14 @@ export const useCustomFields = ({
     useGetCustomFieldDefinitionsByResourceTypeQuery(resourceType, {
       skip: !isEnabled,
     });
-  const customFieldsQuery = useGetCustomFieldsForResourceQuery(
-    resourceFidesKey ?? "",
-    {
-      skip: queryFidesKey !== "" && !(isEnabled && queryFidesKey),
-    }
-  );
+  const {
+    data,
+    isLoading: isCustomFieldIsLoading,
+    error,
+    isError,
+  } = useGetCustomFieldsForResourceQuery(resourceFidesKey ?? "", {
+    skip: queryFidesKey !== "" && !(isEnabled && queryFidesKey),
+  });
 
   // The `fixedCacheKey` options will ensure that components referencing the same resource will
   // share mutation info. That won't be too useful, though, because `upsertCustomField` can issue
@@ -57,7 +58,7 @@ export const useCustomFields = ({
   const isLoading =
     allAllowListQuery.isLoading ||
     customFieldDefinitionsQuery.isLoading ||
-    customFieldsQuery.isLoading ||
+    isCustomFieldIsLoading ||
     upsertCustomFieldMutationResult.isLoading ||
     deleteCustomFieldMutationResult.isLoading;
 
@@ -91,16 +92,17 @@ export const useCustomFields = ({
     [activeCustomFieldDefinition]
   );
 
-  const definitionIdToCustomField = useMemo(
-    () =>
-      new Map(
-        filterWithId(customFieldsQuery.data).map((fd) => [
-          fd.custom_field_definition_id,
-          fd,
-        ])
-      ),
-    [customFieldsQuery]
-  );
+  const definitionIdToCustomField: Map<string, CustomFieldWithId> =
+    useMemo(() => {
+      // @ts-ignore
+      if (isError && error?.status === 404) {
+        return new Map();
+      }
+      const newMap = new Map(
+        filterWithId(data).map((fd) => [fd.custom_field_definition_id, fd])
+      );
+      return newMap;
+    }, [data, isError, error]);
 
   const sortedCustomFieldDefinitionIds = useMemo(() => {
     const ids = [...idToCustomFieldDefinition.keys()];
@@ -109,23 +111,45 @@ export const useCustomFields = ({
   }, [idToCustomFieldDefinition]);
 
   /**
+   * Transformed version of definitionIdToCustomField to be easy
+   * to pass into Formik
+   */
+  const customFieldValues = useMemo(() => {
+    const values: CustomFieldValues = {};
+    if (definitionIdToCustomField) {
+      definitionIdToCustomField.forEach((value, key) => {
+        values[key] = value.value.toString();
+      });
+    }
+    return values;
+  }, [definitionIdToCustomField]);
+
+  /**
    * Issue a batch of upsert and delete requests that will sync the form selections to the
    * backend.
    */
   const upsertCustomFields = useCallback(
     async (formValues: CustomFieldsFormValues) => {
+      if (!isEnabled) {
+        return;
+      }
+
       // When creating an resource, the fides key may have initially been blank. But by the time the
       // form is submitted it must not be blank (not undefined, not an empty string).
-      const fidesKey = formValues.fides_key || resourceFidesKey;
+      const fidesKey =
+        "fides_key" in formValues && formValues.fides_key !== ""
+          ? formValues.fides_key
+          : resourceFidesKey;
+
       if (!fidesKey) {
         return;
       }
 
-      const { definitionIdToCustomFieldValue } = formValues;
+      const { customFieldValues: customFieldValuesFromForm } = formValues;
 
       // This will be undefined if the form never rendered a `CustomFieldList` that would assign
       // form values.
-      if (!definitionIdToCustomFieldValue) {
+      if (!customFieldValuesFromForm) {
         return;
       }
 
@@ -135,7 +159,7 @@ export const useCustomFields = ({
         await Promise.allSettled(
           sortedCustomFieldDefinitionIds.map((definitionId) => {
             const customField = definitionIdToCustomField.get(definitionId);
-            const value = definitionIdToCustomFieldValue[definitionId];
+            const value = customFieldValuesFromForm[definitionId];
 
             if (
               value === undefined ||
@@ -145,8 +169,9 @@ export const useCustomFields = ({
               if (!customField?.id) {
                 return undefined;
               }
+              const { id } = customField;
 
-              return deleteCustomFieldMutationTrigger(customField);
+              return deleteCustomFieldMutationTrigger({ id });
             }
 
             const body = {
@@ -172,6 +197,7 @@ export const useCustomFields = ({
       }
     },
     [
+      isEnabled,
       definitionIdToCustomField,
       deleteCustomFieldMutationTrigger,
       errorAlert,
@@ -184,6 +210,7 @@ export const useCustomFields = ({
   );
 
   return {
+    customFieldValues,
     definitionIdToCustomField,
     idToAllowListWithOptions,
     idToCustomFieldDefinition,

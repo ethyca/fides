@@ -3,7 +3,6 @@ from functools import partial
 from typing import Callable, Dict
 
 import nox
-
 from constants_nox import (
     CONTAINER_NAME,
     IMAGE_NAME,
@@ -12,7 +11,7 @@ from constants_nox import (
     START_APP,
     WITH_TEST_CONFIG,
 )
-from test_setup_nox import pytest_ctl, pytest_lib, pytest_ops
+from test_setup_nox import pytest_ctl, pytest_lib, pytest_nox, pytest_ops
 from utils_nox import install_requirements
 
 
@@ -186,6 +185,7 @@ TEST_GROUPS = [
     nox.param("ops-external-datastores", id="ops-external-datastores"),
     nox.param("ops-saas", id="ops-saas"),
     nox.param("lib", id="lib"),
+    nox.param("nox", id="nox"),
 ]
 
 TEST_MATRIX: Dict[str, Callable] = {
@@ -198,6 +198,7 @@ TEST_MATRIX: Dict[str, Callable] = {
     "ops-external-datastores": partial(pytest_ops, mark="external_datastores"),
     "ops-saas": partial(pytest_ops, mark="saas"),
     "lib": pytest_lib,
+    "nox": pytest_nox,
 }
 
 

@@ -12,18 +12,18 @@ type HomeLayoutProps = {
 };
 
 const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
-  <div data-testid={title}>
+  <Flex data-testid={title} direction="column">
     <Head>
       <title>Fides Admin UI - {title}</title>
-      <meta name="description" content="" />
+      <meta name="description" content="Privacy Engineering Platform" />
       <link rel="icon" href="/favicon.ico" />
     </Head>
     <Header />
     <NavTopBar />
-    <Flex flexDirection="column" gap="40px" width="100vw">
+    <Flex as="main" flexGrow={1} flexDirection="column" gap={10}>
       {children}
     </Flex>
-  </div>
+  </Flex>
 );
 
 export default HomeLayout;

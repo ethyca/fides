@@ -8,6 +8,8 @@ import pandas as pd
 from fideslang.models import DataSubject, DataSubjectRightsEnum, DataUse
 from fideslang.validation import FidesKey
 
+from fides.api.ctl.sql_models import PrivacyDeclaration  # type: ignore[attr-defined]
+
 DATAMAP_TEMPLATE = join(
     dirname(__file__),
     "../templates",
@@ -140,7 +142,7 @@ def export_datamap_to_excel(
 
 def format_data_uses(
     data_uses: List[DataUse],
-) -> Tuple[Dict[FidesKey, Dict[str, str]], Dict[str, str]]:
+) -> Tuple[Dict[FidesKey, Dict[str, str]], List[str]]:
     """
     This function formats data uses for use when exporting,
     returning the necessary values as a dict. Formatting
@@ -148,7 +150,7 @@ def format_data_uses(
     """
 
     formatted_data_uses = {}
-    custom_columns = {}
+    custom_columns = []
     known_attributes = (
         "legal_basis",
         "special_category",
@@ -193,7 +195,7 @@ def format_data_uses(
 
         for k, v in data_use.items():
             if k not in known_attributes and k not in excluded_attributes:
-                custom_columns[k] = k
+                custom_columns.append(k)
                 if isinstance(v, list):
                     formatted_data_use[k] = ", ".join(v)
                 else:
@@ -206,7 +208,7 @@ def format_data_uses(
 
 def format_data_subjects(
     data_subjects: List[DataSubject],
-) -> Tuple[Dict[FidesKey, Dict[str, str]], Dict[str, str]]:
+) -> Tuple[Dict[FidesKey, Dict[str, str]], List[str]]:
     """
     This function formats data subjects from the server, returning the necessary values
     as a list of dicts.
@@ -237,7 +239,7 @@ def format_data_subjects(
         "is_default",
         "rights_available",
     )
-    custom_columns = {}
+    custom_columns = []
 
     for data_subject in data_subjects:
         if not isinstance(data_subject, dict):
@@ -268,7 +270,7 @@ def format_data_subjects(
 
         for k, v in data_subject.items():
             if k not in excluded_attributes:
-                custom_columns[k] = k
+                custom_columns.append(k)
                 if isinstance(v, list):
                     formatted_data_subject[k] = ", ".join(v)
                 else:
@@ -277,6 +279,63 @@ def format_data_subjects(
         formatted_data_subjects[data_subject["fides_key"]] = formatted_data_subject
 
     return formatted_data_subjects, custom_columns
+
+
+def format_privacy_declarations(
+    privacy_declarations: List[PrivacyDeclaration],
+) -> Tuple[Dict[str, Dict[str, str]], List[str]]:
+    """
+    This function formats privacy declarations for use when exporting,
+    returning the necessary values as a dict. Formatting
+    differences exist due to various types allowed across attributes.
+    """
+
+    formatted_privacy_declarations = {}
+    custom_columns = []
+    known_attributes = (
+        "name",
+        "data_qualifier",
+        "data_use",
+        "data_categories",
+        "data_subjects",
+        "dataset_references",
+    )
+    excluded_attributes = (
+        "id",
+        "ingress",
+        "egress",
+        "system_id",
+        "updated_at",
+        "created_at",
+    )
+    for privacy_declaration in privacy_declarations:
+        if not isinstance(privacy_declaration, dict):
+            privacy_declaration = privacy_declaration.dict()
+
+        formatted_privacy_declaration = {
+            "name": privacy_declaration["name"],
+        }
+
+        for attribute in known_attributes:
+            attribute_value = privacy_declaration.get(attribute)
+            if attribute_value is None:
+                attribute_value = "N/A"
+
+            formatted_privacy_declaration[attribute] = attribute_value
+
+        for k, v in privacy_declaration.items():
+            if k not in known_attributes and k not in excluded_attributes:
+                custom_columns.append(k)
+                if isinstance(v, list):
+                    formatted_privacy_declaration[k] = ", ".join(v)
+                else:
+                    formatted_privacy_declaration[k] = v
+
+        formatted_privacy_declarations[
+            privacy_declaration["id"]
+        ] = formatted_privacy_declaration
+
+    return formatted_privacy_declarations, custom_columns
 
 
 def convert_tuple_to_string(values: Tuple[str, ...]) -> str:
@@ -350,7 +409,6 @@ def union_data_categories_in_joined_dataframe(joined_df: pd.DataFrame) -> pd.Dat
     # isolate the system data categories into a new dataframe and create a common column
     joined_df = joined_df.drop(
         [
-            "system.privacy_declaration.name",
             "dataset.description",
         ],
         axis=1,

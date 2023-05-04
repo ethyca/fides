@@ -13,15 +13,21 @@ import {
   useToast,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
+import { useRouter } from "next/router";
 import React from "react";
 import * as Yup from "yup";
 
+import { useAppDispatch } from "~/app/hooks";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import { User } from "./types";
-import { useDeleteUserMutation } from "./user-management.slice";
+import {
+  setActiveUserId,
+  useDeleteUserMutation,
+} from "./user-management.slice";
 
 const initialValues = { username: "", usernameConfirmation: "" };
 
@@ -31,6 +37,8 @@ const useDeleteUserModal = ({
   onClose,
 }: Pick<User, "id" | "username"> & { onClose: () => void }) => {
   const toast = useToast();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   const [deleteUser] = useDeleteUserMutation();
 
   const handleDeleteUser = async () => {
@@ -41,6 +49,8 @@ const useDeleteUserModal = ({
       toast(successToastParams("Successfully deleted user"));
       onClose();
     }
+    dispatch(setActiveUserId(undefined));
+    router.push(USER_MANAGEMENT_ROUTE);
   };
 
   const validationSchema = Yup.object().shape({

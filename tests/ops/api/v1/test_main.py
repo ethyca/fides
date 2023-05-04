@@ -7,7 +7,7 @@ from fides.api.main import create_fides_app
 from fides.api.ops.util.oauth_util import (
     get_root_client,
     verify_oauth_client,
-    verify_oauth_client_cli,
+    verify_oauth_client_prod,
 )
 
 
@@ -26,7 +26,9 @@ class TestConfigureSecurityEnvOverrides:
         security_env = "dev"
         test_app = FastAPI(title="test")
         test_app = create_fides_app(security_env=security_env)
-        assert test_app.dependency_overrides[verify_oauth_client_cli] == get_root_client
+        assert (
+            test_app.dependency_overrides[verify_oauth_client_prod] == get_root_client
+        )
 
     def test_configure_security_env_overrides_prod(self) -> None:
         """
@@ -40,4 +42,4 @@ class TestConfigureSecurityEnvOverrides:
             test_app.dependency_overrides[verify_oauth_client]
 
         with pytest.raises(KeyError):
-            test_app.dependency_overrides[verify_oauth_client_cli]
+            test_app.dependency_overrides[verify_oauth_client_prod]

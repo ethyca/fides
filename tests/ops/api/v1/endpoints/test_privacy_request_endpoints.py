@@ -87,6 +87,7 @@ from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
@@ -819,6 +820,30 @@ class TestGetPrivacyRequests:
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
         assert resp["items"][0].get("identity") is None
 
+    def test_filter_privacy_requests_by_action(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request,
+        executable_consent_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url + f"?action_type=access", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+
+        response = api_client.get(url + f"?action_type=consent", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+
+        response = api_client.get(url + f"?action_type=erasure", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 0
+
     def test_filter_privacy_requests_by_status(
         self,
         api_client: TestClient,
@@ -1292,6 +1317,7 @@ class TestGetPrivacyRequests:
             "phone_number": TEST_PHONE,
             "ga_client_id": None,
             "ljt_readerID": None,
+            "fides_user_device_id": None,
         }
         assert first_row["Request Type"] == "access"
         assert first_row["Status"] == "approved"
@@ -1450,7 +1476,7 @@ class TestGetPrivacyRequests:
         privacy_request.status = PrivacyRequestStatus.error
         privacy_request.save(db)
         privacy_request.cache_failed_checkpoint_details(
-            step=CurrentStep.erasure_email_post_send,
+            step=CurrentStep.email_post_send,
             collection=None,
         )
 
@@ -1461,7 +1487,7 @@ class TestGetPrivacyRequests:
         data = response.json()["items"][0]
         assert data["status"] == "error"
         assert data["action_required_details"] == {
-            "step": "erasure_email_post_send",
+            "step": "email_post_send",
             "collection": None,
             "action_needed": None,
         }
@@ -1947,7 +1973,7 @@ class TestApprovePrivacyRequest:
         privacy_request.save(db=db)
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -1993,7 +2019,7 @@ class TestApprovePrivacyRequest:
         privacy_request_review_notification_enabled,
     ):
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -2021,7 +2047,7 @@ class TestApprovePrivacyRequest:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -2122,7 +2148,7 @@ class TestDenyPrivacyRequest:
         privacy_request.save(db=db)
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -2153,7 +2179,7 @@ class TestDenyPrivacyRequest:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -2193,7 +2219,7 @@ class TestDenyPrivacyRequest:
         privacy_request.save(db=db)
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -2224,7 +2250,7 @@ class TestDenyPrivacyRequest:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -2817,7 +2843,7 @@ class TestBulkRestartFromFailure:
         privacy_requests[0].save(db)
 
         privacy_requests[0].cache_failed_checkpoint_details(
-            step=CurrentStep.erasure_email_post_send,
+            step=CurrentStep.email_post_send,
             collection=None,
         )
 
@@ -2834,7 +2860,7 @@ class TestBulkRestartFromFailure:
 
         submit_mock.assert_called_with(
             privacy_request_id=privacy_requests[0].id,
-            from_step=CurrentStep.erasure_email_post_send.value,
+            from_step=CurrentStep.email_post_send.value,
             from_webhook_id=None,
         )
 
@@ -2963,7 +2989,7 @@ class TestRestartFromFailure:
         privacy_request.save(db)
 
         privacy_request.cache_failed_checkpoint_details(
-            step=CurrentStep.erasure_email_post_send,
+            step=CurrentStep.email_post_send,
             collection=None,
         )
 
@@ -2975,7 +3001,7 @@ class TestRestartFromFailure:
 
         submit_mock.assert_called_with(
             privacy_request_id=privacy_request.id,
-            from_step=CurrentStep.erasure_email_post_send.value,
+            from_step=CurrentStep.email_post_send.value,
             from_webhook_id=None,
         )
 
@@ -3148,7 +3174,7 @@ class TestVerifyIdentity:
         assert task_kwargs["to_identity"] == Identity(
             phone_number="+12345678910", email="test@example.com"
         )
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3256,7 +3282,7 @@ class TestVerifyIdentity:
         assert task_kwargs["to_identity"] == Identity(
             phone_number="+12345678910", email="test@example.com"
         )
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3358,7 +3384,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
             kwargs["action_type"] == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
         )
         assert kwargs["to_identity"] == Identity(email="test@example.com")
-        assert kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert kwargs["service_type"] == MessagingServiceType.mailgun.value
         assert kwargs["message_body_params"] == SubjectIdentityVerificationBodyParams(
             verification_code=pr.get_cached_verification_code(),
             verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,
@@ -3877,7 +3903,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3928,7 +3954,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (

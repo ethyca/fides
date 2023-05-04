@@ -9,9 +9,23 @@ CONFIG = "/config"
 CONSENT_REQUEST = "/consent-request"
 CONSENT_REQUEST_PREFERENCES = "/consent-request/preferences"
 CONSENT_REQUEST_PREFERENCES_WITH_ID = (
-    "/consent-request/{consent_request_id}/preferences"
+    "/consent-request/{consent_request_id}/preferences"  # TODO: slated to be deprecated
 )
+
 CONSENT_REQUEST_VERIFY = "/consent-request/{consent_request_id}/verify"
+
+# Privacy Preference URLs
+CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID = (
+    "/consent-request/{consent_request_id}/privacy-preferences"
+)
+CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY = (
+    "/consent-request/{consent_request_id}/verify-for-privacy-preferences"
+)
+PRIVACY_PREFERENCES = "/privacy-preferences"
+
+# Reporting endpoints - have records for *all* users
+HISTORICAL_PRIVACY_PREFERENCES_REPORT = "/historical-privacy-preferences"
+CURRENT_PRIVACY_PREFERENCES_REPORT = "/current-privacy-preferences"
 
 
 # Oauth Client URLs
@@ -58,6 +72,15 @@ MESSAGING_TEST = "/messaging/config/test"
 # Policy URLs
 POLICY_LIST = "/dsr/policy"
 POLICY_DETAIL = "/dsr/policy/{policy_key}"
+
+# Privacy Experience URLs
+PRIVACY_EXPERIENCE = "/privacy-experience"
+PRIVACY_EXPERIENCE_DETAIL = "/privacy-experience/{privacy_experience_id}"
+
+# Privacy Notice URLs
+PRIVACY_NOTICE = "/privacy-notice"
+PRIVACY_NOTICE_DETAIL = "/privacy-notice/{privacy_notice_id}"
+PRIVACY_NOTICE_BY_DATA_USE = "/privacy-notice-by-data-use"
 
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
@@ -134,6 +157,7 @@ YAML_DATASETS = YAML + DATASETS
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
 SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{saas_connector_type}"
+REGISTER_CONNECTOR_TEMPLATE = "/connector_template/register"
 
 SYSTEM_CONNECTIONS = "/system/{fides_key}/connection"
 
@@ -142,6 +166,8 @@ USERS = "/user"
 USER_DETAIL = "/user/{user_id}"
 USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
 USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"
+SYSTEM_MANAGER = "/user/{user_id}/system-manager"
+SYSTEM_MANAGER_DETAIL = "/user/{user_id}/system-manager/{system_key}"
 
 # User Permission URLs
 USER_PERMISSIONS = "/user/{user_id}/permission"

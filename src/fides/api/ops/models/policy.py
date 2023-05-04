@@ -15,6 +15,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
+from fides.api.ctl.sql_models import DataCategory  # type: ignore
 from fides.api.ops import common_exceptions
 from fides.api.ops.common_exceptions import (
     StorageConfigNotFoundException,
@@ -37,8 +38,7 @@ class CurrentStep(EnumType):
     access = "access"
     erasure = "erasure"
     consent = "consent"
-    erasure_email_post_send = "erasure_email_post_send"
-    consent_email_post_send = "consent_email_post_send"
+    email_post_send = "email_post_send"
     post_webhooks = "post_webhooks"
 
 
@@ -49,6 +49,10 @@ class ActionType(str, EnumType):
     consent = "consent"
     erasure = "erasure"
     update = "update"
+
+
+# action types we actively support in policies/requests
+SUPPORTED_ACTION_TYPES = {ActionType.access, ActionType.consent, ActionType.erasure}
 
 
 class DrpAction(EnumType):
@@ -158,21 +162,34 @@ class Policy(Base):
         consent_rules = self.get_rules_for_action(ActionType.consent)
         return consent_rules[0] if consent_rules else None
 
+    def get_action_type(self) -> Optional[ActionType]:
+        try:
+            return self.rules[0].action_type  # type: ignore[attr-defined]
+        except IndexError:
+            return None
 
-def _get_ref_from_taxonomy(fides_key: FidesKey) -> FideslangDataCategory:
+
+def _get_ref_from_taxonomy(
+    fides_key: FidesKey,
+    all_categories: List[DataCategory] = [],
+) -> FideslangDataCategory:
     """Returns the DataCategory model from the DEFAULT_TAXONOMY corresponding to fides_key."""
-    for item in DEFAULT_TAXONOMY.data_category:
+    if not all_categories:
+        all_categories = DEFAULT_TAXONOMY.data_category
+
+    for item in all_categories:
         if item.fides_key == fides_key:
             return item
 
     raise common_exceptions.DataCategoryNotSupported(
-        f"The data category {fides_key} has no Fideslang reference."
+        f"The data category {fides_key} is not configured."
     )
 
 
 def _is_ancestor_of_contained_categories(
     fides_key: FidesKey,
     data_categories: List[str],
+    all_categories: List[DataCategory],
 ) -> Tuple[bool, Optional[str]]:
     """
     Returns True if `fides_key` is an ancestor of any item in `data_categories`.
@@ -181,7 +198,10 @@ def _is_ancestor_of_contained_categories(
 
     TODO: Should we memoize this function?
     """
-    ref = _get_ref_from_taxonomy(fides_key=fides_key)
+    ref = _get_ref_from_taxonomy(
+        fides_key=fides_key,
+        all_categories=all_categories,
+    )
     if ref.parent_key:
         if ref.parent_key in data_categories:
             return True, ref.parent_key
@@ -189,23 +209,28 @@ def _is_ancestor_of_contained_categories(
         return _is_ancestor_of_contained_categories(
             fides_key=ref.parent_key,
             data_categories=data_categories,
+            all_categories=all_categories,
         )
 
     return False, None
 
 
-def _validate_rule_target_collection(target_categories: List[str]) -> None:
+def _validate_rule_target_collection(
+    db: Session,
+    target_categories: List[str],
+) -> None:
     """
     Validates that no erasure rules within the Policy have conflicting data category targets:
         - We cannot mask the same data categories multiple times
         - We cannot perform separate masking upon a data category's sub-categories
     """
-
+    all_categories = DataCategory.all(db=db)
     for cat in target_categories:
         # Here we check that `cat` is not an ancestor of any other category within `target_categories`
         is_ancestor, ancestor_fides_key = _is_ancestor_of_contained_categories(
             fides_key=cat,  # type: ignore
             data_categories=target_categories,
+            all_categories=all_categories,
         )
         if is_ancestor:
             raise common_exceptions.PolicyValidationError(
@@ -275,7 +300,7 @@ class Rule(Base):
         return super().save(db=db)
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
+    def create(cls, db: Session, *, data: Dict[str, Any], check_name: bool = True) -> FidesBase:  # type: ignore[override]
         """Validate this object's data before deferring to the superclass on create"""
         policy_id: Optional[str] = data.get("policy_id")
 
@@ -303,7 +328,7 @@ class Rule(Base):
             storage_destination_id=data.get("storage_destination_id"),
             masking_strategy=data.get("masking_strategy"),
         )
-        return super().create(db=db, data=data)
+        return super().create(db=db, data=data, check_name=check_name)
 
     def delete(self, db: Session) -> Optional[FidesBase]:
         """Cascade delete all targets on deletion of a Rule."""
@@ -446,7 +471,7 @@ class RuleTarget(Base):
         return db_obj  # type: ignore[return-value]
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
+    def create(cls, db: Session, *, data: Dict[str, Any], check_name: bool = True) -> FidesBase:  # type: ignore[override]
         """Validate data_category on object creation."""
         data_category = data.get("data_category")
         if not data_category:
@@ -463,7 +488,10 @@ class RuleTarget(Base):
         if data.get("name") is None:
             data["name"] = default_name
 
-        _validate_data_category(data_category=data_category)
+        _validate_data_category(
+            db=db,
+            data_category=data_category,
+        )
 
         # This database query is necessary since we need to access all Rules and their Targets
         # associated with any given Policy, not just those in the local scope of this object.
@@ -481,13 +509,16 @@ class RuleTarget(Base):
             if policy:
                 erasure_categories.extend(rule.policy.get_erasure_target_categories())
 
-            _validate_rule_target_collection(erasure_categories)
+            _validate_rule_target_collection(db, erasure_categories)
 
-        return super().create(db=db, data=data)
+        return super().create(db=db, data=data, check_name=check_name)
 
     def save(self, db: Session) -> FidesBase:
         """Validate data_category on object save."""
-        _validate_data_category(data_category=self.data_category)
+        _validate_data_category(
+            db=db,
+            data_category=self.data_category,
+        )
         _validate_rule_target_name(name=self.name)
         return super().save(db=db)
 
@@ -508,7 +539,10 @@ class RuleTarget(Base):
             updated_data_category is not None
             and updated_data_category != self.data_category
         ):
-            _validate_data_category(data_category=updated_data_category)
+            _validate_data_category(
+                db=db,
+                data_category=updated_data_category,
+            )
         return super().update(db=db, data=data)
 
 

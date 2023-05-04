@@ -9,7 +9,7 @@ import RequestSubmitted from "./RequestSubmitted";
 
 import { ModalViews, VerificationType } from "../types";
 
-export const usePrivactRequestModal = () => {
+export const usePrivacyRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [openAction, setOpenAction] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<ModalViews>(
@@ -107,7 +107,7 @@ export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
   }
 
   if (currentView === ModalViews.RequestSubmitted) {
-    form = <RequestSubmitted onClose={onClose} action={action} />;
+    form = <RequestSubmitted onClose={onClose} />;
   }
 
   return (

@@ -1,23 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import type { RootState } from "~/app/store";
-import { selectToken } from "~/features/auth";
-import { addCommonHeaders } from "~/features/common/CommonHeaders";
+import { baseApi } from "~/features/common/api.slice";
 import { Organization } from "~/types/api";
 
 // Organization API
-export const organizationApi = createApi({
-  reducerPath: "organizationApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
-    prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
-      addCommonHeaders(headers, token);
-      return headers;
-    },
-  }),
-  tagTypes: ["Organization"],
+const organizationApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     createOrganization: build.mutation<Organization, Partial<Organization>>({
       query: (body) => ({
@@ -27,7 +14,10 @@ export const organizationApi = createApi({
       }),
       invalidatesTags: () => ["Organization"],
     }),
-    getOrganizationByFidesKey: build.query<Partial<Organization>, string>({
+    getOrganizationByFidesKey: build.query<
+      Partial<Organization> & Pick<Organization, "fides_key">,
+      string
+    >({
       query: (fides_key) => ({ url: `organization/${fides_key}/` }),
       providesTags: ["Organization"],
     }),

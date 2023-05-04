@@ -37,7 +37,7 @@ import { useState } from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
-type Variant = "inline" | "stacked";
+type Variant = "inline" | "stacked" | "block";
 
 interface CustomInputProps {
   disabled?: boolean;
@@ -79,7 +79,7 @@ const TextInput = ({
     setType(type === "password" ? "text" : "password");
 
   return (
-    <InputGroup size="sm" mr="2">
+    <InputGroup size="sm">
       <Input
         {...props}
         type={type}
@@ -147,6 +147,7 @@ interface SelectProps {
    * similar to how the multi values are rendered
    */
   singleValueBlock?: boolean;
+  isFormikOnChange?: boolean;
 }
 const SelectInput = ({
   options,
@@ -158,7 +159,11 @@ const SelectInput = ({
   singleValueBlock,
   isDisabled = false,
   menuPosition = "absolute",
-}: { fieldName: string; isMulti?: boolean } & Omit<SelectProps, "label">) => {
+  onChange,
+}: { fieldName: string; isMulti?: boolean; onChange?: any } & Omit<
+  SelectProps,
+  "label"
+>) => {
   const [initialField] = useField(fieldName);
   const field = { ...initialField, value: initialField.value ?? "" };
   const selected = isMulti
@@ -184,10 +189,16 @@ const SelectInput = ({
     }
   };
 
-  const handleChange = (newValue: MultiValue<Option> | SingleValue<Option>) =>
-    isMulti
-      ? handleChangeMulti(newValue as MultiValue<Option>)
-      : handleChangeSingle(newValue as SingleValue<Option>);
+  const handleChange = (newValue: MultiValue<Option> | SingleValue<Option>) => {
+    if (onChange) {
+      onChange(newValue);
+    }
+    if (isMulti) {
+      handleChangeMulti(newValue as MultiValue<Option>);
+    } else {
+      handleChangeSingle(newValue as SingleValue<Option>);
+    }
+  };
 
   const components = isClearable ? undefined : { ClearIndicator: () => null };
 
@@ -206,7 +217,6 @@ const SelectInput = ({
       chakraStyles={{
         container: (provided) => ({
           ...provided,
-          mr: 2,
           flexGrow: 1,
           backgroundColor: "white",
         }),
@@ -305,7 +315,7 @@ const CreatableSelectInput = ({
       size={size}
       classNamePrefix="custom-creatable-select"
       chakraStyles={{
-        container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
+        container: (provided) => ({ ...provided, flexGrow: 1 }),
         dropdownIndicator: (provided) => ({
           ...provided,
           background: "white",
@@ -351,7 +361,7 @@ export const CustomTextInput = ({
         <Grid templateColumns="1fr 3fr">
           <Label htmlFor={props.id || props.name}>{label}</Label>
           <Flex alignItems="center">
-            <Flex flexDir="column" flexGrow={1}>
+            <Flex flexDir="column" flexGrow={1} mr="2">
               <TextInput
                 {...field}
                 isDisabled={disabled}
@@ -372,7 +382,7 @@ export const CustomTextInput = ({
     );
   }
   return (
-    <FormControl isInvalid={isInvalid}>
+    <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
           <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
@@ -410,6 +420,8 @@ export const CustomSelect = ({
   isMulti,
   variant = "inline",
   singleValueBlock,
+  onChange,
+  isFormikOnChange,
   ...props
 }: SelectProps & StringField) => {
   const [field, meta] = useField(props);
@@ -422,7 +434,7 @@ export const CustomSelect = ({
             {label}
           </Label>
           <Flex alignItems="center" data-testid={`input-${field.name}`}>
-            <Flex flexDir="column" flexGrow={1}>
+            <Flex flexDir="column" flexGrow={1} mr={2}>
               <SelectInput
                 options={options}
                 fieldName={field.name}
@@ -435,6 +447,7 @@ export const CustomSelect = ({
                 isDisabled={isDisabled}
                 singleValueBlock={singleValueBlock}
                 menuPosition={props.menuPosition}
+                onChange={!isFormikOnChange ? onChange : undefined}
               />
               <ErrorMessage
                 isInvalid={isInvalid}
@@ -505,7 +518,7 @@ export const CustomCreatableSelect = ({
         <Grid templateColumns="1fr 3fr">
           <Label htmlFor={props.id || props.name}>{label}</Label>
           <Flex alignItems="center" data-testid={`input-${field.name}`}>
-            <Flex flexDir="column" flexGrow={1}>
+            <Flex flexDir="column" flexGrow={1} mr={2}>
               <CreatableSelectInput
                 fieldName={field.name}
                 options={options}
@@ -573,7 +586,6 @@ export const CustomTextArea = ({
     <Textarea
       {...field}
       size="sm"
-      mr={2}
       {...textAreaProps}
       data-testid={`input-${field.name}`}
     />
@@ -605,7 +617,7 @@ export const CustomTextArea = ({
         <Grid templateColumns="1fr 3fr">
           {label ? <FormLabel>{label}</FormLabel> : null}
           <Flex>
-            <Flex flexDir="column" flexGrow={1}>
+            <Flex flexDir="column" flexGrow={1} mr={2}>
               {innerTextArea}
               <ErrorMessage
                 isInvalid={isInvalid}
@@ -692,34 +704,62 @@ export const CustomRadioGroup = ({
 interface CustomSwitchProps {
   label: string;
   tooltip?: string;
+  variant?: "inline" | "condensed";
+  isDisabled?: boolean;
 }
 export const CustomSwitch = ({
   label,
   tooltip,
+  variant = "inline",
+  isDisabled,
   ...props
 }: CustomSwitchProps & FieldHookConfig<boolean>) => {
   const [field, meta] = useField({ ...props, type: "checkbox" });
   const isInvalid = !!(meta.touched && meta.error);
 
+  const innerSwitch = (
+    <Switch
+      name={field.name}
+      isChecked={field.checked}
+      onChange={field.onChange}
+      onBlur={field.onBlur}
+      colorScheme="secondary"
+      mr={2}
+      data-testid={`input-${field.name}`}
+      disabled={isDisabled}
+    />
+  );
+
+  if (variant === "inline") {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Grid templateColumns="1fr 3fr" justifyContent="center">
+          <Label htmlFor={props.id || props.name} my={0}>
+            {label}
+          </Label>
+          <Box display="flex" alignItems="center">
+            {innerSwitch}
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Box>
+        </Grid>
+      </FormControl>
+    );
+  }
   return (
-    <FormControl isInvalid={isInvalid}>
-      <Grid templateColumns="1fr 3fr" justifyContent="center">
-        <Label htmlFor={props.id || props.name} my={0}>
+    <FormControl isInvalid={isInvalid} width="fit-content">
+      <Box display="flex" alignItems="center">
+        <Label
+          htmlFor={props.id || props.name}
+          fontSize="sm"
+          color="gray.500"
+          my={0}
+          mr={2}
+        >
           {label}
         </Label>
-        <Box display="flex" alignItems="center">
-          <Switch
-            name={field.name}
-            isChecked={field.checked}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            colorScheme="secondary"
-            mr={2}
-            data-testid={`input-${field.name}`}
-          />
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-        </Box>
-      </Grid>
+        {innerSwitch}
+        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+      </Box>
     </FormControl>
   );
 };

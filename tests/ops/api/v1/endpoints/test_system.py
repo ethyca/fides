@@ -57,7 +57,6 @@ class TestGetConnections:
     def test_get_connections_with_invalid_system(
         self, api_client: TestClient, generate_auth_header, url_invalid_system
     ):
-
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(url_invalid_system, headers=auth_header)
 

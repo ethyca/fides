@@ -247,6 +247,7 @@ def scan_dataset_db(
     coverage_threshold: int,
     url: AnyHttpUrl,
     headers: Dict[str, str],
+    local: bool = False,
 ) -> None:
     """
     Given a database connection string, fetches collections
@@ -255,11 +256,15 @@ def scan_dataset_db(
     """
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
     manifest_datasets = manifest_taxonomy.dataset if manifest_taxonomy else []
-    server_datasets = get_all_server_datasets(
-        url=url, headers=headers, exclude_datasets=manifest_datasets
-    )
 
-    if not server_datasets:
+    if not local:
+        server_datasets = (
+            get_all_server_datasets(
+                url=url, headers=headers, exclude_datasets=manifest_datasets
+            )
+            or []
+        )
+    else:
         server_datasets = []
 
     dataset_keys = [

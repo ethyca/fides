@@ -1,12 +1,15 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { addCommonHeaders } from "common/CommonHeaders";
 import { utf8ToB64 } from "common/utils";
 
 import type { RootState } from "~/app/store";
-import { BASE_URL } from "~/constants";
-import { selectToken, selectUser } from "~/features/auth";
-import { ScopeRegistryEnum, UserForcePasswordReset } from "~/types/api";
+import { selectUser } from "~/features/auth";
+import { baseApi } from "~/features/common/api.slice";
+import {
+  RoleRegistryEnum,
+  ScopeRegistryEnum,
+  System,
+  UserForcePasswordReset,
+} from "~/types/api";
 
 import {
   User,
@@ -27,6 +30,7 @@ export interface UserManagementState {
   size: number;
   username: string;
   token: string | null;
+  activeUserId?: User["id"];
 }
 
 const initialState: UserManagementState = {
@@ -55,10 +59,18 @@ export const userManagementSlice = createSlice({
       page: initialState.page,
       size: action.payload,
     }),
+    setActiveUserId: (
+      state,
+      action: PayloadAction<User["id"] | undefined>
+    ) => ({
+      ...state,
+      activeUserId: action.payload,
+    }),
   },
 });
 
-export const { setPage, setUsernameSearch } = userManagementSlice.actions;
+export const { setPage, setUsernameSearch, setActiveUserId } =
+  userManagementSlice.actions;
 
 export const { reducer } = userManagementSlice;
 
@@ -73,17 +85,7 @@ export const mapFiltersToSearchParams = ({
   ...(username ? { username } : {}),
 });
 
-export const userApi = createApi({
-  reducerPath: "userApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
-      addCommonHeaders(headers, token);
-      return headers;
-    },
-  }),
-  tagTypes: ["User"],
+const userApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllUsers: build.query<UsersResponse, UsersListParams>({
       query: (filters) => ({
@@ -115,25 +117,6 @@ export const userApi = createApi({
         body: patch,
       }),
       invalidatesTags: ["User"],
-      // For optimistic updates
-      async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          // @ts-ignore
-          userApi.util.updateQueryData("getUserById", id, (draft) => {
-            Object.assign(draft, patch);
-          })
-        );
-        try {
-          await queryFulfilled;
-        } catch {
-          patchResult.undo();
-          /**
-           * Alternatively, on failure you can invalidate the corresponding cache tags
-           * to trigger a re-fetch:
-           * dispatch(api.util.invalidateTags(['User']))
-           */
-        }
-      },
     }),
     updateUserPassword: build.mutation<UserResponse, UserPasswordResetParams>({
       query: ({ id, old_password, new_password }) => ({
@@ -163,12 +146,22 @@ export const userApi = createApi({
       UserPermissions,
       UserPermissionsEditParams
     >({
-      query: ({ user_id, scopes }) => ({
+      query: ({ user_id, payload }) => ({
         url: `user/${user_id}/permission`,
         method: "PUT",
-        body: { id: user_id, scopes },
+        body: payload,
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: (result, error, arg) => {
+        // The backend will change managed systems if the role becomes "Approver"
+        // so make sure we refetch for the managed systems in this case
+        if (arg.payload.roles?.includes(RoleRegistryEnum.APPROVER)) {
+          return [
+            "User",
+            { type: "Managed Systems" as const, id: arg.user_id },
+          ];
+        }
+        return ["User"];
+      },
     }),
     deleteUser: build.mutation<{ success: boolean; id: string }, string>({
       query: (id) => ({
@@ -177,6 +170,39 @@ export const userApi = createApi({
       }),
       // Invalidates all queries that subscribe to this User `id` only
       invalidatesTags: ["User"],
+    }),
+
+    // Data steward endpoints
+    getUserManagedSystems: build.query<System[], string>({
+      query: (id) => ({ url: `user/${id}/system-manager` }),
+      providesTags: (result, error, arg) => [
+        { type: "Managed Systems" as const, id: arg },
+      ],
+    }),
+    updateUserManagedSystems: build.mutation<
+      System[],
+      { fidesKeys: string[]; userId: string }
+    >({
+      query: ({ userId, fidesKeys }) => ({
+        url: `user/${userId}/system-manager`,
+        method: "PUT",
+        body: fidesKeys,
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Managed Systems" as const, id: arg.userId },
+      ],
+    }),
+    removeUserManagedSystem: build.mutation<
+      void,
+      { userId: string; systemKey: string }
+    >({
+      query: ({ userId, systemKey }) => ({
+        url: `user/${userId}/system-manager/${systemKey}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Managed Systems" as const, id: arg.userId },
+      ],
     }),
   }),
 });
@@ -187,10 +213,26 @@ export const selectUserFilters = (state: RootState): UsersListParams => ({
   username: state.userManagement.username,
 });
 
+const selectUserManagement = (state: RootState) => state.userManagement;
+
+export const selectActiveUserId = createSelector(
+  selectUserManagement,
+  (state) => state.activeUserId
+);
+
+export const selectActiveUser = createSelector(
+  [(RootState) => RootState, selectActiveUserId],
+  (RootState, userId) => {
+    if (!userId) {
+      return undefined;
+    }
+    return userApi.endpoints.getUserById.select(userId)(RootState).data;
+  }
+);
+
 const emptyScopes: ScopeRegistryEnum[] = [];
-export const selectThisUsersScopes = createSelector(
-  [(RootState) => RootState, selectUser],
-  (RootState, user) => {
+export const selectThisUsersScopes: (state: RootState) => ScopeRegistryEnum[] =
+  createSelector([(RootState) => RootState, selectUser], (RootState, user) => {
     if (!user) {
       return emptyScopes;
     }
@@ -199,6 +241,41 @@ export const selectThisUsersScopes = createSelector(
     ).data;
 
     return permissions ? permissions.total_scopes : emptyScopes;
+  });
+
+const emptyRoles: RoleRegistryEnum[] = [];
+/**
+ * In general, the UI should restrict based off of scopes, not roles to allow
+ * for flexibility when adding or removing roles.
+ * There are however, some unique cases where it is more useful to restrict
+ * off of role than scope. Make sure you use this selector intentionally!
+ */
+export const selectThisUsersRoles = createSelector(
+  [(RootState) => RootState, selectUser],
+  (RootState, user) => {
+    if (!user) {
+      return emptyRoles;
+    }
+    const permissions = userApi.endpoints.getUserPermissions.select(user.id)(
+      RootState
+    ).data;
+
+    return permissions?.roles ?? emptyRoles;
+  }
+);
+
+const emptyManagedSystems: System[] = [];
+export const selectActiveUsersManagedSystems = createSelector(
+  [(RootState) => RootState, selectActiveUserId],
+  (RootState, activeUserId) => {
+    if (!activeUserId) {
+      return emptyManagedSystems;
+    }
+    const systems =
+      userApi.endpoints.getUserManagedSystems.select(activeUserId)(
+        RootState
+      ).data;
+    return systems ?? emptyManagedSystems;
   }
 );
 
@@ -212,4 +289,8 @@ export const {
   useUpdateUserPermissionsMutation,
   useGetUserPermissionsQuery,
   useForceResetUserPasswordMutation,
+
+  useGetUserManagedSystemsQuery,
+  useUpdateUserManagedSystemsMutation,
+  useRemoveUserManagedSystemMutation,
 } = userApi;

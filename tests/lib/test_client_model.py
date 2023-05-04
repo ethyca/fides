@@ -15,6 +15,7 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
+    JWE_PAYLOAD_SYSTEMS,
 )
 from fides.lib.models.client import ClientDetail, _get_root_client_detail
 from fides.lib.oauth.oauth_util import extract_payload
@@ -38,6 +39,7 @@ def test_create_client_and_secret(db, config):
     )
     assert new_client.scopes == []
     assert new_client.roles == []
+    assert new_client.systems == []
 
 
 def test_create_client_and_secret_no_roles(db, config):
@@ -58,6 +60,7 @@ def test_create_client_and_secret_no_roles(db, config):
     )
     assert new_client.scopes == ["user:create", "user:read"]
     assert new_client.roles == []
+    assert new_client.systems == []
 
 
 def test_create_client_and_secret_no_scopes(db, config):
@@ -78,6 +81,7 @@ def test_create_client_and_secret_no_scopes(db, config):
     )
     assert new_client.scopes == []
     assert new_client.roles == [VIEWER]
+    assert new_client.systems == []
 
 
 def test_create_client_and_secret_scopes_and_roles(db, config):
@@ -99,6 +103,7 @@ def test_create_client_and_secret_scopes_and_roles(db, config):
     )
     assert new_client.scopes == [DATASET_CREATE_OR_UPDATE]
     assert new_client.roles == [VIEWER]
+    assert new_client.systems == []
 
 
 def test_create_client_defaults(db):
@@ -120,6 +125,7 @@ def test_create_client_defaults(db):
 
     assert client.scopes == []
     assert client.roles == []
+    assert client.systems == []
 
     client.delete(db)
 
@@ -130,6 +136,7 @@ def test_get_client_with_scopes(db, oauth_client, config):
     assert client.id == oauth_client.id
     assert client.scopes == SCOPE_REGISTRY
     assert client.roles == []
+    assert client.systems == []
     assert oauth_client.hashed_secret == "thisisatest"
 
 
@@ -140,6 +147,16 @@ def test_get_client_with_roles(db, owner_client, config):
     assert client.scopes == []
     assert client.roles == [OWNER]
     assert owner_client.hashed_secret == "thisisatest"
+    assert client.systems == []
+
+
+def test_get_client_with_systems(db, system_manager_client, config, system):
+    client = ClientDetail.get(db, object_id=system_manager_client.id, config=config)
+    assert client
+    assert client.id == system_manager_client.id
+    assert client.scopes == []
+    assert client.roles == []
+    assert client.systems == [system.id]
 
 
 def test_get_client_root_client(db, config):
@@ -150,6 +167,7 @@ def test_get_client_root_client(db, config):
     assert client.id == config.security.oauth_root_client_id
     assert client.scopes == SCOPE_REGISTRY
     assert client.roles == [OWNER]
+    assert client.systems == []
 
 
 def test_get_root_client_no_scopes(db, config):
@@ -157,6 +175,7 @@ def test_get_root_client_no_scopes(db, config):
     assert client_detail
     assert client_detail.scopes == []
     assert client_detail.roles == []
+    assert client_detail.systems == []
 
 
 def test_credentials_valid(db, config):
@@ -171,6 +190,7 @@ def test_credentials_valid(db, config):
     assert new_client.credentials_valid(secret) is True
     assert new_client.scopes == SCOPE_REGISTRY
     assert new_client.roles == []
+    assert new_client.systems == []
 
 
 def test_get_root_client_detail_no_root_client_hash(config):
@@ -189,10 +209,10 @@ def test_client_create_access_code_jwe(oauth_client, config):
     assert token_data[JWE_PAYLOAD_SCOPES] == oauth_client.scopes
     assert token_data[JWE_ISSUED_AT] is not None
     assert token_data[JWE_PAYLOAD_ROLES] == []
+    assert token_data[JWE_PAYLOAD_SYSTEMS] == []
 
 
 def test_client_create_access_code_jwe_owner_client(owner_client, config):
-
     jwe = owner_client.create_access_code_jwe(config.security.app_encryption_key)
 
     token_data = json.loads(extract_payload(jwe, config.security.app_encryption_key))
@@ -201,10 +221,10 @@ def test_client_create_access_code_jwe_owner_client(owner_client, config):
     assert token_data[JWE_PAYLOAD_SCOPES] == []
     assert token_data[JWE_ISSUED_AT] is not None
     assert token_data[JWE_PAYLOAD_ROLES] == [OWNER]
+    assert token_data[JWE_PAYLOAD_SYSTEMS] == []
 
 
 def test_client_create_access_code_jwe_viewer_client(viewer_client, config):
-
     jwe = viewer_client.create_access_code_jwe(config.security.app_encryption_key)
 
     token_data = json.loads(extract_payload(jwe, config.security.app_encryption_key))
@@ -213,3 +233,18 @@ def test_client_create_access_code_jwe_viewer_client(viewer_client, config):
     assert token_data[JWE_PAYLOAD_SCOPES] == []
     assert token_data[JWE_ISSUED_AT] is not None
     assert token_data[JWE_PAYLOAD_ROLES] == [VIEWER]
+    assert token_data[JWE_PAYLOAD_SYSTEMS] == []
+
+
+def test_client_create_access_code_with_systems(system_manager_client, config, system):
+    jwe = system_manager_client.create_access_code_jwe(
+        config.security.app_encryption_key
+    )
+
+    token_data = json.loads(extract_payload(jwe, config.security.app_encryption_key))
+
+    assert token_data[JWE_PAYLOAD_CLIENT_ID] == system_manager_client.id
+    assert token_data[JWE_PAYLOAD_SCOPES] == []
+    assert token_data[JWE_ISSUED_AT] is not None
+    assert token_data[JWE_PAYLOAD_ROLES] == []
+    assert token_data[JWE_PAYLOAD_SYSTEMS] == [system.id]

@@ -1,9 +1,10 @@
 """
 This file aggregates nox commands for various development tasks.
 """
-
 import shutil
 import sys
+import platform
+import webbrowser
 from os.path import isfile
 from subprocess import PIPE, CalledProcessError, run
 from typing import List
@@ -16,15 +17,30 @@ from ci_nox import *
 from dev_nox import *
 from docker_nox import *
 from docs_nox import *
+from git_nox import *
 from utils_nox import *
 
 # pylint: enable=unused-wildcard-import, wildcard-import, wrong-import-position
 
 REQUIRED_DOCKER_VERSION = "20.10.17"
+REQUIRED_PYTHON_VERSIONS = ["3.8", "3.9", "3.10"]
 
-# Sets the default session to `--list`
-nox.options.sessions = []
+nox.options.sessions = ["open_docs"]
+
+# This is important for caching pip installs
 nox.options.reuse_existing_virtualenvs = True
+
+
+@nox.session()
+def open_docs(session: nox.Session) -> None:
+    """Open the webpage for the developer/contribution docs."""
+    dev_url = "http://localhost:8000/fides/development/developing_fides/"
+    prod_url = "https://ethyca.github.io/fides/dev/development/developing_fides/"
+
+    if "dev" in session.posargs:
+        webbrowser.open(dev_url)
+    else:
+        webbrowser.open(prod_url)
 
 
 @nox.session()
@@ -121,11 +137,25 @@ def check_docker_version() -> bool:
     )
     if not version_is_valid:
         raise SystemExit(
-            f"Error: Your Docker version (v{docker_version}) is not compatible, please update to at least version {REQUIRED_DOCKER_VERSION}!"
+            f"Error: Your Docker version ({docker_version}) is not compatible, please update to at least version {REQUIRED_DOCKER_VERSION}!"
         )
     return version_is_valid
 
 
+def check_python_version() -> bool:
+    """Verify the Python version."""
+    python_version = platform.python_version()
+    print(platform.platform())
+    print(f"Python version {python_version}")
+
+    python_major_minor_version = ".".join(platform.python_version_tuple()[0:2])
+    if python_major_minor_version not in REQUIRED_PYTHON_VERSIONS:
+        raise SystemExit(
+            f"Error: Your Python version ({python_version}) is not compatible, please install one of the following versions: {REQUIRED_PYTHON_VERSIONS}!"
+        )
+
+
 # Run startup checks
 check_docker_version()
+check_python_version()
 check_for_env_file()

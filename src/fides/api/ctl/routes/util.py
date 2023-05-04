@@ -9,6 +9,18 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
 )
 from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
+from fides.api.ops.api.v1.scope_registry import (
+    CTL_DATASET,
+    CTL_POLICY,
+    DATA_CATEGORY,
+    DATA_QUALIFIER,
+    DATA_SUBJECT,
+    DATA_USE,
+    EVALUATION,
+    ORGANIZATION,
+    REGISTRY,
+    SYSTEM,
+)
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
 API_PREFIX = "/api/v1"
@@ -80,3 +92,20 @@ async def forbid_if_editing_any_is_default(
                 != existing_resources[resource["fides_key"]].is_default
             ):
                 raise errors.ForbiddenError(sql_model.__name__, resource["fides_key"])
+
+
+# Map the ctl model type to the scope prefix.
+# Policies and datasets have ctl-* prefixes to
+# avoid overlapping with ops scopes of same name
+CLI_SCOPE_PREFIX_MAPPING: Dict[str, str] = {
+    "data_category": DATA_CATEGORY,
+    "data_qualifier": DATA_QUALIFIER,
+    "data_subject": DATA_SUBJECT,
+    "data_use": DATA_USE,
+    "dataset": CTL_DATASET,
+    "evaluation": EVALUATION,
+    "organization": ORGANIZATION,
+    "policy": CTL_POLICY,
+    "registry": REGISTRY,
+    "system": SYSTEM,
+}

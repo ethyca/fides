@@ -135,8 +135,32 @@ const usePrivacyRequestForm = ({
     },
     validationSchema: Yup.object().shape({
       name: nameValidation(identityInputs?.name),
-      email: emailValidation(identityInputs?.email),
-      phone: phoneValidation(identityInputs?.phone),
+      email: emailValidation(identityInputs?.email).test(
+        "one of email or phone entered",
+        "You must enter either email or phone",
+        (value, context) => {
+          if (
+            identityInputs?.email === "optional" &&
+            identityInputs?.phone === "optional"
+          ) {
+            return Boolean(context.parent.phone || context.parent.email);
+          }
+          return true;
+        }
+      ),
+      phone: phoneValidation(identityInputs?.phone).test(
+        "one of email or phone entered",
+        "You must enter either email or phone",
+        (value, context) => {
+          if (
+            identityInputs?.email === "optional" &&
+            identityInputs?.phone === "optional"
+          ) {
+            return Boolean(context.parent.phone || context.parent.email);
+          }
+          return true;
+        }
+      ),
     }),
   });
 
@@ -198,9 +222,15 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
       </ModalHeader>
       <chakra.form onSubmit={handleSubmit} data-testid="privacy-request-form">
         <ModalBody>
-          <Text fontSize="sm" color="gray.500" mb={4}>
+          <Text fontSize="sm" color="gray.600" mb={4}>
             {action.description}
           </Text>
+          {action.description_subtext?.map((paragraph, index) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <Text fontSize="sm" color="gray.600" mb={4} key={index}>
+              {paragraph}
+            </Text>
+          ))}
           <Stack>
             {identityInputs.name ? (
               <FormControl
@@ -208,7 +238,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 isInvalid={touched.name && Boolean(errors.name)}
                 isRequired={identityInputs.name === "required"}
               >
-                <FormLabel>Name</FormLabel>
+                <FormLabel fontSize="sm">Name</FormLabel>
                 <Input
                   id="name"
                   name="name"
@@ -227,16 +257,19 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 isInvalid={touched.email && Boolean(errors.email)}
                 isRequired={identityInputs.email === "required"}
               >
-                <FormLabel>Email</FormLabel>
+                <FormLabel fontSize="sm">Email</FormLabel>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   focusBorderColor="primary.500"
-                  placeholder="test-email@example.com"
+                  placeholder="your-email@example.com"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.email}
+                  isDisabled={Boolean(
+                    typeof values.phone !== "undefined" && values.phone
+                  )}
                 />
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
@@ -247,7 +280,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 isInvalid={touched.phone && Boolean(errors.phone)}
                 isRequired={identityInputs.phone === "required"}
               >
-                <FormLabel>Phone</FormLabel>
+                <FormLabel fontSize="sm">Phone</FormLabel>
                 <PhoneInput
                   id="phone"
                   name="phone"
@@ -256,6 +289,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   }}
                   onBlur={handleBlur}
                   value={values.phone}
+                  isDisabled={Boolean(
+                    typeof values.email !== "undefined" && values.email
+                  )}
                 />
                 <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>
