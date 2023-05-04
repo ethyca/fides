@@ -77,6 +77,7 @@ const SettingsBar: React.FC = () => {
   } = useSettingsBar();
 
   const { tableInstance } = useContext(DatamapTableContext);
+
   if (!tableInstance) {
     return null;
   }
