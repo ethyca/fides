@@ -1,6 +1,8 @@
 import { Box, Center, Flex, Spinner } from "@fidesui/react";
+import { baseApi } from "common/api.slice";
 import dynamic from "next/dynamic";
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
 import { useIsAnyFormDirty } from "~/features/common/hooks/useIsAnyFormDirty";
@@ -67,6 +69,19 @@ const Datamap = () => {
     selectedSystemId,
     resetSelectedSystemId,
   } = useHome();
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    /*
+    The tag needs to be invalided this way because the plusApi
+    is not a part of the baseApi yet. This will be done on the
+    API in the future.
+     */
+
+    dispatch(baseApi.util.invalidateTags(["Datamap"]));
+  }, [dispatch]);
+
   const { isLoading } = useTableInstance();
   if (isLoading) {
     return (

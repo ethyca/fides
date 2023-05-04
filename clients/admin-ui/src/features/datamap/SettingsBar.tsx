@@ -9,8 +9,7 @@ import {
   Tag,
   useDisclosure,
 } from "@fidesui/react";
-import { baseApi } from "common/api.slice";
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
@@ -78,15 +77,6 @@ const SettingsBar: React.FC = () => {
   } = useSettingsBar();
 
   const { tableInstance } = useContext(DatamapTableContext);
-
-  useEffect(() => {
-    /*
-    The tag needs to be invalided this way because the plusApi
-    is not a part of the baseApi yet. This will be done on the
-    API in the future.
-     */
-    dispatch(baseApi.util.invalidateTags(["Datamap"]));
-  }, [dispatch, tableInstance]);
 
   if (!tableInstance) {
     return null;
