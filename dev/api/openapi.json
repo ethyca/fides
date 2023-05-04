@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.12.1b0.post0.dev2"
+    "version": "2.12.1b1.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18161,17 +18161,17 @@
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_overlay": {
             "title": "Displayed In Overlay",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_api": {
             "title": "Displayed In Api",
             "type": "boolean",
-            "default": true
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -18241,17 +18241,17 @@
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_overlay": {
             "title": "Displayed In Overlay",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_api": {
             "title": "Displayed In Api",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "id": {
             "title": "Id",
@@ -18367,17 +18367,17 @@
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_overlay": {
             "title": "Displayed In Overlay",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_api": {
             "title": "Displayed In Api",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "id": {
             "title": "Id",
@@ -18462,17 +18462,17 @@
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_overlay": {
             "title": "Displayed In Overlay",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_api": {
             "title": "Displayed In Api",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "id": {
             "title": "Id",
