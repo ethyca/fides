@@ -47,22 +47,23 @@ def onesignal_erasure_external_references(onesignal_erasure_data) -> Dict[str, A
     player_id = onesignal_erasure_data
     return {"player_id": player_id}
 
+class OnesignalClient:
+    def __init__(self, secrets: Dict[str, Any]):
+        self.base_url = f"https://{secrets['domain']}"
+        self.headers  = {
+                "Authorization": f"Basic {secrets['api_key']}",
+            },
+        self.api_key  = f"Basic {secrets['api_key']}"
+        self.app_id   = secrets['app_id']
 
-@pytest.fixture(scope="session")
-def onesignal_erasure_data(
-    onesignal_secrets,
-    onesignal_erasure_identity_email: str,
-) -> Generator:
-    # create the data needed for erasure tests here
-    response = requests.post(
-        url="https://onesignal.com/api/v1/players",
-        headers={
-            "Authorization": f"Basic {onesignal_secrets['api_key']}",
-        },
-        json={
-            "app_id": onesignal_secrets["app_id"],
+    def create_device(self, email):
+        response = requests.post(
+            url=f"{self.base_url}/api/v1/players",
+            headers={"Authorization": self.api_key},
+            json={
+            "app_id": self.app_id,
             "device_type": 11,
-            "identifier": onesignal_erasure_identity_email,
+            "identifier": email,
             "test_type": "1",
             "language": "en",
             "external_user_id": "5088124543035",
@@ -72,8 +73,8 @@ def onesignal_erasure_data(
             "device_os": "15.1.1",
             "session_count": 600,
             "tags": {
-                "first_name": "Vivek",
-                "last_name": "Thiyagarajan",
+                "first_name": "Eraure test",
+                "last_name": "Test request",
                 "level": "99",
                 "amount_spent": "6000",
                 "account_type": "VIP",
@@ -87,9 +88,33 @@ def onesignal_erasure_data(
             "lat": 37.563,
             "long": 122.3255,
             "country": "US",
-        },
-    )
-    yield response.json()["id"]
+            },
+        )
+        return response.json()["id"]
+
+    def get_device(self, onesignal_erasure_data):
+        return requests.get(
+            url=f"{self.base_url}/api/v1/players/{onesignal_erasure_data}",
+            headers={"Authorization": self.api_key},
+            params={"app_id": self.app_id},
+        )
+
+
+@pytest.fixture
+def onesignal_client(onesignal_secrets) -> Generator:
+    yield OnesignalClient(onesignal_secrets)
+
+
+# @pytest.fixture(scope="session")
+@pytest.fixture
+def onesignal_erasure_data(
+    onesignal_secrets,
+    onesignal_client: OnesignalClient,
+    onesignal_erasure_identity_email: str,
+) -> Generator:
+    #create device
+    response = onesignal_client.create_device(onesignal_erasure_identity_email)
+    yield response
 
 
 @pytest.fixture

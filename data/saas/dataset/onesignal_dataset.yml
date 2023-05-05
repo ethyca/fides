@@ -6,12 +6,12 @@ dataset:
       - name: devices
         fields:
           - name: id
-            data_categories: [system.operations]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
               primary_key: True
           - name: identifier
-            data_categories: [system.operations]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: session_count
@@ -63,7 +63,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: first_name
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: key_to_delete
@@ -71,7 +71,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: last_name
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
           - name: last_active

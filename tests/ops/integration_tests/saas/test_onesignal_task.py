@@ -23,6 +23,7 @@ class TestOneSignalConnector:
         erasure_policy_string_rewrite: Policy,
         onesignal_erasure_identity_email: str,
         onesignal_erasure_data,
+        onesignal_client
     ):
         (
             access_results,
@@ -37,3 +38,7 @@ class TestOneSignalConnector:
             "onesignal_instance:devices": 1,
             "onesignal_external_dataset:onesignal_external_collection": 0,
         }
+
+        response = onesignal_client.get_device(onesignal_erasure_data)
+        # Since user is deleted, it won't be available so response is 400
+        assert response.status_code == 400
