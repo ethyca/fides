@@ -63,6 +63,12 @@ const acknowledgeValidationSchema = Yup.object().shape({
     .label("Acknowledgment button label"),
 });
 
+export interface ExperienceFormRules {
+  isOverlay: boolean;
+  needsBanner: boolean;
+  hasOnlyNoticeOnlyNotices: boolean;
+}
+
 /**
  * Use the various rules/conditions of a privacy experience form
  */
@@ -72,7 +78,7 @@ export const useExperienceFormRules = ({
 }: {
   privacyExperience: PrivacyExperienceCreate;
   privacyNotices?: PrivacyNoticeResponse[];
-}) => {
+}): ExperienceFormRules & { validationSchema: any } => {
   const isOverlay = useMemo(
     () => privacyExperience.component === ComponentType.OVERLAY,
     [privacyExperience.component]
@@ -80,7 +86,7 @@ export const useExperienceFormRules = ({
 
   const needsBanner = useMemo(
     () =>
-      privacyNotices &&
+      !!privacyNotices &&
       privacyNotices.some(
         (notice) =>
           notice.consent_mechanism === ConsentMechanism.OPT_IN ||
@@ -91,8 +97,8 @@ export const useExperienceFormRules = ({
 
   const hasOnlyNoticeOnlyNotices = useMemo(
     () =>
-      privacyNotices &&
-      privacyNotices.length &&
+      !!privacyNotices &&
+      privacyNotices.length > 0 &&
       privacyNotices.every(
         (notice) => notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
       ),

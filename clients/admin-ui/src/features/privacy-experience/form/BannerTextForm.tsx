@@ -1,22 +1,14 @@
-import { useFormikContext } from "formik";
-
 import FormSection from "~/features/common/form/FormSection";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
-import { PrivacyExperienceCreate } from "~/types/api";
 
-import { useExperienceFormRules } from "./helpers";
+import { ExperienceFormRules } from "./helpers";
 
 /**
  * Banner text form component.
  * Rules:
  *   * Only renders on component_type = OVERLAY
  */
-const BannerTextForm = () => {
-  const { initialValues } = useFormikContext<PrivacyExperienceCreate>();
-  const { isOverlay } = useExperienceFormRules({
-    privacyExperience: initialValues,
-  });
-
+const BannerTextForm = ({ isOverlay }: ExperienceFormRules) => {
   if (!isOverlay) {
     return null;
   }

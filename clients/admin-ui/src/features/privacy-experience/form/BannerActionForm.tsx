@@ -1,10 +1,7 @@
-import { useFormikContext } from "formik";
-
 import FormSection from "~/features/common/form/FormSection";
 import { CustomTextInput } from "~/features/common/form/inputs";
-import { PrivacyExperienceCreate, PrivacyNoticeResponse } from "~/types/api";
 
-import { useExperienceFormRules } from "./helpers";
+import { ExperienceFormRules } from "./helpers";
 
 /**
  * Banner text form component.
@@ -13,16 +10,9 @@ import { useExperienceFormRules } from "./helpers";
  *   * If the experience only has notice_only notices, renders an "Acknowledgment button" instead of confirm + reject
  */
 const BannerActionForm = ({
-  privacyNotices,
-}: {
-  privacyNotices?: PrivacyNoticeResponse[];
-}) => {
-  const { initialValues } = useFormikContext<PrivacyExperienceCreate>();
-  const { hasOnlyNoticeOnlyNotices, isOverlay } = useExperienceFormRules({
-    privacyExperience: initialValues,
-    privacyNotices,
-  });
-
+  hasOnlyNoticeOnlyNotices,
+  isOverlay,
+}: ExperienceFormRules) => {
   if (!isOverlay) {
     return null;
   }

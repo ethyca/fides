@@ -71,7 +71,7 @@ const PrivacyNoticeForm = ({
     ? passedInPrivacyExperience.privacy_notices
     : undefined;
 
-  const { validationSchema } = useExperienceFormRules({
+  const { validationSchema, ...rules } = useExperienceFormRules({
     privacyExperience: initialValues,
     privacyNotices: associatedNotices,
   });
@@ -109,10 +109,10 @@ const PrivacyNoticeForm = ({
                 </Box>
               </FormSection>
               {/* Form subsections are responsible for their own render/don't render logic */}
-              <DeliveryMechanismForm privacyNotices={associatedNotices} />
-              <PrivacyCenterMessagingForm />
-              <BannerTextForm />
-              <BannerActionForm privacyNotices={associatedNotices} />
+              <DeliveryMechanismForm {...rules} />
+              <PrivacyCenterMessagingForm {...rules} />
+              <BannerTextForm {...rules} />
+              <BannerActionForm {...rules} />
               {/* End form subsections */}
             </Stack>
             <ButtonGroup size="sm" spacing={2}>

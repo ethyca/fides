@@ -1,23 +1,14 @@
-import { useFormikContext } from "formik";
-
 import FormSection from "~/features/common/form/FormSection";
 import { CustomTextInput } from "~/features/common/form/inputs";
-import { PrivacyExperienceCreate } from "~/types/api";
 
-import { useExperienceFormRules } from "./helpers";
+import { ExperienceFormRules } from "./helpers";
 
 /**
  * Privacy center configuration form
  * Rules:
  *   * Only renders on component_type = privacy_center
  */
-const PrivacyCenterMessagingForm = () => {
-  const { initialValues } = useFormikContext<PrivacyExperienceCreate>();
-
-  const { isOverlay } = useExperienceFormRules({
-    privacyExperience: initialValues,
-  });
-
+const PrivacyCenterMessagingForm = ({ isOverlay }: ExperienceFormRules) => {
   if (isOverlay) {
     return null;
   }
