@@ -1,11 +1,11 @@
 import { produce } from "immer";
 
-import { configIsValid } from "~/scripts/validate-config";
+import { validateConfig } from "~/app/server-environment";
 import minimalJson from "~/config/examples/minimal.json";
 import fullJson from "~/config/examples/full.json";
 import v2ConsentJson from "~/config/examples/v2Consent.json";
 
-describe("configIsValid", () => {
+describe("validateConfig", () => {
   const testCases = [
     {
       name: "no consent options",
@@ -56,7 +56,7 @@ describe("configIsValid", () => {
 
   testCases.forEach((tc) => {
     test(tc.name, () => {
-      expect(configIsValid(tc.config)).toMatchObject(tc.expected);
+      expect(validateConfig(tc.config)).toMatchObject(tc.expected);
     });
   });
 });

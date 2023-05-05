@@ -106,7 +106,7 @@ const loadConfigFile = async (
  * Transform the config to the latest version so that components can
  * reference config variables uniformly.
  */
-const transformConfig = (config: LegacyConfig): Config => {
+export const transformConfig = (config: LegacyConfig): Config => {
   if (isV1ConsentConfig(config.consent)) {
     const v1ConsentConfig: LegacyConsentConfig = config.consent;
     const translatedConsent: ConsentConfig = translateV1ConfigToV2({
@@ -120,7 +120,10 @@ const transformConfig = (config: LegacyConfig): Config => {
 /**
  * Validate the config object 
  */
-const validateConfig = (config: Config): { isValid: boolean, message: string } => {
+export const validateConfig = (input: Config | LegacyConfig): { isValid: boolean, message: string } => {
+  // First, ensure we support LegacyConfig type if provided
+  const config = transformConfig(input);
+
   // Cannot currently have more than one consent be executable
   if (config.consent) {
     const options = config.consent.page.consentOptions;
