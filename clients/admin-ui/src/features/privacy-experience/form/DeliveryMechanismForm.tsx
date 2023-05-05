@@ -11,6 +11,7 @@ import {
   PrivacyExperienceCreate,
   PrivacyNoticeResponse,
 } from "~/types/api";
+import { useExperienceFormRules } from "./helpers";
 
 const DELIVERY_MECHANISM_OPTIONS = enumToOptions(DeliveryMechanism).map(
   (opt) => ({
@@ -33,16 +34,10 @@ const DeliveryMechanismForm = ({
   const { initialValues, setFieldValue } =
     useFormikContext<PrivacyExperienceCreate>();
 
-  const needsBanner = useMemo(() => {
-    return (
-      privacyNotices &&
-      privacyNotices.some(
-        (notice) =>
-          notice.consent_mechanism === ConsentMechanism.OPT_IN ||
-          notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
-      )
-    );
-  }, [privacyNotices]);
+  const { needsBanner, isOverlay } = useExperienceFormRules({
+    privacyExperience: initialValues,
+    privacyNotices,
+  });
 
   useEffect(() => {
     if (needsBanner) {
@@ -50,7 +45,7 @@ const DeliveryMechanismForm = ({
     }
   }, [needsBanner, setFieldValue]);
 
-  if (initialValues.component === ComponentType.PRIVACY_CENTER) {
+  if (!isOverlay) {
     return null;
   }
 

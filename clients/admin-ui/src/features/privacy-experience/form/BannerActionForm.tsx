@@ -8,6 +8,7 @@ import {
   PrivacyExperienceCreate,
   PrivacyNoticeResponse,
 } from "~/types/api";
+import { useExperienceFormRules } from "./helpers";
 
 /**
  * Banner text form component.
@@ -21,23 +22,19 @@ const BannerActionForm = ({
   privacyNotices?: PrivacyNoticeResponse[];
 }) => {
   const { initialValues } = useFormikContext<PrivacyExperienceCreate>();
+  const { hasOnlyNoticeOnlyNotices, isOverlay } = useExperienceFormRules({
+    privacyExperience: initialValues,
+    privacyNotices,
+  });
 
-  if (initialValues.component === ComponentType.PRIVACY_CENTER) {
+  if (!isOverlay) {
     return null;
   }
-
-  // Special rules for if the banner _only_ has notice only notices
-  const onlyNoticeOnlyNotices =
-    privacyNotices &&
-    privacyNotices.length &&
-    privacyNotices.every(
-      (notice) => notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
-    );
 
   return (
     <FormSection title="Banner actions" data-testid="banner-action-form">
       <CustomTextInput name="link_label" label="Link label" variant="stacked" />
-      {onlyNoticeOnlyNotices ? (
+      {hasOnlyNoticeOnlyNotices ? (
         <CustomTextInput
           label="Acknowledgment button label"
           name="acknowledgement_button_label"

@@ -22,6 +22,7 @@ import DeliveryMechanismForm from "./DeliveryMechanismForm";
 import {
   defaultInitialValues,
   transformPrivacyExperienceResponseToCreation,
+  useExperienceFormRules,
 } from "./helpers";
 import PrivacyCenterMessagingForm from "./PrivacyCenterMessagingForm";
 
@@ -70,11 +71,17 @@ const PrivacyNoticeForm = ({
     ? passedInPrivacyExperience.privacy_notices
     : undefined;
 
+  const { validationSchema } = useExperienceFormRules({
+    privacyExperience: initialValues,
+    privacyNotices: associatedNotices,
+  });
+
   return (
     <Formik
       initialValues={initialValues}
       enableReinitialize
       onSubmit={handleSubmit}
+      validationSchema={validationSchema}
     >
       {({ dirty, isValid, isSubmitting }) => (
         <Form>

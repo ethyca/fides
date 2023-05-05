@@ -3,6 +3,7 @@ import { useFormikContext } from "formik";
 import FormSection from "~/features/common/form/FormSection";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { ComponentType, PrivacyExperienceCreate } from "~/types/api";
+import { useExperienceFormRules } from "./helpers";
 
 /**
  * Banner text form component.
@@ -11,8 +12,11 @@ import { ComponentType, PrivacyExperienceCreate } from "~/types/api";
  */
 const BannerTextForm = () => {
   const { initialValues } = useFormikContext<PrivacyExperienceCreate>();
+  const { isOverlay } = useExperienceFormRules({
+    privacyExperience: initialValues,
+  });
 
-  if (initialValues.component === ComponentType.PRIVACY_CENTER) {
+  if (!isOverlay) {
     return null;
   }
 

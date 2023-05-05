@@ -3,6 +3,7 @@ import { useFormikContext } from "formik";
 import FormSection from "~/features/common/form/FormSection";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { ComponentType, PrivacyExperienceCreate } from "~/types/api";
+import { useExperienceFormRules } from "./helpers";
 
 /**
  * Privacy center configuration form
@@ -12,7 +13,11 @@ import { ComponentType, PrivacyExperienceCreate } from "~/types/api";
 const PrivacyCenterMessagingForm = () => {
   const { initialValues } = useFormikContext<PrivacyExperienceCreate>();
 
-  if (initialValues.component === ComponentType.OVERLAY) {
+  const { isOverlay } = useExperienceFormRules({
+    privacyExperience: initialValues,
+  });
+
+  if (isOverlay) {
     return null;
   }
 
