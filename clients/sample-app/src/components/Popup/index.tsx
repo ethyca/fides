@@ -26,7 +26,7 @@ const Popup = ({ trigger }: Props) => {
   }, [trigger]);
 
   return (
-    <div className={css.popup + " " + className}>
+    <div className={`${css.popup  } ${  className}`}>
       <svg
         className={css.checkmark}
         width="18"

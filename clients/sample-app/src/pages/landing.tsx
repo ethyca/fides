@@ -2,8 +2,7 @@ import Head from "next/head";
 
 import Landing from "../components/Landing";
 
-const LandingPage = () => {
-  return (
+const LandingPage = () => (
     <>
       <Head>
         <title>Welcome to Fides</title>
@@ -22,6 +21,5 @@ const LandingPage = () => {
       <Landing />
     </>
   );
-};
 
 export default LandingPage;

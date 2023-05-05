@@ -8,6 +8,7 @@
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "start": "next start",
     "test": "npm run lint && tsc --noemit"
   },

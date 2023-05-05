@@ -21,7 +21,7 @@ const Button = ({
   <button
     type={type}
     onClick={onClick}
-    className={css.button + " " + css[color] + " " + (className ?? "")}
+    className={`${css.button  } ${  css[color]  } ${  className ?? ""}`}
     disabled={disabled}
   >
     {children}
