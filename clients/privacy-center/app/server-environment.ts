@@ -118,6 +118,24 @@ const transformConfig = (config: LegacyConfig): Config => {
 };
 
 /**
+ * Validate the config object 
+ */
+const validateConfig = (config: Config): { isValid: boolean, message: string } => {
+  // Cannot currently have more than one consent be executable
+  if (config.consent) {
+    const options = config.consent.page.consentOptions;
+    const executables = options.filter((option) => option.executable);
+    if (executables.length > 1) {
+      return {
+        isValid: false,
+        message: "Cannot have more than one consent option be executable",
+      };
+    }
+  }
+  return { isValid: true, message: "Config is valid" };
+};
+
+/**
  * Load the config.json file from the given URL, or fallback to default filesystem paths.
  *
  * Loading precedence is:
@@ -140,8 +158,13 @@ export const loadConfigFromFile = async (
   const file = await loadConfigFile(urls);
   if (file) {
     const config = transformConfig(JSON.parse(file));
-    // DEFER: validate the configuration here, log helpful warnings, etc.
+    const { isValid, message } = validateConfig(config);
+    // DEFER: add more validations here, log helpful warnings, etc.
     // (see https://github.com/ethyca/fides/issues/3171)
+    if (!isValid) {
+      console.warn("Configuration file is invalid! Message:", message);
+      return;
+    }
     return config;
   }
 };
