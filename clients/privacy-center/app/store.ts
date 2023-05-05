@@ -9,7 +9,6 @@ import {
   PAUSE,
   PERSIST,
   persistReducer,
-  persistStore,
   PURGE,
   REGISTER,
   REHYDRATE,
@@ -62,7 +61,10 @@ const persistConfig = {
    * not exist any more.
    * https://redux-toolkit.js.org/usage/usage-guide#use-with-redux-persist
    */
-  blacklist: [baseApi.reducerPath],
+  blacklist: [
+    "config", // don't persist the config store - this should always be refreshed from the server!
+    baseApi.reducerPath,
+  ],
 };
 
 const persistedReducer = persistReducer(persistConfig, allReducers);
@@ -85,19 +87,5 @@ export const makeStore = (preloadedState?: Partial<RootState>) => {
   return store;
 };
 
-const store = makeStore();
-
-export type AppStore = typeof store;
+export type AppStore = ReturnType<typeof makeStore>;
 export type AppDispatch = AppStore["dispatch"];
-
-export const persistor = persistStore(store);
-
-/**
- * The store is exposed on the window object when running in the Cypress test environment. This
- * enables the custom `cy.dispatch` command.
- */
-if (typeof window !== "undefined" && window.Cypress) {
-  window.store = store;
-}
-
-export default store;

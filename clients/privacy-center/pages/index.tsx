@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
-import Head from "next/head";
 import { Flex, Heading, Text, Stack, Image, useToast } from "@fidesui/react";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
 
@@ -12,12 +11,13 @@ import {
   useConsentRequestModal,
   ConsentRequestModal,
 } from "~/components/modals/consent-request-modal/ConsentRequestModal";
-import { config } from "~/constants";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import PrivacyCard from "~/components/PrivacyCard";
 import ConsentCard from "~/components/ConsentCard";
+import { useConfig } from "~/features/common/config.slice";
 
 const Home: NextPage = () => {
+  const config = useConfig();
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
   const toast = useToast();
@@ -93,12 +93,6 @@ const Home: NextPage = () => {
 
   return (
     <div>
-      <Head>
-        <title>Privacy Center</title>
-        <meta name="description" content="Privacy Center" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
       <header>
         <Flex
           bg="gray.100"

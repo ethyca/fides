@@ -20,6 +20,12 @@ Cypress.Commands.add("waitUntilCookieExists", (cookieName: string, ...args) => {
   cy.waitUntil(() => cy.getCookie(cookieName).then(cookie => Boolean(cookie && cookie.value)), ...args);
 });
 
+Cypress.Commands.add("loadConfigFixture", (fixtureName: string, ...args) => {
+    cy.fixture(fixtureName, ...args).then((config) => {
+      cy.dispatch({ type: "config/loadConfig", payload: config }).then(() => config);
+    });
+});
+
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -55,14 +61,8 @@ declare global {
        * implement using regular browser interactions, as this provides less end-to-end coverage.
        *
        * https://www.cypress.io/blog/2018/11/14/testing-redux-store/#dispatch-actions
-       *
-       * TODO(ssangervasi): Make the action object less permissive. Right now it can be `AnyAction`
-       * by inferring it this way, which means we don't get good intellisense when writing tests.
-       * Unfortunately we also can't use action creators (such as
-       * `configSlice.actions.overrideConsentOptions(payload)`) because that would require importing
-       * the whole RTK store, which Cypress can't/shouldn't do.
        */
-      dispatch: (action: Parameters<AppDispatch>[0]) => void;
+      dispatch(action: Parameters<AppDispatch>[0]): Chainable<any>;
       /**
        * Custom command to wait until a given cookie name exists. Sometimes this
        * is delayed, and Cypress' built-in default timeout is not used for
@@ -79,7 +79,20 @@ declare global {
             Cypress.Withinable &
             Cypress.Shadow
         >
-      ): Chainable<JQuery<HTMLElement>>;
+      ): Chainable<boolean>;
+      /**
+       * Custom command to load a Privacy Center configuration JSON file from a fixture.
+       * Note that because it is injected into the Redux state, any subsequent page-load resets that with the original
+       * config from the server-side.
+       *
+       * @example cy.loadConfigFixture("config/config_all.json").as("config");
+       */
+      loadConfigFixture(
+        fixtureName: string,
+        options?: Partial<
+          Cypress.Timeoutable
+        >
+      ): Chainable<any>;
     }
   }
 }
