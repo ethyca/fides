@@ -436,7 +436,7 @@ async def load_samples(async_session: AsyncSession) -> None:
         sample_connections = load_sample_connections_from_project()
         with sync_session() as db_session:
             for connection in sample_connections:
-                assert connection.key
+                assert connection.key, "Connection Key expected!"
                 # If the connection config already exists, skip creation!
                 # NOTE: This creates an edge case where the sample data was
                 # created previously, but has since changed. By not deleting &

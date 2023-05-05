@@ -229,7 +229,7 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
         db, field="key", value=authentication_request.connection_key
     )
     verify_oauth_connection_config(connection_config)
-    assert connection_config  # For mypy
+    assert connection_config, "Connection config expected!"  # fixes mypy
 
     try:
         authentication = (
