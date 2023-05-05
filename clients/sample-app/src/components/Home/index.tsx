@@ -61,7 +61,6 @@ const Home = ({ products }: Props) => {
           isOpen={!!productInPurchase} 
           onRequestClose={onCloseModal} 
           onSubmit={onSubmit}
-          product={productInPurchase} 
         />
         <Popup trigger={popupTrigger} />
     </div>

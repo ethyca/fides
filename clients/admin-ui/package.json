@@ -22,7 +22,7 @@
     "lint-staged:fix": "lint-staged --diff=main",
     "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./src/types/api --exportCore false --exportServices false --indent 2",
     "start": "next start",
-    "test": "jest --watch",
+    "test": "jest --watchAll",
     "test:ci": "jest"
   },
   "dependencies": {

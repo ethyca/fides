@@ -7,19 +7,6 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 /** @type {import("next").NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
-    webpack(config) {
-        Object.assign(config.resolve.alias, {
-            react: path.resolve(__dirname, "node_modules", "react"),
-            "react-dom": path.resolve(__dirname, "node_modules", "react-dom"),
-            "@emotion/react": path.resolve(
-                __dirname,
-                "node_modules",
-                "@emotion/react"
-            ),
-        });
-
-        return config;
-    },
     experimental: {
         /**
          * Data flow scanning sometimes takes longer than the default of 30 seconds

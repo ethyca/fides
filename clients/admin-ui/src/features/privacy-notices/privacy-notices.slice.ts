@@ -17,7 +17,7 @@ export interface State {
 
 const initialState: State = {
   page: 1,
-  pageSize: 10,
+  pageSize: 50,
 };
 
 interface PrivacyNoticesParams {

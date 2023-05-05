@@ -2,17 +2,17 @@ import {
   ConsentContext,
   CookieKeyConsent,
   resolveConsentValue,
-} from "fides-consent";
+} from "fides-js";
 
-import { ConfigConsentOption, V1Consent, V2Consent } from "~/types/config";
+import { ConfigConsentOption, LegacyConsentConfig, ConsentConfig } from "~/types/config";
 import { FidesKeyToConsent, GpcStatus } from "./types";
 
 /**
  * Ascertain whether a consentConfig is V1 or V2 based upon the presence of a `button` key
  */
 export function isV1ConsentConfig(
-  consentConfig: V1Consent | V2Consent | undefined
-): consentConfig is V1Consent {
+  consentConfig: LegacyConsentConfig | ConsentConfig | undefined
+): consentConfig is LegacyConsentConfig {
   return (
     typeof consentConfig === "object" &&
     consentConfig != null &&
@@ -28,8 +28,8 @@ export function isV1ConsentConfig(
 export const translateV1ConfigToV2 = ({
   v1ConsentConfig,
 }: {
-  v1ConsentConfig: V1Consent;
-}): V2Consent => ({
+  v1ConsentConfig: LegacyConsentConfig;
+}): ConsentConfig => ({
   button: {
     icon_path: v1ConsentConfig.icon_path,
     description: v1ConsentConfig.description,

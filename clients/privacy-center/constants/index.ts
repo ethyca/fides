@@ -1,25 +1,28 @@
 /* eslint-disable import/prefer-default-export */
-import configJson from "~/config/config.json";
+// DEFER: remove this import part of removing default config state (see https://github.com/ethyca/fides/issues/3212)
+import dangerousStaticDefaultConfig from "~/config/config.json";
 import {
   isV1ConsentConfig,
   translateV1ConfigToV2,
 } from "~/features/consent/helpers";
 import {
-  Config,
+  LegacyConfig,
   IdentityInputs,
-  V1Consent,
-  V2Config,
-  V2Consent,
+  LegacyConsentConfig,
+  Config,
+  ConsentConfig,
 } from "~/types/config";
 
 /**
  * Transform the config to the latest version so that components can
  * reference config variables uniformly.
+ * 
+ * DEFER: move this to config.slice as part of removing default config state (see https://github.com/ethyca/fides/issues/3212)
  */
-const transformConfig = (config: Config): V2Config => {
+const transformConfig = (config: LegacyConfig): Config => {
   if (isV1ConsentConfig(config.consent)) {
-    const v1ConsentConfig: V1Consent = config.consent;
-    const translatedConsent: V2Consent = translateV1ConfigToV2({
+    const v1ConsentConfig: LegacyConsentConfig = config.consent;
+    const translatedConsent: ConsentConfig = translateV1ConfigToV2({
       v1ConsentConfig,
     });
     return { ...config, consent: translatedConsent };
@@ -27,14 +30,9 @@ const transformConfig = (config: Config): V2Config => {
   return { ...config, consent: config.consent };
 };
 
-export const config: V2Config = transformConfig(configJson);
-
-// Compute the host URL for the server, while being backwards compatible with
-// the previous "fidesops_host_***" configuration
-// DEFER: remove backwards compatibility (see https://github.com/ethyca/fides/issues/1264)
-export const hostUrl =
-  process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
-    ? config.server_url_development || (config as any).fidesops_host_development
-    : config.server_url_production || (config as any).fidesops_host_production;
+// DEFER: remove this import part of removing default config state (see https://github.com/ethyca/fides/issues/3212)
+export function getDefaultConfig(): Config {
+  return transformConfig(dangerousStaticDefaultConfig);
+}
 
 export const defaultIdentityInput: IdentityInputs = { email: "optional" };

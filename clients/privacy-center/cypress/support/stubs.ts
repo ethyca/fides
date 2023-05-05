@@ -1,7 +1,7 @@
-import { hostUrl } from "~/constants";
+import { API_URL } from "./constants";
 
 export const stubIdVerification = () => {
-  cy.intercept("GET", `${hostUrl}/id-verification/config`, {
+  cy.intercept("GET", `${API_URL}/id-verification/config`, {
     body: {
       identity_verification_required: true,
     },
