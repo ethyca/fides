@@ -132,7 +132,7 @@ const initialState: SettingsState = {
   isGettingStarted: false,
 };
 
-const mergeColumns = (
+export const mergeColumns = (
   columns: DatamapColumn[] | undefined,
   updatedColumns: DatamapColumn[]
 ) => {
