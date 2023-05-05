@@ -10,6 +10,7 @@ import {
   Text,
   useDisclosure,
 } from "@fidesui/react";
+import { useRef } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { CopyIcon } from "~/features/common/Icon";
@@ -19,6 +20,7 @@ const SCRIPT_TAG =
 
 const JavaScriptTag = () => {
   const modal = useDisclosure();
+  const initialRef = useRef(null);
 
   return (
     <>
@@ -31,10 +33,21 @@ const JavaScriptTag = () => {
       >
         Get JavaScript tag
       </Button>
-      <Modal isOpen={modal.isOpen} onClose={modal.onClose} isCentered size="xl">
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={modal.onClose}
+        isCentered
+        size="xl"
+        initialFocusRef={initialRef}
+      >
         <ModalOverlay />
         <ModalContent data-testid="copy-js-tag-modal">
-          <ModalHeader pb={0}>Copy JavaScript tag</ModalHeader>
+          {/* Setting tabIndex and a ref makes this the initial modal focus.
+              This is helpful because otherwise the copy button receives the focus 
+              which triggers unexpected tooltip behavior */}
+          <ModalHeader tabIndex={-1} ref={initialRef} pb={0}>
+            Copy JavaScript tag
+          </ModalHeader>
           <ModalBody pt={3} pb={6}>
             <Stack spacing={3}>
               <Text>
