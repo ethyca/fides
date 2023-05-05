@@ -2,39 +2,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { useAppSelector } from "~/app/hooks";
 import type { RootState } from "~/app/store";
-import {
-  isV1ConsentConfig,
-  translateV1ConfigToV2,
-} from "~/features/consent/helpers";
 import { Consent, ConsentPreferences } from "~/types/api";
-import {
-  LegacyConfig,
-  LegacyConsentConfig,
-  Config,
-  ConsentConfig,
-} from "~/types/config";
+import { Config } from "~/types/config";
 
 interface ConfigState {
   config?: Config;
 }
 const initialState: ConfigState = {};
-
-/**
- * Transform the config to the latest version so that components can
- * reference config variables uniformly.
- *
- * DEFER: move this to config.slice as part of removing default config state (see https://github.com/ethyca/fides/issues/3212)
- */
-const transformConfig = (config: LegacyConfig): Config => {
-  if (isV1ConsentConfig(config.consent)) {
-    const v1ConsentConfig: LegacyConsentConfig = config.consent;
-    const translatedConsent: ConsentConfig = translateV1ConfigToV2({
-      v1ConsentConfig,
-    });
-    return { ...config, consent: translatedConsent };
-  }
-  return { ...config, consent: config.consent };
-};
 
 export const configSlice = createSlice({
   name: "config",
@@ -96,9 +70,9 @@ export const { reducer } = configSlice;
 export const { loadConfig, mergeConfig, updateConsentOptionsFromApi } =
   configSlice.actions;
 export const useConfig = (): Config => {
-  const config = useAppSelector(selectConfig).config;
+  const { config } = useAppSelector(selectConfig);
   if (!config) {
-    throw new Error("WUnable to load Privacy Center configuration!");
+    throw new Error("Unable to load Privacy Center configuration!");
   }
   return config;
 };

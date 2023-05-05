@@ -85,26 +85,21 @@ const SafeHydrate: React.FC = ({ children }) => (
  */
 const hydrateEnvironmentAndStore = (
   serverEnvironment?: PrivacyCenterEnvironment
-): { environment: PrivacyCenterEnvironment; store: AppStore } => {
+): { environment?: PrivacyCenterEnvironment; store: AppStore } => {
   if (!serverEnvironment) {
     console.warn(
       "hydrateEnvironmentAndStore() called without a valid server environment!"
     );
   }
   // Initialize the environment
-  // TODO: do I even need to do this?
   const environment = hydratePrivacyCenterEnvironment(serverEnvironment);
 
   // Initialize the store
   let store;
-  if (!environment || !environment.config) {
-    console.warn(
-      "makeStore being called with empty env or config",
-      environment
-    );
-    store = makeStore();
-  } else {
+  if (environment?.config) {
     store = makeStore({ config: { config: environment.config } });
+  } else {
+    store = makeStore();
   }
 
   // The store is exposed on the window object when running in the Cypress test
@@ -135,7 +130,7 @@ const PrivacyCenterApp = ({
               <title>Privacy Center</title>
               <meta name="description" content="Privacy Center" />
               <link rel="icon" href="/favicon.ico" />
-              {environment.styles ? <style>{environment.styles}</style> : null}
+              {environment?.styles ? <style>{environment.styles}</style> : null}
             </Head>
             <Component {...pageProps} />
           </ChakraProvider>

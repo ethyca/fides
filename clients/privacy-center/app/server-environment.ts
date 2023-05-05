@@ -11,7 +11,16 @@
  */
 import { URL } from "url";
 
-import { Config } from "~/types/config";
+import {
+  isV1ConsentConfig,
+  translateV1ConfigToV2,
+} from "~/features/consent/helpers";
+import {
+  LegacyConfig,
+  LegacyConsentConfig,
+  Config,
+  ConsentConfig,
+} from "~/types/config";
 
 /**
  * SERVER-SIDE functions
@@ -94,6 +103,21 @@ const loadConfigFile = async (
 };
 
 /**
+ * Transform the config to the latest version so that components can
+ * reference config variables uniformly.
+ */
+const transformConfig = (config: LegacyConfig): Config => {
+  if (isV1ConsentConfig(config.consent)) {
+    const v1ConsentConfig: LegacyConsentConfig = config.consent;
+    const translatedConsent: ConsentConfig = translateV1ConfigToV2({
+      v1ConsentConfig,
+    });
+    return { ...config, consent: translatedConsent };
+  }
+  return { ...config, consent: config.consent };
+};
+
+/**
  * Load the config.json file from the given URL, or fallback to default filesystem paths.
  *
  * Loading precedence is:
@@ -115,7 +139,7 @@ export const loadConfigFromFile = async (
   ];
   const file = await loadConfigFile(urls);
   if (file) {
-    const config = JSON.parse(file) as Config;
+    const config = transformConfig(JSON.parse(file));
     // DEFER: validate the configuration here, log helpful warnings, etc.
     // (see https://github.com/ethyca/fides/issues/3171)
     return config;
@@ -229,11 +253,8 @@ export const loadPrivacyCenterEnvironment =
 export const hydratePrivacyCenterEnvironment = (
   serverEnvironment?: PrivacyCenterEnvironment
 ): PrivacyCenterEnvironment | undefined => {
-  // DEFER: handle this (see https://github.com/ethyca/fides/issues/3212)
-  console.log(
-    `hydratePrivacyCenterEnvironment(): current=${_environment?.config?.title}, new=${serverEnvironment?.config?.title}`
-  );
   if (_environment) {
+    // TODO: remove
     console.warn(
       "Called hydratePrivacyCenterEnvironment() after environment was already initialized, ignoring!"
     );
