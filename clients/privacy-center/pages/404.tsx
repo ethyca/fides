@@ -12,7 +12,7 @@ const Custom404: NextPage = () => {
         <Stack minH="100vh" align="center" justify="center" spacing={6}>
           <Box
             bg="white"
-            py={16}
+            py={8}
             px={[0, 0, 35]}
             width={["100%", "100%", 640]}
             borderRadius={4}
@@ -26,7 +26,7 @@ const Custom404: NextPage = () => {
             <Stack align="center" spacing={9}>
               <Stack align="center" justify="center" spacing={3}>
                 <Heading
-                  fontSize="7xl"
+                  fontSize="3xl"
                   lineHeight="1"
                   colorScheme="primary"
                   color="gray.700"
@@ -34,7 +34,7 @@ const Custom404: NextPage = () => {
                   Error: 404
                 </Heading>
                 <Text fontWeight="semibold">
-                  We’re sorry but this page doesn’t exist
+                  We’re sorry, but this page doesn’t exist.
                 </Text>
                 <NextLink href="/" passHref>
                   <Button

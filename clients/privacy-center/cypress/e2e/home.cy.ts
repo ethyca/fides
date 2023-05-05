@@ -15,4 +15,11 @@ describe("Home", () => {
       });
     });
   });
+
+  it("renders an error page if configuration is invalid", () => {
+    cy.visit("/");
+    cy.loadConfigFixture("config/config_error.json").then((config) => {
+      cy.contains("an unexpected error occurred");
+    });
+  });
 });
