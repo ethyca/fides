@@ -196,12 +196,20 @@ describe("Privacy experiences", () => {
       cy.getByTestId("banner-action-form");
     });
 
-    it("renders notice_only notice with acknowledgment btn", () => {
+    it("renders notice_only notice with acknowledgment btn and banner as mechanism", () => {
       stubExperience({ mechanisms: ["notice_only"], component: "overlay" });
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
       cy.getByTestId("privacy-center-messaging-form").should("not.exist");
 
-      cy.getByTestId("delivery-mechanism-form");
+      cy.getByTestId("delivery-mechanism-form").within(() => {
+        cy.getSelectValueContainer("input-delivery_mechanism").within(() => {
+          cy.get("input").should("be.disabled");
+        });
+        cy.getSelectValueContainer("input-delivery_mechanism").should(
+          "contain",
+          "Banner"
+        );
+      });
       cy.getByTestId("banner-text-form");
       cy.getByTestId("banner-action-form").within(() => {
         cy.getByTestId("input-confirmation_button_label").should("not.exist");

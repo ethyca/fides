@@ -33,20 +33,22 @@ const DeliveryMechanismForm = ({
   const { initialValues, setFieldValue } =
     useFormikContext<PrivacyExperienceCreate>();
 
-  const hasOptInNotices = useMemo(
-    () =>
+  const needsBanner = useMemo(() => {
+    return (
       privacyNotices &&
       privacyNotices.some(
-        (notice) => notice.consent_mechanism === ConsentMechanism.OPT_IN
-      ),
-    [privacyNotices]
-  );
+        (notice) =>
+          notice.consent_mechanism === ConsentMechanism.OPT_IN ||
+          notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
+      )
+    );
+  }, [privacyNotices]);
 
   useEffect(() => {
-    if (hasOptInNotices) {
+    if (needsBanner) {
       setFieldValue("delivery_mechanism", DeliveryMechanism.BANNER);
     }
-  }, [hasOptInNotices, setFieldValue]);
+  }, [needsBanner, setFieldValue]);
 
   if (initialValues.component === ComponentType.PRIVACY_CENTER) {
     return null;
@@ -62,7 +64,7 @@ const DeliveryMechanismForm = ({
         label="Choose your delivery mechanism"
         options={DELIVERY_MECHANISM_OPTIONS}
         variant="stacked"
-        isDisabled={hasOptInNotices}
+        isDisabled={needsBanner}
       />
     </FormSection>
   );
