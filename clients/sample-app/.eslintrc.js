@@ -3,19 +3,19 @@ module.exports = {
     "airbnb",
     "airbnb-typescript/base",
     "prettier",
-    "next/core-web-vitals"
+    "next/core-web-vitals",
   ],
   rules: {
     // "curly": ["error", "all"],
     // "nonblock-statement-body-position": ["error", "below"],
     // "import/prefer-default-export": "off",
-    "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
+    "react/jsx-filename-extension": [1, { extensions: [".tsx"] }],
     "react/jsx-props-no-spreading": [0],
     "react/function-component-definition": [
       2,
       {
-        "namedComponents": "arrow-function"
-      }
+        namedComponents: "arrow-function",
+      },
     ],
     "react/require-default-props": "off",
   },

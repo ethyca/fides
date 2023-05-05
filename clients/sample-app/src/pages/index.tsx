@@ -16,20 +16,20 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 };
 
 const IndexPage = ({ products }: Props) => (
-    <>
-      <Head>
-        <title>Cookie House</title>
-        <meta
-          name="description"
-          content="Sample Project used within Fides (github.com/ethyca/fides)"
-        />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-        <script src="http://localhost:3001/fides.js" />
-      </Head>
+  <>
+    <Head>
+      <title>Cookie House</title>
+      <meta
+        name="description"
+        content="Sample Project used within Fides (github.com/ethyca/fides)"
+      />
+      <link rel="icon" href="/favicon.ico" />
+      <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+      <script src="http://localhost:3001/fides.js" />
+    </Head>
 
-      <Home products={products} />
-    </>
-  );
+    <Home products={products} />
+  </>
+);
 
 export default IndexPage;
