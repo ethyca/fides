@@ -31,7 +31,7 @@ const nextConfig = {
         source: "/:path(fides-consent.js|fides.js)",
         destination: "/api/fides-js",
       },
-    ]
+    ];
   },
 };
 

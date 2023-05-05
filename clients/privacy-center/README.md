@@ -66,7 +66,6 @@ Not exactly the most appealing color scheme – but note that wherever those var
 
 To serve this application locally, first install your local dependencies by installing at the root `client` directory level:
 
-
 In `/clients`:
 
 ```bash

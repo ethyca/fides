@@ -17,13 +17,21 @@ Cypress.Commands.add("dispatch", (action) => {
 });
 
 Cypress.Commands.add("waitUntilCookieExists", (cookieName: string, ...args) => {
-  cy.waitUntil(() => cy.getCookie(cookieName).then(cookie => Boolean(cookie && cookie.value)), ...args);
+  cy.waitUntil(
+    () =>
+      cy
+        .getCookie(cookieName)
+        .then((cookie) => Boolean(cookie && cookie.value)),
+    ...args
+  );
 });
 
 Cypress.Commands.add("loadConfigFixture", (fixtureName: string, ...args) => {
-    cy.fixture(fixtureName, ...args).then((config) => {
-      cy.dispatch({ type: "config/loadConfig", payload: config }).then(() => config);
-    });
+  cy.fixture(fixtureName, ...args).then((config) => {
+    cy.dispatch({ type: "config/loadConfig", payload: config }).then(
+      () => config
+    );
+  });
 });
 
 declare global {
@@ -68,7 +76,7 @@ declare global {
        * is delayed, and Cypress' built-in default timeout is not used for
        * getCookie, surprisingly!
        * (see * https://github.com/cypress-io/cypress/issues/4802#issuecomment-941891554)
-       * 
+       *
        * @example cy.waitUntilCookieExists("fides_consent");
        */
       waitUntilCookieExists(
@@ -89,9 +97,7 @@ declare global {
        */
       loadConfigFixture(
         fixtureName: string,
-        options?: Partial<
-          Cypress.Timeoutable
-        >
+        options?: Partial<Cypress.Timeoutable>
       ): Chainable<any>;
     }
   }

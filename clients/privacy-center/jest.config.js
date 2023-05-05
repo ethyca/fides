@@ -1,16 +1,16 @@
 // jest.config.js
-const nextJest = require("next/jest")
+const nextJest = require("next/jest");
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
   dir: "./",
-})
+});
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
   setupFilesAfterEnv: ["<rootDir>/__tests__/jest.setup.ts"],
   testEnvironment: "jest-environment-jsdom",
-  testPathIgnorePatterns: [ "jest.setup.ts" ],
+  testPathIgnorePatterns: ["jest.setup.ts"],
   moduleDirectories: ["node_modules"],
   moduleNameMapper: {
     // Handle module aliases
@@ -23,7 +23,7 @@ const customJestConfig = {
     // See https://github.com/jestjs/jest/issues/5325
     "^fides-js$": "<rootDir>/../fides-js/dist/fides.mjs",
   },
-}
+};
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-module.exports = createJestConfig(customJestConfig)
+module.exports = createJestConfig(customJestConfig);

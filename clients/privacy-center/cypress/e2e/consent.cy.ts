@@ -5,8 +5,8 @@ import { API_URL } from "../support/constants";
 
 describe("Consent settings", () => {
   beforeEach(() => {
-      cy.visit("/");
-      cy.loadConfigFixture("config/config_consent.json").as("config");
+    cy.visit("/");
+    cy.loadConfigFixture("config/config_consent.json").as("config");
   });
 
   describe("when the user isn't verified", () => {
@@ -60,8 +60,12 @@ describe("Consent settings", () => {
           const { body } = interception.request;
           cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
-            const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
-            expect(body.fides_user_device_id).to.eql(cookie.identity.fides_user_device_id);
+            const cookie = JSON.parse(
+              decodeURIComponent(cookieJson!.value)
+            ) as FidesCookie;
+            expect(body.fides_user_device_id).to.eql(
+              cookie.identity.fides_user_device_id
+            );
           });
         });
       });
@@ -73,7 +77,7 @@ describe("Consent settings", () => {
           identity: { fides_user_device_id: uuid },
           fides_meta: { version: "0.9.0", createdAt: now },
           consent: {},
-        }
+        };
         cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
         cy.getByTestId("card").contains("Manage your consent").click();
         cy.getByTestId("consent-request-form").within(() => {
@@ -91,7 +95,7 @@ describe("Consent settings", () => {
           data_sales: false,
           tracking: false,
           analytics: true,
-        }
+        };
         cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(previousCookie));
         cy.getByTestId("card").contains("Manage your consent").click();
         cy.getByTestId("consent-request-form").within(() => {
@@ -101,14 +105,20 @@ describe("Consent settings", () => {
         cy.wait("@postConsentRequest").then((interception) => {
           const { body } = interception.request;
           // Wait until the cookie is updated to the new format
-          cy.waitUntil(() => 
-            cy.getCookie(CONSENT_COOKIE_NAME).then(cookie =>
-              Boolean(cookie!.value && cookie!.value.match(/identity/))
-            )
+          cy.waitUntil(() =>
+            cy
+              .getCookie(CONSENT_COOKIE_NAME)
+              .then((cookie) =>
+                Boolean(cookie!.value && cookie!.value.match(/identity/))
+              )
           );
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
-            const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
-            expect(body.fides_user_device_id).to.eql(cookie.identity.fides_user_device_id);
+            const cookie = JSON.parse(
+              decodeURIComponent(cookieJson!.value)
+            ) as FidesCookie;
+            expect(body.fides_user_device_id).to.eql(
+              cookie.identity.fides_user_device_id
+            );
             expect(cookie.consent).to.eql(previousCookie);
           });
         });
@@ -190,7 +200,9 @@ describe("Consent settings", () => {
 
       cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
       cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
-        const cookie = JSON.parse(decodeURIComponent(cookieJson!.value)) as FidesCookie;
+        const cookie = JSON.parse(
+          decodeURIComponent(cookieJson!.value)
+        ) as FidesCookie;
         expect(cookie.consent.data_sales).to.eql(true);
       });
     });
