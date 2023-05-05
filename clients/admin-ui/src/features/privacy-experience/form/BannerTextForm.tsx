@@ -2,7 +2,8 @@ import { useFormikContext } from "formik";
 
 import FormSection from "~/features/common/form/FormSection";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
-import { ComponentType, PrivacyExperienceCreate } from "~/types/api";
+import { PrivacyExperienceCreate } from "~/types/api";
+
 import { useExperienceFormRules } from "./helpers";
 
 /**
@@ -26,6 +27,7 @@ const BannerTextForm = () => {
         name="banner_title"
         label="Banner title"
         variant="stacked"
+        isRequired
       />
       <CustomTextArea
         label="Banner description"

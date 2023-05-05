@@ -2,7 +2,8 @@ import { useFormikContext } from "formik";
 
 import FormSection from "~/features/common/form/FormSection";
 import { CustomTextInput } from "~/features/common/form/inputs";
-import { ComponentType, PrivacyExperienceCreate } from "~/types/api";
+import { PrivacyExperienceCreate } from "~/types/api";
+
 import { useExperienceFormRules } from "./helpers";
 
 /**
@@ -30,6 +31,7 @@ const PrivacyCenterMessagingForm = () => {
         name="link_label"
         label="Website link text"
         variant="stacked"
+        isRequired
       />
       <CustomTextInput
         name="component_description"

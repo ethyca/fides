@@ -1,16 +1,15 @@
 import { useFormikContext } from "formik";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
 import FormSection from "~/features/common/form/FormSection";
 import { CustomSelect } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
 import {
-  ComponentType,
-  ConsentMechanism,
   DeliveryMechanism,
   PrivacyExperienceCreate,
   PrivacyNoticeResponse,
 } from "~/types/api";
+
 import { useExperienceFormRules } from "./helpers";
 
 const DELIVERY_MECHANISM_OPTIONS = enumToOptions(DeliveryMechanism).map(

@@ -2,12 +2,8 @@ import { useFormikContext } from "formik";
 
 import FormSection from "~/features/common/form/FormSection";
 import { CustomTextInput } from "~/features/common/form/inputs";
-import {
-  ComponentType,
-  ConsentMechanism,
-  PrivacyExperienceCreate,
-  PrivacyNoticeResponse,
-} from "~/types/api";
+import { PrivacyExperienceCreate, PrivacyNoticeResponse } from "~/types/api";
+
 import { useExperienceFormRules } from "./helpers";
 
 /**
@@ -33,12 +29,18 @@ const BannerActionForm = ({
 
   return (
     <FormSection title="Banner actions" data-testid="banner-action-form">
-      <CustomTextInput name="link_label" label="Link label" variant="stacked" />
+      <CustomTextInput
+        name="link_label"
+        label="Link label"
+        variant="stacked"
+        isRequired
+      />
       {hasOnlyNoticeOnlyNotices ? (
         <CustomTextInput
           label="Acknowledgment button label"
           name="acknowledgement_button_label"
           variant="stacked"
+          isRequired
         />
       ) : (
         <>
@@ -46,11 +48,13 @@ const BannerActionForm = ({
             label="Confirmation button label"
             name="confirmation_button_label"
             variant="stacked"
+            isRequired
           />
           <CustomTextInput
             label="Reject button label"
             name="reject_button_label"
             variant="stacked"
+            isRequired
           />
         </>
       )}
