@@ -132,9 +132,9 @@ const initialState: SettingsState = {
   isGettingStarted: false,
 };
 
-export const mergeColumns = (
-  columns: DatamapColumn[] | undefined,
-  updatedColumns: DatamapColumn[]
+export const mergeColumns = <T extends { value: string }>(
+  columns: T[] | undefined,
+  updatedColumns: T[]
 ) => {
   /*
   this happens the first load of the table when no columns
@@ -181,8 +181,8 @@ export const datamapSlice = createSlice({
     },
     // Load columns for the first time. If columns are already loaded, no-op.
     loadColumns(draftState, { payload }: PayloadAction<DatamapColumn[]>) {
-      draftState.columns = mergeColumns(
-        draftState.columns as DatamapColumn[] | undefined,
+      draftState.columns = mergeColumns<DatamapColumn>(
+        draftState.columns,
         payload
       );
     },
