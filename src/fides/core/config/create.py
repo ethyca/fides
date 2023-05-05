@@ -224,7 +224,7 @@ def create_config_file(config: FidesConfig, fides_directory_location: str = ".")
         echo(f"Configuration file already exists: {config_path}")
 
     echo("To learn more about configuring fides, see:")
-    echo("\thttps://docs.ethyca.com/fides/get_started/configuration")
+    echo("\thttps://ethyca.github.io/fides/config/")
 
     return config_path
 
