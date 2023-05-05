@@ -77,7 +77,6 @@ const PrivacyDeclarationAccordionItem = ({
               <AccordionPanel backgroundColor="gray.50" pt={0}>
                 <Stack spacing={4}>
                   <PrivacyDeclarationFormComponents
-                    isEditing
                     onDelete={onDelete}
                     {...dataProps}
                   />

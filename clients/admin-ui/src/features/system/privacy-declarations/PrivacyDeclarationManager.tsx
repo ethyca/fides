@@ -1,5 +1,5 @@
 import { Box, Button, Stack, Tooltip, useToast } from "@fidesui/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { PrivacyDeclaration, System } from "~/types/api";
 
@@ -146,6 +146,11 @@ const PrivacyDeclarationManager = ({
     system.privacy_declarations.length > 0 ||
     (system.privacy_declarations.length === 0 && !showNewForm);
 
+  // Reset the new form when the system changes (i.e. when clicking on a new datamap node)
+  useEffect(() => {
+    setShowNewForm(false);
+  }, [system.fides_key]);
+
   return (
     <Stack spacing={3}>
       <PrivacyDeclarationAccordion
@@ -155,7 +160,7 @@ const PrivacyDeclarationManager = ({
         {...dataProps}
       />
       {showNewForm ? (
-        <Box backgroundColor="gray.50" p={6} data-testid="new-declaration-form">
+        <Box backgroundColor="gray.50" p={4} data-testid="new-declaration-form">
           <PrivacyDeclarationForm
             initialValues={newDeclaration}
             onSubmit={saveNewDeclaration}
@@ -167,7 +172,7 @@ const PrivacyDeclarationManager = ({
       {showAddDataUseButton ? (
         <Box py={2}>
           <Tooltip
-            label="Add another use case"
+            label="Add a Data Use"
             hasArrow
             placement="top"
             isDisabled={accordionDeclarations.length === 0}

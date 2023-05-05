@@ -24,6 +24,7 @@ import * as Yup from "yup";
 
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import {
   DataCategory,
   Dataset,
@@ -289,7 +290,12 @@ export const usePrivacyDeclarationForm = ({
     hideSaved?: boolean;
     boxProps?: BoxProps;
   }) => (
-    <Box display="flex" alignItems="center" {...boxProps}>
+    <Box
+      display="flex"
+      alignItems="center"
+      justifyContent="space-between"
+      {...boxProps}
+    >
       {title ? (
         <Heading as="h4" size="xs" fontWeight="medium" mr={4}>
           {title}
@@ -341,7 +347,9 @@ export const PrivacyDeclarationForm = ({
     >
       {({ dirty }) => (
         <Form>
+          <FormGuard id="PrivacyDeclaration" name="New Privacy Declaration" />
           <Stack spacing={4}>
+            {/* TODO: might need pt={4} in datamap */}
             <Box data-testid="header">{renderHeader({ dirty })}</Box>
             <PrivacyDeclarationFormComponents
               onDelete={onDelete}

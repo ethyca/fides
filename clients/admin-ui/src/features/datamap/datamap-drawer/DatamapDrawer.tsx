@@ -15,8 +15,9 @@ import React, { useMemo } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { useTaxonomyData } from "~/features/datamap/privacy-declarations/PrivacyDeclarationForm";
-import PrivacyDeclarationManager from "~/features/datamap/privacy-declarations/PrivacyDeclarationManager";
+import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
+import PrivacyDeclarationManager from "~/features/system/privacy-declarations/PrivacyDeclarationManager";
+import { PrivacyDeclarationWithId } from "~/features/system/privacy-declarations/types";
 import {
   useGetSystemByFidesKeyQuery,
   useUpdateSystemMutation,
@@ -36,7 +37,7 @@ const DatamapDrawer = ({
   resetSelectedSystemId,
 }: DatamapDrawerProps) => {
   const isOpen = useMemo(() => Boolean(selectedSystemId), [selectedSystemId]);
-  const { isLoading, ...dataProps } = useTaxonomyData();
+  const { isLoading, ...dataProps } = usePrivacyDeclarationData();
   const toast = useToast();
 
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
@@ -47,7 +48,7 @@ const DatamapDrawer = ({
   const handleSave = async (
     updatedDeclarations: PrivacyDeclaration[],
     isDelete?: boolean
-  ) => {
+  ): Promise<PrivacyDeclarationWithId[] | undefined> => {
     const systemBodyWithDeclaration = {
       ...system!,
       privacy_declarations: updatedDeclarations,
@@ -65,13 +66,13 @@ const DatamapDrawer = ({
         );
 
         toast(errorToastParams(errorMsg));
-        return false;
+        return undefined;
       }
       toast.closeAll();
       toast(
         successToastParams(isDelete ? "Data use deleted" : "Data use saved")
       );
-      return true;
+      return result.data.privacy_declarations as PrivacyDeclarationWithId[];
     };
 
     const updateSystemResult = await updateSystemMutationTrigger(
@@ -183,12 +184,14 @@ const DatamapDrawer = ({
                   Data uses
                 </Text>
                 <Box borderTop="1px solid" borderColor="gray.200">
-                  <PrivacyDeclarationManager
-                    system={system!}
-                    onCollision={collisionWarning}
-                    onSave={handleSave}
-                    {...dataProps}
-                  />
+                  <Box pb={3} px={4}>
+                    <PrivacyDeclarationManager
+                      system={system}
+                      onCollision={collisionWarning}
+                      onSave={handleSave}
+                      {...dataProps}
+                    />
+                  </Box>
                 </Box>
                 <Text
                   size="md"
