@@ -11,9 +11,8 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 
+import ClipboardButton from "~/features/common/ClipboardButton";
 import { CopyIcon } from "~/features/common/Icon";
-
-import ClipboardButton from "../common/ClipboardButton";
 
 const SCRIPT_TAG =
   '<script src="https://{privacy-center-hostname-and-path}/fides.js"></script>';
@@ -28,12 +27,13 @@ const JavaScriptTag = () => {
         variant="outline"
         size="sm"
         rightIcon={<CopyIcon />}
+        data-testid="js-tag-btn"
       >
         Get JavaScript tag
       </Button>
       <Modal isOpen={modal.isOpen} onClose={modal.onClose} isCentered size="xl">
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent data-testid="copy-js-tag-modal">
           <ModalHeader pb={0}>Copy JavaScript tag</ModalHeader>
           <ModalBody pt={3} pb={6}>
             <Stack spacing={3}>

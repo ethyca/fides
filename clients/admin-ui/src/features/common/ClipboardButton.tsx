@@ -78,6 +78,7 @@ const ClipboardButton = ({ copyText }: ClipboardButtonProps) => {
         onMouseLeave={handleMouseLeave}
         aria-label="copy"
         variant="ghost"
+        data-testid="clipboard-btn"
       />
     </Tooltip>
   );
