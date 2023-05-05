@@ -225,11 +225,11 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
             detail="No authentication request found for the given state.",
         )
 
-    connection_config = ConnectionConfig.get_by(
+    connection_config: Optional[ConnectionConfig] = ConnectionConfig.get_by(
         db, field="key", value=authentication_request.connection_key
     )
-    assert connection_config
     verify_oauth_connection_config(connection_config)
+    assert connection_config, "Connection config expected!"  # fixes mypy
 
     try:
         authentication = (

@@ -14,7 +14,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.db.base_class import Base, JSONTypeOverride, OrmWrappedFidesBase
+from fides.api.ops.db.base_class import Base, JSONTypeOverride
 from fides.api.ops.schemas.messaging.messaging import (
     EMAIL_MESSAGING_SERVICES,
     SMS_MESSAGING_SERVICES,
@@ -96,12 +96,14 @@ class MessagingConfig(Base):
     )  # Type bytea in the db
 
     @classmethod
-    def get_configuration(cls, db: Session, service_type: str) -> OrmWrappedFidesBase:
+    def get_configuration(cls, db: Session, service_type: str) -> MessagingConfig:
         """
         Fetches the configured MessagingConfig record by service type. Once fetched this function validates that
         the MessagingConfig is configured with secrets.
         """
-        instance = cls.get_by(db=db, field="service_type", value=service_type)
+        instance: Optional[MessagingConfig] = cls.get_by(
+            db=db, field="service_type", value=service_type
+        )
         if not instance:
             raise MessageDispatchException(
                 f"No messaging config found for service_type {service_type}."

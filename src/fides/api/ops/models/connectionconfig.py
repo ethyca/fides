@@ -13,11 +13,12 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
+from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.ops.db.base_class import (
     Base,
+    FidesBase,
     JSONTypeOverride,
-    OrmWrappedFidesBase,
     get_key_from_data,
 )
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
@@ -128,11 +129,13 @@ class ConnectionConfig(Base):
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
     )
 
-    # This is imported here to avoid a circular dependency
-    from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
-
     system_id = Column(
         String, ForeignKey(System.id_field_path), nullable=True, index=True
+    )
+
+    datasets = relationship(  # type: ignore[misc]
+        "DatasetConfig",
+        back_populates="connection_config",
     )
 
     access_manual_webhook = relationship(  # type: ignore[misc]
@@ -215,12 +218,12 @@ class ConnectionConfig(Base):
         self.last_test_succeeded = test_status == ConnectionTestStatus.succeeded
         self.save(db)
 
-    def delete(self, db: Session) -> Optional[OrmWrappedFidesBase]:
+    def delete(self, db: Session) -> Optional[FidesBase]:
         """Hard deletes datastores that map this ConnectionConfig."""
-        for dataset in self.datasets:  # type: ignore[attr-defined]
+        for dataset in self.datasets:
             dataset.delete(db=db)
 
-        return super().delete(db=db)  # type: ignore[return-value]
+        return super().delete(db=db)
 
 
 @event.listens_for(ConnectionConfig.disabled, "set")

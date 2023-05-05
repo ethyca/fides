@@ -436,14 +436,15 @@ async def load_samples(async_session: AsyncSession) -> None:
         sample_connections = load_sample_connections_from_project()
         with sync_session() as db_session:
             for connection in sample_connections:
+                assert connection.key, "Connection Key expected!"
                 # If the connection config already exists, skip creation!
                 # NOTE: This creates an edge case where the sample data was
                 # created previously, but has since changed. By not deleting &
                 # recreating here, we allow the "old" data to persist. That's an
                 # acceptable risk here, so we log an INFO message to provide a
                 # breadcrumb back to this code.
-                connection_config = ConnectionConfig.get_by(
-                    db=db_session, field="key", value=connection.key  # type: ignore[arg-type]
+                connection_config: Optional[ConnectionConfig] = ConnectionConfig.get_by(
+                    db=db_session, field="key", value=connection.key
                 )
                 if connection_config:
                     log.debug(
@@ -474,7 +475,7 @@ async def load_samples(async_session: AsyncSession) -> None:
 
                     # Check that it succeeded!
                     connection_config = ConnectionConfig.get_by(
-                        db=db_session, field="key", value=connection.key  # type: ignore[arg-type]
+                        db=db_session, field="key", value=connection.key
                     )
                     if not connection_config:
                         log.debug(
@@ -501,7 +502,7 @@ async def load_samples(async_session: AsyncSession) -> None:
 
                 # Check that it succeeded!
                 connection_config = ConnectionConfig.get_by(
-                    db=db_session, field="key", value=connection.key  # type: ignore[arg-type]
+                    db=db_session, field="key", value=connection.key
                 )
                 if not connection_config:
                     log.debug(f"Failed to create sample connection '{connection.key}'")

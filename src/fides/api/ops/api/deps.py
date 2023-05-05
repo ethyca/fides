@@ -3,10 +3,8 @@ from typing import Generator
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from fides.api.ops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.api.ops.common_exceptions import FunctionalityNotConfigured
 from fides.api.ops.db.session import get_db_engine, get_db_session
-from fides.api.ops.schemas.oauth import OAuth2ClientCredentialsBearer
 from fides.api.ops.util.cache import get_cache as get_redis_connection
 from fides.core.config import CONFIG, FidesConfig
 from fides.core.config import get_config as get_app_config
@@ -54,11 +52,3 @@ def get_cache() -> Generator:
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
     yield get_redis_connection()
-
-
-def oauth2_scheme() -> OAuth2ClientCredentialsBearer:
-    """Creates the oauth2 scheme from the token.
-
-    This should be overridden by the installing package.
-    """
-    return OAuth2ClientCredentialsBearer(tokenUrl=f"{V1_URL_PREFIX}{TOKEN}")

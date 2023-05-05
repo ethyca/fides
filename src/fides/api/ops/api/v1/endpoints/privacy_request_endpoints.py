@@ -761,10 +761,13 @@ def get_request_preview_queries(
                 )
             dataset_configs.append(dataset_config)
     try:
-        connection_configs = [
-            ConnectionConfig.get(db=db, object_id=dataset.connection_config_id)
-            for dataset in dataset_configs
-        ]
+        connection_configs: List[ConnectionConfig] = []
+        for dataset in dataset_configs:
+            connection_config: Optional[ConnectionConfig] = ConnectionConfig.get(
+                db=db, object_id=dataset.connection_config_id
+            )
+            if connection_config:
+                connection_configs.append(connection_config)
 
         try:
             dataset_graph: DatasetGraph = DatasetGraph(
@@ -782,7 +785,7 @@ def get_request_preview_queries(
         traversal: Traversal = Traversal(dataset_graph, identity_seed)
         queries: Dict[CollectionAddress, str] = collect_queries(
             traversal,
-            TaskResources(EMPTY_REQUEST, Policy(), connection_configs, db),  # type: ignore[arg-type]
+            TaskResources(EMPTY_REQUEST, Policy(), connection_configs, db),
         )
         return [
             DryRunDatasetResponse(
