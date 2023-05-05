@@ -16,7 +16,7 @@ import {
 /**
  * Transform the config to the latest version so that components can
  * reference config variables uniformly.
- * 
+ *
  * DEFER: move this to config.slice as part of removing default config state (see https://github.com/ethyca/fides/issues/3212)
  */
 const transformConfig = (config: LegacyConfig): Config => {

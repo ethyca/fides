@@ -104,7 +104,8 @@ export const consentSlice = createSlice({
 });
 
 export const { reducer } = consentSlice;
-export const { changeConsent, updateUserConsentPreferencesFromApi } = consentSlice.actions;
+export const { changeConsent, updateUserConsentPreferencesFromApi } =
+  consentSlice.actions;
 
 export const selectConsentState = (state: RootState) => state.consent;
 

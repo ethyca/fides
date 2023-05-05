@@ -14,5 +14,5 @@ describe("Home", () => {
         cy.contains(action.title);
       });
     });
-  })
+  });
 });

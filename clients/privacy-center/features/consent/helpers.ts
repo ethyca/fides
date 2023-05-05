@@ -4,7 +4,11 @@ import {
   resolveConsentValue,
 } from "fides-js";
 
-import { ConfigConsentOption, LegacyConsentConfig, ConsentConfig } from "~/types/config";
+import {
+  ConfigConsentOption,
+  LegacyConsentConfig,
+  ConsentConfig,
+} from "~/types/config";
 import { FidesKeyToConsent, GpcStatus } from "./types";
 
 /**

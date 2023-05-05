@@ -72,5 +72,6 @@ export const configSlice = createSlice({
 const selectConfig = (state: RootState) => state.config;
 
 export const { reducer } = configSlice;
-export const { loadConfig, mergeConfig, updateConsentOptionsFromApi } = configSlice.actions;
+export const { loadConfig, mergeConfig, updateConsentOptionsFromApi } =
+  configSlice.actions;
 export const useConfig = (): Config => useAppSelector(selectConfig).config;
