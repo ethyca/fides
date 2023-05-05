@@ -43,3 +43,11 @@ class TestDeploy:
             "/usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9"
         )
         assert deploy.check_virtualenv() == True
+
+
+@pytest.mark.unit
+class TestCheckDockerVersion:
+    def test_docker_version_exception(self):
+        with pytest.raises(SystemExit):
+            result = deploy.check_docker_version("30.1.24")
+            assert result
