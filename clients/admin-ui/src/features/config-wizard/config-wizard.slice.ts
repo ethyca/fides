@@ -23,7 +23,7 @@ const initialState: State = {
   addSystemsMethod: SystemMethods.MANUAL,
 };
 
-export const slice = createSlice({
+export const configWizardSlice = createSlice({
   name: "configWizard",
   initialState,
   reducers: {
@@ -83,9 +83,9 @@ export const {
   setSystemsForReview,
   chooseSystemsForReview,
   setAddSystemsMethod,
-} = slice.actions;
+} = configWizardSlice.actions;
 
-export const { reducer } = slice;
+export const { reducer } = configWizardSlice;
 
 const selectConfigWizard = (state: RootState) => state.configWizard;
 

@@ -28,7 +28,7 @@ type FeaturesState = {
 
 const initialState: FeaturesState = { flags: {}, showNotificationBanner: true };
 
-const featuresSlice = createSlice({
+export const featuresSlice = createSlice({
   name: "features",
   initialState,
   reducers: {

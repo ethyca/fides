@@ -1,22 +1,10 @@
 import { createSelector, createSlice } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
-import { selectToken } from "~/features/auth";
-import { addCommonHeaders } from "~/features/common/CommonHeaders";
+import { baseApi } from "~/features/common/api.slice";
 import { DataQualifier } from "~/types/api";
 
-export const dataQualifierApi = createApi({
-  reducerPath: "dataQualifierApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
-    prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
-      addCommonHeaders(headers, token);
-      return headers;
-    },
-  }),
-  tagTypes: ["Data Qualifiers"],
+const dataQualifierApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllDataQualifiers: build.query<DataQualifier[], void>({
       query: () => ({ url: `data_qualifier/` }),
@@ -77,6 +65,9 @@ export const { reducer } = dataQualifierSlice;
 const emptyDataQualifiers: DataQualifier[] = [];
 export const selectDataQualifiers: (state: RootState) => DataQualifier[] =
   createSelector(
-    dataQualifierApi.endpoints.getAllDataQualifiers.select(),
-    ({ data }) => data ?? emptyDataQualifiers
+    [
+      (RootState) => RootState,
+      dataQualifierApi.endpoints.getAllDataQualifiers.select(),
+    ],
+    (RootState, { data }) => data ?? emptyDataQualifiers
   );
