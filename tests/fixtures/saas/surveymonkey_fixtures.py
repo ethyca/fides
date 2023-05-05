@@ -17,7 +17,8 @@ secrets = get_secrets("surveymonkey")
 def surveymonkey_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "surveymonkey.domain") or secrets["domain"],
-        "api_token": pydash.get(saas_config, "surveymonkey.api_token") or secrets["api_token"],
+        "api_token": pydash.get(saas_config, "surveymonkey.api_token")
+        or secrets["api_token"],
         # add the rest of your secrets here
     }
 
@@ -25,7 +26,8 @@ def surveymonkey_secrets(saas_config) -> Dict[str, Any]:
 @pytest.fixture(scope="session")
 def surveymonkey_identity_email(saas_config) -> str:
     return (
-        pydash.get(saas_config, "surveymonkey.identity_email") or secrets["identity_email"]
+        pydash.get(saas_config, "surveymonkey.identity_email")
+        or secrets["identity_email"]
     )
 
 
@@ -43,7 +45,8 @@ def surveymonkey_external_references() -> Dict[str, Any]:
 def surveymonkey_erasure_external_references() -> Dict[str, Any]:
     return {}
 
-class surveymonkeyClient:
+
+class SurveyMonkeyClient:
     headers: object = {}
     base_url: str = ""
 
@@ -82,43 +85,35 @@ class surveymonkeyClient:
             json={
                 "name": "Ethyca test",
                 "description": "An email list of employees at UMBC",
-                "attributes": {
-                    "internal_id": 113,
-                    "list_group_id": 12322
-                },
+                "attributes": {"internal_id": 113, "list_group_id": 12322},
                 "recipients": [
                     {
-                        "address": {
-                            "email": email,
-                            "name": "test"
-                        },
-                        "tags": [
-                            "reading"
-                        ],
-                        "metadata": {
-                            "age": "31",
-                            "place": "Test location"
-                        },
+                        "address": {"email": email, "name": "test"},
+                        "tags": ["reading"],
+                        "metadata": {"age": "31", "place": "Test location"},
                         "substitution_data": {
                             "favorite_color": "surveymonkey Orange",
-                            "job": "Software Engineer"
-                        }
+                            "job": "Software Engineer",
+                        },
                     }
-                ]
+                ],
             },
         )
 
+
 @pytest.fixture
 def surveymonkey_client(surveymonkey_secrets) -> Generator:
-    yield surveymonkeyClient(surveymonkey_secrets)
+    yield SurveyMonkeyClient(surveymonkey_secrets)
+
 
 @pytest.fixture
 def surveymonkey_erasure_data(
-    surveymonkey_client: surveymonkeyClient,
+    surveymonkey_client: SurveyMonkeyClient,
     surveymonkey_erasure_identity_email: str,
 ) -> Generator:
-    
-    response = surveymonkey_client.create_survey_response(surveymonkey_erasure_identity_email)
+    response = surveymonkey_client.create_survey_response(
+        surveymonkey_erasure_identity_email
+    )
     recipient = response.json()["results"]
     recipient_id = recipient["id"]
 
@@ -130,6 +125,7 @@ def surveymonkey_erasure_data(
     # )
 
     yield recipient_id
+
 
 @pytest.fixture
 def surveymonkey_runner(

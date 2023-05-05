@@ -9,6 +9,7 @@ saas_config:
     - name: domain
       default_value: api.surveymonkey.com
     - name: api_token
+      label: API Token
 
   client_config:
     protocol: https
@@ -51,6 +52,9 @@ saas_config:
         read:
           method: GET
           path: /v3/surveys
+          query_params:
+            - name: page
+              value: 1
           pagination:
             strategy: offset
             configuration:
@@ -92,8 +96,8 @@ saas_config:
               identity: email
         delete:
           method: DELETE
-          path: >-
-            /v3/collectors/<survey_response_collector_id>/responses/<survey_response_id>
+          path: /v3/collectors/<survey_response_collector_id>/responses/<survey_response_id>
+          grouped_inputs: [survey_response_collector_id, survey_response_id]
           param_values:
             - name: survey_response_collector_id
               references:
