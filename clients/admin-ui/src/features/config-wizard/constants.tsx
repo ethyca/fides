@@ -19,11 +19,9 @@ export const STEPS = [
 
 // When more links like these are introduced we should move them to a single file.
 export const DOCS_URL_AWS_PERMISSIONS =
-  "https://ethyca.github.io/fides/2.0.0/getting-started/generate_resources/#required-permissions";
-export const DOCS_URL_OKTA_CREDENTIALS =
-  "https://ethyca.github.io/fides/2.0.0/getting-started/generate_resources/#providing-credentials_2";
+  "https://docs.ethyca.com/fides/cli_support/infra_scanning#required-permissions";
 export const DOCS_URL_IAM_POLICY =
-  "https://ethyca.github.io/fides/2.0.0/getting-started/generate_resources/#sample-iam-policy";
+  "https://docs.ethyca.com/fides/cli_support/infra_scanning#providing-credentials-1";
 export const DOCS_URL_ACCESS_MANAGEMENT =
   "https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_access-management.html";
 export const DOCS_URL_ISSUES = "https://github.com/ethyca/fides/issues";
