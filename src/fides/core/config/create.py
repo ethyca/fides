@@ -16,7 +16,6 @@ from fides.core.config.utils import replace_config_value
 CONFIG_DOCS_URL = "https://ethyca.github.io/fides/stable/config/"
 HELP_LINK = f"# For more info, please visit: {CONFIG_DOCS_URL}"
 
-# Update this file to append
 
 def get_nested_settings(config: FidesConfig) -> Dict[str, BaseSettings]:
     """
