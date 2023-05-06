@@ -17,7 +17,6 @@ import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 
 import {
-  hydratePrivacyCenterEnvironment,
   loadPrivacyCenterEnvironment,
   PrivacyCenterEnvironment,
 } from "~/app/server-environment";
@@ -25,6 +24,7 @@ import store, { persistor } from "~/app/store";
 import Error from "~/components/Error";
 import Layout from "~/components/Layout";
 import { loadConfig } from "~/features/common/config.slice";
+import { loadSettings } from "~/features/common/settings.slice";
 import { loadStyles } from "~/features/common/styles.slice";
 import theme from "~/theme";
 
@@ -80,10 +80,12 @@ const PrivacyCenterApp = ({
   serverEnvironment,
 }: PrivacyCenterProps & AppProps) => {
   useMemo(() => {
-    const env = hydratePrivacyCenterEnvironment(serverEnvironment);
-    store.dispatch(loadConfig(env?.config));
-    store.dispatch(loadStyles(env?.styles));
-    return env;
+    if (serverEnvironment) {
+      // Load the server environment into the Redux store
+      store.dispatch(loadSettings(serverEnvironment.settings));
+      store.dispatch(loadConfig(serverEnvironment.config));
+      store.dispatch(loadStyles(serverEnvironment.styles));
+    }
   }, [serverEnvironment]);
   return (
     <SafeHydrate>

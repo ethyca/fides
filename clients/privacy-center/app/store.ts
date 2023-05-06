@@ -18,6 +18,7 @@ import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
 import { baseApi } from "~/features/common/api.slice";
 import { reducer as configReducer } from "~/features/common/config.slice";
+import { reducer as settingsReducer } from "~/features/common/settings.slice";
 import { reducer as stylesReducer } from "~/features/common/styles.slice";
 import { reducer as consentReducer } from "~/features/consent/consent.slice";
 
@@ -47,6 +48,7 @@ const reducer = {
   [baseApi.reducerPath]: baseApi.reducer,
   config: configReducer,
   consent: consentReducer,
+  settings: settingsReducer,
   styles: stylesReducer,
 };
 

@@ -16,14 +16,18 @@ describe("Home", () => {
     });
   });
 
-  it.only("supports custom styles", () => {
+  it("supports custom styles", () => {
     cy.visit("/");
     cy.getByTestId("home");
 
     // Check the before/after background-color
     // NOTE: rgb(255, 99, 71) === "tomato" 🍅
-    cy.get("body").should("not.have.css", "background-color", "rgb(255, 99, 71)");
-    const styles = "body { background-color: tomato !important; }"
+    cy.get("body").should(
+      "not.have.css",
+      "background-color",
+      "rgb(255, 99, 71)"
+    );
+    const styles = "body { background-color: tomato !important; }";
     cy.dispatch({ type: "styles/loadStyles", payload: styles });
     cy.get("body").should("have.css", "background-color", "rgb(255, 99, 71)");
   });
@@ -31,8 +35,8 @@ describe("Home", () => {
   describe("when handling errors", () => {
     // Allow uncaught exceptions to occur without failing the test
     beforeEach(() => {
-      cy.on('uncaught:exception', () => false);
-    })
+      cy.on("uncaught:exception", () => false);
+    });
 
     it("renders an error page if configuration is missing", () => {
       cy.visit("/");
