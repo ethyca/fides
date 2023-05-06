@@ -16,6 +16,9 @@ ENV_PREFIX = "FIDES__DATABASE__"
 class DatabaseSettings(FidesSettings):
     """Configuration settings for the application database."""
 
+    automigrate: bool = Field(
+        default=True, description="Automatically runs migrations on webserver startup. If set to `false`, will require the user to run migrations manually via the CLI or API."
+    )
     api_engine_pool_size: int = Field(
         default=50,
         description="Number of concurrent database connections Fides will use for API requests. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
