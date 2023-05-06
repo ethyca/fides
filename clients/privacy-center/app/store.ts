@@ -9,6 +9,7 @@ import {
   PAUSE,
   PERSIST,
   persistReducer,
+  persistStore,
   PURGE,
   REGISTER,
   REHYDRATE,
@@ -98,3 +99,4 @@ if (typeof window !== "undefined" && window.Cypress) {
 export default store;
 export type AppStore = ReturnType<typeof makeStore>;
 export type AppDispatch = AppStore["dispatch"];
+export const persistor = persistStore(store);

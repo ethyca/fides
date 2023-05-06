@@ -3,7 +3,6 @@ import Head from "next/head";
 import { useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
-import { persistStore } from "redux-persist";
 import { PersistGate } from "redux-persist/integration/react";
 /*
  * This import needed to be updated to '@chakra-ui/react' from "@fidesui/react".
@@ -23,7 +22,7 @@ import {
   loadPrivacyCenterEnvironment,
   PrivacyCenterEnvironment,
 } from "~/app/server-environment";
-import store from "~/app/store";
+import store, { persistor} from "~/app/store";
 import Error from "~/components/Error";
 import { loadConfig } from "~/features/common/config.slice";
 import theme from "~/theme";
@@ -80,16 +79,14 @@ const PrivacyCenterApp = ({
   serverEnvironment,
 }: PrivacyCenterProps & AppProps) => {
   const environment = useMemo(() => {
-    console.log("_app.useMemo initializing...");
     const env = hydratePrivacyCenterEnvironment(serverEnvironment);
     store.dispatch(loadConfig(env?.config));
     return env;
   }, [serverEnvironment]);
-  console.log("render app");
   return (
     <SafeHydrate>
       <Provider store={store}>
-        <PersistGate onBeforeLift={() => console.log("onBeforeLift")} loading={<div>Loading...</div>} persistor={persistStore(store)}>
+        <PersistGate persistor={persistor}>
           <ChakraProvider theme={theme}>
             <ErrorBoundary fallbackRender={Error}>
               <Head>
