@@ -20,7 +20,7 @@ export const configSlice = createSlice({
     loadConfig(draftState, { payload }: PayloadAction<Config | undefined>) {
       if (process.env.NODE_ENV === "development") {
         // eslint-disable-next-line no-console
-        console.log("Loading Privacy Center configuration into Redux store...");
+        console.log("Loading Privacy Center configuration into Redux store...", payload?.title);
       }
       draftState.config = payload;
     },

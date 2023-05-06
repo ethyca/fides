@@ -18,6 +18,7 @@ import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
 import { baseApi } from "~/features/common/api.slice";
 import { reducer as configReducer } from "~/features/common/config.slice";
+import { reducer as stylesReducer } from "~/features/common/styles.slice";
 import { reducer as consentReducer } from "~/features/consent/consent.slice";
 
 /**
@@ -46,6 +47,7 @@ const reducer = {
   [baseApi.reducerPath]: baseApi.reducer,
   config: configReducer,
   consent: consentReducer,
+  styles: stylesReducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
@@ -62,10 +64,7 @@ const persistConfig = {
    * not exist any more.
    * https://redux-toolkit.js.org/usage/usage-guide#use-with-redux-persist
    */
-  blacklist: [
-    "config", // don't persist the config store - this should always be refreshed from the server!
-    baseApi.reducerPath,
-  ],
+  whitelist: ["consent"],
 };
 
 const persistedReducer = persistReducer(persistConfig, allReducers);

@@ -3,14 +3,13 @@ import React from "react";
 import Head from "next/head";
 
 import { useConfig } from "~/features/common/config.slice";
+import { useStyles } from "~/features/common/styles.slice";
 
-// TODO: get styles from store
-interface LayoutProps {
-  styles?: string;
-}
+interface LayoutProps {}
 
-const Layout: React.FC<LayoutProps> = ({ children, styles }) => {
+const Layout: React.FC<LayoutProps> = ({ children }) => {
   const config = useConfig();
+  const styles = useStyles();
   return (
     <>
       <Head>

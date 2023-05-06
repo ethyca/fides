@@ -25,6 +25,7 @@ import store, { persistor } from "~/app/store";
 import Error from "~/components/Error";
 import Layout from "~/components/Layout";
 import { loadConfig } from "~/features/common/config.slice";
+import { loadStyles } from "~/features/common/styles.slice";
 import theme from "~/theme";
 
 interface PrivacyCenterProps {
@@ -78,9 +79,10 @@ const PrivacyCenterApp = ({
   pageProps,
   serverEnvironment,
 }: PrivacyCenterProps & AppProps) => {
-  const environment = useMemo(() => {
+  useMemo(() => {
     const env = hydratePrivacyCenterEnvironment(serverEnvironment);
     store.dispatch(loadConfig(env?.config));
+    store.dispatch(loadStyles(env?.styles));
     return env;
   }, [serverEnvironment]);
   return (
@@ -89,7 +91,7 @@ const PrivacyCenterApp = ({
         <PersistGate persistor={persistor}>
           <ChakraProvider theme={theme}>
             <ErrorBoundary fallbackRender={Error}>
-              <Layout styles={environment?.styles}>
+              <Layout>
                 <Component {...pageProps} />
               </Layout>
             </ErrorBoundary>
