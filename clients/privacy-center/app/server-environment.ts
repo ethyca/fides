@@ -118,9 +118,11 @@ export const transformConfig = (config: LegacyConfig): Config => {
 };
 
 /**
- * Validate the config object 
+ * Validate the config object
  */
-export const validateConfig = (input: Config | LegacyConfig): { isValid: boolean, message: string } => {
+export const validateConfig = (
+  input: Config | LegacyConfig
+): { isValid: boolean; message: string } => {
   // First, ensure we support LegacyConfig type if provided
   const config = transformConfig(input);
 

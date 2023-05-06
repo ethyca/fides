@@ -22,7 +22,7 @@ import {
   loadPrivacyCenterEnvironment,
   PrivacyCenterEnvironment,
 } from "~/app/server-environment";
-import store, { persistor} from "~/app/store";
+import store, { persistor } from "~/app/store";
 import Error from "~/components/Error";
 import { loadConfig } from "~/features/common/config.slice";
 import theme from "~/theme";
@@ -93,7 +93,9 @@ const PrivacyCenterApp = ({
                 <title>Privacy Center</title>
                 <meta name="description" content="Privacy Center" />
                 <link rel="icon" href="/favicon.ico" />
-                {environment?.styles ? <style>{environment.styles}</style> : null}
+                {environment?.styles ? (
+                  <style>{environment.styles}</style>
+                ) : null}
               </Head>
               <Component {...pageProps} />
             </ErrorBoundary>
