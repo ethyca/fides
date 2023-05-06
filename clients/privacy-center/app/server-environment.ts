@@ -47,13 +47,15 @@ export type PrivacyCenterClientSettings = Pick<
   "FIDES_API_URL"
 >;
 
+export type Styles = string;
+
 /**
  * Environment that is generated server-side and provided to the client
  */
 export interface PrivacyCenterEnvironment {
   settings: PrivacyCenterClientSettings;
   config?: Config;
-  styles?: string;
+  styles?: Styles;
 }
 
 /**

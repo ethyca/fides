@@ -2,8 +2,8 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { useAppSelector } from "~/app/hooks";
 import type { RootState } from "~/app/store";
+import type { Styles } from "~/app/server-environment";
 
-type Styles = string;
 interface StylesState {
   styles?: Styles;
 }
