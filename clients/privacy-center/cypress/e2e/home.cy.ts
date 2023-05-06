@@ -22,4 +22,9 @@ describe("Home", () => {
       cy.contains("an unexpected error occurred");
     });
   });
+
+  it("renders a 404 page for non-existent routes", () => {
+    cy.visit("/404", { failOnStatusCode: false });
+    cy.contains("Error: 404");
+  });
 });
