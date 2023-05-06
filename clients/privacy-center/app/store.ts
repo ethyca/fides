@@ -69,7 +69,6 @@ const persistConfig = {
 
 const persistedReducer = persistReducer(persistConfig, allReducers);
 
-// hello
 export const makeStore = (preloadedState?: Partial<RootState>) => {
   const store = configureStore({
     reducer: persistedReducer,
@@ -88,5 +87,14 @@ export const makeStore = (preloadedState?: Partial<RootState>) => {
   return store;
 };
 
+const store = makeStore();
+
+// The store is exposed on the window object when running in the Cypress test
+// environment. This enables the custom `cy.dispatch` command.
+if (typeof window !== "undefined" && window.Cypress) {
+  window.store = store;
+}
+
+export default store;
 export type AppStore = ReturnType<typeof makeStore>;
 export type AppDispatch = AppStore["dispatch"];

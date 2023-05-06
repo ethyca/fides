@@ -17,6 +17,7 @@ import ConsentCard from "~/components/ConsentCard";
 import { useConfig } from "~/features/common/config.slice";
 
 const Home: NextPage = () => {
+  console.log("render Home");
   const config = useConfig();
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);

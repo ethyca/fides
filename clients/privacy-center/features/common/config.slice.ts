@@ -17,7 +17,8 @@ export const configSlice = createSlice({
     /**
      * Load a new configuration, replacing the current state entirely.
      */
-    loadConfig(draftState, { payload }: PayloadAction<Config>) {
+    loadConfig(draftState, { payload }: PayloadAction<Config | undefined>) {
+      console.log("loadConfig");
       draftState.config = payload;
     },
     /**
@@ -70,7 +71,9 @@ export const { reducer } = configSlice;
 export const { loadConfig, mergeConfig, updateConsentOptionsFromApi } =
   configSlice.actions;
 export const useConfig = (): Config => {
+  console.log("useConfig");
   const { config } = useAppSelector(selectConfig);
+  console.log("useConfig got=", config);
   if (!config) {
     throw new Error("Unable to load Privacy Center configuration!");
   }

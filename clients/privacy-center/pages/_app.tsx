@@ -1,4 +1,5 @@
 import App, { AppContext, AppInitialProps, AppProps } from "next/app";
+import Head from "next/head";
 import { useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
@@ -22,10 +23,10 @@ import {
   loadPrivacyCenterEnvironment,
   PrivacyCenterEnvironment,
 } from "~/app/server-environment";
-import { AppStore, makeStore } from "~/app/store";
+import store from "~/app/store";
 import Error from "~/components/Error";
+import { loadConfig } from "~/features/common/config.slice";
 import theme from "~/theme";
-import Head from "next/head";
 
 interface PrivacyCenterProps {
   serverEnvironment?: PrivacyCenterEnvironment;
@@ -73,60 +74,22 @@ const SafeHydrate: React.FC = ({ children }) => (
   </div>
 );
 
-/**
- *
- * Hydrate the environment and the Redux store using the server-side environment
- *
- * DEFER: ensure this can only happen *once* per session, to avoid unexpected
- * issues where the environment changes unexpected - probably due to a logic
- * error in our app - and we change out the state. The NextJS withRedux() wrapper
- * might handle this? This will allow us to remove all the `console.warn`s...
- * (see https://github.com/ethyca/fides/issues/3212)
- *
- * NOTE: the official NextJS withRedux() wrapper might handle this?
- */
-const hydrateEnvironmentAndStore = (
-  serverEnvironment?: PrivacyCenterEnvironment
-): { environment?: PrivacyCenterEnvironment; store: AppStore } => {
-  if (!serverEnvironment) {
-    console.warn(
-      "hydrateEnvironmentAndStore() called without a valid server environment!"
-    );
-  }
-  // Initialize the environment
-  const environment = hydratePrivacyCenterEnvironment(serverEnvironment);
-
-  // Initialize the store
-  let store;
-  if (environment?.config) {
-    store = makeStore({ config: { config: environment.config } });
-  } else {
-    store = makeStore();
-  }
-
-  // The store is exposed on the window object when running in the Cypress test
-  // environment. This enables the custom `cy.dispatch` command.
-  if (typeof window !== "undefined" && window.Cypress) {
-    window.store = store;
-  }
-
-  return { environment, store };
-};
-
 const PrivacyCenterApp = ({
   Component,
   pageProps,
   serverEnvironment,
 }: PrivacyCenterProps & AppProps) => {
-  // DEFER: ensure this initializes only once -- and safely! (see https://github.com/ethyca/fides/issues/3212)
-  const { environment, store } = useMemo(
-    () => hydrateEnvironmentAndStore(serverEnvironment),
-    [serverEnvironment]
-  );
+  const environment = useMemo(() => {
+    console.log("_app.useMemo initializing...");
+    const env = hydratePrivacyCenterEnvironment(serverEnvironment);
+    store.dispatch(loadConfig(env?.config));
+    return env;
+  }, [serverEnvironment]);
+  console.log("render app");
   return (
     <SafeHydrate>
       <Provider store={store}>
-        <PersistGate loading={null} persistor={persistStore(store)}>
+        <PersistGate onBeforeLift={() => console.log("onBeforeLift")} loading={<div>Loading...</div>} persistor={persistStore(store)}>
           <ChakraProvider theme={theme}>
             <ErrorBoundary fallbackRender={Error}>
               <Head>
