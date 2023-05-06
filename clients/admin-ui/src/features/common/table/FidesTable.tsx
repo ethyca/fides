@@ -124,6 +124,7 @@ export const FidesTable = <T extends FidesObject>({
             prepareRow(row);
             const { key: rowKey, ...rowProps } = row.getRowProps();
             const rowName = row.original.name;
+            const rowId = row.original.id;
             return (
               <Tr
                 key={rowKey}
@@ -133,7 +134,7 @@ export const FidesTable = <T extends FidesObject>({
                     ? { backgroundColor: "gray.50", cursor: "pointer" }
                     : undefined
                 }
-                data-testid={`row-${rowName}`}
+                data-testid={`row-${rowName ?? rowId}`}
               >
                 {row.cells.map((cell) => {
                   const { key: cellKey, ...cellProps } = cell.getCellProps();

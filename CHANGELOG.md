@@ -26,11 +26,17 @@ The types of changes are:
 - Access and erasure support for Amplitude [#2569](https://github.com/ethyca/fides/pull/2569)
 - Access and erasure support for Gorgias [#2444](https://github.com/ethyca/fides/pull/2444)
 - Privacy Experience Bulk Create, Bulk Update, and Detail Endpoints [#3185](https://github.com/ethyca/fides/pull/3185)
+- Initial privacy experience UI [#3186](https://github.com/ethyca/fides/pull/3186)
 
 ### Changed
 
 - Merge instances of RTK `createApi` into one instance for better cache invalidation [#3059](https://github.com/ethyca/fides/pull/3059)
+- Update custom field definition uniqueness to be case insensitive name per resource type [#3215](https://github.com/ethyca/fides/pull/3215)
 - Restrict where privacy notices of certain consent mechanisms must be displayed [#3195](https://github.com/ethyca/fides/pull/3195)
+
+### Developer Experience
+
+- Use prettier to format *all* source files in client packages [#3240](https://github.com/ethyca/fides/pull/3240)
 
 ## [2.12.1](https://github.com/ethyca/fides/compare/2.12.0...2.12.1)
 

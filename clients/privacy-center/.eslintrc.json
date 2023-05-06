@@ -20,6 +20,7 @@
         "namedComponents": "arrow-function"
       }
     ],
+    "react/require-default-props": "off",
     "no-param-reassign": [
       "error",
       {
