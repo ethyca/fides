@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 from fides.api.ctl.sql_models import CustomFieldDefinition
-from fides.lib.exceptions import KeyOrNameAlreadyExists
+from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
 
 
 @pytest.fixture(autouse=True)

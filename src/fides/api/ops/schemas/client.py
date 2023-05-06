@@ -1,7 +1,7 @@
-from fides.api.ops.schemas.base_class import FidesopsSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 
 
-class ClientCreatedResponse(FidesopsSchema):
+class ClientCreatedResponse(FidesSchema):
     """Response schema for client creation"""
 
     client_id: str

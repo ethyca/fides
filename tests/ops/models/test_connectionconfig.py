@@ -1,6 +1,7 @@
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.ops.db.base_class import KeyOrNameAlreadyExists, KeyValidationError
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -8,7 +9,6 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.api.ops.util.text import to_snake_case
-from fides.lib.db.base_class import KeyOrNameAlreadyExists, KeyValidationError
 
 
 class TestConnectionConfigModel:

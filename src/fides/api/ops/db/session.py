@@ -6,8 +6,8 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import Session, sessionmaker
 
+from fides.api.ops.common_exceptions import MissingConfig
 from fides.core.config import FidesConfig
-from fides.lib.exceptions import MissingConfig
 
 
 def get_db_engine(
