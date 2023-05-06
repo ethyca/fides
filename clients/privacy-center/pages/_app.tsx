@@ -1,5 +1,4 @@
 import App, { AppContext, AppInitialProps, AppProps } from "next/app";
-import Head from "next/head";
 import { useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
@@ -24,6 +23,7 @@ import {
 } from "~/app/server-environment";
 import store, { persistor } from "~/app/store";
 import Error from "~/components/Error";
+import Layout from "~/components/Layout";
 import { loadConfig } from "~/features/common/config.slice";
 import theme from "~/theme";
 
@@ -89,15 +89,9 @@ const PrivacyCenterApp = ({
         <PersistGate persistor={persistor}>
           <ChakraProvider theme={theme}>
             <ErrorBoundary fallbackRender={Error}>
-              <Head>
-                <title>Privacy Center</title>
-                <meta name="description" content="Privacy Center" />
-                <link rel="icon" href="/favicon.ico" />
-                {environment?.styles ? (
-                  <style>{environment.styles}</style>
-                ) : null}
-              </Head>
-              <Component {...pageProps} />
+              <Layout styles={environment?.styles}>
+                <Component {...pageProps} />
+              </Layout>
             </ErrorBoundary>
           </ChakraProvider>
         </PersistGate>
