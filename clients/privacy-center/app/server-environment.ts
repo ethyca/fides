@@ -177,7 +177,7 @@ export const loadConfigFromFile = async (
     // DEFER: add more validations here, log helpful warnings, etc.
     // (see https://github.com/ethyca/fides/issues/3171)
     if (!isValid) {
-      console.warn("Configuration file is invalid! Message:", message);
+      console.warn("WARN: Configuration file is invalid! Message:", message);
       return;
     }
     return config;
