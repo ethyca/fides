@@ -1,39 +1,49 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { produce } from "immer";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { useAppSelector } from "~/app/hooks";
 import type { RootState } from "~/app/store";
-import { config as initialConfig } from "~/constants";
+import { getDefaultConfig } from "~/constants";
 import { Consent, ConsentPreferences } from "~/types/api";
-import { ConfigConsentOption } from "~/types/config";
+import { Config } from "~/types/config";
 
-type State = {
-  consent?: {
-    page: {
-      consentOptions?: ConfigConsentOption[];
-    }
-  };
-};
-const initialState: State = {};
+// DEFER: by statically loading the config here, we *guarantee* that the initial
+// state is never undefined. This is convenient for all the Typescript checking,
+// but is probably not wise - do we *really* want to ever show the "default"
+// prebuilt config?
+//
+// We should refactor this to initialize the slice when the store is initialized
+// (at runtime) and then set the initial state then. That would allow us to define the type as:
+// ```
+// type State = Config | undefined
+// ```
+//
+// ...and then update all the code to handle that.
+//
+// (see https://github.com/ethyca/fides/issues/3212)
+interface ConfigState {
+  config: Config;
+}
+const initialState: ConfigState = { config: getDefaultConfig() };
 
 export const configSlice = createSlice({
   name: "config",
   initialState,
   reducers: {
-    overrideConsentOptions(
-      draftState,
-      { payload }: PayloadAction<ConfigConsentOption[]>
-    ) {
-      if (!draftState.consent) {
-        draftState.consent = {
-          page: {}
-        };
-      }
-      draftState.consent.page.consentOptions = payload;
+    /**
+     * Load a new configuration, replacing the current state entirely.
+     */
+    loadConfig(draftState, { payload }: PayloadAction<Config>) {
+      draftState.config = payload;
     },
-
+    /**
+     * Modify the current configuration, by merging a partial config into the current state.
+     */
+    mergeConfig(draftState, { payload }: PayloadAction<Partial<Config>>) {
+      draftState.config = { ...draftState.config, ...payload };
+    },
     /**
      * When consent preferences are returned from the API, they include the up-to-date description
-     * of the related data use. This overrides the statically configured data use info.
+     * of the related data use. This overrides the currently configured data use info.
      */
     updateConsentOptionsFromApi(
       draftState,
@@ -43,7 +53,7 @@ export const configSlice = createSlice({
         (payload.consent ?? []).map((consent) => [consent.data_use, consent])
       );
 
-      draftState.consent?.page.consentOptions?.forEach((draftOption) => {
+      draftState.config.consent?.page.consentOptions?.forEach((draftOption) => {
         const apiConsent = consentPreferencesMap.get(
           draftOption.fidesDataUseKey
         );
@@ -59,24 +69,9 @@ export const configSlice = createSlice({
   },
 });
 
+const selectConfig = (state: RootState) => state.config;
+
 export const { reducer } = configSlice;
-export const { updateConsentOptionsFromApi } = configSlice.actions;
-
-/**
- * The stored config state, which is the subset of configs options that can be modified at runtime.
- */
-export const selectConfigState = (state: RootState) => state.config;
-
-/**
- * The app config with all runtime overrides applied.
- */
-export const selectConfig = createSelector(selectConfigState, (configState) =>
-  produce(initialConfig, (draft) => {
-    Object.assign(draft, configState);
-  })
-);
-
-export const selectConfigConsentOptions = createSelector(
-  selectConfig,
-  (config) => config.consent?.page.consentOptions ?? []
-);
+export const { loadConfig, mergeConfig, updateConsentOptionsFromApi } =
+  configSlice.actions;
+export const useConfig = (): Config => useAppSelector(selectConfig).config;

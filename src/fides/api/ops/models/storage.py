@@ -13,7 +13,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.db.base_class import Base, JSONTypeOverride
 from fides.api.ops.schemas.storage.storage import ResponseFormat, StorageType
 from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
@@ -22,7 +22,6 @@ from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.storage_util import get_schema_for_secrets
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
-from fides.lib.db.base_class import Base
 
 
 class StorageConfig(Base):

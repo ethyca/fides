@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Depends, HTTPException
 from fastapi.params import Security
 from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
@@ -14,15 +14,16 @@ from fides.api.ops.api.v1.urn_registry import (
 )
 from fides.api.ops.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.ops.models.policy import ActionType
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionSystemTypeMap,
     SystemType,
 )
+from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.connection_type import (
     connection_type_secret_schema,
     get_connection_types,
 )
-from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)
 

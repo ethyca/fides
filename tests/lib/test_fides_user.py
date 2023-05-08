@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from fides.lib.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user import FidesUser
 
 
 def test_create_user():

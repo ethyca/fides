@@ -15,9 +15,37 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.12.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.12.1...main)
 
+### Added
 
+- Access and erasure support for Amplitude [#2569](https://github.com/ethyca/fides/pull/2569)
+- Access and erasure support for Gorgias [#2444](https://github.com/ethyca/fides/pull/2444)
+- Privacy Experience Bulk Create, Bulk Update, and Detail Endpoints [#3185](https://github.com/ethyca/fides/pull/3185)
+- Initial privacy experience UI [#3186](https://github.com/ethyca/fides/pull/3186)
+
+### Changed
+
+- Merge instances of RTK `createApi` into one instance for better cache invalidation [#3059](https://github.com/ethyca/fides/pull/3059)
+- Update custom field definition uniqueness to be case insensitive name per resource type [#3215](https://github.com/ethyca/fides/pull/3215)
+- Restrict where privacy notices of certain consent mechanisms must be displayed [#3195](https://github.com/ethyca/fides/pull/3195)
+- Merged the `lib` submodule into the `api.ops` submodule [#3134](https://github.com/ethyca/fides/pull/3134)
+
+### Developer Experience
+
+- Use prettier to format *all* source files in client packages [#3240](https://github.com/ethyca/fides/pull/3240)
+
+## [2.12.1](https://github.com/ethyca/fides/compare/2.12.0...2.12.1)
+
+### Changed
+
+- Updated how Docker version checks are handled and added an escape-hatch [#3218](https://github.com/ethyca/fides/pull/3218)
+
+### Fixed
+
+- Datamap export mitigation for deleted taxonomy elements referenced by declarations [#3214](https://github.com/ethyca/fides/pull/3214)
+- Update datamap columns each time the page is visited [#3211](https://github.com/ethyca/fides/pull/3211)
+- Ensure inactive custom fields are not returned for datamap response [#3223](https://github.com/ethyca/fides/pull/3223)
 
 ## [2.12.0](https://github.com/ethyca/fides/compare/2.11.0...2.12.0)
 
@@ -28,6 +56,7 @@ The types of changes are:
 - Page to edit or add privacy notices [#3058](https://github.com/ethyca/fides/pull/3058)
 - Side navigation bar can now also have children navigation links [#3099](https://github.com/ethyca/fides/pull/3099)
 - Endpoints for consent reporting [#3095](https://github.com/ethyca/fides/pull/3095)
+- Added manage custom fields page behind feature flag [#3089](https://github.com/ethyca/fides/pull/3089)
 - Custom fields table [#3097](https://github.com/ethyca/fides/pull/3097)
 - Custom fields form modal [#3165](https://github.com/ethyca/fides/pull/3165)
 - Endpoints to save the new-style Privacy Preferences with respect to a fides user device id [#3132](https://github.com/ethyca/fides/pull/3132)
@@ -37,7 +66,7 @@ The types of changes are:
 - Support pseudonymous consent requests with `fides_user_device_id` [#3158](https://github.com/ethyca/fides/pull/3158)
 - Update `fides_consent` cookie format [#3158](https://github.com/ethyca/fides/pull/3158)
 - Add custom fields to the data use declaration form [#3197](https://github.com/ethyca/fides/pull/3197)
-
+- Added fides user device id as a ProvidedIdentityType [#3131](https://github.com/ethyca/fides/pull/3131)
 
 ### Changed
 
@@ -46,11 +75,15 @@ The types of changes are:
 - More tests on data use validation for privacy notices within the same region [#3156](https://github.com/ethyca/fides/pull/3156)
 - Improvements to export code for bugfixes and privacy declaration custom field support [#3184](https://github.com/ethyca/fides/pull/3184)
 - Enabled privacy notice feature flag [#3192](https://github.com/ethyca/fides/pull/3192)
+- Updated TS types - particularly with new privacy notices [#3054](https://github.com/ethyca/fides/pull/3054)
+- Make name not required on privacy declaration [#3150](https://github.com/ethyca/fides/pull/3150)
+- Let Rule Targets allow for custom data categories [#3147](https://github.com/ethyca/fides/pull/3147)
 
 ### Removed
 
 - Removed the warning about access control migration [#3055](https://github.com/ethyca/fides/pull/3055)
 - Remove `customFields` feature flag [#3080](https://github.com/ethyca/fides/pull/3080)
+- Remove notification banner from the home page [#3088](https://github.com/ethyca/fides/pull/3088)
 
 ### Fixed
 
@@ -58,12 +91,16 @@ The types of changes are:
 - The `--local` flag is now respected for the `scan dataset db` command [#3096](https://github.com/ethyca/fides/pull/3096)
 - Fixing issue where connectors with external dataset references would fail to save [#3142](https://github.com/ethyca/fides/pull/3142)
 - Ensure privacy declaration IDs are stable across updates through system API [#3188](https://github.com/ethyca/fides/pull/3188)
+- Fixed unit tests for saas connector type endpoints now that we have >50 [#3101](https://github.com/ethyca/fides/pull/3101)
+- Fixed nox docs link [#3121](https://github.com/ethyca/fides/pull/3121/files)
 
 ### Developer Experience
 
 - Update fides deploy to use a new database.load_samples setting to initialize sample Systems, Datasets, and Connections for testing [#3102](https://github.com/ethyca/fides/pull/3102)
 - Remove support for automatically configuring messaging (Mailgun) & storage (S3) using `.env` with `nox -s "fides_env(test)"` [#3102](https://github.com/ethyca/fides/pull/3102)
 - Add smoke tests for consent management [#3158](https://github.com/ethyca/fides/pull/3158)
+- Added nox command that opens dev docs [#3082](https://github.com/ethyca/fides/pull/3082)
+
 
 ## [2.11.0](https://github.com/ethyca/fides/compare/2.10.0...2.11.0)
 

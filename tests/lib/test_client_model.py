@@ -5,21 +5,21 @@ from copy import deepcopy
 import pytest
 
 from fides.api.ops.api.v1.scope_registry import DATASET_CREATE_OR_UPDATE, SCOPE_REGISTRY
-from fides.lib.cryptography.cryptographic_util import (
+from fides.api.ops.cryptography.cryptographic_util import (
     generate_salt,
     generate_secure_random_string,
     hash_with_salt,
 )
-from fides.lib.cryptography.schemas.jwt import (
+from fides.api.ops.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
-from fides.lib.models.client import ClientDetail, _get_root_client_detail
-from fides.lib.oauth.oauth_util import extract_payload
-from fides.lib.oauth.roles import OWNER, VIEWER
+from fides.api.ops.models.client import ClientDetail, _get_root_client_detail
+from fides.api.ops.oauth.roles import OWNER, VIEWER
+from fides.api.ops.oauth.utils import extract_payload
 
 
 def test_create_client_and_secret(db, config):

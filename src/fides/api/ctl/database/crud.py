@@ -21,7 +21,7 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     ResourceTypes,
 )
 from fides.api.ctl.utils import errors
-from fides.lib.db.base import Base  # type: ignore[attr-defined]
+from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
 
 
 # CRUD Functions
@@ -68,6 +68,8 @@ async def get_custom_fields_filtered(
     Utility function to construct a filtered query for custom field values based on provided mapping of
     resource types to resource IDs.
 
+    Only custom fields with an "active" CustomFieldDefinition are returned.
+
     This is for use in bulk querying of custom fields, to avoid multiple round trips to the db.
     """
     with log.contextualize(model=CustomField):
@@ -88,6 +90,8 @@ async def get_custom_fields_filtered(
                     and_(
                         CustomFieldDefinition.resource_type == resource_type.value,
                         CustomField.resource_id.in_(resource_ids),
+                        # pylint: disable=singleton-comparison
+                        CustomFieldDefinition.active == True,
                     )
                     for resource_type, resource_ids in resource_types_to_ids.items()
                 ]

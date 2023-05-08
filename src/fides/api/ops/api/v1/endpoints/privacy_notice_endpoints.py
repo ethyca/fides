@@ -25,9 +25,9 @@ from fides.api.ops.models.privacy_notice import (
     PrivacyNoticeRegion,
     check_conflicting_data_uses,
 )
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas import privacy_notice as schemas
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Privacy Notice"], prefix=urls.V1_URL_PREFIX)
 

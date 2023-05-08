@@ -9,7 +9,6 @@ import {
   useToast,
 } from "@fidesui/react";
 import type { NextPage } from "next";
-import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useMemo } from "react";
 
@@ -19,21 +18,20 @@ import {
   resolveConsentValue,
   saveFidesCookie,
   getOrMakeFidesCookie,
-} from "fides-consent";
+} from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { useLocalStorage } from "~/common/hooks";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import ConsentItemCard from "~/components/ConsentItemCard";
-import { config } from "~/constants";
 import {
-  selectConfigConsentOptions,
   updateConsentOptionsFromApi,
+  useConfig,
 } from "~/features/common/config.slice";
 import {
   selectFidesKeyToConsent,
   selectPersistedFidesKeyToConsent,
-  updateConsentFromApi,
+  updateUserConsentPreferencesFromApi,
   useLazyGetConsentRequestPreferencesQuery,
   usePostConsentRequestVerificationMutation,
   useUpdateConsentRequestPreferencesMutation,
@@ -54,7 +52,11 @@ const Consent: NextPage = () => {
   const persistedFidesKeyToConsent = useAppSelector(
     selectPersistedFidesKeyToConsent
   );
-  const consentOptions = useAppSelector(selectConfigConsentOptions);
+  const config = useConfig();
+  const consentOptions = useMemo(
+    () => config.consent?.page.consentOptions ?? [],
+    [config]
+  );
 
   const getIdVerificationConfigQueryResult = useGetIdVerificationConfigQuery();
   const [
@@ -100,7 +102,7 @@ const Consent: NextPage = () => {
   const storeConsentPreferences = useCallback(
     (data: ConsentPreferences) => {
       dispatch(updateConsentOptionsFromApi(data));
-      dispatch(updateConsentFromApi(data));
+      dispatch(updateUserConsentPreferencesFromApi(data));
     },
     [dispatch]
   );
@@ -255,6 +257,7 @@ const Consent: NextPage = () => {
       },
     });
   }, [
+    config,
     consentContext,
     consentOptions,
     consentRequestId,
@@ -318,12 +321,6 @@ const Consent: NextPage = () => {
 
   return (
     <div>
-      <Head>
-        <title>Privacy Center</title>
-        <meta name="description" content="Privacy Center" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
       <header>
         <Flex
           bg="gray.100"

@@ -46,6 +46,7 @@ from fides.api.ops.common_exceptions import (
     RedisConnectionError,
 )
 from fides.api.ops.models.application_config import ApplicationConfig
+from fides.api.ops.oauth.utils import get_root_client, verify_oauth_client_prod
 from fides.api.ops.schemas.analytics import Event, ExtraData
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     update_saas_configs,
@@ -59,7 +60,6 @@ from fides.api.ops.service.saas_request.override_implementations import *
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import _log_exception
-from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_prod
 from fides.api.ops.util.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
@@ -68,7 +68,6 @@ from fides.api.ops.util.system_manager_oauth_util import (
 )
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.core.config import CONFIG, check_required_webserver_config_values
-from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
 VERSION = fides.__version__
 
@@ -128,7 +127,6 @@ def create_fides_app(
 
     for router in routers:
         fastapi_app.include_router(router)
-    fastapi_app.include_router(user_router, tags=["Users"], prefix=f"{api_prefix}")
     fastapi_app.include_router(api_router)
 
     if security_env == "dev":

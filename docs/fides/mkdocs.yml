@@ -62,7 +62,9 @@ theme:
 markdown_extensions:
   - attr_list
   - pymdownx.superfences
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      check_paths: true
+      base_path: ["docs/fides/docs/config/", "docs/fides/config/","docs/fides/dev/config/"]
   - pymdownx.inlinehilite
   - pymdownx.tabbed
   - admonition

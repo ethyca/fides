@@ -79,6 +79,8 @@ from fides.api.ops.common_exceptions import (
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph, Node
 from fides.api.ops.graph.traversal import Traversal
+from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
@@ -99,6 +101,7 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentity,
     ProvidedIdentityType,
 )
+from fides.api.ops.oauth.utils import verify_callback_oauth, verify_oauth_client
 from fides.api.ops.schemas.dataset import (
     CollectionAddressResponse,
     DryRunDatasetResponse,
@@ -147,11 +150,8 @@ from fides.api.ops.util.cache import FidesopsRedis
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.enums import ColumnSort
 from fides.api.ops.util.logger import Pii
-from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
-from fides.lib.models.client import ClientDetail
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 
@@ -761,10 +761,13 @@ def get_request_preview_queries(
                 )
             dataset_configs.append(dataset_config)
     try:
-        connection_configs: List[ConnectionConfig] = [
-            ConnectionConfig.get(db=db, object_id=dataset.connection_config_id)
-            for dataset in dataset_configs
-        ]
+        connection_configs: List[ConnectionConfig] = []
+        for dataset in dataset_configs:
+            connection_config: Optional[ConnectionConfig] = ConnectionConfig.get(
+                db=db, object_id=dataset.connection_config_id
+            )
+            if connection_config:
+                connection_configs.append(connection_config)
 
         try:
             dataset_graph: DatasetGraph = DatasetGraph(
