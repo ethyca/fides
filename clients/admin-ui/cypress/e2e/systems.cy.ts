@@ -530,6 +530,12 @@ describe("System management page", () => {
         });
         cy.visit(`${SYSTEM_ROUTE}/configure/fidesctl_system`);
         cy.wait("@getFidesctlSystemWithDataUses");
+        cy.fixture("systems/system.json").then((system) => {
+          const newSystem = { ...system, fides_key: "fidesctl_system" };
+          cy.intercept("PUT", "/api/v1/system*", { body: newSystem }).as(
+            "putFidesctlSystem"
+          );
+        });
 
         cy.getByTestId("tab-Data uses").click();
       });
@@ -545,13 +551,13 @@ describe("System management page", () => {
           cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
           cy.getByTestId("delete-btn").should("be.disabled");
           cy.getByTestId("save-btn").click();
-          cy.wait("@putSystem");
+          cy.wait("@putFidesctlSystem");
           cy.getByTestId("delete-btn").should("be.enabled");
           // now go through delete flow
           cy.getByTestId("delete-btn").click();
         });
         cy.getByTestId("continue-btn").click();
-        cy.wait("@putSystem");
+        cy.wait("@putFidesctlSystem");
         cy.getByTestId("toast-success-msg").contains("Data use deleted");
       });
 
@@ -561,7 +567,7 @@ describe("System management page", () => {
           cy.getByTestId("delete-btn").click();
         });
         cy.getByTestId("continue-btn").click();
-        cy.wait("@putSystem").then((interception) => {
+        cy.wait("@putFidesctlSystem").then((interception) => {
           const { body } = interception.request;
           expect(body.privacy_declarations.length).to.eql(1);
           expect(body.privacy_declarations[0].data_use !== "improve.system");
