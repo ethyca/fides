@@ -677,6 +677,7 @@ class TestGetPrivacyNoticeDetail:
         )
         assert resp.status_code == 200
         created_notice = resp.json()[0]
+        print(f"Created Notice: {created_notice}")
 
         url = V1_URL_PREFIX + PRIVACY_NOTICE_DETAIL.format(
             privacy_notice_id=created_notice["id"]
@@ -690,15 +691,19 @@ class TestGetPrivacyNoticeDetail:
         )
         assert resp.status_code == 200
         data = resp.json()
+        print(f"Unescaped Response: {data}")
         assert data["description"] == "user&#x27;s description &lt;script /&gt;"
 
         # now request with the unescape header
         unescape_header = {"Unescape-Safestr": "yes"}
+        auth_and_unescape_header = {**auth_header, **unescape_header}
+        print(f"Auth & Unescape Headers: {auth_and_unescape_header}")
         resp = api_client.get(
             url,
-            headers={**auth_header, **unescape_header},
+            headers=auth_and_unescape_header,
         )
         data = resp.json()
+        print(f"Escaped Data: {data}")
         assert data["description"] == maybe_dangerous_description
 
 
