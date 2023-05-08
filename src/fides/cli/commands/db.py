@@ -32,6 +32,23 @@ def db_init(ctx: click.Context) -> None:
     )
 
 
+@database.command(name="migrate")
+@click.pass_context
+@with_analytics
+def db_migrate(ctx: click.Context) -> None:
+    """
+    Run the latest migrations for the Fides database.
+    """
+    config = ctx.obj["CONFIG"]
+    handle_cli_response(
+        _api.db_action(
+            server_url=config.cli.server_url,
+            headers=config.user.auth_header,
+            action="migrate",
+        )
+    )
+
+
 @database.command(name="reset")
 @click.pass_context
 @yes_flag
