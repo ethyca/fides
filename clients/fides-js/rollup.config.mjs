@@ -30,6 +30,14 @@ export default [
         verbose: true,
         hook: "writeBundle",
       }),
+      copy({
+        // Automatically add the built css to the privacy center's static files for bundling:
+        targets: [
+          { src: `dist/${name}.css`, dest: "../privacy-center/public/lib/" },
+        ],
+        verbose: true,
+        hook: "writeBundle",
+      }),
       filesize({
         reporter: [
           "boxen", // default reporter, which prints a nice CLI output

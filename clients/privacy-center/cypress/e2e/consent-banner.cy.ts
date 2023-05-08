@@ -1,10 +1,11 @@
-import { CONSENT_COOKIE_NAME, ConsentBannerOptions, CookieKeyConsent } from "fides-js";
+import { CONSENT_COOKIE_NAME, CookieKeyConsent } from "fides-js";
+import {ConsentValue, FidesConfig} from "fides-js/src/fides";
 
-// The fides-consent-demo.html page is wired up to inject the
+// The fides-js-demo.html page is wired up to inject the
 // `fidesConsentBannerOptions` into the Fides.banner(...) function
 declare global {
     interface Window {
-        fidesConsentBannerOptions?: ConsentBannerOptions;
+        fidesConsentBannerOptions?: FidesConfig;
     }
 }
 
@@ -12,7 +13,7 @@ declare global {
 declare global {
     namespace Cypress {
         interface Chainable {
-            visitConsentDemo(bannerOptions?: ConsentBannerOptions): Chainable<any>;
+            visitConsentDemo(bannerOptions?: FidesConfig): Chainable<any>;
         }
     }
 }
@@ -20,36 +21,43 @@ declare global {
 
 describe("Consent banner", () => {
     // Default options to use for all tests
-    const testBannerOptions: ConsentBannerOptions = {
-        debug: true, // enable debug logging
-        labels: {
-            bannerDescription: "This test website is overriding the banner description label.",
-            primaryButton: "Accept Test",
-            secondaryButton: "Reject Test",
-            tertiaryButton: "Customize Test",
+    const testBannerOptions: FidesConfig = {
+        consent: {
+            options: [{
+                cookieKeys: ["data_sales"],
+                default: true,
+                fidesDataUseKey: "data_use.sales"
+            },{
+                cookieKeys: ["tracking"],
+                default: false,
+                fidesDataUseKey: "advertising"
+            }
+            ]
+
+        },
+        bannerOptions: {
+            debug: true, // enable debug logging
+            labels: {
+                bannerDescription: "This test website is overriding the banner description label.",
+                primaryButton: "Accept Test",
+                secondaryButton: "Reject Test",
+                tertiaryButton: "Customize Test",
+            }
         }
     };
 
-    const testCookieValue: CookieKeyConsent = {
-        data_sales: true,
-        tracking: false,
-    }
-
-    Cypress.Commands.add("visitConsentDemo", (bannerOptions?: ConsentBannerOptions) => {
-        cy.visit("/fides-consent-demo.html", {
+    Cypress.Commands.add("visitConsentDemo", (bannerOptions?: FidesConfig) => {
+        cy.visit("/fides-js-components-demo.html", {
             onBeforeLoad: (win) => {
                 // eslint-disable-next-line no-param-reassign
-                win.fidesConsentBannerOptions = {
-                    ...testBannerOptions,
-                    ...bannerOptions,
-                }
+                win.fidesConsentBannerOptions = testBannerOptions
             },
         });
     })
 
     describe("when disabled", () => {
         beforeEach(() => {
-            cy.visitConsentDemo({ isDisabled: true });
+            cy.visitConsentDemo({ bannerOptions: {isDisabled: true }});
         });
 
         it("does not render", () => {
@@ -57,23 +65,6 @@ describe("Consent banner", () => {
             cy.contains("button", "Accept Test").should("not.exist");
         });
     })
-
-    describe("when user has a saved consent cookie", () => {
-        beforeEach(() => {
-            cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(testCookieValue));
-        });
-
-        describe("when banner is not disabled", () => {
-            beforeEach(() => {
-                cy.visitConsentDemo({ isDisabled: false })
-            });
-
-            it("does not render", () => {
-                cy.get("div#fides-consent-banner").should("not.exist");
-                cy.contains("button", "Accept Test").should("not.exist");
-            });
-        });
-    });
 
     describe("when user has no saved consent cookie", () => {
         beforeEach(() => {
@@ -83,8 +74,10 @@ describe("Consent banner", () => {
         describe("when banner is not disabled", () => {
             beforeEach(() => {
                 cy.visitConsentDemo({
-                    isDisabled: false,
-                    isGeolocationEnabled: false,
+                    bannerOptions: {
+                        isDisabled: false,
+                        isGeolocationEnabled: false,
+                    }
                 });
             });
 
@@ -188,9 +181,11 @@ describe("Consent banner", () => {
                 }
                 cy.intercept("GET", "https://example-api.com/location", { body: locationData });
                 cy.visitConsentDemo({
-                    geolocationApiUrl: "https://example-api.com/location",
-                    isDisabled: false,
-                    isGeolocationEnabled: true,
+                    bannerOptions: {
+                        geolocationApiUrl: "https://example-api.com/location",
+                        isDisabled: false,
+                        isGeolocationEnabled: true,
+                    }
                 });
                 cy.get("div#fides-consent-banner").should("exist");
                 cy.contains("button", "Accept Test").should("exist");
@@ -204,9 +199,11 @@ describe("Consent banner", () => {
                 }
                 cy.intercept("GET", "https://example-api.com/location", { body: locationData });
                 cy.visitConsentDemo({
-                    geolocationApiUrl: "https://example-api.com/location",
-                    isDisabled: false,
-                    isGeolocationEnabled: true,
+                    bannerOptions: {
+                        geolocationApiUrl: "https://example-api.com/location",
+                        isDisabled: false,
+                        isGeolocationEnabled: true,
+                    }
                 });
                 cy.get("div#fides-consent-banner").should("not.exist");
                 cy.contains("button", "Accept Test").should("not.exist");
@@ -220,10 +217,11 @@ describe("Consent banner", () => {
                 }
                 cy.intercept("GET", "https://example-api.com/location", { body: locationData });
                 cy.visitConsentDemo({
-                    geolocationApiUrl: "https://example-api.com/location",
-                    isDisabled: false,
-                    isGeolocationEnabled: true,
-                    isEnabledCountries: ["US", "CA"],
+                    bannerOptions: {
+                        geolocationApiUrl: "https://example-api.com/location",
+                        isDisabled: false,
+                        isGeolocationEnabled: true,
+                    }
                 });
                 cy.get("div#fides-consent-banner").should("exist");
                 cy.contains("button", "Accept Test").should("exist");

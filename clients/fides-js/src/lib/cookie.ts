@@ -103,11 +103,11 @@ export const makeConsentDefaults = ({
   config,
   context,
 }: {
-  config: ConsentConfig;
+  config?: ConsentConfig;
   context: ConsentContext;
 }): CookieKeyConsent => {
   const defaults: CookieKeyConsent = {};
-  config.options.forEach(({ cookieKeys, default: current }) => {
+  config?.options.forEach(({ cookieKeys, default: current }) => {
     if (current === undefined) {
       return;
     }
