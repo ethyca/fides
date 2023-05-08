@@ -1,5 +1,5 @@
 import {h, FunctionComponent} from "preact";
-import {ButtonType} from "./consent-types";
+import {ButtonType} from "../lib/consent-types";
 
 interface ButtonProps {
     buttonType: ButtonType;

@@ -3,7 +3,7 @@ import {useState, useEffect} from "preact/hooks";
 import {CookieKeyConsent, setConsentCookieAcceptAll, setConsentCookieRejectAll} from "./cookie";
 import {ButtonType, ConsentBannerOptions} from "./consent-types";
 import debugLog from "./consent-utils";
-import ConsentBannerButton from "./ConsentBannerButton";
+import ConsentBannerButton from "../components/ConsentBannerButton";
 
 interface BannerProps {
   defaults: CookieKeyConsent;
