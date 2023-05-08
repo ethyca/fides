@@ -33,6 +33,7 @@ The types of changes are:
 
 ### Fixed
 - Prevent ability to unintentionally show "default" Privacy Center configuration, styles, etc. [#3242](https://github.com/ethyca/fides/pull/3242)
+- Fix broken links to docs site pages in Admin UI [#3232](https://github.com/ethyca/fides/pull/3232)
 
 ### Developer Experience
 
