@@ -37,7 +37,9 @@ const DatamapDrawer = ({
   resetSelectedSystemId,
 }: DatamapDrawerProps) => {
   const isOpen = useMemo(() => Boolean(selectedSystemId), [selectedSystemId]);
-  const { isLoading, ...dataProps } = usePrivacyDeclarationData();
+  const { isLoading, ...dataProps } = usePrivacyDeclarationData({
+    includeDatasets: false,
+  });
   const toast = useToast();
 
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
@@ -184,11 +186,12 @@ const DatamapDrawer = ({
                   Data uses
                 </Text>
                 <Box borderTop="1px solid" borderColor="gray.200">
-                  <Box pb={3} px={4}>
+                  <Box pb={3}>
                     <PrivacyDeclarationManager
                       system={system}
                       onCollision={collisionWarning}
                       onSave={handleSave}
+                      addButtonProps={{ ml: 4 }}
                       {...dataProps}
                     />
                   </Box>

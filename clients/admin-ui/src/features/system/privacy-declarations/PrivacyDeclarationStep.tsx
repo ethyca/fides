@@ -21,7 +21,9 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
-  const { isLoading, ...dataProps } = usePrivacyDeclarationData();
+  const { isLoading, ...dataProps } = usePrivacyDeclarationData({
+    includeDatasets: true,
+  });
 
   const handleSave = async (
     updatedDeclarations: PrivacyDeclaration[],
@@ -94,6 +96,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
           system={system}
           onCollision={collisionWarning}
           onSave={handleSave}
+          includeCustomFields
           {...dataProps}
         />
       )}

@@ -95,7 +95,12 @@ export const PrivacyDeclarationFormComponents = ({
   allDatasets,
   onDelete,
   privacyDeclarationId,
-}: DataProps & Pick<Props, "onDelete"> & { privacyDeclarationId?: string }) => {
+  includeCustomFields,
+}: DataProps &
+  Pick<Props, "onDelete"> & {
+    privacyDeclarationId?: string;
+    includeCustomFields?: boolean;
+  }) => {
   const { dirty, isSubmitting, isValid, initialValues } =
     useFormikContext<FormValues>();
   const deleteModal = useDisclosure();
@@ -169,10 +174,12 @@ export const PrivacyDeclarationFormComponents = ({
           variant="stacked"
         />
       ) : null}
-      <CustomFieldsList
-        resourceType={ResourceTypes.PRIVACY_DECLARATION}
-        resourceFidesKey={privacyDeclarationId}
-      />
+      {includeCustomFields ? (
+        <CustomFieldsList
+          resourceType={ResourceTypes.PRIVACY_DECLARATION}
+          resourceFidesKey={privacyDeclarationId}
+        />
+      ) : null}
       <ButtonGroup size="sm" display="flex" justifyContent="space-between">
         <Button
           variant="outline"
@@ -322,6 +329,7 @@ interface Props {
   ) => Promise<PrivacyDeclarationWithId[] | undefined>;
   initialValues?: PrivacyDeclarationWithId;
   privacyDeclarationId?: string;
+  includeCustomFields?: boolean;
 }
 
 export const PrivacyDeclarationForm = ({

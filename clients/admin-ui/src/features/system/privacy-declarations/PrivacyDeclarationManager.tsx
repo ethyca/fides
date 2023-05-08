@@ -1,4 +1,11 @@
-import { Box, Button, Stack, Tooltip, useToast } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  ButtonProps,
+  Stack,
+  Tooltip,
+  useToast,
+} from "@fidesui/react";
 import { useEffect, useMemo, useState } from "react";
 
 import { PrivacyDeclaration, System } from "~/types/api";
@@ -30,12 +37,16 @@ interface Props {
     privacyDeclarations: PrivacyDeclaration[],
     isDelete?: boolean
   ) => Promise<PrivacyDeclarationWithId[] | undefined>;
+  addButtonProps?: ButtonProps;
+  includeCustomFields?: boolean;
 }
 
 const PrivacyDeclarationManager = ({
   system,
   onCollision,
   onSave,
+  addButtonProps,
+  includeCustomFields,
   ...dataProps
 }: Props & DataProps) => {
   const toast = useToast();
@@ -157,6 +168,7 @@ const PrivacyDeclarationManager = ({
         privacyDeclarations={accordionDeclarations}
         onEdit={handleEditDeclaration}
         onDelete={handleDelete}
+        includeCustomFields={includeCustomFields}
         {...dataProps}
       />
       {showNewForm ? (
@@ -165,6 +177,7 @@ const PrivacyDeclarationManager = ({
             initialValues={newDeclaration}
             onSubmit={saveNewDeclaration}
             onDelete={handleDeleteNew}
+            includeCustomFields={includeCustomFields}
             {...dataProps}
           />
         </Box>
@@ -183,6 +196,7 @@ const PrivacyDeclarationManager = ({
               data-testid="add-btn"
               onClick={handleShowNewForm}
               disabled={showNewForm && !newDeclaration}
+              {...addButtonProps}
             >
               Add a Data Use +
             </Button>
