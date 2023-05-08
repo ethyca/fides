@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Callable
+from pydantic import BaseModel
 
 from fastapi import HTTPException
 from starlette.status import HTTP_400_BAD_REQUEST
@@ -28,3 +29,18 @@ def validate_start_and_end_filters(
                 status_code=HTTP_400_BAD_REQUEST,
                 detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
             )
+
+
+def transform_fields(
+    transformation: Callable, model: BaseModel, fields: List[str]
+) -> BaseModel:
+    """
+    Takes a callable and returns a transformed object.
+    """
+
+    for field in fields:
+        transformed_field = transformation(getattr(model, field))
+        if transformed_field:
+            setattr(model, field, transformed_field)
+
+    return model

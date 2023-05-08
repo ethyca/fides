@@ -25,6 +25,7 @@ from fides.api.ops.models.privacy_notice import (
     PrivacyNoticeRegion,
     check_conflicting_data_uses,
 )
+from fides.api.ops.api.v1.endpoints.utils import transform_fields
 from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas import privacy_notice as schemas
 from fides.api.ops.util.api_router import APIRouter
@@ -32,6 +33,7 @@ from fides.api.ops.util.api_router import APIRouter
 router = APIRouter(tags=["Privacy Notice"], prefix=urls.V1_URL_PREFIX)
 
 DataUseMap = Dict[str, List[schemas.PrivacyNoticeResponse]]
+ESCAPE_FIELDS = ["name", "description", "internal_description", "origin"]
 
 
 def generate_notice_query(
@@ -171,7 +173,9 @@ def get_privacy_notice(
     notice = get_privacy_notice_or_error(db, privacy_notice_id)
     if should_unescape:
         print("orig", notice.name)
-        notice.name = unescape(notice.name)
+        notice = transform_fields(
+            transformation=unescape, model=notice, fields=ESCAPE_FIELDS
+        )
     return notice
 
 
@@ -228,7 +232,9 @@ def create_privacy_notices(
     # Loop through and create the new privacy notices
     created_privacy_notices: List[PrivacyNotice] = []
     for privacy_notice in privacy_notices:
-        privacy_notice.name = escape(privacy_notice.name)
+        privacy_notice = transform_fields(
+            transformation=escape, model=privacy_notice, fields=ESCAPE_FIELDS
+        )
         created_privacy_notice = PrivacyNotice.create(
             db=db,
             data=privacy_notice.dict(exclude_unset=True),
@@ -266,7 +272,9 @@ def prepare_privacy_notice_patches(
                 detail=f"No PrivacyNotice found for id {update_data.id}.",
             )
 
-        update_data.name = escape(update_data.name)
+        update_data = transform_fields(
+            transformation=escape, model=update_data, fields=ESCAPE_FIELDS
+        )
         updates_and_existing.append((update_data, existing_notices[update_data.id]))
 
     # we temporarily store proposed update data in-memory for validation purposes only

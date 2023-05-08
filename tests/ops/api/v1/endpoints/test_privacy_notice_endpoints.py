@@ -678,9 +678,9 @@ class TestGetPrivacyNoticeDetail:
                 }
             ],
         )
+        print(f"Created Notice: {resp.text}")
         assert resp.status_code == 200
         created_notice = resp.json()[0]
-        print(f"Created Notice: {created_notice}")
 
         url = V1_URL_PREFIX + PRIVACY_NOTICE_DETAIL.format(
             privacy_notice_id=created_notice["id"]
