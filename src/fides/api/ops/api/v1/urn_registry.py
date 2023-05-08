@@ -2,6 +2,9 @@
 V1_URL_PREFIX = "/api/v1"
 YAML = "/yml"
 
+# User Permission URLs
+USER_PERMISSIONS = "/user/{user_id}/permission"
+
 # Config URLs
 CONFIG = "/config"
 
@@ -168,9 +171,6 @@ USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
 USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"
 SYSTEM_MANAGER = "/user/{user_id}/system-manager"
 SYSTEM_MANAGER_DETAIL = "/user/{user_id}/system-manager/{system_key}"
-
-# User Permission URLs
-USER_PERMISSIONS = "/user/{user_id}/permission"
 
 # Login URLs
 LOGIN = "/login"

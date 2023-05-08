@@ -4,7 +4,7 @@ from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import String
 
-from fides.lib.db.base_class import Base
+from fides.api.ops.db.base_class import Base
 
 
 class AuditLogAction(str, EnumType):

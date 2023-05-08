@@ -4,7 +4,7 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   Page_PrivacyExperienceResponse_,
-  PrivacyExperience,
+  PrivacyExperienceCreate,
   PrivacyExperienceResponse,
   PrivacyNoticeRegion,
 } from "~/types/api";
@@ -57,7 +57,10 @@ const privacyExperienceApi = baseApi.injectEndpoints({
         { type: "Privacy Experiences", id: arg },
       ],
     }),
-    postPrivacyExperience: build.mutation<PrivacyExperience[], void>({
+    postPrivacyExperience: build.mutation<
+      PrivacyExperienceResponse[],
+      PrivacyExperienceCreate[]
+    >({
       query: (payload) => ({
         method: "POST",
         url: `privacy-experience/`,

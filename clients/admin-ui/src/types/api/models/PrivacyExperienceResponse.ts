@@ -12,9 +12,9 @@ import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
  */
 export type PrivacyExperienceResponse = {
   disabled?: boolean;
-  component: ComponentType;
-  delivery_mechanism: DeliveryMechanism;
-  regions: Array<PrivacyNoticeRegion>;
+  component?: ComponentType;
+  delivery_mechanism?: DeliveryMechanism;
+  regions?: Array<PrivacyNoticeRegion>;
   component_title?: string;
   component_description?: string;
   banner_title?: string;

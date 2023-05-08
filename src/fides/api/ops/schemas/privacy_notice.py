@@ -11,10 +11,10 @@ from fides.api.ops.models.privacy_notice import (
     EnforcementLevel,
     PrivacyNoticeRegion,
 )
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 
 
-class PrivacyNotice(BaseSchema):
+class PrivacyNotice(FidesSchema):
     """
     Base for PrivacyNotice API objects
 

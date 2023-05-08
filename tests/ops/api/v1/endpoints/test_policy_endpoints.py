@@ -15,6 +15,7 @@ from fides.api.ops.api.v1.urn_registry import (
     RULE_TARGET_LIST,
     V1_URL_PREFIX,
 )
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
@@ -23,7 +24,6 @@ from fides.api.ops.util.data_category import (
     DataCategory,
     generate_fides_data_categories,
 )
-from fides.lib.models.client import ClientDetail
 
 
 class TestGetPolicies:

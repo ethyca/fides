@@ -10,6 +10,12 @@ from fides.api.ops.api.v1.urn_registry import (
     ENCRYPTION_KEY,
     V1_URL_PREFIX,
 )
+from fides.api.ops.cryptography import cryptographic_util
+from fides.api.ops.cryptography.cryptographic_util import (
+    b64_str_to_bytes,
+    bytes_to_b64_str,
+)
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.encryption_request import (
     AesDecryptionRequest,
     AesDecryptionResponse,
@@ -23,10 +29,7 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_verify_secret_length as aes_gcm_encrypt,
 )
-from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
-from fides.lib.cryptography import cryptographic_util
-from fides.lib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 
 router = APIRouter(tags=["Encryption"], prefix=V1_URL_PREFIX)
 

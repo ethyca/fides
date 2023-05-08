@@ -8,22 +8,22 @@ from sqlalchemy import ARRAY, Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
-from fides.core.config import FidesConfig
-from fides.lib.cryptography.cryptographic_util import (
+from fides.api.ops.cryptography.cryptographic_util import (
     generate_salt,
     generate_secure_random_string,
     hash_with_salt,
 )
-from fides.lib.cryptography.schemas.jwt import (
+from fides.api.ops.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
-from fides.lib.db.base_class import Base
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.oauth.jwt import generate_jwe
+from fides.api.ops.db.base_class import Base
+from fides.api.ops.models.fides_user import FidesUser
+from fides.api.ops.oauth.jwt import generate_jwe
+from fides.core.config import FidesConfig
 
 DEFAULT_SCOPES: list[str] = []
 DEFAULT_ROLES: list[str] = []

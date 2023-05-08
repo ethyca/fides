@@ -144,4 +144,168 @@ describe("Privacy experiences", () => {
       });
     });
   });
+
+  describe("form", () => {
+    beforeEach(() => {
+      cy.intercept("PATCH", "/api/v1/privacy-experience*", {
+        fixture: "privacy-experiences/list.json",
+      }).as("patchExperiences");
+    });
+    interface Props {
+      mechanisms: ("opt_in" | "opt_out" | "notice_only")[];
+      component?: "overlay" | "privacy_center";
+    }
+    /**
+     * Helper function to swap out notices and components in a stubbed experience
+     * @example stubExperience({mechanisms: ["notice_only", "opt_in"], component: "overlay"})
+     */
+    const stubExperience = ({ mechanisms, component }: Props) => {
+      const notices = [];
+      mechanisms.forEach((mechanism) => {
+        cy.fixture(`privacy-notices/${mechanism}.json`).then((notice) =>
+          notices.push(notice)
+        );
+      });
+      cy.fixture("privacy-experiences/experience.json").then((experience) => {
+        const updatedExperience = {
+          ...experience,
+          privacy_notices: mechanisms ? notices : experience.privacy_notices,
+          component: component ?? experience.component,
+        };
+        cy.intercept("GET", "/api/v1/privacy-experience/pri*", {
+          body: updatedExperience,
+        });
+      });
+    };
+
+    it("renders opt_in notice with banner as delivery mechanism", () => {
+      stubExperience({ mechanisms: ["opt_in"], component: "overlay" });
+      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
+      cy.getByTestId("privacy-center-messaging-form").should("not.exist");
+
+      cy.getByTestId("delivery-mechanism-form").within(() => {
+        cy.getSelectValueContainer("input-delivery_mechanism").within(() => {
+          cy.get("input").should("be.disabled");
+        });
+        cy.getSelectValueContainer("input-delivery_mechanism").should(
+          "contain",
+          "Banner"
+        );
+      });
+      cy.getByTestId("banner-text-form");
+      cy.getByTestId("banner-action-form");
+    });
+
+    it("renders notice_only notice with acknowledgment btn and banner as mechanism", () => {
+      stubExperience({ mechanisms: ["notice_only"], component: "overlay" });
+      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
+      cy.getByTestId("privacy-center-messaging-form").should("not.exist");
+
+      cy.getByTestId("delivery-mechanism-form").within(() => {
+        cy.getSelectValueContainer("input-delivery_mechanism").within(() => {
+          cy.get("input").should("be.disabled");
+        });
+        cy.getSelectValueContainer("input-delivery_mechanism").should(
+          "contain",
+          "Banner"
+        );
+      });
+      cy.getByTestId("banner-text-form");
+      cy.getByTestId("banner-action-form").within(() => {
+        cy.getByTestId("input-confirmation_button_label").should("not.exist");
+        cy.getByTestId("input-reject_button_label").should("not.exist");
+        cy.getByTestId("input-acknowledgement_button_label");
+      });
+    });
+
+    it("renders notice_only combined with other notices with confirm/reject btns", () => {
+      stubExperience({
+        mechanisms: ["notice_only", "opt_in"],
+        component: "overlay",
+      });
+      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
+      cy.getByTestId("privacy-center-messaging-form").should("not.exist");
+
+      cy.getByTestId("delivery-mechanism-form");
+      cy.getByTestId("banner-text-form");
+      cy.getByTestId("banner-action-form").within(() => {
+        cy.getByTestId("input-confirmation_button_label");
+        cy.getByTestId("input-reject_button_label");
+        cy.getByTestId("input-acknowledgement_button_label").should(
+          "not.exist"
+        );
+      });
+    });
+
+    it("renders opt_out notice with all options available", () => {
+      stubExperience({ mechanisms: ["opt_out"], component: "overlay" });
+      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
+      cy.getByTestId("privacy-center-messaging-form").should("not.exist");
+
+      cy.getByTestId("delivery-mechanism-form").within(() => {
+        cy.getSelectValueContainer("input-delivery_mechanism").within(() => {
+          cy.get("input").should("not.be.disabled");
+        });
+      });
+      cy.getByTestId("banner-text-form");
+      cy.getByTestId("banner-action-form");
+    });
+
+    it("renders privacy center overlays without banner form sections", () => {
+      stubExperience({
+        mechanisms: ["opt_in", "opt_out", "notice_only"],
+        component: "privacy_center",
+      });
+      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
+      cy.getByTestId("privacy-center-messaging-form");
+      cy.getByTestId("delivery-mechanism-form").should("not.exist");
+      cy.getByTestId("banner-text-form").should("not.exist");
+      cy.getByTestId("banner-action-form").should("not.exist");
+    });
+
+    it("can submit an overlay form", () => {
+      // opt_out is the most permissive, so use that one
+      stubExperience({ mechanisms: ["opt_out"], component: "overlay" });
+      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
+
+      const payload = {
+        delivery_mechanism: "banner",
+        banner_title: "title",
+        banner_description: "description",
+        link_label: "link label",
+        confirmation_button_label: "Accept",
+        reject_button_label: "Reject",
+      };
+      cy.selectOption("input-delivery_mechanism", "Banner");
+      Object.entries(payload).forEach(([key, value]) => {
+        cy.getByTestId(`input-${key}`).type(value);
+      });
+      cy.getByTestId("save-btn").click();
+      cy.wait("@patchExperiences").then((interception) => {
+        const { body } = interception.request;
+        Object.entries(payload).forEach(([key, value]) => {
+          expect(body[0][key]).to.eql(value);
+        });
+      });
+    });
+
+    it("can submit a privacy center form", () => {
+      stubExperience({ mechanisms: ["opt_out"], component: "privacy_center" });
+      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
+      const payload = {
+        link_label: "link label",
+        component_description: "title",
+      };
+      Object.entries(payload).forEach(([key, value]) => {
+        cy.getByTestId(`input-${key}`).type(value);
+      });
+      cy.getByTestId("save-btn").click();
+      cy.wait("@patchExperiences").then((interception) => {
+        const { body } = interception.request;
+        Object.entries(payload).forEach(([key, value]) => {
+          expect(body[0][key]).to.eql(value);
+        });
+      });
+    });
+  });
 });
