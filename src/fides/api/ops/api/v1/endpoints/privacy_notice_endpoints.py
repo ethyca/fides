@@ -1,4 +1,4 @@
-from html import unescape
+from html import escape, unescape
 from typing import Dict, List, Optional, Tuple
 
 from fastapi import Depends, Request, Security
@@ -225,14 +225,18 @@ def create_privacy_notices(
     except ValidationError as e:
         raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
 
-    return [
-        PrivacyNotice.create(
+    # Loop through and create the new privacy notices
+    created_privacy_notices: List[PrivacyNotice] = []
+    for privacy_notice in privacy_notices:
+        privacy_notice.name = escape(privacy_notice.name)
+        created_privacy_notice = PrivacyNotice.create(
             db=db,
-            data=privacy_notice.escaped().dict(exclude_unset=True),
+            data=privacy_notice.dict(exclude_unset=True),
             check_name=False,
         )
-        for privacy_notice in privacy_notices
-    ]
+        created_privacy_notices.append(created_privacy_notice)
+
+    return created_privacy_notices
 
 
 def prepare_privacy_notice_patches(
@@ -262,9 +266,8 @@ def prepare_privacy_notice_patches(
                 detail=f"No PrivacyNotice found for id {update_data.id}.",
             )
 
-        updates_and_existing.append(
-            (update_data.escaped(), existing_notices[update_data.id])
-        )
+        update_data.name = escape(update_data.name)
+        updates_and_existing.append((update_data, existing_notices[update_data.id]))
 
     # we temporarily store proposed update data in-memory for validation purposes only
     validation_updates = []

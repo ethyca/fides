@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from html import escape
 from typing import List, Optional
 
 from pydantic import Extra, conlist
@@ -51,11 +50,6 @@ class PrivacyNotice(BaseSchema):
         for data_use in self.data_uses or []:
             if data_use not in valid_data_uses:
                 raise ValueError(f"Unknown data_use '{data_use}'")
-
-    def escaped(self) -> PrivacyNotice:
-        if self.name:
-            self.name = escape(self.name)
-        return self
 
 
 class PrivacyNoticeCreation(PrivacyNotice):
