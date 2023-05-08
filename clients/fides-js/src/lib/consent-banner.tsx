@@ -1,6 +1,6 @@
 import {h, Component, VNode} from "preact";
 import {useState, useEffect} from "preact/hooks";
-import {CookieKeyConsent, hasSavedConsentCookie, setConsentCookieAcceptAll, setConsentCookieRejectAll} from "./cookie";
+import {CookieKeyConsent, setConsentCookieAcceptAll, setConsentCookieRejectAll} from "./cookie";
 import {ButtonType, ConsentBannerOptions} from "./consent-types";
 import debugLog from "./consent-utils";
 import ConsentBannerButton from "./ConsentBannerButton";
@@ -111,12 +111,6 @@ class ConsentBanner extends Component<BannerProps, BannerState> {
   render(): VNode | null {
     let bannerBuild = null;
     try {
-      if (hasSavedConsentCookie()) {
-        debugLog(
-          "Fides consent cookie already exists, skipping banner initialization!"
-        );
-        return null;
-      }
       debugLog(
         "Fides consent banner should be shown! Building banner elements & styles..."
       );

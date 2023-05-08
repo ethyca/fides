@@ -1,5 +1,5 @@
 import { h, Component, VNode } from "preact";
-import { CookieKeyConsent, hasSavedConsentCookie } from "./cookie";
+import { CookieKeyConsent } from "./cookie";
 import debugLog, { getBannerOptions } from "./consent-utils";
 import { ConsentBannerOptions } from "./consent-types";
 
@@ -30,14 +30,6 @@ class ConsentLink extends Component<LinkProps> {
     let linkBuild = null;
     // If the user provides any extra options, override the defaults
     try {
-      if (hasSavedConsentCookie()) {
-        // todo- check for device id too
-        // also does the existence of a device id prevent links from rendering too, or just banners?
-        debugLog(
-          "Fides consent cookie already exists, skipping banner initialization!"
-        );
-        return null;
-      }
       debugLog(
         "Fides consent link should be shown! Building banner elements & styles..."
       );

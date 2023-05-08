@@ -228,7 +228,8 @@ export const setConsentCookieAcceptAll = (defaults: CookieKeyConsent): void => {
   // Override all consent values to true and save the cookie
   const entries: [string, boolean][] = Object.keys(defaults).map((key) => [key, true]);
   const cookieKeyConsent = Object.fromEntries(entries);
-  setConsentCookie(cookieKeyConsent);
+  const cookie: FidesCookie = getOrMakeFidesCookie(cookieKeyConsent);
+  saveFidesCookie(cookie);
 };
 
 export const setConsentCookieRejectAll = (defaults: CookieKeyConsent): void => {
@@ -241,5 +242,6 @@ export const setConsentCookieRejectAll = (defaults: CookieKeyConsent): void => {
   // Override all consent values to false and save the cookie
   const entries: [string, boolean][] = Object.keys(defaults).map((key) => [key, false]);
   const cookieKeyConsent = Object.fromEntries(entries);
-  setConsentCookie(cookieKeyConsent);
+  const cookie: FidesCookie = getOrMakeFidesCookie(cookieKeyConsent);
+  saveFidesCookie(cookie);
 };

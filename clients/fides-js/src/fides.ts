@@ -94,7 +94,7 @@ const init = async (config: FidesConfig) => {
   await initFidesConsent(defaults, config.bannerOptions);
   // Initialize the window.Fides object
   _Fides.consent = cookie.consent;
-  _Fides.getBannerOptions = getBannerOptions();
+  _Fides.getBannerOptions = getBannerOptions;
   _Fides.fides_meta = cookie.fides_meta;
   _Fides.identity = cookie.identity;
 
