@@ -14,6 +14,7 @@ from botocore.exceptions import ClientError, ParamValidationError
 from bson import ObjectId
 from loguru import logger
 
+from fides.api.ops.cryptography.cryptographic_util import bytes_to_b64_str
 from fides.api.ops.schemas.storage.storage import (
     ResponseFormat,
     S3AuthMethod,
@@ -25,7 +26,6 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
 )
 from fides.api.ops.util.storage_authenticator import get_s3_session
 from fides.core.config import CONFIG
-from fides.lib.cryptography.cryptographic_util import bytes_to_b64_str
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 

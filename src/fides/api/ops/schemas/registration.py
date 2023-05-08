@@ -2,10 +2,10 @@ from typing import Optional
 
 from pydantic import EmailStr, Extra
 
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 
 
-class GetRegistrationStatusResponse(BaseSchema):
+class GetRegistrationStatusResponse(FidesSchema):
     """
     Reflects the registration status of a Fides deployment.
     """

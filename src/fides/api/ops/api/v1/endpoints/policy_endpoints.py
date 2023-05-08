@@ -24,19 +24,19 @@ from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.common_exceptions import (
     DataCategoryNotSupported,
     DrpActionValidationError,
+    KeyOrNameAlreadyExists,
     PolicyValidationError,
     RuleTargetValidationError,
     RuleValidationError,
 )
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas import policy as schemas
 from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
-from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.lib.exceptions import KeyOrNameAlreadyExists
-from fides.lib.models.client import ClientDetail
 
 router = APIRouter(tags=["DSR Policy"], prefix=urls.V1_URL_PREFIX)
 

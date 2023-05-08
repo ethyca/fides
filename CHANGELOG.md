@@ -22,12 +22,22 @@ The types of changes are:
 - Access and erasure support for Amplitude [#2569](https://github.com/ethyca/fides/pull/2569)
 - Access and erasure support for Gorgias [#2444](https://github.com/ethyca/fides/pull/2444)
 - Privacy Experience Bulk Create, Bulk Update, and Detail Endpoints [#3185](https://github.com/ethyca/fides/pull/3185)
+- Initial privacy experience UI [#3186](https://github.com/ethyca/fides/pull/3186)
 
 ### Changed
 
 - Merge instances of RTK `createApi` into one instance for better cache invalidation [#3059](https://github.com/ethyca/fides/pull/3059)
+- Update custom field definition uniqueness to be case insensitive name per resource type [#3215](https://github.com/ethyca/fides/pull/3215)
 - Restrict where privacy notices of certain consent mechanisms must be displayed [#3195](https://github.com/ethyca/fides/pull/3195)
+- Merged the `lib` submodule into the `api.ops` submodule [#3134](https://github.com/ethyca/fides/pull/3134)
+
+### Fixed
+- Prevent ability to unintentionally show "default" Privacy Center configuration, styles, etc. [#3242](https://github.com/ethyca/fides/pull/3242)
 - Fix broken links to docs site pages in Admin UI [#3232](https://github.com/ethyca/fides/pull/3232)
+
+### Developer Experience
+
+- Use prettier to format *all* source files in client packages [#3240](https://github.com/ethyca/fides/pull/3240)
 
 ## [2.12.1](https://github.com/ethyca/fides/compare/2.12.0...2.12.1)
 
@@ -35,13 +45,11 @@ The types of changes are:
 
 - Updated how Docker version checks are handled and added an escape-hatch [#3218](https://github.com/ethyca/fides/pull/3218)
 
-
 ### Fixed
 
 - Datamap export mitigation for deleted taxonomy elements referenced by declarations [#3214](https://github.com/ethyca/fides/pull/3214)
 - Update datamap columns each time the page is visited [#3211](https://github.com/ethyca/fides/pull/3211)
 - Ensure inactive custom fields are not returned for datamap response [#3223](https://github.com/ethyca/fides/pull/3223)
-
 
 ## [2.12.0](https://github.com/ethyca/fides/compare/2.11.0...2.12.0)
 
