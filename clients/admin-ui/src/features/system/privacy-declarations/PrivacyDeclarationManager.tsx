@@ -6,9 +6,15 @@ import {
   Tooltip,
   useToast,
 } from "@fidesui/react";
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { useEffect, useMemo, useState } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { useUpdateSystemMutation } from "~/features/system/system.slice";
 import { PrivacyDeclaration, System } from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 import {
@@ -32,25 +38,21 @@ const transformDeclarationForSubmission = (
 
 interface Props {
   system: System;
-  onCollision: () => void;
-  onSave: (
-    privacyDeclarations: PrivacyDeclaration[],
-    isDelete?: boolean
-  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
   addButtonProps?: ButtonProps;
   includeCustomFields?: boolean;
+  onSave?: (system: System) => void;
 }
 
 const PrivacyDeclarationManager = ({
   system,
-  onCollision,
-  onSave,
   addButtonProps,
   includeCustomFields,
+  onSave,
   ...dataProps
 }: Props & DataProps) => {
   const toast = useToast();
 
+  const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const [showNewForm, setShowNewForm] = useState(false);
   const [newDeclaration, setNewDeclaration] = useState<
     PrivacyDeclarationWithId | undefined
@@ -73,7 +75,11 @@ const PrivacyDeclarationManager = ({
         (d) => d.data_use === values.data_use && d.name === values.name
       ).length > 0
     ) {
-      onCollision();
+      toast(
+        errorToastParams(
+          "A declaration already exists with that data use in this system. Please supply a different data use."
+        )
+      );
       return true;
     }
     return false;
@@ -86,8 +92,39 @@ const PrivacyDeclarationManager = ({
     const transformedDeclarations = updatedDeclarations.map((d) =>
       transformDeclarationForSubmission(d)
     );
-    const res = await onSave(transformedDeclarations, isDelete);
-    return res;
+    const systemBodyWithDeclaration = {
+      ...system,
+      privacy_declarations: transformedDeclarations,
+    };
+    const handleResult = (
+      result:
+        | { data: System }
+        | { error: FetchBaseQueryError | SerializedError }
+    ) => {
+      if (isErrorResult(result)) {
+        const errorMsg = getErrorMessage(
+          result.error,
+          "An unexpected error occurred while updating the system. Please try again."
+        );
+
+        toast(errorToastParams(errorMsg));
+        return undefined;
+      }
+      toast.closeAll();
+      toast(
+        successToastParams(isDelete ? "Data use deleted" : "Data use saved")
+      );
+      if (onSave) {
+        onSave(result.data);
+      }
+      return result.data.privacy_declarations as PrivacyDeclarationWithId[];
+    };
+
+    const updateSystemResult = await updateSystemMutationTrigger(
+      systemBodyWithDeclaration
+    );
+
+    return handleResult(updateSystemResult);
   };
 
   const handleEditDeclaration = async (
