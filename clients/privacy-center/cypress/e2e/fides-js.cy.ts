@@ -1,5 +1,5 @@
 describe("fides.js", () => {
-  it("returns the fides.js packaged bundled with the global config", () => {
+  it("returns the fides.js package bundled with the global config", () => {
     cy.request("/fides.js").then(response => {
       expect(response.status).to.eq(200);
       expect(response)
@@ -23,6 +23,15 @@ describe("fides.js", () => {
         .to.have.nested.property("consent.options")
         .to.have.length(3)
     });
+  });
+
+  describe("when location is provided to the fides.js API", () => {
+    it("returns location provided as a ?location query param");
+    it("returns error for an invalid ?location query param");
+    it("returns location provided as ?country&region query params");
+    it("returns error for invalid ?country&region query params");
+    it("returns location provided as Cloudfront location headers");
+    it("returns error for invalid Cloudfront location headers");
   });
 
   it("caches in the browser", () => {
