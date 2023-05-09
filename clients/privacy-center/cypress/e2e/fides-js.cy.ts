@@ -1,17 +1,31 @@
 describe("fides.js", () => {
-  it("returns the fides.js packaged bundled with the global config", () => {
+  it.only("returns the fides.js packaged bundled with the global config", () => {
     cy.request("/fides.js").then(response => {
       expect(response.status).to.eq(200);
       expect(response)
         .to.have.property("headers")
         .to.have.property("content-type")
         .to.eql("application/javascript");
-      // TODO: ensure bundle has config
-      // TODO: ensure JS is valid
+
+      // Run a few checks on the "bundled" response body, which should:
+      // 1) Be an IIFE that...
+      // 2) ...includes a call to Fides.init with a config JSON that...
+      // 3) ...is populated with the config.json options
+      expect(response.body)
+        .to.match(/^\s+\(function/, "should be an IIFE")
+        .to.match(/\}\)\(\);\s+$/, "should be an IIFE");
+      expect(response.body)
+        .to.match(/var fidesConfig = \{/, "should bundle Fides.init")
+        .to.match(/Fides.init\(fidesConfig\);/, "should bundle Fides.init");
+      const matches = response.body.match(/var fidesConfig = (?<json>\{.*?\});/);
+      expect(matches).to.have.nested.property("groups.json")
+      expect(JSON.parse(matches.groups.json))
+        .to.have.nested.property("consent.options")
+        .to.have.length(3)
     });
   });
 
-  it.only("caches in the browser", () => {
+  it("caches in the browser", () => {
     cy.intercept("/fides.js").as("fidesJS");
 
     // Load the demo page 3 times, and check /fides.js is called *at most* once
