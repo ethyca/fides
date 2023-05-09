@@ -219,7 +219,7 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
 };
 
 export const setConsentCookieAcceptAll = (defaults: CookieKeyConsent): void => {
-  if (defaults === undefined) {
+  if ( !defaults ) {
     // eslint-disable-next-line no-console
     console.error("Unable to set consent cookie to accept all: invalid defaults.");
     return;
