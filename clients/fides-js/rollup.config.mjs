@@ -16,6 +16,8 @@ const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
 export default [
   {
     input: `src/${name}.ts`,
+    // DEFER: Add aliases for typical react imports (see https://preactjs.com/guide/v10/getting-started/#aliasing-in-rollup)
+    // This will be needed if & when we want to leverage other packages written for the React ecosystem
     plugins: [
       nodeResolve(),
       css(),
