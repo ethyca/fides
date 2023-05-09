@@ -24,6 +24,8 @@ class PrivacyNoticeRegion(Enum):
 
     us_ca = "us_ca"  # california
     us_co = "us_co"  # colorado
+    us_ny = "us_ny"  # new york
+    us_tx = "us_tx"  # texas
     us_va = "us_va"  # virginia
     us_ut = "us_ut"  # utah
     eu_be = "eu_be"  # belgium

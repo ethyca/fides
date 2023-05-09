@@ -1,22 +1,31 @@
 from __future__ import annotations
 
-from typing import List
-
 import pytest
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1 import scope_registry as scopes
 from fides.api.ops.api.v1.endpoints.privacy_experience_endpoints import (
-    get_privacy_experience_or_error,
+    get_experience_language_or_error,
 )
 from fides.api.ops.api.v1.urn_registry import (
+    EXPERIENCE_LANGUAGE,
     PRIVACY_EXPERIENCE,
     PRIVACY_EXPERIENCE_DETAIL,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.privacy_experience import ComponentType, DeliveryMechanism
-from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
+from fides.api.ops.models.privacy_experience import (
+    ComponentType,
+    DeliveryMechanism,
+    ExperienceLanguage,
+    PrivacyExperience,
+)
+from fides.api.ops.models.privacy_notice import (
+    ConsentMechanism,
+    EnforcementLevel,
+    PrivacyNotice,
+    PrivacyNoticeRegion,
+)
 
 
 class TestGetPrivacyExperiences:
@@ -81,22 +90,23 @@ class TestGetPrivacyExperiences:
         assert resp["disabled"] is False
         assert resp["component"] == "privacy_center"
         assert resp["delivery_mechanism"] == "link"
-        assert resp["regions"] == ["us_ca", "us_co"]
-        assert resp["component_title"] == "Manage your consent preferences"
+        assert resp["region"] == "us_co"
+        assert resp["version"] == 1.0
+        # Assert experience language is nested
+        experience_language = resp["experience_language"]
+        assert experience_language["component_title"] == "Control your privacy"
+        assert experience_language["banner_title"] is None
+        assert experience_language["banner_description"] is None
+        assert experience_language["link_label"] == "Manage your preferences"
+        assert experience_language["confirmation_button_label"] is None
+        assert experience_language["reject_button_label"] is None
+        assert experience_language["acknowledgement_button_label"] is None
+        assert experience_language["id"] is not None
+        assert experience_language["version"] == 1
         assert (
-            resp["component_description"]
-            == "On this page you can opt in and out of these data uses cases"
+            experience_language["experience_language_history_id"]
+            == privacy_experience_privacy_center_link.experience_language.experience_language_history_id
         )
-        assert resp["banner_title"] is None
-        assert resp["banner_description"] is None
-        assert resp["link_label"] == "Manage your privacy"
-        assert resp["confirmation_button_label"] is None
-        assert resp["reject_button_label"] is None
-        assert resp["acknowledgement_button_label"] is None
-        assert resp["id"] is not None
-        assert resp["version"] == 1
-        assert resp["privacy_experience_history_id"] is not None
-        assert resp["privacy_experience_template_id"] is None
         assert (
             resp["privacy_experience_history_id"]
             == privacy_experience_privacy_center_link.privacy_experience_history_id
@@ -159,19 +169,16 @@ class TestGetPrivacyExperiences:
         assert data["total"] == 1
         assert len(data["items"]) == 1
         assert data["items"][0]["id"] == privacy_experience_overlay_link.id
-        assert data["items"][0]["regions"] == [
-            reg.value for reg in privacy_experience_overlay_link.regions
-        ]
+        assert data["items"][0]["region"] == "eu_fr"
         resp = api_client.get(
             url + "?region=us_ca",
             headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
-        assert data["total"] == 2
-        assert len(data["items"]) == 2
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
         assert {exp["id"] for exp in data["items"]} == {
-            privacy_experience_privacy_center_link.id,
             privacy_experience_overlay_banner.id,
         }
 
@@ -299,7 +306,7 @@ class TestGetPrivacyExperiences:
             first_experience["id"] == privacy_experience_overlay_banner.id
         )  # Most recently created
         assert first_experience["component"] == "overlay"
-        assert first_experience["regions"] == ["us_ca"]
+        assert first_experience["region"] == "us_ca"
         assert len(first_experience["privacy_notices"]) == 2
 
         # Notices match on region and "overlay"
@@ -320,7 +327,7 @@ class TestGetPrivacyExperiences:
             second_experience["id"] == privacy_experience_overlay_link.id
         )  # Most recently created
         assert second_experience["component"] == "overlay"
-        assert second_experience["regions"] == ["eu_fr"]
+        assert second_experience["region"] == "eu_fr"
         assert len(second_experience["privacy_notices"]) == 1
 
         # Notices match on region and "overlay"
@@ -339,7 +346,7 @@ class TestGetPrivacyExperiences:
             third_experience["id"] == privacy_experience_privacy_center_link.id
         )  # Most recently created
         assert third_experience["component"] == "privacy_center"
-        assert third_experience["regions"] == ["us_ca", "us_co"]
+        assert third_experience["region"] == "us_co"
         assert len(third_experience["privacy_notices"]) == 2
 
         # Notices match on region and "overlay"
@@ -393,7 +400,7 @@ class TestGetPrivacyExperiences:
         assert len(data["items"]) == 1
 
         assert data["items"][0]["id"] == privacy_experience_privacy_center_link.id
-        assert data["items"][0]["regions"] == ["us_ca", "us_co"]
+        assert data["items"][0]["region"] == "us_co"
 
         notices = data["items"][0]["privacy_notices"]
         assert len(notices) == 2
@@ -439,7 +446,7 @@ class TestGetPrivacyExperiences:
         assert len(data["items"]) == 1
 
         assert data["items"][0]["id"] == privacy_experience_privacy_center_link.id
-        assert data["items"][0]["regions"] == ["us_ca", "us_co"]
+        assert data["items"][0]["region"] == "us_co"
 
         notices = data["items"][0]["privacy_notices"]
         assert len(notices) == 1
@@ -448,32 +455,30 @@ class TestGetPrivacyExperiences:
         assert notices[0]["displayed_in_privacy_center"]
 
 
-class TestCreatePrivacyExperiences:
+class TestCreateExperienceLanguage:
     @pytest.fixture(scope="function")
     def url(self) -> str:
-        return V1_URL_PREFIX + PRIVACY_EXPERIENCE
+        return V1_URL_PREFIX + EXPERIENCE_LANGUAGE
 
     @pytest.fixture(scope="function")
-    def request_data(self) -> List[dict]:
-        return [
-            {
-                "component": "overlay",
-                "delivery_mechanism": "banner",
-                "regions": ["eu_it", "eu_es", "eu_fr"],
-                "component_title": "Control your privacy",
-                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
-                "banner_title": "Manage your consent",
-                "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
-                "confirmation_button_label": "Accept all",
-                "reject_button_label": "Reject all",
-            }
-        ]
+    def overlay_banner_experience_request_body(self) -> dict:
+        return {
+            "component": "overlay",
+            "delivery_mechanism": "banner",
+            "regions": ["eu_it", "eu_es", "eu_fr"],
+            "component_title": "Control your privacy",
+            "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+            "banner_title": "Manage your consent",
+            "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
+            "confirmation_button_label": "Accept all",
+            "reject_button_label": "Reject all",
+        }
 
-    def test_create_privacy_experiences_unauthenticated(self, url, api_client):
+    def test_create_experience_language_unauthenticated(self, url, api_client):
         resp = api_client.post(url)
         assert resp.status_code == 401
 
-    def test_create_privacy_experiences_wrong_scope(
+    def test_create_experience_language_wrong_scope(
         self, url, api_client: TestClient, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
@@ -493,165 +498,1450 @@ class TestCreatePrivacyExperiences:
             ("approver", HTTP_403_FORBIDDEN),
         ],
     )
-    def test_create_privacy_experience_with_roles(
+    def test_create_experience_language_with_roles(
         self,
         role,
         expected_status,
         api_client: TestClient,
         url,
         generate_role_header,
-        request_data,
+        overlay_banner_experience_request_body,
     ) -> None:
         auth_header = generate_role_header(roles=[role])
-        response = api_client.post(url, json=request_data, headers=auth_header)
+        response = api_client.post(
+            url, json=overlay_banner_experience_request_body, headers=auth_header
+        )
         assert response.status_code == expected_status
 
-    def test_post_privacy_experience_duplicate_regions(
+    def test_create_overlay_banner_experience_language_missing_banner_details(
         self,
         api_client: TestClient,
-        generate_auth_header,
-        request_data,
         url,
-    ):
-        """
-        Assert if regions are accidentally duplicated on a notice that this is flagged
-        """
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_CREATE])
-        last_region = request_data[0]["regions"][-1]
-        request_data[0]["regions"].append(last_region)
-
-        resp = api_client.post(url, headers=auth_header, json=request_data)
-        assert resp.status_code == 422
-        assert resp.json()["detail"][0]["msg"] == "Duplicate regions found."
-
-    @pytest.mark.usefixtures("privacy_notice")
-    def test_create_privacy_experiences(
-        self,
-        db,
-        api_client: TestClient,
         generate_auth_header,
-        url,
-        request_data,
-        privacy_notice_eu_fr_provide_service_frontend_only,
-    ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_CREATE])
-
-        resp = api_client.post(url, headers=auth_header, json=request_data)
-        assert resp.status_code == 201
-        data = resp.json()
-        assert len(data) == 1
-        data = data[0]
-        assert data["disabled"] is False
-        assert data["component"] == "overlay"
-        assert data["delivery_mechanism"] == "banner"
-        assert data["regions"] == ["eu_it", "eu_es", "eu_fr"]
-        assert data["component_title"] == "Control your privacy"
-        assert (
-            data["component_description"]
-            == "We care about your privacy. Opt in and opt out of the data use cases below."
+    ) -> None:
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
         )
-        assert data["banner_title"] == "Manage your consent"
+        response = api_client.post(
+            url,
+            json={
+                "component": "overlay",
+                "delivery_mechanism": "banner",
+                "regions": ["eu_it", "eu_es", "eu_fr"],
+                "component_title": "Manage your privacy",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
         assert (
-            data["banner_description"]
+            response.json()["detail"][0]["msg"]
+            == "The following fields are required when defining a banner: ['banner_title', 'confirmation_button_label', 'reject_button_label']."
+        )
+
+    def test_create_experience_language_missing_link(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "component": "privacy_center",
+                "delivery_mechanism": "banner",
+                "regions": ["eu_it", "eu_es", "eu_fr"],
+                "component_title": "Manage your privacy",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Privacy center experiences can only be delivered via a link."
+        )
+
+        response = api_client.post(
+            url,
+            json={
+                "component": "privacy_center",
+                "delivery_mechanism": "link",
+                "regions": ["eu_it", "eu_es", "eu_fr"],
+                "component_title": "Manage your privacy",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Link label required when the delivery mechanism is of type link."
+        )
+
+    def test_create_experience_duplicate_regions(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "component": "privacy_center",
+                "delivery_mechanism": "banner",
+                "regions": ["eu_it", "eu_it"],
+                "component_title": "Manage your privacy",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert response.json()["detail"][0]["msg"] == "Duplicate regions found."
+
+    def test_create_experience_language_with_no_regions(
+        self, api_client: TestClient, url, generate_auth_header, db
+    ) -> None:
+        """Experience language can be defined without any regions specified. This is handy for defining default experiences
+
+        No privacy experiences are affected here.  But ExperienceLanguage and ExperienceLanguageHistory records are created.
+        """
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "component": "privacy_center",
+                "delivery_mechanism": "link",
+                "component_title": "Manage your privacy",
+                "link_label": "Go to the privacy center",
+                "regions": [],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 201
+        resp = response.json()["experience_language"]
+        assert resp["acknowledgement_button_label"] is None
+        assert resp["banner_title"] is None
+        assert resp["banner_description"] is None
+        assert resp["component"] == "privacy_center"
+        assert resp["component_title"] == "Manage your privacy"
+        assert resp["component_description"] is None
+        assert resp["confirmation_button_label"] is None
+        assert resp["delivery_mechanism"] == "link"
+        assert resp["link_label"] == "Go to the privacy center"
+        assert resp["reject_button_label"] is None
+        assert resp["regions"] == []
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert resp["version"] == 1.0
+        experience_language = get_experience_language_or_error(db, resp["id"])
+        assert experience_language.experiences.all() == []
+        assert experience_language.histories.count() == 1
+        history = experience_language.histories[0]
+        assert history.version == 1.0
+        assert history.component == ComponentType.privacy_center
+        assert history.delivery_mechanism == DeliveryMechanism.link
+        assert history.experience_language_id == experience_language.id
+
+        assert response.json()["added_regions"] == []
+        assert response.json()["removed_regions"] == []
+        assert response.json()["skipped_regions"] == []
+
+        history.delete(db)
+        experience_language.delete(db)
+
+    def test_create_experience_language_no_existing_experiences(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+    ) -> None:
+        """
+        Specifying a NY region to be used with the new ExperienceLanguage will cause a NY PrivacyExperience to be created
+        behind the scenes if one doesn't exist.
+        """
+
+        assert (
+            PrivacyExperience.get_experience_by_component_and_region(
+                db, PrivacyNoticeRegion.us_ny, ComponentType.overlay
+            )
+            is None
+        )
+
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "component": "overlay",
+                "delivery_mechanism": "banner",
+                "regions": ["us_ny"],
+                "component_title": "Control your privacy",
+                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                "banner_title": "Manage your consent",
+                "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
+                "confirmation_button_label": "Accept all",
+                "reject_button_label": "Reject all",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 201
+        resp = response.json()["experience_language"]
+        assert resp["acknowledgement_button_label"] is None
+        assert resp["banner_title"] == "Manage your consent"
+        assert (
+            resp["banner_description"]
             == "By clicking accept you consent to one of these methods by us and our third parties."
         )
-        assert data["link_label"] is None
-        assert data["confirmation_button_label"] == "Accept all"
-        assert data["reject_button_label"] == "Reject all"
-        assert data["acknowledgement_button_label"] is None
-        assert data["version"] == 1.0
-        assert data["created_at"] is not None
-        assert data["updated_at"] is not None
-
-        assert len(data["privacy_notices"]) == 1
+        assert resp["component"] == "overlay"
+        assert resp["component_title"] == "Control your privacy"
         assert (
-            data["privacy_notices"][0]["id"]
-            == privacy_notice_eu_fr_provide_service_frontend_only.id
-        )
-
-        created_privacy_experience_id = data["id"]
-        experience = get_privacy_experience_or_error(
-            db, experience_id=created_privacy_experience_id
-        )
-
-        # Assert qualities of associated created experience
-        assert experience.histories.count() == 1
-        history = experience.histories[0]
-        assert data["privacy_experience_history_id"] == history.id
-        assert history.privacy_experience_id == experience.id
-        assert history.version == 1.0
-        assert not history.disabled
-        assert history.component == ComponentType.overlay
-        assert history.delivery_mechanism == DeliveryMechanism.banner
-        assert history.regions == [
-            PrivacyNoticeRegion.eu_it,
-            PrivacyNoticeRegion.eu_es,
-            PrivacyNoticeRegion.eu_fr,
-        ]
-        assert history.component_title == "Control your privacy"
-        assert (
-            history.component_description
+            resp["component_description"]
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
-        assert history.banner_title == "Manage your consent"
-        assert history.link_label is None
-        assert history.confirmation_button_label == "Accept all"
-        assert history.reject_button_label == "Reject all"
-        assert history.acknowledgement_button_label is None
-        assert history.version == 1.0
-        assert history.created_at is not None
-        assert history.updated_at is not None
+        assert resp["confirmation_button_label"] == "Accept all"
+        assert resp["delivery_mechanism"] == "banner"
+        assert resp["link_label"] is None
+        assert resp["reject_button_label"] == "Reject all"
+        assert resp["regions"] == ["us_ny"]
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert resp["version"] == 1.0
 
-        db.delete(history)
-        db.delete(experience)
+        # Created Experience Language
+        experience_language = get_experience_language_or_error(db, resp["id"])
+        assert experience_language.histories.count() == 1
 
-    @pytest.mark.usefixtures("privacy_notice")
-    def test_create_privacy_experiences_min_fields(
-        self,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-    ):
-        data = [
-            {
-                "regions": ["us_ca"],
-                "delivery_mechanism": "link",
-                "component": "privacy_center",
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_CREATE])
-
-        resp = api_client.post(url, headers=auth_header, json=data)
-        assert resp.status_code == 201
-        data = resp.json()
-        assert len(data) == 1
-        data = data[0]
-        assert data["disabled"] is False
-        assert data["component"] == "privacy_center"
-        assert data["delivery_mechanism"] == "link"
-        assert data["regions"] == ["us_ca"]
-        assert data["component_title"] is None
-        assert data["component_description"] is None
-        assert data["banner_title"] is None
-        assert data["banner_description"] is None
-        assert data["link_label"] is None
-        assert data["confirmation_button_label"] is None
-        assert data["reject_button_label"] is None
-        assert data["acknowledgement_button_label"] is None
-        assert data["version"] == 1.0
-        assert data["created_at"] is not None
-        assert data["updated_at"] is not None
-
-        created_privacy_experience_id = data["id"]
-        experience = get_privacy_experience_or_error(
-            db, experience_id=created_privacy_experience_id
+        # Created Experience Language History
+        experience_language_history = experience_language.histories[0]
+        assert experience_language_history.version == 1.0
+        assert experience_language_history.component == ComponentType.overlay
+        assert (
+            experience_language_history.delivery_mechanism == DeliveryMechanism.banner
         )
-        history = experience.histories[0]
-        assert history.version == 1.0
+        assert (
+            experience_language_history.experience_language_id == experience_language.id
+        )
 
-        db.delete(history)
-        db.delete(experience)
+        # Created Privacy Experience
+        assert experience_language.experiences.count() == 1
+        experience = experience_language.experiences[0]
+        assert experience.region == PrivacyNoticeRegion.us_ny
+        assert experience.component == ComponentType.overlay
+        assert experience.delivery_mechanism == DeliveryMechanism.banner
+        assert experience.disabled is False
+        assert experience.version == 1.0
+        assert experience.experience_language_id == experience_language.id
+        assert (
+            experience.experience_language_history_id == experience_language_history.id
+        )
+
+        # Created Experience History
+        assert experience.histories.count() == 1
+        experience_history = experience.histories[0]
+        assert experience_history.region == PrivacyNoticeRegion.us_ny
+        assert experience_history.component == ComponentType.overlay
+        assert experience_history.delivery_mechanism == DeliveryMechanism.banner
+        assert experience_history.disabled is False
+        assert experience_history.version == 1.0
+        assert experience_history.experience_language_id == experience_language.id
+        assert (
+            experience_history.experience_language_history_id
+            == experience_language_history.id
+        )
+        assert experience_history.privacy_experience_id == experience.id
+
+        experience_history.delete(db)
+        experience.delete(db)
+        experience_language_history.delete(db)
+        experience_language.delete(db)
+
+        assert response.json()["added_regions"] == ["us_ny"]
+        assert response.json()["removed_regions"] == []
+        assert response.json()["skipped_regions"] == []
+
+    def test_create_experience_language_existing_experiences(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+    ) -> None:
+        """
+        Specifying a TX region to be used with the new ExperienceLanguage can
+        cause an existing TX PrivacyExperience to be linked to the current ExperienceLanguage
+        with its version bumped
+        """
+
+        privacy_experience = PrivacyExperience.create(
+            db,
+            data={
+                "disabled": False,
+                "component": ComponentType.overlay,
+                "delivery_mechanism": DeliveryMechanism.banner,
+                "region": PrivacyNoticeRegion.us_tx,
+            },
+        )
+
+        assert privacy_experience.version == 1.0
+        assert privacy_experience.histories.count() == 1.0
+        assert privacy_experience.experience_language_id is None
+
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "component": "overlay",
+                "delivery_mechanism": "banner",
+                "regions": ["us_tx"],
+                "component_title": "Control your privacy",
+                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                "banner_title": "Manage your consent",
+                "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
+                "confirmation_button_label": "Accept all",
+                "reject_button_label": "Reject all",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 201
+        resp = response.json()["experience_language"]
+        assert resp["acknowledgement_button_label"] is None
+        assert resp["banner_title"] == "Manage your consent"
+        assert (
+            resp["banner_description"]
+            == "By clicking accept you consent to one of these methods by us and our third parties."
+        )
+        assert resp["component"] == "overlay"
+        assert resp["component_title"] == "Control your privacy"
+        assert (
+            resp["component_description"]
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert resp["confirmation_button_label"] == "Accept all"
+        assert resp["delivery_mechanism"] == "banner"
+        assert resp["link_label"] is None
+        assert resp["reject_button_label"] == "Reject all"
+        assert resp["regions"] == ["us_tx"]
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert resp["version"] == 1.0
+
+        # Created Experience Language
+        experience_language = get_experience_language_or_error(db, resp["id"])
+        assert experience_language.histories.count() == 1
+
+        # Created Experience Language History
+        experience_language_history = experience_language.histories[0]
+        assert experience_language_history.version == 1.0
+        assert experience_language_history.component == ComponentType.overlay
+        assert (
+            experience_language_history.delivery_mechanism == DeliveryMechanism.banner
+        )
+        assert (
+            experience_language_history.experience_language_id == experience_language.id
+        )
+
+        # Updated Privacy Experience - TX Privacy Experience automatically linked, and bumped to 2.0
+        assert experience_language.experiences.count() == 1
+        experience = experience_language.experiences[0]
+        db.refresh(experience)
+        assert (
+            experience == privacy_experience
+        )  # Linked experience is the same Texas experience from above
+        assert experience.region == PrivacyNoticeRegion.us_tx
+        assert experience.component == ComponentType.overlay
+        assert experience.delivery_mechanism == DeliveryMechanism.banner
+        assert experience.disabled is False
+        assert experience.version == 2.0
+        assert experience.experience_language_id == experience_language.id
+        assert (
+            experience.experience_language_history_id == experience_language_history.id
+        )
+
+        # Created Experience History - new version of Privacy Experience created due to language being linked
+        assert experience.histories.count() == 2
+        experience_history = experience.histories[-1]
+        assert experience_history.region == PrivacyNoticeRegion.us_tx
+        assert experience_history.component == ComponentType.overlay
+        assert experience_history.delivery_mechanism == DeliveryMechanism.banner
+        assert experience_history.disabled is False
+        assert experience_history.version == 2.0
+        assert experience_history.experience_language_id == experience_language.id
+        assert (
+            experience_history.experience_language_history_id
+            == experience_language_history.id
+        )
+        assert experience_history.privacy_experience_id == experience.id
+
+        assert response.json()["added_regions"] == ["us_tx"]
+        assert response.json()["removed_regions"] == []
+        assert response.json()["skipped_regions"] == []
+
+        for history in experience.histories:
+            history.delete(db)
+        experience.delete(db)
+        experience_language_history.delete(db)
+        experience_language.delete(db)
+
+    def test_adding_region_to_experience_language_would_violate_experience_rules(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+    ) -> None:
+        """
+        We're attempting to create an overlay experience which is delivered by a link, and add TX to this.
+        However, there's already a TX privacy center experience defined and we can't have two experiences
+        for a region delivered by a link.  Still create the ExperienceLanguage, but don't add TX to it.
+        """
+
+        privacy_experience = PrivacyExperience.create(
+            db,
+            data={
+                "disabled": False,
+                "component": ComponentType.privacy_center,
+                "delivery_mechanism": DeliveryMechanism.link,
+                "region": PrivacyNoticeRegion.us_tx,
+            },
+        )
+
+        assert privacy_experience.version == 1.0
+        assert privacy_experience.histories.count() == 1.0
+        assert privacy_experience.experience_language_id is None
+
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "component": "overlay",
+                "delivery_mechanism": "link",
+                "regions": ["us_tx"],
+                "component_title": "Control your privacy",
+                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                "link_label": "Manage your privacy here",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 201
+        resp = response.json()["experience_language"]
+        assert resp["acknowledgement_button_label"] is None
+        assert resp["banner_title"] is None
+        assert resp["banner_description"] is None
+        assert resp["component"] == "overlay"
+        assert resp["component_title"] == "Control your privacy"
+        assert (
+            resp["component_description"]
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert resp["confirmation_button_label"] is None
+        assert resp["delivery_mechanism"] == "link"
+        assert resp["link_label"] == "Manage your privacy here"
+        assert resp["reject_button_label"] is None
+        assert resp["regions"] == [], "No regions added because TX cannot be added here"
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert resp["version"] == 1.0
+
+        # Created Experience Language
+        experience_language = get_experience_language_or_error(db, resp["id"])
+        assert experience_language.histories.count() == 1
+
+        # Created Experience Language History
+        experience_language_history = experience_language.histories[0]
+        assert experience_language_history.version == 1.0
+        assert experience_language_history.component == ComponentType.overlay
+        assert experience_language_history.delivery_mechanism == DeliveryMechanism.link
+        assert (
+            experience_language_history.experience_language_id == experience_language.id
+        )
+
+        assert response.json()["added_regions"] == []
+        assert response.json()["removed_regions"] == []
+        assert response.json()["skipped_regions"] == ["us_tx"]
+
+        # Overlay Privacy Experience was *not* created for Texas, and nothing was linked to the new ExperienceLanguage
+        assert experience_language.experiences.count() == 0
+
+        (
+            overlay_experience,
+            privacy_center_experience,
+        ) = PrivacyExperience.get_experiences_by_region(
+            db=db, region=PrivacyNoticeRegion.us_tx
+        )
+        assert overlay_experience is None
+        assert privacy_center_experience == privacy_experience
+        assert privacy_center_experience.region == PrivacyNoticeRegion.us_tx
+        assert privacy_center_experience.component == ComponentType.privacy_center
+        assert privacy_center_experience.delivery_mechanism == DeliveryMechanism.link
+        assert privacy_center_experience.disabled is False
+        assert privacy_center_experience.version == 1.0
+        assert privacy_center_experience.experience_language_id is None
+        assert privacy_center_experience.experience_language_history_id is None
+
+        # No new historical records created, creating the new overlay ExperienceLanguage did not affect Texas Privacy Experiences
+        assert privacy_center_experience.histories.count() == 1
+        experience_history = privacy_center_experience.histories[0]
+        assert experience_history.region == PrivacyNoticeRegion.us_tx
+        assert experience_history.component == ComponentType.privacy_center
+        assert experience_history.delivery_mechanism == DeliveryMechanism.link
+        assert experience_history.disabled is False
+        assert experience_history.version == 1.0
+        assert experience_history.experience_language_id is None
+        assert experience_history.experience_language_history_id is None
+        assert experience_history.privacy_experience_id == privacy_center_experience.id
+
+        for history in privacy_center_experience.histories:
+            history.delete(db)
+        privacy_center_experience.delete(db)
+        experience_language_history.delete(db)
+        experience_language.delete(db)
+
+    def test_opt_in_notices_must_be_delivered_via_banner(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+    ) -> None:
+        """
+        Attempt to create an ExperienceLanguage and link a region to that Experience that has notices
+        that must be delivered in a different way. The ExperienceLanguage should be created, but the conflicting
+        region should not be linked
+        """
+
+        # Create an opt in notice that needs to be displayed in an overlay
+        privacy_notice = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Test Notice",
+                "regions": [PrivacyNoticeRegion.us_tx],
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["provide"],
+                "enforcement_level": EnforcementLevel.frontend,
+                "displayed_in_overlay": True,
+            },
+        )
+
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "component": "overlay",
+                "delivery_mechanism": "link",
+                "regions": ["us_tx"],
+                "component_title": "Control your privacy",
+                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                "link_label": "Manage your privacy here",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 201
+        resp = response.json()["experience_language"]
+        assert resp["acknowledgement_button_label"] is None
+        assert resp["banner_title"] is None
+        assert resp["banner_description"] is None
+        assert resp["component"] == "overlay"
+        assert resp["component_title"] == "Control your privacy"
+        assert (
+            resp["component_description"]
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert resp["confirmation_button_label"] is None
+        assert resp["delivery_mechanism"] == "link"
+        assert resp["link_label"] == "Manage your privacy here"
+        assert resp["reject_button_label"] is None
+        assert resp["regions"] == [], "No regions added because TX cannot be added here"
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert resp["version"] == 1.0
+
+        # Created Experience Language
+        experience_language = get_experience_language_or_error(db, resp["id"])
+        assert experience_language.histories.count() == 1
+
+        # Created Experience Language History
+        experience_language_history = experience_language.histories[0]
+        assert experience_language_history.version == 1.0
+        assert experience_language_history.component == ComponentType.overlay
+        assert experience_language_history.delivery_mechanism == DeliveryMechanism.link
+        assert (
+            experience_language_history.experience_language_id == experience_language.id
+        )
+
+        assert response.json()["added_regions"] == []
+        assert response.json()["removed_regions"] == []
+        assert response.json()["skipped_regions"] == ["us_tx"]
+
+        # Overlay Privacy Experience was *not* created for Texas, and nothing was linked to the new ExperienceLanguage
+        assert experience_language.experiences.count() == 0
+
+        (
+            overlay_experience,
+            privacy_center_experience,
+        ) = PrivacyExperience.get_experiences_by_region(
+            db=db, region=PrivacyNoticeRegion.us_tx
+        )
+        assert overlay_experience is None
+        assert privacy_center_experience is None
+
+        for history in privacy_notice.histories:
+            history.delete(db)
+        experience_language_history.delete(db)
+        experience_language.delete(db)
+
+
+class TestUpdateExperienceLanguage:
+    @pytest.fixture(scope="function")
+    def url(self, overlay_banner_experience_language) -> str:
+        return (
+            V1_URL_PREFIX
+            + EXPERIENCE_LANGUAGE
+            + f"/{overlay_banner_experience_language.id}"
+        )
+
+    @pytest.fixture(scope="function")
+    def overlay_banner_experience_language(self, db) -> ExperienceLanguage:
+        exp = ExperienceLanguage.create(
+            db=db,
+            data={
+                "component": "overlay",
+                "delivery_mechanism": "banner",
+                "component_title": "Control your privacy",
+                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                "banner_title": "Manage your consent",
+                "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
+                "confirmation_button_label": "Accept all",
+                "reject_button_label": "Reject all",
+            },
+        )
+        yield exp
+        for history in exp.histories:
+            history.delete(db)
+        exp.delete(db)
+
+    def test_update_experience_language_unauthenticated(self, url, api_client):
+        resp = api_client.patch(url, json={"disabled": True})
+        assert resp.status_code == 401
+
+    def test_update_experience_language_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        resp = api_client.patch(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    @pytest.mark.parametrize(
+        "role,expected_status",
+        [
+            ("owner", HTTP_200_OK),
+            ("contributor", HTTP_200_OK),
+            ("viewer_and_approver", HTTP_403_FORBIDDEN),
+            ("viewer", HTTP_403_FORBIDDEN),
+            ("approver", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_update_experience_language_with_roles(
+        self,
+        role,
+        expected_status,
+        api_client: TestClient,
+        url,
+        generate_role_header,
+    ) -> None:
+        auth_header = generate_role_header(roles=[role])
+        response = api_client.patch(
+            url, json={"disabled": True, "regions": []}, headers=auth_header
+        )
+        assert response.status_code == expected_status
+
+    def test_update_experience_language_duplicate_regions(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        """Failing if duplicate regions in request"""
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={"banner_title": None, "regions": ["us_ca", "us_ca"]},
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert response.json()["detail"][0]["msg"] == "Duplicate regions found."
+
+    def test_update_bad_experience_language(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        """Nonexistent experience language id"""
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            V1_URL_PREFIX + EXPERIENCE_LANGUAGE + "/bad_experience_id",
+            json={"banner_title": None, "regions": ["us_ca"]},
+            headers=auth_header,
+        )
+        assert response.status_code == 404
+        assert (
+            response.json()["detail"]
+            == "No ExperienceLanguage found for id 'bad_experience_id'."
+        )
+
+    def test_update_overlay_banner_experience_language_missing_banner_details(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        """ExperienceLanguage is currently for a banner, and we're trying to remove the banner title"""
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={"banner_title": None, "regions": []},
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "The following fields are required when defining a banner: ['banner_title', 'confirmation_button_label', 'reject_button_label']."
+        )
+
+    #
+    def test_update_experience_language_missing_link(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        """ExperienceLanguage is currently for a banner, and we're trying to convert it to a link here without all the necessary pieces"""
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "delivery_mechanism": "link",
+                "regions": [],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Link label required when the delivery mechanism is of type link."
+        )
+
+    def test_update_experience_language_with_no_regions(
+        self, api_client: TestClient, url, generate_auth_header, db
+    ) -> None:
+        """Test scenario where experience language has no regions and we make updates without any regions being
+        involved.  Specifically disabling the ExperienceLanguage
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "disabled": True,
+                "regions": [],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()["experience_language"]
+        assert resp["acknowledgement_button_label"] is None
+        assert resp["banner_title"] == "Manage your consent"
+        assert (
+            resp["banner_description"]
+            == "By clicking accept you consent to one of these methods by us and our third parties."
+        )
+        assert resp["component"] == "overlay"
+        assert resp["component_title"] == "Control your privacy"
+        assert (
+            resp["component_description"]
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert resp["confirmation_button_label"] == "Accept all"
+        assert resp["delivery_mechanism"] == "banner"
+        assert resp["link_label"] is None
+        assert resp["reject_button_label"] == "Reject all"
+        assert resp["regions"] == []
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert resp["disabled"] is True
+        assert resp["version"] == 2.0
+
+        experience_language = get_experience_language_or_error(db, resp["id"])
+        assert experience_language.experiences.all() == []
+        assert experience_language.histories.count() == 2
+        history = experience_language.histories[0]
+        assert history.version == 1.0
+        assert history.component == ComponentType.overlay
+        assert history.delivery_mechanism == DeliveryMechanism.banner
+        assert history.experience_language_id == experience_language.id
+        assert history.disabled is False
+
+        history = experience_language.histories[1]
+        assert history.version == 2.0
+        assert history.component == ComponentType.overlay
+        assert history.delivery_mechanism == DeliveryMechanism.banner
+        assert history.experience_language_id == experience_language.id
+        assert history.disabled is True
+
+        assert response.json()["added_regions"] == []
+        assert response.json()["removed_regions"] == []
+        assert response.json()["skipped_regions"] == []
+
+        for history in experience_language.histories:
+            history.delete(db)
+        experience_language.delete(db)
+
+    def test_update_experience_language_no_existing_experiences(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+        overlay_banner_experience_language,
+    ) -> None:
+        """
+        This action is updating an existing ExperienceLanguage to add NY.  NY does not have a PrivacyExperience
+        yet, so one will be created for it.
+        """
+
+        assert (
+            PrivacyExperience.get_experience_by_component_and_region(
+                db, PrivacyNoticeRegion.us_ny, ComponentType.overlay
+            )
+            is None
+        )
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={"regions": ["us_ny"]},
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()["experience_language"]
+        assert resp["acknowledgement_button_label"] is None
+        assert resp["banner_title"] == "Manage your consent"
+        assert (
+            resp["banner_description"]
+            == "By clicking accept you consent to one of these methods by us and our third parties."
+        )
+        assert resp["component"] == "overlay"
+        assert resp["component_title"] == "Control your privacy"
+        assert (
+            resp["component_description"]
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert resp["confirmation_button_label"] == "Accept all"
+        assert resp["delivery_mechanism"] == "banner"
+        assert resp["link_label"] is None
+        assert resp["reject_button_label"] == "Reject all"
+        assert resp["regions"] == ["us_ny"]
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert resp["version"] == 1.0
+        assert resp["regions"] == ["us_ny"]
+
+        # ExperienceLanguage specifically wasn't updated, as this change is only changing which regions link here as FK
+        db.refresh(overlay_banner_experience_language)
+        assert overlay_banner_experience_language.id == resp["id"]
+        assert overlay_banner_experience_language.histories.count() == 1
+
+        # Existing Experience Language History
+        experience_language_history = overlay_banner_experience_language.histories[0]
+        assert experience_language_history.version == 1.0
+        assert experience_language_history.component == ComponentType.overlay
+        assert (
+            experience_language_history.delivery_mechanism == DeliveryMechanism.banner
+        )
+        assert (
+            experience_language_history.experience_language_id
+            == overlay_banner_experience_language.id
+        )
+
+        # Created Privacy Experience
+        assert overlay_banner_experience_language.experiences.count() == 1
+        experience = overlay_banner_experience_language.experiences[0]
+        assert experience.region == PrivacyNoticeRegion.us_ny
+        assert experience.component == ComponentType.overlay
+        assert experience.delivery_mechanism == DeliveryMechanism.banner
+        assert experience.disabled is False
+        assert experience.version == 1.0
+        assert (
+            experience.experience_language_id == overlay_banner_experience_language.id
+        )
+        assert (
+            experience.experience_language_history_id == experience_language_history.id
+        )
+
+        # Created Experience History
+        assert experience.histories.count() == 1
+        experience_history = experience.histories[0]
+        assert experience_history.region == PrivacyNoticeRegion.us_ny
+        assert experience_history.component == ComponentType.overlay
+        assert experience_history.delivery_mechanism == DeliveryMechanism.banner
+        assert experience_history.disabled is False
+        assert experience_history.version == 1.0
+        assert (
+            experience_history.experience_language_id
+            == overlay_banner_experience_language.id
+        )
+        assert (
+            experience_history.experience_language_history_id
+            == experience_language_history.id
+        )
+        assert experience_history.privacy_experience_id == experience.id
+
+        experience_history.delete(db)
+        experience.delete(db)
+
+        assert response.json()["added_regions"] == ["us_ny"]
+        assert response.json()["removed_regions"] == []
+        assert response.json()["skipped_regions"] == []
+
+    def test_update_experience_language_regions_to_overlap_an_existing_experiences(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+        overlay_banner_experience_language,
+    ) -> None:
+        """
+        Existing ExperienceLanguage is updated to add TX.  A Texas Privacy Experience already exists.
+
+        This should cause the existing Texas PrivacyExperience to be given a FK to the existing ExperienceLanguage record
+        with its version bumped as its language has changed.
+        """
+
+        privacy_experience = PrivacyExperience.create(
+            db,
+            data={
+                "disabled": False,
+                "component": ComponentType.overlay,
+                "delivery_mechanism": DeliveryMechanism.banner,
+                "region": PrivacyNoticeRegion.us_tx,
+            },
+        )
+
+        assert privacy_experience.version == 1.0
+        assert privacy_experience.histories.count() == 1.0
+        assert privacy_experience.experience_language_id is None
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "regions": ["us_tx"],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()["experience_language"]
+        assert resp["acknowledgement_button_label"] is None
+        assert resp["banner_title"] == "Manage your consent"
+        assert (
+            resp["banner_description"]
+            == "By clicking accept you consent to one of these methods by us and our third parties."
+        )
+        assert resp["component"] == "overlay"
+        assert resp["component_title"] == "Control your privacy"
+        assert (
+            resp["component_description"]
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert resp["confirmation_button_label"] == "Accept all"
+        assert resp["delivery_mechanism"] == "banner"
+        assert resp["link_label"] is None
+        assert resp["reject_button_label"] == "Reject all"
+        assert resp["regions"] == ["us_tx"]
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert (
+            resp["version"] == 1.0
+        ), "Version not bumped because language didn't change on ExperienceLanguage"
+
+        db.refresh(overlay_banner_experience_language)
+        # Existing Experience Language History - no new version needed to be created
+        assert overlay_banner_experience_language.histories.count() == 1
+        experience_language_history = overlay_banner_experience_language.histories[0]
+        assert experience_language_history.version == 1.0
+        assert experience_language_history.component == ComponentType.overlay
+        assert (
+            experience_language_history.delivery_mechanism == DeliveryMechanism.banner
+        )
+        assert (
+            experience_language_history.experience_language_id
+            == overlay_banner_experience_language.id
+        )
+
+        # Updated Privacy Experience - TX Privacy Experience automatically linked, and bumped to 2.0
+        assert overlay_banner_experience_language.experiences.count() == 1
+        experience = overlay_banner_experience_language.experiences[0]
+        db.refresh(experience)
+        assert (
+            experience == privacy_experience
+        )  # Linked experience is the same Texas experience from above
+        assert experience.region == PrivacyNoticeRegion.us_tx
+        assert experience.component == ComponentType.overlay
+        assert experience.delivery_mechanism == DeliveryMechanism.banner
+        assert experience.disabled is False
+        assert experience.version == 2.0
+        assert (
+            experience.experience_language_id == overlay_banner_experience_language.id
+        )
+        assert (
+            experience.experience_language_history_id == experience_language_history.id
+        )
+
+        # Created Experience History - new version of Privacy Experience created due to language being linked
+        assert experience.histories.count() == 2
+        experience_history = experience.histories[-1]
+        assert experience_history.region == PrivacyNoticeRegion.us_tx
+        assert experience_history.component == ComponentType.overlay
+        assert experience_history.delivery_mechanism == DeliveryMechanism.banner
+        assert experience_history.disabled is False
+        assert experience_history.version == 2.0
+        assert (
+            experience_history.experience_language_id
+            == overlay_banner_experience_language.id
+        )
+        assert (
+            experience_history.experience_language_history_id
+            == experience_language_history.id
+        )
+        assert experience_history.privacy_experience_id == experience.id
+
+        assert response.json()["added_regions"] == ["us_tx"]
+        assert response.json()["removed_regions"] == []
+        assert response.json()["skipped_regions"] == []
+
+        for history in experience.histories:
+            history.delete(db)
+        experience.delete(db)
+
+    def test_update_experience_language_experience_also_updated(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+        overlay_banner_experience_language,
+    ) -> None:
+        """
+        Verify that if the ExperienceLanguage is updated, some of those updates are passed onto the PrivacyExperience record.
+
+        Existing ExperienceLanguage is updated to add TX.  A Texas Privacy Experience already exists.
+        We are updating the existing ExperienceLanguage simultaneously. So the TX PrivacyExperience will
+        be linked to the ExperienceLanguage and also have select attributes from ExperienceLanguage propagated back
+        """
+
+        privacy_experience = PrivacyExperience.create(
+            db,
+            data={
+                "disabled": False,
+                "component": ComponentType.overlay,
+                "delivery_mechanism": DeliveryMechanism.banner,
+                "region": PrivacyNoticeRegion.us_tx,
+            },
+        )
+
+        assert privacy_experience.version == 1.0
+        assert privacy_experience.histories.count() == 1.0
+        assert privacy_experience.experience_language_id is None
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={"regions": ["us_tx"], "disabled": True},
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()["experience_language"]
+        assert resp["acknowledgement_button_label"] is None
+        assert resp["banner_title"] == "Manage your consent"
+        assert (
+            resp["banner_description"]
+            == "By clicking accept you consent to one of these methods by us and our third parties."
+        )
+        assert resp["component"] == "overlay"
+        assert resp["component_title"] == "Control your privacy"
+        assert (
+            resp["component_description"]
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert resp["confirmation_button_label"] == "Accept all"
+        assert resp["delivery_mechanism"] == "banner"
+        assert resp["link_label"] is None
+        assert resp["reject_button_label"] == "Reject all"
+        assert resp["regions"] == ["us_tx"]
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert resp["disabled"] is True
+        assert (
+            resp["version"] == 2.0
+        ), "Version bumped because we've disabled ExperienceLanguage"
+
+        db.refresh(overlay_banner_experience_language)
+        # ExperienceLanguage was disabled - this is a change, so another historical record is created
+        assert overlay_banner_experience_language.histories.count() == 2
+        experience_language_history = overlay_banner_experience_language.histories[1]
+        assert experience_language_history.version == 2.0
+        assert experience_language_history.disabled
+        assert experience_language_history.component == ComponentType.overlay
+        assert (
+            experience_language_history.delivery_mechanism == DeliveryMechanism.banner
+        )
+        assert (
+            experience_language_history.experience_language_id
+            == overlay_banner_experience_language.id
+        )
+
+        # Updated Privacy Experience - TX Privacy Experience automatically linked, and bumped to 2.0
+        assert overlay_banner_experience_language.experiences.count() == 1
+        experience = overlay_banner_experience_language.experiences[0]
+        db.refresh(experience)
+        assert (
+            experience == privacy_experience
+        )  # Linked experience is the same Texas experience from above
+        assert experience.region == PrivacyNoticeRegion.us_tx
+        assert experience.component == ComponentType.overlay
+        assert experience.delivery_mechanism == DeliveryMechanism.banner
+        assert (
+            experience.disabled is True
+        ), "Experience disabled because it was linked to a disabled language"
+        assert experience.version == 2.0
+        assert (
+            experience.experience_language_id == overlay_banner_experience_language.id
+        )
+        assert (
+            experience.experience_language_history_id == experience_language_history.id
+        )
+
+        # Created Experience History - new version of Privacy Experience created due to language being linked
+        assert experience.histories.count() == 2
+        experience_history = experience.histories[-1]
+        assert experience_history.region == PrivacyNoticeRegion.us_tx
+        assert experience_history.component == ComponentType.overlay
+        assert experience_history.delivery_mechanism == DeliveryMechanism.banner
+        assert experience_history.disabled is True
+        assert experience_history.version == 2.0
+        assert (
+            experience_history.experience_language_id
+            == overlay_banner_experience_language.id
+        )
+        assert (
+            experience_history.experience_language_history_id
+            == experience_language_history.id
+        )
+        assert experience_history.privacy_experience_id == experience.id
+
+        assert response.json()["added_regions"] == ["us_tx"]
+        assert response.json()["removed_regions"] == []
+        assert response.json()["skipped_regions"] == []
+
+        for history in experience.histories:
+            history.delete(db)
+        experience.delete(db)
+
+    def test_update_experience_language_to_remove_region(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+        overlay_banner_experience_language,
+    ) -> None:
+        """
+        Update the ExperienceLanguage to remove a region. Verify this unlinks the region.
+        """
+
+        privacy_experience = PrivacyExperience.create(
+            db,
+            data={
+                "disabled": False,
+                "component": ComponentType.overlay,
+                "delivery_mechanism": DeliveryMechanism.banner,
+                "region": PrivacyNoticeRegion.us_tx,
+                "experience_language_id": overlay_banner_experience_language.id,
+                "experience_language_history_id": overlay_banner_experience_language.experience_language_history_id,
+            },
+        )
+
+        assert privacy_experience.version == 1.0
+        assert privacy_experience.histories.count() == 1.0
+        assert (
+            privacy_experience.experience_language_id
+            == overlay_banner_experience_language.id
+        )
+
+        db.refresh(overlay_banner_experience_language)
+        assert overlay_banner_experience_language.experiences.all() == [
+            privacy_experience
+        ]
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "regions": [],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()["experience_language"]
+
+        assert (
+            resp["version"] == 1.0
+        ), "Version not bumped because language didn't change, only region removed"
+
+        db.refresh(overlay_banner_experience_language)
+        # ExperienceLanguage was disabled - this is a change, so another historical record is created
+        assert overlay_banner_experience_language.histories.count() == 1
+        experience_language_history = overlay_banner_experience_language.histories[0]
+        assert experience_language_history.version == 1.0
+        assert experience_language_history.component == ComponentType.overlay
+        assert (
+            experience_language_history.delivery_mechanism == DeliveryMechanism.banner
+        )
+        assert (
+            experience_language_history.experience_language_id
+            == overlay_banner_experience_language.id
+        )
+
+        # Updated Privacy Experience - TX Privacy Experience automatically *unlinked*, and bumped to 2.0
+        assert overlay_banner_experience_language.experiences.count() == 0
+        db.refresh(privacy_experience)
+
+        assert privacy_experience.version == 2.0
+        assert privacy_experience.experience_language_id is None
+        assert privacy_experience.experience_language_history_id is None
+
+        # Created Experience History - new version of Privacy Experience created due to language being *unlinked*
+        assert privacy_experience.histories.count() == 2
+        experience_history = privacy_experience.histories[-1]
+        assert experience_history.region == PrivacyNoticeRegion.us_tx
+        assert experience_history.component == ComponentType.overlay
+        assert experience_history.delivery_mechanism == DeliveryMechanism.banner
+        assert experience_history.disabled is False
+        assert experience_history.version == 2.0
+        assert experience_history.experience_language_id is None
+        assert experience_history.experience_language_history_id is None
+        assert experience_history.privacy_experience_id == privacy_experience.id
+
+        assert response.json()["added_regions"] == []
+        assert response.json()["removed_regions"] == ["us_tx"]
+        assert response.json()["skipped_regions"] == []
+
+        for history in privacy_experience.histories:
+            history.delete(db)
+        privacy_experience.delete(db)
+
+    def test_updating_experience_language_would_violate_experience_rules(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        overlay_banner_experience_language,
+        db,
+    ) -> None:
+        """
+        We have existing ExperienceLanguage that is an overlay delivered by a banner, that we're going to update
+        to be delivered by a link.  Because we're adding TX to this experience, it should trigger an
+        overlay TX PrivacyExperience to be delivered via link. However, there's already a TX Privacy Center Experience.
+
+        Still update the ExperienceLanguage, but don't add TX to it.
+        """
+
+        privacy_experience = PrivacyExperience.create(
+            db,
+            data={
+                "disabled": False,
+                "component": ComponentType.privacy_center,
+                "delivery_mechanism": DeliveryMechanism.link,
+                "region": PrivacyNoticeRegion.us_tx,
+            },
+        )
+
+        assert privacy_experience.version == 1.0
+        assert privacy_experience.histories.count() == 1.0
+        assert privacy_experience.experience_language_id is None
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "delivery_mechanism": "link",
+                "regions": ["us_tx"],
+                "link_label": "Control your privacy",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()["experience_language"]
+        assert resp["component"] == "overlay"
+        assert resp["delivery_mechanism"] == "link"
+        assert resp["link_label"] == "Control your privacy"
+        assert resp["regions"] == [], "No regions added because TX cannot be added here"
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert resp["version"] == 2.0
+
+        # Updated Experience Language
+        experience_language = get_experience_language_or_error(db, resp["id"])
+        assert experience_language.id == overlay_banner_experience_language.id
+        assert experience_language.histories.count() == 2
+
+        # Created Experience Language History
+        experience_language_history = experience_language.histories[1]
+        assert experience_language_history.version == 2.0
+        assert experience_language_history.component == ComponentType.overlay
+        assert experience_language_history.delivery_mechanism == DeliveryMechanism.link
+        assert (
+            experience_language_history.experience_language_id
+            == overlay_banner_experience_language.id
+        )
+
+        assert response.json()["added_regions"] == []
+        assert response.json()["skipped_regions"] == ["us_tx"]
+        assert response.json()["removed_regions"] == []
+
+        # Overlay Link Privacy Experience was *not* created for Texas,
+        # and nothing was linked to the new ExperienceLanguage
+        assert experience_language.experiences.count() == 0
+
+        (
+            overlay_experience,
+            privacy_center_experience,
+        ) = PrivacyExperience.get_experiences_by_region(
+            db=db, region=PrivacyNoticeRegion.us_tx
+        )
+        assert overlay_experience is None
+        assert privacy_center_experience == privacy_experience
+        assert privacy_center_experience.region == PrivacyNoticeRegion.us_tx
+        assert privacy_center_experience.component == ComponentType.privacy_center
+        assert privacy_center_experience.delivery_mechanism == DeliveryMechanism.link
+        assert privacy_center_experience.disabled is False
+        assert privacy_center_experience.version == 1.0
+        assert privacy_center_experience.experience_language_id is None
+        assert privacy_center_experience.experience_language_history_id is None
+
+        # No new historical records created,
+        # Creating the new overlay ExperienceLanguage did not affect Texas Privacy Experiences
+        assert privacy_center_experience.histories.count() == 1
+        experience_history = privacy_center_experience.histories[0]
+        assert experience_history.region == PrivacyNoticeRegion.us_tx
+        assert experience_history.component == ComponentType.privacy_center
+        assert experience_history.delivery_mechanism == DeliveryMechanism.link
+        assert experience_history.disabled is False
+        assert experience_history.version == 1.0
+        assert experience_history.experience_language_id is None
+        assert experience_history.experience_language_history_id is None
+        assert experience_history.privacy_experience_id == privacy_center_experience.id
+
+        for history in privacy_center_experience.histories:
+            history.delete(db)
+        privacy_center_experience.delete(db)
+
+    def test_opt_in_notices_must_be_delivered_via_banner(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+        overlay_banner_experience_language,
+    ) -> None:
+        """
+        Attempt to update an ExperienceLanguage and link a region to that Experience that has notices
+        that must be delivered in a different way. The ExperienceLanguage should be updated, but the conflicting
+        region should not be linked
+        """
+
+        # Create an opt in notice that needs to be displayed in an overlay
+        privacy_notice = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Test Notice",
+                "regions": [PrivacyNoticeRegion.us_tx],
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["provide"],
+                "enforcement_level": EnforcementLevel.frontend,
+                "displayed_in_overlay": True,
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "delivery_mechanism": "link",
+                "regions": ["us_tx"],
+                "link_label": "Manage your privacy here",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()["experience_language"]
+        assert resp["delivery_mechanism"] == "link"
+        assert resp["link_label"] == "Manage your privacy here"
+        assert resp["regions"] == [], "No regions added because TX cannot be added here"
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert resp["version"] == 2.0
+
+        # Updated Experience Language
+        experience_language = get_experience_language_or_error(db, resp["id"])
+        assert experience_language.histories.count() == 2
+
+        # Created Experience Language History
+        experience_language_history = experience_language.histories[1]
+        assert experience_language_history.version == 2.0
+        assert experience_language_history.component == ComponentType.overlay
+        assert experience_language_history.delivery_mechanism == DeliveryMechanism.link
+        assert (
+            experience_language_history.experience_language_id
+            == experience_language.id
+            == overlay_banner_experience_language.id
+        )
+
+        assert response.json()["added_regions"] == []
+        assert response.json()["skipped_regions"] == ["us_tx"]
+        assert response.json()["removed_regions"] == []
+
+        # Overlay Privacy Experience was *not* created for Texas,
+        # and nothing was linked to the new ExperienceLanguage
+        assert experience_language.experiences.count() == 0
+
+        (
+            overlay_experience,
+            privacy_center_experience,
+        ) = PrivacyExperience.get_experiences_by_region(
+            db=db, region=PrivacyNoticeRegion.us_tx
+        )
+        assert overlay_experience is None
+        assert privacy_center_experience is None
+
+        for history in privacy_notice.histories:
+            history.delete(db)
 
 
 class TestPrivacyExperienceDetail:
@@ -729,25 +2019,33 @@ class TestPrivacyExperienceDetail:
         assert body["disabled"] is True
         assert body["component"] == "overlay"
         assert body["delivery_mechanism"] == "banner"
-        assert body["regions"] == ["us_ca"]
-        assert body["component_title"] == "Manage your consent"
+        assert body["region"] == "us_ca"
+        experience_language = body["experience_language"]
+        assert experience_language["component_title"] == "Manage your consent"
         assert (
-            body["component_description"]
+            experience_language["component_description"]
             == "On this page you can opt in and out of these data uses cases"
         )
-        assert body["banner_title"] == "Manage your consent"
+        assert experience_language["banner_title"] == "Manage your consent"
         assert (
-            body["banner_description"]
+            experience_language["banner_description"]
             == "We use cookies to recognize visitors and remember their preferences"
         )
-        assert body["link_label"] is None
-        assert body["confirmation_button_label"] == "Accept all"
-        assert body["reject_button_label"] == "Reject all"
-        assert body["acknowledgement_button_label"] is None
+        assert experience_language["link_label"] is None
+        assert experience_language["confirmation_button_label"] == "Accept all"
+        assert experience_language["reject_button_label"] == "Reject all"
+        assert experience_language["acknowledgement_button_label"] is None
+        assert experience_language["id"] is not None
+        assert experience_language["version"] == 1.0
+        assert (
+            experience_language["experience_language_history_id"]
+            == privacy_experience_overlay_banner.experience_language_history_id
+        )
+
         assert body["id"] == privacy_experience_overlay_banner.id
         assert body["created_at"] is not None
         assert body["updated_at"] is not None
-        assert body["version"] is not None
+        assert body["version"] == 1.0
         assert (
             body["privacy_experience_history_id"]
             == privacy_experience_overlay_banner.histories[0].id
@@ -755,69 +2053,6 @@ class TestPrivacyExperienceDetail:
         assert len(body["privacy_notices"]) == 2
         assert body["privacy_notices"][0]["id"] == privacy_notice_us_ca_provide.id
         assert body["privacy_notices"][1]["id"] == privacy_notice.id
-
-    @pytest.mark.usefixtures(
-        "privacy_notice", "privacy_notice_eu_fr_provide_service_frontend_only"
-    )
-    def test_get_privacy_experience_detail_bad_region_filter(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        privacy_experience_overlay_banner,
-    ):
-        """Region filter for an experience can restrict embedded notices to just that region"""
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
-
-        resp = api_client.get(url + "?region=eu_it", headers=auth_header)
-        assert resp.status_code == 400
-        assert (
-            resp.json()["detail"]
-            == f"Region query param eu_it not applicable for privacy experience {privacy_experience_overlay_banner.id}."
-        )
-
-    @pytest.mark.usefixtures("privacy_notice_eu_fr_provide_service_frontend_only")
-    def test_get_privacy_experience_detail_region_filter(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        privacy_experience_privacy_center_link,  # regions ca/co
-        privacy_notice,  # regions ca/co,
-        privacy_notice_us_co_third_party_sharing,  # regions co
-    ):
-        """Region filter for an experience can restrict embedded notices to just that region"""
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
-
-        resp = api_client.get(
-            V1_URL_PREFIX
-            + PRIVACY_EXPERIENCE_DETAIL.format(
-                privacy_experience_id=privacy_experience_privacy_center_link.id
-            ),
-            headers=auth_header,
-        )
-        # Sanity check
-        assert resp.status_code == 200
-        assert len(resp.json()["privacy_notices"]) == 2
-        assert resp.json()["id"] == privacy_experience_privacy_center_link.id
-        assert (
-            resp.json()["privacy_notices"][0]["id"]
-            == privacy_notice_us_co_third_party_sharing.id
-        )
-        assert resp.json()["privacy_notices"][1]["id"] == privacy_notice.id
-
-        # Now filter just on ca to get just the ca notices
-        resp = api_client.get(
-            V1_URL_PREFIX
-            + PRIVACY_EXPERIENCE_DETAIL.format(
-                privacy_experience_id=privacy_experience_privacy_center_link.id
-            )
-            + "?region=us_ca",
-            headers=auth_header,
-        )
-        assert len(resp.json()["privacy_notices"]) == 1
-        assert resp.json()["id"] == privacy_experience_privacy_center_link.id
-        assert resp.json()["privacy_notices"][0]["id"] == privacy_notice.id
 
     @pytest.mark.usefixtures(
         "privacy_notice", "privacy_notice_eu_fr_provide_service_frontend_only"
@@ -890,192 +2125,3 @@ class TestPrivacyExperienceDetail:
         )
 
         assert resp.json()["privacy_notices"][0]["disabled"] is False
-
-
-class TestUpdatePrivacyExperiences:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return V1_URL_PREFIX + PRIVACY_EXPERIENCE
-
-    @pytest.fixture(scope="function")
-    def request_data(self, privacy_experience_privacy_center_link) -> List[dict]:
-        return [
-            {
-                "component": ComponentType.privacy_center.value,
-                "delivery_mechanism": DeliveryMechanism.link.value,
-                "regions": [
-                    PrivacyNoticeRegion.us_ca.value,
-                    PrivacyNoticeRegion.us_co.value,
-                    PrivacyNoticeRegion.us_va.value,
-                ],
-                "component_title": "Manage your consent preferences with Fides!",
-                "id": privacy_experience_privacy_center_link.id,
-            }
-        ]
-
-    def test_update_privacy_experiences_unauthenticated(self, url, api_client):
-        resp = api_client.patch(url)
-        assert resp.status_code == 401
-
-    def test_update_privacy_experiences_wrong_scope(
-        self,
-        url,
-        api_client: TestClient,
-        generate_auth_header,
-        request_data,
-    ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
-        resp = api_client.patch(
-            url,
-            json=request_data,
-            headers=auth_header,
-        )
-        assert resp.status_code == 403
-
-    @pytest.mark.parametrize(
-        "role,expected_status",
-        [
-            ("owner", HTTP_200_OK),
-            ("contributor", HTTP_200_OK),
-            ("viewer_and_approver", HTTP_403_FORBIDDEN),
-            ("viewer", HTTP_403_FORBIDDEN),
-            ("approver", HTTP_403_FORBIDDEN),
-        ],
-    )
-    def test_update_privacy_experience_with_roles(
-        self,
-        role,
-        expected_status,
-        api_client: TestClient,
-        url,
-        generate_role_header,
-        request_data,
-    ) -> None:
-        auth_header = generate_role_header(roles=[role])
-        response = api_client.patch(url, json=request_data, headers=auth_header)
-        assert response.status_code == expected_status
-
-    def test_update_privacy_experiences_duplicate_ids(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        request_data,
-    ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
-        dupe = request_data[0]
-        request_data.append(dupe)
-        resp = api_client.patch(url, headers=auth_header, json=request_data)
-        assert resp.status_code == 422
-        assert (
-            resp.json()["detail"]
-            == "Duplicate privacy experience ids submitted in request."
-        )
-
-    def test_update_privacy_experiences_bad_ids(
-        self,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        request_data,
-    ):
-        request_data[0]["id"] = "bad_id"
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
-        resp = api_client.patch(url, headers=auth_header, json=request_data)
-        assert resp.status_code == 404
-        assert resp.json()["detail"] == "No PrivacyExperience found for id bad_id."
-
-    def test_update_privacy_experiences(
-        self,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        request_data,
-        privacy_notice,
-        privacy_experience_privacy_center_link,
-    ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
-
-        resp = api_client.patch(url, headers=auth_header, json=request_data)
-        assert resp.status_code == 200
-        data = resp.json()
-        assert len(data) == 1
-        data = data[0]
-        assert data["disabled"] is False
-        assert data["component"] == "privacy_center"
-        assert data["delivery_mechanism"] == "link"
-        assert data["regions"] == ["us_ca", "us_co", "us_va"]
-        assert data["component_title"] == "Manage your consent preferences with Fides!"
-        assert (
-            data["component_description"]
-            == privacy_experience_privacy_center_link.component_description
-        )
-        assert data["banner_title"] is None
-        assert data["banner_description"] is None
-        assert data["link_label"] == "Manage your privacy"
-        assert data["confirmation_button_label"] is None
-        assert data["reject_button_label"] is None
-        assert data["acknowledgement_button_label"] is None
-        assert data["version"] == 2.0
-        assert data["created_at"] is not None
-        assert data["updated_at"] is not None
-
-        assert len(data["privacy_notices"]) == 1
-        assert data["privacy_notices"][0]["id"] == privacy_notice.id
-
-        db.refresh(privacy_experience_privacy_center_link)
-
-        # Assert qualities of associated created experience
-        assert privacy_experience_privacy_center_link.histories.count() == 2
-        history = privacy_experience_privacy_center_link.histories[1]
-        assert data["privacy_experience_history_id"] == history.id
-        assert (
-            history.privacy_experience_id == privacy_experience_privacy_center_link.id
-        )
-        assert history.version == 2.0
-        assert not history.disabled
-        assert history.component == ComponentType.privacy_center
-        assert history.delivery_mechanism == DeliveryMechanism.link
-        assert history.regions == [
-            PrivacyNoticeRegion.us_ca,
-            PrivacyNoticeRegion.us_co,
-            PrivacyNoticeRegion.us_va,
-        ]
-        assert history.component_title == "Manage your consent preferences with Fides!"
-        assert (
-            history.component_description
-            == "On this page you can opt in and out of these data uses cases"
-        )
-        assert history.banner_title is None
-        assert history.link_label == "Manage your privacy"
-        assert history.confirmation_button_label is None
-        assert history.reject_button_label is None
-        assert history.acknowledgement_button_label is None
-        assert history.version == 2.0
-        assert history.created_at is not None
-        assert history.updated_at is not None
-
-    def test_update_one_field(
-        self,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        request_data,
-        privacy_experience_privacy_center_link,
-    ):
-        assert privacy_experience_privacy_center_link.disabled is False
-
-        data = {"id": privacy_experience_privacy_center_link.id, "disabled": True}
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
-
-        resp = api_client.patch(url, headers=auth_header, json=[data])
-        assert resp.status_code == 200
-        assert resp.json()[0]["id"] == privacy_experience_privacy_center_link.id
-        assert resp.json()[0]["disabled"] is True
-
-        db.refresh(privacy_experience_privacy_center_link)
-
-        assert privacy_experience_privacy_center_link.disabled is True

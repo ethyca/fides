@@ -1,6 +1,7 @@
 from fides.api.ops.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
+    ExperienceLanguage,
     PrivacyExperience,
 )
 from fides.api.ops.models.privacy_notice import (
@@ -11,7 +12,241 @@ from fides.api.ops.models.privacy_notice import (
 )
 
 
+class TestExperienceLanguage:
+    def test_create_privacy_experience_language(self, db):
+        """Assert ExperienceLanguage and its historical record are created
+        Note that the ExperienceLanguage doesn't have regions specifically defined on it.
+        """
+        lang = ExperienceLanguage.create(
+            db=db,
+            data={
+                "component": "overlay",
+                "delivery_mechanism": "banner",
+                "component_title": "Control your privacy",
+                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                "banner_title": "Manage your consent",
+                "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
+                "confirmation_button_label": "Accept all",
+                "reject_button_label": "Reject all",
+            },
+        )
+
+        assert lang.disabled is False
+        assert lang.component == ComponentType.overlay
+        assert lang.delivery_mechanism == DeliveryMechanism.banner
+        assert lang.component_title == "Control your privacy"
+        assert (
+            lang.component_description
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert lang.banner_title == "Manage your consent"
+        assert (
+            lang.banner_description
+            == "By clicking accept you consent to one of these methods by us and our third parties."
+        )
+        assert lang.link_label is None
+        assert lang.confirmation_button_label == "Accept all"
+        assert lang.reject_button_label == "Reject all"
+        assert lang.acknowledgement_button_label is None
+        assert lang.version == 1.0
+
+        assert lang.histories.count() == 1
+        history = lang.histories[0]
+        assert lang.experience_language_history_id == history.id
+        assert history.component_title == "Control your privacy"
+        assert (
+            history.component_description
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert history.banner_title == "Manage your consent"
+        assert (
+            history.banner_description
+            == "By clicking accept you consent to one of these methods by us and our third parties."
+        )
+        assert history.link_label is None
+        assert history.confirmation_button_label == "Accept all"
+        assert history.reject_button_label == "Reject all"
+        assert history.acknowledgement_button_label is None
+        assert history.version == 1.0
+
+        history.delete(db)
+        lang.delete(db=db)
+
+    def test_update_privacy_experience_language(self, db):
+        """Assert PrivacyExperienceLanguage and its historical record are created"""
+        lang = ExperienceLanguage.create(
+            db=db,
+            data={
+                "component": "overlay",
+                "delivery_mechanism": "banner",
+                "component_title": "Control your privacy",
+                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                "banner_title": "Manage your consent",
+                "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
+                "confirmation_button_label": "Accept all",
+                "reject_button_label": "Reject all",
+            },
+        )
+        lang_created_at = lang.created_at
+        lang_updated_at = lang.updated_at
+
+        lang.update(
+            db=db,
+            data={
+                "component": "privacy_center",
+                "delivery_mechanism": "link",
+                "link_label": "Manage your privacy",
+            },
+        )
+        db.refresh(lang)
+
+        assert lang.disabled is False
+        assert lang.component == ComponentType.privacy_center
+        assert lang.delivery_mechanism == DeliveryMechanism.link
+        assert lang.component_title == "Control your privacy"
+        assert (
+            lang.component_description
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert lang.link_label == "Manage your privacy"
+        assert lang.version == 2.0
+
+        assert lang.id is not None
+        assert lang.created_at == lang_created_at
+        assert lang.updated_at > lang_updated_at
+
+        assert lang.histories.count() == 2
+        history = lang.histories[1]
+        assert history.component == ComponentType.privacy_center
+        assert history.delivery_mechanism == DeliveryMechanism.link
+        assert history.component_title == "Control your privacy"
+        assert (
+            history.component_description
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert history.link_label == "Manage your privacy"
+        assert lang.version == 2.0
+
+        assert lang.experience_language_history_id == history.id
+
+        old_history = lang.histories[0]
+        assert old_history.version == 1.0
+        assert old_history.component == ComponentType.overlay
+        assert old_history.delivery_mechanism == DeliveryMechanism.banner
+
+        old_history.delete(db)
+        history.delete(db)
+
+
 class TestPrivacyExperience:
+    def test_get_experiences_by_region(self, db):
+        (
+            queried_overlay_exp,
+            queried_pc_exp,
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_tx)
+        assert queried_overlay_exp is None
+        assert queried_pc_exp is None
+
+        overlay_exp = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": "overlay",
+                "delivery_mechanism": "banner",
+                "region": "us_tx",
+            },
+        )
+
+        (
+            queried_overlay_exp,
+            queried_pc_exp,
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_tx)
+        assert queried_overlay_exp == overlay_exp
+        assert queried_pc_exp is None
+
+        pc_exp = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": "privacy_center",
+                "delivery_mechanism": "link",
+                "region": "us_tx",
+            },
+        )
+
+        (
+            queried_overlay_exp,
+            queried_pc_exp,
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_tx)
+        assert queried_overlay_exp == overlay_exp
+        assert queried_pc_exp == pc_exp
+
+        db.delete(pc_exp.histories[0])
+        db.delete(overlay_exp.histories[0])
+        overlay_exp.delete(db)
+        pc_exp.delete(db)
+
+    def test_get_experience_by_component_and_region(self, db):
+        assert (
+            PrivacyExperience.get_experience_by_component_and_region(
+                db, PrivacyNoticeRegion.eu_at, ComponentType.overlay
+            )
+            is None
+        )
+
+        pc_exp = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": "privacy_center",
+                "delivery_mechanism": "link",
+                "region": "eu_at",
+            },
+        )
+
+        assert (
+            PrivacyExperience.get_experience_by_component_and_region(
+                db, PrivacyNoticeRegion.eu_at, ComponentType.overlay
+            )
+            is None
+        )
+        assert (
+            PrivacyExperience.get_experience_by_component_and_region(
+                db, PrivacyNoticeRegion.eu_at, ComponentType.privacy_center
+            )
+            == pc_exp
+        )
+
+        db.delete(pc_exp.histories[0])
+        db.delete(pc_exp)
+
+    def test_unlink_privacy_experience_language(
+        self, db, experience_language_privacy_center
+    ):
+        pc_exp = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": "privacy_center",
+                "delivery_mechanism": "link",
+                "region": "eu_at",
+                "experience_language_id": experience_language_privacy_center.id,
+                "experience_language_history_id": experience_language_privacy_center.experience_language_history_id,
+            },
+        )
+        created_at = pc_exp.created_at
+        updated_at = pc_exp.updated_at
+
+        assert pc_exp.experience_language == experience_language_privacy_center
+        pc_exp.unlink_privacy_experience_language(db)
+        db.refresh(pc_exp)
+
+        assert pc_exp.experience_language_id is None
+        assert pc_exp.experience_language_history_id is None
+        assert pc_exp.version == 2.0
+        assert pc_exp.created_at == created_at
+        assert pc_exp.updated_at > updated_at
+
+        for history in pc_exp.histories:
+            history.delete(db)
+        pc_exp.delete(db)
+
     def test_create_privacy_experience(self, db):
         """Assert PrivacyExperience and its historical record are created"""
         exp = PrivacyExperience.create(
@@ -19,48 +254,22 @@ class TestPrivacyExperience:
             data={
                 "component": "overlay",
                 "delivery_mechanism": "banner",
-                "regions": ["us_va"],
-                "component_title": "Manage your privacy",
-                "banner_title": "Consent Options",
-                "banner_description": "Here's where you change your consent",
-                "confirmation_button_label": "Approve",
-                "reject_button_label": "Discard",
+                "region": "us_tx",
             },
-            check_name=False,
         )
 
         assert exp.disabled is False
         assert exp.component == ComponentType.overlay
         assert exp.delivery_mechanism == DeliveryMechanism.banner
-        assert exp.regions == [PrivacyNoticeRegion.us_va]
-        assert exp.component_title == "Manage your privacy"
-        assert exp.component_description is None
-        assert exp.banner_title == "Consent Options"
-        assert exp.banner_description == "Here's where you change your consent"
-        assert exp.link_label is None
-        assert exp.confirmation_button_label == "Approve"
-        assert exp.reject_button_label == "Discard"
-        assert exp.acknowledgement_button_label is None
         assert exp.version == 1.0
-        assert exp.privacy_experience_template_id is None
 
+        assert exp.histories.count() == 1
         history = exp.histories[0]
         assert exp.privacy_experience_history_id == history.id
-        assert history.disabled is False
         assert history.component == ComponentType.overlay
         assert history.delivery_mechanism == DeliveryMechanism.banner
-        assert history.regions == [PrivacyNoticeRegion.us_va]
-        assert history.component_title == "Manage your privacy"
-        assert history.component_description is None
-        assert history.banner_title == "Consent Options"
-        assert history.banner_description == "Here's where you change your consent"
-        assert history.link_label is None
-        assert history.confirmation_button_label == "Approve"
-        assert history.reject_button_label == "Discard"
-        assert history.acknowledgement_button_label is None
+        assert history.region == PrivacyNoticeRegion.us_tx
         assert history.version == 1.0
-        assert history.privacy_experience_template_id is None
-        assert history.privacy_experience_id == exp.id
 
         history.delete(db)
         exp.delete(db=db)
@@ -70,78 +279,53 @@ class TestPrivacyExperience:
         exp = PrivacyExperience.create(
             db=db,
             data={
+                "component": "overlay",
+                "delivery_mechanism": "banner",
+                "region": "us_ca",
+            },
+        )
+        exp_created_at = exp.created_at
+        exp_updated_at = exp.updated_at
+
+        exp.update(
+            db=db,
+            data={
                 "component": "privacy_center",
                 "delivery_mechanism": "link",
-                "regions": ["eu_hu"],
-                "component_title": "Manage your privacy",
-                "link_label": "Go to the privacy center",
+                "region": "us_ut",
             },
-            check_name=False,
         )
+        db.refresh(exp)
 
         assert exp.disabled is False
         assert exp.component == ComponentType.privacy_center
         assert exp.delivery_mechanism == DeliveryMechanism.link
-        assert exp.regions == [PrivacyNoticeRegion.eu_hu]
-        assert exp.component_title == "Manage your privacy"
-        assert exp.component_description is None
-        assert exp.banner_description is None
-        assert exp.link_label == "Go to the privacy center"
-        assert exp.version == 1.0
-        assert exp.privacy_experience_template_id is None
-        assert exp.acknowledgement_button_label is None
+        assert exp.region == PrivacyNoticeRegion.us_ut
+
+        assert exp.version == 2.0
 
         assert exp.id is not None
-        exp_created_at = exp.created_at
-        exp_updated_at = exp.updated_at
-
-        history = exp.histories[0]
-        assert exp.privacy_experience_history_id == history.id
-        assert history.disabled is False
-        assert history.component == ComponentType.privacy_center
-        assert history.delivery_mechanism == DeliveryMechanism.link
-        assert history.regions == [PrivacyNoticeRegion.eu_hu]
-        assert history.component_title == "Manage your privacy"
-        assert history.component_description is None
-        assert history.banner_description is None
-        assert history.link_label == "Go to the privacy center"
-        assert history.version == 1.0
-        assert history.privacy_experience_template_id is None
-
-        exp.update(
-            db,
-            data={
-                "regions": [PrivacyNoticeRegion.eu_hu, PrivacyNoticeRegion.eu_at],
-                "banner_description": "Please verify your consent_options",
-            },
-        )
-        db.refresh(exp)
-        assert exp.regions == [PrivacyNoticeRegion.eu_hu, PrivacyNoticeRegion.eu_at]
-        assert exp.banner_description == "Please verify your consent_options"
-        assert exp.version == 2.0
-        assert exp.histories.count() == 2
         assert exp.created_at == exp_created_at
         assert exp.updated_at > exp_updated_at
 
-        assert exp.privacy_experience_history_id == exp.histories[1].id
-        history_2 = exp.histories[1]
-        assert history_2.disabled is False
-        assert history_2.component == ComponentType.privacy_center
-        assert history_2.delivery_mechanism == DeliveryMechanism.link
-        assert history_2.regions == [
-            PrivacyNoticeRegion.eu_hu,
-            PrivacyNoticeRegion.eu_at,
-        ]
-        assert history_2.component_title == "Manage your privacy"
-        assert history_2.component_description is None
-        assert history_2.banner_description == "Please verify your consent_options"
-        assert history_2.link_label == "Go to the privacy center"
-        assert history_2.version == 2.0
-        assert history_2.privacy_experience_template_id is None
+        assert exp.histories.count() == 2
+        history = exp.histories[1]
+        assert history.component == ComponentType.privacy_center
+        assert history.delivery_mechanism == DeliveryMechanism.link
+        assert history.region == PrivacyNoticeRegion.us_ut
+        assert history.version == 2.0
 
-        history_2.delete(db)
+        assert exp.privacy_experience_history_id == history.id
+
+        old_history = exp.histories[0]
+        assert old_history.version == 1.0
+        assert old_history.component == ComponentType.overlay
+        assert old_history.delivery_mechanism == DeliveryMechanism.banner
+        assert old_history.region == PrivacyNoticeRegion.us_ca
+
+        old_history.delete(db)
         history.delete(db)
-        exp.delete(db=db)
+        exp.delete(db)
 
     def test_get_related_privacy_notices(self, db):
         privacy_experience = PrivacyExperience.create(
@@ -149,10 +333,7 @@ class TestPrivacyExperience:
             data={
                 "component": ComponentType.overlay,
                 "delivery_mechanism": DeliveryMechanism.link,
-                "regions": [PrivacyNoticeRegion.eu_fr, PrivacyNoticeRegion.eu_at],
-                "component_title": "Manage your consent preferences",
-                "component_description": "On this page you can opt in and out of these data uses cases",
-                "link_label": "Manage your privacy",
+                "region": "eu_it",
             },
         )
 
@@ -164,7 +345,7 @@ class TestPrivacyExperience:
             data={
                 "name": "Test privacy notice",
                 "description": "a test sample privacy notice configuration",
-                "regions": [PrivacyNoticeRegion.eu_fr],
+                "regions": [PrivacyNoticeRegion.eu_fr, PrivacyNoticeRegion.eu_it],
                 "consent_mechanism": ConsentMechanism.opt_in,
                 "data_uses": ["advertising", "third_party_sharing"],
                 "enforcement_level": EnforcementLevel.system_wide,
@@ -188,25 +369,8 @@ class TestPrivacyExperience:
         # While privacy notice is displayed in the overlay, it doesn't have a matching region
         assert privacy_experience.get_related_privacy_notices(db) == []
 
-        privacy_notice.regions = ["eu_at"]
+        privacy_notice.regions = ["eu_it"]
         privacy_notice.save(db)
-
-        # Sanity check
-        assert privacy_experience.get_related_privacy_notices(db) == [privacy_notice]
-
-        # France filter returns no notices
-        assert (
-            privacy_experience.get_related_privacy_notices(
-                db, region=PrivacyNoticeRegion.eu_fr
-            )
-            == []
-        )
-
-        # Austria filter returns the one notice
-        assert privacy_experience.get_related_privacy_notices(
-            db, region=PrivacyNoticeRegion.eu_at
-        ) == [privacy_notice]
-
         privacy_notice.disabled = True
         privacy_notice.save(db)
 
