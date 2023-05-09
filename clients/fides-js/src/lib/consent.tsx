@@ -141,7 +141,7 @@ export const initFidesConsent = async (
     debugLog(
       "Fides consent banner is disabled, skipping banner initialization!"
     );
-    return Promise.reject("Banner is disabled");
+    return Promise.resolve();
   }
 
 
@@ -179,4 +179,5 @@ export const initFidesConsent = async (
       debugLog(e);
     }
   });
+  return Promise.resolve();
 };

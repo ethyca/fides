@@ -51,7 +51,7 @@ import { getBannerOptions } from "./lib/consent-utils";
 import "./lib/banner.module.css";
 
 export interface FidesConfig {
-  consent?: ConsentConfig;
+  consent: ConsentConfig;
   bannerOptions?: ConsentBannerOptions;
 }
 

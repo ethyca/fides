@@ -22,7 +22,7 @@ let globalBannerOptions: ConsentBannerOptions = {
     secondaryButton: "Reject All",
     tertiaryButton: "Manage Preferences",
   },
-  privacyCenterUrl: "http://localhost:3001", // TODO: default?
+  privacyCenterUrl: "http://localhost:3000", // TODO: default?
   consentLinkText: "Manage Your Consent",
 };
 

@@ -10,7 +10,7 @@ interface ButtonProps {
 const ConsentBannerButton: FunctionComponent<ButtonProps> = ({ buttonType, label, onClick }) => (
     <button
         id={`fides-consent-banner-button-${buttonType.valueOf()}`}
-        class={`fides-consent-banner-button fides-consent-banner-button-${buttonType.valueOf()}`}
+        className={`fides-consent-banner-button fides-consent-banner-button-${buttonType.valueOf()}`}
         onClick={onClick}
     >
         {label || ""}
