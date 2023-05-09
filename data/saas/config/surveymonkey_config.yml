@@ -18,7 +18,7 @@ saas_config:
       strategy: bearer
       configuration:
         token: <api_token>
-  
+
   rate_limit_config:
     limits:
       - rate: 120
@@ -70,24 +70,24 @@ saas_config:
             configuration:
               incremental_param: page
               increment_by: 1
+          data_path: data
     - name: collectors
       requests:
         read:
           method: GET
-          path: /v3/surveys/<surveys_data_id>/collectors
+          path: /v3/surveys/<survey_id>/collectors
           data_path: data
           postprocessors:
             - strategy: filter
               configuration:
                 field: type
-                value: email
+                value:
+                  identity: email
           param_values:
-            - name: placeholder
-              identity: email
-            - name: surveys_data_id
+            - name: survey_id
               references:
                 - dataset: <instance_fides_key>
-                  field: surveys.data.id
+                  field: surveys.id
                   direction: from
     - name: survey_response
       requests:
