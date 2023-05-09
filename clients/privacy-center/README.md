@@ -102,7 +102,8 @@ turbo run test
 For a fully-loaded development & test setup of both the Privacy Center and the
 Fides Consent library, run the following commands in three separate terminals:
 
-[//]: # (fixme- turbo doesn't work right now in privacy center)
+[//]: # "fixme- turbo doesn't work right now in privacy center"
+
 ```bash
 cd privacy-center && turbo run dev
 cd packages/fides-js && turbo run watch
