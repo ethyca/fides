@@ -19,13 +19,13 @@ from fides.api.ctl.sql_models import DataUse, System  # type: ignore
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.api.v1.endpoints.utils import transform_fields
 from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeRegion,
     check_conflicting_data_uses,
 )
-from fides.api.ops.api.v1.endpoints.utils import transform_fields
 from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas import privacy_notice as schemas
 from fides.api.ops.util.api_router import APIRouter
@@ -173,7 +173,9 @@ def get_privacy_notice(
     notice = get_privacy_notice_or_error(db, privacy_notice_id)
     if should_unescape:
         notice = transform_fields(
-            transformation=unescape, model=notice, fields=ESCAPE_FIELDS
+            transformation=lambda x: unescape(x) if x else x,
+            model=notice,
+            fields=ESCAPE_FIELDS,
         )
     return notice
 
@@ -232,7 +234,9 @@ def create_privacy_notices(
     created_privacy_notices: List[PrivacyNotice] = []
     for privacy_notice in privacy_notices:
         privacy_notice = transform_fields(
-            transformation=escape, model=privacy_notice, fields=ESCAPE_FIELDS
+            transformation=lambda x: escape(x) if x else x,
+            model=privacy_notice,
+            fields=ESCAPE_FIELDS,
         )
         created_privacy_notice = PrivacyNotice.create(
             db=db,
@@ -272,7 +276,9 @@ def prepare_privacy_notice_patches(
             )
 
         update_data = transform_fields(
-            transformation=escape, model=update_data, fields=ESCAPE_FIELDS
+            transformation=lambda x: escape(x) if x else x,
+            model=update_data,
+            fields=ESCAPE_FIELDS,
         )
         updates_and_existing.append((update_data, existing_notices[update_data.id]))
 

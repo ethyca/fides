@@ -1,5 +1,5 @@
 """Logic related to sanitizing and validating user application input."""
-from html import escape, unescape
+from html import escape
 from re import compile as regex
 from typing import Generator
 
