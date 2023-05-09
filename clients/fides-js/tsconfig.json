@@ -22,6 +22,6 @@
       "react-dom": ["./node_modules/preact/compat/"]
     }
   },
-  "include": ["**/*.ts", "**/*.d.ts"],
+  "include": ["**/*.ts", "**/*.d.ts", "**/*.tsx"],
   "exclude": ["node_modules", "dist"]
 }
