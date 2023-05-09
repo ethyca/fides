@@ -33,5 +33,5 @@ export type UserGeolocation = {
 export enum ButtonType {
   PRIMARY = "primary",
   SECONDARY = "secondary",
-  TERTIARY = "tertiary"
+  TERTIARY = "tertiary",
 }
