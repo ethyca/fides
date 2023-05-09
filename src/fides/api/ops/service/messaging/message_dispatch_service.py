@@ -12,7 +12,7 @@ from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
 
 from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.email_templates import get_email_template
+from fides.api.ops.email_templates.get_email_template import get_email_template
 from fides.api.ops.models.messaging import (  # type: ignore[attr-defined]
     EMAIL_MESSAGING_SERVICES,
     MessagingConfig,

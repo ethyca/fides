@@ -19,4 +19,8 @@ export default defineConfig({
       bundler: "webpack",
     },
   },
+
+  env: {
+    API_URL: "http://localhost:8080/api/v1",
+  },
 });

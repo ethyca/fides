@@ -503,6 +503,7 @@ class TestMessageDispatchService:
                                     data_uses=["improve.system"],
                                     enforcement_level=EnforcementLevel.system_wide,
                                     version=1.0,
+                                    displayed_in_overlay=True,
                                 ),
                             )
                         ],

@@ -6,9 +6,9 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Session, relationship
 
+from fides.api.ops.db.base_class import Base
 from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.lib.db.base_class import Base
-from fides.lib.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 
 
 class AccessManualWebhook(Base):
@@ -32,7 +32,7 @@ class AccessManualWebhook(Base):
     fields = Column(MutableList.as_mutable(JSONB), nullable=False)
 
     @property
-    def fields_schema(self) -> BaseSchema:
+    def fields_schema(self) -> FidesSchema:
         """Build a dynamic Pydantic schema from fields defined on this webhook"""
 
         class Config:
@@ -51,10 +51,10 @@ class AccessManualWebhook(Base):
         return ManualWebhookValidationModel
 
     @property
-    def fields_non_strict_schema(self) -> BaseSchema:
+    def fields_non_strict_schema(self) -> FidesSchema:
         """Returns a dynamic Pydantic Schema for webhook fields that can keep the overlap between
         fields that are saved and fields that are defined here."""
-        schema: BaseSchema = self.fields_schema
+        schema: FidesSchema = self.fields_schema
         # Extra is set to "ignore" on the BaseConfig
         schema.__config__ = BaseConfig  # type: ignore[misc]
         return schema

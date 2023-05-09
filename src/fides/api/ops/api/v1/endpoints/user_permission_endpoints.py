@@ -15,21 +15,21 @@ from fides.api.ops.api.v1.scope_registry import (
     USER_PERMISSION_UPDATE,
 )
 from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.ops.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
+from fides.api.ops.oauth.roles import APPROVER, OWNER, RoleRegistryEnum
+from fides.api.ops.oauth.utils import (
+    get_current_user,
+    oauth2_scheme,
+    verify_oauth_client,
+)
 from fides.api.ops.schemas.user_permission import (
     UserPermissionsCreate,
     UserPermissionsEdit,
     UserPermissionsResponse,
 )
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.oauth_util import (
-    get_current_user,
-    oauth2_scheme,
-    verify_oauth_client,
-)
 from fides.core.config import CONFIG
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import APPROVER, OWNER, RoleRegistryEnum
 
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 
