@@ -48,7 +48,6 @@ import {
 } from "./lib/cookie";
 import { ConsentBannerOptions } from "./lib/consent-types";
 import { getBannerOptions } from "./lib/consent-utils";
-import "./lib/banner.module.css";
 
 export interface FidesConfig {
   consent: ConsentConfig;

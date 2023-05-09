@@ -92,26 +92,6 @@ describe("Consent banner", () => {
             });
 
             it("should render the expected HTML banner", () => {
-                // Consider me paranoid, but the various DOM APIs that consent-banner.ts uses
-                // (like createElement) are very easy to mess up. This test is (almost) a DOM
-                // snapshot test that asserts that the rendered banner HTML is similar to this:
-                //
-                // <div id='fides-consent-banner' class='fides-consent-banner'>
-                //   <div id='fides-consent-banner-description' class='fides-consent-banner-description'>
-                //     {labels.bannerDescription}
-                //   </div>
-                //   <div id='fides-consent-banner-buttons' class='fides-consent-banner-buttons'>
-                //     <button id='fides-consent-banner-tertiary-button' class='fides-consent-banner-button fides-consent-banner-primary-button'>
-                //       {labels.tertiaryButton}
-                //     </button>
-                //     <button id='fides-consent-banner-secondary-button' class='fides-consent-banner-button fides-consent-banner-secondary-button'>
-                //       {labels.secondaryButton}
-                //     </button>
-                //     <button id='fides-consent-banner-primary-button' class='fides-consent-banner-button fides-consent-banner-primary-button'>
-                //       {labels.primaryButton}
-                //     </button>
-                //   </div>
-                // </div>
                 cy.get("div#fides-consent-banner.fides-consent-banner").within(() => {
                     cy.get("div#fides-consent-banner-description.fides-consent-banner-description")
                         .contains("This test website is overriding the banner description label.");

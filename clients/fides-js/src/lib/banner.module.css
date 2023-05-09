@@ -2,50 +2,50 @@
 * Default CSS styles for the banner
 */
 :root {
-  --fides-consent-banner-font-family: inherit;
-  --fides-consent-banner-font-size: 16px;
-  --fides-consent-banner-background: #fff;
-  --fides-consent-banner-text-color: #24292f;
-  --fides-consent-banner-padding: 0.75em 2em 1em;
+  --fides-consent-overlay-font-family: inherit;
+  --fides-consent-overlay-font-size: 16px;
+  --fides-consent-overlay-background: #fff;
+  --fides-consent-overlay-text-color: #24292f;
+  --fides-consent-overlay-padding: 0.75em 2em 1em;
 
-  --fides-consent-banner-button-background: #eee;
-  --fides-consent-banner-button-text-color: #24292f;
-  --fides-consent-banner-button-hover-background: #ccc;
-  --fides-consent-banner-button-border-radius: 4px;
-  --fides-consent-banner-button-padding: .5em 1em;
+  --fides-consent-overlay-button-background: #eee;
+  --fides-consent-overlay-button-text-color: #24292f;
+  --fides-consent-overlay-button-hover-background: #ccc;
+  --fides-consent-overlay-button-border-radius: 4px;
+  --fides-consent-overlay-button-padding: .5em 1em;
 
-  --fides-consent-banner-button-primary-background: #464b83;
-  --fides-consent-banner-button-primary-text-color: #fff;
-  --fides-consent-banner-button-primary-hover-background: #3f4375;
+  --fides-consent-overlay-button-primary-background: #464b83;
+  --fides-consent-overlay-button-primary-text-color: #fff;
+  --fides-consent-overlay-button-primary-hover-background: #3f4375;
 
-  --fides-consent-banner-button-secondary-background: var(
-    --fides-consent-banner-button-background
+  --fides-consent-overlay-button-secondary-background: var(
+    --fides-consent-overlay-button-background
   );
-  --fides-consent-banner-button-secondary-text-color: var(
-    --fides-consent-banner-button-text-color
+  --fides-consent-overlay-button-secondary-text-color: var(
+    --fides-consent-overlay-button-text-color
   );
-  --fides-consent-banner-button-secondary-hover-background: var(
-    --fides-consent-banner-button-hover-background
+  --fides-consent-overlay-button-secondary-hover-background: var(
+    --fides-consent-overlay-button-hover-background
   );
 
-  --fides-consent-banner-button-tertiary-background: var(
-    --fides-consent-banner-button-background
+  --fides-consent-overlay-button-tertiary-background: var(
+    --fides-consent-overlay-button-background
   );
-  --fides-consent-banner-button-tertiary-text-color: var(
-    --fides-consent-banner-button-text-color
+  --fides-consent-overlay-button-tertiary-text-color: var(
+    --fides-consent-overlay-button-text-color
   );
-  --fides-consent-banner-button-tertiary-hover-background: var(
-    --fides-consent-banner-button-hover-background
+  --fides-consent-overlay-button-tertiary-hover-background: var(
+    --fides-consent-overlay-button-hover-background
   );
 }
 
 div#fides-consent-banner {
-  font-family: var(--fides-consent-banner-font-family);
-  font-size: var(--fides-consent-banner-font-size);
-  background: var(--fides-consent-banner-background);
-  color: var(--fides-consent-banner-text-color);
+  font-family: var(--fides-consent-overlay-font-family);
+  font-size: var(--fides-consent-overlay-font-size);
+  background: var(--fides-consent-overlay-background);
+  color: var(--fides-consent-overlay-text-color);
   box-sizing: border-box;
-  padding: var(--fides-consent-banner-padding);
+  padding: var(--fides-consent-overlay-padding);
 
   display: flex;
   flex-direction: row;
@@ -102,11 +102,11 @@ button.fides-consent-banner-button {
   margin: 0;
   margin-top: 0.25em;
   margin-right: 0.5em;
-  padding: var(--fides-consent-banner-button-padding);
-  background: var(--fides-consent-banner-button-background);
-  color: var(--fides-consent-banner-button-text-color);
+  padding: var(--fides-consent-overlay-button-padding);
+  background: var(--fides-consent-overlay-button-background);
+  color: var(--fides-consent-overlay-button-text-color);
   border: none;
-  border-radius: var(--fides-consent-banner-button-border-radius);
+  border-radius: var(--fides-consent-overlay-button-border-radius);
 
   font-family: inherit;
   font-size: 100%;
@@ -115,32 +115,32 @@ button.fides-consent-banner-button {
 }
 
 button.fides-consent-banner-button:hover {
-  background: var(--fides-consent-banner-button-hover-background);
+  background: var(--fides-consent-overlay-button-hover-background);
 }
 
 button.fides-consent-banner-button.fides-consent-banner-button-primary {
-  background: var(--fides-consent-banner-button-primary-background);
-  color: var(--fides-consent-banner-button-primary-text-color);
+  background: var(--fides-consent-overlay-button-primary-background);
+  color: var(--fides-consent-overlay-button-primary-text-color);
 }
 
 button.fides-consent-banner-button.fides-consent-banner-button-primary:hover {
-  background: var(--fides-consent-banner-button-primary-hover-background);
+  background: var(--fides-consent-overlay-button-primary-hover-background);
 }
 
 button.fides-consent-banner-button.fides-consent-banner-button-secondary {
-  background: var(--fides-consent-banner-button-secondary-background);
-  color: var(--fides-consent-banner-button-secondary-text-color);
+  background: var(--fides-consent-overlay-button-secondary-background);
+  color: var(--fides-consent-overlay-button-secondary-text-color);
 }
 
 button.fides-consent-banner-button.fides-consent-banner-button-secondary:hover {
-  background: var(--fides-consent-banner-button-secondary-hover-background);
+  background: var(--fides-consent-overlay-button-secondary-hover-background);
 }
 
 button.fides-consent-banner-button.fides-consent-banner-button-tertiary {
-  background: var(--fides-consent-banner-button-tertiary-background);
-  color: var(--fides-consent-banner-button-tertiary-text-color);
+  background: var(--fides-consent-overlay-button-tertiary-background);
+  color: var(--fides-consent-overlay-button-tertiary-text-color);
 }
 
 button.fides-consent-banner-button.fides-consent-banner-button-tertiary:hover {
-  background: var(--fides-consent-banner-button-tertiary-hover-background);
+  background: var(--fides-consent-overlay-button-tertiary-hover-background);
 }

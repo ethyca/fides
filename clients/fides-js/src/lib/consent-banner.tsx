@@ -4,6 +4,7 @@ import {CookieKeyConsent, setConsentCookieAcceptAll, setConsentCookieRejectAll} 
 import {ButtonType, ConsentBannerOptions} from "./consent-types";
 import debugLog from "./consent-utils";
 import ConsentBannerButton from "../components/ConsentBannerButton";
+import "./banner.module.css";
 
 interface BannerProps {
   defaults: CookieKeyConsent;
