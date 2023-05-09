@@ -1,19 +1,19 @@
 import {h, FunctionComponent} from "preact";
 import {useState, useEffect} from "preact/hooks";
-import {CookieKeyConsent, setConsentCookieAcceptAll, setConsentCookieRejectAll} from "../lib/cookie";
 import {ButtonType, ConsentBannerOptions} from "../lib/consent-types";
 import debugLog from "../lib/consent-utils";
 import ConsentBannerButton from "./ConsentBannerButton";
 import "../lib/banner.module.css";
 
 interface BannerProps {
-  defaults: CookieKeyConsent;
-  options: ConsentBannerOptions;
-  waitBeforeShow: number;
+    options: ConsentBannerOptions;
+    onAcceptAll: () => void;
+    onRejectAll: () => void;
+    waitBeforeShow: number;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = (
-    { defaults, options, waitBeforeShow }
+    { options, onAcceptAll, onRejectAll, waitBeforeShow }
 ) => {
   const [isShown, setIsShown] = useState(false)
   useEffect(() => {
@@ -54,7 +54,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = (
               buttonType={ButtonType.SECONDARY}
               label={options.labels?.secondaryButton}
               onClick={() => {
-                setConsentCookieRejectAll(defaults);
+                onRejectAll();
                 setIsShown(false);
                 // TODO: save to Fides consent request API
                 // eslint-disable-next-line no-console
@@ -66,7 +66,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = (
               buttonType={ButtonType.PRIMARY}
               label={options.labels?.primaryButton}
               onClick={() => {
-                setConsentCookieAcceptAll(defaults);
+                onAcceptAll();
                 setIsShown(false);
                 // TODO: save to Fides consent request API
                 // eslint-disable-next-line no-console

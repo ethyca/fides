@@ -1,5 +1,5 @@
 import { h, render } from "preact";
-import { CookieKeyConsent } from "./cookie";
+import {CookieKeyConsent, setConsentCookieAcceptAll, setConsentCookieRejectAll} from "./cookie";
 import ConsentBanner from "../components/ConsentBanner";
 import { ConsentBannerOptions, UserGeolocation } from "./consent-types";
 import debugLog, {
@@ -147,8 +147,14 @@ export const initFidesConsent = async (
           // if something goes wrong with location api, we still want to render notices
         })
       }
+      const onAcceptAll = () => {
+        setConsentCookieAcceptAll(defaults)
+      }
+      const onRejectAll = () => {
+        setConsentCookieRejectAll(defaults)
+      }
       render(
-          <ConsentBanner defaults={defaults} options={options} waitBeforeShow={100}/>
+          <ConsentBanner options={options} onAcceptAll={onAcceptAll} onRejectAll={onRejectAll} waitBeforeShow={100}/>
         ,
         document.body
       );
