@@ -172,7 +172,6 @@ def get_privacy_notice(
     should_unescape = request.headers.get("unescape-safestr")
     notice = get_privacy_notice_or_error(db, privacy_notice_id)
     if should_unescape:
-        print("orig", notice.name)
         notice = transform_fields(
             transformation=unescape, model=notice, fields=ESCAPE_FIELDS
         )
