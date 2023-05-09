@@ -77,6 +77,8 @@ def tag(session: nox.Session) -> str:
     - (default) = don't actually apply the tag or push, just show the tag that will be generated
     - only_tag = generate and apply the a tag locally to the current commit, but don't push the tag
     - push = generate, apply and push a tag
+    
+    Add examples
     """
     from git.repo import Repo
 
