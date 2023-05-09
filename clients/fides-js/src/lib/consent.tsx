@@ -97,15 +97,6 @@ const getLocation = async (): Promise<UserGeolocation> => {
 };
 
 /**
- * Determine applicable notices to be shown based on location
- */
-const getApplicableNotices = (location?: UserGeolocation): any => {
-  const options = getBannerOptions();
-  // todo- call fides api with location to get applicable notices
-  return {}
-};
-
-/**
  * Initialize the Fides Consent Banner or Link, with optional extraOptions to override defaults.
  *
  * (see the type definition of ConsentBannerOptions for what options are available)
@@ -134,7 +125,7 @@ export const initFidesConsent = async (
 
   debugLog("Validating Fides consent banner options...", options);
   if (!validateBannerOptions(options)) {
-    return Promise.reject("Invalid banner options");
+    return Promise.reject(new Error("Invalid banner options"));
   }
 
   if (options.isDisabled) {
@@ -145,15 +136,14 @@ export const initFidesConsent = async (
   }
 
 
-  document.addEventListener("DOMContentLoaded", (event) => {
+  document.addEventListener("DOMContentLoaded", () => {
     debugLog("DOM fully loaded and parsed");
 
     try {
       debugLog("Adding Fides consent banner CSS & HTML into the DOM...");
       if (options.isGeolocationEnabled) {
-        getLocation().then((location) => {
-          // todo- if location is {}, what notices do we render? all of them?
-          const applicableNotices = getApplicableNotices(location)
+        getLocation().then(() => {
+          // todo- get applicable notices using location
         }).catch(() => {
           // if something goes wrong with location api, we still want to render notices
         })
@@ -167,7 +157,7 @@ export const initFidesConsent = async (
       if (consentLinkEl !== null) {
         debugLog("Fides consent link el found");
         const consentLink = (
-          <ConsentLink defaults={defaults} options={options} />
+          <ConsentLink options={options} />
         );
         render(consentLink, consentLinkEl);
       } else {

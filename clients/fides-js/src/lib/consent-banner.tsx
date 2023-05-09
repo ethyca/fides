@@ -58,25 +58,24 @@ class ConsentBanner extends Component<BannerProps, BannerState> {
     return (
       <div
         id="fides-consent-banner"
-        class={`fides-consent-banner fides-consent-banner-bottom ${
+        className={`fides-consent-banner fides-consent-banner-bottom ${
           isShown ? "" : "fides-consent-banner-hidden" 
         } `}
       >
         <div
           id="fides-consent-banner-description"
-          class="fides-consent-banner-description"
+          className="fides-consent-banner-description"
         >
           {this.options.labels?.bannerDescription || ""}
         </div>
         <div
           id="fides-consent-banner-buttons"
-          class="fides-consent-banner-buttons"
+          className="fides-consent-banner-buttons"
         >
           <ConsentBannerButton
             buttonType={ButtonType.TERTIARY}
             label={this.options.labels?.tertiaryButton}
-            onClick={this.navigateToPrivacyCenter}>
-          </ConsentBannerButton>
+            onClick={this.navigateToPrivacyCenter} />
           <ConsentBannerButton
             buttonType={ButtonType.SECONDARY}
             label={this.options.labels?.secondaryButton}
@@ -88,8 +87,7 @@ class ConsentBanner extends Component<BannerProps, BannerState> {
             console.error(
                 "Could not save consent record to Fides API, not implemented!"
             );
-          }}>
-          </ConsentBannerButton>
+          }} />
           <ConsentBannerButton
             buttonType={ButtonType.PRIMARY}
             label={this.options.labels?.primaryButton}
@@ -101,8 +99,7 @@ class ConsentBanner extends Component<BannerProps, BannerState> {
             console.error(
                 "Could not save consent record to Fides API, not implemented!"
             );
-          }}>
-          </ConsentBannerButton>
+          }} />
         </div>
       </div>
     );

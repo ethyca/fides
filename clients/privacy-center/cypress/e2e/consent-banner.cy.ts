@@ -52,6 +52,7 @@ describe("Consent banner", () => {
     Cypress.Commands.add("visitConsentDemo", (consent?: ConsentConfig, bannerOptions?: ConsentBannerOptions) => {
         cy.visit("/fides-js-components-demo.html", {
             onBeforeLoad: (win) => {
+                // eslint-disable-next-line no-param-reassign
                 win.fidesConsentBannerOptions = {
                     consent: {
                         ...testBannerOptions.consent,
