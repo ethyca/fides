@@ -53,6 +53,11 @@ The types of changes are:
 
 - Add dispatch event when publishing a non-prod tag [#3317](https://github.com/ethyca/fides/pull/3317)
 
+### Removed
+
+- Remove `fides export` command and backing code [#3256](https://github.com/ethyca/fides/pull/3256)
+
+
 ## [2.13.0](https://github.com/ethyca/fides/compare/2.12.1...2.13.0)
 
 ### Added
