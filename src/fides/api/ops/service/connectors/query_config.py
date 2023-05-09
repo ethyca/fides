@@ -759,7 +759,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         return None
 
 
-DynamoDBStatement = Dict[str, Dict[str, Any]]
+DynamoDBStatement = Dict[str, Any]
 """A DynamoDB query is formed using the boto3 library. The required parameters are:
   * a table/collection name (string)
   * the key name to pass when accessing the table, along with type and value (dict)
@@ -790,8 +790,8 @@ class DynamoDBQueryConfig(QueryConfig[DynamoDBStatement]):
         self,
         input_data: Dict[str, List[Any]],
         policy: Optional[Policy],
-    ) -> Dict[str, Dict[str, Any]]:
-        """Generate a dictionary for the `get_item` method used for DynamoDB"""
+    ) -> Optional[DynamoDBStatement]:
+        """Generates a dictionary for the `query` method used for DynamoDB"""
         query_param = {}
         serializer = TypeSerializer()
         for attribute_definition in self.attribute_definitions:
@@ -800,7 +800,8 @@ class DynamoDBQueryConfig(QueryConfig[DynamoDBStatement]):
             query_param["ExpressionAttributeValues"] = {
                 ":value": serializer.serialize(attribute_value)
             }
-            query_param["KeyConditionExpression"] = f"{attribute_name} = :value"
+            key_condition_expression: str = f"{attribute_name} = :value"
+            query_param["KeyConditionExpression"] = key_condition_expression  # type: ignore
         return query_param
 
     def generate_update_stmt(

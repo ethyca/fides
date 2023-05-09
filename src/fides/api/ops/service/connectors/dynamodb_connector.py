@@ -114,6 +114,8 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
                     query_param = query_config.generate_query(
                         selected_input_data, policy
                     )
+                    if query_param is None:
+                        return []
                     items = client.query(
                         TableName=collection_name,
                         ExpressionAttributeValues=query_param[
