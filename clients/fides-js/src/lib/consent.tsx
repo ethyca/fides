@@ -1,11 +1,12 @@
 import { h, render } from "preact";
-import {CookieKeyConsent, setConsentCookieAcceptAll, setConsentCookieRejectAll} from "./cookie";
+import {
+  CookieKeyConsent,
+  setConsentCookieAcceptAll,
+  setConsentCookieRejectAll,
+} from "./cookie";
 import ConsentBanner from "../components/ConsentBanner";
 import { ConsentBannerOptions, UserGeolocation } from "./consent-types";
-import debugLog, {
-  getBannerOptions,
-  setBannerOptions,
-} from "./consent-utils";
+import debugLog, { getBannerOptions, setBannerOptions } from "./consent-utils";
 
 /**
  * Validate the banner options. This checks for errors like using geolocation
@@ -59,11 +60,11 @@ const getLocation = async (): Promise<UserGeolocation> => {
   // assumes that isGeolocationEnabled is true
   debugLog("Running getLocation...");
   const options = getBannerOptions();
-  const {geolocationApiUrl} = options
+  const { geolocationApiUrl } = options;
 
   if (!geolocationApiUrl) {
     debugLog(
-        "Location cannot be found due to no configured geoLocationApiUrl."
+      "Location cannot be found due to no configured geoLocationApiUrl."
     );
     return {};
   }
@@ -134,41 +135,47 @@ export const initFidesConsent = async (
     return Promise.resolve();
   }
 
-
   document.addEventListener("DOMContentLoaded", () => {
     debugLog("DOM fully loaded and parsed");
 
     try {
       debugLog("Adding Fides consent banner CSS & HTML into the DOM...");
       if (options.isGeolocationEnabled) {
-        getLocation().then(() => {
-          // todo- get applicable notices using location
-        }).catch(() => {
-          // if something goes wrong with location api, we still want to render notices
-        })
+        getLocation()
+          .then(() => {
+            // todo- get applicable notices using location
+          })
+          .catch(() => {
+            // if something goes wrong with location api, we still want to render notices
+          });
       }
       const onAcceptAll = () => {
-        setConsentCookieAcceptAll(defaults)
-      }
+        setConsentCookieAcceptAll(defaults);
+      };
       const onRejectAll = () => {
-        setConsentCookieRejectAll(defaults)
-      }
+        setConsentCookieRejectAll(defaults);
+      };
       render(
-          <ConsentBanner options={options} onAcceptAll={onAcceptAll} onRejectAll={onRejectAll} waitBeforeShow={100}/>
-        ,
+        <ConsentBanner
+          options={options}
+          onAcceptAll={onAcceptAll}
+          onRejectAll={onRejectAll}
+          waitBeforeShow={100}
+        />,
         document.body
       );
-      const consentLinkEl = document.getElementById("fides-consent-link") as HTMLElement;
-      if (consentLinkEl !== null) {
-        debugLog("Fides consent link el found");
-        consentLinkEl.onclick = () => {
-          debugLog("Navigate to Privacy Center URL:", options.privacyCenterUrl);
-          // todo- depending on notices / experience config, we update onclick of this link to nav to PC or open modal,
-          //  or hide link entirely
-          if (options.privacyCenterUrl) {
-            window.location.assign(options.privacyCenterUrl);
-          }
-        };
+      const consentLinkEl = document.getElementById("fides-consent-link");
+      if (
+        consentLinkEl &&
+        consentLinkEl instanceof HTMLAnchorElement &&
+        options.privacyCenterUrl
+      ) {
+        debugLog(
+          `Fides consent link el found, replacing href with ${options.privacyCenterUrl}`
+        );
+        consentLinkEl.href = options.privacyCenterUrl;
+        // TODO: depending on notices / experience config, we update onclick of this link to nav to PC or open modal,
+        // or hide link entirely
       } else {
         debugLog("Fides consent link el not found");
       }
