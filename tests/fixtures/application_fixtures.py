@@ -19,12 +19,16 @@ from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ctl.sql_models import System
 from fides.api.ops.common_exceptions import SystemManagerException
 from fides.api.ops.models.application_config import ApplicationConfig
+from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
 from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import (
     ActionType,
@@ -60,6 +64,7 @@ from fides.api.ops.models.storage import (
     _create_local_default_storage,
     default_storage_config_name,
 )
+from fides.api.ops.oauth.roles import APPROVER, VIEWER
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
@@ -86,11 +91,6 @@ from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite impo
 from fides.api.ops.util.data_category import DataCategory
 from fides.core.config import CONFIG
 from fides.core.config.helpers import load_file
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging

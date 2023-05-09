@@ -2,8 +2,9 @@ from typing import AsyncGenerator
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
+from fides.api.ops.db.session import ExtendedSession
 from fides.core.config import CONFIG
 
 engine = create_async_engine(
@@ -15,7 +16,7 @@ async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False
 sync_engine = create_engine(CONFIG.database.sync_database_uri, echo=False)
 sync_session = sessionmaker(
     sync_engine,
-    class_=Session,
+    class_=ExtendedSession,
     expire_on_commit=False,
     autocommit=False,
 )

@@ -45,6 +45,7 @@ from fides.api.ops.models.messaging import (
     default_messaging_config_name,
     get_schema_for_secrets,
 )
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
     MessagingConfigRequest,
@@ -68,7 +69,6 @@ from fides.api.ops.service.messaging.messaging_crud_service import (
 )
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
-from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["messaging"], prefix=V1_URL_PREFIX)

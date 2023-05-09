@@ -1,17 +1,15 @@
 {
-  "name": "fidesops-privacy-center",
+  "name": "privacy-center",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run build:fides-consent",
     "build": "next build",
-    "build:fides-consent": "npm run --workspace=fides-consent build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "lint-staged --diff=main",
-    "format": "prettier --write types/ theme/ pages/ config/ components/ __tests__/",
-    "format:ci": "prettier --check types/ theme/ pages/ config/ components/ __tests__/",
-    "test": "jest --watch",
+    "format": "prettier --write .",
+    "format:ci": "prettier --check .",
+    "test": "jest --watchAll",
     "test:ci": "tsc --noEmit && jest",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
@@ -19,12 +17,8 @@
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",
-    "build-privacy-portal": "npm run build",
     "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./types/api --exportCore false --exportServices false --indent 2"
   },
-  "workspaces": [
-    "packages/fides-consent"
-  ],
   "dependencies": {
     "@chakra-ui/react": "^1.8.9",
     "@emotion/react": "^11.10.6",
@@ -32,7 +26,7 @@
     "@fidesui/react": "^0.0.23",
     "@fontsource/inter": "^4.5.15",
     "@reduxjs/toolkit": "^1.9.3",
-    "fides-consent": "./packages/fides-consent",
+    "fides-js": "*",
     "formik": "^2.2.9",
     "framer-motion": "^5",
     "headers-polyfill": "^3.1.2",
@@ -40,6 +34,7 @@
     "next": "12.2.5",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-error-boundary": "^4.0.4",
     "react-phone-number-input": "^3.2.19",
     "react-redux": "^8.0.5",
     "redux-persist": "^6.0.0",

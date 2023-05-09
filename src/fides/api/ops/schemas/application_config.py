@@ -5,8 +5,8 @@ from typing import Dict, Optional
 
 from pydantic import Extra, root_validator, validator
 
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
-from fides.lib.schemas.base_class import BaseSchema
 
 
 class StorageTypeApiAccepted(Enum):
@@ -16,7 +16,7 @@ class StorageTypeApiAccepted(Enum):
     local = "local"  # local should be used for testing only, not for processing real-world privacy requests
 
 
-class StorageApplicationConfig(BaseSchema):
+class StorageApplicationConfig(FidesSchema):
     active_default_storage_type: StorageTypeApiAccepted
 
     class Config:
@@ -31,7 +31,7 @@ class StorageApplicationConfig(BaseSchema):
 # just make all fields optional by default for the API models.
 
 
-class NotificationApplicationConfig(BaseSchema):
+class NotificationApplicationConfig(FidesSchema):
     """
     API model - configuration settings for data subject and/or data processor notifications
     """
@@ -59,7 +59,7 @@ class NotificationApplicationConfig(BaseSchema):
         return value
 
 
-class ExecutionApplicationConfig(BaseSchema):
+class ExecutionApplicationConfig(FidesSchema):
     subject_identity_verification_required: Optional[bool]
     require_manual_request_approval: Optional[bool]
 
@@ -67,7 +67,7 @@ class ExecutionApplicationConfig(BaseSchema):
         extra = Extra.forbid
 
 
-class ApplicationConfig(BaseSchema):
+class ApplicationConfig(FidesSchema):
     """
     Application config settings update body is an arbitrary dict (JSON object)
     We describe it in a schema to enforce some restrictions on the keys passed.

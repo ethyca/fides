@@ -151,7 +151,7 @@ jobs:
           - "nox"
 
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     continue-on-error: true
     steps:
       - name: Download container

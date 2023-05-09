@@ -6,6 +6,7 @@ from fideslang.validation import FidesKey
 from pydantic import Field, validator
 
 from fides.api.custom_types import SafeStr
+from fides.api.ops.models.audit_log import AuditLogAction
 from fides.api.ops.models.policy import ActionType
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
@@ -13,15 +14,14 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.policy import PolicyResponse as PolicySchema
 from fides.api.ops.schemas.redis_cache import Identity, IdentityBase
+from fides.api.ops.schemas.user import PrivacyRequestReviewer
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )
 from fides.core.config import CONFIG
-from fides.lib.models.audit_log import AuditLogAction
-from fides.lib.oauth.schemas.user import PrivacyRequestReviewer
 
 
 class PrivacyRequestDRPStatus(EnumType):
@@ -35,7 +35,7 @@ class PrivacyRequestDRPStatus(EnumType):
     expired = "expired"
 
 
-class PrivacyRequestDRPStatusResponse(BaseSchema):
+class PrivacyRequestDRPStatusResponse(FidesSchema):
     """A Fidesops PrivacyRequest updated to fit the Data Rights Protocol specification."""
 
     request_id: str
@@ -53,7 +53,7 @@ class PrivacyRequestDRPStatusResponse(BaseSchema):
         use_enum_values = True
 
 
-class Consent(BaseSchema):
+class Consent(FidesSchema):
     """Schema for consent."""
 
     data_use: str
@@ -71,7 +71,7 @@ class ConsentReport(Consent):
     updated_at: datetime
 
 
-class PrivacyRequestCreate(BaseSchema):
+class PrivacyRequestCreate(FidesSchema):
     """Data required to create a PrivacyRequest"""
 
     external_id: Optional[str]
@@ -93,7 +93,7 @@ class PrivacyRequestCreate(BaseSchema):
         return value
 
 
-class FieldsAffectedResponse(BaseSchema):
+class FieldsAffectedResponse(FidesSchema):
     """Schema detailing the individual fields affected by a particular query detailed in the ExecutionLog"""
 
     path: Optional[str]
@@ -107,7 +107,7 @@ class FieldsAffectedResponse(BaseSchema):
         use_enum_values = True
 
 
-class ExecutionLogResponse(BaseSchema):
+class ExecutionLogResponse(FidesSchema):
     """Schema for the embedded ExecutionLogs associated with a PrivacyRequest"""
 
     collection_name: Optional[str]
@@ -131,7 +131,7 @@ class ExecutionLogDetailResponse(ExecutionLogResponse):
     dataset_name: Optional[str]
 
 
-class ExecutionAndAuditLogResponse(BaseSchema):
+class ExecutionAndAuditLogResponse(FidesSchema):
     """Schema for the combined ExecutionLogs and Audit Logs
     associated with a PrivacyRequest"""
 
@@ -151,7 +151,7 @@ class ExecutionAndAuditLogResponse(BaseSchema):
         allow_population_by_field_name = True
 
 
-class RowCountRequest(BaseSchema):
+class RowCountRequest(FidesSchema):
     """Schema for a user to manually confirm data erased for a collection"""
 
     row_count: int
@@ -161,23 +161,23 @@ class CheckpointActionRequiredDetails(CheckpointActionRequired):
     collection: Optional[str] = None  # type: ignore
 
 
-class VerificationCode(BaseSchema):
+class VerificationCode(FidesSchema):
     """Request Body for the user to supply their identity verification code"""
 
     code: str
 
 
-class ManualWebhookData(BaseSchema):
+class ManualWebhookData(FidesSchema):
     checked: bool  # If we have record the user saved data for this webhook (even if it was empty)
     fields: Dict[str, Any]
 
 
-class PrivacyRequestNotificationInfo(BaseSchema):
+class PrivacyRequestNotificationInfo(FidesSchema):
     email_addresses: List[str]
     notify_after_failures: int
 
 
-class PrivacyRequestResponse(BaseSchema):
+class PrivacyRequestResponse(FidesSchema):
     """Schema to check the status of a PrivacyRequest"""
 
     id: str
@@ -222,7 +222,7 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
         allow_population_by_field_name = True
 
 
-class ReviewPrivacyRequestIds(BaseSchema):
+class ReviewPrivacyRequestIds(FidesSchema):
     """Pass in a list of privacy request ids"""
 
     request_ids: List[str] = Field(..., max_items=50)
@@ -245,20 +245,20 @@ class BulkReviewResponse(BulkPostPrivacyRequests):
     """Schema with mixed success/failure responses for Bulk Approve/Deny of PrivacyRequest responses."""
 
 
-class ConsentPreferences(BaseSchema):
+class ConsentPreferences(FidesSchema):
     """Schema for consent preferences."""
 
     consent: Optional[List[Consent]] = None
 
 
-class ConsentWithExecutableStatus(BaseSchema):
+class ConsentWithExecutableStatus(FidesSchema):
     """Schema for executable consents"""
 
     data_use: str
     executable: bool
 
 
-class ConsentPreferencesWithVerificationCode(BaseSchema):
+class ConsentPreferencesWithVerificationCode(FidesSchema):
     """Schema for consent preferences including the verification code."""
 
     code: Optional[str]
@@ -268,13 +268,13 @@ class ConsentPreferencesWithVerificationCode(BaseSchema):
     browser_identity: Optional[Identity]
 
 
-class ConsentRequestResponse(BaseSchema):
+class ConsentRequestResponse(FidesSchema):
     """Schema for consent request response."""
 
     consent_request_id: str
 
 
-class ConsentRequestVerification(BaseSchema):
+class ConsentRequestVerification(FidesSchema):
     """Schema for consent requests."""
 
     identity: Identity

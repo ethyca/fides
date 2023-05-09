@@ -12,14 +12,14 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
-import { getOrMakeFidesCookie, saveFidesCookie } from "fides-consent";
+import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import * as Yup from "yup";
 
 import { ErrorToastOptions } from "~/common/toast-options";
 import { addCommonHeaders } from "~/common/CommonHeaders";
-import { config, defaultIdentityInput, hostUrl } from "~/constants";
+import { defaultIdentityInput } from "~/constants";
 import { PhoneInput } from "~/components/phone-input";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
 import {
@@ -27,6 +27,8 @@ import {
   phoneValidation,
 } from "~/components/modals/validation";
 import { ModalViews, VerificationType } from "~/components/modals/types";
+import { useConfig } from "~/features/common/config.slice";
+import { useSettings } from "~/features/common/settings.slice";
 
 const useConsentRequestForm = ({
   onClose,
@@ -41,8 +43,10 @@ const useConsentRequestForm = ({
   isVerificationRequired: boolean;
   successHandler: () => void;
 }) => {
+  const config = useConfig();
   const identityInputs =
     config.consent?.button.identity_inputs ?? defaultIdentityInput;
+  const settings = useSettings();
   const toast = useToast();
   const cookie = useMemo(() => getOrMakeFidesCookie(), []);
   const formik = useFormik({
@@ -77,7 +81,7 @@ const useConsentRequestForm = ({
         addCommonHeaders(headers, null);
 
         const response = await fetch(
-          `${hostUrl}/${VerificationType.ConsentRequest}`,
+          `${settings.FIDES_API_URL}/${VerificationType.ConsentRequest}`,
           {
             method: "POST",
             headers,
@@ -190,6 +194,8 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
     isVerificationRequired,
     successHandler,
   });
+
+  const config = useConfig();
 
   const requiredInputs = Object.entries(identityInputs).filter(
     ([, required]) => required === "required"
