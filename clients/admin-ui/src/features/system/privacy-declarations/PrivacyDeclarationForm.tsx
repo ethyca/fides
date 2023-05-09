@@ -357,7 +357,6 @@ export const PrivacyDeclarationForm = ({
         <Form>
           <FormGuard id="PrivacyDeclaration" name="New Privacy Declaration" />
           <Stack spacing={4}>
-            {/* TODO: might need pt={4} in datamap */}
             <Box data-testid="header">{renderHeader({ dirty })}</Box>
             <PrivacyDeclarationFormComponents
               onDelete={onDelete}

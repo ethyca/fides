@@ -84,7 +84,7 @@ const PrivacyDeclarationAccordionItem = ({
                   <PrivacyDeclarationFormComponents
                     privacyDeclarationId={privacyDeclaration.id}
                     onDelete={onDelete}
-                    includeCustomFields
+                    includeCustomFields={includeCustomFields}
                     {...dataProps}
                   />
                 </Stack>
