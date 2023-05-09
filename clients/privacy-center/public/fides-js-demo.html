@@ -20,9 +20,7 @@
   <body>
     <main>
       <h1>fides.js demo page</h1>
-      <p>
-        This page exists to demonstrate and debug the fides.js script.
-      </p>
+      <p>This page exists to demonstrate and debug the fides.js script.</p>
 
       <h2>Was the fides global defined?</h2>
       <pre id="has-fides"></pre>
@@ -35,7 +33,6 @@
 
       <h2>Consent Banner Options</h2>
       <pre id="consent-banner-options"></pre>
-
     </main>
   </body>
 
@@ -50,17 +47,14 @@
 
       // Pretty-print the fides consent object and add it to the page.
       document.getElementById("consent-json").textContent = JSON.stringify(
-              Fides.consent,
-              null,
-              2
+        Fides.consent,
+        null,
+        2
       );
 
       // Pretty-print the fides consent banner options object and add it to the page.
-      document.getElementById("consent-banner-options").textContent = JSON.stringify(
-              Fides.getBannerOptions(),
-              null,
-              2
-      );
+      document.getElementById("consent-banner-options").textContent =
+        JSON.stringify(Fides.getBannerOptions(), null, 2);
 
       // Test behavior of integrations that can be configured without/before their platform scripts.
       Fides.gtm();
