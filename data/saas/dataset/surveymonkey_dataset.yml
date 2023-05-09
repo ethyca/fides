@@ -37,6 +37,7 @@ dataset:
               - name: id
                 data_categories: [system.operations]
                 fidesops_meta:
+                  primary_key: True
                   data_type: string
               - name: title
                 data_categories: [system.operations]
@@ -79,6 +80,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: string
           - name: href
             data_categories: [system.operations]
@@ -89,7 +91,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: email
-            data_categories: [user.contact.email]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: is_sender_email_verified

@@ -18,6 +18,13 @@ saas_config:
       strategy: bearer
       configuration:
         token: <api_token>
+  
+  rate_limit_config:
+    limits:
+      - rate: 120
+        period: minute
+      - rate: 500
+        period: day
 
   test_request:
     method: GET
@@ -55,6 +62,9 @@ saas_config:
           query_params:
             - name: page
               value: 1
+          param_values:
+            - name: placeholder
+              identity: email
           pagination:
             strategy: offset
             configuration:
@@ -72,6 +82,8 @@ saas_config:
                 field: type
                 value: email
           param_values:
+            - name: placeholder
+              identity: email
             - name: surveys_data_id
               references:
                 - dataset: <instance_fides_key>

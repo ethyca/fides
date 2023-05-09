@@ -17,8 +17,13 @@ secrets = get_secrets("surveymonkey")
 def surveymonkey_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "surveymonkey.domain") or secrets["domain"],
-        "api_token": pydash.get(saas_config, "surveymonkey.api_token")
-        or secrets["api_token"],
+        "api_token": pydash.get(saas_config, "surveymonkey.api_token") or secrets["api_token"],
+        "survey_id": pydash.get(saas_config, "surveymonkey.survey_id") or secrets["survey_id"],
+        "collector_id": pydash.get(saas_config, "surveymonkey.collector_id") or secrets["collector_id"],
+        "admin_email": pydash.get(saas_config, "surveymonkey.admin_email") or secrets["admin_email"],
+        "page_id": pydash.get(saas_config, "surveymonkey.page_id") or secrets["page_id"],
+        "ques_id": pydash.get(saas_config, "surveymonkey.ques_id") or secrets["ques_id"],
+        "choice_id": pydash.get(saas_config, "surveymonkey.choice_id") or secrets["choice_id"],
         # add the rest of your secrets here
     }
 
@@ -56,47 +61,51 @@ class SurveyMonkeyClient:
             "Authorization": f"Bearer {secrets['api_token']}",
         }
 
-    def get_recipient(self, recipient_id: str, email: str) -> requests.Response:
-        body = {
-            "filterGroups": [
-                {
-                    "filters": [
-                        {
-                            "value": email,
-                            "propertyName": "address.email",
-                            "operator": "EQ",
-                        }
-                    ]
-                }
-            ]
-        }
-        recipient_response: requests.Response = requests.post(
-            url=f"{self.base_url}/api/v1/recipient-lists/{recipient_id}?show_recipients=true",
-            json=body,
-            headers=self.headers,
-        )
-        assert recipient_response.ok
-        return recipient_response.json()
-
-    def create_survey_response(self, email):
+    def create_contacts(self, email):
         return requests.post(
-            url=f"{self.base_url}/api/v1/recipient-lists?num_rcpt_errors=1",
+            url=f"{self.base_url}/v3/contacts",
             headers=self.headers,
             json={
-                "name": "Ethyca test",
-                "description": "An email list of employees at UMBC",
-                "attributes": {"internal_id": 113, "list_group_id": 12322},
-                "recipients": [
+                "email": email
+            },
+        )
+    
+    def create_collectors(self, secrets: Dict[str, Any]):
+        return requests.post(
+            url=f"{self.base_url}/v3/surveys/{secrets['survey_id']}/collectors",
+            headers=self.headers,
+            json={
+            "type": "email",
+            "name": "Erasure Test Collector"
+            },
+        )
+
+    def get_collectors(self, survey_secrets):
+        return requests.get(
+            url=f"{self.base_url}/v3/surveys/{survey_secrets['survey_id']}/collectors",
+            headers=self.headers,
+        )
+
+    def create_survey_response(self, survey_secrets):
+        return requests.post(
+            url=f"{self.base_url}/v3/collectors/{survey_secrets['collector_id']}/responses",
+            headers=self.headers,
+            json={
+                "pages": [
                     {
-                        "address": {"email": email, "name": "test"},
-                        "tags": ["reading"],
-                        "metadata": {"age": "31", "place": "Test location"},
-                        "substitution_data": {
-                            "favorite_color": "surveymonkey Orange",
-                            "job": "Software Engineer",
-                        },
+                        "id": survey_secrets['page_id'],
+                        "questions": [
+                            {
+                                "id": survey_secrets['ques_id'],
+                                "answers": [
+                                    {
+                                        "choice_id": survey_secrets['choice_id']
+                                    }
+                                ]
+                            }
+                        ]
                     }
-                ],
+                ]
             },
         )
 
@@ -110,12 +119,21 @@ def surveymonkey_client(surveymonkey_secrets) -> Generator:
 def surveymonkey_erasure_data(
     surveymonkey_client: SurveyMonkeyClient,
     surveymonkey_erasure_identity_email: str,
+    surveymonkey_secrets
 ) -> Generator:
-    response = surveymonkey_client.create_survey_response(
-        surveymonkey_erasure_identity_email
-    )
-    recipient = response.json()["results"]
-    recipient_id = recipient["id"]
+    # contacts
+    contacts_response = surveymonkey_client.create_contacts(surveymonkey_erasure_identity_email)
+    assert contacts_response.ok
+    contacts = contacts_response.json()
+
+    # collectors
+    # response = surveymonkey_client.create_collectors(surveymonkey_secrets)
+    # assert response.ok
+    # collectors = response.json()["id"]
+
+    # survey_response
+    sur_response = surveymonkey_client.create_survey_response(surveymonkey_secrets)
+    assert sur_response.ok
 
     # error_message = f"customer with email {surveymonkey_erasure_identity_email} could not be created in Recharge"
     # poll_for_existence(
@@ -124,7 +142,7 @@ def surveymonkey_erasure_data(
     #     error_message=error_message,
     # )
 
-    yield recipient_id
+    yield sur_response, collectors, contacts
 
 
 @pytest.fixture
