@@ -218,30 +218,35 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
   );
 };
 
-export const setConsentCookieAcceptAll = (defaults: CookieKeyConsent): void => {
-  if ( !defaults ) {
+/**
+ * Given a CookieKeyConsent and a `value`, update and set the fides cookie
+ * such that every key is set to the passed in `value`
+ */
+const setConsentCookieValuesTo = (
+  cookieKeys: CookieKeyConsent,
+  value: boolean
+) => {
+  if (!cookieKeys) {
     // eslint-disable-next-line no-console
-    console.error("Unable to set consent cookie to accept all: invalid defaults.");
+    console.error(
+      `Unable to set consent cookie values to all ${value}: invalid defaults`
+    );
     return;
   }
+  const updatedCookieKeyConsent: CookieKeyConsent = {};
 
-  // Override all consent values to true and save the cookie
-  const entries: [string, boolean][] = Object.keys(defaults).map((key) => [key, true]);
-  const cookieKeyConsent = Object.fromEntries(entries);
-  const cookie: FidesCookie = getOrMakeFidesCookie(cookieKeyConsent);
-  saveFidesCookie(cookie);
+  Object.keys(cookieKeys).forEach((cookieKey) => {
+    updatedCookieKeyConsent[cookieKey] = value;
+  });
+
+  const cookie = getOrMakeFidesCookie();
+  saveFidesCookie({ ...cookie, consent: updatedCookieKeyConsent });
+};
+
+export const setConsentCookieAcceptAll = (defaults: CookieKeyConsent): void => {
+  setConsentCookieValuesTo(defaults, true);
 };
 
 export const setConsentCookieRejectAll = (defaults: CookieKeyConsent): void => {
-  if (defaults === undefined) {
-    // eslint-disable-next-line no-console
-    console.error("Unable to set consent cookie to reject all: invalid defaults.");
-    return;
-  }
-
-  // Override all consent values to false and save the cookie
-  const entries: [string, boolean][] = Object.keys(defaults).map((key) => [key, false]);
-  const cookieKeyConsent = Object.fromEntries(entries);
-  const cookie: FidesCookie = getOrMakeFidesCookie(cookieKeyConsent);
-  saveFidesCookie(cookie);
+  setConsentCookieValuesTo(defaults, false);
 };
