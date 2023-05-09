@@ -21,9 +21,6 @@ export type ConsentBannerOptions = {
 
   // URL for the Privacy Center, used to customize consent preferences. Required.
   privacyCenterUrl?: string;
-
-  // Text for consent link
-  consentLinkText?: string;
 };
 
 export type UserGeolocation = {

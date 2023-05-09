@@ -1,7 +1,6 @@
 import { h, render } from "preact";
 import { CookieKeyConsent } from "./cookie";
-import ConsentLink from "./consent-link";
-import ConsentBanner from "./consent-banner";
+import ConsentBanner from "../components/ConsentBanner";
 import { ConsentBannerOptions, UserGeolocation } from "./consent-types";
 import debugLog, {
   getBannerOptions,
@@ -153,13 +152,17 @@ export const initFidesConsent = async (
         ,
         document.body
       );
-      const consentLinkEl = document.getElementById("fides-consent-link");
+      const consentLinkEl = document.getElementById("fides-consent-link") as HTMLElement;
       if (consentLinkEl !== null) {
         debugLog("Fides consent link el found");
-        const consentLink = (
-          <ConsentLink options={options} />
-        );
-        render(consentLink, consentLinkEl);
+        consentLinkEl.onclick = () => {
+          debugLog("Navigate to Privacy Center URL:", options.privacyCenterUrl);
+          // todo- depending on notices / experience config, we update onclick of this link to nav to PC or open modal,
+          //  or hide link entirely
+          if (options.privacyCenterUrl) {
+            window.location.assign(options.privacyCenterUrl);
+          }
+        };
       } else {
         debugLog("Fides consent link el not found");
       }
