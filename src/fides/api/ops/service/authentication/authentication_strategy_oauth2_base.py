@@ -176,8 +176,7 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         # persist new tokens to the database
         # ideally we use a passed in database session but we can
         # get the session from the connection_config as a fallback
-        if not db:
-            db = Session.object_session(connection_config)
+        db = db or Session.object_session(connection_config)
         updated_secrets = {**connection_config.secrets, **data}  # type: ignore
         connection_config.update(db, data={"secrets": updated_secrets})
         logger.info(

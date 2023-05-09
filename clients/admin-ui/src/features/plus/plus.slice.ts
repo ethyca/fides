@@ -167,7 +167,7 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/custom-metadata/custom-field/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Custom Fields"],
+      invalidatesTags: ["Custom Fields", "Datamap"],
     }),
     getCustomFieldsForResource: build.query<CustomFieldWithId[], string>({
       query: (resource_id: string) => ({
@@ -186,7 +186,7 @@ const plusApi = baseApi.injectEndpoints({
           value: params.value,
         },
       }),
-      invalidatesTags: ["Custom Fields"],
+      invalidatesTags: ["Custom Fields", "Datamap"],
     }),
 
     getAllCustomFieldDefinitions: build.query<
@@ -208,7 +208,7 @@ const plusApi = baseApi.injectEndpoints({
         method: "POST",
         body: params,
       }),
-      invalidatesTags: ["Custom Field Definition"],
+      invalidatesTags: ["Custom Field Definition", "Datamap"],
     }),
     updateCustomFieldDefinition: build.mutation<
       CustomFieldDefinitionWithId,
@@ -219,14 +219,14 @@ const plusApi = baseApi.injectEndpoints({
         method: "PUT",
         body: params,
       }),
-      invalidatesTags: ["Custom Field Definition"],
+      invalidatesTags: ["Custom Field Definition", "Datamap"],
     }),
     deleteCustomFieldDefinition: build.mutation<void, { id: string }>({
       query: ({ id }) => ({
         url: `plus/custom-metadata/custom-field-definition/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Custom Field Definition"],
+      invalidatesTags: ["Custom Field Definition", "Datamap"],
     }),
 
     // Custom Metadata Custom Field Definition By Resource Type

@@ -131,13 +131,20 @@ describe("Smoke test", () => {
       cy.getCookie("fides_consent").should("exist");
       cy.window().then((win) => {
         cy.wrap(win).should("to.have.property", "Fides");
-        cy.wrap(win).should("to.have.nested.property", "Fides.fides_meta.version").should("eql", "0.9.0");
-        cy.wrap(win).should("to.have.nested.property", "Fides.consent").should("eql", {
-          data_sales: false,
-          tracking: true,
-          analytics: true,
-        });
-        cy.wrap(win).should("to.have.nested.property", "Fides.identity.fides_user_device_id");
+        cy.wrap(win)
+          .should("to.have.nested.property", "Fides.fides_meta.version")
+          .should("eql", "0.9.0");
+        cy.wrap(win)
+          .should("to.have.nested.property", "Fides.consent")
+          .should("eql", {
+            data_sales: false,
+            tracking: true,
+            analytics: true,
+          });
+        cy.wrap(win).should(
+          "to.have.nested.property",
+          "Fides.identity.fides_user_device_id"
+        );
       });
     });
   });

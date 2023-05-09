@@ -2,12 +2,12 @@ from typing import Any, Dict
 
 from pydantic import EmailStr, root_validator
 
+from fides.api.ops.schemas.base_class import NoValidationSchema
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
     ExtendedEmailSchema,
     ExtendedIdentityTypes,
 )
-from fides.lib.schemas.base_class import NoValidationSchema
 
 SOVRN_REQUIRED_IDENTITY: str = "ljt_readerID"
 

@@ -21,7 +21,7 @@ from fides.api.ops.api.v1.scope_registry import (
     REGISTRY,
     SYSTEM,
 )
-from fides.lib.db.base import Base  # type: ignore[attr-defined]
+from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
 
 API_PREFIX = "/api/v1"
 

@@ -15,7 +15,7 @@ Admin UI will be found at `localhost:3000` and Privacy Center at `localhost:3001
 Then, in this folder:
 
 ```
-npm run cy:run
+turbo run cy:run
 ```
 
 ### Environment variables

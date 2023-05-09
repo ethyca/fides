@@ -204,7 +204,9 @@ export type { PolicyWebhookUpdateResponse } from "./models/PolicyWebhookUpdateRe
 export type { PostgreSQLDocsSchema } from "./models/PostgreSQLDocsSchema";
 export type { PrivacyDeclaration } from "./models/PrivacyDeclaration";
 export type { PrivacyDeclarationResponse } from "./models/PrivacyDeclarationResponse";
+export type { PrivacyExperienceCreate } from "./models/PrivacyExperienceCreate";
 export type { PrivacyExperienceResponse } from "./models/PrivacyExperienceResponse";
+export type { PrivacyExperienceWithId } from "./models/PrivacyExperienceWithId";
 export type { PrivacyNoticeCreation } from "./models/PrivacyNoticeCreation";
 export type { PrivacyNoticeHistorySchema } from "./models/PrivacyNoticeHistorySchema";
 export { PrivacyNoticeRegion } from "./models/PrivacyNoticeRegion";

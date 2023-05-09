@@ -14,12 +14,15 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
-from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
+from fides.api.ops.db.base_class import (
+    Base,
+    FidesBase,
+    JSONTypeOverride,
+    get_key_from_data,
+)
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.core.config import CONFIG
-from fides.lib.db.base import Base  # type: ignore[attr-defined]
-from fides.lib.db.base_class import get_key_from_data
-from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 
 class ConnectionTestStatus(enum.Enum):
@@ -127,8 +130,14 @@ class ConnectionConfig(Base):
     saas_config = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
     )
+
     system_id = Column(
         String, ForeignKey(System.id_field_path), nullable=True, index=True
+    )
+
+    datasets = relationship(  # type: ignore[misc]
+        "DatasetConfig",
+        back_populates="connection_config",
     )
 
     access_manual_webhook = relationship(  # type: ignore[misc]
@@ -211,7 +220,7 @@ class ConnectionConfig(Base):
         self.last_test_succeeded = test_status == ConnectionTestStatus.succeeded
         self.save(db)
 
-    def delete(self, db: Session) -> Optional[Base]:
+    def delete(self, db: Session) -> Optional[FidesBase]:
         """Hard deletes datastores that map this ConnectionConfig."""
         for dataset in self.datasets:
             dataset.delete(db=db)

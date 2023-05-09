@@ -17,6 +17,7 @@ from fides.api.ops.api.v1.scope_registry import (
     STORAGE_DELETE,
 )
 from fides.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -24,8 +25,7 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.privacy_request import PrivacyRequestStatus
-from fides.lib.models.client import ClientDetail
-from fides.lib.oauth.roles import APPROVER, OWNER, VIEWER
+from fides.api.ops.oauth.roles import APPROVER, OWNER, VIEWER
 from tests.fixtures.application_fixtures import integration_secrets
 
 page_size = Params().size
@@ -552,7 +552,7 @@ class TestPatchConnections:
         bigquery_resource.delete(db)
         manual_webhook_resource.delete(db)
 
-    @mock.patch("fides.lib.db.base_class.OrmWrappedFidesBase.create_or_update")
+    @mock.patch("fides.api.ops.db.base_class.OrmWrappedFidesBase.create_or_update")
     def test_patch_connections_failed_response(
         self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
     ) -> None:

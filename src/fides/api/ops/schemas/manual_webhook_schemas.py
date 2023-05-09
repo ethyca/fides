@@ -2,11 +2,11 @@ from typing import TYPE_CHECKING, List, Optional, Set
 
 from pydantic import ConstrainedStr, conlist, validator
 
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
 )
-from fides.lib.utils.text import to_snake_case
+from fides.api.ops.util.text import to_snake_case
 
 
 class PIIFieldType(ConstrainedStr):
@@ -24,7 +24,7 @@ class DSRLabelFieldType(ConstrainedStr):
     strip_whitespace = True
 
 
-class ManualWebhookField(BaseSchema):
+class ManualWebhookField(FidesSchema):
     """Schema to describe the attributes on a manual webhook field"""
 
     pii_field: PIIFieldType
@@ -50,7 +50,7 @@ else:
     ManualWebhookFieldsList = conlist(ManualWebhookField, min_items=1)
 
 
-class AccessManualWebhooks(BaseSchema):
+class AccessManualWebhooks(FidesSchema):
     """Expected request body for creating Access Manual Webhooks"""
 
     fields: ManualWebhookFieldsList

@@ -39,13 +39,13 @@ from fides.api.ops.api.v1.scope_registry import (
 )
 from fides.api.ops.api.v1.urn_registry import SYSTEM_CONNECTIONS, V1_URL_PREFIX
 from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.oauth.utils import verify_oauth_client, verify_oauth_client_prod
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfigurationWithSecrets,
 )
 from fides.api.ops.util.connection_util import patch_connection_configs
-from fides.api.ops.util.oauth_util import verify_oauth_client, verify_oauth_client_prod
 from fides.api.ops.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,

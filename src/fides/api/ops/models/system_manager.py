@@ -1,6 +1,6 @@
 from sqlalchemy import Column, ForeignKey, String
 
-from fides.lib.db.base_class import Base
+from fides.api.ops.db.base_class import Base
 
 
 class SystemManager(Base):

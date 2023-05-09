@@ -21,7 +21,7 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     ResourceTypes,
 )
 from fides.api.ctl.utils import errors
-from fides.lib.db.base import Base  # type: ignore[attr-defined]
+from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
 
 
 # CRUD Functions

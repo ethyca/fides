@@ -10,11 +10,11 @@ from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry as scopes
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.models.application_config import ApplicationConfig
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.application_config import (
     ApplicationConfig as ApplicationConfigSchema,
 )
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import censor_config
 from fides.core.config import get_config as get_app_config
 
