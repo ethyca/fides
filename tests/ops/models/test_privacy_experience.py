@@ -1,8 +1,8 @@
 from fides.api.ops.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
-    ExperienceLanguage,
     PrivacyExperience,
+    PrivacyExperienceConfig,
 )
 from fides.api.ops.models.privacy_notice import (
     ConsentMechanism,
@@ -12,12 +12,12 @@ from fides.api.ops.models.privacy_notice import (
 )
 
 
-class TestExperienceLanguage:
-    def test_create_privacy_experience_language(self, db):
-        """Assert ExperienceLanguage and its historical record are created
-        Note that the ExperienceLanguage doesn't have regions specifically defined on it.
+class TestExperienceConfig:
+    def test_create_privacy_experience_config(self, db):
+        """Assert PrivacyExperienceConfig and its historical record are created
+        Note that the PrivacyExperienceConfig doesn't have regions specifically defined on it.
         """
-        lang = ExperienceLanguage.create(
+        lang = PrivacyExperienceConfig.create(
             db=db,
             data={
                 "component": "overlay",
@@ -52,7 +52,7 @@ class TestExperienceLanguage:
 
         assert lang.histories.count() == 1
         history = lang.histories[0]
-        assert lang.experience_language_history_id == history.id
+        assert lang.experience_config_history_id == history.id
         assert history.component_title == "Control your privacy"
         assert (
             history.component_description
@@ -72,9 +72,9 @@ class TestExperienceLanguage:
         history.delete(db)
         lang.delete(db=db)
 
-    def test_update_privacy_experience_language(self, db):
-        """Assert PrivacyExperienceLanguage and its historical record are created"""
-        lang = ExperienceLanguage.create(
+    def test_update_privacy_experience_config(self, db):
+        """Assert PrivacyExperienceConfig and its historical record are created"""
+        lang = PrivacyExperienceConfig.create(
             db=db,
             data={
                 "component": "overlay",
@@ -127,7 +127,7 @@ class TestExperienceLanguage:
         assert history.link_label == "Manage your privacy"
         assert lang.version == 2.0
 
-        assert lang.experience_language_history_id == history.id
+        assert lang.experience_config_history_id == history.id
 
         old_history = lang.histories[0]
         assert old_history.version == 1.0
@@ -217,8 +217,8 @@ class TestPrivacyExperience:
         db.delete(pc_exp.histories[0])
         db.delete(pc_exp)
 
-    def test_unlink_privacy_experience_language(
-        self, db, experience_language_privacy_center
+    def test_unlink_privacy_experience_config(
+        self, db, experience_config_privacy_center
     ):
         pc_exp = PrivacyExperience.create(
             db=db,
@@ -226,19 +226,19 @@ class TestPrivacyExperience:
                 "component": "privacy_center",
                 "delivery_mechanism": "link",
                 "region": "eu_at",
-                "experience_language_id": experience_language_privacy_center.id,
-                "experience_language_history_id": experience_language_privacy_center.experience_language_history_id,
+                "experience_config_id": experience_config_privacy_center.id,
+                "experience_config_history_id": experience_config_privacy_center.experience_config_history_id,
             },
         )
         created_at = pc_exp.created_at
         updated_at = pc_exp.updated_at
 
-        assert pc_exp.experience_language == experience_language_privacy_center
-        pc_exp.unlink_privacy_experience_language(db)
+        assert pc_exp.experience_config == experience_config_privacy_center
+        pc_exp.unlink_privacy_experience_config(db)
         db.refresh(pc_exp)
 
-        assert pc_exp.experience_language_id is None
-        assert pc_exp.experience_language_history_id is None
+        assert pc_exp.experience_config_id is None
+        assert pc_exp.experience_config_history_id is None
         assert pc_exp.version == 2.0
         assert pc_exp.created_at == created_at
         assert pc_exp.updated_at > updated_at

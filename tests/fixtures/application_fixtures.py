@@ -41,8 +41,8 @@ from fides.api.ops.models.policy import (
 from fides.api.ops.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
-    ExperienceLanguage,
     PrivacyExperience,
+    PrivacyExperienceConfig,
 )
 from fides.api.ops.models.privacy_notice import (
     ConsentMechanism,
@@ -2027,8 +2027,8 @@ def consent_records(
 
 
 @pytest.fixture(scope="function")
-def experience_language_privacy_center(db: Session) -> Generator:
-    exp = ExperienceLanguage.create(
+def experience_config_privacy_center(db: Session) -> Generator:
+    exp = PrivacyExperienceConfig.create(
         db=db,
         data={
             "component": "privacy_center",
@@ -2045,7 +2045,7 @@ def experience_language_privacy_center(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def privacy_experience_privacy_center_link(
-    db: Session, experience_language_privacy_center
+    db: Session, experience_config_privacy_center
 ) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
@@ -2054,8 +2054,8 @@ def privacy_experience_privacy_center_link(
             "disabled": False,
             "delivery_mechanism": DeliveryMechanism.link,
             "region": PrivacyNoticeRegion.us_co,
-            "experience_language_id": experience_language_privacy_center.id,
-            "experience_language_history_id": experience_language_privacy_center.histories[
+            "experience_config_id": experience_config_privacy_center.id,
+            "experience_config_history_id": experience_config_privacy_center.histories[
                 0
             ].id,
         },
@@ -2068,8 +2068,8 @@ def privacy_experience_privacy_center_link(
 
 
 @pytest.fixture(scope="function")
-def experience_language_overlay_link(db: Session) -> Generator:
-    exp = ExperienceLanguage.create(
+def experience_config_overlay_link(db: Session) -> Generator:
+    exp = PrivacyExperienceConfig.create(
         db=db,
         data={
             "component": "overlay",
@@ -2087,7 +2087,7 @@ def experience_language_overlay_link(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def privacy_experience_overlay_link(
-    db: Session, experience_language_overlay_link
+    db: Session, experience_config_overlay_link
 ) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
@@ -2095,8 +2095,8 @@ def privacy_experience_overlay_link(
             "component": ComponentType.overlay,
             "delivery_mechanism": DeliveryMechanism.link,
             "region": PrivacyNoticeRegion.eu_fr,
-            "experience_language_id": experience_language_overlay_link.id,
-            "experience_language_history_id": experience_language_overlay_link.histories[
+            "experience_config_id": experience_config_overlay_link.id,
+            "experience_config_history_id": experience_config_overlay_link.histories[
                 0
             ].id,
         },
@@ -2109,8 +2109,8 @@ def privacy_experience_overlay_link(
 
 
 @pytest.fixture(scope="function")
-def experience_language_overlay_banner(db: Session) -> Generator:
-    exp = ExperienceLanguage.create(
+def experience_config_overlay_banner(db: Session) -> Generator:
+    exp = PrivacyExperienceConfig.create(
         db=db,
         data={
             "component_title": "Manage your consent",
@@ -2132,7 +2132,7 @@ def experience_language_overlay_banner(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def privacy_experience_overlay_banner(
-    db: Session, experience_language_overlay_banner
+    db: Session, experience_config_overlay_banner
 ) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
@@ -2140,8 +2140,8 @@ def privacy_experience_overlay_banner(
             "component": ComponentType.overlay,
             "delivery_mechanism": DeliveryMechanism.banner,
             "region": PrivacyNoticeRegion.us_ca,
-            "experience_language_id": experience_language_overlay_banner.id,
-            "experience_language_history_id": experience_language_overlay_banner.histories[
+            "experience_config_id": experience_config_overlay_banner.id,
+            "experience_config_history_id": experience_config_overlay_banner.histories[
                 0
             ].id,
             "disabled": True,

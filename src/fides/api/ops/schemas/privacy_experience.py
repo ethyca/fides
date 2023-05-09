@@ -12,9 +12,9 @@ from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.privacy_notice import PrivacyNoticeResponse
 
 
-class ExperienceLanguage(FidesSchema):
+class ExperienceConfigSchema(FidesSchema):
     """
-    Base for ExperienceLanguage API objects.  Here all fields are optional since
+    Base for ExperienceConfig API objects.  Here all fields are optional since
     Pydantic allows subclasses to be more strict but not less strict
     """
 
@@ -32,9 +32,9 @@ class ExperienceLanguage(FidesSchema):
     reject_button_label: Optional[SafeStr]
 
 
-class ExperienceLanguageCreate(ExperienceLanguage):
+class ExperienceConfigCreate(ExperienceConfigSchema):
     """
-    An API representation to create ExperienceLanguage.
+    An API representation to create ExperienceConfig.
     This model doesn't include an `id` so that it can be used for creation.
     It also establishes some fields _required_ for creation
     """
@@ -91,9 +91,9 @@ class ExperienceLanguageCreate(ExperienceLanguage):
         return values
 
 
-class ExperienceLanguageUpdate(ExperienceLanguage):
+class ExperienceConfigUpdate(ExperienceConfigSchema):
     """
-    Updating ExperienceLanguage - requires regions to be patched specifically
+    Updating ExperienceConfig - requires regions to be patched specifically
     """
 
     regions: List[PrivacyNoticeRegion]
@@ -109,21 +109,21 @@ class ExperienceLanguageUpdate(ExperienceLanguage):
         return regions
 
 
-class ExperienceLanguageWithId(ExperienceLanguage):
+class ExperienceConfigSchemaWithId(ExperienceConfigSchema):
     """
-    An API representation of a ExperienceLanguage that includes an `id` field.
+    An API representation of a ExperienceConfig that includes an `id` field.
 
-    Also includes the experience language history id and version
+    Also includes the experience config history id and version
     """
 
     id: str
-    experience_language_history_id: str
+    experience_config_history_id: str
     version: float
 
 
-class ExperienceLanguageResponse(ExperienceLanguageWithId):
+class ExperienceConfigResponse(ExperienceConfigSchemaWithId):
     """
-    An API representation of ExperienceLanguage used for response payloads
+    An API representation of ExperienceConfig used for response payloads
     """
 
     created_at: datetime
@@ -131,10 +131,10 @@ class ExperienceLanguageResponse(ExperienceLanguageWithId):
     regions: List[PrivacyNoticeRegion]  # Property
 
 
-class ExperienceLanguageCreateOrUpdateResponse(FidesSchema):
-    """Schema with the created/updated experience language with regions that succeeded or failed"""
+class ExperienceConfigCreateOrUpdateResponse(FidesSchema):
+    """Schema with the created/updated experience config with regions that succeeded or failed"""
 
-    experience_language: ExperienceLanguageResponse
+    experience_config: ExperienceConfigResponse
     added_regions: List[PrivacyNoticeRegion]
     removed_regions: List[PrivacyNoticeRegion]
     skipped_regions: List[PrivacyNoticeRegion]
@@ -150,7 +150,7 @@ class PrivacyExperience(FidesSchema):
     component: Optional[ComponentType]
     delivery_mechanism: Optional[DeliveryMechanism]
     region: PrivacyNoticeRegion
-    experience_language: Optional[ExperienceLanguageWithId]
+    experience_config: Optional[ExperienceConfigSchemaWithId]
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""

@@ -1,8 +1,8 @@
-"""split privacy experiences
+"""Split PrivacyExperience table
 
-Revision ID: 1c799754b5e2
+Revision ID: 2dd549ed5ff6
 Revises: 15a3e7483249
-Create Date: 2023-05-08 15:20:11.290079
+Create Date: 2023-05-09 16:36:21.752211
 
 """
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "1c799754b5e2"
+revision = "2dd549ed5ff6"
 down_revision = "15a3e7483249"
 branch_labels = None
 depends_on = None
@@ -18,7 +18,7 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        "experiencelanguage",
+        "privacyexperienceconfig",
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column(
             "created_at",
@@ -48,94 +48,96 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_experiencelanguage_component"),
-        "experiencelanguage",
+        op.f("ix_privacyexperienceconfig_component"),
+        "privacyexperienceconfig",
         ["component"],
         unique=False,
     )
     op.create_index(
-        op.f("ix_experiencelanguage_delivery_mechanism"),
-        "experiencelanguage",
+        op.f("ix_privacyexperienceconfig_delivery_mechanism"),
+        "privacyexperienceconfig",
         ["delivery_mechanism"],
         unique=False,
     )
     op.create_index(
-        op.f("ix_experiencelanguage_id"), "experiencelanguage", ["id"], unique=False
-    )
-    op.create_table(
-        "experiencelanguagehistory",
-        sa.Column("id", sa.String(length=255), nullable=False),
-        sa.Column(
-            "created_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=True,
-        ),
-        sa.Column(
-            "updated_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=True,
-        ),
-        sa.Column("acknowledgement_button_label", sa.String(), nullable=True),
-        sa.Column("banner_title", sa.String(), nullable=True),
-        sa.Column("banner_description", sa.String(), nullable=True),
-        sa.Column("component", sa.String(), nullable=False),
-        sa.Column("component_title", sa.String(), nullable=True),
-        sa.Column("component_description", sa.String(), nullable=True),
-        sa.Column("confirmation_button_label", sa.String(), nullable=True),
-        sa.Column("delivery_mechanism", sa.String(), nullable=False),
-        sa.Column("disabled", sa.Boolean(), nullable=False),
-        sa.Column("is_default", sa.Boolean(), nullable=False),
-        sa.Column("link_label", sa.String(), nullable=True),
-        sa.Column("reject_button_label", sa.String(), nullable=True),
-        sa.Column("version", sa.Float(), nullable=False),
-        sa.Column("experience_language_id", sa.String(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["experience_language_id"],
-            ["experiencelanguage.id"],
-        ),
-        sa.PrimaryKeyConstraint("id"),
-    )
-    op.create_index(
-        op.f("ix_experiencelanguagehistory_component"),
-        "experiencelanguagehistory",
-        ["component"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_experiencelanguagehistory_delivery_mechanism"),
-        "experiencelanguagehistory",
-        ["delivery_mechanism"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_experiencelanguagehistory_id"),
-        "experiencelanguagehistory",
+        op.f("ix_privacyexperienceconfig_id"),
+        "privacyexperienceconfig",
         ["id"],
         unique=False,
     )
-
-    op.add_column("privacyexperience", sa.Column("region", sa.String(), nullable=False))
-    op.add_column(
-        "privacyexperience",
-        sa.Column("experience_language_id", sa.String(), nullable=True),
+    op.create_table(
+        "privacyexperienceconfighistory",
+        sa.Column("id", sa.String(length=255), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
+        ),
+        sa.Column("acknowledgement_button_label", sa.String(), nullable=True),
+        sa.Column("banner_title", sa.String(), nullable=True),
+        sa.Column("banner_description", sa.String(), nullable=True),
+        sa.Column("component", sa.String(), nullable=False),
+        sa.Column("component_title", sa.String(), nullable=True),
+        sa.Column("component_description", sa.String(), nullable=True),
+        sa.Column("confirmation_button_label", sa.String(), nullable=True),
+        sa.Column("delivery_mechanism", sa.String(), nullable=False),
+        sa.Column("disabled", sa.Boolean(), nullable=False),
+        sa.Column("is_default", sa.Boolean(), nullable=False),
+        sa.Column("link_label", sa.String(), nullable=True),
+        sa.Column("reject_button_label", sa.String(), nullable=True),
+        sa.Column("version", sa.Float(), nullable=False),
+        sa.Column("experience_config_id", sa.String(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["experience_config_id"],
+            ["privacyexperienceconfig.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
     )
-    op.add_column(
-        "privacyexperience",
-        sa.Column("experience_language_history_id", sa.String(), nullable=True),
-    )
-    op.drop_index("ix_privacyexperience_regions", table_name="privacyexperience")
     op.create_index(
-        op.f("ix_privacyexperience_experience_language_history_id"),
-        "privacyexperience",
-        ["experience_language_history_id"],
+        op.f("ix_privacyexperienceconfighistory_component"),
+        "privacyexperienceconfighistory",
+        ["component"],
         unique=False,
     )
     op.create_index(
-        op.f("ix_privacyexperience_experience_language_id"),
+        op.f("ix_privacyexperienceconfighistory_delivery_mechanism"),
+        "privacyexperienceconfighistory",
+        ["delivery_mechanism"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_privacyexperienceconfighistory_id"),
+        "privacyexperienceconfighistory",
+        ["id"],
+        unique=False,
+    )
+    op.add_column("privacyexperience", sa.Column("region", sa.String(), nullable=False))
+    op.add_column(
         "privacyexperience",
-        ["experience_language_id"],
+        sa.Column("experience_config_id", sa.String(), nullable=True),
+    )
+    op.add_column(
+        "privacyexperience",
+        sa.Column("experience_config_history_id", sa.String(), nullable=True),
+    )
+    op.drop_index("ix_privacyexperience_regions", table_name="privacyexperience")
+    op.create_index(
+        op.f("ix_privacyexperience_experience_config_history_id"),
+        "privacyexperience",
+        ["experience_config_history_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_privacyexperience_experience_config_id"),
+        "privacyexperience",
+        ["experience_config_id"],
         unique=False,
     )
     op.create_index(
@@ -150,53 +152,53 @@ def upgrade():
         type_="foreignkey",
     )
     op.create_foreign_key(
-        "privacyexperience_experience_language_history_id_fkey",
+        "privacyexperienceconfighistory_experience_config_id_fkey",
         "privacyexperience",
-        "experiencelanguagehistory",
-        ["experience_language_history_id"],
+        "privacyexperienceconfighistory",
+        ["experience_config_history_id"],
         ["id"],
     )
     op.create_foreign_key(
-        "privacyexperience_experience_language_id_fkey",
+        "privacyexperience_experience_config_id_fkey",
         "privacyexperience",
-        "experiencelanguage",
-        ["experience_language_id"],
+        "privacyexperienceconfig",
+        ["experience_config_id"],
         ["id"],
     )
-    op.drop_column("privacyexperience", "privacy_experience_template_id")
-    op.drop_column("privacyexperience", "component_title")
-    op.drop_column("privacyexperience", "component_description")
-    op.drop_column("privacyexperience", "acknowledgement_button_label")
-    op.drop_column("privacyexperience", "reject_button_label")
     op.drop_column("privacyexperience", "regions")
     op.drop_column("privacyexperience", "banner_description")
-    op.drop_column("privacyexperience", "link_label")
-    op.drop_column("privacyexperience", "banner_title")
     op.drop_column("privacyexperience", "confirmation_button_label")
+    op.drop_column("privacyexperience", "acknowledgement_button_label")
+    op.drop_column("privacyexperience", "banner_title")
+    op.drop_column("privacyexperience", "privacy_experience_template_id")
+    op.drop_column("privacyexperience", "link_label")
+    op.drop_column("privacyexperience", "component_title")
+    op.drop_column("privacyexperience", "component_description")
+    op.drop_column("privacyexperience", "reject_button_label")
     op.add_column(
         "privacyexperiencehistory", sa.Column("region", sa.String(), nullable=False)
     )
     op.add_column(
         "privacyexperiencehistory",
-        sa.Column("experience_language_id", sa.String(), nullable=True),
+        sa.Column("experience_config_id", sa.String(), nullable=True),
     )
     op.add_column(
         "privacyexperiencehistory",
-        sa.Column("experience_language_history_id", sa.String(), nullable=True),
+        sa.Column("experience_config_history_id", sa.String(), nullable=True),
     )
     op.drop_index(
         "ix_privacyexperiencehistory_regions", table_name="privacyexperiencehistory"
     )
     op.create_index(
-        op.f("ix_privacyexperiencehistory_experience_language_history_id"),
+        op.f("ix_privacyexperiencehistory_experience_config_history_id"),
         "privacyexperiencehistory",
-        ["experience_language_history_id"],
+        ["experience_config_history_id"],
         unique=False,
     )
     op.create_index(
-        op.f("ix_privacyexperiencehistory_experience_language_id"),
+        op.f("ix_privacyexperiencehistory_experience_config_id"),
         "privacyexperiencehistory",
-        ["experience_language_id"],
+        ["experience_config_id"],
         unique=False,
     )
     op.create_index(
@@ -217,30 +219,29 @@ def upgrade():
         type_="foreignkey",
     )
     op.create_foreign_key(
-        "privacyexperiencehistory_experience_language_history_id_fkey",
+        "privacyexperiencehistory_experience_config_history_id_fkey",
         "privacyexperiencehistory",
-        "experiencelanguagehistory",
-        ["experience_language_history_id"],
+        "privacyexperienceconfighistory",
+        ["experience_config_history_id"],
         ["id"],
     )
     op.create_foreign_key(
-        "privacyexperiencehistory_experience_language_id_fkey",
+        "privacyexperience_experience_config_history_id_fkey",
         "privacyexperiencehistory",
-        "experiencelanguage",
-        ["experience_language_id"],
+        "privacyexperienceconfig",
+        ["experience_config_id"],
         ["id"],
     )
-    op.drop_column("privacyexperiencehistory", "privacy_experience_template_id")
-    op.drop_column("privacyexperiencehistory", "component_title")
-    op.drop_column("privacyexperiencehistory", "component_description")
-    op.drop_column("privacyexperiencehistory", "acknowledgement_button_label")
-    op.drop_column("privacyexperiencehistory", "reject_button_label")
     op.drop_column("privacyexperiencehistory", "regions")
     op.drop_column("privacyexperiencehistory", "banner_description")
-    op.drop_column("privacyexperiencehistory", "link_label")
-    op.drop_column("privacyexperiencehistory", "banner_title")
     op.drop_column("privacyexperiencehistory", "confirmation_button_label")
-
+    op.drop_column("privacyexperiencehistory", "acknowledgement_button_label")
+    op.drop_column("privacyexperiencehistory", "banner_title")
+    op.drop_column("privacyexperiencehistory", "privacy_experience_template_id")
+    op.drop_column("privacyexperiencehistory", "link_label")
+    op.drop_column("privacyexperiencehistory", "component_title")
+    op.drop_column("privacyexperiencehistory", "component_description")
+    op.drop_column("privacyexperiencehistory", "reject_button_label")
     op.drop_index(
         "ix_privacyexperiencetemplate_id", table_name="privacyexperiencetemplate"
     )
@@ -251,52 +252,10 @@ def upgrade():
 
 
 def downgrade():
-    # ### commands auto generated by Alembic - please adjust! ###
-    op.add_column(
-        "privacyexperiencehistory",
-        sa.Column(
-            "confirmation_button_label",
-            sa.VARCHAR(),
-            autoincrement=False,
-            nullable=True,
-        ),
-    )
-    op.add_column(
-        "privacyexperiencehistory",
-        sa.Column("banner_title", sa.VARCHAR(), autoincrement=False, nullable=True),
-    )
-    op.add_column(
-        "privacyexperiencehistory",
-        sa.Column("link_label", sa.VARCHAR(), autoincrement=False, nullable=True),
-    )
-    op.add_column(
-        "privacyexperiencehistory",
-        sa.Column(
-            "banner_description", sa.VARCHAR(), autoincrement=False, nullable=True
-        ),
-    )
-    op.add_column(
-        "privacyexperiencehistory",
-        sa.Column(
-            "regions",
-            postgresql.ARRAY(sa.VARCHAR()),
-            autoincrement=False,
-            nullable=False,
-        ),
-    )
     op.add_column(
         "privacyexperiencehistory",
         sa.Column(
             "reject_button_label", sa.VARCHAR(), autoincrement=False, nullable=True
-        ),
-    )
-    op.add_column(
-        "privacyexperiencehistory",
-        sa.Column(
-            "acknowledgement_button_label",
-            sa.VARCHAR(),
-            autoincrement=False,
-            nullable=True,
         ),
     )
     op.add_column(
@@ -311,6 +270,10 @@ def downgrade():
     )
     op.add_column(
         "privacyexperiencehistory",
+        sa.Column("link_label", sa.VARCHAR(), autoincrement=False, nullable=True),
+    )
+    op.add_column(
+        "privacyexperiencehistory",
         sa.Column(
             "privacy_experience_template_id",
             sa.VARCHAR(),
@@ -318,13 +281,50 @@ def downgrade():
             nullable=True,
         ),
     )
+    op.add_column(
+        "privacyexperiencehistory",
+        sa.Column("banner_title", sa.VARCHAR(), autoincrement=False, nullable=True),
+    )
+    op.add_column(
+        "privacyexperiencehistory",
+        sa.Column(
+            "acknowledgement_button_label",
+            sa.VARCHAR(),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "privacyexperiencehistory",
+        sa.Column(
+            "confirmation_button_label",
+            sa.VARCHAR(),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "privacyexperiencehistory",
+        sa.Column(
+            "banner_description", sa.VARCHAR(), autoincrement=False, nullable=True
+        ),
+    )
+    op.add_column(
+        "privacyexperiencehistory",
+        sa.Column(
+            "regions",
+            postgresql.ARRAY(sa.VARCHAR()),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
     op.drop_constraint(
-        "privacyexperiencehistory_experience_language_id_fkey",
+        "privacyexperience_experience_config_history_id_fkey",
         "privacyexperiencehistory",
         type_="foreignkey",
     )
     op.drop_constraint(
-        "privacyexperiencehistory_experience_language_history_id_fkey",
+        "privacyexperiencehistory_experience_config_history_id_fkey",
         "privacyexperiencehistory",
         type_="foreignkey",
     )
@@ -344,11 +344,11 @@ def downgrade():
         table_name="privacyexperiencehistory",
     )
     op.drop_index(
-        op.f("ix_privacyexperiencehistory_experience_language_id"),
+        op.f("ix_privacyexperiencehistory_experience_config_id"),
         table_name="privacyexperiencehistory",
     )
     op.drop_index(
-        op.f("ix_privacyexperiencehistory_experience_language_history_id"),
+        op.f("ix_privacyexperiencehistory_experience_config_history_id"),
         table_name="privacyexperiencehistory",
     )
     op.create_index(
@@ -357,54 +357,13 @@ def downgrade():
         ["regions"],
         unique=False,
     )
-    op.drop_column("privacyexperiencehistory", "experience_language_history_id")
-    op.drop_column("privacyexperiencehistory", "experience_language_id")
+    op.drop_column("privacyexperiencehistory", "experience_config_history_id")
+    op.drop_column("privacyexperiencehistory", "experience_config_id")
     op.drop_column("privacyexperiencehistory", "region")
     op.add_column(
         "privacyexperience",
         sa.Column(
-            "confirmation_button_label",
-            sa.VARCHAR(),
-            autoincrement=False,
-            nullable=True,
-        ),
-    )
-    op.add_column(
-        "privacyexperience",
-        sa.Column("banner_title", sa.VARCHAR(), autoincrement=False, nullable=True),
-    )
-    op.add_column(
-        "privacyexperience",
-        sa.Column("link_label", sa.VARCHAR(), autoincrement=False, nullable=True),
-    )
-    op.add_column(
-        "privacyexperience",
-        sa.Column(
-            "banner_description", sa.VARCHAR(), autoincrement=False, nullable=True
-        ),
-    )
-    op.add_column(
-        "privacyexperience",
-        sa.Column(
-            "regions",
-            postgresql.ARRAY(sa.VARCHAR()),
-            autoincrement=False,
-            nullable=False,
-        ),
-    )
-    op.add_column(
-        "privacyexperience",
-        sa.Column(
             "reject_button_label", sa.VARCHAR(), autoincrement=False, nullable=True
-        ),
-    )
-    op.add_column(
-        "privacyexperience",
-        sa.Column(
-            "acknowledgement_button_label",
-            sa.VARCHAR(),
-            autoincrement=False,
-            nullable=True,
         ),
     )
     op.add_column(
@@ -419,6 +378,10 @@ def downgrade():
     )
     op.add_column(
         "privacyexperience",
+        sa.Column("link_label", sa.VARCHAR(), autoincrement=False, nullable=True),
+    )
+    op.add_column(
+        "privacyexperience",
         sa.Column(
             "privacy_experience_template_id",
             sa.VARCHAR(),
@@ -426,13 +389,50 @@ def downgrade():
             nullable=True,
         ),
     )
+    op.add_column(
+        "privacyexperience",
+        sa.Column("banner_title", sa.VARCHAR(), autoincrement=False, nullable=True),
+    )
+    op.add_column(
+        "privacyexperience",
+        sa.Column(
+            "acknowledgement_button_label",
+            sa.VARCHAR(),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "privacyexperience",
+        sa.Column(
+            "confirmation_button_label",
+            sa.VARCHAR(),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "privacyexperience",
+        sa.Column(
+            "banner_description", sa.VARCHAR(), autoincrement=False, nullable=True
+        ),
+    )
+    op.add_column(
+        "privacyexperience",
+        sa.Column(
+            "regions",
+            postgresql.ARRAY(sa.VARCHAR()),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
     op.drop_constraint(
-        "privacyexperience_experience_language_id_fkey",
+        "privacyexperienceconfighistory_experience_config_id_fkey",
         "privacyexperience",
         type_="foreignkey",
     )
     op.drop_constraint(
-        "privacyexperience_experience_language_history_id_fkeyq",
+        "privacyexperiencehistory_experience_config_id_fkey",
         "privacyexperience",
         type_="foreignkey",
     )
@@ -445,18 +445,18 @@ def downgrade():
     )
     op.drop_index(op.f("ix_privacyexperience_region"), table_name="privacyexperience")
     op.drop_index(
-        op.f("ix_privacyexperience_experience_language_id"),
+        op.f("ix_privacyexperience_experience_config_id"),
         table_name="privacyexperience",
     )
     op.drop_index(
-        op.f("ix_privacyexperience_experience_language_history_id"),
+        op.f("ix_privacyexperience_experience_config_history_id"),
         table_name="privacyexperience",
     )
     op.create_index(
         "ix_privacyexperience_regions", "privacyexperience", ["regions"], unique=False
     )
-    op.drop_column("privacyexperience", "experience_language_history_id")
-    op.drop_column("privacyexperience", "experience_language_id")
+    op.drop_column("privacyexperience", "experience_config_history_id")
+    op.drop_column("privacyexperience", "experience_config_id")
     op.drop_column("privacyexperience", "region")
     op.create_table(
         "privacyexperiencetemplate",
@@ -484,7 +484,7 @@ def downgrade():
             "regions",
             postgresql.ARRAY(sa.VARCHAR()),
             autoincrement=False,
-            nullable=False,
+            nullable=True,
         ),
         sa.Column("component_title", sa.VARCHAR(), autoincrement=False, nullable=True),
         sa.Column(
@@ -525,24 +525,28 @@ def downgrade():
         unique=False,
     )
     op.drop_index(
-        op.f("ix_experiencelanguagehistory_id"), table_name="experiencelanguagehistory"
+        op.f("ix_privacyexperienceconfighistory_id"),
+        table_name="privacyexperienceconfighistory",
     )
     op.drop_index(
-        op.f("ix_experiencelanguagehistory_delivery_mechanism"),
-        table_name="experiencelanguagehistory",
+        op.f("ix_privacyexperienceconfighistory_delivery_mechanism"),
+        table_name="privacyexperienceconfighistory",
     )
     op.drop_index(
-        op.f("ix_experiencelanguagehistory_component"),
-        table_name="experiencelanguagehistory",
+        op.f("ix_privacyexperienceconfighistory_component"),
+        table_name="privacyexperienceconfighistory",
     )
-    op.drop_table("experiencelanguagehistory")
-    op.drop_index(op.f("ix_experiencelanguage_id"), table_name="experiencelanguage")
+    op.drop_table("privacyexperienceconfighistory")
     op.drop_index(
-        op.f("ix_experiencelanguage_delivery_mechanism"),
-        table_name="experiencelanguage",
+        op.f("ix_privacyexperienceconfig_id"), table_name="privacyexperienceconfig"
     )
     op.drop_index(
-        op.f("ix_experiencelanguage_component"), table_name="experiencelanguage"
+        op.f("ix_privacyexperienceconfig_delivery_mechanism"),
+        table_name="privacyexperienceconfig",
     )
-    op.drop_table("experiencelanguage")
+    op.drop_index(
+        op.f("ix_privacyexperienceconfig_component"),
+        table_name="privacyexperienceconfig",
+    )
+    op.drop_table("privacyexperienceconfig")
     # ### end Alembic commands ###

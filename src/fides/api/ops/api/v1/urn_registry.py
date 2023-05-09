@@ -80,9 +80,9 @@ POLICY_DETAIL = "/dsr/policy/{policy_key}"
 PRIVACY_EXPERIENCE = "/privacy-experience"
 PRIVACY_EXPERIENCE_DETAIL = "/privacy-experience/{privacy_experience_id}"
 
-# Experience Language URLs
-EXPERIENCE_LANGUAGE = "/experience-language"
-EXPERIENCE_LANGUAGE_DETAIL = "/experience-language/{experience_language_id}"
+# Privacy Experience Config URLs
+EXPERIENCE_CONFIG = "/experience-config"
+EXPERIENCE_CONFIG_DETAIL = "/experience-config/{experience_config_id}"
 
 
 # Privacy Notice URLs

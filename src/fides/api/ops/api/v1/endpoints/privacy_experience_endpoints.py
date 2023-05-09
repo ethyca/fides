@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
@@ -21,8 +21,8 @@ from fides.api.ops.api.v1.scope_registry import PRIVACY_EXPERIENCE_UPDATE
 from fides.api.ops.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
-    ExperienceLanguage,
     PrivacyExperience,
+    PrivacyExperienceConfig,
     get_privacy_notices_by_region_and_component,
 )
 from fides.api.ops.models.privacy_notice import (
@@ -32,34 +32,33 @@ from fides.api.ops.models.privacy_notice import (
 )
 from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.privacy_experience import (
-    ExperienceLanguageCreate,
-    ExperienceLanguageCreateOrUpdateResponse,
-    ExperienceLanguageUpdate,
+    ExperienceConfigCreate,
+    ExperienceConfigCreateOrUpdateResponse,
+    ExperienceConfigUpdate,
     PrivacyExperienceResponse,
-    PrivacyExperienceWithId,
 )
 from fides.api.ops.util.api_router import APIRouter
 
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
 
 
-def get_experience_language_or_error(
-    db: Session, experience_language_id: str
-) -> ExperienceLanguage:
+def get_experience_config_or_error(
+    db: Session, experience_config_id: str
+) -> PrivacyExperienceConfig:
     """
-    Helper method to load ExperienceLanguage or throw a 404
+    Helper method to load ExperienceConfig or throw a 404
     """
-    logger.info("Finding ExperienceLanguage with id '{}'", experience_language_id)
-    experience_language = ExperienceLanguage.get(
-        db=db, object_id=experience_language_id
+    logger.info("Finding PrivacyExperienceConfig with id '{}'", experience_config_id)
+    experience_config = PrivacyExperienceConfig.get(
+        db=db, object_id=experience_config_id
     )
-    if not experience_language:
+    if not experience_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No ExperienceLanguage found for id '{experience_language_id}'.",
+            detail=f"No PrivacyExperienceConfig found for id '{experience_config_id}'.",
         )
 
-    return experience_language
+    return experience_config
 
 
 def get_privacy_experience_or_error(
@@ -169,28 +168,28 @@ def privacy_experience_detail(
     return experience
 
 
-def remove_language_from_experience(
+def remove_config_from_matched_experiences(
     db: Session,
-    experience_language: ExperienceLanguage,
+    experience_config: PrivacyExperienceConfig,
     regions_to_unlink: List[PrivacyNoticeRegion],
 ) -> List[PrivacyExperience]:
-    """Remove the language from a PrivacyExperience"""
-    experiences_to_unlink: List[PrivacyExperience] = experience_language.experiences.filter(  # type: ignore[call-arg]
+    """Remove the config from linked PrivacyExperiences"""
+    experiences_to_unlink: List[PrivacyExperience] = experience_config.experiences.filter(  # type: ignore[call-arg]
         PrivacyExperience.region.in_(regions_to_unlink)
     ).all()
     for experience in experiences_to_unlink:
-        experience.unlink_privacy_experience_language(db)
+        experience.unlink_privacy_experience_config(db)
     return experiences_to_unlink
 
 
 def upsert_privacy_experiences(
     db: Session,
-    experience_language: ExperienceLanguage,
+    experience_config: PrivacyExperienceConfig,
     regions: List[PrivacyNoticeRegion],
 ) -> Tuple[
     List[PrivacyNoticeRegion], List[PrivacyNoticeRegion], List[PrivacyNoticeRegion]
 ]:
-    """Add, update, or remove privacy experiences that are attached to given experience language"""
+    """Add, update, or remove privacy experiences that are attached to given experience config"""
     added_regions: List[PrivacyNoticeRegion] = []
     removed_regions: List[PrivacyNoticeRegion] = []
     skipped_regions: List[PrivacyNoticeRegion] = []
@@ -202,13 +201,13 @@ def upsert_privacy_experiences(
         ) = PrivacyExperience.get_experiences_by_region(db, region)
         existing_experience: Optional[PrivacyExperience] = (
             overlay_experience
-            if experience_language.component == ComponentType.overlay
+            if experience_config.component == ComponentType.overlay
             else privacy_center_experience
         )
 
         if (
-            experience_language.component == ComponentType.overlay
-            and experience_language.delivery_mechanism == DeliveryMechanism.link
+            experience_config.component == ComponentType.overlay
+            and experience_config.delivery_mechanism == DeliveryMechanism.link
         ):
             if privacy_center_experience:
                 logger.info(
@@ -216,7 +215,7 @@ def upsert_privacy_experiences(
                     region.value,
                 )
                 if existing_experience:
-                    existing_experience.unlink_privacy_experience_language(db)
+                    existing_experience.unlink_privacy_experience_config(db)
                     removed_regions.append(region)
                 else:
                     skipped_regions.append(region)
@@ -224,7 +223,7 @@ def upsert_privacy_experiences(
 
             if (
                 get_privacy_notices_by_region_and_component(
-                    db, region, experience_language.component  # type: ignore[arg-type]
+                    db, region, experience_config.component  # type: ignore[arg-type]
                 )
                 .filter(
                     PrivacyNotice.consent_mechanism.in_(
@@ -238,23 +237,23 @@ def upsert_privacy_experiences(
                     region,
                 )
                 if existing_experience:
-                    existing_experience.unlink_privacy_experience_language(db)
+                    existing_experience.unlink_privacy_experience_config(db)
                     removed_regions.append(region)
                 else:
                     skipped_regions.append(region)
                 continue
 
         data = {
-            "component": experience_language.component,
-            "delivery_mechanism": experience_language.delivery_mechanism,
+            "component": experience_config.component,
+            "delivery_mechanism": experience_config.delivery_mechanism,
             "region": region,
-            "experience_language_id": experience_language.id,
-            "experience_language_history_id": experience_language.experience_language_history_id,
-            "disabled": experience_language.disabled,
+            "experience_config_id": experience_config.id,
+            "experience_config_history_id": experience_config.experience_config_history_id,
+            "disabled": experience_config.disabled,
         }
 
         if existing_experience:
-            if existing_experience.experience_language_id != experience_language.id:
+            if existing_experience.experience_config_id != experience_config.id:
                 added_regions.append(region)
             existing_experience.update(db, data=data)
 
@@ -268,9 +267,9 @@ def upsert_privacy_experiences(
 
 
 @router.post(
-    urls.EXPERIENCE_LANGUAGE,
+    urls.EXPERIENCE_CONFIG,
     status_code=HTTP_201_CREATED,
-    response_model=ExperienceLanguageCreateOrUpdateResponse,
+    response_model=ExperienceConfigCreateOrUpdateResponse,
     dependencies=[
         Security(
             verify_oauth_client,
@@ -281,33 +280,33 @@ def upsert_privacy_experiences(
         )
     ],
 )
-def experience_language_create(
+def experience_config_create(
     *,
     db: Session = Depends(deps.get_db),
-    experience_data: ExperienceLanguageCreate,
-) -> ExperienceLanguageCreateOrUpdateResponse:
+    experience_config_data: ExperienceConfigCreate,
+) -> ExperienceConfigCreateOrUpdateResponse:
     """
-    Create Experience Language and then attempt to upsert Experiences and link to ExperienceLanguage
+    Create Experience Language and then attempt to upsert Experiences and link to ExperienceConfig
     """
     logger.info(
-        "Creating experience language of component {} and delivery mechanism {} for regions {}.",
-        experience_data.component,
-        experience_data.delivery_mechanism,
-        experience_data.regions,
+        "Creating experience config of component {} and delivery mechanism {} for regions {}.",
+        experience_config_data.component,
+        experience_config_data.delivery_mechanism,
+        experience_config_data.regions,
     )
-    experience_language_data: Dict = experience_data.dict(exclude_unset=True)
-    new_regions: List[PrivacyNoticeRegion] = experience_language_data.pop("regions")
+    experience_config_dict: Dict = experience_config_data.dict(exclude_unset=True)
+    new_regions: List[PrivacyNoticeRegion] = experience_config_dict.pop("regions")
 
-    experience_language = ExperienceLanguage.create(
-        db, data=experience_language_data, check_name=False
+    experience_config = PrivacyExperienceConfig.create(
+        db, data=experience_config_dict, check_name=False
     )
 
     added, removed, skipped = upsert_privacy_experiences(
-        db, experience_language, new_regions
+        db, experience_config, new_regions
     )
 
-    return ExperienceLanguageCreateOrUpdateResponse(
-        experience_language=experience_language,
+    return ExperienceConfigCreateOrUpdateResponse(
+        experience_config=experience_config,
         added_regions=added,
         removed_regions=removed,
         skipped_regions=skipped,
@@ -315,9 +314,9 @@ def experience_language_create(
 
 
 @router.patch(
-    urls.EXPERIENCE_LANGUAGE_DETAIL,
+    urls.EXPERIENCE_CONFIG_DETAIL,
     status_code=HTTP_200_OK,
-    response_model=ExperienceLanguageCreateOrUpdateResponse,
+    response_model=ExperienceConfigCreateOrUpdateResponse,
     dependencies=[
         Security(
             verify_oauth_client,
@@ -327,42 +326,45 @@ def experience_language_create(
         )
     ],
 )
-def experience_language_update(
+def experience_config_update(
     *,
     db: Session = Depends(deps.get_db),
-    experience_language_id: str,
-    experience_data: ExperienceLanguageUpdate,
-) -> ExperienceLanguageCreateOrUpdateResponse:
+    experience_config_id: str,
+    experience_config_data: ExperienceConfigUpdate,
+) -> ExperienceConfigCreateOrUpdateResponse:
     """
-    Update Experience Language and then attempt to upsert Experiences and link back to ExperienceLanguage
+    Update Experience Config and then attempt to upsert Experiences and link back to ExperienceConfig
     """
-    experience_language: ExperienceLanguage = get_experience_language_or_error(
-        db, experience_language_id
+    experience_config: PrivacyExperienceConfig = get_experience_config_or_error(
+        db, experience_config_id
     )
-    experience_language_data: Dict = experience_data.dict(exclude_unset=True)
-    regions: List[PrivacyNoticeRegion] = experience_language_data.pop("regions")
+    experience_config_data_dict: Dict = experience_config_data.dict(exclude_unset=True)
+    regions: List[PrivacyNoticeRegion] = experience_config_data_dict.pop("regions")
 
     # Because we're allowing patch updates here, first do a dry update and make sure the experience
-    # language wouldn't be put in a bad state.
-    dry_update: ExperienceLanguage = experience_language.dry_update(
-        data=experience_language_data
+    # config wouldn't be put in a bad state.
+    dry_update: PrivacyExperienceConfig = experience_config.dry_update(
+        data=experience_config_data_dict
     )
     try:
-        ExperienceLanguageCreate.from_orm(dry_update)
+        ExperienceConfigCreate.from_orm(dry_update)
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            # pylint: disable=no-member
             detail=exc.errors(),  # type: ignore
         )
 
-    logger.info("Updating experience language of id '{}'", experience_language.id)
-    experience_language.update(db=db, data=experience_language_data)
+    logger.info("Updating experience config of id '{}'", experience_config.id)
+    experience_config.update(db=db, data=experience_config_data_dict)
 
     # Upserting PrivacyExperiences based on regions specified in the request
-    current_regions: List[PrivacyNoticeRegion] = experience_language.regions
-    not_included_in_request: List[PrivacyExperience] = remove_language_from_experience(
+    current_regions: List[PrivacyNoticeRegion] = experience_config.regions
+    not_included_in_request: List[
+        PrivacyExperience
+    ] = remove_config_from_matched_experiences(
         db,
-        experience_language,
+        experience_config,
         [
             PrivacyNoticeRegion(reg)
             for reg in {reg.value for reg in current_regions}.difference(
@@ -372,10 +374,10 @@ def experience_language_update(
     )
 
     added, removed_for_conflict, skipped = upsert_privacy_experiences(
-        db, experience_language, regions
+        db, experience_config, regions
     )
-    return ExperienceLanguageCreateOrUpdateResponse(
-        experience_language=experience_language,
+    return ExperienceConfigCreateOrUpdateResponse(
+        experience_config=experience_config,
         added_regions=added,
         removed_regions=removed_for_conflict
         + [omitted.region for omitted in not_included_in_request],

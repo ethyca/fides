@@ -31,8 +31,8 @@ class DeliveryMechanism(Enum):
     link = "link"
 
 
-class ExperienceLanguageBase:
-    """Base schema to share common experience language."""
+class ExperienceConfigBase:
+    """Base schema to share common experience config."""
 
     acknowledgement_button_label = Column(String)
     banner_title = Column(String)
@@ -51,36 +51,36 @@ class ExperienceLanguageBase:
     version = Column(Float, nullable=False, default=1.0)
 
 
-class ExperienceLanguage(ExperienceLanguageBase, Base):
-    """Stores common experience language to be shared across multiple regions"""
+class PrivacyExperienceConfig(ExperienceConfigBase, Base):
+    """Stores common experience config to be shared across multiple regions"""
 
     experiences = relationship(
         "PrivacyExperience",
-        back_populates="experience_language",
+        back_populates="experience_config",
         lazy="dynamic",
     )
 
     histories = relationship(
-        "ExperienceLanguageHistory",
-        backref="experience_language",
+        "PrivacyExperienceConfigHistory",
+        backref="experience_config",
         lazy="dynamic",
     )
 
     @property
     def regions(self) -> List[PrivacyNoticeRegion]:
-        """Return the regions attached to the various experiences using this ExperienceLanguage"""
+        """Return the regions using this experience config"""
         return [exp.region for exp in self.experiences]  # type: ignore[attr-defined]
 
     @classmethod
     def create(
-        cls: Type[ExperienceLanguage],
+        cls: Type[PrivacyExperienceConfig],
         db: Session,
         *,
         data: dict[str, Any],
         check_name: bool = False,
-    ) -> ExperienceLanguage:
-        """Create experience language and then clone this record into the history table for record keeping"""
-        experience_language: ExperienceLanguage = super().create(
+    ) -> PrivacyExperienceConfig:
+        """Create experience config and then clone this record into the history table for record keeping"""
+        experience_config: PrivacyExperienceConfig = super().create(
             db=db, data=data, check_name=check_name
         )
 
@@ -88,15 +88,15 @@ class ExperienceLanguage(ExperienceLanguageBase, Base):
         # writing history if the creation fails and so that we can get the generated ID
         history_data = {
             **data,
-            "experience_language_id": experience_language.id,
+            "experience_config_id": experience_config.id,
         }
-        ExperienceLanguageHistory.create(db, data=history_data, check_name=False)
-        return experience_language
+        PrivacyExperienceConfigHistory.create(db, data=history_data, check_name=False)
+        return experience_config
 
-    def update(self, db: Session, *, data: dict[str, Any]) -> ExperienceLanguage:
+    def update(self, db: Session, *, data: dict[str, Any]) -> PrivacyExperienceConfig:
         """
         Overrides the base update method to automatically bump the version of the
-        ExperienceLanguage record and also create a new ExperienceLanguageHistory entry
+        PrivacyExperienceConfig record and also create a new PrivacyExperienceConfigHistory entry
         """
 
         # run through potential updates now
@@ -118,13 +118,15 @@ class ExperienceLanguage(ExperienceLanguageBase, Base):
             history_data.pop("id")
             history_data.pop("created_at")
             history_data.pop("updated_at")
-            history_data["experience_language_id"] = self.id
+            history_data["experience_config_id"] = self.id
 
-            ExperienceLanguageHistory.create(db, data=history_data, check_name=False)
+            PrivacyExperienceConfigHistory.create(
+                db, data=history_data, check_name=False
+            )
 
         return self
 
-    def dry_update(self, *, data: dict[str, Any]) -> ExperienceLanguage:
+    def dry_update(self, *, data: dict[str, Any]) -> PrivacyExperienceConfig:
         """
         A utility method to get an updated object without saving it to the db.
 
@@ -135,26 +137,26 @@ class ExperienceLanguage(ExperienceLanguageBase, Base):
         for key, val in data.items():
             cloned_attributes[key] = val
         cloned_attributes.pop("_sa_instance_state")
-        return ExperienceLanguage(**cloned_attributes)
+        return PrivacyExperienceConfig(**cloned_attributes)
 
     @hybridproperty
-    def experience_language_history_id(self) -> Optional[str]:
-        """Convenience property that returns the experience language id for the current version.
+    def experience_config_history_id(self) -> Optional[str]:
+        """Convenience property that returns the experience config id for the current version.
 
-        Note that there are possibly many historical records for the given experience language, this just returns the current
+        Note that there are possibly many historical records for the given experience config, this just returns the current
         corresponding historical record.
         """
-        history: ExperienceLanguageHistory = self.histories.filter_by(  # type: ignore # pylint: disable=no-member
+        history: PrivacyExperienceConfigHistory = self.histories.filter_by(  # type: ignore # pylint: disable=no-member
             version=self.version
         ).first()
         return history.id if history else None
 
 
-class ExperienceLanguageHistory(ExperienceLanguageBase, Base):
-    """Experience Language History - stores the history of how the language changed"""
+class PrivacyExperienceConfigHistory(ExperienceConfigBase, Base):
+    """Experience Config History - stores the history of how the config changed"""
 
-    experience_language_id = Column(
-        String, ForeignKey(ExperienceLanguage.id_field_path), nullable=False
+    experience_config_id = Column(
+        String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=False
     )
 
 
@@ -171,19 +173,19 @@ class PrivacyExperienceBase:
 class PrivacyExperience(PrivacyExperienceBase, Base):
     """Stores Privacy Experiences for a given region."""
 
-    experience_language_id = Column(
+    experience_config_id = Column(
         String,
-        ForeignKey(ExperienceLanguage.id_field_path),
+        ForeignKey(PrivacyExperienceConfig.id_field_path),
         nullable=True,
         index=True,
     )
 
-    experience_language_history_id = Column(
+    experience_config_history_id = Column(
         String,
-        ForeignKey(ExperienceLanguageHistory.id_field_path),
+        ForeignKey(PrivacyExperienceConfigHistory.id_field_path),
         nullable=True,
         index=True,
-    )  # Also links to the historical record, so if the version of the language gets updated, that
+    )  # Also links to the historical record, so if the version of config gets updated, that
     # triggers a new version of the experience.
 
     UniqueConstraint("region", "component", name="region_component")
@@ -192,8 +194,8 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
         "PrivacyExperienceHistory", backref="privacy_experience", lazy="dynamic"
     )
 
-    experience_language = relationship(
-        "ExperienceLanguage",
+    experience_config = relationship(
+        "PrivacyExperienceConfig",
         back_populates="experiences",
         uselist=False,
     )
@@ -327,13 +329,13 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
 
         return overlay_experience, privacy_center_experience
 
-    def unlink_privacy_experience_language(self, db: Session) -> PrivacyExperience:
-        """Remove language from experience"""
+    def unlink_privacy_experience_config(self, db: Session) -> PrivacyExperience:
+        """Remove config from experience"""
         return self.update(
             db,
             data={
-                "experience_language_id": None,
-                "experience_language_history_id": None,
+                "experience_config_id": None,
+                "experience_config_history_id": None,
             },
         )
 
@@ -345,16 +347,16 @@ class PrivacyExperienceHistory(PrivacyExperienceBase, Base):
     privacy_experience_id = Column(
         String, ForeignKey(PrivacyExperience.id_field_path), nullable=False, index=True
     )
-    experience_language_id = Column(
+    experience_config_id = Column(
         String,
-        ForeignKey(ExperienceLanguage.id_field_path),
+        ForeignKey(PrivacyExperienceConfig.id_field_path),
         nullable=True,
         index=True,
     )
 
-    experience_language_history_id = Column(
+    experience_config_history_id = Column(
         String,
-        ForeignKey(ExperienceLanguageHistory.id_field_path),
+        ForeignKey(PrivacyExperienceConfigHistory.id_field_path),
         nullable=True,
         index=True,
     )
