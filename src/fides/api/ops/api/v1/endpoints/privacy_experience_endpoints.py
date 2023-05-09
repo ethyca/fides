@@ -5,7 +5,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -34,6 +34,7 @@ from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.privacy_experience import (
     ExperienceConfigCreate,
     ExperienceConfigCreateOrUpdateResponse,
+    ExperienceConfigResponse,
     ExperienceConfigUpdate,
     PrivacyExperienceResponse,
 )
@@ -96,11 +97,10 @@ def privacy_experience_list(
     has_notices: Optional[bool] = None,
 ) -> AbstractPage[PrivacyExperience]:
     """
-    Return a paginated list of `PrivacyExperience` records in this system.
-    Includes some query params to help filter the list if needed. Returns
-    relevant privacy notices embedded in the experience response.
+    Returns a list of PrivacyExperience records for individual regions with
+    relevant privacy notices embedded in the response.
 
-    'region' and 'show_disabled' query params are passed along to further filter
+    'show_disabled' query params are passed along to further filter
     notices as well.
     """
     logger.info("Finding all Privacy Experiences with pagination params '{}'", params)
@@ -146,7 +146,7 @@ def privacy_experience_detail(
     show_disabled: Optional[bool] = True,
 ) -> PrivacyExperience:
     """
-    Get privacy experience with embedded notices.
+    Return a privacy experience for a given region with relevant notices embedded.
 
     show_disabled query params are passed onto optionally filter the embedded notices.
     """
@@ -266,6 +266,52 @@ def upsert_privacy_experiences(
     return added_regions, removed_regions, skipped_regions
 
 
+@router.get(
+    urls.EXPERIENCE_CONFIG,
+    status_code=HTTP_200_OK,
+    response_model=Page[ExperienceConfigResponse],
+    dependencies=[
+        Security(verify_oauth_client, scopes=[scope_registry.PRIVACY_EXPERIENCE_READ])
+    ],
+)
+def experience_config_list(
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    show_disabled: Optional[bool] = True,
+    component: Optional[ComponentType] = None,
+    region: Optional[PrivacyNoticeRegion] = None,
+) -> AbstractPage[PrivacyExperienceConfig]:
+    """
+    Returns a list of PrivacyExperienceConfig resources.  These resources have common titles, descriptions, and
+    labels that can be shared between multiple experiences.
+    """
+
+    privacy_experience_config_query: Query = db.query(PrivacyExperienceConfig)
+
+    if component:
+        privacy_experience_config_query = privacy_experience_config_query.filter(
+            PrivacyExperienceConfig.component == component
+        )
+
+    if show_disabled is False:
+        privacy_experience_config_query = privacy_experience_config_query.filter(
+            PrivacyExperienceConfig.disabled.is_(False)
+        )
+
+    if region:
+        privacy_experience_config_query = privacy_experience_config_query.join(
+            PrivacyExperience,
+            PrivacyExperienceConfig.id == PrivacyExperience.experience_config_id,
+        ).filter(PrivacyExperience.region == region)
+
+    privacy_experience_config_query = privacy_experience_config_query.order_by(
+        PrivacyExperienceConfig.created_at.desc()
+    )
+
+    return fastapi_paginate(privacy_experience_config_query.all(), params=params)
+
+
 @router.post(
     urls.EXPERIENCE_CONFIG,
     status_code=HTTP_201_CREATED,
@@ -311,6 +357,26 @@ def experience_config_create(
         removed_regions=removed,
         skipped_regions=skipped,
     )
+
+
+@router.get(
+    urls.EXPERIENCE_CONFIG_DETAIL,
+    status_code=HTTP_200_OK,
+    response_model=ExperienceConfigResponse,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[scope_registry.PRIVACY_EXPERIENCE_READ])
+    ],
+)
+def experience_config_detail(
+    *,
+    db: Session = Depends(deps.get_db),
+    experience_config_id: str,
+) -> PrivacyExperienceConfig:
+    """
+    Returns a PrivacyExperienceConfig.
+    """
+
+    return get_experience_config_or_error(db, experience_config_id)
 
 
 @router.patch(

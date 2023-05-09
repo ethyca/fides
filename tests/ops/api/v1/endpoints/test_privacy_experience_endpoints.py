@@ -10,6 +10,7 @@ from fides.api.ops.api.v1.endpoints.privacy_experience_endpoints import (
 )
 from fides.api.ops.api.v1.urn_registry import (
     EXPERIENCE_CONFIG,
+    EXPERIENCE_CONFIG_DETAIL,
     PRIVACY_EXPERIENCE,
     PRIVACY_EXPERIENCE_DETAIL,
     V1_URL_PREFIX,
@@ -453,6 +454,405 @@ class TestGetPrivacyExperiences:
         assert notices[0]["regions"] == ["us_ca", "us_co"]
         assert notices[0]["id"] == privacy_notice.id
         assert notices[0]["displayed_in_privacy_center"]
+
+
+class TestPrivacyExperienceDetail:
+    @pytest.fixture(scope="function")
+    def url(self, privacy_experience_overlay_banner) -> str:
+        return V1_URL_PREFIX + PRIVACY_EXPERIENCE_DETAIL.format(
+            privacy_experience_id=privacy_experience_overlay_banner.id
+        )
+
+    def test_get_privacy_experience_detail_unauthenticated(self, url, api_client):
+        resp = api_client.get(url)
+        assert resp.status_code == 401
+
+    def test_get_privacy_experience_detail_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    @pytest.mark.parametrize(
+        "role,expected_status",
+        [
+            ("owner", HTTP_200_OK),
+            ("contributor", HTTP_200_OK),
+            ("viewer_and_approver", HTTP_200_OK),
+            ("viewer", HTTP_200_OK),
+            ("approver", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_get_privacy_experience_detail_with_roles(
+        self,
+        role,
+        expected_status,
+        api_client: TestClient,
+        url,
+        generate_role_header,
+    ) -> None:
+        auth_header = generate_role_header(roles=[role])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == expected_status
+
+    def test_get_privacy_experience_bad_experience(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        resp = api_client.get(
+            V1_URL_PREFIX
+            + PRIVACY_EXPERIENCE_DETAIL.format(privacy_experience_id="bad_id"),
+            headers=auth_header,
+        )
+        assert resp.status_code == 404
+
+    @pytest.mark.usefixtures(
+        "privacy_notice", "privacy_notice_eu_fr_provide_service_frontend_only"
+    )
+    def test_get_privacy_experience_detail(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        privacy_experience_overlay_banner,
+        privacy_notice_us_ca_provide,
+        privacy_notice,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        body = resp.json()
+
+        assert body["disabled"] is True
+        assert body["component"] == "overlay"
+        assert body["delivery_mechanism"] == "banner"
+        assert body["region"] == "us_ca"
+        experience_config = body["experience_config"]
+        assert experience_config["component_title"] == "Manage your consent"
+        assert (
+            experience_config["component_description"]
+            == "On this page you can opt in and out of these data uses cases"
+        )
+        assert experience_config["banner_title"] == "Manage your consent"
+        assert (
+            experience_config["banner_description"]
+            == "We use cookies to recognize visitors and remember their preferences"
+        )
+        assert experience_config["link_label"] is None
+        assert experience_config["confirmation_button_label"] == "Accept all"
+        assert experience_config["reject_button_label"] == "Reject all"
+        assert experience_config["acknowledgement_button_label"] is None
+        assert experience_config["id"] is not None
+        assert experience_config["version"] == 1.0
+        assert (
+            experience_config["experience_config_history_id"]
+            == privacy_experience_overlay_banner.experience_config_history_id
+        )
+
+        assert body["id"] == privacy_experience_overlay_banner.id
+        assert body["created_at"] is not None
+        assert body["updated_at"] is not None
+        assert body["version"] == 1.0
+        assert (
+            body["privacy_experience_history_id"]
+            == privacy_experience_overlay_banner.histories[0].id
+        )
+        assert len(body["privacy_notices"]) == 2
+        assert body["privacy_notices"][0]["id"] == privacy_notice_us_ca_provide.id
+        assert body["privacy_notices"][1]["id"] == privacy_notice.id
+
+    @pytest.mark.usefixtures(
+        "privacy_notice", "privacy_notice_eu_fr_provide_service_frontend_only"
+    )
+    def test_get_privacy_experience_detail_bad_show_disabled_filter(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db,
+        privacy_experience_overlay_banner,
+    ):
+        """Show_disabled=False can be added to privacy experience detail to only return enabled privacy notices for an experience.
+        However, if the experience itself is disabled, this is an invalid filter.
+        """
+        privacy_experience_overlay_banner.disabled = True
+        privacy_experience_overlay_banner.save(db)
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+
+        resp = api_client.get(url + "?show_disabled=False", headers=auth_header)
+        assert resp.status_code == 400
+        assert (
+            resp.json()["detail"]
+            == f"Query param show_disabled=False not applicable for disabled privacy experience {privacy_experience_overlay_banner.id}."
+        )
+
+    @pytest.mark.usefixtures(
+        "privacy_notice", "privacy_notice_eu_fr_provide_service_frontend_only"
+    )
+    def test_get_privacy_experience_detail_disabled_filter(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db,
+        privacy_notice,
+        privacy_notice_us_ca_provide,
+        privacy_experience_overlay_banner,
+    ):
+        """Show_disabled=False can be added to privacy experience detail to only return enabled privacy notices for an experience."""
+        privacy_experience_overlay_banner.disabled = False
+        privacy_experience_overlay_banner.save(db)
+        privacy_notice.disabled = True
+        privacy_notice.save(db)
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+
+        resp = api_client.get(url, headers=auth_header)
+
+        # Sanity check
+        assert resp.status_code == 200
+        assert len(resp.json()["privacy_notices"]) == 2
+        assert resp.json()["id"] == privacy_experience_overlay_banner.id
+        assert (
+            resp.json()["privacy_notices"][0]["id"] == privacy_notice_us_ca_provide.id
+        )
+        assert resp.json()["privacy_notices"][0]["disabled"] is False
+        assert resp.json()["privacy_notices"][1]["id"] == privacy_notice.id
+        assert resp.json()["privacy_notices"][1]["disabled"] is True
+
+        # Now filter just on ca to get just the ca notices
+        resp = api_client.get(
+            url + "?show_disabled=False",
+            headers=auth_header,
+        )
+        assert len(resp.json()["privacy_notices"]) == 1
+        assert resp.json()["id"] == privacy_experience_overlay_banner.id
+        assert (
+            resp.json()["privacy_notices"][0]["id"] == privacy_notice_us_ca_provide.id
+        )
+
+        assert resp.json()["privacy_notices"][0]["disabled"] is False
+
+
+class TestGetExperienceConfigList:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + EXPERIENCE_CONFIG
+
+    def test_get_experience_config_unauthenticated(self, url, api_client):
+        resp = api_client.get(url)
+        assert resp.status_code == 401
+
+    def test_get_experience_config_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    @pytest.mark.parametrize(
+        "role,expected_status",
+        [
+            ("owner", HTTP_200_OK),
+            ("contributor", HTTP_200_OK),
+            ("viewer_and_approver", HTTP_200_OK),
+            ("viewer", HTTP_200_OK),
+            ("approver", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_get_experience_config_with_roles(
+        self,
+        role,
+        expected_status,
+        api_client: TestClient,
+        url,
+        generate_role_header,
+    ) -> None:
+        auth_header = generate_role_header(roles=[role])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == expected_status
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_overlay_link", "privacy_experience_overlay_banner"
+    )
+    def test_get_experience_config_list(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_overlay_link,
+        experience_config_overlay_banner,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()
+        assert resp["total"] == 2
+        assert resp["page"] == 1
+        assert resp["size"] == 50
+        data = resp["items"]
+        assert len(data) == 2
+
+        first_config = data[0]
+        assert first_config["id"] == experience_config_overlay_banner.id
+        assert first_config["component"] == "overlay"
+        assert first_config["delivery_mechanism"] == "banner"
+        assert first_config["disabled"] is True
+        assert first_config["regions"] == ["us_ca"]
+        assert first_config["version"] == 1.0
+        assert first_config["created_at"] is not None
+        assert first_config["updated_at"] is not None
+        assert (
+            first_config["experience_config_history_id"]
+            == experience_config_overlay_banner.experience_config_history_id
+        )
+        assert first_config["banner_title"] == "Manage your consent"
+
+        second_config = data[1]
+        assert second_config["id"] == experience_config_overlay_link.id
+        assert second_config["component"] == "overlay"
+        assert second_config["delivery_mechanism"] == "link"
+        assert second_config["disabled"] is False
+        assert second_config["regions"] == ["eu_fr"]
+        assert second_config["created_at"] is not None
+        assert second_config["updated_at"] is not None
+        assert second_config["version"] == 1.0
+        assert (
+            second_config["experience_config_history_id"]
+            == experience_config_overlay_link.experience_config_history_id
+        )
+        assert second_config["link_label"] == "Manage your privacy"
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_overlay_link",
+        "experience_config_overlay_banner",
+        "privacy_experience_overlay_banner",
+    )
+    def test_get_experience_config_show_disabled_false_filter(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_overlay_link,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        response = api_client.get(
+            url + "?show_disabled=False",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()
+        assert resp["total"] == 1
+        assert resp["page"] == 1
+        assert resp["size"] == 50
+        data = resp["items"]
+        assert len(data) == 1
+
+        config = data[0]
+        assert config["id"] == experience_config_overlay_link.id
+        assert config["component"] == "overlay"
+        assert config["delivery_mechanism"] == "link"
+        assert config["disabled"] is False
+        assert config["regions"] == ["eu_fr"]
+        assert config["version"] == 1.0
+        assert config["created_at"] is not None
+        assert config["updated_at"] is not None
+        assert (
+            config["experience_config_history_id"]
+            == experience_config_overlay_link.experience_config_history_id
+        )
+        assert config["link_label"] == "Manage your privacy"
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_overlay_link",
+        "experience_config_overlay_link",
+        "privacy_experience_overlay_banner",
+    )
+    def test_get_experience_config_region_filter(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_overlay_banner,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        response = api_client.get(
+            url + "?region=us_ca",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()
+        assert resp["total"] == 1
+        assert resp["page"] == 1
+        assert resp["size"] == 50
+        data = resp["items"]
+        assert len(data) == 1
+
+        first_config = data[0]
+        assert first_config["id"] == experience_config_overlay_banner.id
+        assert first_config["regions"] == ["us_ca"]
+        assert first_config["version"] == 1.0
+        assert first_config["created_at"] is not None
+        assert first_config["updated_at"] is not None
+        assert (
+            first_config["experience_config_history_id"]
+            == experience_config_overlay_banner.experience_config_history_id
+        )
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_overlay_banner",
+        "privacy_experience_overlay_link",
+        "privacy_experience_privacy_center_link",
+    )
+    def test_get_experience_config_component_filter(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_overlay_banner,
+        experience_config_overlay_link,
+        experience_config_privacy_center,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        response = api_client.get(
+            url + "?component=overlay",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()
+        assert resp["total"] == 2
+        assert resp["page"] == 1
+        assert resp["size"] == 50
+        data = resp["items"]
+        assert len(data) == 2
+
+        assert data[0]["id"] == experience_config_overlay_link.id
+        assert data[1]["id"] == experience_config_overlay_banner.id
+
+        response = api_client.get(
+            url + "?component=privacy_center",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()
+        assert resp["total"] == 1
+        assert resp["page"] == 1
+        assert resp["size"] == 50
+        data = resp["items"]
+        assert len(data) == 1
+
+        assert data[0]["id"] == experience_config_privacy_center.id
 
 
 class TestCreateExperienceConfig:
@@ -1085,6 +1485,105 @@ class TestCreateExperienceConfig:
             history.delete(db)
         experience_config_history.delete(db)
         experience_config.delete(db)
+
+
+class TestGetExperienceConfigDetail:
+    @pytest.fixture(scope="function")
+    def url(self, experience_config_overlay_banner) -> str:
+        return (
+            V1_URL_PREFIX
+            + EXPERIENCE_CONFIG
+            + f"/{experience_config_overlay_banner.id}"
+        )
+
+    def test_get_experience_config_detail_unauthenticated(self, url, api_client):
+        resp = api_client.get(url)
+        assert resp.status_code == 401
+
+    def test_get_experience_config_detail_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    @pytest.mark.parametrize(
+        "role,expected_status",
+        [
+            ("owner", HTTP_200_OK),
+            ("contributor", HTTP_200_OK),
+            ("viewer_and_approver", HTTP_200_OK),
+            ("viewer", HTTP_200_OK),
+            ("approver", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_get_experience_config_detail_with_roles(
+        self,
+        role,
+        expected_status,
+        api_client: TestClient,
+        url,
+        generate_role_header,
+    ) -> None:
+        auth_header = generate_role_header(roles=[role])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == expected_status
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_overlay_banner",
+    )
+    def test_get_bad_experience_config_detail(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + "/bad_id"
+
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == 404
+        assert (
+            response.json()["detail"]
+            == "No PrivacyExperienceConfig found for id 'bad_id'."
+        )
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_overlay_banner",
+    )
+    def test_get_experience_config_detail(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_overlay_banner,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()
+
+        assert resp["id"] == experience_config_overlay_banner.id
+        assert resp["component"] == "overlay"
+        assert resp["delivery_mechanism"] == "banner"
+        assert resp["disabled"] is True
+        assert resp["regions"] == ["us_ca"]
+        assert resp["version"] == 1.0
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert (
+            resp["experience_config_history_id"]
+            == experience_config_overlay_banner.experience_config_history_id
+        )
+        assert resp["banner_title"] == "Manage your consent"
 
 
 class TestUpdateExperienceConfig:
@@ -1906,186 +2405,3 @@ class TestUpdateExperienceConfig:
 
         for history in privacy_notice.histories:
             history.delete(db)
-
-
-class TestPrivacyExperienceDetail:
-    @pytest.fixture(scope="function")
-    def url(self, privacy_experience_overlay_banner) -> str:
-        return V1_URL_PREFIX + PRIVACY_EXPERIENCE_DETAIL.format(
-            privacy_experience_id=privacy_experience_overlay_banner.id
-        )
-
-    def test_get_privacy_experience_detail_unauthenticated(self, url, api_client):
-        resp = api_client.get(url)
-        assert resp.status_code == 401
-
-    def test_get_privacy_experience_detail_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header
-    ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_READ])
-        resp = api_client.get(
-            url,
-            headers=auth_header,
-        )
-        assert resp.status_code == 403
-
-    @pytest.mark.parametrize(
-        "role,expected_status",
-        [
-            ("owner", HTTP_200_OK),
-            ("contributor", HTTP_200_OK),
-            ("viewer_and_approver", HTTP_200_OK),
-            ("viewer", HTTP_200_OK),
-            ("approver", HTTP_403_FORBIDDEN),
-        ],
-    )
-    def test_get_privacy_experience_detail_with_roles(
-        self,
-        role,
-        expected_status,
-        api_client: TestClient,
-        url,
-        generate_role_header,
-    ) -> None:
-        auth_header = generate_role_header(roles=[role])
-        response = api_client.get(url, headers=auth_header)
-        assert response.status_code == expected_status
-
-    def test_get_privacy_experience_bad_experience(
-        self, url, api_client: TestClient, generate_auth_header
-    ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
-        resp = api_client.get(
-            V1_URL_PREFIX
-            + PRIVACY_EXPERIENCE_DETAIL.format(privacy_experience_id="bad_id"),
-            headers=auth_header,
-        )
-        assert resp.status_code == 404
-
-    @pytest.mark.usefixtures(
-        "privacy_notice", "privacy_notice_eu_fr_provide_service_frontend_only"
-    )
-    def test_get_privacy_experience_detail(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        privacy_experience_overlay_banner,
-        privacy_notice_us_ca_provide,
-        privacy_notice,
-    ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
-
-        resp = api_client.get(url, headers=auth_header)
-        assert resp.status_code == 200
-        body = resp.json()
-
-        assert body["disabled"] is True
-        assert body["component"] == "overlay"
-        assert body["delivery_mechanism"] == "banner"
-        assert body["region"] == "us_ca"
-        experience_config = body["experience_config"]
-        assert experience_config["component_title"] == "Manage your consent"
-        assert (
-            experience_config["component_description"]
-            == "On this page you can opt in and out of these data uses cases"
-        )
-        assert experience_config["banner_title"] == "Manage your consent"
-        assert (
-            experience_config["banner_description"]
-            == "We use cookies to recognize visitors and remember their preferences"
-        )
-        assert experience_config["link_label"] is None
-        assert experience_config["confirmation_button_label"] == "Accept all"
-        assert experience_config["reject_button_label"] == "Reject all"
-        assert experience_config["acknowledgement_button_label"] is None
-        assert experience_config["id"] is not None
-        assert experience_config["version"] == 1.0
-        assert (
-            experience_config["experience_config_history_id"]
-            == privacy_experience_overlay_banner.experience_config_history_id
-        )
-
-        assert body["id"] == privacy_experience_overlay_banner.id
-        assert body["created_at"] is not None
-        assert body["updated_at"] is not None
-        assert body["version"] == 1.0
-        assert (
-            body["privacy_experience_history_id"]
-            == privacy_experience_overlay_banner.histories[0].id
-        )
-        assert len(body["privacy_notices"]) == 2
-        assert body["privacy_notices"][0]["id"] == privacy_notice_us_ca_provide.id
-        assert body["privacy_notices"][1]["id"] == privacy_notice.id
-
-    @pytest.mark.usefixtures(
-        "privacy_notice", "privacy_notice_eu_fr_provide_service_frontend_only"
-    )
-    def test_get_privacy_experience_detail_bad_show_disabled_filter(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        db,
-        privacy_experience_overlay_banner,
-    ):
-        """Show_disabled=False can be added to privacy experience detail to only return enabled privacy notices for an experience.
-        However, if the experience itself is disabled, this is an invalid filter.
-        """
-        privacy_experience_overlay_banner.disabled = True
-        privacy_experience_overlay_banner.save(db)
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
-
-        resp = api_client.get(url + "?show_disabled=False", headers=auth_header)
-        assert resp.status_code == 400
-        assert (
-            resp.json()["detail"]
-            == f"Query param show_disabled=False not applicable for disabled privacy experience {privacy_experience_overlay_banner.id}."
-        )
-
-    @pytest.mark.usefixtures(
-        "privacy_notice", "privacy_notice_eu_fr_provide_service_frontend_only"
-    )
-    def test_get_privacy_experience_detail_disabled_filter(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        db,
-        privacy_notice,
-        privacy_notice_us_ca_provide,
-        privacy_experience_overlay_banner,
-    ):
-        """Show_disabled=False can be added to privacy experience detail to only return enabled privacy notices for an experience."""
-        privacy_experience_overlay_banner.disabled = False
-        privacy_experience_overlay_banner.save(db)
-        privacy_notice.disabled = True
-        privacy_notice.save(db)
-
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
-
-        resp = api_client.get(url, headers=auth_header)
-
-        # Sanity check
-        assert resp.status_code == 200
-        assert len(resp.json()["privacy_notices"]) == 2
-        assert resp.json()["id"] == privacy_experience_overlay_banner.id
-        assert (
-            resp.json()["privacy_notices"][0]["id"] == privacy_notice_us_ca_provide.id
-        )
-        assert resp.json()["privacy_notices"][0]["disabled"] is False
-        assert resp.json()["privacy_notices"][1]["id"] == privacy_notice.id
-        assert resp.json()["privacy_notices"][1]["disabled"] is True
-
-        # Now filter just on ca to get just the ca notices
-        resp = api_client.get(
-            url + "?show_disabled=False",
-            headers=auth_header,
-        )
-        assert len(resp.json()["privacy_notices"]) == 1
-        assert resp.json()["id"] == privacy_experience_overlay_banner.id
-        assert (
-            resp.json()["privacy_notices"][0]["id"] == privacy_notice_us_ca_provide.id
-        )
-
-        assert resp.json()["privacy_notices"][0]["disabled"] is False
