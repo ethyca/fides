@@ -3,7 +3,7 @@ from typing import Any, Dict
 from sqlalchemy import Column, String
 from sqlalchemy.orm import Session
 
-from fides.lib.db.base_class import Base
+from fides.api.ops.db.base_class import Base
 
 
 class AuthenticationRequest(Base):

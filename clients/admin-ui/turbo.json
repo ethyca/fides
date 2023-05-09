@@ -1,0 +1,23 @@
+{
+  "extends": ["//"],
+  "pipeline": {
+    "chrome:debug": {
+      "dependsOn": ["build"]
+    },
+    "copy-export": {
+      "dependsOn": ["build"]
+    },
+    "prod-export": {
+      "dependsOn": ["build"]
+    },
+    "export": {
+      "dependsOn": ["build"]
+    },
+    "lint-staged:fix": {
+      "dependsOn": []
+    },
+    "dev:mock": {
+      "dependsOn": ["build"]
+    }
+  }
+}

@@ -14,7 +14,7 @@ from sqlalchemy.util import hybridproperty
 
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import ValidationError
-from fides.lib.db.base_class import Base, FidesBase
+from fides.api.ops.db.base_class import Base, FidesBase
 
 
 class PrivacyNoticeRegion(Enum):
@@ -93,9 +93,9 @@ class PrivacyNoticeBase:
     version = Column(Float, nullable=False, default=1.0)
     disabled = Column(Boolean, nullable=False, default=False)
     has_gpc_flag = Column(Boolean, nullable=False, default=False)
-    displayed_in_privacy_center = Column(Boolean, nullable=False, default=True)
-    displayed_in_overlay = Column(Boolean, nullable=False, default=True)
-    displayed_in_api = Column(Boolean, nullable=False, default=True)
+    displayed_in_privacy_center = Column(Boolean, nullable=False, default=False)
+    displayed_in_overlay = Column(Boolean, nullable=False, default=False)
+    displayed_in_api = Column(Boolean, nullable=False, default=False)
 
     def applies_to_system(self, system: System) -> bool:
         """Privacy Notice applies to System if a data use matches or the Privacy Notice
@@ -250,15 +250,21 @@ def check_conflicting_data_uses(
                     # we need to check for hierachical overlaps in _both_ directions
                     # i.e. whether the incoming DataUse is a parent _or_ a child of
                     # an existing DataUse
-                    if existing_use.startswith(data_use) or data_use.startswith(
-                        existing_use
-                    ):
+                    if new_data_use_conflicts_with_existing_use(existing_use, data_use):
                         raise ValidationError(
                             message=f"Privacy Notice '{notice_name}' has already assigned data use '{existing_use}' to region '{region}'"
                         )
                 # add the data use to our map, to effectively include it in validation against the
                 # following incoming records
                 region_uses.append((data_use, privacy_notice.name))
+
+
+def new_data_use_conflicts_with_existing_use(existing_use: str, new_use: str) -> bool:
+    """Data use check that prevents grandparent/parent/child, but allows siblings, aunt/child, etc.
+    Check needs to happen in both directions.
+    This assumes the supplied uses are on notices in the same region.
+    """
+    return existing_use.startswith(new_use) or new_use.startswith(existing_use)
 
 
 class PrivacyNoticeHistory(PrivacyNoticeBase, Base):

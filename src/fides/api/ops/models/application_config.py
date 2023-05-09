@@ -14,9 +14,8 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.db.base_class import Base, JSONTypeOverride
 from fides.core.config import CONFIG, FidesConfig
-from fides.lib.db.base_class import Base
 
 
 class ApplicationConfig(Base):

@@ -1,7 +1,7 @@
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 
 
-class IdentityVerificationConfigResponse(BaseSchema):
+class IdentityVerificationConfigResponse(FidesSchema):
     """Response for identity verification config info"""
 
     identity_verification_required: bool

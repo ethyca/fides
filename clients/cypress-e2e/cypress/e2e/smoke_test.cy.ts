@@ -2,10 +2,11 @@ import {
   ADMIN_UI_URL,
   API_URL,
   PRIVACY_CENTER_URL,
+  SAMPLE_APP_URL,
 } from "support/constants";
 
 describe("Smoke test", () => {
-  it("can submit an access request from the privacy center", () => {
+  it("can submit an access request from the Privacy Center", () => {
     // Watch these routes without changing or stubbing its response
     cy.intercept("PATCH", `${API_URL}/privacy-request/administrate/approve`).as(
       "patchRequest"
@@ -56,7 +57,7 @@ describe("Smoke test", () => {
     });
   });
 
-  it("can access mongo and postgres connectors", () => {
+  it("can access Mongo and Postgres connectors from the Admin UI", () => {
     cy.intercept(`${API_URL}/connection_type`).as("getConnectionType");
     cy.intercept(`${API_URL}/connection*`).as("getConnections");
 
@@ -71,6 +72,80 @@ describe("Smoke test", () => {
     });
     cy.getByTestId("connection-grid-item-Postgres Connector").within(() => {
       cy.get("button").contains("Test").click();
+    });
+  });
+
+  it("can manage consent preferences from the Privacy Center", () => {
+    cy.visit(PRIVACY_CENTER_URL);
+    cy.getCookie("fides_consent").should("not.exist");
+    cy.getByTestId("card").contains("Manage your consent").click();
+    cy.getByTestId("consent-request-form").within(() => {
+      cy.get("input#email").type("jenny@example.com");
+      cy.get("button").contains("Continue").click();
+    });
+
+    // Check the defaults for Cookie House are what we expect:
+    //  - Data Sales or Sharing => true
+    //  - Email Marketing => true
+    //  - Product Analytics => true
+    cy.getByTestId(`consent-item-card-advertising`).within(() => {
+      cy.contains("Data Sales or Sharing");
+      cy.getRadio("true").should("be.checked");
+      cy.getRadio("false").should("not.be.checked");
+    });
+    cy.getByTestId(`consent-item-card-advertising.first_party`).within(() => {
+      cy.contains("Email Marketing");
+      cy.getRadio("true").should("be.checked");
+      cy.getRadio("false").should("not.be.checked");
+    });
+    cy.getByTestId(`consent-item-card-improve`).within(() => {
+      cy.contains("Product Analytics");
+      cy.getRadio("true").should("be.checked");
+      cy.getRadio("false").should("not.be.checked");
+    });
+
+    // Opt-out of data sales / sharing
+    cy.getByTestId(`consent-item-card-advertising`).within(() => {
+      cy.getRadio("false").check({ force: true });
+    });
+    cy.contains("Save").click();
+    cy.contains("Your consent preferences have been saved");
+
+    // Reload and confirm preferences were saved
+    cy.visit(PRIVACY_CENTER_URL);
+    cy.reload();
+    cy.getByTestId("card").contains("Manage your consent").click();
+    cy.getByTestId("consent-request-form").within(() => {
+      cy.get("input#email").type("jenny@example.com");
+      cy.get("button").contains("Continue").click();
+    });
+    cy.getByTestId(`consent-item-card-advertising`).within(() => {
+      cy.getRadio("true").should("not.be.checked");
+      cy.getRadio("false").should("be.checked");
+    });
+    cy.getCookie("fides_consent").should("exist");
+
+    // Visit the Cookie House sample app and confirm saved consent preferences are loaded
+    cy.visit(SAMPLE_APP_URL);
+    cy.origin(SAMPLE_APP_URL, () => {
+      cy.getCookie("fides_consent").should("exist");
+      cy.window().then((win) => {
+        cy.wrap(win).should("to.have.property", "Fides");
+        cy.wrap(win)
+          .should("to.have.nested.property", "Fides.fides_meta.version")
+          .should("eql", "0.9.0");
+        cy.wrap(win)
+          .should("to.have.nested.property", "Fides.consent")
+          .should("eql", {
+            data_sales: false,
+            tracking: true,
+            analytics: true,
+          });
+        cy.wrap(win).should(
+          "to.have.nested.property",
+          "Fides.identity.fides_user_device_id"
+        );
+      });
     });
   });
 });

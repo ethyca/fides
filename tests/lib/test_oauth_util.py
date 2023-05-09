@@ -15,26 +15,16 @@ from fides.api.ops.api.v1.scope_registry import (
     USER_PERMISSION_READ,
     USER_READ,
 )
-from fides.api.ops.util.oauth_util import (
-    _has_direct_scopes,
-    _has_scope_via_role,
-    get_root_client,
-    has_permissions,
-    has_scope_subset,
-    verify_oauth_client,
-)
-from fides.core.config import CONFIG
-from fides.lib.cryptography.schemas.jwt import (
+from fides.api.ops.common_exceptions import AuthorizationError
+from fides.api.ops.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.lib.exceptions import AuthorizationError
-from fides.lib.models.client import ClientDetail
-from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
-from fides.lib.oauth.roles import (
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.oauth.jwt import generate_jwe
+from fides.api.ops.oauth.roles import (
     APPROVER,
     CONTRIBUTOR,
     OWNER,
@@ -43,6 +33,17 @@ from fides.lib.oauth.roles import (
     VIEWER_AND_APPROVER,
     not_contributor_scopes,
 )
+from fides.api.ops.oauth.utils import (
+    _has_direct_scopes,
+    _has_scope_via_role,
+    extract_payload,
+    get_root_client,
+    has_permissions,
+    has_scope_subset,
+    is_token_expired,
+    verify_oauth_client,
+)
+from fides.core.config import CONFIG
 
 
 @pytest.fixture

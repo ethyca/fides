@@ -7,25 +7,16 @@ Contains all of the SqlAlchemy models for the Fides resources.
 from __future__ import annotations
 
 from enum import Enum as EnumType
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Set,
-    Type,
-    TypeVar,
-)
+from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 
-from fideslang.models import (
-    DataCategory as FideslangDataCategory,
-    Dataset as FideslangDataset,
-)
+from fideslang.models import DataCategory as FideslangDataCategory
+from fideslang.models import Dataset as FideslangDataset
 from pydantic import BaseModel
 from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -35,18 +26,18 @@ from sqlalchemy import (
     type_coerce,
 )
 from sqlalchemy.dialects.postgresql import BYTEA
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
+from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
+from fides.api.ops.db.base_class import Base
+from fides.api.ops.db.base_class import FidesBase as FideslibBase
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
 from fides.core.config import CONFIG
-from fides.lib.db.base import (  # type: ignore[attr-defined]
-    Base,
-    ClientDetail,
-    FidesUser,
-    FidesUserPermissions,
-)
-from fides.lib.db.base_class import FidesBase as FideslibBase
 
 
 class FidesBase(FideslibBase):
@@ -149,6 +140,7 @@ class ClassificationInstance(Base):
 
 
 DataCategoryType = TypeVar("DataCategoryType", bound="DataCategory")
+
 
 # Privacy Types
 class DataCategory(Base, FidesBase):
@@ -523,7 +515,50 @@ class CustomFieldDefinition(Base):
     )
     active = Column(BOOLEAN, nullable=False, default=True)
 
-    UniqueConstraint("name", "resource_type")
+    @classmethod
+    def create(
+        cls: Type[PrivacyDeclaration],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = False,  # this is the reason for the override
+    ) -> PrivacyDeclaration:
+        """
+        Overrides base create to avoid unique check on `name` column
+        and to cleanly handle uniqueness constraint on name/resource_type
+        """
+        try:
+            return super().create(db=db, data=data, check_name=check_name)
+        except IntegrityError as e:
+            if cls.name_resource_index in str(e):
+                raise KeyOrNameAlreadyExists(
+                    "Custom field definitions must have unique names for a given resource type"
+                )
+            raise e
+
+    def update(self, db: Session, *, data: Dict[str, Any]) -> FidesBase:
+        """Overrides base update to cleanly handle uniqueness constraint on name/resource type"""
+        try:
+            return super().update(db=db, data=data)
+        except IntegrityError as e:
+            if CustomFieldDefinition.name_resource_index in str(e):
+                raise KeyOrNameAlreadyExists(
+                    "Custom field definitions must have unique names for a given resource type"
+                )
+            raise e
+
+    # unique index on the lowername/resource type for case-insensitive name checking per resource type
+    name_resource_index = (
+        "ix_plus_custom_field_definition_unique_lowername_resourcetype"
+    )
+    __table_args__ = (
+        Index(
+            name_resource_index,
+            resource_type,
+            func.lower(name),
+            unique=True,
+        ),
+    )
 
 
 class CustomField(Base):

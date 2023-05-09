@@ -17,9 +17,10 @@ additional [user endpoints](#managing-users).
 From the root `fidesops` directory, run the following:
 
 ``` sh
-    cd clients/admin-ui
+    cd clients
     npm install
-    npm run dev
+    cd admin-ui
+    turbo run dev
 ```
 
 This will navigate you to the `admin-ui` directory, and run the development environment.
@@ -43,9 +44,10 @@ Fidesops automatically serves a version of the UI when running `nox -s dev`.
 To deploy a full version of the UI from a backend, run the following from the root fidesops directory:
 
 ```sh
-    cd clients/admin-ui
+    cd clients
     npm install
-    npm run prod-export
+    cd admin-ui
+    turbo run prod-export
 ```
 
 This will build and place the Admin UI files into a location accessible by backend fidesops deployments.
