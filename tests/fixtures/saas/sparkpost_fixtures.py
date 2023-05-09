@@ -9,7 +9,6 @@ from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
 )
-from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("sparkpost")
@@ -41,9 +40,6 @@ def sparkpost_erasure_identity_email() -> str:
 
 
 class SparkPostClient:
-    headers: object = {}
-    base_url: str = ""
-
     def __init__(self, secrets: Dict[str, Any]):
         self.base_url = f"https://{secrets['domain']}"
         self.headers = {
