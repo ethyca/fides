@@ -1,9 +1,9 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: Sparkpost Dataset
-    description: A sample dataset representing the Sparkpost connector for Fides
+    name: SparkPost Dataset
+    description: A sample dataset representing the SparkPost connector for Fides
     collections:
-      - name: all_recipients
+      - name: recipient_lists
         fields:
           - name: id
             data_categories: [system.operations]
@@ -55,7 +55,7 @@ dataset:
           - name: tags
             data_categories: [system.operations]
             fidesops_meta:
-              data_type: 'string[]'
+              data_type: "string[]"
           - name: metadata
             fidesops_meta:
               data_type: object

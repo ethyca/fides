@@ -5,7 +5,7 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
 @pytest.mark.integration_saas
-class TestSparkpostConnector:
+class TestSparkPostConnector:
     def test_connection(self, sparkpost_runner: ConnectorRunner):
         sparkpost_runner.test_connection()
 
@@ -40,7 +40,7 @@ class TestSparkpostConnector:
         )
 
         assert erasure_results == {
-            "sparkpost_instance:all_recipients": 0,
+            "sparkpost_instance:recipient_lists": 0,
             "sparkpost_instance:recipient": 1,
         }
 

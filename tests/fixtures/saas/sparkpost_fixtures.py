@@ -1,6 +1,6 @@
+import uuid
 from typing import Any, Dict, Generator
 
-import uuid
 import pydash
 import pytest
 import requests
@@ -34,22 +34,13 @@ def sparkpost_identity_email(saas_config) -> str:
 def sparkpost_erasure_recipient_id():
     return f"{uuid.uuid4().hex}"
 
+
 @pytest.fixture
 def sparkpost_erasure_identity_email() -> str:
     return generate_random_email()
 
 
-@pytest.fixture
-def sparkpost_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def sparkpost_erasure_external_references() -> Dict[str, Any]:
-    return {}
-
-
-class sparkpostClient:
+class SparkPostClient:
     headers: object = {}
     base_url: str = ""
 
@@ -89,71 +80,42 @@ class sparkpostClient:
                 "id": uuid,
                 "name": "Ethyca test",
                 "description": "An email list of employees at UMBC",
-                "attributes": {
-                    "internal_id": 113,
-                    "list_group_id": 12322
-                },
+                "attributes": {"internal_id": 113, "list_group_id": 12322},
                 "recipients": [
                     {
-                        "address": {
-                            "email": email,
-                            "name": "test"
-                        },
-                        "tags": [
-                            "reading"
-                        ],
-                        "metadata": {
-                            "age": "31",
-                            "place": "Test location"
-                        },
+                        "address": {"email": email, "name": "test"},
+                        "tags": ["reading"],
+                        "metadata": {"age": "31", "place": "Test location"},
                         "substitution_data": {
                             "favorite_color": "SparkPost Orange",
-                            "job": "Software Engineer"
-                        }
+                            "job": "Software Engineer",
+                        },
                     }
-                ]
+                ],
             },
         )
 
+
 @pytest.fixture
 def sparkpost_client(sparkpost_secrets) -> Generator:
-    yield sparkpostClient(sparkpost_secrets)
+    yield SparkPostClient(sparkpost_secrets)
 
 
 @pytest.fixture
 def sparkpost_erasure_data(
-    sparkpost_client: sparkpostClient,
+    sparkpost_client: SparkPostClient,
     sparkpost_erasure_identity_email: str,
-    sparkpost_erasure_recipient_id: str
+    sparkpost_erasure_recipient_id: str,
 ) -> Generator:
-    
-    response = sparkpost_client.create_recipient(sparkpost_erasure_identity_email, sparkpost_erasure_recipient_id)
+    response = sparkpost_client.create_recipient(
+        sparkpost_erasure_identity_email, sparkpost_erasure_recipient_id
+    )
     recipient = response.json()["results"]
     recipient_id = recipient["id"]
-
-    # error_message = f"customer with email {sparkpost_erasure_identity_email} could not be created in Recharge"
-    # poll_for_existence(
-    #     sparkpost_client.get_recipient,
-    #     (sparkpost_erasure_identity_email,recipient_id),
-    #     error_message=error_message,
-    # )
 
     yield recipient_id
 
 
 @pytest.fixture
-def sparkpost_runner(
-    db,
-    cache,
-    sparkpost_secrets,
-    sparkpost_external_references,
-    sparkpost_erasure_external_references,
-) -> ConnectorRunner:
-    return ConnectorRunner(
-        db,
-        cache,
-        "sparkpost",
-        sparkpost_secrets,
-        external_references=sparkpost_external_references,
-        erasure_external_references=sparkpost_erasure_external_references,
-    )
+def sparkpost_runner(db, cache, sparkpost_secrets) -> ConnectorRunner:
+    return ConnectorRunner(db, cache, "sparkpost", sparkpost_secrets)

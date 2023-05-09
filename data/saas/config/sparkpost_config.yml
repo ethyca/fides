@@ -1,14 +1,15 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Sparkpost
+  name: SparkPost
   type: sparkpost
-  description: A sample schema representing the Sparkpost connector for Fides
+  description: A sample schema representing the SparkPost connector for Fides
   version: 0.1.0
 
   connector_params:
     - name: domain
       default_value: api.sparkpost.com
     - name: api_key
+      label: API Key
 
   client_config:
     protocol: https
@@ -17,15 +18,13 @@ saas_config:
       strategy: basic
       configuration:
         username: <api_key>
-        password: ''
 
   test_request:
     method: GET
     path: /api/v1/recipient-lists
-    data_path: results
 
   endpoints:
-    - name: all_recipients
+    - name: recipient_lists
       requests:
         read:
           method: GET
@@ -38,7 +37,7 @@ saas_config:
       requests:
         read:
           method: GET
-          path: /api/v1/recipient-lists/<all_recipients_id>?show_recipients=true
+          path: /api/v1/recipient-lists/<recipient_list_id>?show_recipients=true
           data_path: results.recipients
           postprocessors:
             - strategy: filter
@@ -51,10 +50,10 @@ saas_config:
           param_values:
             - name: placeholder
               identity: email
-            - name: all_recipients_id
+            - name: recipient_list_id
               references:
                 - dataset: <instance_fides_key>
-                  field: all_recipients.id
+                  field: recipient_lists.id
                   direction: from
         delete:
           method: POST
