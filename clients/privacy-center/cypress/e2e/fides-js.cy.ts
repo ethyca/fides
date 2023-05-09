@@ -1,5 +1,5 @@
 describe("fides.js", () => {
-  it.only("returns the fides.js packaged bundled with the global config", () => {
+  it("returns the fides.js packaged bundled with the global config", () => {
     cy.request("/fides.js").then(response => {
       expect(response.status).to.eq(200);
       expect(response)

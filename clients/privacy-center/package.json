@@ -26,6 +26,7 @@
     "@fidesui/react": "^0.0.23",
     "@fontsource/inter": "^4.5.15",
     "@reduxjs/toolkit": "^1.9.3",
+    "cache-control-parser": "^2.0.4",
     "fides-js": "*",
     "formik": "^2.2.9",
     "framer-motion": "^5",

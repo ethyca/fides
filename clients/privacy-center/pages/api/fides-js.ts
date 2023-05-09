@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { CacheControl, stringify } from "cache-control-parser";
 
 import { ConsentOption, FidesConfig } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
@@ -57,9 +58,17 @@ export default async function handler(
   })();
   `;
 
+  // Calculate the cache-control headers
+  // TODO: ...configuration?
+  const cacheHeaders: CacheControl = {
+    "max-age": 3600,
+    "public": true,
+  };
+
   // Send the bundled script, ready to be loaded directly into a page!
   res
     .status(200)
     .setHeader("Content-Type", "application/javascript")
+    .setHeader("Cache-Control", stringify(cacheHeaders))
     .send(script);
 }
