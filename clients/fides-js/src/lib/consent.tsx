@@ -6,7 +6,7 @@ import {
 } from "./cookie";
 import ConsentBanner from "../components/ConsentBanner";
 import { ConsentBannerOptions, UserGeolocation } from "./consent-types";
-import debugLog, { getBannerOptions, setBannerOptions } from "./consent-utils";
+import { debugLog, getBannerOptions, setBannerOptions } from "./consent-utils";
 
 /**
  * Validate the banner options. This checks for errors like using geolocation

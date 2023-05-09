@@ -45,11 +45,9 @@ export const getBannerOptions = (): ConsentBannerOptions => globalBannerOptions;
  * option is truthy
  */
 type ConsoleLogParameters = Parameters<typeof console.log>;
-const debugLog = (...args: ConsoleLogParameters): void => {
+export const debugLog = (...args: ConsoleLogParameters): void => {
   if (getBannerOptions().debug) {
     // eslint-disable-next-line no-console
     console.log(...args); // TODO: use console.debug instead?
   }
 };
-
-export default debugLog;
