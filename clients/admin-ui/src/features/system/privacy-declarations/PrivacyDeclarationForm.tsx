@@ -24,6 +24,7 @@ import * as Yup from "yup";
 
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import {
   DataCategory,
   Dataset,
@@ -94,7 +95,12 @@ export const PrivacyDeclarationFormComponents = ({
   allDatasets,
   onDelete,
   privacyDeclarationId,
-}: DataProps & Pick<Props, "onDelete"> & { privacyDeclarationId?: string }) => {
+  includeCustomFields,
+}: DataProps &
+  Pick<Props, "onDelete"> & {
+    privacyDeclarationId?: string;
+    includeCustomFields?: boolean;
+  }) => {
   const { dirty, isSubmitting, isValid, initialValues } =
     useFormikContext<FormValues>();
   const deleteModal = useDisclosure();
@@ -168,10 +174,12 @@ export const PrivacyDeclarationFormComponents = ({
           variant="stacked"
         />
       ) : null}
-      <CustomFieldsList
-        resourceType={ResourceTypes.PRIVACY_DECLARATION}
-        resourceFidesKey={privacyDeclarationId}
-      />
+      {includeCustomFields ? (
+        <CustomFieldsList
+          resourceType={ResourceTypes.PRIVACY_DECLARATION}
+          resourceFidesKey={privacyDeclarationId}
+        />
+      ) : null}
       <ButtonGroup size="sm" display="flex" justifyContent="space-between">
         <Button
           variant="outline"
@@ -289,7 +297,12 @@ export const usePrivacyDeclarationForm = ({
     hideSaved?: boolean;
     boxProps?: BoxProps;
   }) => (
-    <Box display="flex" alignItems="center" {...boxProps}>
+    <Box
+      display="flex"
+      alignItems="center"
+      justifyContent="space-between"
+      {...boxProps}
+    >
       {title ? (
         <Heading as="h4" size="xs" fontWeight="medium" mr={4}>
           {title}
@@ -316,6 +329,7 @@ interface Props {
   ) => Promise<PrivacyDeclarationWithId[] | undefined>;
   initialValues?: PrivacyDeclarationWithId;
   privacyDeclarationId?: string;
+  includeCustomFields?: boolean;
 }
 
 export const PrivacyDeclarationForm = ({
@@ -341,6 +355,7 @@ export const PrivacyDeclarationForm = ({
     >
       {({ dirty }) => (
         <Form>
+          <FormGuard id="PrivacyDeclaration" name="New Privacy Declaration" />
           <Stack spacing={4}>
             <Box data-testid="header">{renderHeader({ dirty })}</Box>
             <PrivacyDeclarationFormComponents
