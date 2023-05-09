@@ -2,6 +2,7 @@ import pytest
 
 from fides.api.ops.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
 @pytest.mark.integration_saas
@@ -23,8 +24,9 @@ class TestOneSignalConnector:
         erasure_policy_string_rewrite: Policy,
         onesignal_erasure_identity_email: str,
         onesignal_erasure_data,
-        onesignal_client
+        onesignal_client,
     ):
+        player_id = onesignal_erasure_data
         (
             access_results,
             erasure_results,
@@ -39,6 +41,6 @@ class TestOneSignalConnector:
             "onesignal_external_dataset:onesignal_external_collection": 0,
         }
 
-        response = onesignal_client.get_device(onesignal_erasure_data)
-        # Since user is deleted, it won't be available so response is 400
-        assert response.status_code == 400
+        poll_for_existence(
+            onesignal_client.get_device, (player_id,), existence_desired=False
+        )
