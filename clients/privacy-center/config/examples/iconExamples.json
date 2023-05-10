@@ -1,0 +1,27 @@
+{
+  "title": "Privacy center",
+  "description": "Privacy center test configuration",
+  "server_url_development": "http://localhost:8080/api/v1",
+  "server_url_production": "http://example.com/api/v1",
+  "logo_path": "/logo.svg",
+  "actions": [
+    {
+      "policy_key": "download",
+      "icon_path": "md:MdCloudDownload",
+      "title": "Download your data",
+      "description": "Prefixing the icon_path with md: allows you to use from Material Design icons from https://react-icons.github.io/react-icons/icons?name=md.",
+      "identity_inputs": {
+        "email": "required"
+      }
+    },
+    {
+      "policy_key": "delete",
+      "icon_path": "fa:FaTrashAlt",
+      "title": "Delete your data",
+      "description": "Prefixing the icon_path with fa: allows you to use from Font Awesome 5 icons from https://react-icons.github.io/react-icons/icons?name=fa.",
+      "identity_inputs": {
+        "email": "required"
+      }
+    }
+  ]
+}
