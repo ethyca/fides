@@ -9,10 +9,10 @@ import {
 } from "fides-js";
 
 // The fides-js-components-demo.html page is wired up to inject the
-// `fidesConsentBannerOptions` into the Fides.init(...) function
+// `fidesConfig` into the Fides.init(...) function
 declare global {
   interface Window {
-    fidesConsentBannerOptions?: FidesConfig;
+    fidesConfig?: FidesConfig;
   }
 }
 
@@ -89,7 +89,7 @@ describe("Consent banner", () => {
     cy.visit("/fides-js-components-demo.html", {
       onBeforeLoad: (win) => {
         // eslint-disable-next-line no-param-reassign
-        win.fidesConsentBannerOptions = options;
+        win.fidesConfig = options;
       },
     });
   });
