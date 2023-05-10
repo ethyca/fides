@@ -51,6 +51,7 @@ from fides.api.ops.models.datasetconfig import (
     convert_dataset_to_graph,
     to_graph_field,
 )
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.dataset import (
     BulkPutDataset,
@@ -58,11 +59,10 @@ from fides.api.ops.schemas.dataset import (
     DatasetConfigSchema,
     DatasetTraversalDetails,
     ValidateDatasetResponse,
-    get_data_categories_from_db,
     validate_data_categories_against_db,
 )
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.util.data_category import get_data_categories_from_db
 from fides.api.ops.util.saas_util import merge_datasets
 
 X_YAML = "application/x-yaml"

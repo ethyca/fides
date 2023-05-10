@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple
 import requests
 from fideslang.validation import FidesKey
 
+from fides.api.ops.cryptography.cryptographic_util import str_to_b64_str
 from fides.cli.utils import handle_cli_response
 from fides.core.config import CONFIG
 from fides.core.utils import (
@@ -16,7 +17,6 @@ from fides.core.utils import (
     read_credentials_file,
     write_credentials_file,
 )
-from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 
 CREATE_USER_PATH = "/api/v1/user"
 LOGIN_PATH = "/api/v1/login"
@@ -102,7 +102,6 @@ def get_systems_managed_by_user(
 
 def update_user_permissions(
     user_id: str,
-    scopes: List[str],
     auth_header: Dict[str, str],
     server_url: str,
     roles: List[str],
@@ -110,7 +109,7 @@ def update_user_permissions(
     """
     Update user permissions for a given user.
     """
-    request_data = {"scopes": scopes, "id": user_id, "roles": roles}
+    request_data = {"id": user_id, "roles": roles}
     set_permissions_path = USER_PERMISSIONS_PATH.format(user_id)
     response = requests.put(
         server_url + set_permissions_path,
@@ -139,14 +138,14 @@ def create_command(
         server_url=server_url,
     )
     user_id = user_response.json()["id"]
+    new_user_roles = CONFIG.security.root_user_roles
     update_user_permissions(
         user_id=user_id,
-        scopes=CONFIG.security.root_user_scopes,
         auth_header=auth_header,
         server_url=server_url,
-        roles=CONFIG.security.root_user_roles,
+        roles=new_user_roles,
     )
-    echo_green(f"User: '{username}' created and assigned permissions.")
+    echo_green(f"User: '{username}' created and assigned permissions: {new_user_roles}")
 
 
 def login_command(username: str, password: str, server_url: str) -> str:

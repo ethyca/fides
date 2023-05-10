@@ -27,6 +27,13 @@ class DatabaseSettings(FidesSettings):
     db: str = Field(
         default="default_db", description="The name of the application database."
     )
+    load_samples: bool = Field(
+        default=False,
+        description=(
+            "When set to True, initializes the database with sample data for testing (Systems, Datasets, Connectors, etc.) "
+            "Used by 'fides deploy' to configure the sample project."
+        ),
+    )
     password: str = Field(
         default="defaultpassword",
         description="The password with which to login to the application database.",

@@ -8,7 +8,10 @@ import {
 } from "user-management/user-management.slice";
 import UserManagementLayout from "user-management/UserManagementLayout";
 
-import { useAppDispatch } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { selectUser } from "~/features/auth";
+import { useHasPermission } from "~/features/common/Restrict";
+import { ScopeRegistryEnum } from "~/types/api";
 
 const Profile = () => {
   const router = useRouter();
@@ -24,11 +27,25 @@ const Profile = () => {
   const { data: existingUser, isLoading: isLoadingUser } =
     useGetUserByIdQuery(profileId);
 
+  // Must have edit user permission or be the user's profile
+  const loggedInUser = useAppSelector(selectUser);
+  const isOwnProfile =
+    loggedInUser && existingUser ? loggedInUser.id === existingUser.id : false;
+  const canAccess =
+    useHasPermission([ScopeRegistryEnum.USER_UPDATE]) || isOwnProfile;
+
   useEffect(() => {
     if (existingUser) {
       dispatch(setActiveUserId(existingUser.id));
     }
-  }, [dispatch, existingUser]);
+  }, [dispatch, existingUser, canAccess]);
+
+  // Redirect to the home page if the user should not be able to access this page
+  useEffect(() => {
+    if (existingUser && !canAccess) {
+      router.push("/");
+    }
+  }, [router, canAccess, existingUser]);
 
   if (isLoadingUser) {
     return (

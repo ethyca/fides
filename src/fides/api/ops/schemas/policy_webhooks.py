@@ -3,13 +3,13 @@ from typing import List, Optional
 from fideslang.validation import FidesKey
 
 from fides.api.ops.models.policy import WebhookDirection
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
 )
 
 
-class WebhookBase(BaseSchema):
+class WebhookBase(FidesSchema):
     """Base schema for Webhooks"""
 
     direction: WebhookDirection
@@ -40,7 +40,7 @@ class PolicyWebhookResponse(WebhookBase):
         orm_mode = True
 
 
-class PolicyWebhookUpdate(BaseSchema):
+class PolicyWebhookUpdate(FidesSchema):
     """Request schema for updating a single webhook - fields are optional"""
 
     direction: Optional[WebhookDirection]
@@ -56,7 +56,7 @@ class PolicyWebhookUpdate(BaseSchema):
         use_enum_values = True
 
 
-class WebhookOrder(BaseSchema):
+class WebhookOrder(FidesSchema):
     """Schema for displaying a minimal amount of information about the webhook and its order"""
 
     key: FidesKey
@@ -68,15 +68,16 @@ class WebhookOrder(BaseSchema):
         orm_mode = True
 
 
-class PolicyWebhookUpdateResponse(BaseSchema):
+class PolicyWebhookUpdateResponse(FidesSchema):
     """Response schema after a PATCH to a single webhook - because updating the order of this webhook can update the
-    order of other webhooks, new_order will include the new order if order was adjusted at all"""
+    order of other webhooks, new_order will include the new order if order was adjusted at all
+    """
 
     resource: PolicyWebhookResponse
     new_order: List[WebhookOrder]
 
 
-class PolicyWebhookDeleteResponse(BaseSchema):
+class PolicyWebhookDeleteResponse(FidesSchema):
     """Response schema after deleting a webhook; new_order includes remaining reordered webhooks if applicable"""
 
     new_order: List[WebhookOrder]

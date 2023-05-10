@@ -1,5 +1,3 @@
-from nox import Session
-
 from constants_nox import (
     CI_ARGS_EXEC,
     COMPOSE_FILE,
@@ -11,6 +9,7 @@ from constants_nox import (
     START_APP,
     START_APP_WITH_EXTERNAL_POSTGRES,
 )
+from nox import Session
 from run_infrastructure import OPS_TEST_DIR, run_infrastructure
 
 
@@ -24,6 +23,16 @@ def pytest_lib(session: Session, coverage_arg: str) -> None:
         coverage_arg,
         "tests/lib/",
     )
+    session.run(*run_command, external=True)
+
+
+def pytest_nox(session: Session, coverage_arg: str) -> None:
+    """Runs any tests of nox commands themselves."""
+    # the nox tests don't run with coverage, override the provided arg
+    coverage_arg = "--no-cov"
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (*EXEC, "pytest", coverage_arg, "--noconftest", "tests/nox/")
     session.run(*run_command, external=True)
 
 

@@ -4,19 +4,18 @@ from fideslang.validation import FidesKey
 
 from fides.api.ops.models.policy import ActionType, DrpAction
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.storage.storage import StorageDestinationResponse
-from fides.api.ops.util.data_category import DataCategory
 
 
-class PolicyMaskingSpec(BaseSchema):
+class PolicyMaskingSpec(FidesSchema):
     """Models the masking strategy definition"""
 
     strategy: str
     configuration: Dict[str, Any]
 
 
-class PolicyMaskingSpecResponse(BaseSchema):
+class PolicyMaskingSpecResponse(FidesSchema):
     """
     The schema to use when returning a masking strategy via the API. This schema omits other
     potentially sensitive fields in the masking configuration, for example the encryption
@@ -26,12 +25,14 @@ class PolicyMaskingSpecResponse(BaseSchema):
     strategy: str
 
 
-class RuleTarget(BaseSchema):
+class RuleTarget(FidesSchema):
     """An external representation of a Rule's target DataCategory within a Fidesops Policy"""
 
     name: Optional[str]
     key: Optional[FidesKey]
-    data_category: DataCategory  # type: ignore
+    # `data_category` is type str so that we can validate its contents against the DB records
+    # outside of the schemas
+    data_category: str
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -39,7 +40,7 @@ class RuleTarget(BaseSchema):
         use_enum_values = True
 
 
-class RuleBase(BaseSchema):
+class RuleBase(FidesSchema):
     """An external representation of a Rule within a Fidesops Policy"""
 
     name: str
@@ -91,7 +92,7 @@ class Rule(RuleBase):
     masking_strategy: Optional[PolicyMaskingSpec]
 
 
-class Policy(BaseSchema):
+class Policy(FidesSchema):
     """An external representation of a Fidesops Policy"""
 
     name: str

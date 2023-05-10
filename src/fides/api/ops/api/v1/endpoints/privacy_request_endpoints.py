@@ -34,6 +34,7 @@ from fides.api.ops.api.v1.endpoints.dataset_endpoints import _get_connection_con
 from fides.api.ops.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
 )
+from fides.api.ops.api.v1.endpoints.utils import validate_start_and_end_filters
 from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
@@ -78,6 +79,8 @@ from fides.api.ops.common_exceptions import (
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph, Node
 from fides.api.ops.graph.traversal import Traversal
+from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
@@ -88,6 +91,7 @@ from fides.api.ops.models.policy import (
     PolicyPreWebhook,
     Rule,
 )
+from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLog,
@@ -97,6 +101,7 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentity,
     ProvidedIdentityType,
 )
+from fides.api.ops.oauth.utils import verify_callback_oauth, verify_oauth_client
 from fides.api.ops.schemas.dataset import (
     CollectionAddressResponse,
     DryRunDatasetResponse,
@@ -145,11 +150,8 @@ from fides.api.ops.util.cache import FidesopsRedis
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.enums import ColumnSort
 from fides.api.ops.util.logger import Pii
-from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
-from fides.lib.models.client import ClientDetail
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 
@@ -383,6 +385,7 @@ def _filter_privacy_request_queryset(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
+    action_type: Optional[ActionType] = None,
 ) -> Query:
     """
     Utility method to apply filters to our privacy request query.
@@ -396,25 +399,14 @@ def _filter_privacy_request_queryset(
             detail="Cannot specify both succeeded and failed query params.",
         )
 
-    for end, start, field_name in [
-        [created_lt, created_gt, "created"],
-        [completed_lt, completed_gt, "completed"],
-        [errored_lt, errored_gt, "errored"],
-        [started_lt, started_gt, "started"],
-    ]:
-        if end is None or start is None:
-            continue
-
-        if not (isinstance(end, datetime) and isinstance(start, datetime)):
-            continue
-
-        if end < start:
-            # With date fields, if the start date is after the end date, return a 400
-            # because no records will lie within this range.
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
-            )
+    validate_start_and_end_filters(
+        [
+            (created_lt, created_gt, "created"),
+            (completed_lt, completed_gt, "completed"),
+            (errored_lt, errored_gt, "errored"),
+            (started_lt, started_gt, "started"),
+        ]
+    )
 
     if identity:
         hashed_identity = ProvidedIdentity.hash_value(value=identity)
@@ -464,6 +456,14 @@ def _filter_privacy_request_queryset(
             PrivacyRequest.status == PrivacyRequestStatus.error,
             PrivacyRequest.finished_processing_at > errored_gt,
         )
+    if action_type:
+        policy_ids_for_action_type = (
+            db.query(Rule)
+            .filter(Rule.action_type == action_type)
+            .with_entities(Rule.policy_id)
+            .distinct()
+        )
+        query = query.filter(PrivacyRequest.policy_id.in_(policy_ids_for_action_type))
 
     return query
 
@@ -556,6 +556,7 @@ def get_request_status(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
+    action_type: Optional[ActionType] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
     download_csv: Optional[bool] = False,
@@ -585,6 +586,7 @@ def get_request_status(
         errored_lt,
         errored_gt,
         external_id,
+        action_type,
     )
 
     logger.info(
@@ -759,10 +761,13 @@ def get_request_preview_queries(
                 )
             dataset_configs.append(dataset_config)
     try:
-        connection_configs: List[ConnectionConfig] = [
-            ConnectionConfig.get(db=db, object_id=dataset.connection_config_id)
-            for dataset in dataset_configs
-        ]
+        connection_configs: List[ConnectionConfig] = []
+        for dataset in dataset_configs:
+            connection_config: Optional[ConnectionConfig] = ConnectionConfig.get(
+                db=db, object_id=dataset.connection_config_id
+            )
+            if connection_config:
+                connection_configs.append(connection_config)
 
         try:
             dataset_graph: DatasetGraph = DatasetGraph(
@@ -1575,6 +1580,9 @@ def create_privacy_request_func(
     config_proxy: ConfigProxy,
     data: conlist(PrivacyRequestCreate),  # type: ignore
     authenticated: bool = False,
+    privacy_preferences: List[
+        PrivacyPreferenceHistory
+    ] = [],  # For consent requests only
 ) -> BulkPostPrivacyRequests:
     """Creates privacy requests.
 
@@ -1648,6 +1656,9 @@ def create_privacy_request_func(
             privacy_request.persist_identity(
                 db=db, identity=privacy_request_data.identity
             )
+            for privacy_preference in privacy_preferences:
+                privacy_preference.privacy_request_id = privacy_request.id
+                privacy_preference.save(db=db)
 
             cache_data(
                 privacy_request,

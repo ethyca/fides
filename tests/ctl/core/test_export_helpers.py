@@ -61,7 +61,6 @@ def test_sample_dataset_taxonomy() -> Generator:
 def test_dataset_data_category_rows(
     test_sample_dataset_taxonomy: List[Dataset],
 ) -> None:
-
     dataset_name = test_sample_dataset_taxonomy[0].name
     dataset_description = test_sample_dataset_taxonomy[0].description
     dataset_third_country_transfers = test_sample_dataset_taxonomy[

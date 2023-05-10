@@ -15,21 +15,21 @@ from fides.api.ops.api.v1.scope_registry import (
     USER_PERMISSION_UPDATE,
 )
 from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.ops.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
+from fides.api.ops.oauth.roles import APPROVER, OWNER, RoleRegistryEnum
+from fides.api.ops.oauth.utils import (
+    get_current_user,
+    oauth2_scheme,
+    verify_oauth_client,
+)
 from fides.api.ops.schemas.user_permission import (
     UserPermissionsCreate,
     UserPermissionsEdit,
     UserPermissionsResponse,
 )
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.oauth_util import (
-    get_current_user,
-    oauth2_scheme,
-    verify_oauth_client,
-)
 from fides.core.config import CONFIG
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import OWNER, RoleRegistryEnum
 
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 
@@ -114,10 +114,22 @@ async def update_user_permissions(
 
     if user.client:
         user.client.update(db=db, data={"roles": permissions.roles})
-    return user.permissions.update(  # type: ignore[attr-defined]
+
+    updated_user_perms = user.permissions.update(  # type: ignore[attr-defined]
         db=db,
         data={"id": user.permissions.id, "user_id": user_id, "roles": permissions.roles},  # type: ignore[attr-defined]
     )
+
+    if user.systems and APPROVER in user.permissions.roles:  # type: ignore[attr-defined]
+        for system in user.systems.copy():
+            logger.info(
+                "Approvers cannot be system managers. Removing user {} as system manager of {}.",
+                user.id,
+                system.fides_key,
+            )
+            user.remove_as_system_manager(db, system)
+
+    return updated_user_perms
 
 
 @router.get(

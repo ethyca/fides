@@ -16,7 +16,7 @@ from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api.v1 import scope_registry
-from fides.api.ops.util.oauth_util import verify_oauth_client_cli
+from fides.api.ops.oauth.utils import verify_oauth_client_prod
 from fides.connectors.models import (
     AWSConfig,
     BigQueryConfig,
@@ -103,7 +103,7 @@ router = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
     "/",
     status_code=status.HTTP_200_OK,
     dependencies=[
-        Security(verify_oauth_client_cli, scopes=[scope_registry.GENERATE_EXEC])
+        Security(verify_oauth_client_prod, scopes=[scope_registry.GENERATE_EXEC])
     ],
     response_model=GenerateResponse,
     responses={

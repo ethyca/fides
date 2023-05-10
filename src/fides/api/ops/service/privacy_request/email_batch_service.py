@@ -37,7 +37,6 @@ def send_email_batch(self: DatabaseTask) -> EmailExitState:
 
     logger.info("Starting batched email send...")
     with self.get_new_session() as session:
-
         privacy_requests: Query = (
             session.query(PrivacyRequest)
             .filter(PrivacyRequest.status == PrivacyRequestStatus.awaiting_email_send)

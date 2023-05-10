@@ -1,42 +1,44 @@
 import { useRouter } from "next/router";
 import { ReactNode } from "react";
-import { useDispatch, useSelector } from "react-redux";
 
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { LOGIN_ROUTE, VERIFY_AUTH_INTERVAL } from "~/constants";
-import { canAccessRoute } from "~/features/common/nav/v2/nav-config";
+import { useNav } from "~/features/common/nav/v2/hooks";
+import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import { useGetUserPermissionsQuery } from "~/features/user-management";
 
 import { logout, selectToken, selectUser } from "./auth.slice";
 
 const useProtectedRoute = (redirectUrl: string) => {
   const router = useRouter();
-  const dispatch = useDispatch();
-  const token = useSelector(selectToken);
-  const user = useSelector(selectUser);
+  const dispatch = useAppDispatch();
+  const token = useAppSelector(selectToken);
+  const user = useAppSelector(selectUser);
   const userId = user?.id;
   const permissionsQuery = useGetUserPermissionsQuery(userId!, {
     pollingInterval: VERIFY_AUTH_INTERVAL,
     skip: !userId,
   });
+  const plusQuery = useGetHealthQuery();
+  const nav = useNav({ path: router.pathname });
 
   if (!token || !userId || permissionsQuery.isError) {
-    dispatch(logout());
+    // Reset the user information in redux only if we have stale information
+    if (token || userId) {
+      dispatch(logout());
+    }
     if (typeof window !== "undefined") {
       router.push(redirectUrl);
     }
     return { authenticated: false, hasAccess: false };
   }
 
-  const path = router.pathname;
-  const userScopes = permissionsQuery.data
-    ? permissionsQuery.data.total_scopes
-    : [];
-
-  const hasAccess = canAccessRoute({ path, userScopes });
+  const hasAccess = !!nav.active;
   if (
     !hasAccess &&
     permissionsQuery.isSuccess &&
-    typeof window !== "undefined"
+    typeof window !== "undefined" &&
+    !plusQuery.isLoading
   ) {
     router.push("/");
   }

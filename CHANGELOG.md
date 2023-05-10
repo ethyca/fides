@@ -15,179 +15,357 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.9.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.12.1...main)
+
+### Added
+
+- Access and erasure support for Amplitude [#2569](https://github.com/ethyca/fides/pull/2569)
+- Access and erasure support for Gorgias [#2444](https://github.com/ethyca/fides/pull/2444)
+- Privacy Experience Bulk Create, Bulk Update, and Detail Endpoints [#3185](https://github.com/ethyca/fides/pull/3185)
+- Initial privacy experience UI [#3186](https://github.com/ethyca/fides/pull/3186)
+- Access and erasure support for OneSignal [#3199](https://github.com/ethyca/fides/pull/3199)
 
 ### Changed
-* Improved standard layout for large width screens and polished misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
-* Changed UI paths in the admin-ui [#2869](https://github.com/ethyca/fides/pull/2892)
-  * `/add-systems/new` --> `/add-systems/manual`
-  * `/system` --> `/systems`
-* Added individual ID routes for systems [#2902](https://github.com/ethyca/fides/pull/2902)
-* Deprecated adding scopes to users directly; you can only add roles. [#2848](https://github.com/ethyca/fides/pull/2848/files)
-* Changed About Fides page to say "Fides Core Version:" over "Version". [#2899](https://github.com/ethyca/fides/pull/2899)
-* Polish Admin UI header & navigation [#2897](https://github.com/ethyca/fides/pull/2897)
+
+- Merge instances of RTK `createApi` into one instance for better cache invalidation [#3059](https://github.com/ethyca/fides/pull/3059)
+- Update custom field definition uniqueness to be case insensitive name per resource type [#3215](https://github.com/ethyca/fides/pull/3215)
+- Restrict where privacy notices of certain consent mechanisms must be displayed [#3195](https://github.com/ethyca/fides/pull/3195)
+- Merged the `lib` submodule into the `api.ops` submodule [#3134](https://github.com/ethyca/fides/pull/3134)
+- Merged duplicate privacy declaration components [#3254](https://github.com/ethyca/fides/pull/3254)
 
 ### Fixed
-* Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
+- Prevent ability to unintentionally show "default" Privacy Center configuration, styles, etc. [#3242](https://github.com/ethyca/fides/pull/3242)
+- Fix broken links to docs site pages in Admin UI [#3232](https://github.com/ethyca/fides/pull/3232)
+- Repoint legacy docs site links to the new and improved docs site [#3167](https://github.com/ethyca/fides/pull/3167)
+
+### Developer Experience
+
+- Use prettier to format *all* source files in client packages [#3240](https://github.com/ethyca/fides/pull/3240)
+
+## [2.12.1](https://github.com/ethyca/fides/compare/2.12.0...2.12.1)
+
+### Changed
+
+- Updated how Docker version checks are handled and added an escape-hatch [#3218](https://github.com/ethyca/fides/pull/3218)
 
 ### Fixed
-* Allow for dynamic aspect ratio for logo on Privacy Center 404 [#2895](https://github.com/ethyca/fides/pull/2895)
-* Allow for dynamic aspect ratio for logo on consent page [#2895](https://github.com/ethyca/fides/pull/2895)
+
+- Datamap export mitigation for deleted taxonomy elements referenced by declarations [#3214](https://github.com/ethyca/fides/pull/3214)
+- Update datamap columns each time the page is visited [#3211](https://github.com/ethyca/fides/pull/3211)
+- Ensure inactive custom fields are not returned for datamap response [#3223](https://github.com/ethyca/fides/pull/3223)
+
+## [2.12.0](https://github.com/ethyca/fides/compare/2.11.0...2.12.0)
+
+### Added
+
+- Access and erasure support for Aircall [#2589](https://github.com/ethyca/fides/pull/2589)
+- Access and erasure support for Klaviyo [#2501](https://github.com/ethyca/fides/pull/2501)
+- Page to edit or add privacy notices [#3058](https://github.com/ethyca/fides/pull/3058)
+- Side navigation bar can now also have children navigation links [#3099](https://github.com/ethyca/fides/pull/3099)
+- Endpoints for consent reporting [#3095](https://github.com/ethyca/fides/pull/3095)
+- Added manage custom fields page behind feature flag [#3089](https://github.com/ethyca/fides/pull/3089)
+- Custom fields table [#3097](https://github.com/ethyca/fides/pull/3097)
+- Custom fields form modal [#3165](https://github.com/ethyca/fides/pull/3165)
+- Endpoints to save the new-style Privacy Preferences with respect to a fides user device id [#3132](https://github.com/ethyca/fides/pull/3132)
+- Support `privacy_declaration` as a resource type for custom fields [#3149](https://github.com/ethyca/fides/pull/3149)
+- Expose `id` field of embedded `privacy_declarations` on `system` API responses [#3157](https://github.com/ethyca/fides/pull/3157)
+- Access and erasure support for Unbounce [#2697](https://github.com/ethyca/fides/pull/2697)
+- Support pseudonymous consent requests with `fides_user_device_id` [#3158](https://github.com/ethyca/fides/pull/3158)
+- Update `fides_consent` cookie format [#3158](https://github.com/ethyca/fides/pull/3158)
+- Add custom fields to the data use declaration form [#3197](https://github.com/ethyca/fides/pull/3197)
+- Added fides user device id as a ProvidedIdentityType [#3131](https://github.com/ethyca/fides/pull/3131)
+
+### Changed
+
+- The `cursor` pagination strategy now also searches for data outside of the `data_path` when determining the cursor value [#3068](https://github.com/ethyca/fides/pull/3068)
+- Moved Privacy Declarations associated with Systems to their own DB table [#3098](https://github.com/ethyca/fides/pull/3098)
+- More tests on data use validation for privacy notices within the same region [#3156](https://github.com/ethyca/fides/pull/3156)
+- Improvements to export code for bugfixes and privacy declaration custom field support [#3184](https://github.com/ethyca/fides/pull/3184)
+- Enabled privacy notice feature flag [#3192](https://github.com/ethyca/fides/pull/3192)
+- Updated TS types - particularly with new privacy notices [#3054](https://github.com/ethyca/fides/pull/3054)
+- Make name not required on privacy declaration [#3150](https://github.com/ethyca/fides/pull/3150)
+- Let Rule Targets allow for custom data categories [#3147](https://github.com/ethyca/fides/pull/3147)
+
+### Removed
+
+- Removed the warning about access control migration [#3055](https://github.com/ethyca/fides/pull/3055)
+- Remove `customFields` feature flag [#3080](https://github.com/ethyca/fides/pull/3080)
+- Remove notification banner from the home page [#3088](https://github.com/ethyca/fides/pull/3088)
+
+### Fixed
+
+- Fix a typo in the Admin UI [#3166](https://github.com/ethyca/fides/pull/3166)
+- The `--local` flag is now respected for the `scan dataset db` command [#3096](https://github.com/ethyca/fides/pull/3096)
+- Fixing issue where connectors with external dataset references would fail to save [#3142](https://github.com/ethyca/fides/pull/3142)
+- Ensure privacy declaration IDs are stable across updates through system API [#3188](https://github.com/ethyca/fides/pull/3188)
+- Fixed unit tests for saas connector type endpoints now that we have >50 [#3101](https://github.com/ethyca/fides/pull/3101)
+- Fixed nox docs link [#3121](https://github.com/ethyca/fides/pull/3121/files)
+
+
+### Developer Experience
+
+- Update fides deploy to use a new database.load_samples setting to initialize sample Systems, Datasets, and Connections for testing [#3102](https://github.com/ethyca/fides/pull/3102)
+- Remove support for automatically configuring messaging (Mailgun) & storage (S3) using `.env` with `nox -s "fides_env(test)"` [#3102](https://github.com/ethyca/fides/pull/3102)
+- Add smoke tests for consent management [#3158](https://github.com/ethyca/fides/pull/3158)
+- Added nox command that opens dev docs [#3082](https://github.com/ethyca/fides/pull/3082)
+
+
+## [2.11.0](https://github.com/ethyca/fides/compare/2.10.0...2.11.0)
+
+### Added
+
+- Access support for Shippo [#2484](https://github.com/ethyca/fides/pull/2484)
+- Feature flags can be set such that they cannot be modified by the user [#2966](https://github.com/ethyca/fides/pull/2966)
+- Added the datamap UI to make it open source [#2988](https://github.com/ethyca/fides/pull/2988)
+- Introduced a `FixedLayout` component (from the datamap UI) for pages that need to be a fixed height and scroll within [#2992](https://github.com/ethyca/fides/pull/2992)
+- Added preliminary privacy notice page [#2995](https://github.com/ethyca/fides/pull/2995)
+- Table for privacy notices [#3001](https://github.com/ethyca/fides/pull/3001)
+- Added connector template endpoint [#2946](https://github.com/ethyca/fides/pull/2946)
+- Query params on connection type endpoint to filter by supported action type [#2996](https://github.com/ethyca/fides/pull/2996)
+- Scope restrictions for privacy notice table in the UI [#3007](https://github.com/ethyca/fides/pull/3007)
+- Toggle for enabling/disabling privacy notices in the UI [#3010](https://github.com/ethyca/fides/pull/3010)
+- Add endpoint to retrieve privacy notices grouped by their associated data uses [#2956](https://github.com/ethyca/fides/pull/2956)
+- Support for uploading custom connector templates via the UI [#2997](https://github.com/ethyca/fides/pull/2997)
+- Add a backwards-compatible workflow for saving and propagating consent preferences with respect to Privacy Notices [#3016](https://github.com/ethyca/fides/pull/3016)
+- Empty state for privacy notices [#3027](https://github.com/ethyca/fides/pull/3027)
+- Added Data flow modal [#3008](https://github.com/ethyca/fides/pull/3008)
+- Update datamap table export [#3038](https://github.com/ethyca/fides/pull/3038)
+- Added more advanced privacy center styling [#2943](https://github.com/ethyca/fides/pull/2943)
+- Backend privacy experiences foundation [#3146](https://github.com/ethyca/fides/pull/3146)
+
+### Changed
+
+- Set `privacyDeclarationDeprecatedFields` flags to false and set `userCannotModify` to true [2987](https://github.com/ethyca/fides/pull/2987)
+- Restored `nav-config` back to the admin-ui [#2990](https://github.com/ethyca/fides/pull/2990)
+- Bumped supported Python versions to 3.10.11, 3.9.16, and 3.8.14 [#2936](https://github.com/ethyca/fides/pull/2936)
+- Modify privacy center default config to only request email identities, and add validation preventing requesting both email & phone identities [#2539](https://github.com/ethyca/fides/pull/2539)
+- SaaS connector icons are now dynamically loaded from the connector templates [#3018](https://github.com/ethyca/fides/pull/3018)
+- Updated consentmechanism Enum to rename "necessary" to "notice_only" [#3048](https://github.com/ethyca/fides/pull/3048)
+- Updated test data for Mongo, CLI [#3011](https://github.com/ethyca/fides/pull/3011)
+- Updated the check for if a user can assign owner roles to be scope-based instead of role-based [#2964](https://github.com/ethyca/fides/pull/2964)
+- Replaced menu in user management table with delete icon [#2958](https://github.com/ethyca/fides/pull/2958)
+- Added extra fields to webhook payloads [#2830](https://github.com/ethyca/fides/pull/2830)
+
+### Removed
+
+- Removed interzone navigation logic now that the datamap UI and admin UI are one app [#2990](https://github.com/ethyca/fides/pull/2990)
+- Remove the `unknown` state for generated datasets displaying on fidesplus [#2957](https://github.com/ethyca/fides/pull/2957)
+- Removed datamap export API [#2999](https://github.com/ethyca/fides/pull/2999)
+
+### Developer Experience
+
+- Nox commands for git tagging to support feature branch builds [#2979](https://github.com/ethyca/fides/pull/2979)
+- Changed test environment (`nox -s fides_env`) to run `fides deploy` for local testing [#3071](https://github.com/ethyca/fides/pull/3017)
+- Publish git-tag specific docker images [#3050](https://github.com/ethyca/fides/pull/3050)
+
+## [2.10.0](https://github.com/ethyca/fides/compare/2.9.2...2.10.0)
+
+### Added
+
+- Allow users to configure their username and password via the config file [#2884](https://github.com/ethyca/fides/pull/2884)
+- Add authentication to the `masking` endpoints as well as accompanying scopes [#2909](https://github.com/ethyca/fides/pull/2909)
+- Add an Organization Management page (beta) [#2908](https://github.com/ethyca/fides/pull/2908)
+- Adds assigned systems to user management table [#2922](https://github.com/ethyca/fides/pull/2922)
+- APIs to support Privacy Notice management (create, read, update) [#2928](https://github.com/ethyca/fides/pull/2928)
+
+### Changed
+
+- Improved standard layout for large width screens and polished misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
+- Changed UI paths in the admin-ui [#2869](https://github.com/ethyca/fides/pull/2892)
+  - `/add-systems/new` --> `/add-systems/manual`
+  - `/system` --> `/systems`
+- Added individual ID routes for systems [#2902](https://github.com/ethyca/fides/pull/2902)
+- Deprecated adding scopes to users directly; you can only add roles. [#2848](https://github.com/ethyca/fides/pull/2848/files)
+- Changed About Fides page to say "Fides Core Version:" over "Version". [#2899](https://github.com/ethyca/fides/pull/2899)
+- Polish Admin UI header & navigation [#2897](https://github.com/ethyca/fides/pull/2897)
+- Give new users a "viewer" role by default [#2900](https://github.com/ethyca/fides/pull/2900)
+- Tie together save states for user permissions and systems [#2913](https://github.com/ethyca/fides/pull/2913)
+- Removing payment types from Stripe connector params [#2915](https://github.com/ethyca/fides/pull/2915)
+- Viewer role can now access a restricted version of the user management page [#2933](https://github.com/ethyca/fides/pull/2933)
+- Change Privacy Center email placeholder text [#2935](https://github.com/ethyca/fides/pull/2935)
+- Restricted setting Approvers as System Managers [#2891](https://github.com/ethyca/fides/pull/2891)
+- Adds confirmation modal when downgrading user to "approver" role via Admin UI [#2924](https://github.com/ethyca/fides/pull/2924)
+- Changed the toast message for new users to include access control info [#2939](https://github.com/ethyca/fides/pull/2939)
+- Add Data Stewards to datamap export [#2962](https://github.com/ethyca/fides/pull/2962)
+
+### Fixed
+
+- Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
+- Allow for dynamic aspect ratio for logo on Privacy Center 404 [#2895](https://github.com/ethyca/fides/pull/2895)
+- Allow for dynamic aspect ratio for logo on consent page [#2895](https://github.com/ethyca/fides/pull/2895)
+- Align role dscription drawer of Admin UI with top nav: [#2932](https://github.com/ethyca/fides/pull/2932)
+- Fixed error message when a user is assigned to be an approver without any systems [#2953](https://github.com/ethyca/fides/pull/2953)
+
+### Developer Experience
+
+- Update frontend npm packages (admin-ui, privacy-center, cypress-e2e) [#2921](https://github.com/ethyca/fides/pull/2921)
+
+## [2.9.2](https://github.com/ethyca/fides/compare/2.9.1...2.9.2)
+
+### Fixed
+
+- Allow multiple data uses as long as their processing activity name is different [#2905](https://github.com/ethyca/fides/pull/2905)
+- use HTML property, not text, when dispatching Mailchimp Transactional emails [#2901](https://github.com/ethyca/fides/pull/2901)
+- Remove policy key from Privacy Center submission modal [#2912](https://github.com/ethyca/fides/pull/2912)
 
 ## [2.9.1](https://github.com/ethyca/fides/compare/2.9.0...2.9.1)
 
 ### Added
-* Added Attentive erasure email connector [#2782](https://github.com/ethyca/fides/pull/2782)
+
+- Added Attentive erasure email connector [#2782](https://github.com/ethyca/fides/pull/2782)
 
 ### Changed
-* Improved standard layout for large width screens and polish misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
-* Removed dataset based email connectors [#2782](https://github.com/ethyca/fides/pull/2782)
-* Changed Auth0's authentication strategy from `bearer` to `oauth2_client_credentials` [#2820](https://github.com/ethyca/fides/pull/2820)
-* Renamed the privacy declarations field "Privacy declaration name (deprecated)" to "Processing Activity" [#711](https://github.com/ethyca/fidesplus/issues/711)
-* UX cleanups in Role Management section of Admin UI [#2870](https://github.com/ethyca/fides/pull/2870)
 
+- Removed dataset based email connectors [#2782](https://github.com/ethyca/fides/pull/2782)
+- Changed Auth0's authentication strategy from `bearer` to `oauth2_client_credentials` [#2820](https://github.com/ethyca/fides/pull/2820)
+- renamed the privacy declarations field "Privacy declaration name (deprecated)" to "Processing Activity" [#711](https://github.com/ethyca/fidesplus/issues/711)
 
 ### Fixed
-* Fixed issue where the scopes list passed into FidesUserPermission could get mutated with the total_scopes call [#2883](https://github.com/ethyca/fides/pull/2883)
+
+- Fixed issue where the scopes list passed into FidesUserPermission could get mutated with the total_scopes call [#2883](https://github.com/ethyca/fides/pull/2883)
 
 ### Removed
-* Removed the `privacyDeclarationDeprecatedFields` flag [#711](https://github.com/ethyca/fidesplus/issues/711)
+
+- removed the `privacyDeclarationDeprecatedFields` flag [#711](https://github.com/ethyca/fidesplus/issues/711)
 
 ## [2.9.0](https://github.com/ethyca/fides/compare/2.8.3...2.9.0)
 
 ### Added
 
-* The ability to assign users as system managers for a specific system [#2714](https://github.com/ethyca/fides/pull/2714)
-* New endpoints to add and remove users as system managers [#2726](https://github.com/ethyca/fides/pull/2726)
-* Warning about access control migration to the UI [#2842](https://github.com/ethyca/fides/pull/2842)
-* Adds Role Assignment UI [#2739](https://github.com/ethyca/fides/pull/2739)
-* Add an automated migration to give users a `viewer` role [#2821](https://github.com/ethyca/fides/pull/2821)
+- The ability to assign users as system managers for a specific system [#2714](https://github.com/ethyca/fides/pull/2714)
+- New endpoints to add and remove users as system managers [#2726](https://github.com/ethyca/fides/pull/2726)
+- Warning about access control migration to the UI [#2842](https://github.com/ethyca/fides/pull/2842)
+- Adds Role Assignment UI [#2739](https://github.com/ethyca/fides/pull/2739)
+- Add an automated migration to give users a `viewer` role [#2821](https://github.com/ethyca/fides/pull/2821)
 
 ### Changed
 
-* Removed "progressive" navigation that would hide Admin UI tabs until Systems / Connections were configured [#2762](https://github.com/ethyca/fides/pull/2762)
-* Added `system.privacy_declaration.name` to datamap response [#2831](https://github.com/ethyca/fides/pull/2831/files)
+- Removed "progressive" navigation that would hide Admin UI tabs until Systems / Connections were configured [#2762](https://github.com/ethyca/fides/pull/2762)
+- Added `system.privacy_declaration.name` to datamap response [#2831](https://github.com/ethyca/fides/pull/2831/files)
 
 ### Developer Experience
 
-* Retired legacy `navV2` feature flag [#2762](https://github.com/ethyca/fides/pull/2762)
-* Update Admin UI Layout to fill viewport height [#2812](https://github.com/ethyca/fides/pull/2812)
+- Retired legacy `navV2` feature flag [#2762](https://github.com/ethyca/fides/pull/2762)
+- Update Admin UI Layout to fill viewport height [#2812](https://github.com/ethyca/fides/pull/2812)
 
 ### Fixed
 
-* Fixed issue where unsaved changes warning would always show up when running fidesplus [#2788](https://github.com/ethyca/fides/issues/2788)
-* Fixed problem in datamap export with datasets that had been updated via SaaS instantiation [#2841](https://github.com/ethyca/fides/pull/2841)
-* Fixed problem in datamap export with inconsistent custom field ordering [#2859](https://github.com/ethyca/fides/pull/2859)
+- Fixed issue where unsaved changes warning would always show up when running fidesplus [#2788](https://github.com/ethyca/fides/issues/2788)
+- Fixed problem in datamap export with datasets that had been updated via SaaS instantiation [#2841](https://github.com/ethyca/fides/pull/2841)
+- Fixed problem in datamap export with inconsistent custom field ordering [#2859](https://github.com/ethyca/fides/pull/2859)
 
 ## [2.8.3](https://github.com/ethyca/fides/compare/2.8.2...2.8.3)
 
 ### Added
 
-* Serialise `bson.ObjectId` types in SAR data packages [#2785](https://github.com/ethyca/fides/pull/2785)
+- Serialise `bson.ObjectId` types in SAR data packages [#2785](https://github.com/ethyca/fides/pull/2785)
 
 ### Fixed
 
-* Fixed issue where more than 1 populated custom fields removed a system from the datamap export [#2825](https://github.com/ethyca/fides/pull/2825)
+- Fixed issue where more than 1 populated custom fields removed a system from the datamap export [#2825](https://github.com/ethyca/fides/pull/2825)
 
 ## [2.8.2](https://github.com/ethyca/fides/compare/2.8.1...2.8.2)
 
 ### Fixed
 
-* Resolved a bug that stopped custom fields populating the visual datamap [#2775](https://github.com/ethyca/fides/pull/2775)
-* Patch appconfig migration to handle existing db record [#2780](https://github.com/ethyca/fides/pull/2780)
+- Resolved a bug that stopped custom fields populating the visual datamap [#2775](https://github.com/ethyca/fides/pull/2775)
+- Patch appconfig migration to handle existing db record [#2780](https://github.com/ethyca/fides/pull/2780)
 
 ## [2.8.1](https://github.com/ethyca/fides/compare/2.8.0...2.8.1)
 
-
 ### Fixed
 
-* Disabled hiding Admin UI based on user scopes [#2771](https://github.com/ethyca/fides/pull/2771)
+- Disabled hiding Admin UI based on user scopes [#2771](https://github.com/ethyca/fides/pull/2771)
 
 ## [2.8.0](https://github.com/ethyca/fides/compare/2.7.1...2.8.0)
 
 ### Added
 
-* Add API support for messaging config properties [#2551](https://github.com/ethyca/fides/pull/2551)
-* Access and erasure support for Kustomer [#2520](https://github.com/ethyca/fides/pull/2520)
-* Added the `erase_after` field on collections to be able to set the order for erasures [#2619](https://github.com/ethyca/fides/pull/2619)
-* Add a toggle to filter the system classification to only return those with classification data [#2700](https://github.com/ethyca/fides/pull/2700)
-* Added backend role-based permissions [#2671](https://github.com/ethyca/fides/pull/2671)
-* Access and erasure for Vend SaaS Connector [#1869](https://github.com/ethyca/fides/issues/1869)
-* Added endpoints for storage and messaging config setup status [#2690](https://github.com/ethyca/fides/pull/2690)
-* Access and erasure for Jira SaaS Connector [#1871](https://github.com/ethyca/fides/issues/1871)
-* Access and erasure support for Delighted [#2244](https://github.com/ethyca/fides/pull/2244)
-* Improve "Upload a new dataset YAML" [#1531](https://github.com/ethyca/fides/pull/2258)
-* Input validation and sanitization for Privacy Request fields [#2655](https://github.com/ethyca/fides/pull/2655)
-* Access and erasure support for Yotpo [#2708](https://github.com/ethyca/fides/pull/2708)
-* Custom Field Library Tab [#527](https://github.com/ethyca/fides/pull/2693)
-* Allow SendGrid template usage [#2728](https://github.com/ethyca/fides/pull/2728)
-* Added ConnectorRunner to simplify SaaS connector testing [#1795](https://github.com/ethyca/fides/pull/1795)
-* Adds support for Mailchimp Transactional as a messaging config [#2742](https://github.com/ethyca/fides/pull/2742)
+- Add API support for messaging config properties [#2551](https://github.com/ethyca/fides/pull/2551)
+- Access and erasure support for Kustomer [#2520](https://github.com/ethyca/fides/pull/2520)
+- Added the `erase_after` field on collections to be able to set the order for erasures [#2619](https://github.com/ethyca/fides/pull/2619)
+- Add a toggle to filter the system classification to only return those with classification data [#2700](https://github.com/ethyca/fides/pull/2700)
+- Added backend role-based permissions [#2671](https://github.com/ethyca/fides/pull/2671)
+- Access and erasure for Vend SaaS Connector [#1869](https://github.com/ethyca/fides/issues/1869)
+- Added endpoints for storage and messaging config setup status [#2690](https://github.com/ethyca/fides/pull/2690)
+- Access and erasure for Jira SaaS Connector [#1871](https://github.com/ethyca/fides/issues/1871)
+- Access and erasure support for Delighted [#2244](https://github.com/ethyca/fides/pull/2244)
+- Improve "Upload a new dataset YAML" [#1531](https://github.com/ethyca/fides/pull/2258)
+- Input validation and sanitization for Privacy Request fields [#2655](https://github.com/ethyca/fides/pull/2655)
+- Access and erasure support for Yotpo [#2708](https://github.com/ethyca/fides/pull/2708)
+- Custom Field Library Tab [#527](https://github.com/ethyca/fides/pull/2693)
+- Allow SendGrid template usage [#2728](https://github.com/ethyca/fides/pull/2728)
+- Added ConnectorRunner to simplify SaaS connector testing [#1795](https://github.com/ethyca/fides/pull/1795)
+- Adds support for Mailchimp Transactional as a messaging config [#2742](https://github.com/ethyca/fides/pull/2742)
 
 ### Changed
 
-* Admin UI
-  * Add flow for selecting system types when manually creating a system [#2530](https://github.com/ethyca/fides/pull/2530)
-  * Updated forms for privacy declarations [#2648](https://github.com/ethyca/fides/pull/2648)
-  * Delete flow for privacy declarations [#2664](https://github.com/ethyca/fides/pull/2664)
-  * Add framework to have UI elements respect the user's scopes [#2682](https://github.com/ethyca/fides/pull/2682)
-  * "Manual Webhook" has been renamed to "Manual Process". [#2717](https://github.com/ethyca/fides/pull/2717)
-* Convert all config values to Pydantic `Field` objects [#2613](https://github.com/ethyca/fides/pull/2613)
-* Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
-* Redesigned the default/init config file to be auto-documented. Also updates the `fides init` logic and analytics consent logic [#2694](https://github.com/ethyca/fides/pull/2694)
-* Change how config creation/import is handled across the application [#2622](https://github.com/ethyca/fides/pull/2622)
-* Update the CLI aesthetics & docstrings [#2703](https://github.com/ethyca/fides/pull/2703)
-* Updates Roles->Scopes Mapping [#2744](https://github.com/ethyca/fides/pull/2744)
-* Return user scopes as an enum, as well as total scopes [#2741](https://github.com/ethyca/fides/pull/2741)
-* Update `MessagingServiceType` enum to be lowercased throughout [#2746](https://github.com/ethyca/fides/pull/2746)
+- Admin UI
+  - Add flow for selecting system types when manually creating a system [#2530](https://github.com/ethyca/fides/pull/2530)
+  - Updated forms for privacy declarations [#2648](https://github.com/ethyca/fides/pull/2648)
+  - Delete flow for privacy declarations [#2664](https://github.com/ethyca/fides/pull/2664)
+  - Add framework to have UI elements respect the user's scopes [#2682](https://github.com/ethyca/fides/pull/2682)
+  - "Manual Webhook" has been renamed to "Manual Process". [#2717](https://github.com/ethyca/fides/pull/2717)
+- Convert all config values to Pydantic `Field` objects [#2613](https://github.com/ethyca/fides/pull/2613)
+- Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
+- Redesigned the default/init config file to be auto-documented. Also updates the `fides init` logic and analytics consent logic [#2694](https://github.com/ethyca/fides/pull/2694)
+- Change how config creation/import is handled across the application [#2622](https://github.com/ethyca/fides/pull/2622)
+- Update the CLI aesthetics & docstrings [#2703](https://github.com/ethyca/fides/pull/2703)
+- Updates Roles->Scopes Mapping [#2744](https://github.com/ethyca/fides/pull/2744)
+- Return user scopes as an enum, as well as total scopes [#2741](https://github.com/ethyca/fides/pull/2741)
+- Update `MessagingServiceType` enum to be lowercased throughout [#2746](https://github.com/ethyca/fides/pull/2746)
 
 ### Developer Experience
 
-* Set the security environment of the fides dev setup to `prod` instead of `dev` [#2588](https://github.com/ethyca/fides/pull/2588)
-* Removed unexpected default Redis password [#2666](https://github.com/ethyca/fides/pull/2666)
-* Privacy Center
-  * Typechecking and validation of the `config.json` will be checked for backwards-compatibility. [#2661](https://github.com/ethyca/fides/pull/2661)
-* Combined conftest.py files [#2669](https://github.com/ethyca/fides/pull/2669)
+- Set the security environment of the fides dev setup to `prod` instead of `dev` [#2588](https://github.com/ethyca/fides/pull/2588)
+- Removed unexpected default Redis password [#2666](https://github.com/ethyca/fides/pull/2666)
+- Privacy Center
+  - Typechecking and validation of the `config.json` will be checked for backwards-compatibility. [#2661](https://github.com/ethyca/fides/pull/2661)
+- Combined conftest.py files [#2669](https://github.com/ethyca/fides/pull/2669)
 
 ### Fixed
 
-* Fix support for "redis.user" setting when authenticating to the Redis cache [#2666](https://github.com/ethyca/fides/pull/2666)
-* Fix error with the classify dataset feature flag not writing the dataset to the server [#2675](https://github.com/ethyca/fides/pull/2675)
-* Allow string dates to stay strings in cache decoding [#2695](https://github.com/ethyca/fides/pull/2695)
-* Admin UI
-  * Remove Identifiability (Data Qualifier) from taxonomy editor [2684](https://github.com/ethyca/fides/pull/2684)
-* FE: Custom field selections binding issue on Taxonomy tabs [#2659](https://github.com/ethyca/fides/pull/2693/)
-* Fix Privacy Request Status when submitting a consent request when identity verification is required [#2736](https://github.com/ethyca/fides/pull/2736)
+- Fix support for "redis.user" setting when authenticating to the Redis cache [#2666](https://github.com/ethyca/fides/pull/2666)
+- Fix error with the classify dataset feature flag not writing the dataset to the server [#2675](https://github.com/ethyca/fides/pull/2675)
+- Allow string dates to stay strings in cache decoding [#2695](https://github.com/ethyca/fides/pull/2695)
+- Admin UI
+  - Remove Identifiability (Data Qualifier) from taxonomy editor [2684](https://github.com/ethyca/fides/pull/2684)
+- FE: Custom field selections binding issue on Taxonomy tabs [#2659](https://github.com/ethyca/fides/pull/2693/)
+- Fix Privacy Request Status when submitting a consent request when identity verification is required [#2736](https://github.com/ethyca/fides/pull/2736)
 
 ## [2.7.1](https://github.com/ethyca/fides/compare/2.7.0...2.7.1)
 
-* Fix error with the classify dataset feature flag not writing the dataset to the server [#2675](https://github.com/ethyca/fides/pull/2675)
+- Fix error with the classify dataset feature flag not writing the dataset to the server [#2675](https://github.com/ethyca/fides/pull/2675)
 
 ## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
 
-* Fides API
-  * Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
-  * Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
-  * Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
+- Fides API
 
-* Admin UI
-  * Custom Metadata [#2536](https://github.com/ethyca/fides/pull/2536)
-    * Create Custom Lists
-    * Create Custom Field Definition
-    * Create custom fields from a the taxonomy editor
-    * Provide a custom field value in a resource
-    * Bulk edit custom field values [#2612](https://github.com/ethyca/fides/issues/2612)
-    * Custom metadata UI Polish [#2624](https://github.com/ethyca/fides/pull/2625)
-* Privacy Center
-  * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
-  * When GPC is enabled, the UI indicates which data uses are opted out by default. [#2596](https://github.com/ethyca/fides/pull/2596)
-  * `inspectForBrowserIdentities` now also looks for `ljt_readerID`. [#2543](https://github.com/ethyca/fides/pull/2543)
+  - Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
+  - Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
+  - Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
+
+- Admin UI
+
+  - Custom Metadata [#2536](https://github.com/ethyca/fides/pull/2536)
+    - Create Custom Lists
+    - Create Custom Field Definition
+    - Create custom fields from a the taxonomy editor
+    - Provide a custom field value in a resource
+    - Bulk edit custom field values [#2612](https://github.com/ethyca/fides/issues/2612)
+    - Custom metadata UI Polish [#2624](https://github.com/ethyca/fides/pull/2625)
+
+- Privacy Center
+
+  - The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
+  - When GPC is enabled, the UI indicates which data uses are opted out by default. [#2596](https://github.com/ethyca/fides/pull/2596)
+  - `inspectForBrowserIdentities` now also looks for `ljt_readerID`. [#2543](https://github.com/ethyca/fides/pull/2543)
 
 ### Added
 
-* Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
-* Added new Sovrn Email Consent Connector [#2543](https://github.com/ethyca/fides/pull/2543/)
-* Log Fides version at startup [#2566](https://github.com/ethyca/fides/pull/2566)
+- Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
+- Added new Sovrn Email Consent Connector [#2543](https://github.com/ethyca/fides/pull/2543/)
+- Log Fides version at startup [#2566](https://github.com/ethyca/fides/pull/2566)
 
 ### Changed
 
@@ -209,10 +387,10 @@ The types of changes are:
 
 ### Developer Experience
 
-* Added new Cypress E2E smoke tests [#2241](https://github.com/ethyca/fides/pull/2241)
-* New command `nox -s e2e_test` which will spin up the test environment and run true E2E Cypress tests against it [#2417](https://github.com/ethyca/fides/pull/2417)
-* Cypress E2E tests now run in CI and are reported to Cypress Cloud [#2417](https://github.com/ethyca/fides/pull/2417)
-* Change from `randomint` to `uuid` in mongodb tests to reduce flakiness. [#2591](https://github.com/ethyca/fides/pull/2591)
+- Added new Cypress E2E smoke tests [#2241](https://github.com/ethyca/fides/pull/2241)
+- New command `nox -s e2e_test` which will spin up the test environment and run true E2E Cypress tests against it [#2417](https://github.com/ethyca/fides/pull/2417)
+- Cypress E2E tests now run in CI and are reported to Cypress Cloud [#2417](https://github.com/ethyca/fides/pull/2417)
+- Change from `randomint` to `uuid` in mongodb tests to reduce flakiness. [#2591](https://github.com/ethyca/fides/pull/2591)
 
 ### Removed
 
@@ -250,7 +428,6 @@ The types of changes are:
 
 - Issue addressing missing field in dataset migration [#2510](https://github.com/ethyca/fides/pull/2510)
 
-
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 
 ### Fixed
@@ -262,26 +439,26 @@ The types of changes are:
 
 ### Added
 
-* Added the `env` option to the `security` configuration options to allow for users to completely secure the API endpoints [#2267](https://github.com/ethyca/fides/pull/2267)
-* Unified Fides Resources
-  * Added a dataset dropdown selector when configuring a connector to link an existing dataset to the connector configuration. [#2162](https://github.com/ethyca/fides/pull/2162)
-  * Added new datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
-* Add new connection config routes that couple them with systems [#2249](https://github.com/ethyca/fides/pull/2249)
-* Add new select/deselect all permissions buttons [#2437](https://github.com/ethyca/fides/pull/2437)
-* Endpoints to allow a user with the `user:password-reset` scope to reset users' passwords. In addition, users no longer require a scope to edit their own passwords. [#2373](https://github.com/ethyca/fides/pull/2373)
-* New form to reset a user's password without knowing an old password [#2390](https://github.com/ethyca/fides/pull/2390)
-* Approve & deny buttons on the "Request details" page. [#2473](https://github.com/ethyca/fides/pull/2473)
-* Consent Propagation
-  * Add the ability to execute Consent Requests via the Privacy Request Execution layer [#2125](https://github.com/ethyca/fides/pull/2125)
-  * Add a Mailchimp Transactional Consent Connector [#2194](https://github.com/ethyca/fides/pull/2194)
-  * Allow defining a list of opt-in and/or opt-out requests in consent connectors [#2315](https://github.com/ethyca/fides/pull/2315)
-  * Add a Google Analytics Consent Connector for GA4 properties [#2302](https://github.com/ethyca/fides/pull/2302)
-  * Pass the GA Cookie from the Privacy Center [#2337](https://github.com/ethyca/fides/pull/2337)
-  * Rename "user_id" to more specific "ga_client_id" [#2356](https://github.com/ethyca/fides/pull/2356)
-  * Patch Google Analytics Consent Connector to delete by client_id [#2355](https://github.com/ethyca/fides/pull/2355)
-  * Add a "skip_param_values option" to optionally skip when we are missing param values in the body [#2384](https://github.com/ethyca/fides/pull/2384)
-  * Adds a new Universal Analytics Connector that works with the UA Tracking Id
-* Adds intake and storage of Global Privacy Control Signal props for Consent [#2599](https://github.com/ethyca/fides/pull/2599)
+- Added the `env` option to the `security` configuration options to allow for users to completely secure the API endpoints [#2267](https://github.com/ethyca/fides/pull/2267)
+- Unified Fides Resources
+  - Added a dataset dropdown selector when configuring a connector to link an existing dataset to the connector configuration. [#2162](https://github.com/ethyca/fides/pull/2162)
+  - Added new datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
+- Add new connection config routes that couple them with systems [#2249](https://github.com/ethyca/fides/pull/2249)
+- Add new select/deselect all permissions buttons [#2437](https://github.com/ethyca/fides/pull/2437)
+- Endpoints to allow a user with the `user:password-reset` scope to reset users' passwords. In addition, users no longer require a scope to edit their own passwords. [#2373](https://github.com/ethyca/fides/pull/2373)
+- New form to reset a user's password without knowing an old password [#2390](https://github.com/ethyca/fides/pull/2390)
+- Approve & deny buttons on the "Request details" page. [#2473](https://github.com/ethyca/fides/pull/2473)
+- Consent Propagation
+  - Add the ability to execute Consent Requests via the Privacy Request Execution layer [#2125](https://github.com/ethyca/fides/pull/2125)
+  - Add a Mailchimp Transactional Consent Connector [#2194](https://github.com/ethyca/fides/pull/2194)
+  - Allow defining a list of opt-in and/or opt-out requests in consent connectors [#2315](https://github.com/ethyca/fides/pull/2315)
+  - Add a Google Analytics Consent Connector for GA4 properties [#2302](https://github.com/ethyca/fides/pull/2302)
+  - Pass the GA Cookie from the Privacy Center [#2337](https://github.com/ethyca/fides/pull/2337)
+  - Rename "user_id" to more specific "ga_client_id" [#2356](https://github.com/ethyca/fides/pull/2356)
+  - Patch Google Analytics Consent Connector to delete by client_id [#2355](https://github.com/ethyca/fides/pull/2355)
+  - Add a "skip_param_values option" to optionally skip when we are missing param values in the body [#2384](https://github.com/ethyca/fides/pull/2384)
+  - Adds a new Universal Analytics Connector that works with the UA Tracking Id
+- Adds intake and storage of Global Privacy Control Signal props for Consent [#2599](https://github.com/ethyca/fides/pull/2599)
 
 ### Changed
 
@@ -303,9 +480,9 @@ The types of changes are:
 
 ### Developer Experience
 
-* `nox -s test_env` has been replaced with `nox -s "fides_env(dev)"`
-* New command `nox -s "fides_env(test)"` creates a complete test environment with seed data (similar to `fides_env(dev)`) but with the production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
-* Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
+- `nox -s test_env` has been replaced with `nox -s "fides_env(dev)"`
+- New command `nox -s "fides_env(test)"` creates a complete test environment with seed data (similar to `fides_env(dev)`) but with the production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
+- Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
 
 ### Fixed
 
@@ -669,6 +846,7 @@ The types of changes are:
   - Integrate Fides Plus API into placeholder features introduced in 1.9.0. [#1194](https://github.com/ethyca/fides/pull/1194)
 
 - Fides Admin UI:
+
   - Configure Connector after creation [#1204](https://github.com/ethyca/fides/pull/1356)
 
 ### Fixed
@@ -988,7 +1166,7 @@ The types of changes are:
 
 - Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
 - Removed config/schemas page [#613](https://github.com/ethyca/fides/issues/613)
-- Dataset UI and config wizard docs added (<https://github.com/ethyca/fides/pull/697>)
+- Dataset UI and config wizard docs added ([https://github.com/ethyca/fides/pull/697](https://github.com/ethyca/fides/pull/697))
 - The fides README now walks through generating a datamap [#746](https://github.com/ethyca/fides/pull/746)
 
 ### Fixed

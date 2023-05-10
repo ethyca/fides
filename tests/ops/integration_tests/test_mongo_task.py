@@ -336,7 +336,6 @@ async def test_composite_key_erasure(
     db,
     integration_mongodb_config: ConnectionConfig,
 ) -> None:
-
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
     policy = erasure_policy("A")
     customer = Collection(
@@ -517,7 +516,6 @@ async def test_object_querying_mongo(
     integration_mongodb_config,
     integration_postgres_config,
 ):
-
     postgres_config = copy.copy(integration_postgres_config)
 
     dataset_postgres = Dataset(**example_datasets[0])
@@ -592,9 +590,6 @@ async def test_object_querying_mongo(
         "position": "Chief Strategist",
         "direct_reports": ["Robbie Margo", "Sully Hunter"],
     }
-    assert isinstance(
-        filtered_results["mongo_test:customer_details"][0]["_id"], ObjectId
-    )
 
     # Includes data retrieved from a nested field that was joined with a nested field from another table
     target_categories = {"user"}
@@ -847,26 +842,14 @@ async def test_array_querying_mongo(
     assert filtered_identifiable["mongo_test:customer_details"][0]["children"] == [
         "Erica Example"
     ]
-    assert isinstance(
-        filtered_identifiable["mongo_test:customer_details"][0]["_id"], ObjectId
-    )
     customer_detail_logs = privacy_request.execution_logs.filter_by(
         dataset_name="mongo_test", collection_name="customer_details", status="complete"
     )
     # Returns fields_affected for all possible targeted fields, even though this identity only had some
     # of them actually populated
-    # Note that order matters here!
-    assert customer_detail_logs[0].fields_affected == [
-        {
-            "path": "mongo_test:customer_details:_id",
-            "field_name": "_id",
-            "data_categories": ["user.unique_id"],
-        },
-        {
-            "path": "mongo_test:customer_details:customer_id",
-            "field_name": "customer_id",
-            "data_categories": ["user.unique_id"],
-        },
+    assert sorted(
+        customer_detail_logs[0].fields_affected, key=lambda e: e["field_name"]
+    ) == [
         {
             "path": "mongo_test:customer_details:birthday",
             "field_name": "birthday",
@@ -878,13 +861,13 @@ async def test_array_querying_mongo(
             "data_categories": ["user.childrens"],
         },
         {
-            "path": "mongo_test:customer_details:emergency_contacts.name",
-            "field_name": "emergency_contacts.name",
-            "data_categories": ["user.name"],
+            "path": "mongo_test:customer_details:customer_id",
+            "field_name": "customer_id",
+            "data_categories": ["user.unique_id"],
         },
         {
-            "path": "mongo_test:customer_details:workplace_info.direct_reports",
-            "field_name": "workplace_info.direct_reports",
+            "path": "mongo_test:customer_details:emergency_contacts.name",
+            "field_name": "emergency_contacts.name",
             "data_categories": ["user.name"],
         },
         {
@@ -896,6 +879,11 @@ async def test_array_querying_mongo(
             "path": "mongo_test:customer_details:gender",
             "field_name": "gender",
             "data_categories": ["user.gender"],
+        },
+        {
+            "path": "mongo_test:customer_details:workplace_info.direct_reports",
+            "field_name": "workplace_info.direct_reports",
+            "data_categories": ["user.name"],
         },
         {
             "path": "mongo_test:customer_details:workplace_info.position",

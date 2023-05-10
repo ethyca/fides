@@ -1,7 +1,8 @@
-import { Config } from "~/types/config";
+import { LegacyConfig } from "~/types/config";
 import minimalJson from "~/config/examples/minimal.json";
 import basicJson from "~/config/examples/basic.json";
 import fullJson from "~/config/examples/full.json";
+import v2ConsentJson from "~/config/examples/v2Consent.json";
 
 describe("The Config type", () => {
   /**
@@ -16,12 +17,14 @@ describe("The Config type", () => {
    * Discussion: https://github.com/ethyca/fides/discussions/2392
    */
   it("is backwards-compatible with old JSON files", () => {
-    const minimalTyped: Config = minimalJson;
-    const basicTyped: Config = basicJson;
-    const fullTyped: Config = fullJson;
+    const minimalTyped: LegacyConfig = minimalJson;
+    const basicTyped: LegacyConfig = basicJson;
+    const fullTyped: LegacyConfig = fullJson;
+    const v2ConsentObject: LegacyConfig = v2ConsentJson;
 
     expect(minimalTyped).toBeDefined();
     expect(basicTyped).toBeDefined();
     expect(fullTyped).toBeDefined();
+    expect(v2ConsentObject).toBeDefined();
   });
 });

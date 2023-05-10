@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ops.db import session
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -17,7 +18,6 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.lib.db import session
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 from tests.ops.test_helpers.vault_client import get_secrets
 
@@ -186,7 +186,6 @@ def fullstory_postgres_db(postgres_integration_session):
 
 
 class FullstoryTestClient:
-
     headers: object = {}
     base_url: str = ""
 
@@ -198,7 +197,6 @@ class FullstoryTestClient:
         self.base_url = f"https://{fullstory_secrets['domain']}"
 
     def get_user(self, user_id: str) -> requests.Response:
-
         user_response: requests.Response = requests.get(
             url=f"{self.base_url}/users/v1/individual/{user_id}", headers=self.headers
         )

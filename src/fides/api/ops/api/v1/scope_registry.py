@@ -16,17 +16,18 @@ CLIENT = "client"
 CONFIG = "config"
 CONNECTION = "connection"
 CONNECTION_TYPE = "connection_type"
+CONNECTOR_TEMPLATE = "connector_template"
 CONSENT = "consent"
 CREATE = "create"
 CREATE_OR_UPDATE = "create_or_update"
 CTL_DATASET = "ctl_dataset"
 CTL_POLICY = "ctl_policy"
+CURRENT_PRIVACY_PREFERENCE = "current-privacy-preference"
 DATABASE = "database"
 DATA_CATEGORY = "data_category"
 DATA_QUALIFIER = "data_qualifier"
 DATA_SUBJECT = "data_subject"
 DATA_USE = "data_use"
-DATAMAP = "datamap"
 DATASET = "dataset"
 DELETE = "delete"
 ENCRYPTION = "encryption"
@@ -35,13 +36,18 @@ EXEC = "exec"
 FIDES_TAXONOMY = "fides_taxonomy"
 GENERATE = "generate"
 INSTANTIATE = "instantiate"
+MASKING = "masking"
 MESSAGING = "messaging"
 ORGANIZATION = "organization"
 PASSWORD_RESET = "password-reset"
 POLICY = "policy"
+PRIVACY_EXPERIENCE = "privacy-experience"
+PRIVACY_NOTICE = "privacy-notice"
+PRIVACY_PREFERENCE_HISTORY = "privacy-preference-history"
 PRIVACY_REQUEST = "privacy-request"
 PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
+REGISTER = "register"
 REGISTRY = "registry"
 RESET = "reset"
 RESUME = "resume"
@@ -96,6 +102,8 @@ CTL_POLICY_READ = f"{CTL_POLICY}:{READ}"
 CTL_POLICY_UPDATE = f"{CTL_POLICY}:{UPDATE}"
 CTL_POLICY_DELETE = f"{CTL_POLICY}:{DELETE}"
 
+CURRENT_PRIVACY_PREFERENCE_READ = f"{CURRENT_PRIVACY_PREFERENCE}:{READ}"
+
 DATABASE_RESET = f"{DATABASE}:{RESET}"
 
 DATA_CATEGORY_CREATE = f"{DATA_CATEGORY}:{CREATE}"
@@ -118,8 +126,6 @@ DATA_USE_READ = f"{DATA_USE}:{READ}"
 DATA_USE_UPDATE = f"{DATA_USE}:{UPDATE}"
 DATA_USE_DELETE = f"{DATA_USE}:{DELETE}"
 
-DATAMAP_READ = f"{DATAMAP}:{READ}"
-
 DATASET_CREATE_OR_UPDATE = f"{DATASET}:{CREATE_OR_UPDATE}"
 DATASET_DELETE = f"{DATASET}:{DELETE}"
 DATASET_READ = f"{DATASET}:{READ}"
@@ -135,6 +141,9 @@ FIDES_TAXONOMY_UPDATE = f"{FIDES_TAXONOMY}:{UPDATE}"
 
 GENERATE_EXEC = f"{GENERATE}:{EXEC}"
 
+MASKING_EXEC = f"{MASKING}:{EXEC}"
+MASKING_READ = f"{MASKING}:{READ}"
+
 MESSAGING_CREATE_OR_UPDATE = f"{MESSAGING}:{CREATE_OR_UPDATE}"
 MESSAGING_DELETE = f"{MESSAGING}:{DELETE}"
 MESSAGING_READ = f"{MESSAGING}:{READ}"
@@ -147,6 +156,16 @@ ORGANIZATION_DELETE = f"{ORGANIZATION}:{DELETE}"
 POLICY_CREATE_OR_UPDATE = f"{POLICY}:{CREATE_OR_UPDATE}"
 POLICY_DELETE = f"{POLICY}:{DELETE}"
 POLICY_READ = f"{POLICY}:{READ}"
+
+PRIVACY_EXPERIENCE_CREATE = f"{PRIVACY_EXPERIENCE}:{CREATE}"
+PRIVACY_EXPERIENCE_UPDATE = f"{PRIVACY_EXPERIENCE}:{UPDATE}"
+PRIVACY_EXPERIENCE_READ = f"{PRIVACY_EXPERIENCE}:{READ}"
+
+PRIVACY_NOTICE_CREATE = f"{PRIVACY_NOTICE}:{CREATE}"
+PRIVACY_NOTICE_UPDATE = f"{PRIVACY_NOTICE}:{UPDATE}"
+PRIVACY_NOTICE_READ = f"{PRIVACY_NOTICE}:{READ}"
+
+PRIVACY_PREFERENCE_HISTORY_READ = f"{PRIVACY_PREFERENCE_HISTORY}:{READ}"
 
 PRIVACY_REQUEST_CALLBACK_RESUME = f"{PRIVACY_REQUEST}:{RESUME}"  # User has permission to restart a paused privacy request
 PRIVACY_REQUEST_CREATE = f"{PRIVACY_REQUEST}:{CREATE}"
@@ -175,6 +194,7 @@ SAAS_CONFIG_DELETE = f"{SAAS_CONFIG}:{DELETE}"
 SAAS_CONFIG_READ = f"{SAAS_CONFIG}:{READ}"
 
 SAAS_CONNECTION_INSTANTIATE = f"{CONNECTION}:{INSTANTIATE}"
+CONNECTOR_TEMPLATE_REGISTER = f"{CONNECTOR_TEMPLATE}:{REGISTER}"
 
 SCOPE_READ = f"{SCOPE}:{READ}"
 
@@ -229,6 +249,7 @@ SCOPE_DOCS = {
     CONNECTION_READ: "View connections",
     CONNECTION_AUTHORIZE: "OAuth2 Authorization",
     CONNECTION_TYPE_READ: "View types of connections",
+    CONNECTOR_TEMPLATE_REGISTER: "Register a connector template",
     CONSENT_READ: "Read consent preferences",
     CTL_DATASET_CREATE: "Create a ctl dataset",
     CTL_DATASET_READ: "Read ctl datasets",
@@ -238,6 +259,7 @@ SCOPE_DOCS = {
     CTL_POLICY_READ: "Read ctl policies",
     CTL_POLICY_DELETE: "Delete a ctl policy",
     CTL_POLICY_UPDATE: "Update ctl policies",
+    CURRENT_PRIVACY_PREFERENCE_READ: "Read the current privacy preferences of all users",
     DATABASE_RESET: "Reset the application database",
     DATA_CATEGORY_CREATE: "Create a data category",
     DATA_CATEGORY_DELETE: "Delete data categories",
@@ -255,7 +277,6 @@ SCOPE_DOCS = {
     DATA_USE_READ: "Read data uses",
     DATA_USE_DELETE: "Delete data uses",
     DATA_USE_UPDATE: "Update data uses",
-    DATAMAP_READ: "Read systems on the datamap",
     DATASET_CREATE_OR_UPDATE: "Create or modify datasets",
     DATASET_DELETE: "Delete datasets",
     DATASET_READ: "View datasets",
@@ -266,6 +287,8 @@ SCOPE_DOCS = {
     EVALUATION_UPDATE: "Update evaluations",
     FIDES_TAXONOMY_UPDATE: "Update default fides taxonomy description",
     GENERATE_EXEC: "",
+    MASKING_EXEC: "Execute a masking strategy",
+    MASKING_READ: "Read masking strategies",
     MESSAGING_CREATE_OR_UPDATE: "",
     MESSAGING_DELETE: "",
     MESSAGING_READ: "",
@@ -276,6 +299,13 @@ SCOPE_DOCS = {
     POLICY_CREATE_OR_UPDATE: "Create or modify policies",
     POLICY_DELETE: "Remove policies",
     POLICY_READ: "View policies",
+    PRIVACY_EXPERIENCE_CREATE: "Create privacy experiences",
+    PRIVACY_EXPERIENCE_UPDATE: "Update privacy experiences",
+    PRIVACY_EXPERIENCE_READ: "View privacy experiences",
+    PRIVACY_NOTICE_CREATE: "Create privacy notices",
+    PRIVACY_NOTICE_UPDATE: "Update privacy notices",
+    PRIVACY_NOTICE_READ: "View privacy notices",
+    PRIVACY_PREFERENCE_HISTORY_READ: "Read the history of all saved privacy preferences",
     PRIVACY_REQUEST_CREATE: "",
     PRIVACY_REQUEST_CALLBACK_RESUME: "Restart paused privacy requests",
     PRIVACY_REQUEST_DELETE: "Remove privacy requests",
@@ -293,9 +323,9 @@ SCOPE_DOCS = {
     RULE_CREATE_OR_UPDATE: "Create or update rules",
     RULE_DELETE: "Remove rules",
     RULE_READ: "View rules",
-    SAAS_CONFIG_CREATE_OR_UPDATE: "Create or update SAAS configurations",
-    SAAS_CONFIG_DELETE: "Remove SAAS configurations",
-    SAAS_CONFIG_READ: "View SAAS configurations",
+    SAAS_CONFIG_CREATE_OR_UPDATE: "Create or update SaaS configurations",
+    SAAS_CONFIG_DELETE: "Remove SaaS configurations",
+    SAAS_CONFIG_READ: "View SaaS configurations",
     SAAS_CONNECTION_INSTANTIATE: "",
     SCOPE_READ: "View authorization scopes",
     STORAGE_CREATE_OR_UPDATE: "Create or update storage",

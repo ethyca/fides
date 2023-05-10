@@ -50,9 +50,17 @@ from fides.api.ops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
 )
+from fides.api.ops.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
+    JWE_PAYLOAD_SCOPES,
+)
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.application_config import ApplicationConfig
+from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.policy import ActionType, CurrentStep, Policy
@@ -65,6 +73,8 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequestNotifications,
     PrivacyRequestStatus,
 )
+from fides.api.ops.oauth.jwt import generate_jwe
+from fides.api.ops.oauth.roles import APPROVER, VIEWER
 from fides.api.ops.schemas.dataset import DryRunDatasetResponse
 from fides.api.ops.schemas.masking.masking_secrets import SecretType
 from fides.api.ops.schemas.messaging.messaging import (
@@ -84,16 +94,6 @@ from fides.api.ops.util.cache import (
     get_masking_secret_cache_key,
 )
 from fides.core.config import CONFIG
-from fides.lib.cryptography.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_ROLES,
-    JWE_PAYLOAD_SCOPES,
-)
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
-from fides.lib.models.client import ClientDetail
-from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.roles import APPROVER, VIEWER
 
 page_size = Params().size
 
@@ -820,6 +820,30 @@ class TestGetPrivacyRequests:
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
         assert resp["items"][0].get("identity") is None
 
+    def test_filter_privacy_requests_by_action(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request,
+        executable_consent_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url + f"?action_type=access", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+
+        response = api_client.get(url + f"?action_type=consent", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+
+        response = api_client.get(url + f"?action_type=erasure", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 0
+
     def test_filter_privacy_requests_by_status(
         self,
         api_client: TestClient,
@@ -1293,6 +1317,7 @@ class TestGetPrivacyRequests:
             "phone_number": TEST_PHONE,
             "ga_client_id": None,
             "ljt_readerID": None,
+            "fides_user_device_id": None,
         }
         assert first_row["Request Type"] == "access"
         assert first_row["Status"] == "approved"

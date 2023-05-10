@@ -1,5 +1,5 @@
 # If you update this, also update `DEFAULT_PYTHON_VERSION` in the GitHub workflow files
-ARG PYTHON_VERSION="3.10.7"
+ARG PYTHON_VERSION="3.10.11"
 
 
 #########################
@@ -93,23 +93,54 @@ RUN pip install -e . --no-deps
 ###################
 ## Frontend Base ##
 ###################
-FROM node:16-slim as frontend
+FROM node:16-alpine as frontend
 
-# Build the admin-ui frontend
-WORKDIR /fides/clients/admin-ui
-COPY clients/admin-ui/package.json clients/admin-ui/package-lock.json ./
+RUN apk add --no-cache libc6-compat
+# Build the frontend clients
+WORKDIR /fides/clients
+COPY clients/package.json clients/package-lock.json ./
+COPY clients/fides-js/package.json ./fides-js/package.json
+COPY clients/admin-ui/package.json ./admin-ui/package.json
+COPY clients/privacy-center/package.json ./privacy-center/package.json
+
 RUN npm install
-COPY clients/admin-ui/ .
+
+COPY clients/ .
 
 ####################
 ## Built frontend ##
 ####################
 FROM frontend as built_frontend
-RUN npm run export
 
-#############################
+# Builds and exports admin-ui
+RUN npm run export-admin-ui
+# Builds privacy-center
+RUN npm run build-privacy-center
+
+###############################
+## Production Privacy Center ##
+###############################
+FROM node:16-alpine as prod_pc
+
+WORKDIR /fides/clients
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+USER nextjs
+
+COPY --from=built_frontend --chown=nextjs:nodejs /fides/clients .
+WORKDIR /fides/clients/privacy-center
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start"]
+
+############################
 ## Production Application ##
-#############################
+############################
 FROM backend as prod
 
 # Copy frontend build over

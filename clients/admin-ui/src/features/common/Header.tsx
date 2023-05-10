@@ -14,27 +14,26 @@ import {
 } from "@fidesui/react";
 import NextLink from "next/link";
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
 
 import logoImage from "~/../public/logo.svg";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { INDEX_ROUTE } from "~/constants";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
 
 const useHeader = () => {
-  const { username } = useSelector(selectUser) ?? { username: "" };
+  const { username } = useAppSelector(selectUser) ?? { username: "" };
   return { username };
 };
 
 const Header: React.FC = () => {
   const { username } = useHeader();
   const [logoutMutation] = useLogoutMutation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const handleLogout = async () => {
-    logoutMutation({})
-      .unwrap()
-      .then(() => dispatch(logout()));
+    await logoutMutation({});
+    dispatch(logout());
   };
 
   return (
@@ -55,7 +54,7 @@ const Header: React.FC = () => {
         </Link>
       </NextLink>
       <Flex alignItems="center">
-        <Link href="https://ethyca.github.io/fides/" isExternal>
+        <Link href="https://docs.ethyca.com" isExternal>
           <Button size="sm" variant="ghost">
             <QuestionIcon color="gray.700" boxSize={4} />
           </Button>

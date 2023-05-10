@@ -14,12 +14,12 @@ from fides.api.ops.schemas.privacy_request import (
     PrivacyRequestResponse,
 )
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.user import UserLogin
 from fides.api.ops.service.privacy_request.request_service import (
     poll_server_for_completion,
 )
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.wrappers import sync
-from fides.lib.oauth.schemas.user import UserLogin
 
 COMPLETION_STATUSES = [
     PrivacyRequestStatus.complete,
@@ -85,7 +85,6 @@ class FidesClient:
         data: Optional[Any] = None,
         json: Optional[Any] = None,
     ) -> Request:
-
         if not self.token:
             raise FidesError(
                 f"Unable to create authenticated request. No token for Fides connector for server {self.uri}"

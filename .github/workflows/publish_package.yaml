@@ -27,13 +27,13 @@ jobs:
 
       - name: Install node modules
         run: |
-          cd clients/admin-ui
+          cd clients
           npm install
 
       - name: Build and export frontend files
         run: |
-          cd clients/admin-ui
-          npm run prod-export
+          cd clients
+          npm run prod-export-admin-ui
 
       - name: Install Twine and wheel
         run: pip install twine wheel
@@ -48,10 +48,15 @@ jobs:
       - name: Build the wheel
         run: python setup.py bdist_wheel
 
+      # If the tag matches either a release tag or a beta tag, allow publishing to PyPi, e.g.:
+      #   2.10.0 --> match (production release tag)
+      #   2.10.0b1 --> match (beta release tag, used on main)
+      #   2.10.0.a0 --> no match (alpha tag, used on feature branches)
+      #   2.10.0.dev0 --> no match (arbitrary development tag)
       - name: Check Prod Tag
         id: check-tag
         run: |
-          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+(b[0-9]*)?$ ]]; then
               echo ::set-output name=match::true
           fi
 

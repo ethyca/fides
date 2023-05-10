@@ -6,6 +6,8 @@ import requests
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ops.cryptography import cryptographic_util
+from fides.api.ops.db import session
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -16,8 +18,6 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.lib.cryptography import cryptographic_util
-from fides.lib.db import session
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("outreach")
@@ -120,7 +120,6 @@ def outreach_dataset_config(
 def outreach_create_erasure_data(
     outreach_connection_config: ConnectionConfig, outreach_erasure_identity_email: str
 ) -> None:
-
     outreach_secrets = outreach_connection_config.secrets
     base_url = f"https://{outreach_secrets['domain']}"
     headers = {

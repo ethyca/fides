@@ -1,0 +1,15 @@
+{
+  "title": "Error Config",
+  "description": "This Privacy Center config tests error-handling - it's invalid!",
+  "unsupported_type": "Unsupported",
+  "logo_path": "/logo.svg",
+  "includeConsent": "maybe",
+  "consent": {
+    "button": {
+      "name": "Not really a thing"
+    },
+    "page": {
+      "consentOptions": "This should be an array!"
+    }
+  }
+}

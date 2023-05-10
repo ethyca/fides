@@ -1,0 +1,21 @@
+{
+  "disabled": false,
+  "component": "overlay",
+  "delivery_mechanism": "link",
+  "regions": ["eu_de"],
+  "component_title": null,
+  "component_description": null,
+  "banner_title": null,
+  "banner_description": null,
+  "link_label": null,
+  "confirmation_button_label": null,
+  "reject_button_label": null,
+  "acknowledgement_button_label": null,
+  "id": "pri_4076d6dd-a728-4f2d-9a5c-98f35d7a5a86",
+  "created_at": "2023-05-02T15:32:41.253621+00:00",
+  "updated_at": "2023-05-02T15:32:41.253621+00:00",
+  "version": 1.0,
+  "privacy_experience_history_id": "pri_fa40ddc5-ba8d-4efe-b83f-643b2595b191",
+  "privacy_experience_template_id": null,
+  "privacy_notices": []
+}

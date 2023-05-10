@@ -1,12 +1,12 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
-import { ADD_SYSTEMS_ROUTE } from "~/constants";
+import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
 
 describe("Config Wizard", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
-      fixture: "organization.json",
+      fixture: "organizations/default_organization.json",
     }).as("getOrganization");
   });
 

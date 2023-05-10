@@ -9,7 +9,8 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import yaml
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
-from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.ops.common_exceptions import FidesopsException, ValidationError
+from fides.api.ops.cryptography.cryptographic_util import bytes_to_b64_str
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
@@ -20,7 +21,6 @@ from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.core.config.helpers import load_file
-from fides.lib.cryptography.cryptographic_util import bytes_to_b64_str
 
 FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
 PRIVACY_REQUEST_ID = "privacy_request_id"
@@ -43,7 +43,18 @@ def load_config(filename: str) -> Dict:
 
 def load_config_from_string(string: str) -> Dict:
     """Loads the SaaS config dict from the yaml string"""
-    return yaml.safe_load(string).get("saas_config", [])
+    try:
+        return yaml.safe_load(string)["saas_config"]
+    except:
+        raise ValidationError(
+            "Config contents do not contain a 'saas_config' key at the root level."
+        )
+
+
+def load_as_string(filename: str) -> str:
+    file_path = load_file([filename])
+    with open(file_path, "r", encoding="utf-8") as file:
+        return file.read()
 
 
 def replace_config_placeholders(
@@ -73,7 +84,12 @@ def load_datasets(filename: str) -> Dict:
 
 def load_dataset_from_string(string: str) -> Dict:
     """Loads the dataset dict from the yaml string"""
-    return yaml.safe_load(string).get("dataset", [])[0]
+    try:
+        return yaml.safe_load(string)["dataset"][0]
+    except:
+        raise ValidationError(
+            "Dataset contents do not contain a 'dataset' key at the root level."
+        )
 
 
 def replace_dataset_placeholders(
@@ -369,3 +385,14 @@ def to_pascal_case(s: str) -> str:
     s = s.title()
     s = s.replace("_", "")
     return s
+
+
+def replace_version(saas_config: str, new_version: str) -> str:
+    """
+    Replace the version number in the given saas_config string with the provided new_version.
+    """
+    version_pattern = r"version:\s*[\d\.]+"
+    updated_config = re.sub(
+        version_pattern, f"version: {new_version}", saas_config, count=1
+    )
+    return updated_config

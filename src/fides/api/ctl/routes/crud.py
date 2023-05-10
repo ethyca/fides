@@ -40,8 +40,8 @@ from fides.api.ctl.sql_models import (
 from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api.v1.scope_registry import CREATE, DELETE, READ, UPDATE
+from fides.api.ops.oauth.utils import verify_oauth_client_prod
 from fides.api.ops.schemas.dataset import validate_data_categories_against_db
-from fides.api.ops.util.oauth_util import verify_oauth_client_cli
 
 
 async def get_data_categories_from_db(async_session: AsyncSession) -> List[FidesKey]:
@@ -78,97 +78,97 @@ for model_type, fides_model in model_map.items():
         prefix=f"{API_PREFIX}/{model_type}",
     )
 
-    @router.post(
-        "/",
-        response_model=fides_model,
-        status_code=status.HTTP_201_CREATED,
-        dependencies=[
-            Security(
-                verify_oauth_client_cli,
-                scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{CREATE}"],
-            )
-        ],
-        responses={
-            status.HTTP_403_FORBIDDEN: {
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "detail": {
-                                "error": "user does not have permission to modify this resource",
-                                "resource_type": model_type,
-                                "fides_key": "example.key",
+    if (
+        model_type != "system"
+    ):  # System endpoints defined separately in /routes/system.py
+
+        @router.post(
+            "/",
+            response_model=fides_model,
+            status_code=status.HTTP_201_CREATED,
+            dependencies=[
+                Security(
+                    verify_oauth_client_prod,
+                    scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{CREATE}"],
+                )
+            ],
+            responses={
+                status.HTTP_403_FORBIDDEN: {
+                    "content": {
+                        "application/json": {
+                            "example": {
+                                "detail": {
+                                    "error": "user does not have permission to modify this resource",
+                                    "resource_type": model_type,
+                                    "fides_key": "example.key",
+                                }
                             }
                         }
                     }
-                }
+                },
             },
-        },
-    )
-    async def create(
-        resource: fides_model,
-        resource_type: str = get_resource_type(router),
-        db: AsyncSession = Depends(get_async_db),
-    ) -> Dict:
-        """
-        Create a resource.
+        )
+        async def create(
+            resource: fides_model,
+            resource_type: str = get_resource_type(router),
+            db: AsyncSession = Depends(get_async_db),
+        ) -> Dict:
+            """
+            Create a resource.
 
-        Payloads with an is_default field can only be set to False,
-        will return a `403 Forbidden`.
-        """
-        sql_model = sql_model_map[resource_type]
-        await validate_data_categories(resource, db)
-        if sql_model in models_with_default_field and resource.is_default:
-            raise errors.ForbiddenError(resource_type, resource.fides_key)
-        return await create_resource(sql_model, resource.dict(), db)
+            Payloads with an is_default field can only be set to False,
+            will return a `403 Forbidden`.
+            """
+            sql_model = sql_model_map[resource_type]
+            await validate_data_categories(resource, db)
+            if sql_model in models_with_default_field and resource.is_default:
+                raise errors.ForbiddenError(resource_type, resource.fides_key)
+            return await create_resource(sql_model, resource.dict(), db)
 
-    @router.get(
-        "/",
-        dependencies=[
-            Security(
-                verify_oauth_client_cli,
-                scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
-            )
-        ],
-        response_model=List[fides_model],
-        name="List",
-    )
-    async def ls(  # pylint: disable=invalid-name
-        resource_type: str = get_resource_type(router),
-        db: AsyncSession = Depends(get_async_db),
-    ) -> List:
-        """Get a list of all of the resources of this type."""
-        sql_model = sql_model_map[resource_type]
-        return await list_resource(sql_model, db)
+        @router.get(
+            "/",
+            dependencies=[
+                Security(
+                    verify_oauth_client_prod,
+                    scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
+                )
+            ],
+            response_model=List[fides_model],
+            name="List",
+        )
+        async def ls(  # pylint: disable=invalid-name
+            resource_type: str = get_resource_type(router),
+            db: AsyncSession = Depends(get_async_db),
+        ) -> List:
+            """Get a list of all of the resources of this type."""
+            sql_model = sql_model_map[resource_type]
+            return await list_resource(sql_model, db)
 
-    @router.get(
-        "/{fides_key}",
-        dependencies=[
-            Security(
-                verify_oauth_client_cli,
-                scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
-            )
-        ],
-        response_model=fides_model,
-    )
-    async def get(
-        fides_key: str,
-        resource_type: str = get_resource_type(router),
-        db: AsyncSession = Depends(get_async_db),
-    ) -> Dict:
-        """Get a resource by its fides_key."""
-        sql_model = sql_model_map[resource_type]
-        return await get_resource_with_custom_fields(sql_model, fides_key, db)
-
-    if (
-        model_type != "system"
-    ):  # System Update endpoint defined separately in /routes/system.py
+        @router.get(
+            "/{fides_key}",
+            dependencies=[
+                Security(
+                    verify_oauth_client_prod,
+                    scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
+                )
+            ],
+            response_model=fides_model,
+        )
+        async def get(
+            fides_key: str,
+            resource_type: str = get_resource_type(router),
+            db: AsyncSession = Depends(get_async_db),
+        ) -> Dict:
+            """Get a resource by its fides_key."""
+            sql_model = sql_model_map[resource_type]
+            return await get_resource_with_custom_fields(sql_model, fides_key, db)
 
         @router.put(
             "/",
             response_model=fides_model,
             dependencies=[
                 Security(
-                    verify_oauth_client_cli,
+                    verify_oauth_client_prod,
                     scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{UPDATE}"],
                 )
             ],
@@ -206,98 +206,94 @@ for model_type, fides_model in model_map.items():
             )
             return await update_resource(sql_model, resource.dict(), db)
 
-    @router.post(
-        "/upsert",
-        dependencies=[
-            Security(
-                verify_oauth_client_cli,
-                scopes=[
-                    f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{CREATE}",
-                    f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{UPDATE}",
-                ],
-            )
-        ],
-        responses={
-            status.HTTP_200_OK: {
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "message": f"Upserted 3 {model_type}(s)",
-                            "inserted": 0,
-                            "updated": 3,
-                        }
-                    }
-                }
-            },
-            status.HTTP_201_CREATED: {
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "message": f"Upserted 3 {model_type}(s)",
-                            "inserted": 1,
-                            "updated": 2,
-                        }
-                    }
-                }
-            },
-            status.HTTP_403_FORBIDDEN: {
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "detail": {
-                                "error": "user does not have permission to modify this resource",
-                                "resource_type": "DataCategory",
-                                "fides_key": "example.key",
+        @router.post(
+            "/upsert",
+            dependencies=[
+                Security(
+                    verify_oauth_client_prod,
+                    scopes=[
+                        f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{CREATE}",
+                        f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{UPDATE}",
+                    ],
+                )
+            ],
+            responses={
+                status.HTTP_200_OK: {
+                    "content": {
+                        "application/json": {
+                            "example": {
+                                "message": f"Upserted 3 {model_type}(s)",
+                                "inserted": 0,
+                                "updated": 3,
                             }
                         }
                     }
-                }
+                },
+                status.HTTP_201_CREATED: {
+                    "content": {
+                        "application/json": {
+                            "example": {
+                                "message": f"Upserted 3 {model_type}(s)",
+                                "inserted": 1,
+                                "updated": 2,
+                            }
+                        }
+                    }
+                },
+                status.HTTP_403_FORBIDDEN: {
+                    "content": {
+                        "application/json": {
+                            "example": {
+                                "detail": {
+                                    "error": "user does not have permission to modify this resource",
+                                    "resource_type": "DataCategory",
+                                    "fides_key": "example.key",
+                                }
+                            }
+                        }
+                    }
+                },
             },
-        },
-    )
-    async def upsert(
-        resources: List[fides_model],
-        response: Response,
-        resource_type: str = get_resource_type(router),
-        db: AsyncSession = Depends(get_async_db),
-    ) -> Dict:
-        """
-        For any resource in `resources` that already exists in the database,
-        update the resource by its `fides_key`. Otherwise, create a new resource.
-
-        Responds with a `201 Created` if even a single resource in `resources`
-        did not previously exist. Otherwise, responds with a `200 OK`.
-
-        The `is_default` field cannot be updated and will respond
-        with a `403 Forbidden` if attempted.
-        """
-
-        sql_model = sql_model_map[resource_type]
-        resource_dicts = [resource.dict() for resource in resources]
-        for resource in resources:
-            await validate_data_categories(resource, db)
-
-        await forbid_if_editing_any_is_default(sql_model, resource_dicts, db)
-        result = await upsert_resources(sql_model, resource_dicts, db)
-        response.status_code = (
-            status.HTTP_201_CREATED if result[0] > 0 else response.status_code
         )
+        async def upsert(
+            resources: List[fides_model],
+            response: Response,
+            resource_type: str = get_resource_type(router),
+            db: AsyncSession = Depends(get_async_db),
+        ) -> Dict:
+            """
+            For any resource in `resources` that already exists in the database,
+            update the resource by its `fides_key`. Otherwise, create a new resource.
 
-        return {
-            "message": f"Upserted {len(resources)} {sql_model.__name__}(s)",
-            "inserted": result[0],
-            "updated": result[1],
-        }
+            Responds with a `201 Created` if even a single resource in `resources`
+            did not previously exist. Otherwise, responds with a `200 OK`.
 
-    if (
-        model_type != "system"
-    ):  # System Delete endpoint defined separately in /routes/system.py
+            The `is_default` field cannot be updated and will respond
+            with a `403 Forbidden` if attempted.
+            """
+
+            sql_model = sql_model_map[resource_type]
+            resource_dicts = [resource.dict() for resource in resources]
+            for resource in resources:
+                await validate_data_categories(resource, db)
+
+            await forbid_if_editing_any_is_default(sql_model, resource_dicts, db)
+            result = await upsert_resources(sql_model, resource_dicts, db)
+            response.status_code = (
+                status.HTTP_201_CREATED if result[0] > 0 else response.status_code
+            )
+
+            return {
+                "message": f"Upserted {len(resources)} {sql_model.__name__}(s)",
+                "inserted": result[0],
+                "updated": result[1],
+            }
 
         @router.delete(
             "/{fides_key}",
             dependencies=[
                 Security(
-                    verify_oauth_client_cli,
+                    verify_oauth_client_prod,
                     scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{DELETE}"],
                 )
             ],

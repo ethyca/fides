@@ -8,6 +8,7 @@ from requests.auth import HTTPBasicAuth
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ops.cryptography import cryptographic_util
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -18,7 +19,6 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.lib.cryptography import cryptographic_util
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
@@ -118,7 +118,6 @@ def jira_dataset_config(
 def jira_create_erasure_data(
     jira_connection_config: ConnectionConfig, jira_erasure_identity_email: str
 ) -> None:
-
     jira_secrets = jira_connection_config.secrets
     base_url = f"https://{jira_secrets['domain']}"
 

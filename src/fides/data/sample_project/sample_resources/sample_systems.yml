@@ -13,8 +13,7 @@ system:
       progress: Complete
       link: https://example.org/cookie_house_dpia
     privacy_declarations:
-      - name: Analyze customer behaviour for improvements.
-        data_categories:
+      - data_categories:
           - user.contact
           - user.device.cookie_id
         data_use: improve.system
@@ -31,8 +30,7 @@ system:
     system_dependencies:
     - cookie_house
     privacy_declarations:
-      - name: Store data about customer orders
-        data_categories:
+      - data_categories:
           - user.contact
           - user.financial
         data_use: provide.service
@@ -51,8 +49,7 @@ system:
     system_dependencies:
     - cookie_house
     privacy_declarations:
-      - name: Collect detailed data for marketing
-        data_categories:
+      - data_categories:
           - user.contact
         data_use: advertising.first_party
         data_subjects:
@@ -70,8 +67,7 @@ system:
     system_dependencies:
     - cookie_house_mongo
     privacy_declarations:
-      - name: Collect data for marketing
-        data_categories:
+      - data_categories:
           - user.device.cookie_id
         data_use: advertising.first_party
         data_subjects:

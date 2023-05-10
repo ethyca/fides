@@ -6,6 +6,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ops.db import session
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -19,7 +20,6 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.lib.db import session
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("mailchimp_transactional")
@@ -127,3 +127,24 @@ def reset_mailchimp_transactional_data(
     assert (
         body["email"] == mailchimp_transactional_identity_email
     ), "Identity has been added to allowlist"
+
+
+@pytest.fixture(scope="function")
+def mailchimp_transactional_connection_config_no_secrets(
+    db: session, mailchimp_transactional_config
+) -> Generator:
+    """This test connector cannot not be used to make live requests"""
+    fides_key = mailchimp_transactional_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": {"api_key": "test"},
+            "saas_config": mailchimp_transactional_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)

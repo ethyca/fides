@@ -63,7 +63,6 @@ class TestFidesConnectorUnit:
         fides_connector_example_test_dataset_config: DatasetConfig,
         db,
     ):
-
         datasets = filter_fides_connector_datasets(ConnectionConfig.all(db=db))
         assert len(datasets) == 1
         assert (

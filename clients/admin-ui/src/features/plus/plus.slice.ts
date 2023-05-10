@@ -1,9 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { addCommonHeaders } from "common/CommonHeaders";
 
 import type { RootState } from "~/app/store";
-import { selectToken } from "~/features/auth";
+import { baseApi } from "~/features/common/api.slice";
 import {
   selectActiveCollection,
   selectActiveDatasetFidesKey,
@@ -42,28 +40,10 @@ interface ClassifyInstancesParams {
   resource_type: GenerateTypes;
 }
 
-export const plusApi = createApi({
-  reducerPath: "plusApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`,
-    prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
-      addCommonHeaders(headers, token);
-      return headers;
-    },
-  }),
-  tagTypes: [
-    "AllowList",
-    "ClassifyInstancesDatasets",
-    "ClassifyInstancesSystems",
-    "CustomFieldDefinition",
-    "CustomFields",
-    "LatestScan",
-    "Plus",
-  ],
+const plusApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<HealthCheck, void>({
-      query: () => "health",
+      query: () => "plus/health",
     }),
     /**
      * Fidescls endpoints:
@@ -73,11 +53,11 @@ export const plusApi = createApi({
       ClassifyRequestPayload
     >({
       query: (body) => ({
-        url: `classify/`,
+        url: `plus/classify/`,
         method: "POST",
         body,
       }),
-      invalidatesTags: ["ClassifyInstancesDatasets"],
+      invalidatesTags: ["Classify Instances Datasets"],
     }),
     updateClassifyInstance: build.mutation<
       void,
@@ -87,7 +67,7 @@ export const plusApi = createApi({
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { resource_type = GenerateTypes.DATASETS, ...body } = payload;
         return {
-          url: `classify/`,
+          url: `plus/classify/`,
           method: "PUT",
           params: { resource_type },
           body,
@@ -95,9 +75,9 @@ export const plusApi = createApi({
       },
       invalidatesTags: (response, errors, args) => {
         if (args.resource_type === GenerateTypes.SYSTEMS) {
-          return ["ClassifyInstancesSystems"];
+          return ["Classify Instances Systems"];
         }
-        return ["ClassifyInstancesDatasets"];
+        return ["Classify Instances Datasets"];
       },
     }),
     getAllClassifyInstances: build.query<
@@ -111,86 +91,93 @@ export const plusApi = createApi({
           urlParams.append("fides_keys", key);
         });
         return {
-          url: `classify/?${urlParams.toString()}`,
+          url: `plus/classify/?${urlParams.toString()}`,
           method: "GET",
         };
       },
       providesTags: (response, errors, args) => {
         if (args.resource_type === GenerateTypes.SYSTEMS) {
-          return ["ClassifyInstancesSystems"];
+          return ["Classify Instances Systems"];
         }
-        return ["ClassifyInstancesDatasets"];
+        return ["Classify Instances Datasets"];
       },
     }),
     getClassifyDataset: build.query<ClassificationResponse, string>({
       query: (dataset_fides_key: string) => ({
-        url: `classify/details/${dataset_fides_key}`,
+        url: `plus/classify/details/${dataset_fides_key}`,
         params: { resource_type: GenerateTypes.DATASETS },
       }),
-      providesTags: ["ClassifyInstancesDatasets"],
+      providesTags: ["Classify Instances Datasets"],
     }),
     getClassifySystem: build.query<ClassifySystem | ClassifyEmpty, string>({
       query: (fidesKey: string) => ({
-        url: `classify/details/${fidesKey}`,
+        url: `plus/classify/details/${fidesKey}`,
         params: { resource_type: GenerateTypes.SYSTEMS },
       }),
-      providesTags: ["ClassifyInstancesSystems"],
+      providesTags: ["Classify Instances Systems"],
     }),
 
     // Kubernetes Cluster Scanner
     updateScan: build.mutation<SystemScanResponse, ScanParams>({
       query: (params: ScanParams) => ({
-        url: `scan`,
+        url: `plus/scan`,
         params,
         method: "PUT",
       }),
-      invalidatesTags: ["ClassifyInstancesSystems", "LatestScan"],
+      invalidatesTags: ["Classify Instances Systems", "Latest Scan"],
     }),
     getLatestScanDiff: build.query<SystemsDiff, void>({
       query: () => ({
-        url: `scan/latest`,
+        url: `plus/scan/latest`,
         params: { diff: true },
         method: "GET",
       }),
-      providesTags: ["LatestScan"],
+      providesTags: ["Latest Scan"],
     }),
 
     // Custom Metadata Allow List
     getAllAllowList: build.query<AllowList[], boolean>({
       query: (show_values: boolean) => ({
-        url: `custom-metadata/allow-list`,
+        url: `plus/custom-metadata/allow-list`,
         params: { show_values },
       }),
-      providesTags: ["AllowList"],
+      providesTags: ["Allow List"],
       transformResponse: (allowList: AllowList[]) =>
         allowList.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
     }),
+    getAllowList: build.query<AllowList, string>({
+      query: (id) => ({
+        url: `plus/custom-metadata/allow-list/${id}`,
+        params: { show_values: true },
+      }),
+      providesTags: ["Allow List"],
+    }),
     upsertAllowList: build.mutation<AllowList, AllowListUpdate>({
       query: (params: AllowListUpdate) => ({
-        url: `custom-metadata/allow-list`,
+        url: `plus/custom-metadata/allow-list`,
         method: "PUT",
         body: params,
       }),
-      invalidatesTags: ["AllowList"],
+      invalidatesTags: ["Allow List"],
     }),
 
     // Custom Metadata Custom Field
     deleteCustomField: build.mutation<void, { id: string }>({
       query: ({ id }) => ({
-        url: `custom-metadata/custom-field/${id}`,
+        url: `plus/custom-metadata/custom-field/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["CustomFields"],
+      invalidatesTags: ["Custom Fields", "Datamap"],
     }),
     getCustomFieldsForResource: build.query<CustomFieldWithId[], string>({
       query: (resource_id: string) => ({
-        url: `custom-metadata/custom-field/resource/${resource_id}`,
+        url: `plus/custom-metadata/custom-field/resource/${resource_id}`,
       }),
-      providesTags: ["CustomFields"],
+      providesTags: ["Custom Fields"],
     }),
     upsertCustomField: build.mutation<CustomFieldWithId, CustomFieldWithId>({
       query: (params) => ({
-        url: `custom-metadata/custom-field`,
+        url: `plus/custom-metadata/custom-field`,
         method: "PUT",
         body: {
           custom_field_definition_id: params.custom_field_definition_id,
@@ -199,31 +186,47 @@ export const plusApi = createApi({
           value: params.value,
         },
       }),
-      invalidatesTags: ["CustomFields"],
+      invalidatesTags: ["Custom Fields", "Datamap"],
     }),
 
+    getAllCustomFieldDefinitions: build.query<
+      CustomFieldDefinitionWithId[],
+      void
+    >({
+      query: () => ({
+        url: `plus/custom-metadata/custom-field-definition`,
+      }),
+      providesTags: ["Custom Field Definition"],
+    }),
     // Custom Metadata Custom Field Definition
     addCustomFieldDefinition: build.mutation<
       CustomFieldDefinitionWithId,
       CustomFieldDefinition
     >({
       query: (params) => ({
-        url: `custom-metadata/custom-field-definition`,
+        url: `plus/custom-metadata/custom-field-definition`,
         method: "POST",
         body: params,
       }),
-      invalidatesTags: ["CustomFieldDefinition"],
+      invalidatesTags: ["Custom Field Definition", "Datamap"],
     }),
     updateCustomFieldDefinition: build.mutation<
       CustomFieldDefinitionWithId,
       CustomFieldDefinition
     >({
       query: (params) => ({
-        url: `custom-metadata/custom-field-definition`,
+        url: `plus/custom-metadata/custom-field-definition`,
         method: "PUT",
         body: params,
       }),
-      invalidatesTags: ["CustomFieldDefinition"],
+      invalidatesTags: ["Custom Field Definition", "Datamap"],
+    }),
+    deleteCustomFieldDefinition: build.mutation<void, { id: string }>({
+      query: ({ id }) => ({
+        url: `plus/custom-metadata/custom-field-definition/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Custom Field Definition", "Datamap"],
     }),
 
     // Custom Metadata Custom Field Definition By Resource Type
@@ -232,9 +235,9 @@ export const plusApi = createApi({
       ResourceTypes
     >({
       query: (resource_type: ResourceTypes) => ({
-        url: `custom-metadata/custom-field-definition/resource-type/${resource_type}`,
+        url: `plus/custom-metadata/custom-field-definition/resource-type/${resource_type}`,
       }),
-      providesTags: ["CustomFieldDefinition"],
+      providesTags: ["Custom Field Definition"],
       transformResponse: (list: CustomFieldDefinitionWithId[]) =>
         list.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
     }),
@@ -245,6 +248,7 @@ export const {
   useAddCustomFieldDefinitionMutation,
   useCreateClassifyInstanceMutation,
   useDeleteCustomFieldMutation,
+  useDeleteCustomFieldDefinitionMutation,
   useGetAllAllowListQuery,
   useGetAllClassifyInstancesQuery,
   useGetClassifyDatasetQuery,
@@ -259,6 +263,8 @@ export const {
   useUpdateScanMutation,
   useUpsertAllowListMutation,
   useUpsertCustomFieldMutation,
+  useGetAllCustomFieldDefinitionsQuery,
+  useGetAllowListQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
@@ -358,4 +364,10 @@ export const selectClassifyInstanceFieldMap = createSelector(
 export const selectClassifyInstanceField = createSelector(
   [selectClassifyInstanceFieldMap, selectActiveField],
   (fieldMap, active) => (active ? fieldMap.get(active.name) : undefined)
+);
+
+const emptySelectAllCustomFields: CustomFieldDefinitionWithId[] = [];
+export const selectAllCustomFieldDefinitions = createSelector(
+  plusApi.endpoints.getAllCustomFieldDefinitions.select(),
+  ({ data }) => data || emptySelectAllCustomFields
 );

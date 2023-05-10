@@ -1,6 +1,6 @@
 import { stubPlus } from "cypress/support/stubs";
 
-import { ADD_SYSTEMS_ROUTE } from "~/constants";
+import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
 import { ClusterHealth } from "~/types/api";
 
 /**
@@ -24,11 +24,11 @@ describe("Config wizard with plus settings", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
-      fixture: "organization.json",
+      fixture: "organizations/default_organization.json",
     }).as("getOrganization");
 
     cy.intercept("PUT", "/api/v1/organization**", {
-      fixture: "organization.json",
+      fixture: "organizations/default_organization.json",
     }).as("updateOrganization");
   });
 

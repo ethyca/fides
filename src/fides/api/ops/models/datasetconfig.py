@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, relationship
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import ValidationError
+from fides.api.ops.db.base_class import Base
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
@@ -20,7 +21,6 @@ from fides.api.ops.graph.config import (
 from fides.api.ops.graph.data_type import parse_data_type_string
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.util.saas_util import merge_datasets
-from fides.lib.db.base_class import Base
 
 
 class DatasetConfig(Base):
@@ -41,8 +41,8 @@ class DatasetConfig(Base):
     )
 
     connection_config = relationship(
-        ConnectionConfig,
-        backref="datasets",
+        "ConnectionConfig",
+        back_populates="datasets",
     )
 
     ctl_dataset = relationship(
@@ -153,7 +153,6 @@ class DatasetConfig(Base):
             and self.connection_config.saas_config is not None
             and self.connection_config.saas_config["fides_key"] == self.fides_key
         ):
-
             dataset_graph = merge_datasets(
                 dataset_graph,
                 self.connection_config.get_saas_config().get_graph(self.connection_config.secrets),  # type: ignore

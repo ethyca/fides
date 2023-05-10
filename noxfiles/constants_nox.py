@@ -3,16 +3,27 @@ from os import getcwd, getenv
 
 # Files
 COMPOSE_FILE = "docker-compose.yml"
-INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
-INTEGRATION_POSTGRES_COMPOSE_FILE = "docker/docker-compose.integration-postgres.yml"
-TEST_ENV_COMPOSE_FILE = "docker-compose.test-env.yml"
+INTEGRATION_COMPOSE_FILE = "./docker-compose.integration-tests.yml"
+INTEGRATION_POSTGRES_COMPOSE_FILE = "./docker/docker-compose.integration-postgres.yml"
 REMOTE_DEBUG_COMPOSE_FILE = "docker-compose.remote-debug.yml"
+SAMPLE_PROJECT_COMPOSE_FILE = "./src/fides/data/sample_project/docker-compose.yml"
 WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
+
+COMPOSE_FILE_LIST = {
+    COMPOSE_FILE,
+    SAMPLE_PROJECT_COMPOSE_FILE,
+    INTEGRATION_COMPOSE_FILE,
+    "docker/docker-compose.integration-mariadb.yml",
+    "docker/docker-compose.integration-mongodb.yml",
+    "docker/docker-compose.integration-mysql.yml",
+    "docker/docker-compose.integration-postgres.yml",
+    "docker/docker-compose.integration-mssql.yml",
+}
 
 # Image Names & Tags
 REGISTRY = "ethyca"
 IMAGE_NAME = "fides"
-CONTAINER_NAME = "fides-fides-1"
+CONTAINER_NAME = "fides"
 COMPOSE_SERVICE_NAME = "fides"
 
 # Image Names & Tags
@@ -21,8 +32,8 @@ IMAGE_NAME = "fides"
 IMAGE = f"{REGISTRY}/{IMAGE_NAME}"
 IMAGE_LOCAL = f"{IMAGE}:local"
 IMAGE_LOCAL_UI = f"{IMAGE}:local-ui"
+IMAGE_LOCAL_PC = f"{IMAGE}:local-pc"
 IMAGE_DEV = f"{IMAGE}:dev"
-IMAGE_SAMPLE = f"{IMAGE}:sample"
 IMAGE_LATEST = f"{IMAGE}:latest"
 
 # Image names for the secondary apps
@@ -30,7 +41,7 @@ PRIVACY_CENTER_IMAGE = f"{REGISTRY}/fides-privacy-center"
 SAMPLE_APP_IMAGE = f"{REGISTRY}/fides-sample-app"
 
 # Image names for 3rd party apps
-CYPRESS_IMAGE = "cypress/included:12.3.0"
+CYPRESS_IMAGE = "cypress/included:12.8.1"
 
 # Helpful paths
 CWD = getcwd()
@@ -49,7 +60,7 @@ ANALYTICS_OPT_OUT = ("-e", "ANALYTICS_OPT_OUT")
 LOGIN = (
     "docker",
     "exec",
-    "fides-fides-1",
+    CONTAINER_NAME,
     "fides",
     "user",
     "login",
@@ -97,17 +108,6 @@ START_APP_EXTERNAL = (
     "--wait",
     COMPOSE_SERVICE_NAME,
 )
-START_TEST_ENV = (
-    "docker",
-    "compose",
-    "-f",
-    COMPOSE_FILE,
-    "-f",
-    TEST_ENV_COMPOSE_FILE,
-    "up",
-    "--wait",
-    COMPOSE_SERVICE_NAME,
-)
 START_APP_REMOTE_DEBUG = (
     "docker",
     "compose",
@@ -136,8 +136,14 @@ RUN_CYPRESS_TESTS = (
     "-t",
     "--network=host",
     "-v",
-    f"{CWD}/clients/cypress-e2e:/e2e",
+    f"{CWD}/clients/cypress-e2e:/cypress-e2e",
     "-w",
-    "/e2e",
+    "/cypress-e2e",
+    "--entrypoint=",
+    "-e",
+    "CYPRESS_VIDEO=false",
     CYPRESS_IMAGE,
+    "/bin/bash",
+    "-c",
+    "npm install && cypress run",
 )

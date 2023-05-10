@@ -19,6 +19,8 @@ server_port = 8080
 
 [user]
 analytics_opt_out = false
+username = "root_user"
+password = "Testpassword1!"
 
 [redis]
 host = "redis"

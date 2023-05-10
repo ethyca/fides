@@ -201,7 +201,7 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
         settings = toml.load(config_path)
         config = build_config(config_dict=settings)
         if verbose:
-            print(f"Loaded config from: {config_path}")
+            print(f"> Loaded config from: {config_path}")
         return config
     except FileNotFoundError:
         pass
@@ -209,10 +209,44 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
         echo_red(f"Error reading config file: {config_path}")
 
     if verbose:  # pragma: no cover
-        print("Using default configuration values.")
+        print("> Using default configuration values.")
     config = build_config(config_dict={})
 
     return config
+
+
+def check_required_webserver_config_values(config: FidesConfig) -> None:
+    """Check for required config values and print a user-friendly error message."""
+    required_config_dict = {
+        "security": [
+            "app_encryption_key",
+            "oauth_root_client_id",
+            "oauth_root_client_secret",
+        ]
+    }
+
+    missing_required_config_vars = []
+    for subsection_key, values in required_config_dict.items():
+        for key in values:
+            subsection_model = dict(config).get(subsection_key, {})
+            config_value = dict(subsection_model).get(key)
+
+            if not config_value:
+                missing_required_config_vars.append(".".join((subsection_key, key)))
+
+    if missing_required_config_vars:
+        echo_red(
+            "\nThere are missing required configuration variables. Please add the following config variables to either the "
+            "`fides.toml` file or your environment variables to start Fides: \n"
+        )
+        for missing_value in missing_required_config_vars:
+            echo_red(f"- {missing_value}")
+        echo_red(
+            "\nVisit the Fides deployment documentation for more information: "
+            "https://docs.ethyca.com/fides/deployment"
+        )
+
+        raise SystemExit(1)
 
 
 CONFIG = get_config()

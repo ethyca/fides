@@ -1,5 +1,6 @@
 services:
   fides:
+    container_name: fides
     image: ethyca/fides:local
     command: uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src fides.api.main:app
     healthcheck:
@@ -25,8 +26,8 @@ services:
       FIDES__CLI__SERVER_PORT: "8080"
       FIDES__DATABASE__SERVER: "fides-db"
       FIDES__DEV_MODE: "True"
-      FIDES__REDIS__ENABLED: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
+      FIDES__SECURITY__ALLOW_CUSTOM_CONNECTOR_FUNCTIONS: "True"
       VAULT_ADDR: ${VAULT_ADDR-}
       VAULT_NAMESPACE: ${VAULT_NAMESPACE-}
       VAULT_TOKEN: ${VAULT_TOKEN-}
@@ -38,7 +39,7 @@ services:
 
   fides-ui:
     image: ethyca/fides:local-ui
-    command: npm run dev
+    command: npm run dev-admin-ui
     expose:
       - 3000
     ports:
@@ -49,21 +50,26 @@ services:
         target: /fides
         read_only: False
       # do not volume mount over the node_modules
+      - /fides/clients/node_modules
       - /fides/clients/admin-ui/node_modules
     environment:
       - NEXT_PUBLIC_FIDESCTL_API_SERVER=http://fides:8080
 
   fides-pc:
-    image: ethyca/fides-privacy-center:local
+    image: ethyca/fides:local-pc
+    command: npm run dev-pc
     expose:
       - 3000
     ports:
       - "3001:3000"
     volumes:
       - type: bind
-        source: ./src/fides/data/test_env/privacy_center_config
-        target: /app/config
+        source: .
+        target: /fides
         read_only: False
+      # do not volume mount over the node_modules
+      - /fides/clients/node_modules
+      - /fides/clients/privacy-center/node_modules
 
   fides-db:
     image: postgres:12

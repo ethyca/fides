@@ -1,6 +1,6 @@
 """This module contains logic related to loading/manipulation/writing the config."""
 import os
-from os import environ, getenv
+from os import environ
 from pathlib import Path
 from re import compile as regex
 from typing import Any, Dict, List, Union
@@ -8,8 +8,6 @@ from typing import Any, Dict, List, Union
 from click import echo
 from loguru import logger
 from toml import dump, load
-
-from fides.core.utils import echo_red
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 
@@ -43,7 +41,7 @@ def load_file(file_names: Union[List[Path], List[str]]) -> str:
         for file_name in file_names:
             possible_location = os.path.join(dir_str, file_name)
             if possible_location and os.path.isfile(possible_location):
-                logger.info("Loading file {} from {}", file_name, dir_str)
+                logger.debug("Loading file {} from {}", file_name, dir_str)
                 return possible_location
 
     raise FileNotFoundError
@@ -140,49 +138,3 @@ def handle_deprecated_env_variables(settings: Dict[str, Any]) -> Dict[str, Any]:
             settings["database"][setting] = val
 
     return settings
-
-
-def check_required_webserver_config_values() -> None:
-    """Check for required env vars and print a user-friendly error message."""
-    required_config_dict = {
-        "app_encryption_key": {
-            "env_var": "FIDES__SECURITY__APP_ENCRYPTION_KEY",
-            "config_subsection": "security",
-        },
-        "oauth_root_client_id": {
-            "env_var": "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID",
-            "config_subsection": "security",
-        },
-        "oauth_root_client_secret": {
-            "env_var": "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET",
-            "config_subsection": "security",
-        },
-    }
-
-    missing_required_config_vars = []
-    for key, value in required_config_dict.items():
-        try:
-            config_value = getenv(value["env_var"]) or get_config_from_file(
-                "",
-                value["config_subsection"],
-                key,
-            )
-        except FileNotFoundError:
-            config_value = None
-
-        if not config_value:
-            missing_required_config_vars.append(key)
-
-    if missing_required_config_vars:
-        echo_red(
-            "\nThere are missing required configuration variables. Please add the following config variables to either the "
-            "`fides.toml` file or your environment variables to start Fides: \n"
-        )
-        for missing_value in missing_required_config_vars:
-            print(f"- {missing_value}")
-        print(
-            "\nVisit the Fides deployment documentation for more information: "
-            "https://ethyca.github.io/fides/deployment/"
-        )
-
-        raise SystemExit(1)

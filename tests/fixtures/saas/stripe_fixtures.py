@@ -7,6 +7,8 @@ from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ops.cryptography import cryptographic_util
+from fides.api.ops.db import session
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -17,8 +19,6 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.lib.cryptography import cryptographic_util
-from fides.lib.db import session
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("stripe")
@@ -118,7 +118,6 @@ def stripe_dataset_config(
 def stripe_create_erasure_data(
     stripe_connection_config: ConnectionConfig, stripe_erasure_identity_email
 ) -> Generator:
-
     stripe_secrets = stripe_connection_config.secrets
 
     base_url = f"https://{stripe_secrets['domain']}"

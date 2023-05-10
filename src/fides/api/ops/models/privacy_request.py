@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from celery.result import AsyncResult
 from loguru import logger
+from pydantic import BaseModel
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
@@ -27,9 +28,14 @@ from fides.api.ops.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
+from fides.api.ops.cryptography.cryptographic_util import hash_with_salt
+from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph_differences import GraphRepr
+from fides.api.ops.models.audit_log import AuditLog
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.policy import (
     ActionType,
@@ -39,15 +45,12 @@ from fides.api.ops.models.policy import (
     WebhookDirection,
     WebhookTypes,
 )
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.oauth.jwt import generate_jwe
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
-from fides.api.ops.schemas.external_https import (
-    SecondPartyRequestFormat,
-    SecondPartyResponseFormat,
-    WebhookJWE,
-)
+from fides.api.ops.schemas.external_https import SecondPartyResponseFormat, WebhookJWE
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.redis_cache import Identity, IdentityBase
 from fides.api.ops.tasks import celery_app
 from fides.api.ops.util.cache import (
     FidesopsRedis,
@@ -63,12 +66,6 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.constants import API_DATE_FORMAT
 from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.core.config import CONFIG
-from fides.lib.cryptography.cryptographic_util import hash_with_salt
-from fides.lib.db.base import Base  # type: ignore[attr-defined]
-from fides.lib.models.audit_log import AuditLog
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.oauth.jwt import generate_jwe
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
@@ -81,7 +78,7 @@ EXECUTION_CHECKPOINTS = [
 ]
 
 
-class ManualAction(BaseSchema):
+class ManualAction(FidesSchema):
     """Surface how to retrieve or mask data in a database-agnostic way
 
     "locators" are similar to the SQL "WHERE" information.
@@ -94,7 +91,7 @@ class ManualAction(BaseSchema):
     update: Optional[Dict[str, Any]]
 
 
-class CheckpointActionRequired(BaseSchema):
+class CheckpointActionRequired(FidesSchema):
     """Describes actions needed on a particular checkpoint.
 
     Examples are a paused collection that needs manual input, a failed collection that
@@ -129,6 +126,33 @@ class PrivacyRequestStatus(str, EnumType):
     awaiting_email_send = "awaiting_email_send"
     canceled = "canceled"
     error = "error"
+
+
+class CallbackType(EnumType):
+    """We currently have two types of Policy Webhooks: pre and post"""
+
+    pre = "pre"
+    post = "post"
+
+
+class SecondPartyRequestFormat(BaseModel):
+    """
+    The request body we will use when calling a user's HTTP endpoint from fides.api
+    This class is defined here to avoid circular import issues between this file and
+    models.policy
+    """
+
+    privacy_request_id: str
+    privacy_request_status: PrivacyRequestStatus
+    direction: WebhookDirection
+    callback_type: CallbackType
+    identity: Identity
+    policy_action: Optional[ActionType]
+
+    class Config:
+        """Using enum values"""
+
+        use_enum_values = True
 
 
 def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
@@ -237,7 +261,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         return delta.days
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> PrivacyRequest:
+    def create(
+        cls, db: Session, *, data: Dict[str, Any], check_name: bool = True
+    ) -> PrivacyRequest:
         """
         Check whether this object has been passed a `requested_at` value. Default to
         the current datetime if not.
@@ -260,7 +286,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                     days=policy.execution_timeframe
                 )
 
-        return super().create(db=db, data=data)
+        return super().create(db=db, data=data, check_name=check_name)
 
     def delete(self, db: Session) -> None:
         """
@@ -622,7 +648,11 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
-    def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
+    def trigger_policy_webhook(
+        self,
+        webhook: WebhookTypes,
+        policy_action: Optional[ActionType] = None,
+    ) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response
         should cause privacy request execution to stop.
 
@@ -635,9 +665,11 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         https_connector: HTTPSConnector = get_connector(webhook.connection_config)  # type: ignore
         request_body = SecondPartyRequestFormat(
             privacy_request_id=self.id,
+            privacy_request_status=self.status,
             direction=webhook.direction.value,  # type: ignore
             callback_type=webhook.prefix,
             identity=self.get_cached_identity_data(),
+            policy_action=policy_action,
         )
 
         headers = {}
@@ -780,6 +812,7 @@ class ProvidedIdentityType(EnumType):
     phone_number = "phone_number"
     ga_client_id = "ga_client_id"
     ljt_readerID = "ljt_readerID"
+    fides_user_device_id = "fides_user_device_id"
 
 
 class ProvidedIdentity(Base):  # pylint: disable=R0904
@@ -842,19 +875,47 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         )
         return hashed_value
 
+    def as_identity_schema(self) -> IdentityBase:
+        """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
+        identity = IdentityBase()
+        if any(
+            [
+                not self.field_name,
+                not self.encrypted_value,
+            ]
+        ):
+            return identity
+
+        setattr(
+            identity,
+            self.field_name.value,  # type:ignore
+            self.encrypted_value.get("value"),  # type:ignore
+        )
+        return identity
+
 
 class Consent(Base):
     """The DB ORM model for Consent."""
 
     provided_identity_id = Column(
-        String, ForeignKey(ProvidedIdentity.id), nullable=False
+        String,
+        ForeignKey(ProvidedIdentity.id),
+        nullable=False,
     )
     data_use = Column(String, nullable=False)
     data_use_description = Column(String)
     opt_in = Column(Boolean, nullable=False)
-    has_gpc_flag = Column(Boolean, server_default="f", default=False, nullable=False)
+    has_gpc_flag = Column(
+        Boolean,
+        server_default="f",
+        default=False,
+        nullable=False,
+    )
     conflicts_with_gpc = Column(
-        Boolean, server_default="f", default=False, nullable=False
+        Boolean,
+        server_default="f",
+        default=False,
+        nullable=False,
     )
 
     provided_identity = relationship(ProvidedIdentity, back_populates="consent")
@@ -868,10 +929,19 @@ class ConsentRequest(IdentityVerificationMixin, Base):
     provided_identity_id = Column(
         String, ForeignKey(ProvidedIdentity.id), nullable=False
     )
-
     provided_identity = relationship(
         ProvidedIdentity,
         back_populates="consent_request",
+    )
+
+    preferences = Column(
+        MutableList.as_mutable(JSONB),
+        nullable=True,
+    )
+
+    identity_verified_at = Column(
+        DateTime(timezone=True),
+        nullable=True,
     )
 
     privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
@@ -884,12 +954,18 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         keys = cache.keys(prefix)
         return {key.split("-")[-1]: cache.get(key) for key in keys}
 
-    def verify_identity(self, provided_code: str) -> None:
+    def verify_identity(
+        self,
+        db: Session,
+        provided_code: str,
+    ) -> None:
         """
         A method to call the internal identity verification method provided by the
         `IdentityVerificationMixin`.
         """
         self._verify_identity(provided_code=provided_code)
+        self.identity_verified_at = datetime.utcnow()
+        self.save(db)
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.

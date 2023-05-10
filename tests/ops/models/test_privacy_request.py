@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from time import sleep
-from typing import List
+from typing import List, Tuple
 from uuid import uuid4
 
 import pytest
@@ -22,6 +22,7 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequestError,
     PrivacyRequestNotifications,
     PrivacyRequestStatus,
+    ProvidedIdentity,
     can_run_checkpoint,
 )
 from fides.api.ops.schemas.redis_cache import Identity
@@ -33,8 +34,25 @@ from fides.core.config import CONFIG
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
 
+def test_provided_identity_to_identity(
+    provided_identity_and_consent_request: Tuple,
+) -> None:
+    provided_identity = provided_identity_and_consent_request[0]
+    identity = provided_identity.as_identity_schema()
+    assert identity.email == "test@email.com"
+
+
+def test_blank_provided_identity_to_identity(
+    empty_provided_identity: ProvidedIdentity,
+) -> None:
+    identity = empty_provided_identity.as_identity_schema()
+    assert identity.email is None
+
+
 def test_privacy_request(
-    db: Session, policy: Policy, privacy_request: PrivacyRequest
+    db: Session,
+    policy: Policy,
+    privacy_request: PrivacyRequest,
 ) -> None:
     from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert from_db is not None
@@ -507,7 +525,6 @@ class TestCacheManualErasureCount:
 
 class TestPrivacyRequestCacheFailedStep:
     def test_cache_failed_step_and_collection(self, privacy_request):
-
         privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.erasure, collection=paused_location
         )

@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
+from fides.api.ops.db.base_class import Base, FidesBase
 from fides.core.config import CONFIG
-from fides.lib.db.base_class import Base, FidesBase
 
 
 class UserRegistration(Base):

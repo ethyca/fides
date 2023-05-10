@@ -7,6 +7,7 @@ from fides.api.ops.common_exceptions import (
     RuleValidationError,
     StorageConfigNotFoundException,
 )
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.policy import (
     ActionType,
     Policy,
@@ -23,7 +24,6 @@ from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
 )
 from fides.api.ops.util.data_category import DataCategory
 from fides.api.ops.util.text import to_snake_case
-from fides.lib.models.client import ClientDetail
 
 
 def test_policy_sets_slug(
@@ -57,6 +57,16 @@ def test_policy_wont_override_slug(
     )
     assert policy.key == slug
     policy.delete(db=db)
+
+
+def test_get_action_type(
+    policy: Policy,
+    empty_policy: Policy,
+    erasure_policy: Policy,
+) -> None:
+    assert policy.get_action_type() == ActionType.access
+    assert erasure_policy.get_action_type() == ActionType.erasure
+    assert empty_policy.get_action_type() is None
 
 
 def test_save_policy_doesnt_update_slug(db: Session, policy: Policy) -> None:
@@ -245,12 +255,13 @@ def test_create_access_rule_with_no_storage_destination_is_valid(
     assert rule_storage_config == storage_config_default_local
 
 
-def test_ancestor_detection():
+def test_ancestor_detection(fideslang_data_categories):
     is_ancestor, _ = _is_ancestor_of_contained_categories(
         fides_key="user.contact.email",
         data_categories=[
             "user",
         ],
+        all_categories=fideslang_data_categories,
     )
     # "user.contact.email" is a descendent of
     # "user"
@@ -261,6 +272,7 @@ def test_ancestor_detection():
         data_categories=[
             "user.account",
         ],
+        all_categories=fideslang_data_categories,
     )
     # "user.contact.email" is not a descendent of
     # "user.account"
@@ -271,6 +283,7 @@ def test_ancestor_detection():
         data_categories=[
             "user.contact.email",
         ],
+        all_categories=fideslang_data_categories,
     )
     # "user.contact.email" is not a descendent of
     # itself

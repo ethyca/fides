@@ -8,8 +8,8 @@ from pydantic import Field, validator
 from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.lib.cryptography.cryptographic_util import generate_salt, hash_with_salt
-from fides.lib.oauth.roles import OWNER
+from fides.api.ops.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.api.ops.oauth.roles import OWNER
 
 from .fides_settings import FidesSettings
 
@@ -113,6 +113,10 @@ class SecuritySettings(FidesSettings):
     subject_request_download_link_ttl_seconds: int = Field(
         default=432000,
         description="The number of seconds that a pre-signed download URL when using S3 storage will be valid. The default is equal to 5 days.",
+    )
+    allow_custom_connector_functions: Optional[bool] = Field(
+        default=False,
+        description="Enables or disables the ability to import connector templates with custom functions. When enabled, custom functions which will be loaded in a restricted environment to minimize security risks.",
     )
 
     @validator("app_encryption_key")

@@ -13,28 +13,23 @@ nav:
       - API: api/index.md
       - CLI: cli/index.md
       - Configuration: config/index.md
+      - Contributing:
+          - Overview: development/overview.md
+          - Developing Fides: development/developing_fides.md
+          - Development Tips: development/development_tips.md
+          - Testing: development/testing.md
+          - Code Style: development/code_style.md
+          - UI Development: development/ui.md
+          - Documentation: development/documentation.md
+          - Pull Requests: development/pull_requests.md
+          - Releases: development/releases.md
+          - Using Postman: development/postman/using_postman.md
+          - Updating the Database Diagram: development/update_erd_diagram.md
+          - User Analytics: development/fideslog.md
       - Community:
           - Github, Slack, and Discord: community/overview.md
           - Community Hints and Tips: community/hints_tips.md
           - Code of Conduct: community/code_of_conduct.md
-          - Contributing:
-              - Overview: development/overview.md
-              - Contributing Details: development/contributing_details.md
-              - Code Style: development/code_style.md
-              - UI Development: development/ui.md
-              - Fideslog Analytics: development/fideslog.md
-              - Database Migration: development/database_migration.md
-              - Documentation: development/documentation.md
-              - Writing Tests: development/testing.md
-              - Testing Environment: development/testing_environment.md
-              - Local Fides Deploy: development/dev_deployment.md
-              - Pull Requests: development/pull_requests.md
-              - Releases: development/releases.md
-              - Release Checklist: development/release_checklist.md
-              - VSCode Debugging: development/vscode_debugging.md
-              - Jetbrains Debugging: development/jetbrains_debugging.md
-              - Using Postman: development/postman/using_postman.md
-              - Updating the Database Diagram: development/update_erd_diagram.md
   - About Ethyca:
       - About Ethyca: ethyca.md
       - License: license.md
@@ -67,7 +62,8 @@ theme:
 markdown_extensions:
   - attr_list
   - pymdownx.superfences
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      base_path: ["docs/fides/docs/config/", "docs/fides/config/","docs/fides/dev/config/"]
   - pymdownx.inlinehilite
   - pymdownx.tabbed
   - admonition
