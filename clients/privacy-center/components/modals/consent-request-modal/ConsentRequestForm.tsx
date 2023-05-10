@@ -17,7 +17,6 @@ import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import * as Yup from "yup";
 
-import { getPrivacyCenterEnvironment } from "~/app/server-environment";
 import { ErrorToastOptions } from "~/common/toast-options";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { defaultIdentityInput } from "~/constants";
@@ -29,6 +28,7 @@ import {
 } from "~/components/modals/validation";
 import { ModalViews, VerificationType } from "~/components/modals/types";
 import { useConfig } from "~/features/common/config.slice";
+import { useSettings } from "~/features/common/settings.slice";
 
 const useConsentRequestForm = ({
   onClose,
@@ -46,7 +46,7 @@ const useConsentRequestForm = ({
   const config = useConfig();
   const identityInputs =
     config.consent?.button.identity_inputs ?? defaultIdentityInput;
-  const environment = getPrivacyCenterEnvironment();
+  const settings = useSettings();
   const toast = useToast();
   const cookie = useMemo(() => getOrMakeFidesCookie(), []);
   const formik = useFormik({
@@ -81,7 +81,7 @@ const useConsentRequestForm = ({
         addCommonHeaders(headers, null);
 
         const response = await fetch(
-          `${environment.fidesApiUrl}/${VerificationType.ConsentRequest}`,
+          `${settings.FIDES_API_URL}/${VerificationType.ConsentRequest}`,
           {
             method: "POST",
             headers,

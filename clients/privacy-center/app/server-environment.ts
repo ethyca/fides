@@ -6,12 +6,19 @@
  * 3) etc.
  *
  * During server-side rendering, call loadPrivacyCenterEnvironment() to initialize the environment values for the App.
- *
- * On the client-side, call the usePrivacyCenterEnvironment() hook in code to safely access the environment values at runtime.
  */
 import { URL } from "url";
 
-import { Config } from "~/types/config";
+import {
+  isV1ConsentConfig,
+  translateV1ConfigToV2,
+} from "~/features/consent/helpers";
+import {
+  LegacyConfig,
+  LegacyConsentConfig,
+  Config,
+  ConsentConfig,
+} from "~/types/config";
 
 /**
  * SERVER-SIDE functions
@@ -31,12 +38,24 @@ export interface PrivacyCenterSettings {
 }
 
 /**
+ * Subset of PrivacyCenterSettings that are forwarded to the client.
+ *
+ * NOTE: Since these are exposed on the client, they cannot contain any secrets!
+ */
+export type PrivacyCenterClientSettings = Pick<
+  PrivacyCenterSettings,
+  "FIDES_API_URL"
+>;
+
+export type Styles = string;
+
+/**
  * Environment that is generated server-side and provided to the client
  */
 export interface PrivacyCenterEnvironment {
-  fidesApiUrl: string;
+  settings: PrivacyCenterClientSettings;
   config?: Config;
-  styles?: string;
+  styles?: Styles;
 }
 
 /**
@@ -94,6 +113,44 @@ const loadConfigFile = async (
 };
 
 /**
+ * Transform the config to the latest version so that components can
+ * reference config variables uniformly.
+ */
+export const transformConfig = (config: LegacyConfig): Config => {
+  if (isV1ConsentConfig(config.consent)) {
+    const v1ConsentConfig: LegacyConsentConfig = config.consent;
+    const translatedConsent: ConsentConfig = translateV1ConfigToV2({
+      v1ConsentConfig,
+    });
+    return { ...config, consent: translatedConsent };
+  }
+  return { ...config, consent: config.consent };
+};
+
+/**
+ * Validate the config object
+ */
+export const validateConfig = (
+  input: Config | LegacyConfig
+): { isValid: boolean; message: string } => {
+  // First, ensure we support LegacyConfig type if provided
+  const config = transformConfig(input);
+
+  // Cannot currently have more than one consent be executable
+  if (config.consent) {
+    const options = config.consent.page.consentOptions;
+    const executables = options.filter((option) => option.executable);
+    if (executables.length > 1) {
+      return {
+        isValid: false,
+        message: "Cannot have more than one consent option be executable",
+      };
+    }
+  }
+  return { isValid: true, message: "Config is valid" };
+};
+
+/**
  * Load the config.json file from the given URL, or fallback to default filesystem paths.
  *
  * Loading precedence is:
@@ -115,9 +172,14 @@ export const loadConfigFromFile = async (
   ];
   const file = await loadConfigFile(urls);
   if (file) {
-    const config = JSON.parse(file) as Config;
-    // DEFER: validate the configuration here, log helpful warnings, etc.
+    const config = transformConfig(JSON.parse(file));
+    const { isValid, message } = validateConfig(config);
+    // DEFER: add more validations here, log helpful warnings, etc.
     // (see https://github.com/ethyca/fides/issues/3171)
+    if (!isValid) {
+      console.warn("WARN: Configuration file is invalid! Message:", message);
+      return;
+    }
     return config;
   }
 };
@@ -150,7 +212,6 @@ export const loadStylesFromFile = async (
  * Loads all the ENV variable settings, configuration files, etc. to initialize the environment
  */
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
-let _environment: PrivacyCenterEnvironment;
 export const loadPrivacyCenterEnvironment =
   async (): Promise<PrivacyCenterEnvironment> => {
     if (typeof window !== "undefined") {
@@ -180,11 +241,9 @@ export const loadPrivacyCenterEnvironment =
     // Load styling file (if it exists)
     const styles = await loadStylesFromFile(settings.CONFIG_CSS_URL);
 
-    // Initialize the _environment variable, so usePrivacyCenterEnvironment() can be used
-    _environment = {
-      fidesApiUrl: settings.FIDES_API_URL,
-      config,
-      styles,
+    // Load client settings (ensuring we only pass-along settings that are safe for the client)
+    const clientSettings: PrivacyCenterClientSettings = {
+      FIDES_API_URL: settings.FIDES_API_URL,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present
@@ -208,43 +267,12 @@ export const loadPrivacyCenterEnvironment =
           : config.server_url_production ||
             (config as any).fidesops_host_production;
 
-      _environment.fidesApiUrl = legacyApiUrl;
+      clientSettings.FIDES_API_URL = legacyApiUrl;
     }
 
-    return _environment;
+    return {
+      settings: clientSettings,
+      config,
+      styles,
+    };
   };
-
-/**
- * CLIENT-SIDE functions
- */
-
-/**
- * Hydrate the environment on the client-side, given a serverEnvironment
- * argument that should have been received from - you guessed it - the server!
- */
-export const hydratePrivacyCenterEnvironment = (
-  serverEnvironment?: PrivacyCenterEnvironment
-): PrivacyCenterEnvironment => {
-  // DEFER: handle this (see https://github.com/ethyca/fides/issues/3212)
-  if (_environment) {
-    console.warn(
-      "Called hydratePrivacyCenterEnvironment() after environment was already initialized!"
-    );
-  }
-  if (serverEnvironment) {
-    _environment = serverEnvironment;
-  }
-  return _environment;
-};
-
-/**
- * Basic hook for client-side code to safely access the configured environment.
- */
-export const getPrivacyCenterEnvironment = (): PrivacyCenterEnvironment => {
-  if (!_environment) {
-    throw new Error(
-      "Called usePrivacyCenterEnvironment() prior to initializing with hydratePrivacyCenterEnvironment()!"
-    );
-  }
-  return _environment;
-};
