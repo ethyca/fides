@@ -675,6 +675,7 @@ class TestGetPrivacyNoticeDetail:
                     "consent_mechanism": ConsentMechanism.opt_in.value,
                     "data_uses": ["advertising"],
                     "enforcement_level": EnforcementLevel.system_wide.value,
+                    "displayed_in_overlay": True,
                 }
             ],
         )
