@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional, Tuple, Callable
-from pydantic import BaseModel
+from typing import Callable, List, Optional, Tuple
 
 from fastapi import HTTPException
 from starlette.status import HTTP_400_BAD_REQUEST
@@ -32,8 +31,8 @@ def validate_start_and_end_filters(
 
 
 def transform_fields(
-    transformation: Callable, model: BaseModel, fields: List[str]
-) -> BaseModel:
+    transformation: Callable, model: object, fields: List[str]
+) -> object:
     """
     Takes a callable and returns a transformed object.
     """

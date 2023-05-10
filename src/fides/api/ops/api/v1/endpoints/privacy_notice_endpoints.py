@@ -176,7 +176,7 @@ def get_privacy_notice(
             transformation=unescape,
             model=notice,
             fields=ESCAPE_FIELDS,
-        )
+        )  # type: ignore
     return notice
 
 
@@ -279,7 +279,7 @@ def prepare_privacy_notice_patches(
             transformation=escape,
             model=update_data,
             fields=ESCAPE_FIELDS,
-        )
+        )  # type: ignore
         updates_and_existing.append((update_data, existing_notices[update_data.id]))
 
     # we temporarily store proposed update data in-memory for validation purposes only
