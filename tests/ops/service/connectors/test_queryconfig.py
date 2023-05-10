@@ -694,7 +694,10 @@ class TestDynamoDBQueryConfig:
         item = query_config.generate_query(
             input_data=input_data, policy=resources_dict["policy"]
         )
-        assert item == {"email": {"S": "customer-test_uuid@example.com"}}
+        assert item["ExpressionAttributeValues"] == {
+            ":value": {"S": "customer-test_uuid@example.com"}
+        }
+        assert item["KeyConditionExpression"] == "email = :value"
 
     def test_put_query_param_formatting_single_key(
         self,
