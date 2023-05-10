@@ -29,6 +29,11 @@ EXTERNAL_CONFIG_BODY = {
         "orgUrl": "https://dev-78908748.okta.com",
         "token": getenv("OKTA_CLIENT_TOKEN", ""),
     },
+    "dynamodb": {
+        "region_name": getenv("DYNAMODB_REGION", ""),
+        "aws_access_key_id": getenv("DYNAMODB_ACCESS_KEY_ID", ""),
+        "aws_secret_access_key": getenv("DYNAMODB_ACCESS_KEY", ""),
+    },
 }
 
 EXTERNAL_FAILURE_CONFIG_BODY = {
@@ -50,6 +55,11 @@ EXTERNAL_FAILURE_CONFIG_BODY = {
         "orgUrl": "https://dev-78908748.okta.com",
         "token": "INVALID_TOKEN",
     },
+    "dynamodb": {
+        "region_name": getenv("DYNAMODB_REGION", ""),
+        "aws_access_key_id": "ILLEGAL_ACCESS_KEY_ID",
+        "aws_secret_access_key": "ILLEGAL_SECRET_ACCESS_KEY_ID",
+    },
 }
 EXTERNAL_FAILURE_CONFIG_BODY["bigquery"]["keyfile_creds"][
     "project_id"
@@ -60,6 +70,7 @@ EXPECTED_FAILURE_MESSAGES = {
     "okta": "Invalid token provided",
     "db": 'FATAL:  database "INVALID_DB" does not exist\n\n(Background on this error at: https://sqlalche.me/e/14/e3q8)',
     "bigquery": "Invalid project ID 'INVALID_PROJECT_ID'. Project IDs must contain 6-63 lowercase letters, digits, or dashes. Some project IDs also include domain name separated by a colon. IDs must start with a letter and may not end with a dash.",
+    "dynamodb": "The security token included in the request is invalid.",
 }
 
 
@@ -71,6 +82,7 @@ EXPECTED_FAILURE_MESSAGES = {
         ("systems", "okta"),
         ("datasets", "db"),
         ("datasets", "bigquery"),
+        ("datasets", "dynamodb"),
     ],
 )
 def test_generate(
@@ -106,6 +118,7 @@ def test_generate(
         ("systems", "okta"),
         ("datasets", "db"),
         ("datasets", "bigquery"),
+        ("datasets", "dynamodb"),
     ],
 )
 def test_generate_failure(

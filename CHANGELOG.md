@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 
+- Connector for DynamoDB [#2998](https://github.com/ethyca/fides/pull/2998)
 - Access and erasure support for Amplitude [#2569](https://github.com/ethyca/fides/pull/2569)
 - Access and erasure support for Gorgias [#2444](https://github.com/ethyca/fides/pull/2444)
 - Privacy Experience Bulk Create, Bulk Update, and Detail Endpoints [#3185](https://github.com/ethyca/fides/pull/3185)
