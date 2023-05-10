@@ -12,7 +12,7 @@ from fides.core import export as _export
 from fides.core import parse as _parse
 
 
-@click.group(name="export")
+@click.group(name="export", deprecated=True)
 @click.pass_context
 def export(ctx: click.Context) -> None:
     """
