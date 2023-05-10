@@ -36,6 +36,7 @@ The types of changes are:
 ### Fixed
 - Prevent ability to unintentionally show "default" Privacy Center configuration, styles, etc. [#3242](https://github.com/ethyca/fides/pull/3242)
 - Fix broken links to docs site pages in Admin UI [#3232](https://github.com/ethyca/fides/pull/3232)
+- Repoint legacy docs site links to the new and improved docs site [#3167](https://github.com/ethyca/fides/pull/3167)
 
 ### Developer Experience
 
@@ -99,6 +100,7 @@ The types of changes are:
 - Ensure privacy declaration IDs are stable across updates through system API [#3188](https://github.com/ethyca/fides/pull/3188)
 - Fixed unit tests for saas connector type endpoints now that we have >50 [#3101](https://github.com/ethyca/fides/pull/3101)
 - Fixed nox docs link [#3121](https://github.com/ethyca/fides/pull/3121/files)
+
 
 ### Developer Experience
 
