@@ -7,17 +7,20 @@ from fides.cli.options import (
     organization_fides_key_option,
     output_directory_option,
 )
-from fides.cli.utils import with_analytics
+from fides.cli.utils import echo_red, with_analytics
 from fides.core import export as _export
 from fides.core import parse as _parse
 
 
-@click.group(name="export")
+@click.group(name="export", deprecated=True)
 @click.pass_context
 def export(ctx: click.Context) -> None:
     """
     Export Fides data maps.
     """
+    echo_red(
+        "If you wish to use the 'export' command in future releases, you must use 'fidesplus'"
+    )
 
 
 @export.command(name="system")
