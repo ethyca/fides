@@ -383,7 +383,6 @@ def resources_dict():
                     dataset_references=[],
                 )
             ],
-            system_dependencies=[],
         ),
     }
     yield resources_dict

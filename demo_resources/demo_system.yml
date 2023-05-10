@@ -6,11 +6,11 @@ system:
     administrating_department: Engineering
     data_responsibility_title: Controller
     ingress:
-    - fides_key: demo_marketing_system
-      type: system
+      - fides_key: demo_marketing_system
+        type: system
     third_country_transfers:
-    - USA
-    - CAN
+      - USA
+      - CAN
     data_protection_impact_assessment:
       is_required: True
       progress: Complete
@@ -33,11 +33,9 @@ system:
     system_type: Service
     administrating_department: Marketing
     data_responsibility_title: Processor
-    system_dependencies:
-    - demo_analytics_system
     egress:
-    - fides_key: demo_analytics_system
-      type: system
+      - fides_key: demo_analytics_system
+        type: system
     privacy_declarations:
       - name: Collect data for marketing
         data_categories:

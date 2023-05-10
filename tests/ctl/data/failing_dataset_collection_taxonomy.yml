@@ -30,7 +30,6 @@ system:
           - customer
         dataset_references:
           - test_db_dataset_failing_dataset
-    system_dependencies: []
 
 policy:
   - fides_key: primary_privacy_policy

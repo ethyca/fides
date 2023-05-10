@@ -458,7 +458,6 @@ class TestSystemCreate:
                     dataset_references=[],
                 ),
             ],
-            system_dependencies=[],
         )
 
     def test_system_create_not_authenticated(
@@ -674,7 +673,6 @@ class TestSystemUpdate:
                     dataset_references=[],
                 )
             ],
-            system_dependencies=[],
         )
 
     def test_system_update_not_authenticated(

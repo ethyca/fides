@@ -198,7 +198,6 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
             "system.data_responsibility_title",
             "system.administrating_department",
             "system.third_country_transfers",
-            "system.system_dependencies",
             "system.ingress",
             "system.egress",
             "system.users",
@@ -234,7 +233,6 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         "data_responsibility_title",
         "administrating_department",
         "third_country_transfers",
-        "system_dependencies",
         "ingress",
         "egress",
         "privacy_declarations",
@@ -276,7 +274,6 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
 
         system_users = ", ".join([user.username for user in system.get("users", [])])
         third_country_list = ", ".join(system.get("third_country_transfers") or [])
-        system_dependencies = ", ".join(system.get("system_dependencies") or [])
         if system.get("ingress"):
             if isinstance(system["ingress"], DataFlow):
                 system["ingress"] = system["ingress"].dict()
@@ -347,7 +344,6 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                         system["data_responsibility_title"],
                         system["administrating_department"],
                         third_country_list,
-                        system_dependencies,
                         system_ingress,
                         system_egress,
                         system_users,
@@ -413,7 +409,6 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 system["data_responsibility_title"],
                 system["administrating_department"],
                 third_country_list,
-                system_dependencies,
                 system_ingress,
                 system_egress,
                 system_users,

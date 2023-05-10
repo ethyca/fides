@@ -405,7 +405,6 @@ class SystemModel(BaseModel):
     fidesctl_meta: Optional[Dict[str, Any]]
     system_type: str
     data_responsibility_title: Optional[str]
-    system_dependencies: Optional[List[str]]
     joint_controller: Optional[str]
     third_country_transfers: Optional[List[str]]
     privacy_declarations: Optional[Dict[str, Any]]
