@@ -23,7 +23,9 @@ The types of changes are:
 - Access and erasure support for Gorgias [#2444](https://github.com/ethyca/fides/pull/2444)
 - Privacy Experience Bulk Create, Bulk Update, and Detail Endpoints [#3185](https://github.com/ethyca/fides/pull/3185)
 - Initial privacy experience UI [#3186](https://github.com/ethyca/fides/pull/3186)
+- A JavaScript modal to copy a script tag for `fides.js` [#3238](https://github.com/ethyca/fides/pull/3238)
 - Access and erasure support for OneSignal [#3199](https://github.com/ethyca/fides/pull/3199)
+- Add the ability to "inject" location into `/fides.js` bundles and cache responses for one hour [#3272](https://github.com/ethyca/fides/pull/3272)
 
 ### Changed
 
