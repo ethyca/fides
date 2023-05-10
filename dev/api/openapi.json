@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.12.2b2.post0.dev8"
+    "version": "2.12.2b2.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3950,7 +3950,7 @@
           "Generate"
         ],
         "summary": "Generate",
-        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n* Okta: Systems\n* DB: Datasets\n* BigQuery: Datasets\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Snowflake: Datasets\n\nAll production deployments should implement HTTPS for security purposes",
+        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n* Okta: Systems\n* DB: Datasets\n* BigQuery: Datasets\n* DynamoDB: Datasets\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Snowflake: Datasets\n\nAll production deployments should implement HTTPS for security purposes",
         "operationId": "generate_api_v1_generate_post",
         "requestBody": {
           "content": {
@@ -5201,6 +5201,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/SovrnDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DynamoDBDocsSchema"
                   }
                 ]
               }
@@ -14152,6 +14155,7 @@
           "manual",
           "sovrn",
           "attentive",
+          "dynamodb",
           "manual_webhook",
           "timescale",
           "fides"
@@ -14709,6 +14713,9 @@
               },
               {
                 "$ref": "#/components/schemas/SovrnDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/DynamoDBDocsSchema"
               }
             ]
           },
@@ -15647,6 +15654,35 @@
           }
         },
         "description": "Response model for dataset dry run"
+      },
+      "DynamoDBDocsSchema": {
+        "title": "DynamoDBDocsSchema",
+        "required": [
+          "region_name",
+          "aws_secret_access_key",
+          "aws_access_key_id"
+        ],
+        "type": "object",
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "region_name": {
+            "title": "Region Name",
+            "type": "string"
+          },
+          "aws_secret_access_key": {
+            "title": "Aws Secret Access Key",
+            "type": "string"
+          },
+          "aws_access_key_id": {
+            "title": "Aws Access Key Id",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "DynamoDB Secrets Schema for API Docs"
       },
       "EmailDocsSchema": {
         "title": "EmailDocsSchema",
@@ -19919,6 +19955,9 @@
               },
               {
                 "$ref": "#/components/schemas/SovrnDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/DynamoDBDocsSchema"
               }
             ]
           },
@@ -21056,7 +21095,8 @@
           "aws",
           "db",
           "okta",
-          "bigquery"
+          "bigquery",
+          "dynamodb"
         ],
         "type": "string",
         "description": "Validation of targets attempted to generate resources from"

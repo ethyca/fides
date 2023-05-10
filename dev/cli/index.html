@@ -542,6 +542,26 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#fides-generate-dataset-aws" class="md-nav__link">
+    aws
+  </a>
+  
+    <nav class="md-nav" aria-label="aws">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fides-generate-dataset-aws-dynamodb" class="md-nav__link">
+    dynamodb
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fides-generate-dataset-db" class="md-nav__link">
     db
   </a>
@@ -1341,6 +1361,26 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#fides-generate-dataset-aws" class="md-nav__link">
+    aws
+  </a>
+  
+    <nav class="md-nav" aria-label="aws">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fides-generate-dataset-aws-dynamodb" class="md-nav__link">
+    dynamodb
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fides-generate-dataset-db" class="md-nav__link">
     db
   </a>
@@ -1851,6 +1891,46 @@ The data map is comprised of an Organization, Systems, and Datasets.
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h5 id="fides-generate-dataset-aws">fides generate dataset aws</h5>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate Fides datasets from specific Amazon Web Services.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate dataset aws [OPTIONS] COMMAND [ARGS]...
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h6 id="fides-generate-dataset-aws-dynamodb">fides generate dataset aws dynamodb</h6>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate a dataset object from BigQuery using a SQLAlchemy connection string.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate dataset aws dynamodb [OPTIONS] OUTPUT_FILENAME
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials keys defined within Fides config.
+  --access_key_id TEXT      Connect to AWS using an `Access Key ID`. _Requires
+                            options `--access_key_id`, `--secret_access_key` &amp;
+                            `--region`._
+  --secret_access_key TEXT  Connect to AWS using an `Access Key`. _Requires
+                            options `--access_key_id`, `--secret_access_key` &amp;
+                            `--region`._
+  --region TEXT             Connect to AWS using a specific `Region`.
+                            _Requires options `--access_key_id`,
+                            `--secret_access_key` &amp; `--region`._
+  --include-null            Include null attributes.
+  --help                    Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h5 id="fides-generate-dataset-db">fides generate dataset db</h5>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate a Fides dataset by walking a database and recording every schema/table/field.
