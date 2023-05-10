@@ -21,8 +21,8 @@ root_username = "root_user"
 root_password = "Testpassword1!"
 
 [execution]
-require_manual_request_approval = false
-masking_strict = true
+require_manual_request_approval = true
+masking_strict = false
 
 [cli]
 server_host = "fides"
