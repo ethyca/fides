@@ -132,12 +132,10 @@ export const initFidesConsent = async (
       };
       render(
         <ConsentBanner
-          options={{
-            bannerTitle: config.experience?.banner_title,
-            bannerDescription: config.experience?.banner_description,
-            confirmationButtonLabel: config.experience?.confirmation_button_label,
-            rejectButtonLabel: config.experience?.reject_button_label
-          }}
+          bannerTitle={config.experience?.banner_title}
+          bannerDescription={config.experience?.banner_description}
+          confirmationButtonLabel={config.experience?.confirmation_button_label}
+          rejectButtonLabel={config.experience?.reject_button_label}
           privacyCenterUrl={config.options.privacyCenterUrl}
           onAcceptAll={onAcceptAll}
           onRejectAll={onRejectAll}
