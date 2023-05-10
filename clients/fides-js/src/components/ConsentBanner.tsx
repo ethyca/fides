@@ -46,11 +46,19 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         isShown ? "" : "fides-consent-banner-hidden"
       } `}
     >
-      <div
-        id="fides-consent-banner-description"
-        className="fides-consent-banner-description"
-      >
-        {bannerDescription || ""}
+      <div>
+        <div
+            id="fides-consent-banner-title"
+            className="fides-consent-banner-title"
+        >
+          {bannerTitle || ""}
+        </div>
+        <div
+            id="fides-consent-banner-description"
+            className="fides-consent-banner-description"
+        >
+          {bannerDescription || ""}
+        </div>
       </div>
       <div
         id="fides-consent-banner-buttons"
