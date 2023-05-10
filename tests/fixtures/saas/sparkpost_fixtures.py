@@ -19,6 +19,7 @@ def sparkpost_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "sparkpost.domain") or secrets["domain"],
         "api_key": pydash.get(saas_config, "sparkpost.api_key") or secrets["api_key"],
+        "recipient_list_id": pydash.get(saas_config, "sparkpost.recipient_list_id") or secrets["recipient_list_id"],
     }
 
 
@@ -60,7 +61,7 @@ class SparkPostClient:
                 }
             ]
         }
-        recipient_response: requests.Response = requests.post(
+        recipient_response: requests.Response = requests.get(
             url=f"{self.base_url}/api/v1/recipient-lists/{recipient_id}?show_recipients=true",
             json=body,
             headers=self.headers,
@@ -68,27 +69,23 @@ class SparkPostClient:
         assert recipient_response.ok
         return recipient_response.json()
 
-    def create_recipient(self, email, uuid):
-        return requests.post(
-            url=f"{self.base_url}/api/v1/recipient-lists?num_rcpt_errors=1",
+    def create_recipient(self, email, secrets_sparkpost):
+        return requests.put(
+            url=f"{self.base_url}/api/v1/recipient-lists/{secrets_sparkpost['recipient_list_id']}",
             headers=self.headers,
             json={
-                "id": uuid,
-                "name": "Ethyca test",
-                "description": "An email list of employees at UMBC",
-                "attributes": {"internal_id": 113, "list_group_id": 12322},
                 "recipients": [
                     {
-                        "address": {"email": email, "name": "test"},
+                        "address": {"email": f"{email}", "name": "test"},
                         "tags": ["reading"],
                         "metadata": {"age": "31", "place": "Test location"},
                         "substitution_data": {
                             "favorite_color": "SparkPost Orange",
                             "job": "Software Engineer",
                         },
-                    }
-                ],
-            },
+                    },
+                ]
+            }
         )
 
 
@@ -102,9 +99,10 @@ def sparkpost_erasure_data(
     sparkpost_client: SparkPostClient,
     sparkpost_erasure_identity_email: str,
     sparkpost_erasure_recipient_id: str,
+    sparkpost_secrets
 ) -> Generator:
     response = sparkpost_client.create_recipient(
-        sparkpost_erasure_identity_email, sparkpost_erasure_recipient_id
+        sparkpost_erasure_identity_email, sparkpost_secrets
     )
     recipient = response.json()["results"]
     recipient_id = recipient["id"]
