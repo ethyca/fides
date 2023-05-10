@@ -33,6 +33,13 @@ export default async function handler(
     consent: {
       options,
     },
+    options: {
+      debug: true,
+      isDisabled: false,
+      isGeolocationEnabled: false,
+      geolocationApiUrl: "",
+      privacyCenterUrl: "http://localhost:3000",
+    },
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 

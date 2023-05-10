@@ -1,27 +1,81 @@
-export type ConsentBannerOptions = {
+export const defaultFidesOptions = {
+  debug: false,
+  isDisabled: false,
+  isGeolocationEnabled: false,
+  geolocationApiUrl: "cdn-api.ethyca.com/location",
+}
+
+export type FidesOptions = {
   // Whether or not debug log statements should be enabled
-  debug?: boolean;
+  debug: boolean;
 
   // Whether or not the banner should be globally disabled
-  isDisabled?: boolean;
+  isDisabled: boolean;
 
   // Whether user geolocation should be enabled. Requires geolocationApiUrl
-  isGeolocationEnabled?: boolean;
+  isGeolocationEnabled: boolean;
 
   // API URL for getting user geolocation
-  geolocationApiUrl?: string;
-
-  // Display labels used for the banner text
-  labels?: {
-    bannerDescription?: string;
-    primaryButton?: string;
-    secondaryButton?: string;
-    tertiaryButton?: string;
-  };
+  geolocationApiUrl: string;
 
   // URL for the Privacy Center, used to customize consent preferences. Required.
-  privacyCenterUrl?: string;
-};
+  privacyCenterUrl: string;
+}
+
+export type ExperienceConfig = {
+  version: string;
+  component: ExperienceComponent;
+  delivery_mechanism: ExperienceDeliveryMechanism;
+  regions: Array<string>;
+  component_title: string;
+  component_description: string;
+  banner_title: string;
+  banner_description: string;
+  confirmation_button_label: string;
+  reject_button_label: string;
+  privacy_notices: Array<PrivacyNotice>;
+}
+
+export type PrivacyNotice = {
+  name: string;
+  description?: string;
+  regions: Array<string>;
+  consent_mechanism: ConsentMechanism;
+  has_gpc_flag: boolean;
+  data_uses: Array<string>;
+  enforcement_level: EnforcementLevel;
+  displayed_in_overlay?: boolean;
+  displayed_in_api?: boolean;
+  displayed_in_privacy_center?: boolean;
+  id: string;
+  created_at: string;
+  updated_at: string;
+  version: number;
+  privacy_notice_history_id: string;
+}
+
+export enum EnforcementLevel {
+  FRONTEND = "frontend",
+  SYSTEM_WIDE = "system_wide",
+  NOT_APPLICABLE = "not_applicable",
+}
+
+export enum ConsentMechanism {
+  OPT_IN = "opt_in",
+  OPT_OUT = "opt_out",
+  NOTICE_ONLY = "notice_only",
+}
+
+export enum ExperienceComponent {
+  OVERLAY = "overlay",
+  PRIVACY_CENTER = "privacy_center"
+}
+
+export enum ExperienceDeliveryMechanism {
+  BANNER = "banner",
+  LINK = "link",
+  API = "api"
+}
 
 export type UserGeolocation = {
   country?: string; // "US"

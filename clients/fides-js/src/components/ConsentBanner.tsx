@@ -1,19 +1,32 @@
 import { h, FunctionComponent } from "preact";
 import { useState, useEffect } from "preact/hooks";
-import { ButtonType, ConsentBannerOptions } from "../lib/consent-types";
-import { debugLog } from "../lib/consent-utils";
+import { ButtonType } from "../lib/consent-types";
 import ConsentBannerButton from "./ConsentBannerButton";
 import "../lib/banner.module.css";
 
 interface BannerProps {
   options: ConsentBannerOptions;
+  privacyCenterUrl: string;
   onAcceptAll: () => void;
   onRejectAll: () => void;
   waitBeforeShow: number;
 }
 
+interface ConsentBannerOptions {
+  bannerTitle?: string,
+  bannerDescription?: string,
+  confirmationButtonLabel?: string,
+  rejectButtonLabel?: string
+}
+
 const ConsentBanner: FunctionComponent<BannerProps> = ({
-  options,
+  options = {
+    bannerTitle: "Manage your consent",
+    bannerDescription: "This website processes your data respectfully, so we require your consent to use cookies.",
+    confirmationButtonLabel: "Accept All",
+    rejectButtonLabel: "Reject All"
+  },
+  privacyCenterUrl,
   onAcceptAll,
   onRejectAll,
   waitBeforeShow,
@@ -26,12 +39,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     return () => clearTimeout(delayBanner);
   }, [setIsShown, waitBeforeShow]);
   const navigateToPrivacyCenter = (): void => {
-    debugLog("Navigate to Privacy Center URL:", options.privacyCenterUrl);
-    if (options.privacyCenterUrl) {
-      window.location.assign(options.privacyCenterUrl);
+    if (privacyCenterUrl) {
+      window.location.assign(privacyCenterUrl);
     }
   };
   // TODO: support option to specify top/bottom
+  // TODO: add banner title
   return (
     <div
       id="fides-consent-banner"
@@ -43,7 +56,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         id="fides-consent-banner-description"
         className="fides-consent-banner-description"
       >
-        {options.labels?.bannerDescription || ""}
+        {options.bannerDescription || ""}
       </div>
       <div
         id="fides-consent-banner-buttons"
@@ -51,12 +64,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
       >
         <ConsentBannerButton
           buttonType={ButtonType.TERTIARY}
-          label={options.labels?.tertiaryButton}
+          label="Manage Preferences"
           onClick={navigateToPrivacyCenter}
         />
         <ConsentBannerButton
           buttonType={ButtonType.SECONDARY}
-          label={options.labels?.secondaryButton}
+          label={options.rejectButtonLabel}
           onClick={() => {
             onRejectAll();
             setIsShown(false);
@@ -69,7 +82,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         />
         <ConsentBannerButton
           buttonType={ButtonType.PRIMARY}
-          label={options.labels?.primaryButton}
+          label={options.confirmationButtonLabel}
           onClick={() => {
             onAcceptAll();
             setIsShown(false);

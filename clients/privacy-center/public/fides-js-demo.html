@@ -31,8 +31,15 @@
       <h2>Consent Banner Link</h2>
       <a href="#" id="fides-consent-link">Manage Consent</a>
 
-      <h2>Consent Banner Options</h2>
-      <pre id="consent-banner-options"></pre>
+      <h2>Consent Experience</h2>
+      <pre id="consent-experience"></pre>
+
+      <h2>Geolocation</h2>
+      <pre id="consent-geolocation"></pre>
+
+      <h2>Consent Options</h2>
+      <pre id="consent-options"></pre>
+
     </main>
   </body>
 
@@ -52,9 +59,26 @@
         2
       );
 
-      // Pretty-print the fides consent banner options object and add it to the page.
-      document.getElementById("consent-banner-options").textContent =
-        JSON.stringify(Fides.getBannerOptions(), null, 2);
+      // Pretty-print the fides experience config object and add it to the page.
+      document.getElementById("consent-experience").textContent = JSON.stringify(
+              Fides.experience,
+              null,
+              2
+      );
+
+      // Pretty-print the fides geolocation object and add it to the page.
+      document.getElementById("consent-geolocation").textContent = JSON.stringify(
+              Fides.geolocation,
+              null,
+              2
+      );
+
+      // Pretty-print the fides options object and add it to the page.
+      document.getElementById("consent-options").textContent = JSON.stringify(
+              Fides.options,
+              null,
+              2
+      );
 
       // Test behavior of integrations that can be configured without/before their platform scripts.
       Fides.gtm();

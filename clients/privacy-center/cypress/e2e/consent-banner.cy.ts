@@ -1,12 +1,14 @@
 import { CONSENT_COOKIE_NAME } from "fides-js";
 import {
-  ConsentBannerOptions,
-  ConsentConfig,
+  ConsentMechanism,
+  EnforcementLevel,
+  ExperienceComponent,
+  ExperienceDeliveryMechanism,
   FidesConfig,
   FidesCookie,
 } from "fides-js/src/fides";
 
-// The fides-js-demo.html page is wired up to inject the
+// The fides-js-components-demo.html page is wired up to inject the
 // `fidesConsentBannerOptions` into the Fides.init(...) function
 declare global {
   interface Window {
@@ -19,8 +21,7 @@ declare global {
   namespace Cypress {
     interface Chainable {
       visitConsentDemo(
-        consent?: ConsentConfig,
-        bannerOptions?: ConsentBannerOptions
+        options?: FidesConfig
       ): Chainable<any>;
     }
   }
@@ -43,42 +44,64 @@ describe("Consent banner", () => {
         },
       ],
     },
-    bannerOptions: {
-      debug: true, // enable debug logging
-      labels: {
-        bannerDescription:
-          "This test website is overriding the banner description label.",
-        primaryButton: "Accept Test",
-        secondaryButton: "Reject Test",
-        tertiaryButton: "Customize Test",
-      },
+    experience: {
+      version: "1.0",
+      component: ExperienceComponent.OVERLAY,
+      delivery_mechanism: ExperienceDeliveryMechanism.BANNER,
+      regions: ["us_ca", "us_co"],
+      component_title: "Manage your consent",
+      component_description:
+        "On this page you can opt in and out of these data uses cases",
+      banner_title: "Manage your consent",
+      banner_description:
+        "This test website is overriding the banner description label.",
+      confirmation_button_label: "Accept Test",
+      reject_button_label: "Reject Test",
+      privacy_notices: [
+        {
+          name: "Test privacy notice",
+          description: "a test sample privacy notice configuration",
+          regions: ["us_ca"],
+          consent_mechanism: ConsentMechanism.OPT_IN,
+          has_gpc_flag: true,
+          data_uses: ["advertising", "third_party_sharing"],
+          enforcement_level: EnforcementLevel.SYSTEM_WIDE,
+          displayed_in_overlay: true,
+          displayed_in_api: true,
+          displayed_in_privacy_center: false,
+          id: "pri_4bed96d0-b9e3-4596-a807-26b783836374",
+          created_at: "2023-04-24T21:29:08.870351+00:00",
+          updated_at: "2023-04-24T21:29:08.870351+00:00",
+          version: 1.0,
+          privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
+        },
+      ],
+    },
+    geolocation: {},
+    options: {
+      debug: true,
+      isDisabled: false,
+      isGeolocationEnabled: false,
+      geolocationApiUrl: "",
+      privacyCenterUrl: "http://localhost:3000",
     },
   };
 
-  Cypress.Commands.add(
-    "visitConsentDemo",
-    (consent?: ConsentConfig, bannerOptions?: ConsentBannerOptions) => {
-      cy.visit("/fides-js-components-demo.html", {
-        onBeforeLoad: (win) => {
-          // eslint-disable-next-line no-param-reassign
-          win.fidesConsentBannerOptions = {
-            consent: {
-              ...testBannerOptions.consent,
-              ...consent,
-            },
-            bannerOptions: {
-              ...testBannerOptions.bannerOptions,
-              ...bannerOptions,
-            },
-          };
-        },
-      });
-    }
-  );
+  Cypress.Commands.add("visitConsentDemo", (options?: FidesConfig) => {
+    cy.visit("/fides-js-components-demo.html", {
+      onBeforeLoad: (win) => {
+        // eslint-disable-next-line no-param-reassign
+        win.fidesConsentBannerOptions = options;
+      },
+    });
+  });
 
   describe("when disabled", () => {
     beforeEach(() => {
-      cy.visitConsentDemo(undefined, { isDisabled: true });
+      // todo- need a better test pattern for overriding default config
+      const newTestOptions = testBannerOptions;
+      newTestOptions.options.isDisabled = true;
+      cy.visitConsentDemo(newTestOptions);
     });
 
     it("does not render", () => {
@@ -94,10 +117,10 @@ describe("Consent banner", () => {
 
     describe("when banner is not disabled", () => {
       beforeEach(() => {
-        cy.visitConsentDemo(undefined, {
-          isDisabled: false,
-          isGeolocationEnabled: false,
-        });
+        const newTestOptions = testBannerOptions;
+        newTestOptions.options.isDisabled = false;
+        newTestOptions.options.isGeolocationEnabled = false;
+        cy.visitConsentDemo(newTestOptions);
       });
 
       it("should render the expected HTML banner", () => {
@@ -112,7 +135,7 @@ describe("Consent banner", () => {
           ).within(() => {
             cy.get(
               "button#fides-consent-banner-button-tertiary.fides-consent-banner-button.fides-consent-banner-button-tertiary"
-            ).contains("Customize Test");
+            ).contains("Manage Preferences");
             cy.get(
               "button#fides-consent-banner-button-secondary.fides-consent-banner-button.fides-consent-banner-button-secondary"
             ).contains("Reject Test");
@@ -165,7 +188,9 @@ describe("Consent banner", () => {
       });
 
       it("should navigate to Privacy Center to manage consent options", () => {
-        cy.contains("button", "Customize Test").should("be.visible").click();
+        cy.contains("button", "Manage Preferences")
+          .should("be.visible")
+          .click();
         cy.url().should("equal", "http://localhost:3000/");
       });
 

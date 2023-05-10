@@ -19,7 +19,16 @@
  *         default: true,
  *         fidesDataUseKey: "advertising"
  *       }]
- *     }
+ *     },
+ *     experience: {},
+ *     geolocation: {},
+ *     options: {
+ *           debug: true,
+ *           isDisabled: false,
+ *           isGeolocationEnabled: false,
+ *           geolocationApiUrl: "",
+ *           privacyCenterUrl: "http://localhost:3000"
+ *         }
  *   });
  * </script>
  * ```
@@ -46,18 +55,26 @@ import {
   getOrMakeFidesCookie,
   makeConsentDefaults,
 } from "./lib/cookie";
-import { ConsentBannerOptions } from "./lib/consent-types";
-import { getBannerOptions } from "./lib/consent-utils";
+import {defaultFidesOptions, ExperienceConfig, FidesOptions, UserGeolocation} from "./lib/consent-types";
 
 export interface FidesConfig {
-  consent: ConsentConfig;
-  bannerOptions?: ConsentBannerOptions;
+  // Set the consent defaults from a "legacy" Privacy Center config.json.
+  consent?: ConsentConfig;
+  // Set the "experience" to be used for this Fides.js instance -- overrides the "legacy" config.
+  // If not set, Fides.js will fetch its own experience config.
+  experience?: ExperienceConfig;
+  // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
+  geolocation?: UserGeolocation;
+  // Global options for this Fides.js instance. Fides provides defaults for all props except privacyCenterUrl
+  options: FidesOptions;
 }
 
 type Fides = {
   consent: CookieKeyConsent;
+  experience?: ExperienceConfig;
+  geolocation?: UserGeolocation;
+  options: FidesOptions
   fides_meta: CookieMeta;
-  getBannerOptions: () => ConsentBannerOptions;
   gtm: typeof gtm;
   identity: CookieIdentity;
   init: typeof init;
@@ -80,22 +97,27 @@ let _Fides: Fides;
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  // Configure the default values
+  // passed-in config should override default options
+  // eslint-disable-next-line no-param-reassign
+  config.options = { ...defaultFidesOptions, ...config.options }
+  // Configure the default consent values
   const context = getConsentContext();
-  const defaults = makeConsentDefaults({
+  const consentDefaults = makeConsentDefaults({
     config: config.consent,
     context,
   });
 
   // Load any existing user preferences from the browser cookie
-  const cookie = getOrMakeFidesCookie(defaults);
+  const cookie = getOrMakeFidesCookie(consentDefaults);
 
-  await initFidesConsent(defaults, config.bannerOptions);
+  await initFidesConsent(consentDefaults, config);
   // Initialize the window.Fides object
   _Fides.consent = cookie.consent;
-  _Fides.getBannerOptions = getBannerOptions;
   _Fides.fides_meta = cookie.fides_meta;
   _Fides.identity = cookie.identity;
+  _Fides.experience = config.experience;
+  _Fides.geolocation = config.geolocation;
+  _Fides.options = config.options;
 
   _Fides.initialized = true;
 };
@@ -103,8 +125,10 @@ const init = async (config: FidesConfig) => {
 // The global Fides object; this is bound to window.Fides if available
 _Fides = {
   consent: {},
+  experience: undefined,
+  geolocation: {},
+  options: {...defaultFidesOptions, privacyCenterUrl:""},
   fides_meta: {},
-  getBannerOptions,
   identity: {},
   gtm,
   init,

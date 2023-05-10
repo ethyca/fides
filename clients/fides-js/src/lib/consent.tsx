@@ -1,50 +1,34 @@
-import { h, render } from "preact";
-import {
-  CookieKeyConsent,
-  setConsentCookieAcceptAll,
-  setConsentCookieRejectAll,
-} from "./cookie";
+import {h, render} from "preact";
+import {CookieKeyConsent, setConsentCookieAcceptAll, setConsentCookieRejectAll} from "./cookie";
 import ConsentBanner from "../components/ConsentBanner";
-import { ConsentBannerOptions, UserGeolocation } from "./consent-types";
-import { debugLog, getBannerOptions, setBannerOptions } from "./consent-utils";
+import {FidesOptions, UserGeolocation} from "./consent-types";
+import {debugLog} from "./consent-utils";
+import {FidesConfig} from "../fides";
 
 /**
- * Validate the banner options. This checks for errors like using geolocation
- * without an API
+ * Validate the config options
  */
-const validateBannerOptions = (options: ConsentBannerOptions): boolean => {
+const validateBannerOptions = (config: FidesConfig): boolean => {
   // Check if options is an invalid type
-  if (options === undefined || typeof options !== "object") {
+  if (config.options === undefined || typeof config.options !== "object") {
+    return false;
+  }
+  // todo- more validation here?
+
+  if (!config.options.privacyCenterUrl) {
+    debugLog(config.options.debug, "Invalid banner options: privacyCenterUrl is required!");
     return false;
   }
 
-  if (typeof options.labels === "object") {
-    let validLabels = true;
-    Object.entries(options.labels).forEach((value: [string, string]) => {
-      if (typeof value[1] !== "string") {
-        debugLog(`Invalid banner options: labels.${value[0]} is not a string!`);
-        validLabels = false;
-      }
-    });
-
-    if (!validLabels) {
-      return false;
-    }
-  }
-
-  if (!options.privacyCenterUrl) {
-    debugLog("Invalid banner options: privacyCenterUrl is required!");
-    return false;
-  }
-
-  if (options.privacyCenterUrl) {
+  if (config.options.privacyCenterUrl) {
     try {
       // eslint-disable-next-line no-new
-      new URL(options.privacyCenterUrl);
+      new URL(config.options.privacyCenterUrl);
     } catch (e) {
       debugLog(
+          config.options.debug,
         "Invalid banner options: privacyCenterUrl is an invalid URL!",
-        options
+        config
       );
       return false;
     }
@@ -56,20 +40,20 @@ const validateBannerOptions = (options: ConsentBannerOptions): boolean => {
 /**
  * Fetch the user's geolocation from an external API
  */
-const getLocation = async (): Promise<UserGeolocation> => {
+const getLocation = async (options: FidesOptions): Promise<UserGeolocation> => {
   // assumes that isGeolocationEnabled is true
-  debugLog("Running getLocation...");
-  const options = getBannerOptions();
-  const { geolocationApiUrl } = options;
+  debugLog(options.debug,"Running getLocation...");
+  const {geolocationApiUrl} = options
 
   if (!geolocationApiUrl) {
     debugLog(
+        options.debug,
       "Location cannot be found due to no configured geoLocationApiUrl."
     );
     return {};
   }
 
-  debugLog(`Calling geolocation API: GET ${geolocationApiUrl}...`);
+  debugLog(options.debug,`Calling geolocation API: GET ${geolocationApiUrl}...`);
   const fetchOptions: RequestInit = {
     mode: "cors",
   };
@@ -77,6 +61,7 @@ const getLocation = async (): Promise<UserGeolocation> => {
 
   if (!response.ok) {
     debugLog(
+        options.debug,
       "Error getting location from geolocation API, returning {}. Response:",
       response
     );
@@ -85,10 +70,11 @@ const getLocation = async (): Promise<UserGeolocation> => {
 
   try {
     const body = await response.json();
-    debugLog("Got location response from geolocation API, returning:", body);
+    debugLog(options.debug,"Got location response from geolocation API, returning:", body);
     return body;
   } catch (e) {
     debugLog(
+        options.debug,
       "Error parsing response body from geolocation API, returning {}. Response:",
       response
     );
@@ -103,45 +89,34 @@ const getLocation = async (): Promise<UserGeolocation> => {
  */
 export const initFidesConsent = async (
   defaults: CookieKeyConsent,
-  extraOptions?: ConsentBannerOptions
+  config: FidesConfig
 ): Promise<void> => {
   debugLog(
-    "Initializing Fides consent banner with consent cookie defaults...",
+      config.options.debug,
+    "Initializing Fides consent...",
     defaults
   );
-  if (extraOptions !== undefined) {
-    if (typeof extraOptions !== "object") {
-      // eslint-disable-next-line no-console
-      console.error(
-        "Invalid 'extraOptions' arg for Fides.banner(), ignoring",
-        extraOptions
-      );
-    } else {
-      // If the user provides any extra options, override the defaults
-      setBannerOptions({ ...getBannerOptions(), ...extraOptions });
-    }
-  }
-  const options: ConsentBannerOptions = getBannerOptions();
 
-  debugLog("Validating Fides consent banner options...", options);
-  if (!validateBannerOptions(options)) {
+  debugLog(config.options.debug,"Validating Fides consent banner options...", config);
+  if (!validateBannerOptions(config)) {
     return Promise.reject(new Error("Invalid banner options"));
   }
 
-  if (options.isDisabled) {
+  if (config.options.isDisabled) {
     debugLog(
+        config.options.debug,
       "Fides consent banner is disabled, skipping banner initialization!"
     );
     return Promise.resolve();
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    debugLog("DOM fully loaded and parsed");
+    debugLog(config.options.debug,"DOM fully loaded and parsed");
 
     try {
-      debugLog("Adding Fides consent banner CSS & HTML into the DOM...");
-      if (options.isGeolocationEnabled) {
-        getLocation()
+      debugLog(config.options.debug, "Adding Fides consent banner CSS & HTML into the DOM...");
+      if (config.options.isGeolocationEnabled) {
+        getLocation(config.options)
           .then(() => {
             // todo- get applicable notices using location
           })
@@ -157,7 +132,13 @@ export const initFidesConsent = async (
       };
       render(
         <ConsentBanner
-          options={options}
+          options={{
+            bannerTitle: config.experience?.banner_title,
+            bannerDescription: config.experience?.banner_description,
+            confirmationButtonLabel: config.experience?.confirmation_button_label,
+            rejectButtonLabel: config.experience?.reject_button_label
+          }}
+          privacyCenterUrl={config.options.privacyCenterUrl}
           onAcceptAll={onAcceptAll}
           onRejectAll={onRejectAll}
           waitBeforeShow={100}
@@ -168,21 +149,22 @@ export const initFidesConsent = async (
       if (
         consentLinkEl &&
         consentLinkEl instanceof HTMLAnchorElement &&
-        options.privacyCenterUrl
+        config.options.privacyCenterUrl
       ) {
         debugLog(
-          `Fides consent link el found, replacing href with ${options.privacyCenterUrl}`
+            config.options.debug,
+          `Fides consent link el found, replacing href with ${config.options.privacyCenterUrl}`
         );
-        consentLinkEl.href = options.privacyCenterUrl;
+        consentLinkEl.href = config.options.privacyCenterUrl;
         // TODO: depending on notices / experience config, we update onclick of this link to nav to PC or open modal,
         // or hide link entirely
       } else {
-        debugLog("Fides consent link el not found");
+        debugLog(config.options.debug,"Fides consent link el not found");
       }
 
-      debugLog("Fides consent banner is now showing!");
+      debugLog(config.options.debug,"Fides consent banner is now showing!");
     } catch (e) {
-      debugLog(e);
+      debugLog(config.options.debug, e);
     }
   });
   return Promise.resolve();
