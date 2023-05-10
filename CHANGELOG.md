@@ -25,6 +25,7 @@ The types of changes are:
 - Initial privacy experience UI [#3186](https://github.com/ethyca/fides/pull/3186)
 - Access and erasure support for OneSignal [#3199](https://github.com/ethyca/fides/pull/3199)
 - Add the ability to "inject" location into `/fides.js` bundles and cache responses for one hour [#3272](https://github.com/ethyca/fides/pull/3272)
+- Allow Material Design and FontAwesome icons to be passed in to Privacy Center `icon_path` configuration [#2907](https://github.com/ethyca/fides/pull/2907)
 
 ### Changed
 
