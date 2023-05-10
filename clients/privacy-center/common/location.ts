@@ -27,8 +27,8 @@ export const LOCATION_HEADERS = [
 
 /**
  * Lookup the "location" (ie country and region) for the given request by looking for either:
- * 1) Supported geolocation headers (e.g. "Cloudfront-Viewer-Country: US")
- * 2) An explicit "location" query param (e.g. https://privacy.example.com/some/path?location=US-CA)
+ * 1) An explicit "location" query param (e.g. https://privacy.example.com/some/path?location=US-CA)
+ * 2) Supported geolocation headers (e.g. "Cloudfront-Viewer-Country: US")
  *
  * If neither of these are found, return an undefined location.
  *
