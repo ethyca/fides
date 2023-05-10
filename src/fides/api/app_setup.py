@@ -18,7 +18,6 @@ from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.database.seed import create_or_update_parent_user
 from fides.api.ctl.routes import admin, crud, generate, health, system, validate
-from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.utils.errors import FidesError
 from fides.api.ctl.utils.logger import setup as setup_logging
 from fides.api.ops.api.deps import get_api_session
@@ -64,7 +63,6 @@ def create_fides_app(
     cors_origin_regex: Optional[Pattern] = CONFIG.security.cors_origin_regex,
     routers: List = ROUTERS,
     app_version: str = VERSION,
-    api_prefix: str = API_PREFIX,
     request_rate_limit: str = CONFIG.security.request_rate_limit,
     rate_limit_prefix: str = CONFIG.security.rate_limit_prefix,
     security_env: str = CONFIG.security.env,
@@ -149,9 +147,10 @@ async def run_database_startup() -> None:
     if not CONFIG.database.sync_database_uri:
         raise FidesError("No database uri provided")
 
-    await configure_db(
-        CONFIG.database.sync_database_uri, samples=CONFIG.database.load_samples
-    )
+    if CONFIG.database.automigrate:
+        await configure_db(
+            CONFIG.database.sync_database_uri, samples=CONFIG.database.load_samples
+        )
 
     try:
         create_or_update_parent_user()

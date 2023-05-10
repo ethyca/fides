@@ -29,7 +29,7 @@ def db_init(ctx: click.Context) -> None:
         _api.db_action(
             server_url=config.cli.server_url,
             headers=config.user.auth_header,
-            action="init",
+            action="migrate",
         )
     )
 

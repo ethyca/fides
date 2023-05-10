@@ -31,8 +31,8 @@ async def db_action(action: DBActions) -> Dict:
     """
     Initiate one of the enumerated DBActions.
     """
+    action_text = "migrated"
 
-    action_text = "initialized"
     if action == DBActions.reset:
         if not CONFIG.dev_mode:
             raise errors.FunctionalityNotConfigured(
@@ -40,6 +40,8 @@ async def db_action(action: DBActions) -> Dict:
             )
 
         database.reset_db(CONFIG.database.sync_database_uri)
-        action_text = DBActions.reset
+        action_text = "reset"
+
     await database.configure_db(CONFIG.database.sync_database_uri)
+
     return {"data": {"message": f"fides database {action_text}"}}
