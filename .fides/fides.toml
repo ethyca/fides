@@ -1,5 +1,4 @@
 [database]
-automigrate = false
 server = "fides-db"
 user = "postgres"
 password = "fides"
