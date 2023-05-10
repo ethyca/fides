@@ -8,23 +8,6 @@ import {
   ExperienceDeliveryMechanism,
 } from "fides-js";
 
-// The fides-js-components-demo.html page is wired up to inject the
-// `fidesConfig` into the Fides.init(...) function
-declare global {
-  interface Window {
-    fidesConfig?: FidesConfig;
-  }
-}
-
-// We define a custom Cypress command
-declare global {
-  namespace Cypress {
-    interface Chainable {
-      visitConsentDemo(options?: FidesConfig): Chainable<any>;
-    }
-  }
-}
-
 describe("Consent banner", () => {
   // Default options to use for all tests
   const testBannerOptions: FidesConfig = {
@@ -84,15 +67,6 @@ describe("Consent banner", () => {
       privacyCenterUrl: "http://localhost:3000",
     },
   };
-
-  Cypress.Commands.add("visitConsentDemo", (options?: FidesConfig) => {
-    cy.visit("/fides-js-components-demo.html", {
-      onBeforeLoad: (win) => {
-        // eslint-disable-next-line no-param-reassign
-        win.fidesConfig = options;
-      },
-    });
-  });
 
   describe("when disabled", () => {
     beforeEach(() => {
