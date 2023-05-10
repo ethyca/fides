@@ -39,8 +39,12 @@ from fides.api.ops.common_exceptions import (
     OAuth2TokenException,
 )
 from fides.api.ops.models.authentication_request import AuthenticationRequest
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.oauth.roles import ROLES_TO_SCOPES_MAPPING
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.client import ClientCreatedResponse
+from fides.api.ops.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
 from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
@@ -48,14 +52,7 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2_authori
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
-from fides.lib.models.client import ClientDetail
-from fides.lib.oauth.roles import ROLES_TO_SCOPES_MAPPING
-from fides.lib.oauth.schemas.oauth import (
-    AccessToken,
-    OAuth2ClientCredentialsRequestForm,
-)
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 
@@ -228,10 +225,11 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
             detail="No authentication request found for the given state.",
         )
 
-    connection_config: ConnectionConfig = ConnectionConfig.get_by(
+    connection_config: Optional[ConnectionConfig] = ConnectionConfig.get_by(
         db, field="key", value=authentication_request.connection_key
     )
     verify_oauth_connection_config(connection_config)
+    assert connection_config, "Connection config expected!"  # fixes mypy
 
     try:
         authentication = (

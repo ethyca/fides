@@ -7,6 +7,7 @@ from fides.api.ops.common_exceptions import (
     RuleValidationError,
     StorageConfigNotFoundException,
 )
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.policy import (
     ActionType,
     Policy,
@@ -23,7 +24,6 @@ from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
 )
 from fides.api.ops.util.data_category import DataCategory
 from fides.api.ops.util.text import to_snake_case
-from fides.lib.models.client import ClientDetail
 
 
 def test_policy_sets_slug(

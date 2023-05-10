@@ -3,10 +3,10 @@ from typing import Optional
 from pydantic import EmailStr, Extra
 
 from fides.api.custom_types import PhoneNumber
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 
 
-class IdentityBase(BaseSchema):
+class IdentityBase(FidesSchema):
     """The minimum fields required to represent an identity."""
 
     phone_number: Optional[PhoneNumber] = None

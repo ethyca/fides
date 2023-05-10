@@ -10,8 +10,8 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.util import hybridproperty
 
+from fides.api.ops.db.base_class import Base
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
-from fides.lib.db.base_class import Base
 
 
 class ComponentType(Enum):
@@ -161,6 +161,8 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
 
             PrivacyExperienceHistory.create(db, data=history_data, check_name=False)
 
+        # Cache privacy notices for display
+        self.privacy_notices = self.get_related_privacy_notices(db)
         return self
 
     @hybridproperty

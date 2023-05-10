@@ -10,11 +10,11 @@ from git.repo import Repo
 from py._path.local import LocalPath
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.ops.oauth.roles import OWNER, VIEWER
 from fides.cli import cli
 from fides.core.config import CONFIG
 from fides.core.user import get_systems_managed_by_user, get_user_permissions
 from fides.core.utils import get_auth_header, read_credentials_file
-from fides.lib.oauth.roles import OWNER, VIEWER
 
 OKTA_URL = "https://dev-78908748.okta.com"
 

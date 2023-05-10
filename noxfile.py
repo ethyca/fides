@@ -45,19 +45,38 @@ def open_docs(session: nox.Session) -> None:
 
 @nox.session()
 def usage(session: nox.Session) -> None:
-    """Prints the documentation for a nox session provided: `nox -s usage -- <session>`."""
+    """
+    Prints the documentation for a nox session provided as a posarg.
+
+    Example:
+        - 'nox -s usage -- <session>'
+    """
 
     if not session.posargs:
         session.error("Please provide a session name, such as `clean`")
 
-    command = session.posargs[0]
+    session_target = session.posargs[0]
 
-    if not command in globals():
+    if not session_target in globals():
         session.error(
-            "Sorry, this isn't a valid nox session.\nExamples: `clean`, `build`, `pytest_ctl`"
+            "Sorry, this isn't a valid nox session.\nTry `nox -l` for a list of session names"
         )
 
-    session.log(globals()[command].__doc__)
+    session_object = globals()[session_target]
+    separator = "-" * 40
+    session.log(separator)
+
+    name_str = f"Command: '{session_object.__name__}' "
+    session.log(name_str)
+    session.log(separator)
+
+    session.log(f"Module Location: '{session_object.__module__}'")
+    session.log(separator)
+
+    # This cleaning step helps the docstring properly align left in the terminal
+    cleaned_docstring = session_object.__doc__.lstrip().rstrip().replace("    ", "")
+    session.log("Docstring:\n" + cleaned_docstring)
+    session.log(separator)
 
 
 def check_for_env_file() -> None:

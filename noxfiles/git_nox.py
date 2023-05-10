@@ -68,38 +68,52 @@ def get_current_tag(
 
 
 @nox.session()
-def tag(session: nox.Session) -> str:
+@nox.parametrize(
+    "action",
+    [
+        nox.param("dry", id="dry"),
+        nox.param("local", id="local"),
+        nox.param("push", id="push"),
+    ],
+)
+def tag(session: nox.Session, action: str) -> None:
     """
-    Generates, applies and pushes a git tag to the current HEAD commit,
-    based on the currently checked out branch and existing tags in the repo.
+    Generates and optionally applies and pushes a git tag for the current HEAD commit.
+
+    Programmatically generates new tags based on the currently checked out
+    branch and existing tags in the repo.
 
     Positional Arguments:
-    - (default) = don't actually apply the tag or push, just show the tag that will be generated
-    - only_tag = generate and apply the a tag locally to the current commit, but don't push the tag
-    - push = generate, apply and push a tag
+        N/A
+
+    Parameters:
+        - tag(dry) = Show the tag that would be applied.
+        - tag(local) = Tag local commit but don't push it.
+        - tag(push) = Tag the current commit and push it. NOTE: This will trigger a new CI job to publish the tag.
     """
     from git.repo import Repo
 
-    posargs_set = set(session.posargs)
     repo = Repo()
     all_tags = get_all_tags(repo)
 
-    generated_tag = generate_tag(
-        session, repo.active_branch.name, all_tags
-    )  # generate a tag based on the current repo state
+    # generate a tag based on the current repo state
+    generated_tag = generate_tag(session, repo.active_branch.name, all_tags)
 
     # if no args are passed, it's a dry run
-    if ONLY_TAG not in posargs_set and PUSH not in posargs_set:
+    if action == "dry":
         session.log(f"Dry-run -- would generate tag: {generated_tag}")
-        return
 
-    session.log(f"Tagging current HEAD commit with tag: {generated_tag}")
-    repo.create_tag(generated_tag)
+    elif action == "local":
+        session.log(f"Tagging current HEAD commit with tag: {generated_tag}")
+        repo.create_tag(generated_tag)
 
-    if PUSH in posargs_set and ONLY_TAG not in posargs_set:
-        # push the tag if we've been told to
+    elif action == "push":
+        repo.create_tag(generated_tag)
         session.log(f"Pushing tag {generated_tag} to remote (origin)")
         repo.remotes.origin.push(generated_tag)
+
+    else:
+        session.error(f"Invalid action: {action}")
 
 
 def next_release_increment(session: nox.Session, all_tags: List):

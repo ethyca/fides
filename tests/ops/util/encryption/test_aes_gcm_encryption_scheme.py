@@ -1,10 +1,10 @@
 import pytest
 
+from fides.api.ops.cryptography import cryptographic_util
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     encrypt_verify_secret_length,
 )
-from fides.lib.cryptography import cryptographic_util
 
 NONCE = b"B\xab\x93&\x99u\x0c\xea\xe9\xb7\x8dU"
 KEY = b"y\xc5I\xd4\x92\xf6G\t\x80\xb1$\x06\x19t/\xc4"

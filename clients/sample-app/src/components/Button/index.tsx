@@ -1,12 +1,12 @@
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
-import css from './style.module.scss';
+import css from "./style.module.scss";
 
 interface Props {
   children: ReactNode;
-  color: 'primary' | 'secondary';
+  color: "primary" | "secondary";
   className?: string;
-  type?: 'button' | 'submit';
+  type?: "button" | "submit";
   disabled?: boolean;
   onClick?: () => void;
 }
@@ -14,18 +14,19 @@ const Button = ({
   children,
   color,
   className,
-  type = 'button',
+  type = "button",
   disabled,
   onClick,
 }: Props) => (
-    <button 
-        type={type}
-        onClick={onClick}
-        className={css.button + ' ' + css[color] + ' ' + (className ?? '')}
-        disabled={disabled}
-    >
-        {children}
-    </button>
+  <button
+    // eslint-disable-next-line react/button-has-type
+    type={type}
+    onClick={onClick}
+    className={`${css.button} ${css[color]} ${className ?? ""}`}
+    disabled={disabled}
+  >
+    {children}
+  </button>
 );
 
 export default Button;

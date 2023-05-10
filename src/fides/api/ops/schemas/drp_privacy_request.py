@@ -5,12 +5,12 @@ from pydantic import EmailStr, validator
 
 from fides.api.custom_types import PhoneNumber
 from fides.api.ops.models.policy import DrpAction
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 
 DRP_VERSION = "0.5"
 
 
-class DrpMeta(BaseSchema):
+class DrpMeta(FidesSchema):
     """Enum to hold Drp metadata. Only version is supported at this time"""
 
     version: str
@@ -22,7 +22,7 @@ class DrpRegime(Enum):
     ccpa = "ccpa"
 
 
-class DrpPrivacyRequestCreate(BaseSchema):
+class DrpPrivacyRequestCreate(FidesSchema):
     """Data required to create a DRP PrivacyRequest"""
 
     meta: DrpMeta
@@ -45,7 +45,7 @@ class DrpPrivacyRequestCreate(BaseSchema):
         return exercise
 
 
-class DrpIdentity(BaseSchema):
+class DrpIdentity(FidesSchema):
     """Drp identity props"""
 
     aud: Optional[str]
@@ -60,7 +60,7 @@ class DrpIdentity(BaseSchema):
     owner_of_attorney: Optional[str]
 
 
-class DrpDataRightsResponse(BaseSchema):
+class DrpDataRightsResponse(FidesSchema):
     """Drp data rights response"""
 
     version: str
@@ -69,7 +69,7 @@ class DrpDataRightsResponse(BaseSchema):
     user_relationships: Optional[List[str]]
 
 
-class DrpRevokeRequest(BaseSchema):
+class DrpRevokeRequest(FidesSchema):
     """DRP Data Rights Revoke Request Body"""
 
     request_id: str

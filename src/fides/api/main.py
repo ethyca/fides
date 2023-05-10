@@ -46,6 +46,7 @@ from fides.api.ops.common_exceptions import (
     RedisConnectionError,
 )
 from fides.api.ops.models.application_config import ApplicationConfig
+from fides.api.ops.oauth.utils import get_root_client, verify_oauth_client_prod
 from fides.api.ops.schemas.analytics import Event, ExtraData
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     update_saas_configs,
@@ -65,7 +66,6 @@ from fides.api.ops.service.saas_request.override_implementations import *
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import _log_exception
-from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_prod
 from fides.api.ops.util.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
@@ -74,7 +74,6 @@ from fides.api.ops.util.system_manager_oauth_util import (
 )
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.core.config import CONFIG, check_required_webserver_config_values
-from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
 VERSION = fides.__version__
 
@@ -87,7 +86,6 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     system.system_connections_router,
     system.system_router,
 ]
-
 
 app = create_fides_app()
 
@@ -165,31 +163,6 @@ async def prepare_and_log_request(
     )
 
 
-# Configure the routes here so we can generate the openapi json file
-
-
-@app.on_event("startup")
-async def setup_server() -> None:
-    "Run all of the required setup steps for the webserver."
-
-    log_startup()
-    await run_database_startup()
-    check_redis()
-    initiate_scheduled_batch_email_send()
-
-    logger.debug("Sending startup analytics events...")
-    await send_analytics_event(
-        AnalyticsEvent(
-            docker=in_docker_container(),
-            event=Event.server_start.value,
-            event_created_at=datetime.now(tz=timezone.utc),
-        )
-    )
-
-    logger.info(FIDES_ASCII_ART)
-    logger.info(f"Fides startup complete! v{VERSION}")
-
-
 @app.middleware("http")
 async def log_request(request: Request, call_next: Callable) -> Response:
     """Log basic information about every request handled by the server."""
@@ -259,6 +232,28 @@ def read_other_paths(request: Request) -> Response:
         path,
     )
     return get_admin_index_as_response()
+
+
+@app.on_event("startup")
+async def setup_server() -> None:
+    "Run all of the required setup steps for the webserver."
+
+    log_startup()
+    await run_database_startup()
+    check_redis()
+    initiate_scheduled_batch_email_send()
+
+    logger.debug("Sending startup analytics events...")
+    await send_analytics_event(
+        AnalyticsEvent(
+            docker=in_docker_container(),
+            event=Event.server_start.value,
+            event_created_at=datetime.now(tz=timezone.utc),
+        )
+    )
+
+    logger.info(FIDES_ASCII_ART)
+    logger.info(f"Fides startup complete! v{VERSION}")
 
 
 def start_webserver(port: int = 8080) -> None:
