@@ -8,7 +8,6 @@ import requests
 from fideslang import DEFAULT_TAXONOMY, model_list, models, parse
 from fideslang.models import System as SystemSchema
 from pytest import MonkeyPatch
-from sqlalchemy.exc import IntegrityError
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -39,10 +38,10 @@ from fides.api.ops.api.v1.scope_registry import (
     SYSTEM_UPDATE,
     UPDATE,
 )
+from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.ops.oauth.roles import OWNER, VIEWER
 from fides.core import api as _api
 from fides.core.config import FidesConfig, get_config
-from fides.lib.oauth.api.urn_registry import V1_URL_PREFIX
-from fides.lib.oauth.roles import OWNER, VIEWER
 
 CONFIG = get_config()
 

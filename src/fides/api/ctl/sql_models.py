@@ -31,15 +31,13 @@ from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
+from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
+from fides.api.ops.db.base_class import Base
+from fides.api.ops.db.base_class import FidesBase as FideslibBase
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
 from fides.core.config import CONFIG
-from fides.lib.db.base import (  # type: ignore[attr-defined]
-    Base,
-    ClientDetail,
-    FidesUser,
-    FidesUserPermissions,
-)
-from fides.lib.db.base_class import FidesBase as FideslibBase
-from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 
 class FidesBase(FideslibBase):

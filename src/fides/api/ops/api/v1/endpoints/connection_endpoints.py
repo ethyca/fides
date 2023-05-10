@@ -37,6 +37,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionTestStatus,
     ConnectionType,
 )
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
@@ -56,7 +57,6 @@ from fides.api.ops.util.connection_util import (
     validate_secrets,
 )
 from fides.api.ops.util.logger import Pii
-from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 

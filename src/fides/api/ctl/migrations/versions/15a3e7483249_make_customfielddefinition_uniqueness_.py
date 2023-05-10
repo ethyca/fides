@@ -17,7 +17,6 @@ depends_on = None
 
 
 def upgrade():
-
     try:
         op.execute(
             """ CREATE UNIQUE INDEX ix_plus_custom_field_definition_unique_lowername_resourcetype

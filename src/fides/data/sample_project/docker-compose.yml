@@ -74,10 +74,6 @@ services:
         source: ./privacy_center/config
         target: /app/config
         read_only: False
-      - type: bind
-        source: ./privacy_center/public/assets
-        target: /app/public/assets
-        read_only: False
 
   fides-db:
     container_name: fides-db

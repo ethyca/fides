@@ -10,8 +10,8 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.util import hybridproperty
 
+from fides.api.ops.db.base_class import Base
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
-from fides.lib.db.base_class import Base
 
 
 class ComponentType(Enum):

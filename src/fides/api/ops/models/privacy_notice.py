@@ -14,7 +14,7 @@ from sqlalchemy.util import hybridproperty
 
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import ValidationError
-from fides.lib.db.base_class import Base, FidesBase
+from fides.api.ops.db.base_class import Base, FidesBase
 
 
 class PrivacyNoticeRegion(Enum):

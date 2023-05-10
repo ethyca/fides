@@ -8,11 +8,11 @@ from pydantic import Extra, conlist, validator
 from fides.api.custom_types import SafeStr
 from fides.api.ops.models.privacy_experience import ComponentType, DeliveryMechanism
 from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.privacy_notice import PrivacyNoticeResponse
 
 
-class PrivacyExperience(BaseSchema):
+class PrivacyExperience(FidesSchema):
     """
     Base for PrivacyExperience API objects.  Here all fields are optional since
     Pydantic allows subclasses to be more strict but not less strict

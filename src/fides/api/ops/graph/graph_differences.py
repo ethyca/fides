@@ -5,7 +5,7 @@ from fides.api.ops.graph.config import (
     TERMINATOR_ADDRESS,
     CollectionAddress,
 )
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.util.collection_util import Row
 
 if TYPE_CHECKING:
@@ -56,7 +56,7 @@ def format_graph_for_caching(
     return graph_repr
 
 
-class GraphDiff(BaseSchema):
+class GraphDiff(FidesSchema):
     """A more detailed description about how two graphs differ. Do not send these details to FidesLog."""
 
     previous_collections: List[str] = []
@@ -70,7 +70,7 @@ class GraphDiff(BaseSchema):
     skipped_added_edges: List[str] = []
 
 
-class GraphDiffSummary(BaseSchema):
+class GraphDiffSummary(FidesSchema):
     """A summary about how two graphs have changed. This can be sent to FidesLog."""
 
     prev_collection_count: int = 0

@@ -1,7 +1,7 @@
-from fides.api.ops.schemas.base_class import BaseSchema, NoValidationSchema
+from fides.api.ops.schemas.base_class import FidesSchema, NoValidationSchema
 
 
-class ManualWebhookSchema(BaseSchema):
+class ManualWebhookSchema(FidesSchema):
     """Secrets for manual webhooks. No secrets needed at this time."""
 
 

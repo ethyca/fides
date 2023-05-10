@@ -17,8 +17,10 @@ import {
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
 import { baseApi } from "~/features/common/api.slice";
-import { reducer as configReducer } from "~/features/common/config.slice";
-import { reducer as consentReducer } from "~/features/consent/consent.slice";
+import { configSlice } from "~/features/common/config.slice";
+import { settingsSlice } from "~/features/common/settings.slice";
+import { stylesSlice } from "~/features/common/styles.slice";
+import { consentSlice } from "~/features/consent/consent.slice";
 
 /**
  * To prevent the "redux-persist failed to create sync storage. falling back to noop storage"
@@ -44,8 +46,10 @@ const storage =
 
 const reducer = {
   [baseApi.reducerPath]: baseApi.reducer,
-  config: configReducer,
-  consent: consentReducer,
+  [configSlice.name]: configSlice.reducer,
+  [consentSlice.name]: consentSlice.reducer,
+  [settingsSlice.name]: settingsSlice.reducer,
+  [stylesSlice.name]: stylesSlice.reducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
@@ -55,14 +59,13 @@ const allReducers = combineReducers(reducer);
 const persistConfig = {
   key: "root",
   storage,
-  /*
-   * NOTE: It is also strongly recommended to blacklist any api(s) that you have configured with RTK
-   * Query. If the api slice reducer is not blacklisted, the api cache will be automatically
-   * persisted and restored which could leave you with phantom subscriptions from components that do
-   * not exist any more.
-   * https://redux-toolkit.js.org/usage/usage-guide#use-with-redux-persist
+
+  /**
+   * NOTE: Only persist the consent slice, since we want to remember the user's preferences across
+   * refreshes. We don't persist other slices intentionally - especially the baseApi RTK slice, since
+   * it's cache will persist and leave us with phantom subscriptions to non-existant components!
    */
-  blacklist: [baseApi.reducerPath],
+  whitelist: [consentSlice.name],
 };
 
 const persistedReducer = persistReducer(persistConfig, allReducers);
@@ -87,17 +90,13 @@ export const makeStore = (preloadedState?: Partial<RootState>) => {
 
 const store = makeStore();
 
-export type AppStore = typeof store;
-export type AppDispatch = AppStore["dispatch"];
-
-export const persistor = persistStore(store);
-
-/**
- * The store is exposed on the window object when running in the Cypress test environment. This
- * enables the custom `cy.dispatch` command.
- */
+// The store is exposed on the window object when running in the Cypress test
+// environment. This enables the custom `cy.dispatch` command.
 if (typeof window !== "undefined" && window.Cypress) {
   window.store = store;
 }
 
 export default store;
+export type AppStore = ReturnType<typeof makeStore>;
+export type AppDispatch = AppStore["dispatch"];
+export const persistor = persistStore(store);
