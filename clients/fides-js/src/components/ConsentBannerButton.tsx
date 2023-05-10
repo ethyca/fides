@@ -13,6 +13,7 @@ const ConsentBannerButton: FunctionComponent<ButtonProps> = ({
   onClick,
 }) => (
   <button
+    type="button"
     id={`fides-consent-banner-button-${buttonType.valueOf()}`}
     className={`fides-consent-banner-button fides-consent-banner-button-${buttonType.valueOf()}`}
     onClick={onClick}

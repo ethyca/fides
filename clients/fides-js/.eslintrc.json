@@ -8,14 +8,19 @@
       2,
       { "extensions": [",.js", ".jsx", ".ts", ".tsx"] }
     ],
+    "react/function-component-definition": [
+      2,
+      {
+        "namedComponents": "arrow-function",
+        "unnamedComponents": "arrow-function"
+      }
+    ],
     "curly": ["error", "all"],
     "nonblock-statement-body-position": ["error", "below"],
     "import/prefer-default-export": "off",
     "import/extensions": "off",
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",
-    "react/button-has-type": "off",
-    "react/function-component-definition": "off",
     "no-param-reassign": [
       "error",
       {
