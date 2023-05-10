@@ -44,6 +44,9 @@ The types of changes are:
 
 - Use prettier to format *all* source files in client packages [#3240](https://github.com/ethyca/fides/pull/3240)
 
+### Deprecated
+- Deprecate `fides export` CLI command as it is moving to `fidesplus` [#3264](https://github.com/ethyca/fides/pull/3264)
+
 ## [2.12.1](https://github.com/ethyca/fides/compare/2.12.0...2.12.1)
 
 ### Changed
