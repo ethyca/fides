@@ -2391,7 +2391,7 @@ def test_create_and_process_access_request_dynamodb(
     login_table_key = f"EN_{pr.id}__access_request__dynamodb_example_test_dataset:login"
     assert len(results[customer_table_key]) == 1
     assert len(results[address_table_key]) == 2
-    assert len(results[login_table_key]) == 1
+    assert len(results[login_table_key]) == 2
     assert results[customer_table_key][0]["email"] == customer_email
     assert results[customer_table_key][0]["name"] == customer_name
     assert results[customer_table_key][0]["id"] == customer_id
