@@ -38,8 +38,8 @@ def transform_fields(
     Takes a callable and returns a transformed object.
     """
 
-    for field in fields:
-        if getattr(model, field):
-            setattr(model, field, transformation(field))
+    for name, value in {field: getattr(model, field) for field in fields}.items():
+        if value:
+            setattr(model, name, transformation(value))
 
     return model
