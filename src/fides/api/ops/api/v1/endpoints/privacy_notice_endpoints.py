@@ -173,7 +173,7 @@ def get_privacy_notice(
     notice = get_privacy_notice_or_error(db, privacy_notice_id)
     if should_unescape:
         notice = transform_fields(
-            transformation=lambda x: unescape(x) if x else x,
+            transformation=unescape,
             model=notice,
             fields=ESCAPE_FIELDS,
         )
@@ -234,7 +234,7 @@ def create_privacy_notices(
     created_privacy_notices: List[PrivacyNotice] = []
     for privacy_notice in privacy_notices:
         privacy_notice = transform_fields(
-            transformation=lambda x: escape(x) if x else x,
+            transformation=escape,
             model=privacy_notice,
             fields=ESCAPE_FIELDS,
         )
@@ -276,7 +276,7 @@ def prepare_privacy_notice_patches(
             )
 
         update_data = transform_fields(
-            transformation=lambda x: escape(x) if x else x,
+            transformation=escape,
             model=update_data,
             fields=ESCAPE_FIELDS,
         )
