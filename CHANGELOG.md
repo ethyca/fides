@@ -24,6 +24,7 @@ The types of changes are:
 - Privacy Experience Bulk Create, Bulk Update, and Detail Endpoints [#3185](https://github.com/ethyca/fides/pull/3185)
 - Initial privacy experience UI [#3186](https://github.com/ethyca/fides/pull/3186)
 - Access and erasure support for OneSignal [#3199](https://github.com/ethyca/fides/pull/3199)
+- Add the ability to "inject" location into `/fides.js` bundles and cache responses for one hour [#3272](https://github.com/ethyca/fides/pull/3272)
 
 ### Changed
 
