@@ -16,7 +16,7 @@ router = APIRouter(prefix=API_PREFIX, tags=["Admin"])
 
 class DBActions(str, Enum):
     "The available path parameters for the `/admin/db/{action}` endpoint."
-    init = "init"
+    migrate = "migrate"
     reset = "reset"
 
 
