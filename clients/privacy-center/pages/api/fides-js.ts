@@ -14,8 +14,43 @@ import {
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
 
 /**
- * Server-side API route to generate the customized "fides.js" script
- * based on the current configuration values.
+ * @swagger
+ * /fides.js:
+ *   get:
+ *     description: Generates a customized "fides.js" script bundle using the current configuration values
+ *     parameters:
+ *       - in: query
+ *         name: location
+ *         required: false
+ *         description: Location string to inject into the bundle (e.g. "US-CA"), containing ISO 3166 country code (e.g. "US") and optional region code (e.g. "CA"), separated by a "-"
+ *         schema:
+ *           type: string
+ *         example: US-CA
+ *       - in: header
+ *         name: CloudFront-Viewer-Country
+ *         required: false
+ *         description: ISO 3166 country code to inject into the bundle
+ *         schema:
+ *           type: string
+ *         example: US
+ *       - in: header
+ *         name: CloudFront-Viewer-Country-Region
+ *         required: false
+ *         description: ISO 3166 region code to inject into the bundle; requires CloudFront-Viewer-Country to also be present
+ *         schema:
+ *           type: string
+ *         example: CA
+ *     responses:
+ *       200:
+ *         description: Customized "fides.js" script bundle that is ready to insert into a website
+ *         content:
+ *           application/javascript:
+ *             schema:
+ *               type: string
+ *             example: |
+ *               (function(){
+ *                 // fides.js bundle...
+ *               )();
  */
 export default async function handler(
   req: NextApiRequest,
