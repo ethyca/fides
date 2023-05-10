@@ -128,7 +128,6 @@ def create_fides_app(
 
     for router in routers:
         fastapi_app.include_router(router)
-    fastapi_app.include_router(user_router, tags=["Users"], prefix=f"{api_prefix}")
     fastapi_app.include_router(api_router)
 
     if security_env == "dev":
@@ -208,6 +207,7 @@ async def run_database_startup() -> None:
         return
     finally:
         db.close()
+
 
 def check_redis() -> None:
     """Check that Redis is healthy."""
