@@ -1,22 +1,17 @@
 """
 Contains utility functions that set up the application webserver.
 """
-from datetime import datetime, timezone
-from logging import DEBUG, WARNING
-from typing import Callable, List, Optional, Pattern, Union
+from logging import DEBUG
+from typing import List, Optional, Pattern, Union
 
-from fastapi import FastAPI, HTTPException, Request, Response, status
-from fastapi.responses import FileResponse
-from fideslog.sdk.python.event import AnalyticsEvent
+from fastapi import FastAPI
 from loguru import logger
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import Limiter, _rate_limit_exceeded_handler  # type: ignore
 from slowapi.middleware import SlowAPIMiddleware  # type: ignore
 from slowapi.util import get_remote_address  # type: ignore
-from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
-from uvicorn import Config, Server
 
 import fides
 from fides.api.ctl import view
@@ -24,20 +19,8 @@ from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.database.seed import create_or_update_parent_user
 from fides.api.ctl.routes import admin, crud, generate, health, system, validate
 from fides.api.ctl.routes.util import API_PREFIX
-from fides.api.ctl.ui import (
-    get_admin_index_as_response,
-    get_path_to_admin_ui_file,
-    get_ui_file_map,
-    match_route,
-    path_is_in_ui_directory,
-)
 from fides.api.ctl.utils.errors import FidesError
 from fides.api.ctl.utils.logger import setup as setup_logging
-from fides.api.ops.analytics import (
-    accessed_through_local_host,
-    in_docker_container,
-    send_analytics_event,
-)
 from fides.api.ops.api.deps import get_api_session
 from fides.api.ops.api.v1.api import api_router
 from fides.api.ops.api.v1.exception_handlers import ExceptionHandlers
@@ -46,29 +29,22 @@ from fides.api.ops.common_exceptions import (
     RedisConnectionError,
 )
 from fides.api.ops.models.application_config import ApplicationConfig
-from fides.api.ops.schemas.analytics import Event, ExtraData
+from fides.api.ops.oauth.utils import get_root_client, verify_oauth_client_prod
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     update_saas_configs,
 )
 
 # pylint: disable=wildcard-import, unused-wildcard-import
-from fides.api.ops.service.privacy_request.email_batch_service import (
-    initiate_scheduled_batch_email_send,
-)
 from fides.api.ops.service.saas_request.override_implementations import *
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.api.ops.util.logger import _log_exception
-from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_prod
 from fides.api.ops.util.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
-from fides.cli.utils import FIDES_ASCII_ART
-from fides.core.config import CONFIG, check_required_webserver_config_values
-from fides.lib.oauth.api.routes.user_endpoints import router as user_router
+from fides.core.config import CONFIG
 
 VERSION = fides.__version__
 

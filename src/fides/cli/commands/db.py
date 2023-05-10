@@ -15,12 +15,14 @@ def database(ctx: click.Context) -> None:
     """
 
 
-@database.command(name="init")
+@database.command(name="init", deprecated=True)
 @click.pass_context
 @with_analytics
 def db_init(ctx: click.Context) -> None:
     """
     Initialize the Fides database.
+
+    **WARNING**: Deprecated, use `migrate` instead.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
@@ -37,7 +39,9 @@ def db_init(ctx: click.Context) -> None:
 @with_analytics
 def db_migrate(ctx: click.Context) -> None:
     """
-    Run the latest migrations for the Fides database.
+    Runs the latest migrations for the Fides database
+
+    Will automatically initialize a fresh database.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(

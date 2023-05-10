@@ -17,7 +17,8 @@ class DatabaseSettings(FidesSettings):
     """Configuration settings for the application database."""
 
     automigrate: bool = Field(
-        default=True, description="Automatically runs migrations on webserver startup. If set to `false`, will require the user to run migrations manually via the CLI or API."
+        default=True,
+        description="Automatically runs migrations on webserver startup. If set to `false`, will require the user to run migrations manually via the CLI or API.",
     )
     api_engine_pool_size: int = Field(
         default=50,
