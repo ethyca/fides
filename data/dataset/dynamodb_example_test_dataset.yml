@@ -67,6 +67,8 @@ dataset:
         fields:
           - name: customer_id
             data_categories: [user.unique_id]
+            fides_meta:
+              primary_key: True
           - name: login_date
             data_categories: [system.operations]
           - name: name

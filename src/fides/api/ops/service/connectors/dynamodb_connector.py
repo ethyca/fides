@@ -123,12 +123,12 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
                         ],
                         KeyConditionExpression=query_param["KeyConditionExpression"],
                     )
-                    result = {}
                     for item in items.get("Items"):
+                        result = {}
                         for key, value in item.items():
                             deserialized_value = deserializer.deserialize(value)
                             result[key] = deserialized_value
-                    results.append(result)
+                        results.append(result)
             return results
         except ClientError as error:
             raise ConnectorFailureException(error.response["Error"]["Message"])
