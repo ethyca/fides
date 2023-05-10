@@ -3,9 +3,9 @@ import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { CacheControl, stringify } from "cache-control-parser";
 
-import { ConsentOption, FidesConfig, UserGeolocation } from "fides-js";
+import { ConsentOption, FidesConfig } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
-import { getLocation, LOCATION_HEADERS } from "~/common/location";
+import { getLocation, LOCATION_HEADERS, UserGeolocation } from "~/common/location";
 
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
 

@@ -1,5 +1,14 @@
-import type { UserGeolocation } from "fides-js";
 import type { NextApiRequest } from "next";
+
+// DEFER: Import this type from fides-js when it exists!
+// (see https://github.com/ethyca/fides/pull/3191)
+// import type { UserGeolocation } from "fides-js";
+export type UserGeolocation = {
+  country?: string; // "US"
+  ip?: string; // "192.168.0.1:12345"
+  location?: string; // "US-NY"
+  region?: string; // "NY"
+};
 
 // Regex to validate a location string, which must:
 // 1) Start with a 2-3 character country code (e.g. "US")
