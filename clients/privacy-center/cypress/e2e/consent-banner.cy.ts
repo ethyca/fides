@@ -1,12 +1,12 @@
-import { CONSENT_COOKIE_NAME } from "fides-js";
 import {
+  CONSENT_COOKIE_NAME,
+  FidesConfig,
+  FidesCookie,
   ConsentMechanism,
   EnforcementLevel,
   ExperienceComponent,
   ExperienceDeliveryMechanism,
-  FidesConfig,
-  FidesCookie,
-} from "fides-js/src/fides";
+} from "fides-js";
 
 // The fides-js-components-demo.html page is wired up to inject the
 // `fidesConsentBannerOptions` into the Fides.init(...) function
@@ -20,9 +20,7 @@ declare global {
 declare global {
   namespace Cypress {
     interface Chainable {
-      visitConsentDemo(
-        options?: FidesConfig
-      ): Chainable<any>;
+      visitConsentDemo(options?: FidesConfig): Chainable<any>;
     }
   }
 }
