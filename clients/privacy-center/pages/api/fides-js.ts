@@ -5,7 +5,11 @@ import { CacheControl, stringify } from "cache-control-parser";
 
 import { ConsentOption, FidesConfig } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
-import { getLocation, LOCATION_HEADERS, UserGeolocation } from "~/common/location";
+import {
+  getLocation,
+  LOCATION_HEADERS,
+  UserGeolocation,
+} from "~/common/location";
 
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
 
