@@ -5,13 +5,16 @@ import type { NextApiRequest } from "next";
 // 1) Start with a 2-3 character country code (e.g. "US")
 // 2) Optionally end with a 2-3 character region code (e.g. "CA")
 // 3) Separated by a dash (e.g. "US-CA")
-const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/
+const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
 
 // Constants for the supported CloudFront geolocation headers
 // (see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/adding-cloudfront-headers.html#cloudfront-headers-viewer-location)
 const CLOUDFRONT_HEADER_COUNTRY = "cloudfront-viewer-country";
 const CLOUDFRONT_HEADER_REGION = "cloudfront-viewer-country-region";
-export const LOCATION_HEADERS = [CLOUDFRONT_HEADER_COUNTRY, CLOUDFRONT_HEADER_REGION];
+export const LOCATION_HEADERS = [
+  CLOUDFRONT_HEADER_COUNTRY,
+  CLOUDFRONT_HEADER_REGION,
+];
 
 /**
  * Lookup the "location" (ie country and region) for the given request by looking for either:
@@ -28,31 +31,35 @@ export const getLocation = (
   // DEFER: read headers to determine & return the request's IP address
 
   // Check for a provided "location" query param
-  const { location } = req.query;
-  if (typeof location === "string" && VALID_ISO_3166_LOCATION_REGEX.test(location)) {
-    const [country, region] = location.split("-");
+  const { location: locationQuery } = req.query;
+  if (
+    typeof locationQuery === "string" &&
+    VALID_ISO_3166_LOCATION_REGEX.test(locationQuery)
+  ) {
+    const [country, region] = locationQuery.split("-");
     return {
-        location,
-        country,
-        region,
+      location: locationQuery,
+      country,
+      region,
     };
   }
 
   // Check for CloudFront viewer location headers
   if (typeof req.headers[CLOUDFRONT_HEADER_COUNTRY] === "string") {
-    let location, country, region;
-    country = req.headers[CLOUDFRONT_HEADER_COUNTRY].split(",")[0];
+    let location;
+    let region;
+    const country = req.headers[CLOUDFRONT_HEADER_COUNTRY].split(",")[0];
     location = country;
     if (typeof req.headers[CLOUDFRONT_HEADER_REGION] === "string") {
-      region = req.headers[CLOUDFRONT_HEADER_REGION].split(",")[0];
-      location += "-" + region;
+      [region] = req.headers[CLOUDFRONT_HEADER_REGION].split(",");
+      location = `${country}-${region}`;
     }
     if (VALID_ISO_3166_LOCATION_REGEX.test(location)) {
-        return {
-            location,
-            country,
-            region,
-        }
+      return {
+        location,
+        country,
+        region,
+      };
     }
   }
   return undefined;

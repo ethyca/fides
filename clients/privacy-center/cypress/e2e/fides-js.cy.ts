@@ -50,7 +50,7 @@ describe("fides.js API route", () => {
         headers: {
           "CloudFront-Viewer-Country": "FR",
           "CloudFront-Viewer-Country-Region": "IDF",
-        }
+        },
       }).then((response) => {
         expect(response.body).to.match(/var fidesConfig = \{/);
         const matches = response.body.match(
