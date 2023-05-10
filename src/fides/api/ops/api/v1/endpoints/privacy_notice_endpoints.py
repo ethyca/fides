@@ -84,7 +84,12 @@ def get_privacy_notice_list(
         region=region,
     )
     privacy_notices = notice_query.order_by(PrivacyNotice.created_at.desc())
-    return paginate(privacy_notices, params=params)
+    paginated = paginate(privacy_notices, params=params)
+    paginated.items = [  # type: ignore[attr-defined]
+        transform_fields(transformation=unescape, model=item, fields=ESCAPE_FIELDS)
+        for item in paginated.items  # type: ignore[attr-defined]
+    ]
+    return paginated
 
 
 @router.get(
