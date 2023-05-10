@@ -579,6 +579,60 @@ class TestGetPrivacyNotices:
             most_recent = privacy_notices.pop()
             assert privacy_notice["name"] == most_recent.name
 
+    @pytest.mark.usefixtures(
+        "system",
+    )
+    def test_can_unescape(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_NOTICE_READ, scopes.PRIVACY_NOTICE_CREATE]
+        )
+
+        escaped_name = "Data Sales &#x27;n&#x27; stuff"
+        unescaped_name = "Data Sales 'n' stuff"
+        PrivacyNotice.create(
+            db=db,
+            data={
+                "name": escaped_name,
+                "description": "a sample privacy notice configuration",
+                "regions": [PrivacyNoticeRegion.us_ca],
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["advertising"],
+                "enforcement_level": EnforcementLevel.system_wide,
+                "displayed_in_overlay": True,
+            },
+        )
+
+        unescape_header = {"Unescape-Safestr": "yes"}
+        auth_and_unescape_header = {**auth_header, **unescape_header}
+
+        print("here")
+        # without the unescaped header, should return the escaped version
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        print(data["items"])
+        assert data["items"][0]["name"] == escaped_name
+
+        # now request with the unescape header
+        unescape_header = {"Unescape-Safestr": "yes"}
+        auth_and_unescape_header = {**auth_header, **unescape_header}
+        resp = api_client.get(
+            url,
+            headers=auth_and_unescape_header,
+        )
+        data = resp.json()
+        print(data["items"])
+        assert data["items"][0]["name"] == unescaped_name
+
 
 class TestGetPrivacyNoticeDetail:
     @pytest.fixture(scope="function")

@@ -71,6 +71,7 @@ def get_privacy_notice_list(
     show_disabled: Optional[bool] = True,
     region: Optional[PrivacyNoticeRegion] = None,
     systems_applicable: Optional[bool] = False,
+    request: Request,
 ) -> AbstractPage[PrivacyNotice]:
     """
     Return a paginated list of `PrivacyNotice` records in this system.
@@ -83,12 +84,14 @@ def get_privacy_notice_list(
         systems_applicable=systems_applicable,
         region=region,
     )
+    should_unescape = request.headers.get("unescape-safestr")
     privacy_notices = notice_query.order_by(PrivacyNotice.created_at.desc())
     paginated = paginate(privacy_notices, params=params)
-    paginated.items = [  # type: ignore[attr-defined]
-        transform_fields(transformation=unescape, model=item, fields=ESCAPE_FIELDS)
-        for item in paginated.items  # type: ignore[attr-defined]
-    ]
+    if should_unescape:
+        paginated.items = [  # type: ignore[attr-defined]
+            transform_fields(transformation=unescape, model=item, fields=ESCAPE_FIELDS)
+            for item in paginated.items  # type: ignore[attr-defined]
+        ]
     return paginated
 
 
