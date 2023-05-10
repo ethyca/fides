@@ -3,7 +3,7 @@ export const defaultFidesOptions = {
   isDisabled: false,
   isGeolocationEnabled: false,
   geolocationApiUrl: "cdn-api.ethyca.com/location",
-}
+};
 
 export type FidesOptions = {
   // Whether or not debug log statements should be enabled
@@ -20,7 +20,7 @@ export type FidesOptions = {
 
   // URL for the Privacy Center, used to customize consent preferences. Required.
   privacyCenterUrl: string;
-}
+};
 
 export type ExperienceConfig = {
   version: string;
@@ -34,7 +34,7 @@ export type ExperienceConfig = {
   confirmation_button_label: string;
   reject_button_label: string;
   privacy_notices: Array<PrivacyNotice>;
-}
+};
 
 export type PrivacyNotice = {
   name: string;
@@ -52,7 +52,7 @@ export type PrivacyNotice = {
   updated_at: string;
   version: number;
   privacy_notice_history_id: string;
-}
+};
 
 export enum EnforcementLevel {
   FRONTEND = "frontend",
@@ -68,13 +68,13 @@ export enum ConsentMechanism {
 
 export enum ExperienceComponent {
   OVERLAY = "overlay",
-  PRIVACY_CENTER = "privacy_center"
+  PRIVACY_CENTER = "privacy_center",
 }
 
 export enum ExperienceDeliveryMechanism {
   BANNER = "banner",
   LINK = "link",
-  API = "api"
+  API = "api",
 }
 
 export type UserGeolocation = {

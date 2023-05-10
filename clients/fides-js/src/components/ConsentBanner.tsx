@@ -5,10 +5,10 @@ import ConsentBannerButton from "./ConsentBannerButton";
 import "../lib/banner.module.css";
 
 interface BannerProps {
-  bannerTitle?: string,
-  bannerDescription?: string,
-  confirmationButtonLabel?: string,
-  rejectButtonLabel?: string
+  bannerTitle?: string;
+  bannerDescription?: string;
+  confirmationButtonLabel?: string;
+  rejectButtonLabel?: string;
   privacyCenterUrl: string;
   onAcceptAll: () => void;
   onRejectAll: () => void;
@@ -48,14 +48,14 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     >
       <div>
         <div
-            id="fides-consent-banner-title"
-            className="fides-consent-banner-title"
+          id="fides-consent-banner-title"
+          className="fides-consent-banner-title"
         >
           {bannerTitle || ""}
         </div>
         <div
-            id="fides-consent-banner-description"
-            className="fides-consent-banner-description"
+          id="fides-consent-banner-description"
+          className="fides-consent-banner-description"
         >
           {bannerDescription || ""}
         </div>

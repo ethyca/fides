@@ -11,48 +11,52 @@
       // we default to the below for dev purposes
       var fidesConfig = window.fidesConfig || {
         consent: {
-          options: [{
-            cookieKeys: ["data_sales"],
-            default: true,
-            fidesDataUseKey: "data_use.sales"
-          },{
-            cookieKeys: ["tracking"],
-            default: false,
-            fidesDataUseKey: "advertising"
-          }
-          ]
+          options: [
+            {
+              cookieKeys: ["data_sales"],
+              default: true,
+              fidesDataUseKey: "data_use.sales",
+            },
+            {
+              cookieKeys: ["tracking"],
+              default: false,
+              fidesDataUseKey: "advertising",
+            },
+          ],
         },
         experience: {
-          "version": "1.0",
-          "component": "overlay",
-          "delivery_mechanism": "banner",
-          "regions": [
-            "us_ca",
-            "us_co"
+          version: "1.0",
+          component: "overlay",
+          delivery_mechanism: "banner",
+          regions: ["us_ca", "us_co"],
+          component_title: "Manage your consent",
+          component_description:
+            "On this page you can opt in and out of these data uses cases",
+          banner_title: "Manage your consent",
+          banner_description:
+            "This test website is overriding the banner description label.",
+          confirmation_button_label: "Accept Test",
+          reject_button_label: "Reject Test",
+          privacy_notices: [
+            {
+              name: "Test privacy notice",
+              description: "a test sample privacy notice configuration",
+              regions: ["us_ca"],
+              consent_mechanism: "opt_in",
+              has_gpc_flag: true,
+              data_uses: ["advertising", "third_party_sharing"],
+              enforcement_level: "system_wide",
+              displayed_in_overlay: true,
+              displayed_in_api: true,
+              displayed_in_privacy_center: false,
+              id: "pri_4bed96d0-b9e3-4596-a807-26b783836374",
+              created_at: "2023-04-24T21:29:08.870351+00:00",
+              updated_at: "2023-04-24T21:29:08.870351+00:00",
+              version: 1.0,
+              privacy_notice_history_id:
+                "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
+            },
           ],
-          "component_title": "Manage your consent",
-          "component_description": "On this page you can opt in and out of these data uses cases",
-          "banner_title": "Manage your consent",
-          "banner_description": "This test website is overriding the banner description label.",
-          "confirmation_button_label": "Accept Test",
-          "reject_button_label": "Reject Test",
-          "privacy_notices": [{
-            "name": "Test privacy notice",
-            "description": "a test sample privacy notice configuration",
-            "regions": ["us_ca"],
-            "consent_mechanism": "opt_in",
-            "has_gpc_flag": true,
-            "data_uses": ["advertising", "third_party_sharing"],
-            "enforcement_level": "system_wide",
-            "displayed_in_overlay": true,
-            "displayed_in_api": true,
-            "displayed_in_privacy_center": false,
-            "id": "pri_4bed96d0-b9e3-4596-a807-26b783836374",
-            "created_at": "2023-04-24T21:29:08.870351+00:00",
-            "updated_at": "2023-04-24T21:29:08.870351+00:00",
-            "version": 1.0,
-            "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4f"
-          }]
         },
         geolocation: {},
         options: {
@@ -60,8 +64,8 @@
           isDisabled: false,
           isGeolocationEnabled: false,
           geolocationApiUrl: "",
-          privacyCenterUrl: "http://localhost:3000"
-        }
+          privacyCenterUrl: "http://localhost:3000",
+        },
       };
       window.Fides.init(fidesConfig);
     </script>
@@ -105,7 +109,6 @@
 
       <h2>Consent Options</h2>
       <pre id="consent-options"></pre>
-
     </main>
   </body>
 
@@ -126,24 +129,18 @@
       );
 
       // Pretty-print the fides experience config object and add it to the page.
-      document.getElementById("consent-experience").textContent = JSON.stringify(
-              Fides.experience,
-              null,
-              2
-      );
+      document.getElementById("consent-experience").textContent =
+        JSON.stringify(Fides.experience, null, 2);
 
       // Pretty-print the fides geolocation object and add it to the page.
-      document.getElementById("consent-geolocation").textContent = JSON.stringify(
-              Fides.geolocation,
-              null,
-              2
-      );
+      document.getElementById("consent-geolocation").textContent =
+        JSON.stringify(Fides.geolocation, null, 2);
 
       // Pretty-print the fides options object and add it to the page.
       document.getElementById("consent-options").textContent = JSON.stringify(
-              Fides.options,
-              null,
-              2
+        Fides.options,
+        null,
+        2
       );
 
       // Test behavior of integrations that can be configured without/before their platform scripts.
