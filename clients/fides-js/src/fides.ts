@@ -62,7 +62,6 @@ import {
   UserGeolocation,
 } from "./lib/consent-types";
 
-
 export type Fides = {
   consent: CookieKeyConsent;
   experience?: ExperienceConfig;

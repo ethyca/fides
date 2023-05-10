@@ -5,9 +5,9 @@ import {
   setConsentCookieRejectAll,
 } from "./cookie";
 import ConsentBanner from "../components/ConsentBanner";
-import {FidesConfig, FidesOptions, UserGeolocation} from "./consent-types";
+import { FidesConfig, FidesOptions, UserGeolocation } from "./consent-types";
 import { debugLog } from "./consent-utils";
-import {getConsentContext} from "./consent-context";
+import { getConsentContext } from "./consent-context";
 
 /**
  * Validate the config options
@@ -101,9 +101,7 @@ const getLocation = async (options: FidesOptions): Promise<UserGeolocation> => {
  *
  * (see the type definition of ConsentBannerOptions for what options are available)
  */
-export const initFidesConsent = async (
-  config: FidesConfig
-): Promise<void> => {
+export const initFidesConsent = async (config: FidesConfig): Promise<void> => {
   debugLog(config.options.debug, "Initializing Fides consent...");
 
   debugLog(

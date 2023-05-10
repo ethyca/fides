@@ -1,7 +1,4 @@
-import {ConsentConfig} from "./consent-config";
-import {CookieIdentity, CookieKeyConsent, CookieMeta} from "./cookie";
-
-
+import { ConsentConfig } from "./consent-config";
 
 export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.
@@ -14,7 +11,6 @@ export interface FidesConfig {
   // Global options for this Fides.js instance. Fides provides defaults for all props except privacyCenterUrl
   options: FidesOptions;
 }
-
 
 export const defaultFidesOptions = {
   debug: false,

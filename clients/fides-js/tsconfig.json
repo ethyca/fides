@@ -16,7 +16,7 @@
     "strict": true,
     "target": "es2015",
     "plugins": [{ "name": "typescript-plugin-css-modules" }],
-    "baseUrl": "./",
+    "baseUrl": "./"
   },
   "include": ["**/*.ts", "**/*.d.ts", "**/*.tsx"],
   "exclude": ["node_modules", "dist"]
