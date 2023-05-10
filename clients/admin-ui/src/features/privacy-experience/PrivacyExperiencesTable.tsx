@@ -1,4 +1,4 @@
-import { Button, Flex, Spinner } from "@fidesui/react";
+import { Box, Button, Flex, Spinner, Stack } from "@fidesui/react";
 import { PRIVACY_EXPERIENCE_ROUTE, SYSTEM_ROUTE } from "common/nav/v2/routes";
 import { useHasPermission } from "common/Restrict";
 import { DateCell, FidesTable, MultiTagCell } from "common/table";
@@ -20,6 +20,8 @@ import {
   useGetAllPrivacyExperiencesQuery,
 } from "~/features/privacy-experience/privacy-experience.slice";
 import { PrivacyExperienceResponse, ScopeRegistryEnum } from "~/types/api";
+
+import JavaScriptTag from "./JavaScriptTag";
 
 const PrivacyExperiencesTable = () => {
   const router = useRouter();
@@ -91,11 +93,16 @@ const PrivacyExperiencesTable = () => {
     );
   }
   return (
-    <FidesTable<PrivacyExperienceResponse>
-      columns={columns}
-      data={privacyExperiences}
-      onRowClick={userCanUpdate ? handleRowClick : undefined}
-    />
+    <Stack spacing={3}>
+      <Box alignSelf="end">
+        <JavaScriptTag />
+      </Box>
+      <FidesTable<PrivacyExperienceResponse>
+        columns={columns}
+        data={privacyExperiences}
+        onRowClick={userCanUpdate ? handleRowClick : undefined}
+      />
+    </Stack>
   );
 };
 
