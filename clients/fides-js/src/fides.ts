@@ -45,7 +45,6 @@
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-import { ConsentConfig } from "./lib/consent-config";
 import { getConsentContext } from "./lib/consent-context";
 import { initFidesConsent } from "./lib/consent";
 import {
@@ -58,23 +57,13 @@ import {
 import {
   defaultFidesOptions,
   ExperienceConfig,
+  FidesConfig,
   FidesOptions,
   UserGeolocation,
 } from "./lib/consent-types";
 
-export interface FidesConfig {
-  // Set the consent defaults from a "legacy" Privacy Center config.json.
-  consent?: ConsentConfig;
-  // Set the "experience" to be used for this Fides.js instance -- overrides the "legacy" config.
-  // If not set, Fides.js will fetch its own experience config.
-  experience?: ExperienceConfig;
-  // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
-  geolocation?: UserGeolocation;
-  // Global options for this Fides.js instance. Fides provides defaults for all props except privacyCenterUrl
-  options: FidesOptions;
-}
 
-type Fides = {
+export type Fides = {
   consent: CookieKeyConsent;
   experience?: ExperienceConfig;
   geolocation?: UserGeolocation;
@@ -115,7 +104,7 @@ const init = async (config: FidesConfig) => {
   // Load any existing user preferences from the browser cookie
   const cookie = getOrMakeFidesCookie(consentDefaults);
 
-  await initFidesConsent(consentDefaults, config);
+  await initFidesConsent(config);
   // Initialize the window.Fides object
   _Fides.consent = cookie.consent;
   _Fides.fides_meta = cookie.fides_meta;

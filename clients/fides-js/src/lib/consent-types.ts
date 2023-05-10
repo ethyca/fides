@@ -1,3 +1,21 @@
+import {ConsentConfig} from "./consent-config";
+import {CookieIdentity, CookieKeyConsent, CookieMeta} from "./cookie";
+
+
+
+export interface FidesConfig {
+  // Set the consent defaults from a "legacy" Privacy Center config.json.
+  consent?: ConsentConfig;
+  // Set the "experience" to be used for this Fides.js instance -- overrides the "legacy" config.
+  // If not set, Fides.js will fetch its own experience config.
+  experience?: ExperienceConfig;
+  // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
+  geolocation?: UserGeolocation;
+  // Global options for this Fides.js instance. Fides provides defaults for all props except privacyCenterUrl
+  options: FidesOptions;
+}
+
+
 export const defaultFidesOptions = {
   debug: false,
   isDisabled: false,

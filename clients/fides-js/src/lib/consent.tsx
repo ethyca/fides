@@ -1,13 +1,13 @@
 import { h, render } from "preact";
 import {
-  CookieKeyConsent,
+  makeConsentDefaults,
   setConsentCookieAcceptAll,
   setConsentCookieRejectAll,
 } from "./cookie";
 import ConsentBanner from "../components/ConsentBanner";
-import { FidesOptions, UserGeolocation } from "./consent-types";
+import {FidesConfig, FidesOptions, UserGeolocation} from "./consent-types";
 import { debugLog } from "./consent-utils";
-import { FidesConfig } from "../fides";
+import {getConsentContext} from "./consent-context";
 
 /**
  * Validate the config options
@@ -102,15 +102,14 @@ const getLocation = async (options: FidesOptions): Promise<UserGeolocation> => {
  * (see the type definition of ConsentBannerOptions for what options are available)
  */
 export const initFidesConsent = async (
-  defaults: CookieKeyConsent,
   config: FidesConfig
 ): Promise<void> => {
-  debugLog(config.options.debug, "Initializing Fides consent...", defaults);
+  debugLog(config.options.debug, "Initializing Fides consent...");
 
   debugLog(
     config.options.debug,
     "Validating Fides consent banner options...",
-    config
+    config.options
   );
   if (!validateBannerOptions(config)) {
     return Promise.reject(new Error("Invalid banner options"));
@@ -141,11 +140,16 @@ export const initFidesConsent = async (
             // if something goes wrong with location api, we still want to render notices
           });
       }
+      const context = getConsentContext();
+      const consentDefaults = makeConsentDefaults({
+        config: config.consent,
+        context,
+      });
       const onAcceptAll = () => {
-        setConsentCookieAcceptAll(defaults);
+        setConsentCookieAcceptAll(consentDefaults);
       };
       const onRejectAll = () => {
-        setConsentCookieRejectAll(defaults);
+        setConsentCookieRejectAll(consentDefaults);
       };
       render(
         <ConsentBanner
