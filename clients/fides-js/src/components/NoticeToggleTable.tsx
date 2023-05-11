@@ -14,20 +14,18 @@ const NoticeToggleTable = ({ notices }: { notices: PrivacyNotice[] }) => {
 
   return (
     <div>
-      {notices.map((notice) => {
-        return (
-          <div
-            key={notice.id}
-            style={{ display: "flex", justifyContent: "space-between" }}
-          >
-            <span>{notice.name}</span>
-            {/* TODO: CSS to make this look like an actual switch */}
-            <label>
-              <input type="checkbox" />
-            </label>
-          </div>
-        );
-      })}
+      {notices.map((notice) => (
+        <div
+          key={notice.id}
+          style={{ display: "flex", justifyContent: "space-between" }}
+        >
+          <span>{notice.name}</span>
+          {/* TODO: CSS to make this look like an actual switch and associate control */}
+          <label>
+            <input type="checkbox" />
+          </label>
+        </div>
+      ))}
     </div>
   );
 };
