@@ -179,3 +179,4 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
     version: float
     privacy_experience_history_id: str
     privacy_notices: Optional[List[PrivacyNoticeResponse]]
+    experience_config: Optional[ExperienceConfigResponse]

@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
@@ -20,16 +20,11 @@ from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.scope_registry import PRIVACY_EXPERIENCE_UPDATE
 from fides.api.ops.models.privacy_experience import (
     ComponentType,
-    DeliveryMechanism,
     PrivacyExperience,
     PrivacyExperienceConfig,
-    get_privacy_notices_by_region_and_component,
+    upsert_privacy_experiences_after_config_update,
 )
-from fides.api.ops.models.privacy_notice import (
-    ConsentMechanism,
-    PrivacyNotice,
-    PrivacyNoticeRegion,
-)
+from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.privacy_experience import (
     ExperienceConfigCreate,
@@ -182,90 +177,6 @@ def remove_config_from_matched_experiences(
     return experiences_to_unlink
 
 
-def upsert_privacy_experiences(
-    db: Session,
-    experience_config: PrivacyExperienceConfig,
-    regions: List[PrivacyNoticeRegion],
-) -> Tuple[
-    List[PrivacyNoticeRegion], List[PrivacyNoticeRegion], List[PrivacyNoticeRegion]
-]:
-    """Add, update, or remove privacy experiences that are attached to given experience config"""
-    added_regions: List[PrivacyNoticeRegion] = []
-    removed_regions: List[PrivacyNoticeRegion] = []
-    skipped_regions: List[PrivacyNoticeRegion] = []
-
-    for region in regions:
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, region)
-        existing_experience: Optional[PrivacyExperience] = (
-            overlay_experience
-            if experience_config.component == ComponentType.overlay
-            else privacy_center_experience
-        )
-
-        if (
-            experience_config.component == ComponentType.overlay
-            and experience_config.delivery_mechanism == DeliveryMechanism.link
-        ):
-            if privacy_center_experience:
-                logger.info(
-                    "Two experiences for the same region '{}' cannot be delivered via link.",
-                    region.value,
-                )
-                if existing_experience:
-                    existing_experience.unlink_privacy_experience_config(db)
-                    removed_regions.append(region)
-                else:
-                    skipped_regions.append(region)
-                continue
-
-            if (
-                get_privacy_notices_by_region_and_component(
-                    db, region, experience_config.component  # type: ignore[arg-type]
-                )
-                .filter(
-                    PrivacyNotice.consent_mechanism.in_(
-                        [ConsentMechanism.opt_in, ConsentMechanism.notice_only]
-                    )
-                )
-                .first()
-            ):
-                logger.info(
-                    "Region '{}' contains opt-in or notice-only notices that must be delivered via a banner not a link.",
-                    region,
-                )
-                if existing_experience:
-                    existing_experience.unlink_privacy_experience_config(db)
-                    removed_regions.append(region)
-                else:
-                    skipped_regions.append(region)
-                continue
-
-        data = {
-            "component": experience_config.component,
-            "delivery_mechanism": experience_config.delivery_mechanism,
-            "region": region,
-            "experience_config_id": experience_config.id,
-            "experience_config_history_id": experience_config.experience_config_history_id,
-            "disabled": experience_config.disabled,
-        }
-
-        if existing_experience:
-            if existing_experience.experience_config_id != experience_config.id:
-                added_regions.append(region)
-            existing_experience.update(db, data=data)
-
-        else:
-            PrivacyExperience.create(
-                db,
-                data=data,
-            )
-            added_regions.append(region)
-    return added_regions, removed_regions, skipped_regions
-
-
 @router.get(
     urls.EXPERIENCE_CONFIG,
     status_code=HTTP_200_OK,
@@ -347,7 +258,7 @@ def experience_config_create(
         db, data=experience_config_dict, check_name=False
     )
 
-    added, removed, skipped = upsert_privacy_experiences(
+    added, removed, skipped = upsert_privacy_experiences_after_config_update(
         db, experience_config, new_regions
     )
 
@@ -439,9 +350,11 @@ def experience_config_update(
         ],
     )
 
-    added, removed_for_conflict, skipped = upsert_privacy_experiences(
-        db, experience_config, regions
-    )
+    (
+        added,
+        removed_for_conflict,
+        skipped,
+    ) = upsert_privacy_experiences_after_config_update(db, experience_config, regions)
     return ExperienceConfigCreateOrUpdateResponse(
         experience_config=experience_config,
         added_regions=added,

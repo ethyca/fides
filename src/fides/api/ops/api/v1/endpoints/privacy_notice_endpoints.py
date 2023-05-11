@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from fastapi import Depends, Security
 from fastapi_pagination import Page, Params
@@ -19,6 +19,9 @@ from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.common_exceptions import ValidationError
+from fides.api.ops.models.privacy_experience import (
+    upsert_privacy_experiences_after_notice_update,
+)
 from fides.api.ops.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeRegion,
@@ -218,12 +221,19 @@ def create_privacy_notices(
     except ValidationError as e:
         raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
 
-    return [
-        PrivacyNotice.create(
+    notices: List[PrivacyNotice] = []
+    affected_regions: Set = set()
+    for privacy_notice in privacy_notices:
+        notice = PrivacyNotice.create(
             db=db, data=privacy_notice.dict(exclude_unset=True), check_name=False
         )
-        for privacy_notice in privacy_notices
-    ]
+        notices.append(notice)
+        affected_regions.update(notice.regions)
+    upsert_privacy_experiences_after_notice_update(
+        db, affected_regions=list(affected_regions)
+    )
+
+    return notices
 
 
 def prepare_privacy_notice_patches(
@@ -319,7 +329,15 @@ def update_privacy_notices(
     updates_and_existing: List[
         Tuple[schemas.PrivacyNoticeWithId, PrivacyNotice]
     ] = prepare_privacy_notice_patches(privacy_notice_updates, db)
-    return [
+
+    notices: List[PrivacyNotice] = []
+    affected_regions: Set = set()
+    for update_data, existing_notice in updates_and_existing:
         existing_notice.update(db, data=update_data.dict(exclude_unset=True))
-        for (update_data, existing_notice) in updates_and_existing
-    ]
+        notices.append(existing_notice)
+        affected_regions.update(existing_notice.regions)
+    upsert_privacy_experiences_after_notice_update(
+        db, affected_regions=list(affected_regions)
+    )
+
+    return notices
