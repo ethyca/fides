@@ -3,6 +3,7 @@ import { useState, useEffect } from "preact/hooks";
 import { ButtonType } from "../lib/consent-types";
 import ConsentBannerButton from "./ConsentBannerButton";
 import "../lib/banner.module.css";
+import { useHasMounted } from "../lib/hooks";
 
 interface BannerProps {
   bannerTitle?: string;
@@ -26,17 +27,25 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   waitBeforeShow,
 }) => {
   const [isShown, setIsShown] = useState(false);
+  const hasMounted = useHasMounted();
+
   useEffect(() => {
     const delayBanner = setTimeout(() => {
       setIsShown(true);
     }, waitBeforeShow);
     return () => clearTimeout(delayBanner);
   }, [setIsShown, waitBeforeShow]);
+
   const navigateToPrivacyCenter = (): void => {
     if (privacyCenterUrl) {
       window.location.assign(privacyCenterUrl);
     }
   };
+
+  if (!hasMounted) {
+    return null;
+  }
+
   // TODO: support option to specify top/bottom
   // TODO: add banner title
   return (
