@@ -46,6 +46,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
   [ConnectionType.TIMESCALE, "timescaledb.svg"],
   [ConnectionType.SOVRN, "sovrn.svg"],
   [ConnectionType.ATTENTIVE, "attentive.svg"],
+  [ConnectionType.DYNAMODB, "dynamodb.svg"],
 ]);
 
 /**

@@ -51,6 +51,7 @@ class ConnectionType(enum.Enum):
     manual = "manual"  # Run as part of the traversal
     sovrn = "sovrn"
     attentive = "attentive"
+    dynamodb = "dynamodb"
     manual_webhook = "manual_webhook"  # Run before the traversal
     timescale = "timescale"
     fides = "fides"
@@ -63,6 +64,7 @@ class ConnectionType(enum.Enum):
         readable_mapping: Dict[str, str] = {
             ConnectionType.attentive.value: "Attentive",
             ConnectionType.bigquery.value: "BigQuery",
+            ConnectionType.dynamodb.value: "DynamoDB",
             ConnectionType.fides.value: "Fides Connector",
             ConnectionType.https.value: "Policy Webhook",
             ConnectionType.manual.value: "Manual Connector",

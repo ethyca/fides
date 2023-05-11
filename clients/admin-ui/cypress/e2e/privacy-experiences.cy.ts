@@ -74,6 +74,20 @@ describe("Privacy experiences", () => {
     cy.getByTestId("empty-state");
   });
 
+  it("can copy a JS script tag", () => {
+    cy.visit(PRIVACY_EXPERIENCE_ROUTE);
+    cy.getByTestId("js-tag-btn").click();
+    cy.getByTestId("copy-js-tag-modal");
+    // Have to use a "real click" in order for Cypress to properly inspect
+    // the window's clipboard https://github.com/cypress-io/cypress/issues/18198
+    cy.getByTestId("clipboard-btn").realClick();
+    cy.window().then((win) => {
+      win.navigator.clipboard.readText().then((text) => {
+        expect(text).to.contain("<script src=");
+      });
+    });
+  });
+
   describe("table", () => {
     beforeEach(() => {
       cy.visit(PRIVACY_EXPERIENCE_ROUTE);
