@@ -1,4 +1,5 @@
 import { FunctionComponent, h } from "preact";
+import { useState } from "preact/hooks";
 import {
   ExperienceConfig,
   FidesOptions,
@@ -10,6 +11,7 @@ import {
   setConsentCookieAcceptAll,
   setConsentCookieRejectAll,
 } from "../lib/cookie";
+import ConsentModal from "./ConsentModal";
 
 export interface OverlayProps {
   consentDefaults: CookieKeyConsent;
@@ -23,6 +25,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   experience,
   options,
 }) => {
+  const [modalIsOpen, setModalIsOpen] = useState(false);
   const onAcceptAll = () => {
     setConsentCookieAcceptAll(consentDefaults);
     // TODO: save to Fides consent request API
@@ -41,16 +44,25 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     );
   };
 
+  if (!experience) {
+    return null;
+  }
+  const privacyNotices = experience.privacy_notices ?? [];
+
   return (
-    <ConsentBanner
-      bannerTitle={experience?.banner_title}
-      bannerDescription={experience?.banner_description}
-      confirmationButtonLabel={experience?.confirmation_button_label}
-      rejectButtonLabel={experience?.reject_button_label}
-      privacyCenterUrl={options.privacyCenterUrl}
-      onAcceptAll={onAcceptAll}
-      onRejectAll={onRejectAll}
-    />
+    <div id="fides-js-root">
+      <ConsentBanner
+        experience={experience}
+        privacyCenterUrl={options.privacyCenterUrl}
+        onAcceptAll={onAcceptAll}
+        onRejectAll={onRejectAll}
+        waitBeforeShow={100}
+        onOpenModal={() => setModalIsOpen(true)}
+      />
+      {modalIsOpen ? (
+        <ConsentModal experience={experience} notices={privacyNotices} />
+      ) : null}
+    </div>
   );
 };
 

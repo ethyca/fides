@@ -40,6 +40,20 @@
   );
 }
 
+div#fides-consent-modal {
+  font-family: var(--fides-consent-overlay-font-family);
+  font-size: var(--fides-consent-overlay-font-size);
+  background: var(--fides-consent-overlay-background);
+  color: var(--fides-consent-overlay-text-color);
+  box-sizing: border-box;
+  padding: var(--fides-consent-overlay-padding);
+  
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 div#fides-consent-banner {
   font-family: var(--fides-consent-overlay-font-family);
   font-size: var(--fides-consent-overlay-font-size);
