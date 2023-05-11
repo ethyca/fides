@@ -27,6 +27,16 @@ describe("fides.js API route", () => {
     });
   });
 
+  it("supports /fides-consent.js route for backwards-compatibility", () => {
+    cy.request("/fides-consent.js").then((response) => {
+      expect(response.status).to.eq(200);
+      expect(response)
+        .to.have.property("headers")
+        .to.have.property("content-type")
+        .to.eql("application/javascript");
+    });
+  });
+
   describe("when pre-fetching location", () => {
     it("returns location if provided as a '?location' query param", () => {
       cy.request("/fides.js?location=US-CA").then((response) => {
