@@ -104,6 +104,7 @@ const init = async (config: FidesConfig) => {
   const cookie = getOrMakeFidesCookie(consentDefaults);
 
   await initFidesConsent(config);
+
   // Initialize the window.Fides object
   _Fides.consent = cookie.consent;
   _Fides.fides_meta = cookie.fides_meta;
