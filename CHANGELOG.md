@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 
+- Connector for DynamoDB [#2998](https://github.com/ethyca/fides/pull/2998)
 - Access and erasure support for Amplitude [#2569](https://github.com/ethyca/fides/pull/2569)
 - Access and erasure support for Gorgias [#2444](https://github.com/ethyca/fides/pull/2444)
 - Privacy Experience Bulk Create, Bulk Update, and Detail Endpoints [#3185](https://github.com/ethyca/fides/pull/3185)
@@ -35,16 +36,21 @@ The types of changes are:
 - Restrict where privacy notices of certain consent mechanisms must be displayed [#3195](https://github.com/ethyca/fides/pull/3195)
 - Merged the `lib` submodule into the `api.ops` submodule [#3134](https://github.com/ethyca/fides/pull/3134)
 - Merged duplicate privacy declaration components [#3254](https://github.com/ethyca/fides/pull/3254)
+- Refactor client applications into a monorepo with turborepo, extract fides-js into a standalone package, and improve privacy-center to load configuration at runtime [#3105](https://github.com/ethyca/fides/pull/3105)
 
 ### Fixed
 
 - Prevent ability to unintentionally show "default" Privacy Center configuration, styles, etc. [#3242](https://github.com/ethyca/fides/pull/3242)
 - Fix broken links to docs site pages in Admin UI [#3232](https://github.com/ethyca/fides/pull/3232)
 - Repoint legacy docs site links to the new and improved docs site [#3167](https://github.com/ethyca/fides/pull/3167)
+- Fix Cookie House Privacy Center styles for fides deploy [#3283](https://github.com/ethyca/fides/pull/3283)
 
 ### Developer Experience
 
 - Use prettier to format *all* source files in client packages [#3240](https://github.com/ethyca/fides/pull/3240)
+
+### Deprecated
+- Deprecate `fides export` CLI command as it is moving to `fidesplus` [#3264](https://github.com/ethyca/fides/pull/3264)
 
 ## [2.12.1](https://github.com/ethyca/fides/compare/2.12.0...2.12.1)
 

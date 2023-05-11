@@ -1,0 +1,80 @@
+dataset:
+  - fides_key: dynamodb_example_test_dataset
+    name: DynamoDB Example Test Dataset
+    description: Example of a DynamoDB dataset containing a single customer table
+    collections:
+      - name: customer_identifier
+        fields:
+          - name: customer_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              references:
+                - dataset: dynamodb_example_test_dataset
+                  field: customer.id
+                  direction: to
+                - dataset: dynamodb_example_test_dataset
+                  field: login.customer_id
+                  direction: to
+          - name: created
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              primary_key: True
+              identity: email
+              data_type: string
+          - name: name
+            data_categories: [user.name]
+      - name: address
+        fields:
+          - name: city
+            data_categories: [user.contact.address.city]
+          - name: house
+            data_categories: [user.contact.address.street]
+          - name: id
+            data_categories: [system.operations]
+            fides_meta:
+              primary_key: True
+          - name: state
+            data_categories: [user.contact.address.state]
+          - name: street
+            data_categories: [user.contact.address.street]
+          - name: zip
+            data_categories: [user.contact.address.postal_code]
+      - name: customer
+        fields:
+          - name: address_id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: dynamodb_example_test_dataset
+                  field: address.id
+                  direction: to
+          - name: created
+            data_categories: [system.operations]
+          - name: customer_email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: id
+            data_categories: [user.unique_id]
+            fides_meta:
+              primary_key: True
+          - name: name
+            data_categories: [user.name]
+      - name: login
+        fields:
+          - name: customer_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              primary_key: True
+          - name: login_date
+            data_categories: [system.operations]
+          - name: name
+            data_categories: [user.name]
+          - name: customer_email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
