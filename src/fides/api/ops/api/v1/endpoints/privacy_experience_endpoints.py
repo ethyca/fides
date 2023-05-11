@@ -258,14 +258,14 @@ def experience_config_create(
         db, data=experience_config_dict, check_name=False
     )
 
-    added, removed, skipped = upsert_privacy_experiences_after_config_update(
+    linked, unlinked, skipped = upsert_privacy_experiences_after_config_update(
         db, experience_config, new_regions
     )
 
     return ExperienceConfigCreateOrUpdateResponse(
         experience_config=experience_config,
-        added_regions=added,
-        removed_regions=removed,
+        linked_regions=linked,
+        unlinked_regions=unlinked,
         skipped_regions=skipped,
     )
 
@@ -334,6 +334,7 @@ def experience_config_update(
 
     logger.info("Updating experience config of id '{}'", experience_config.id)
     experience_config.update(db=db, data=experience_config_data_dict)
+    db.refresh(experience_config)
 
     # Upserting PrivacyExperiences based on regions specified in the request
     current_regions: List[PrivacyNoticeRegion] = experience_config.regions
@@ -351,14 +352,14 @@ def experience_config_update(
     )
 
     (
-        added,
-        removed_for_conflict,
+        linked,
+        unlinked_for_conflict,
         skipped,
     ) = upsert_privacy_experiences_after_config_update(db, experience_config, regions)
     return ExperienceConfigCreateOrUpdateResponse(
         experience_config=experience_config,
-        added_regions=added,
-        removed_regions=removed_for_conflict
+        linked_regions=linked,
+        unlinked_regions=unlinked_for_conflict
         + [omitted.region for omitted in not_included_in_request],
         skipped_regions=skipped,
     )

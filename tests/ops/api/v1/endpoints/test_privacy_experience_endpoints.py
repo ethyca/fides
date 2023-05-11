@@ -10,7 +10,6 @@ from fides.api.ops.api.v1.endpoints.privacy_experience_endpoints import (
 )
 from fides.api.ops.api.v1.urn_registry import (
     EXPERIENCE_CONFIG,
-    EXPERIENCE_CONFIG_DETAIL,
     PRIVACY_EXPERIENCE,
     PRIVACY_EXPERIENCE_DETAIL,
     V1_URL_PREFIX,
@@ -1047,8 +1046,8 @@ class TestCreateExperienceConfig:
         assert history.delivery_mechanism == DeliveryMechanism.link
         assert history.experience_config_id == experience_config.id
 
-        assert response.json()["added_regions"] == []
-        assert response.json()["removed_regions"] == []
+        assert response.json()["linked_regions"] == []
+        assert response.json()["unlinked_regions"] == []
         assert response.json()["skipped_regions"] == []
 
         history.delete(db)
@@ -1156,8 +1155,8 @@ class TestCreateExperienceConfig:
         experience_config_history.delete(db)
         experience_config.delete(db)
 
-        assert response.json()["added_regions"] == ["us_ny"]
-        assert response.json()["removed_regions"] == []
+        assert response.json()["linked_regions"] == ["us_ny"]
+        assert response.json()["unlinked_regions"] == []
         assert response.json()["skipped_regions"] == []
 
     def test_create_experience_config_existing_experiences(
@@ -1269,8 +1268,8 @@ class TestCreateExperienceConfig:
         )
         assert experience_history.privacy_experience_id == experience.id
 
-        assert response.json()["added_regions"] == ["us_tx"]
-        assert response.json()["removed_regions"] == []
+        assert response.json()["linked_regions"] == ["us_tx"]
+        assert response.json()["unlinked_regions"] == []
         assert response.json()["skipped_regions"] == []
 
         for history in experience.histories:
@@ -1335,7 +1334,9 @@ class TestCreateExperienceConfig:
         assert resp["delivery_mechanism"] == "link"
         assert resp["link_label"] == "Manage your privacy here"
         assert resp["reject_button_label"] is None
-        assert resp["regions"] == [], "No regions added because TX cannot be added here"
+        assert (
+            resp["regions"] == []
+        ), "No regions linked because TX cannot be linked here"
         assert resp["created_at"] is not None
         assert resp["updated_at"] is not None
         assert resp["version"] == 1.0
@@ -1351,8 +1352,8 @@ class TestCreateExperienceConfig:
         assert experience_config_history.delivery_mechanism == DeliveryMechanism.link
         assert experience_config_history.experience_config_id == experience_config.id
 
-        assert response.json()["added_regions"] == []
-        assert response.json()["removed_regions"] == []
+        assert response.json()["linked_regions"] == []
+        assert response.json()["unlinked_regions"] == []
         assert response.json()["skipped_regions"] == ["us_tx"]
 
         # Overlay Privacy Experience was *not* created for Texas, and nothing was linked to the new ExperienceConfig
@@ -1672,8 +1673,8 @@ class TestUpdateExperienceConfig:
         assert history.experience_config_id == experience_config.id
         assert history.disabled is True
 
-        assert response.json()["added_regions"] == []
-        assert response.json()["removed_regions"] == []
+        assert response.json()["linked_regions"] == []
+        assert response.json()["unlinked_regions"] == []
         assert response.json()["skipped_regions"] == []
 
         for history in experience_config.histories:
@@ -1777,11 +1778,11 @@ class TestUpdateExperienceConfig:
         experience_history.delete(db)
         experience.delete(db)
 
-        assert response.json()["added_regions"] == ["us_ny"]
-        assert response.json()["removed_regions"] == []
+        assert response.json()["linked_regions"] == ["us_ny"]
+        assert response.json()["unlinked_regions"] == []
         assert response.json()["skipped_regions"] == []
 
-    def test_update_experience_config_regions_to_overlap_an_existing_experiences(
+    def test_update_experience_config_regions_to_overlap_on_existing_experiences(
         self,
         api_client: TestClient,
         url,
@@ -1888,8 +1889,8 @@ class TestUpdateExperienceConfig:
         )
         assert experience_history.privacy_experience_id == experience.id
 
-        assert response.json()["added_regions"] == ["us_tx"]
-        assert response.json()["removed_regions"] == []
+        assert response.json()["linked_regions"] == ["us_tx"]
+        assert response.json()["unlinked_regions"] == []
         assert response.json()["skipped_regions"] == []
 
         for history in experience.histories:
@@ -2006,8 +2007,8 @@ class TestUpdateExperienceConfig:
         )
         assert experience_history.privacy_experience_id == experience.id
 
-        assert response.json()["added_regions"] == ["us_tx"]
-        assert response.json()["removed_regions"] == []
+        assert response.json()["linked_regions"] == ["us_tx"]
+        assert response.json()["unlinked_regions"] == []
         assert response.json()["skipped_regions"] == []
 
         for history in experience.histories:
@@ -2097,15 +2098,15 @@ class TestUpdateExperienceConfig:
         assert experience_history.experience_config_history_id is None
         assert experience_history.privacy_experience_id == privacy_experience.id
 
-        assert response.json()["added_regions"] == []
-        assert response.json()["removed_regions"] == ["us_tx"]
+        assert response.json()["linked_regions"] == []
+        assert response.json()["unlinked_regions"] == ["us_tx"]
         assert response.json()["skipped_regions"] == []
 
         for history in privacy_experience.histories:
             history.delete(db)
         privacy_experience.delete(db)
 
-    def test_opt_in_notices_must_be_delivered_via_banner(
+    def test_opt_in_notices_must_be_delivered_via_banner_not_already_linked(
         self,
         api_client: TestClient,
         url,
@@ -2146,7 +2147,9 @@ class TestUpdateExperienceConfig:
         resp = response.json()["experience_config"]
         assert resp["delivery_mechanism"] == "link"
         assert resp["link_label"] == "Manage your privacy here"
-        assert resp["regions"] == [], "No regions added because TX cannot be added here"
+        assert (
+            resp["regions"] == []
+        ), "No regions linked because TX cannot be linked here"
         assert resp["created_at"] is not None
         assert resp["updated_at"] is not None
         assert resp["version"] == 2.0
@@ -2166,9 +2169,9 @@ class TestUpdateExperienceConfig:
             == overlay_banner_experience_config.id
         )
 
-        assert response.json()["added_regions"] == []
+        assert response.json()["linked_regions"] == []
         assert response.json()["skipped_regions"] == ["us_tx"]
-        assert response.json()["removed_regions"] == []
+        assert response.json()["unlinked_regions"] == []
 
         # Overlay Privacy Experience was *not* created for Texas,
         # and nothing was linked to the new ExperienceConfig
@@ -2185,3 +2188,104 @@ class TestUpdateExperienceConfig:
 
         for history in privacy_notice.histories:
             history.delete(db)
+
+    def test_opt_in_notices_must_be_delivered_via_banner_already_linked(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+        overlay_banner_experience_config,
+    ) -> None:
+        """
+        Attempt to update an ExperienceConfig that already has an Experience attached that needs to be delivered via
+        banner, and this update would make it be delivered via link. Unlink the Experience.
+        """
+
+        # Create an opt in notice that needs to be displayed in an overlay
+        privacy_notice = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Test Notice",
+                "regions": [PrivacyNoticeRegion.us_tx],
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["provide"],
+                "enforcement_level": EnforcementLevel.frontend,
+                "displayed_in_overlay": True,
+            },
+        )
+
+        overlay_exp = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": "overlay",
+                "delivery_mechanism": "banner",
+                "region": "us_tx",
+                "experience_config_id": overlay_banner_experience_config.id,
+                "experience_config_history_id": overlay_banner_experience_config.histories[
+                    0
+                ].id,
+            },
+        )
+
+        assert overlay_banner_experience_config.experiences.all() == [overlay_exp]
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "delivery_mechanism": "link",
+                "regions": ["us_tx"],
+                "link_label": "Manage your privacy here",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()["experience_config"]
+        assert resp["delivery_mechanism"] == "link"
+        assert resp["link_label"] == "Manage your privacy here"
+        assert (
+            resp["regions"] == []
+        ), "No regions linked because TX cannot be linked here. We had to unlink TX"
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert resp["version"] == 2.0
+
+        # Updated Experience Config
+        experience_config = get_experience_config_or_error(db, resp["id"])
+        assert experience_config.histories.count() == 2
+
+        # Created Experience Config History
+        experience_config_history = experience_config.histories[1]
+        assert experience_config_history.version == 2.0
+        assert experience_config_history.component == ComponentType.overlay
+        assert experience_config_history.delivery_mechanism == DeliveryMechanism.link
+        assert experience_config_history.experience_config_id == experience_config.id
+
+        assert response.json()["linked_regions"] == []
+        assert response.json()["skipped_regions"] == []
+        assert response.json()["unlinked_regions"] == ["us_tx"]
+
+        # Overlay Privacy Experience was unlinked from the existing ExperienceConfig
+        assert experience_config.experiences.count() == 0
+
+        (
+            overlay_experience,
+            privacy_center_experience,
+        ) = PrivacyExperience.get_experiences_by_region(
+            db=db, region=PrivacyNoticeRegion.us_tx
+        )
+        db.refresh(overlay_experience)
+        assert overlay_experience is not None
+        assert privacy_center_experience is None
+
+        db.refresh(overlay_experience)
+        assert overlay_experience == overlay_exp
+        assert overlay_experience.experience_config_id is None
+        assert overlay_experience.experience_config_history_id is None
+
+        for history in privacy_notice.histories:
+            history.delete(db)
+        overlay_experience.histories[1].delete(db)
+        overlay_experience.histories[0].delete(db)
+        overlay_experience.delete(db)

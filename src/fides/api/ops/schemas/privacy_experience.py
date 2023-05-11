@@ -135,8 +135,8 @@ class ExperienceConfigCreateOrUpdateResponse(FidesSchema):
     """Schema with the created/updated experience config with regions that succeeded or failed"""
 
     experience_config: ExperienceConfigResponse
-    added_regions: List[PrivacyNoticeRegion]
-    removed_regions: List[PrivacyNoticeRegion]
+    linked_regions: List[PrivacyNoticeRegion]
+    unlinked_regions: List[PrivacyNoticeRegion]
     skipped_regions: List[PrivacyNoticeRegion]
 
 

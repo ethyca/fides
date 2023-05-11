@@ -510,9 +510,9 @@ def upsert_privacy_experiences_after_config_update(
     ExperienceConfig.  If the region cannot be linked, or if it is currently attached
     and shouldn't be, skip or remove that region.
     """
-    added_regions: List[PrivacyNoticeRegion] = []
-    removed_regions: List[PrivacyNoticeRegion] = []
-    skipped_regions: List[PrivacyNoticeRegion] = []
+    linked_regions: List[PrivacyNoticeRegion] = []  # Regions that were linked
+    unlinked_regions: List[PrivacyNoticeRegion] = []  # Regions that were unlinked
+    skipped_regions: List[PrivacyNoticeRegion] = []  # Regions that were skipped
 
     for region in regions:
         (
@@ -551,7 +551,7 @@ def upsert_privacy_experiences_after_config_update(
                 and existing_experience.experience_config_id == experience_config.id
             ):
                 existing_experience.unlink_privacy_experience_config(db)
-                removed_regions.append(region)
+                unlinked_regions.append(region)
             else:
                 skipped_regions.append(region)
             continue
@@ -568,7 +568,7 @@ def upsert_privacy_experiences_after_config_update(
         # If existing experience exists, link to experience config
         if existing_experience:
             if existing_experience.experience_config_id != experience_config.id:
-                added_regions.append(region)
+                linked_regions.append(region)
             existing_experience.update(db, data=data)
 
         else:
@@ -577,5 +577,5 @@ def upsert_privacy_experiences_after_config_update(
                 db,
                 data=data,
             )
-            added_regions.append(region)
-    return added_regions, removed_regions, skipped_regions
+            linked_regions.append(region)
+    return linked_regions, unlinked_regions, skipped_regions
