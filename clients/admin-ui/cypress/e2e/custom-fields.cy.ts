@@ -117,19 +117,61 @@ describe("Custom Fields", () => {
       });
     });
 
-    it("can sort", () => {
-      cy.get("tbody > tr")
-        .first()
-        .should("contain", "Taxonomy - Single select");
-      // sort alphabetical
-      cy.getByTestId("column-Label").click();
-      cy.get("tbody > tr").first().should("contain", "Multiple select list");
+    describe("sorting", () => {
+      beforeEach(() => {
+        cy.intercept(
+          "PUT",
+          "/api/v1/plus/custom-metadata/custom-field-definition*",
+          {
+            fixture: "custom-fields/list.json",
+          }
+        ).as("patchCustomFields");
+      });
+      it("should be table to sort", () => {
+        cy.get("tbody > tr")
+          .first()
+          .should("contain", "Taxonomy - Single select");
+        // sort alphabetical
+        cy.getByTestId("column-Label").click();
+        cy.get("tbody > tr").first().should("contain", "Multiple select list");
 
-      // sort reverse
-      cy.getByTestId("column-Label").click();
-      cy.get("tbody > tr")
-        .first()
-        .should("contain", "Taxonomy - Single select");
+        // sort reverse
+        cy.getByTestId("column-Label").click();
+        cy.get("tbody > tr")
+          .first()
+          .should("contain", "Taxonomy - Single select");
+      });
+
+      it("should maintain sort after custom field is enabled/disabled", () => {
+        cy.get("tbody > tr")
+          .first()
+          .should("contain", "Taxonomy - Single select");
+        // sort alphabetical
+        cy.getByTestId("column-Label").click();
+        cy.get("tbody > tr").first().should("contain", "Multiple select list");
+
+        // enable custom field
+        cy.getByTestId("row-Taxonomy - Single select").within(() => {
+          cy.getByTestId("toggle-Enable").click();
+        });
+
+        cy.wait("@patchCustomFields");
+        // redux should requery after invalidation
+        cy.wait("@getCustomFields");
+
+        cy.get("tbody > tr").first().should("contain", "Multiple select list");
+
+        // disable custom field
+        cy.getByTestId("row-Taxonomy - Single select").within(() => {
+          cy.getByTestId("toggle-Enable").click();
+        });
+
+        cy.wait("@patchCustomFields");
+        // redux should requery after invalidation
+        cy.wait("@getCustomFields");
+
+        cy.get("tbody > tr").first().should("contain", "Multiple select list");
+      });
     });
 
     it("can delete from the more actions menu", () => {
