@@ -53,10 +53,18 @@ export const FidesTable = <T extends FidesObject>({
     return [useGlobalFilter, useSortBy];
   }, [customHooks]);
 
-  const tableInstance = useTable({ columns, data }, ...plugins);
+  const tableInstance = useTable(
+    { columns, data, autoResetSortBy: false },
+    ...plugins
+  );
 
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    tableInstance;
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+  } = tableInstance;
 
   return (
     <TableContainer>
