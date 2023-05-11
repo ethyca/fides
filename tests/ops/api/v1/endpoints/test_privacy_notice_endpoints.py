@@ -608,10 +608,6 @@ class TestGetPrivacyNotices:
             },
         )
 
-        unescape_header = {"Unescape-Safestr": "yes"}
-        auth_and_unescape_header = {**auth_header, **unescape_header}
-
-        print("here")
         # without the unescaped header, should return the escaped version
         resp = api_client.get(
             url,
