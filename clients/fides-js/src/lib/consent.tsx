@@ -1,13 +1,9 @@
 import { h, render } from "preact";
-import {
-  makeConsentDefaults,
-  setConsentCookieAcceptAll,
-  setConsentCookieRejectAll,
-} from "./cookie";
-import ConsentBanner from "../components/ConsentBanner";
+
 import { FidesConfig, FidesOptions, UserGeolocation } from "./consent-types";
 import { debugLog } from "./consent-utils";
-import { getConsentContext } from "./consent-context";
+
+import App from "../components/App";
 
 /**
  * Validate the config options
@@ -138,40 +134,8 @@ export const initOverlay = async (config: FidesConfig): Promise<void> => {
             // if something goes wrong with location api, we still want to render notices
           });
       }
-      const context = getConsentContext();
-      const consentDefaults = makeConsentDefaults({
-        config: config.consent,
-        context,
-      });
-      const onAcceptAll = () => {
-        setConsentCookieAcceptAll(consentDefaults);
-        // TODO: save to Fides consent request API
-        // eslint-disable-next-line no-console
-        console.error(
-            "Could not save consent record to Fides API, not implemented!"
-        );
-      };
-      const onRejectAll = () => {
-        setConsentCookieRejectAll(consentDefaults);
-        // TODO: save to Fides consent request API
-        // eslint-disable-next-line no-console
-        console.error(
-            "Could not save consent record to Fides API, not implemented!"
-        );
-      };
-      render(
-        <ConsentBanner
-          bannerTitle={config.experience?.banner_title}
-          bannerDescription={config.experience?.banner_description}
-          confirmationButtonLabel={config.experience?.confirmation_button_label}
-          rejectButtonLabel={config.experience?.reject_button_label}
-          privacyCenterUrl={config.options.privacyCenterUrl}
-          onAcceptAll={onAcceptAll}
-          onRejectAll={onRejectAll}
-          waitBeforeShow={100}
-        />,
-        document.body
-      );
+
+      render(<App config={config} />, document.body);
       const consentLinkEl = document.getElementById("fides-consent-link");
       if (
         consentLinkEl &&
