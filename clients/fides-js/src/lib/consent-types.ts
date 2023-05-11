@@ -12,13 +12,6 @@ export interface FidesConfig {
   options: FidesOptions;
 }
 
-export const defaultFidesOptions = {
-  debug: false,
-  isDisabled: true,
-  isGeolocationEnabled: false,
-  geolocationApiUrl: "cdn-api.ethyca.com/location",
-};
-
 export type FidesOptions = {
   // Whether or not debug log statements should be enabled
   debug: boolean;

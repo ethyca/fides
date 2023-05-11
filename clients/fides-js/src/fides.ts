@@ -55,7 +55,6 @@ import {
   makeConsentDefaults,
 } from "./lib/cookie";
 import {
-  defaultFidesOptions,
   ExperienceConfig,
   FidesConfig,
   FidesOptions,
@@ -90,9 +89,6 @@ let _Fides: Fides;
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  // passed-in config should override default options
-  // eslint-disable-next-line no-param-reassign
-  config.options = { ...defaultFidesOptions, ...config.options };
   // Configure the default consent values
   const context = getConsentContext();
   const consentDefaults = makeConsentDefaults({
@@ -121,7 +117,13 @@ _Fides = {
   consent: {},
   experience: undefined,
   geolocation: {},
-  options: { ...defaultFidesOptions, privacyCenterUrl: "" },
+  options: {
+    debug: true,
+    isDisabled: true,
+    isGeolocationEnabled: false,
+    geolocationApiUrl: "",
+    privacyCenterUrl: "",
+  },
   fides_meta: {},
   identity: {},
   gtm,
