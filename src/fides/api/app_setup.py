@@ -151,6 +151,8 @@ async def run_database_startup() -> None:
         await configure_db(
             CONFIG.database.sync_database_uri, samples=CONFIG.database.load_samples
         )
+    else:
+        logger.info("Skipping auto-migration due to 'automigrate' configuration value.")
 
     try:
         create_or_update_parent_user()
