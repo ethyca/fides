@@ -29,7 +29,7 @@ from fides.api.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.ops.cryptography.cryptographic_util import hash_with_salt
-from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
+from fides.api.ops.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph_differences import GraphRepr
