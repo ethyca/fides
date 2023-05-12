@@ -569,14 +569,11 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         self,
         field_paths: List[FieldPath],
     ) -> List[str]:
-        """
-        Returns fields as required by Snowflake syntax.
-
-        For double-quoted field names, this will still need some thinking.
+        """Returns fields surrounded by quotation marks as required by Snowflake syntax.
 
         Does not take nesting into account yet.
         """
-        return [f"{field_path.levels[-1]}" for field_path in field_paths]
+        return [f'"{field_path.levels[-1]}"' for field_path in field_paths]
 
     def format_clause_for_query(
         self,
@@ -585,26 +582,15 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         operand: str,
     ) -> str:
         """Returns field names in clauses surrounded by quotation marks as required by Snowflake syntax."""
-        return f"{string_path} {operator} (:{operand})"
+        return f'"{string_path}" {operator} (:{operand})'
 
     def get_formatted_query_string(
         self,
         field_list: str,
         clauses: List[str],
     ) -> str:
-        """
-        Returns a query string formatted for Snowflake syntax.
-        This involves using a fully-qualified tablename to handle logins that do not
-        have a default database and schema.
-
-        For tables that have a double-quoted schema (more rare) this will still need some thinking.
-        """
-
-        schema_table = f"{self.node.node.dataset.name}.{self.node.node.collection.name}"
-        query_string = (
-            f'SELECT {field_list} FROM {schema_table} WHERE {" OR ".join(clauses)}'
-        )
-        return query_string
+        """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
+        return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
 
     def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
