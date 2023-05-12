@@ -1,7 +1,7 @@
 import App, { AppContext, AppInitialProps, AppProps } from "next/app";
 import { useMemo } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
-import { persistStore } from "redux-persist";
 import { PersistGate } from "redux-persist/integration/react";
 /*
  * This import needed to be updated to '@chakra-ui/react' from "@fidesui/react".
@@ -17,13 +17,16 @@ import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 
 import {
-  hydratePrivacyCenterEnvironment,
   loadPrivacyCenterEnvironment,
   PrivacyCenterEnvironment,
 } from "~/app/server-environment";
-import { AppStore, makeStore } from "~/app/store";
+import store, { persistor } from "~/app/store";
+import Error from "~/components/Error";
+import Layout from "~/components/Layout";
+import { loadConfig } from "~/features/common/config.slice";
+import { loadSettings } from "~/features/common/settings.slice";
+import { loadStyles } from "~/features/common/styles.slice";
 import theme from "~/theme";
-import Head from "next/head";
 
 interface PrivacyCenterProps {
   serverEnvironment?: PrivacyCenterEnvironment;
@@ -71,72 +74,29 @@ const SafeHydrate: React.FC = ({ children }) => (
   </div>
 );
 
-/**
- *
- * Hydrate the environment and the Redux store using the server-side environment
- *
- * DEFER: ensure this can only happen *once* per session, to avoid unexpected
- * issues where the environment changes unexpected - probably due to a logic
- * error in our app - and we change out the state. The NextJS withRedux() wrapper
- * might handle this? This will allow us to remove all the `console.warn`s...
- * (see https://github.com/ethyca/fides/issues/3212)
- *
- * NOTE: the official NextJS withRedux() wrapper might handle this?
- */
-const hydrateEnvironmentAndStore = (
-  serverEnvironment?: PrivacyCenterEnvironment
-): { environment: PrivacyCenterEnvironment; store: AppStore } => {
-  if (!serverEnvironment) {
-    console.warn(
-      "hydrateEnvironmentAndStore() called without a valid server environment!"
-    );
-  }
-  // Initialize the environment
-  const environment = hydratePrivacyCenterEnvironment(serverEnvironment);
-
-  // Initialize the store
-  let store;
-  if (!environment || !environment.config) {
-    console.warn(
-      "makeStore being called with empty env or config",
-      environment
-    );
-    store = makeStore();
-  } else {
-    store = makeStore({ config: { config: environment.config } });
-  }
-
-  // The store is exposed on the window object when running in the Cypress test
-  // environment. This enables the custom `cy.dispatch` command.
-  if (typeof window !== "undefined" && window.Cypress) {
-    window.store = store;
-  }
-
-  return { environment, store };
-};
-
 const PrivacyCenterApp = ({
   Component,
   pageProps,
   serverEnvironment,
 }: PrivacyCenterProps & AppProps) => {
-  // DEFER: ensure this initializes only once -- and safely! (see https://github.com/ethyca/fides/issues/3212)
-  const { environment, store } = useMemo(
-    () => hydrateEnvironmentAndStore(serverEnvironment),
-    [serverEnvironment]
-  );
+  useMemo(() => {
+    if (serverEnvironment) {
+      // Load the server environment into the Redux store
+      store.dispatch(loadSettings(serverEnvironment.settings));
+      store.dispatch(loadConfig(serverEnvironment.config));
+      store.dispatch(loadStyles(serverEnvironment.styles));
+    }
+  }, [serverEnvironment]);
   return (
     <SafeHydrate>
       <Provider store={store}>
-        <PersistGate loading={null} persistor={persistStore(store)}>
+        <PersistGate persistor={persistor}>
           <ChakraProvider theme={theme}>
-            <Head>
-              <title>Privacy Center</title>
-              <meta name="description" content="Privacy Center" />
-              <link rel="icon" href="/favicon.ico" />
-              {environment.styles ? <style>{environment.styles}</style> : null}
-            </Head>
-            <Component {...pageProps} />
+            <ErrorBoundary fallbackRender={Error}>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            </ErrorBoundary>
           </ChakraProvider>
         </PersistGate>
       </Provider>

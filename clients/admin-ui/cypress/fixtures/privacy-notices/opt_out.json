@@ -1,0 +1,20 @@
+{
+  "name": "Data Sales",
+  "description": "Provide opt-out consent for the use of data in ways that may be considered “data sales” under US state privacy regulations.",
+  "internal_description": null,
+  "origin": null,
+  "regions": ["eu_fr", "eu_ie"],
+  "consent_mechanism": "opt_out",
+  "data_uses": ["advertising.third_party.personalized"],
+  "enforcement_level": "frontend",
+  "disabled": false,
+  "has_gpc_flag": false,
+  "displayed_in_privacy_center": true,
+  "displayed_in_overlay": true,
+  "displayed_in_api": true,
+  "id": "pri_fbdfd4f5-eec3-4d4d-83ae-726bde1d5b3a",
+  "created_at": "2023-04-17T14:49:23.692686+00:00",
+  "updated_at": "2023-04-17T14:49:23.692686+00:00",
+  "version": 1.0,
+  "privacy_notice_history_id": "pri_469a3aaa-c9fe-4bdd-a090-c9a8b0661fdb"
+}

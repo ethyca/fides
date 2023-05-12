@@ -44,6 +44,7 @@ from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
+from tests.fixtures.dynamodb_fixtures import *
 from tests.fixtures.email_fixtures import *
 from tests.fixtures.fides_connector_example_fixtures import *
 from tests.fixtures.integration_fixtures import *

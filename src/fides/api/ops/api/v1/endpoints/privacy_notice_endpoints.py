@@ -1,6 +1,7 @@
+from html import escape, unescape
 from typing import Dict, List, Optional, Set, Tuple
 
-from fastapi import Depends, Security
+from fastapi import Depends, Request, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -18,6 +19,7 @@ from fides.api.ctl.sql_models import DataUse, System  # type: ignore
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.api.v1.endpoints.utils import transform_fields
 from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.models.privacy_experience import (
     upsert_privacy_experiences_after_notice_update,
@@ -34,6 +36,7 @@ from fides.api.ops.util.api_router import APIRouter
 router = APIRouter(tags=["Privacy Notice"], prefix=urls.V1_URL_PREFIX)
 
 DataUseMap = Dict[str, List[schemas.PrivacyNoticeResponse]]
+ESCAPE_FIELDS = ["name", "description", "internal_description", "origin"]
 
 
 def generate_notice_query(
@@ -71,6 +74,7 @@ def get_privacy_notice_list(
     show_disabled: Optional[bool] = True,
     region: Optional[PrivacyNoticeRegion] = None,
     systems_applicable: Optional[bool] = False,
+    request: Request,
 ) -> AbstractPage[PrivacyNotice]:
     """
     Return a paginated list of `PrivacyNotice` records in this system.
@@ -83,8 +87,15 @@ def get_privacy_notice_list(
         systems_applicable=systems_applicable,
         region=region,
     )
+    should_unescape = request.headers.get("unescape-safestr")
     privacy_notices = notice_query.order_by(PrivacyNotice.created_at.desc())
-    return paginate(privacy_notices, params=params)
+    paginated = paginate(privacy_notices, params=params)
+    if should_unescape:
+        paginated.items = [  # type: ignore[attr-defined]
+            transform_fields(transformation=unescape, model=item, fields=ESCAPE_FIELDS)
+            for item in paginated.items  # type: ignore[attr-defined]
+        ]
+    return paginated
 
 
 @router.get(
@@ -164,11 +175,20 @@ def get_privacy_notice(
     *,
     privacy_notice_id: str,
     db: Session = Depends(deps.get_db),
+    request: Request,
 ) -> PrivacyNotice:
     """
     Return a single PrivacyNotice
     """
-    return get_privacy_notice_or_error(db, privacy_notice_id)  # type: ignore[return-value]
+    should_unescape = request.headers.get("unescape-safestr")
+    notice = get_privacy_notice_or_error(db, privacy_notice_id)
+    if should_unescape:
+        notice = transform_fields(
+            transformation=unescape,
+            model=notice,
+            fields=ESCAPE_FIELDS,
+        )  # type: ignore
+    return notice
 
 
 def validate_notice_data_uses(
@@ -221,19 +241,28 @@ def create_privacy_notices(
     except ValidationError as e:
         raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
 
-    notices: List[PrivacyNotice] = []
+    # Loop through and create the new privacy notices
+    created_privacy_notices: List[PrivacyNotice] = []
     affected_regions: Set = set()
     for privacy_notice in privacy_notices:
-        notice = PrivacyNotice.create(
-            db=db, data=privacy_notice.dict(exclude_unset=True), check_name=False
+        privacy_notice = transform_fields(
+            transformation=escape,
+            model=privacy_notice,
+            fields=ESCAPE_FIELDS,
         )
-        notices.append(notice)
-        affected_regions.update(notice.regions)
+        created_privacy_notice = PrivacyNotice.create(
+            db=db,
+            data=privacy_notice.dict(exclude_unset=True),
+            check_name=False,
+        )
+        created_privacy_notices.append(created_privacy_notice)
+        affected_regions.update(created_privacy_notice.regions)
+
     upsert_privacy_experiences_after_notice_update(
         db, affected_regions=list(affected_regions)
     )
 
-    return notices
+    return created_privacy_notices
 
 
 def prepare_privacy_notice_patches(
@@ -263,6 +292,11 @@ def prepare_privacy_notice_patches(
                 detail=f"No PrivacyNotice found for id {update_data.id}.",
             )
 
+        update_data = transform_fields(
+            transformation=escape,
+            model=update_data,
+            fields=ESCAPE_FIELDS,
+        )  # type: ignore
         updates_and_existing.append((update_data, existing_notices[update_data.id]))
 
     # we temporarily store proposed update data in-memory for validation purposes only

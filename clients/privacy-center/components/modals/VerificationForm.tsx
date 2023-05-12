@@ -16,11 +16,11 @@ import {
 import { Headers } from "headers-polyfill";
 import { useFormik } from "formik";
 
-import { getPrivacyCenterEnvironment } from "~/app/server-environment";
 import { ErrorToastOptions } from "~/common/toast-options";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { useLocalStorage } from "~/common/hooks";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
+import { useSettings } from "~/features/common/settings.slice";
 import { ModalViews, VerificationType } from "./types";
 
 const useVerificationForm = ({
@@ -38,7 +38,7 @@ const useVerificationForm = ({
   verificationType: VerificationType;
   successHandler: () => void;
 }) => {
-  const environment = getPrivacyCenterEnvironment();
+  const settings = useSettings();
   const toast = useToast();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [verificationCode, setVerificationCode] = useLocalStorage(
@@ -77,7 +77,7 @@ const useVerificationForm = ({
         addCommonHeaders(headers, null);
 
         const response = await fetch(
-          `${environment.fidesApiUrl}/${verificationType}/${requestId}/verify`,
+          `${settings.FIDES_API_URL}/${verificationType}/${requestId}/verify`,
           {
             method: "POST",
             headers,

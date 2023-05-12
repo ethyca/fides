@@ -11,6 +11,9 @@ from fides.api.ops.models.connectionconfig import ConnectionType as ConnectionTy
 from fides.api.ops.service.connectors.base_connector import (
     BaseConnector as BaseConnector,
 )
+from fides.api.ops.service.connectors.dynamodb_connector import (
+    DynamoDBConnector as DynamoDBConnector,
+)
 from fides.api.ops.service.connectors.email.attentive_connector import (
     AttentiveConnector,
 )
@@ -61,6 +64,7 @@ from fides.api.ops.service.connectors.timescale_connector import (
 supported_connectors: Dict[str, Any] = {
     ConnectionType.attentive.value: AttentiveConnector,
     ConnectionType.bigquery.value: BigQueryConnector,
+    ConnectionType.dynamodb.value: DynamoDBConnector,
     ConnectionType.fides.value: FidesConnector,
     ConnectionType.https.value: HTTPSConnector,
     ConnectionType.manual.value: ManualConnector,

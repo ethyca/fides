@@ -8,7 +8,7 @@ import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import PrivacyExperiencesTable from "~/features/privacy-experience/PrivacyExperiencesTable";
 
 const PrivacyExperiencePage = () => (
-  <Layout title="Privacy notices">
+  <Layout title="Privacy experiences">
     <Box mb={4}>
       <Heading fontSize="2xl" fontWeight="semibold" mb={2} data-testid="header">
         Privacy experience

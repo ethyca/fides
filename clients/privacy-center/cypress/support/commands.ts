@@ -27,6 +27,7 @@ Cypress.Commands.add("waitUntilCookieExists", (cookieName: string, ...args) => {
 });
 
 Cypress.Commands.add("loadConfigFixture", (fixtureName: string, ...args) => {
+  cy.getByTestId("logo");
   cy.fixture(fixtureName, ...args).then((config) => {
     cy.dispatch({ type: "config/loadConfig", payload: config }).then(
       () => config

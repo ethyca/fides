@@ -132,6 +132,44 @@ const initialState: SettingsState = {
   isGettingStarted: false,
 };
 
+export const mergeColumns = <T extends { value: string }>(
+  columns: T[] | undefined,
+  updatedColumns: T[]
+) => {
+  /*
+  this happens the first load of the table when no columns
+  are in localStorage
+   */
+  if (!columns) {
+    return updatedColumns;
+  }
+
+  const currentColumnKeys = new Set(columns.map((column) => column.value));
+  const updatedColumnKeys = new Set(
+    updatedColumns.map((column) => column.value)
+  );
+
+  const newColumnKeys = new Set(
+    [...updatedColumnKeys].filter((x) => !currentColumnKeys.has(x))
+  );
+
+  /*
+  A column can get "removed" when a custom field is deleted
+  or renamed. The column keys are not done by id but by the
+  custom field name. So when a name changes so does the key.
+  This requires removing any cached column that isn't in the
+  updated columns.
+   */
+  const removedColumns = new Set(
+    [...currentColumnKeys].filter((x) => !updatedColumnKeys.has(x))
+  );
+
+  return [
+    ...columns.filter((column) => !removedColumns.has(column.value)),
+    ...updatedColumns.filter((column) => newColumnKeys.has(column.value)),
+  ];
+};
+
 // Settings slice
 export const datamapSlice = createSlice({
   name: "datamap",
@@ -143,11 +181,10 @@ export const datamapSlice = createSlice({
     },
     // Load columns for the first time. If columns are already loaded, no-op.
     loadColumns(draftState, { payload }: PayloadAction<DatamapColumn[]>) {
-      if (draftState.columns) {
-        return;
-      }
-
-      draftState.columns = payload;
+      draftState.columns = mergeColumns<DatamapColumn>(
+        draftState.columns,
+        payload
+      );
     },
     setView(draftState, { payload }: PayloadAction<View>) {
       draftState.view = payload;

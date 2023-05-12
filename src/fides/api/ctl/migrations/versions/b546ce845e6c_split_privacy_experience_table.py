@@ -1,7 +1,7 @@
 """split privacy experience table
 
 Revision ID: b546ce845e6c
-Revises: 15a3e7483249
+Revises: fc04e3e637c0
 Create Date: 2023-05-11 16:21:13.825649
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "b546ce845e6c"
-down_revision = "15a3e7483249"
+down_revision = "fc04e3e637c0"
 branch_labels = None
 depends_on = None
 
