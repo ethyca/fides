@@ -6,6 +6,7 @@ from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
+from sqlalchemy.sql import text
 
 from fides.connectors.bigquery import get_bigquery_engine
 from fides.connectors.models import BigQueryConfig
@@ -24,7 +25,7 @@ SCHEMA_EXCLUSION = {
     "postgresql": ["information_schema"],
     "mysql": ["mysql", "performance_schema", "sys", "information_schema"],
     "mssql": ["INFORMATION_SCHEMA", "guest", "sys"],
-    "snowflake": ["information_schema"],
+    "snowflake": ["INFORMATION_SCHEMA"],
     "redshift": ["information_schema"],
 }
 
@@ -65,16 +66,19 @@ def get_db_schemas(
     """
     Extract the schema, table and column names from a database given a sqlalchemy engine
     """
-    inspector = sqlalchemy.inspect(engine)
-    db_schemas: Dict[str, Dict[str, List]] = {}
-    for schema in inspector.get_schema_names():
-        if include_dataset_schema(schema=schema, database_type=engine.dialect.name):
-            db_schemas[schema] = {}
-            for table in inspector.get_table_names(schema=schema):
-                db_schemas[schema][table] = [
-                    column["name"]
-                    for column in inspector.get_columns(table, schema=schema)
-                ]
+    if engine.dialect.name == "snowflake":
+        db_schemas = get_snowflake_datasets(engine=engine)
+    else:
+        inspector = sqlalchemy.inspect(engine)
+        db_schemas: Dict[str, Dict[str, List]] = {}
+        for schema in inspector.get_schema_names():
+            if include_dataset_schema(schema=schema, database_type=engine.dialect.name):
+                db_schemas[schema] = {}
+                for table in inspector.get_table_names(schema=schema):
+                    db_schemas[schema][table] = [
+                        column["name"]
+                        for column in inspector.get_columns(table, schema=schema)
+                    ]
     return db_schemas
 
 
@@ -356,3 +360,33 @@ def generate_bigquery_datasets(bigquery_config: BigQueryConfig) -> List[Dataset]
         for dataset in bigquery_datasets
     ]
     return unique_bigquery_datasets
+
+
+def get_snowflake_datasets(
+    engine: Engine,
+) -> Dict[str, Dict[str, List[str]]]:
+    """
+    Returns Datasets that match the case-sensitivity that may be
+    required by Snowflake.
+    """
+    schema_cursor = engine.execute(
+        text("SHOW /* sqlalchemy:get_schema_names */ SCHEMAS")
+    )
+    db_schemas = [row[1] for row in schema_cursor]
+    metadata = {}
+    for schema in db_schemas:
+        if include_dataset_schema(schema=schema, database_type=engine.dialect.name):
+            metadata[schema] = {}
+            table_cursor = engine.execute(
+                text(f'SHOW /* sqlalchemy:get_table_names */ TABLES IN "{schema}"')
+            )
+            db_tables = [row[1] for row in table_cursor]
+            for table in db_tables:
+                column_cursor = engine.execute(
+                    text(
+                        f'SHOW /* sqlalchemy:get_column_names_by_table */ COLUMNS IN "{schema}"."{table}"'
+                    )
+                )
+                columns = [row[2] for row in column_cursor]
+                metadata[schema][table] = columns
+    return metadata
