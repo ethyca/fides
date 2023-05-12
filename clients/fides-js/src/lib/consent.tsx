@@ -101,7 +101,7 @@ const getLocation = async (options: FidesOptions): Promise<UserGeolocation> => {
  *
  * (see the type definition of ConsentBannerOptions for what options are available)
  */
-export const initFidesConsent = async (config: FidesConfig): Promise<void> => {
+export const initOverlay = async (config: FidesConfig): Promise<void> => {
   debugLog(config.options.debug, "Initializing Fides consent...");
 
   debugLog(
@@ -145,9 +145,19 @@ export const initFidesConsent = async (config: FidesConfig): Promise<void> => {
       });
       const onAcceptAll = () => {
         setConsentCookieAcceptAll(consentDefaults);
+        // TODO: save to Fides consent request API
+        // eslint-disable-next-line no-console
+        console.error(
+            "Could not save consent record to Fides API, not implemented!"
+        );
       };
       const onRejectAll = () => {
         setConsentCookieRejectAll(consentDefaults);
+        // TODO: save to Fides consent request API
+        // eslint-disable-next-line no-console
+        console.error(
+            "Could not save consent record to Fides API, not implemented!"
+        );
       };
       render(
         <ConsentBanner

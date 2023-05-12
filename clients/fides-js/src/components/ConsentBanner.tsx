@@ -46,7 +46,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     return null;
   }
 
-  // TODO: support option to specify top/bottom
   return (
     <div
       id="fides-consent-banner"
@@ -83,11 +82,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
           onClick={() => {
             onRejectAll();
             setIsShown(false);
-            // TODO: save to Fides consent request API
-            // eslint-disable-next-line no-console
-            console.error(
-              "Could not save consent record to Fides API, not implemented!"
-            );
           }}
         />
         <ConsentBannerButton
@@ -96,11 +90,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
           onClick={() => {
             onAcceptAll();
             setIsShown(false);
-            // TODO: save to Fides consent request API
-            // eslint-disable-next-line no-console
-            console.error(
-              "Could not save consent record to Fides API, not implemented!"
-            );
           }}
         />
       </div>

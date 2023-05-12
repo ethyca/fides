@@ -46,7 +46,7 @@ import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 import { getConsentContext } from "./lib/consent-context";
-import { initFidesConsent } from "./lib/consent";
+import { initOverlay } from "./lib/consent";
 import {
   CookieKeyConsent,
   CookieIdentity,
@@ -99,7 +99,7 @@ const init = async (config: FidesConfig) => {
   // Load any existing user preferences from the browser cookie
   const cookie = getOrMakeFidesCookie(consentDefaults);
 
-  await initFidesConsent(config);
+  await initOverlay(config);
 
   // Initialize the window.Fides object
   _Fides.consent = cookie.consent;
