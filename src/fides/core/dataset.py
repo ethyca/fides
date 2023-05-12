@@ -72,9 +72,7 @@ def get_db_schemas(
     """
     Extract the schema, table and column names from a database given a sqlalchemy engine
     """
-    if engine.dialect.name == "snowflake":
-        db_schemas = get_snowflake_datasets(engine=engine)
-    else:
+    if engine.dialect.name != "snowflake":
         inspector = sqlalchemy.inspect(engine)
         db_schemas: Dict[str, Dict[str, List]] = {}
         for schema in inspector.get_schema_names():
@@ -85,6 +83,8 @@ def get_db_schemas(
                         column["name"]
                         for column in inspector.get_columns(table, schema=schema)
                     ]
+    else:
+        db_schemas = get_snowflake_schemas(engine=engine)
     return db_schemas
 
 
@@ -378,8 +378,8 @@ def generate_dynamo_db_datasets(aws_config: Optional[AWSConfig]) -> Dataset:
     dynamo_dataset = create_dynamodb_dataset(described_dynamo_tables)
     return dynamo_dataset
 
-  
-def get_snowflake_datasets(
+
+def get_snowflake_schemas(
     engine: Engine,
 ) -> Dict[str, Dict[str, List[str]]]:
     """
@@ -390,7 +390,7 @@ def get_snowflake_datasets(
         text("SHOW /* sqlalchemy:get_schema_names */ SCHEMAS")
     )
     db_schemas = [row[1] for row in schema_cursor]
-    metadata = {}
+    metadata: Dict[str, Dict[str, List]] = {}
     for schema in db_schemas:
         if include_dataset_schema(schema=schema, database_type=engine.dialect.name):
             metadata[schema] = {}
