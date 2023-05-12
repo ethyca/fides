@@ -20,7 +20,7 @@ const App = ({ config }: { config: FidesConfig }) => {
     // TODO: save to Fides consent request API
     // eslint-disable-next-line no-console
     console.error(
-        "Could not save consent record to Fides API, not implemented!"
+      "Could not save consent record to Fides API, not implemented!"
     );
   };
 
@@ -29,7 +29,7 @@ const App = ({ config }: { config: FidesConfig }) => {
     // TODO: save to Fides consent request API
     // eslint-disable-next-line no-console
     console.error(
-        "Could not save consent record to Fides API, not implemented!"
+      "Could not save consent record to Fides API, not implemented!"
     );
   };
 
