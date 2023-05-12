@@ -15,7 +15,13 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.12.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.13.0...main)
+
+### Added 
+
+- Add an automated test to check for `/fides-consent.js` backwards compatibility [#3289](https://github.com/ethyca/fides/pull/3289)
+
+## [2.13.0](https://github.com/ethyca/fides/compare/2.12.1...2.13.0)
 
 ### Added
 
@@ -31,6 +37,7 @@ The types of changes are:
 ### Changed
 
 - Merge instances of RTK `createApi` into one instance for better cache invalidation [#3059](https://github.com/ethyca/fides/pull/3059)
+- Explicitly escape/unescape certain fields instead of using SafeStr [#3144](https://github.com/ethyca/fides/pull/3144)
 - Update custom field definition uniqueness to be case insensitive name per resource type [#3215](https://github.com/ethyca/fides/pull/3215)
 - Restrict where privacy notices of certain consent mechanisms must be displayed [#3195](https://github.com/ethyca/fides/pull/3195)
 - Merged the `lib` submodule into the `api.ops` submodule [#3134](https://github.com/ethyca/fides/pull/3134)
@@ -38,9 +45,11 @@ The types of changes are:
 - Refactor client applications into a monorepo with turborepo, extract fides-js into a standalone package, and improve privacy-center to load configuration at runtime [#3105](https://github.com/ethyca/fides/pull/3105)
 
 ### Fixed
+
 - Prevent ability to unintentionally show "default" Privacy Center configuration, styles, etc. [#3242](https://github.com/ethyca/fides/pull/3242)
 - Fix broken links to docs site pages in Admin UI [#3232](https://github.com/ethyca/fides/pull/3232)
 - Repoint legacy docs site links to the new and improved docs site [#3167](https://github.com/ethyca/fides/pull/3167)
+- Fix Cookie House Privacy Center styles for fides deploy [#3283](https://github.com/ethyca/fides/pull/3283)
 
 ### Developer Experience
 
