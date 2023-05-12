@@ -60,7 +60,11 @@ const Overlay: FunctionComponent<OverlayProps> = ({
         onOpenModal={() => setModalIsOpen(true)}
       />
       {modalIsOpen ? (
-        <ConsentModal experience={experience} notices={privacyNotices} />
+        <ConsentModal
+          experience={experience}
+          notices={privacyNotices}
+          // onClose={() => setModalIsOpen(false)}
+        />
       ) : null}
     </div>
   );

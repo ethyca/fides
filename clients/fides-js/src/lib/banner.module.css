@@ -174,6 +174,10 @@ div#fides-consent-modal {
   background-color: var(--fides-consent-overlay-background-color);
   /* TODO: make dynamic? */
   border-radius: 6px;
+  max-height: 100%;
+  max-width: 100%;
+  /* TODO: use a system for z-indexes */
+  z-index: 1010;
 
   position: fixed;
   top: 50%;
@@ -188,6 +192,15 @@ div#fides-consent-modal {
   .modal-button-group {
     display: flex;
   }
+}
+
+.modal-overlay {
+  z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 /** Toggle, adapted from https://kittygiraudel.com/2021/04/05/an-accessible-toggle/ */
@@ -210,7 +223,7 @@ div#fides-consent-modal {
     opacity: 0;
     width: 100%;
     height: 100%;
-    z-index: 3;
+    z-index: 4;
   }
 
   .toggle-display {
@@ -242,7 +255,7 @@ div#fides-consent-modal {
     box-sizing: border-box;
 
     position: absolute;
-    z-index: 2;
+    z-index: 3;
     top: 50%;
     left: var(--offset);
     transform: translate(0, -50%);
