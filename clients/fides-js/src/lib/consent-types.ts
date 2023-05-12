@@ -17,7 +17,7 @@ export type FidesOptions = {
   debug: boolean;
 
   // Whether or not the banner should be globally disabled
-  isDisabled: boolean;
+  isOverlayDisabled: boolean;
 
   // Whether user geolocation should be enabled. Requires geolocationApiUrl
   isGeolocationEnabled: boolean;

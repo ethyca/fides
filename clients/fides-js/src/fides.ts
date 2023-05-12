@@ -119,7 +119,7 @@ _Fides = {
   geolocation: {},
   options: {
     debug: true,
-    isDisabled: true,
+    isOverlayDisabled: true,
     isGeolocationEnabled: false,
     geolocationApiUrl: "",
     privacyCenterUrl: "",

@@ -113,7 +113,7 @@ export const initFidesConsent = async (config: FidesConfig): Promise<void> => {
     return Promise.reject(new Error("Invalid banner options"));
   }
 
-  if (config.options.isDisabled) {
+  if (config.options.isOverlayDisabled) {
     debugLog(
       config.options.debug,
       "Fides consent banner is disabled, skipping banner initialization!"

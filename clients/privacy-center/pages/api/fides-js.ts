@@ -44,7 +44,7 @@ export default async function handler(
     },
     options: {
       debug: true,
-      isDisabled: true,
+      isOverlayDisabled: true,
       isGeolocationEnabled: false,
       geolocationApiUrl: "",
       privacyCenterUrl: "http://localhost:3000",
