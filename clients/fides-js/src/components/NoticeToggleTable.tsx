@@ -1,6 +1,6 @@
-/** @jsx React */
+/** @jsx createElement */
 
-import React from "react";
+import { createElement } from "react";
 import { PrivacyNotice } from "../lib/consent-types";
 
 /**

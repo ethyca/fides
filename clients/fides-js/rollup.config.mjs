@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import alias from "@rollup/plugin-alias";
 import commonjs from "@rollup/plugin-commonjs";
 import copy from "rollup-plugin-copy";
@@ -29,8 +30,10 @@ export default [
           { find: "react/jsx-runtime", replacement: "preact/jsx-runtime" },
         ],
       }),
-      commonjs(),
       nodeResolve(),
+      commonjs({
+        include: "../node_modules",
+      }),
       css(),
       esbuild({
         minify: !isDev,
@@ -56,7 +59,7 @@ export default [
           "boxen", // default reporter, which prints a nice CLI output
 
           // Add a defensive check to fail the build if our bundle size starts getting too big!
-          (options, bundle, { bundleSize, gzipSize, fileName }) => {
+          (options, bundle, { gzipSize, fileName }) => {
             const gzipSizeKb = Number(gzipSize.replace(" KB", ""));
             if (gzipSizeKb > GZIP_SIZE_ERROR_KB) {
               console.error(
