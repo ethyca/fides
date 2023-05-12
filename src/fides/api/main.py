@@ -19,8 +19,6 @@ from fides.api.app_setup import (
     log_startup,
     run_database_startup,
 )
-from fides.api.ctl import view
-from fides.api.ctl.routes import admin, crud, generate, health, system, validate
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
     get_admin_index_as_response,
@@ -40,22 +38,12 @@ from fides.api.ops.schemas.analytics import Event, ExtraData
 from fides.api.ops.service.privacy_request.email_batch_service import (
     initiate_scheduled_batch_email_send,
 )
-from fides.api.ops.service.saas_request.override_implementations import *
+from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.core.config import CONFIG, check_required_webserver_config_values
 
 VERSION = fides.__version__
-
-ROUTERS = crud.routers + [  # type: ignore[attr-defined]
-    admin.router,
-    generate.router,
-    health.router,
-    validate.router,
-    view.router,
-    system.system_connections_router,
-    system.system_router,
-]
 
 app = create_fides_app()
 
@@ -221,6 +209,9 @@ async def setup_server() -> None:
             event_created_at=datetime.now(tz=timezone.utc),
         )
     )
+
+    if not scheduler.running:
+        scheduler.start()
 
     logger.info(FIDES_ASCII_ART)
     logger.info(f"Fides startup complete! v{VERSION}")

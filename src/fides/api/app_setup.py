@@ -35,7 +35,6 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.ops.service.saas_request.override_implementations import *
-from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.system_manager_oauth_util import (
     get_system_fides_key,
@@ -160,8 +159,9 @@ async def run_database_startup() -> None:
         logger.error("Error creating parent user: {}", str(e))
         raise FidesError(f"Error creating parent user: {str(e)}")
     logger.info("Loading config settings into database...")
+
+    db = get_api_session()
     try:
-        db = get_api_session()
         ApplicationConfig.update_config_set(db, CONFIG)
     except Exception as e:
         logger.error("Error occurred writing config settings to database: {}", str(e))
@@ -173,7 +173,6 @@ async def run_database_startup() -> None:
 
     logger.info("Validating SaaS connector templates...")
     try:
-        db = get_api_session()
         update_saas_configs(db)
         logger.info("Finished loading SaaS templates")
     except Exception as e:
@@ -184,6 +183,7 @@ async def run_database_startup() -> None:
         return
     finally:
         db.close()
+    db.close()
 
 
 def check_redis() -> None:
@@ -198,6 +198,3 @@ def check_redis() -> None:
         return
     else:
         logger.debug("Connection to cache succeeded")
-
-    if not scheduler.running:
-        scheduler.start()
