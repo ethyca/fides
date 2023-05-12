@@ -141,7 +141,7 @@ export const initOverlay = async (config: FidesConfig): Promise<void> => {
     return Promise.resolve();
   }
 
-  document.addEventListener("DOMContentLoaded", async () => {
+  async function afterDomIsLoaded() {
     debugLog(config.options.debug, "DOM fully loaded and parsed");
 
     try {
@@ -195,6 +195,15 @@ export const initOverlay = async (config: FidesConfig): Promise<void> => {
     } catch (e) {
       debugLog(config.options.debug, e);
     }
-  });
+  }
+  if (document?.readyState !== "complete") {
+    debugLog(config.options.debug, "DOM not loaded, adding event listener");
+    document.addEventListener("DOMContentLoaded", async () => {
+      await afterDomIsLoaded();
+    });
+  } else {
+    await afterDomIsLoaded();
+  }
+
   return Promise.resolve();
 };
