@@ -497,6 +497,34 @@ def upsert_privacy_experiences_after_notice_update(
     return added_experiences, updated_experiences
 
 
+def config_incompatible_with_region(
+    db: Session,
+    component_type: ComponentType,
+    delivery_mechanism: DeliveryMechanism,
+    region: PrivacyNoticeRegion,
+) -> bool:
+    """Returns True if an ExperienceConfig/PrivacyExperience is invalid for the given region
+
+    Our current primary check is that opt-in and notice only notices have to be displayed in
+    an overlay delivered by a banner.
+    """
+    return (
+        component_type == ComponentType.overlay
+        and delivery_mechanism == DeliveryMechanism.link
+        and bool(
+            get_privacy_notices_by_region_and_component(
+                db, region, ComponentType.overlay  # type: ignore[arg-type]
+            )
+            .filter(
+                PrivacyNotice.consent_mechanism.in_(
+                    [ConsentMechanism.opt_in, ConsentMechanism.notice_only]
+                )
+            )
+            .first()
+        )
+    )
+
+
 def upsert_privacy_experiences_after_config_update(
     db: Session,
     experience_config: PrivacyExperienceConfig,
@@ -520,39 +548,30 @@ def upsert_privacy_experiences_after_config_update(
             privacy_center_experience,
         ) = PrivacyExperience.get_experiences_by_region(db, region)
 
-        required_banner_overlay = (
-            get_privacy_notices_by_region_and_component(
-                db, region, experience_config.component  # type: ignore[arg-type]
-            )
-            .filter(
-                PrivacyNotice.consent_mechanism.in_(
-                    [ConsentMechanism.opt_in, ConsentMechanism.notice_only]
-                )
-            )
-            .first()
-        )
-
         existing_experience: Optional[PrivacyExperience] = (
             overlay_experience
             if experience_config.component == ComponentType.overlay
             else privacy_center_experience
         )
 
-        # Skip adding region or unlink existing region to link overlay ExperienceConfig if there
-        # are notices that have to be delivered by banner
-        if (
-            required_banner_overlay
-            and experience_config.component == ComponentType.overlay
-            and experience_config.delivery_mechanism == DeliveryMechanism.link
+        # This should be caught ahead of time validation at the API level, but if this is called directly,
+        # prioritize keeping the Experiences in a valid state at all times.
+        if config_incompatible_with_region(
+            db,
+            experience_config.component,  # type: ignore[arg-type]
+            experience_config.delivery_mechanism,  # type: ignore[arg-type]
+            region,
         ):
             if (
                 existing_experience
                 and existing_experience.experience_config_id
                 and existing_experience.experience_config_id == experience_config.id
             ):
+                # If existing experience is already linked to a config that is now invalid, unlink it.
                 existing_experience.unlink_privacy_experience_config(db)
                 unlinked_regions.append(region)
             else:
+                # Skip linking experience altogether to config for which it would be incompatible
                 skipped_regions.append(region)
             continue
 

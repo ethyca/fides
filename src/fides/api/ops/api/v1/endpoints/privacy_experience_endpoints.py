@@ -17,11 +17,14 @@ from starlette.status import (
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.api.v1.endpoints.utils import human_friendly_list
 from fides.api.ops.api.v1.scope_registry import PRIVACY_EXPERIENCE_UPDATE
 from fides.api.ops.models.privacy_experience import (
     ComponentType,
+    DeliveryMechanism,
     PrivacyExperience,
     PrivacyExperienceConfig,
+    config_incompatible_with_region,
     upsert_privacy_experiences_after_config_update,
 )
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
@@ -223,6 +226,29 @@ def experience_config_list(
     return fastapi_paginate(privacy_experience_config_query.all(), params=params)
 
 
+def validate_experience_config_and_region_compatibility(
+    db: Session,
+    component_type: ComponentType,
+    delivery_mechanism: DeliveryMechanism,
+    regions: List[PrivacyNoticeRegion],
+) -> None:
+    """Validates that the supplied regions would be compatible with the proposed ExperienceConfig
+    prior to making the ExperienceConfig changes and linking the Experiences for those regions.
+    """
+    invalid_regions: List[PrivacyNoticeRegion] = []
+    for region in regions:
+        if config_incompatible_with_region(
+            db, component_type, delivery_mechanism, region
+        ):
+            invalid_regions.append(region)
+
+    if invalid_regions:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"The following regions would be incompatible with this experience: {human_friendly_list([reg.value for reg in invalid_regions])}.",
+        )
+
+
 @router.post(
     urls.EXPERIENCE_CONFIG,
     status_code=HTTP_201_CREATED,
@@ -245,15 +271,24 @@ def experience_config_create(
     """
     Create Experience Language and then attempt to upsert Experiences and link to ExperienceConfig
     """
+    experience_config_dict: Dict = experience_config_data.dict(exclude_unset=True)
+    # Pop the regions off the request
+    new_regions: List[PrivacyNoticeRegion] = experience_config_dict.pop("regions")
+
+    # Fail early if the ExperienceConfig is going to be incompatible with any of the regions
+    validate_experience_config_and_region_compatibility(
+        db=db,
+        component_type=experience_config_data.component,
+        delivery_mechanism=experience_config_data.delivery_mechanism,
+        regions=new_regions,
+    )
+
     logger.info(
-        "Creating experience config of component {} and delivery mechanism {} for regions {}.",
+        "Creating experience config of component {} and delivery mechanism.",
         experience_config_data.component,
         experience_config_data.delivery_mechanism,
         experience_config_data.regions,
     )
-    experience_config_dict: Dict = experience_config_data.dict(exclude_unset=True)
-    new_regions: List[PrivacyNoticeRegion] = experience_config_dict.pop("regions")
-
     experience_config = PrivacyExperienceConfig.create(
         db, data=experience_config_dict, check_name=False
     )
@@ -310,12 +345,16 @@ def experience_config_update(
     experience_config_data: ExperienceConfigUpdate,
 ) -> ExperienceConfigCreateOrUpdateResponse:
     """
-    Update Experience Config and then attempt to upsert Experiences and link back to ExperienceConfig
+    Update Experience Config and then attempt to upsert Experiences and link back to ExperienceConfig.
+
+    All regions that should be linked to this ExperienceConfig (or remain linked) need to be
+    included in this request.
     """
     experience_config: PrivacyExperienceConfig = get_experience_config_or_error(
         db, experience_config_id
     )
     experience_config_data_dict: Dict = experience_config_data.dict(exclude_unset=True)
+    # Pop the regions off the request
     regions: List[PrivacyNoticeRegion] = experience_config_data_dict.pop("regions")
 
     # Because we're allowing patch updates here, first do a dry update and make sure the experience
@@ -332,11 +371,18 @@ def experience_config_update(
             detail=exc.errors(),  # type: ignore
         )
 
+    # Fail early if the ExperienceConfig is going to be incompatible with any of the regions
+    validate_experience_config_and_region_compatibility(
+        db=db,
+        component_type=dry_update.component,  # type: ignore[arg-type]
+        delivery_mechanism=dry_update.delivery_mechanism,  # type: ignore[arg-type]
+        regions=regions,
+    )
+
     logger.info("Updating experience config of id '{}'", experience_config.id)
     experience_config.update(db=db, data=experience_config_data_dict)
     db.refresh(experience_config)
 
-    # Upserting PrivacyExperiences based on regions specified in the request
     current_regions: List[PrivacyNoticeRegion] = experience_config.regions
     not_included_in_request: List[
         PrivacyExperience
@@ -351,6 +397,7 @@ def experience_config_update(
         ],
     )
 
+    # Upserting PrivacyExperiences based on regions specified in the request
     (
         linked,
         unlinked_for_conflict,
