@@ -8,18 +8,16 @@ const ConsentModal = ({
 }: {
   experience: ExperienceConfig;
   notices: PrivacyNotice[];
-}) => {
-  return (
-    <div data-testid="consent-modal" id="fides-consent-modal">
-      <p>{experience.component_description}</p>
-      <NoticeToggleTable notices={notices} />
-      <div>
-        <button>Save</button>
-        <button>{experience.reject_button_label}</button>
-        <button>{experience.confirmation_button_label}</button>
-      </div>
+}) => (
+  <div data-testid="consent-modal" id="fides-consent-modal">
+    <p>{experience.component_description}</p>
+    <NoticeToggleTable notices={notices} />
+    <div>
+      <button type="button">Save</button>
+      <button type="button">{experience.reject_button_label}</button>
+      <button type="button">{experience.confirmation_button_label}</button>
     </div>
-  );
-};
+  </div>
+);
 
 export default ConsentModal;

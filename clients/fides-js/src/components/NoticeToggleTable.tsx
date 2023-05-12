@@ -20,8 +20,8 @@ const NoticeToggleTable = ({ notices }: { notices: PrivacyNotice[] }) => {
           style={{ display: "flex", justifyContent: "space-between" }}
         >
           <span>{notice.name}</span>
-          {/* TODO: CSS to make this look like an actual switch and associate control */}
-          <label>
+          {/* TODO: CSS to make this look like an actual switch */}
+          <label htmlFor={notice.name}>
             <input type="checkbox" />
           </label>
         </div>
