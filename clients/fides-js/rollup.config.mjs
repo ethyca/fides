@@ -1,6 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import alias from "@rollup/plugin-alias";
-import commonjs from "@rollup/plugin-commonjs";
 import copy from "rollup-plugin-copy";
 import dts from "rollup-plugin-dts";
 import esbuild from "rollup-plugin-esbuild";
@@ -13,6 +12,15 @@ const isDev = process.env.NODE_ENV === "development";
 const GZIP_SIZE_ERROR_KB = 20; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
 
+const preactAliases = {
+  entries: [
+    { find: "react", replacement: "preact/compat" },
+    { find: "react-dom/test-utils", replacement: "preact/test-utils" },
+    { find: "react-dom", replacement: "preact/compat" },
+    { find: "react/jsx-runtime", replacement: "preact/jsx-runtime" },
+  ],
+};
+
 /**
  * @type {import('rollup').RollupOptions}
  */
@@ -22,18 +30,8 @@ export default [
     // DEFER: Add aliases for typical react imports (see https://preactjs.com/guide/v10/getting-started/#aliasing-in-rollup)
     // This will be needed if & when we want to leverage other packages written for the React ecosystem
     plugins: [
-      alias({
-        entries: [
-          { find: "react", replacement: "preact/compat" },
-          { find: "react-dom/test-utils", replacement: "preact/test-utils" },
-          { find: "react-dom", replacement: "preact/compat" },
-          { find: "react/jsx-runtime", replacement: "preact/jsx-runtime" },
-        ],
-      }),
+      alias(preactAliases),
       nodeResolve(),
-      commonjs({
-        include: "../node_modules",
-      }),
       css(),
       esbuild({
         minify: !isDev,
@@ -96,7 +94,7 @@ export default [
   },
   {
     input: `src/${name}.ts`,
-    plugins: [nodeResolve(), css(), esbuild()],
+    plugins: [alias(preactAliases), nodeResolve(), css(), esbuild()],
     output: [
       {
         // Compatible with ES module imports. Apps in this repo may be able to share the code.

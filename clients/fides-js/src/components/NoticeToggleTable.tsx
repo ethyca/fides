@@ -1,4 +1,6 @@
-import { h } from "preact";
+/** @jsx createElement */
+import { createElement } from "react";
+
 import { PrivacyNotice } from "../lib/consent-types";
 import Toggle from "./Toggle";
 
@@ -16,7 +18,6 @@ const NoticeToggleTable = ({ notices }: { notices: PrivacyNotice[] }) => (
         style={{ display: "flex", justifyContent: "space-between" }}
       >
         <span>{notice.name}</span>
-        {/* TODO: CSS to make this look like an actual switch */}
         <Toggle name={notice.name} />
       </div>
     ))}
