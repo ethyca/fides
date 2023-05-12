@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.13.0...main)
 
+### Fixed
+
+- Maintain casing differences within Snowflake datasets for proper DSR execution [#3245](https://github.com/ethyca/fides/pull/3245)
+
 ## [2.13.0](https://github.com/ethyca/fides/compare/2.12.1...2.13.0)
 
 ### Added
