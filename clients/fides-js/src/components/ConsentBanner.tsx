@@ -13,6 +13,7 @@ interface BannerProps {
   bannerTitle?: string;
   confirmationButtonLabel?: string;
   rejectButtonLabel?: string;
+  managePreferencesLabel?: string;
   waitBeforeShow?: number;
 }
 
@@ -23,6 +24,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   bannerDescription = "This website processes your data respectfully, so we require your consent to use cookies.",
   bannerTitle = "Manage your consent",
   confirmationButtonLabel = "Accept All",
+  managePreferencesLabel = "Manage Preferences",
   rejectButtonLabel = "Reject All",
   waitBeforeShow = 100,
 }) => {
@@ -73,7 +75,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
       >
         <ConsentBannerButton
           buttonType={ButtonType.TERTIARY}
-          label="Manage Preferences"
+          label={managePreferencesLabel}
           onClick={navigateToPrivacyCenter}
         />
         <ConsentBannerButton
