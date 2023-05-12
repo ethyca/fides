@@ -5,16 +5,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import Extra, conlist, root_validator, validator
 
-from fides.api.custom_types import SafeStr
 from fides.api.ops.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNoticeRegion,
 )
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 
 
-class PrivacyNotice(BaseSchema):
+class PrivacyNotice(FidesSchema):
     """
     Base for PrivacyNotice API objects
 
@@ -22,13 +21,13 @@ class PrivacyNotice(BaseSchema):
     stricter but not less strict
     """
 
-    name: Optional[SafeStr]
-    description: Optional[SafeStr]
-    internal_description: Optional[SafeStr]
-    origin: Optional[SafeStr]
+    name: Optional[str]
+    description: Optional[str]
+    internal_description: Optional[str]
+    origin: Optional[str]
     regions: Optional[conlist(PrivacyNoticeRegion, min_items=1)]  # type: ignore
     consent_mechanism: Optional[ConsentMechanism]
-    data_uses: Optional[conlist(SafeStr, min_items=1)]  # type: ignore
+    data_uses: Optional[conlist(str, min_items=1)]  # type: ignore
     enforcement_level: Optional[EnforcementLevel]
     disabled: Optional[bool] = False
     has_gpc_flag: Optional[bool] = False
@@ -104,10 +103,10 @@ class PrivacyNoticeCreation(PrivacyNotice):
     It also establishes some fields _required_ for creation
     """
 
-    name: SafeStr
+    name: str
     regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
     consent_mechanism: ConsentMechanism
-    data_uses: conlist(SafeStr, min_items=1)  # type: ignore
+    data_uses: conlist(str, min_items=1)  # type: ignore
     enforcement_level: EnforcementLevel
 
 

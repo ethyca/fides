@@ -474,3 +474,20 @@ def mongo_inserts(integration_mongodb_connector):
         mongo_delete(
             integration_mongodb_connector, "mongo_test", table_name, record_list
         )
+
+
+# ======================= dynamodb  ==========================
+
+
+@pytest.fixture(scope="function")
+def integration_dynamodb_config(db) -> ConnectionConfig:
+    connection_config = ConnectionConfig(
+        key="dynamodb_example",
+        connection_type=ConnectionType.dynamodb,
+        access=AccessLevel.write,
+        secrets=integration_secrets["dynamodb_example"],
+        name="dynamodb_example",
+    )
+    connection_config.save(db)
+    yield connection_config
+    connection_config.delete(db)

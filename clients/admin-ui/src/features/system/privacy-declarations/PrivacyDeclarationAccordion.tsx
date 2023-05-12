@@ -8,6 +8,8 @@ import {
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
 
+import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+
 import {
   DataProps,
   PrivacyDeclarationFormComponents,
@@ -25,12 +27,14 @@ interface AccordionProps extends DataProps {
   onDelete: (
     declaration: PrivacyDeclarationWithId
   ) => Promise<PrivacyDeclarationWithId[] | undefined>;
+  includeCustomFields?: boolean;
 }
 
 const PrivacyDeclarationAccordionItem = ({
   privacyDeclaration,
   onEdit,
   onDelete,
+  includeCustomFields,
   ...dataProps
 }: { privacyDeclaration: PrivacyDeclarationWithId } & Omit<
   AccordionProps,
@@ -58,6 +62,10 @@ const PrivacyDeclarationAccordionItem = ({
         >
           {({ dirty }) => (
             <Form data-testid={`${privacyDeclaration.data_use}-form`}>
+              <FormGuard
+                id={`${privacyDeclaration.id}-form`}
+                name={privacyDeclaration.id}
+              />
               <AccordionButton
                 py={4}
                 borderBottomWidth={isExpanded ? "0px" : "1px"}
@@ -76,6 +84,7 @@ const PrivacyDeclarationAccordionItem = ({
                   <PrivacyDeclarationFormComponents
                     privacyDeclarationId={privacyDeclaration.id}
                     onDelete={onDelete}
+                    includeCustomFields={includeCustomFields}
                     {...dataProps}
                   />
                 </Stack>

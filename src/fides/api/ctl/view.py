@@ -10,7 +10,7 @@ from fides.api.ctl.routes.crud import list_resource  # type: ignore[attr-defined
 from fides.api.ctl.sql_models import Evaluation  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api.v1 import scope_registry
-from fides.api.ops.util.oauth_util import verify_oauth_client_prod
+from fides.api.ops.oauth.utils import verify_oauth_client_prod
 
 router = APIRouter(
     tags=["View"],

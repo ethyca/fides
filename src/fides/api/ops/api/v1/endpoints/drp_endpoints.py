@@ -22,6 +22,7 @@ from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
 )
 from fides.api.ops.models.policy import DrpAction, Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.drp_privacy_request import (
     DRP_VERSION,
     DrpDataRightsResponse,
@@ -45,7 +46,6 @@ from fides.api.ops.service.privacy_request.request_service import (
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.cache import FidesopsRedis
 from fides.api.ops.util.logger import Pii
-from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 

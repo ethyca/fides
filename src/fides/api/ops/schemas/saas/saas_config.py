@@ -13,7 +13,7 @@ from fides.api.ops.graph.config import (
     GraphDataset,
     ScalarField,
 )
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
 
@@ -475,7 +475,7 @@ class SaaSConfig(SaaSConfigBase):
         return reference
 
 
-class SaaSConfigValidationDetails(BaseSchema):
+class SaaSConfigValidationDetails(FidesSchema):
     """
     Message with any validation issues with the SaaS config
     """
@@ -483,7 +483,7 @@ class SaaSConfigValidationDetails(BaseSchema):
     msg: Optional[str]
 
 
-class ValidateSaaSConfigResponse(BaseSchema):
+class ValidateSaaSConfigResponse(FidesSchema):
     """
     Response model for validating a SaaS config, which includes both the SaaS config
     itself (if valid) plus a details object describing any validation errors.

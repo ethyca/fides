@@ -16,6 +16,7 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.service.connectors import (
     BaseConnector,
     BigQueryConnector,
+    DynamoDBConnector,
     FidesConnector,
     ManualConnector,
     MariaDBConnector,
@@ -77,6 +78,8 @@ class Connections:
             return ManualConnector(connection_config)
         if connection_config.connection_type == ConnectionType.timescale:
             return TimescaleConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.dynamodb:
+            return DynamoDBConnector(connection_config)
         if connection_config.connection_type == ConnectionType.fides:
             return FidesConnector(connection_config)
         raise NotImplementedError(

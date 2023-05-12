@@ -8,8 +8,14 @@ from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import text
 
+from fides.connectors.aws import (
+    create_dynamodb_dataset,
+    describe_dynamo_tables,
+    get_aws_client,
+    get_dynamo_tables,
+)
 from fides.connectors.bigquery import get_bigquery_engine
-from fides.connectors.models import BigQueryConfig
+from fides.connectors.models import AWSConfig, BigQueryConfig
 from fides.core.api_helpers import list_server_resources
 from fides.core.parse import parse
 
@@ -362,6 +368,17 @@ def generate_bigquery_datasets(bigquery_config: BigQueryConfig) -> List[Dataset]
     return unique_bigquery_datasets
 
 
+def generate_dynamo_db_datasets(aws_config: Optional[AWSConfig]) -> Dataset:
+    """
+    Given an AWS config, extract all DynamoDB tables/fields and generate corresponding datasets.
+    """
+    client = get_aws_client(service="dynamodb", aws_config=aws_config)
+    dynamo_tables = get_dynamo_tables(client)
+    described_dynamo_tables = describe_dynamo_tables(client, dynamo_tables)
+    dynamo_dataset = create_dynamodb_dataset(described_dynamo_tables)
+    return dynamo_dataset
+
+  
 def get_snowflake_datasets(
     engine: Engine,
 ) -> Dict[str, Dict[str, List[str]]]:

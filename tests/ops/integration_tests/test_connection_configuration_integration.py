@@ -13,6 +13,7 @@ from fides.api.ops.api.v1.scope_registry import (
 )
 from fides.api.ops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
 from fides.api.ops.common_exceptions import ConnectionException
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import ConnectionTestStatus
 from fides.api.ops.service.connectors import (
     MongoDBConnector,
@@ -28,7 +29,6 @@ from fides.api.ops.service.connectors.sql_connector import (
     MicrosoftSQLServerConnector,
     MySQLConnector,
 )
-from fides.lib.models.client import ClientDetail
 
 
 @pytest.mark.integration_postgres
