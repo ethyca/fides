@@ -9,6 +9,7 @@ from pydantic import BaseModel, Extra
 from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionType
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.connection_configuration import connection_secrets_schemas
+from fides.api.ops.schemas.policy import ActionType
 from fides.api.ops.schemas.saas.saas_config import SaaSConfigBase
 
 
@@ -25,6 +26,7 @@ class CreateConnectionConfiguration(BaseModel):
     access: AccessLevel
     disabled: Optional[bool] = False
     description: Optional[str]
+    enabled_actions: Optional[List[ActionType]] = None
 
     class Config:
         """Restrict adding other fields through this schema and set orm_mode to support mapping to ConnectionConfig"""

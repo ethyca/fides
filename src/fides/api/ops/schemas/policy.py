@@ -1,11 +1,39 @@
+from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional
 
 from fideslang.validation import FidesKey
 
-from fides.api.ops.models.policy import ActionType, DrpAction
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.storage.storage import StorageDestinationResponse
+
+
+class ActionType(str, EnumType):
+    """The purpose of a particular privacy request"""
+
+    access = "access"
+    consent = "consent"
+    erasure = "erasure"
+    update = "update"
+
+
+# action types we actively support in policies/requests
+SUPPORTED_ACTION_TYPES = {ActionType.access, ActionType.consent, ActionType.erasure}
+
+
+class DrpAction(EnumType):
+    """
+    Enum to hold valid DRP actions. For more details, see:
+    https://github.com/consumer-reports-digital-lab/data-rights-protocol#301-supported-rights-actions
+    """
+
+    access = "access"
+    deletion = "deletion"
+    # below are not supported
+    sale_opt_out = "sale:opt_out"
+    sale_opt_in = "sale:opt_in"
+    access_categories = "access:categories"
+    access_specific = "access:specific"
 
 
 class PolicyMaskingSpec(FidesSchema):

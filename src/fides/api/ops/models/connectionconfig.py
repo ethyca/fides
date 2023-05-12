@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional, Type
 
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -21,6 +21,7 @@ from fides.api.ops.db.base_class import (
     JSONTypeOverride,
     get_key_from_data,
 )
+from fides.api.ops.schemas.policy import ActionType
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.core.config import CONFIG
 
@@ -148,6 +149,11 @@ class ConnectionConfig(Base):
     )
 
     system = relationship(System)
+
+    # Identifies the privacy actions needed from this connection by the associated system.
+    enabled_actions = Column(
+        ARRAY(Enum(ActionType, native_enum=False)), unique=False, nullable=True
+    )
 
     @property
     def system_key(self) -> str:

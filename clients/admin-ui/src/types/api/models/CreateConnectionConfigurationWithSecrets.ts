@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { ActionType } from "~/features/privacy-requests/types";
 import type { AccessLevel } from "./AccessLevel";
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { ConnectionType } from "./ConnectionType";
@@ -45,4 +46,5 @@ export type CreateConnectionConfigurationWithSecrets = {
     | FidesDocsSchema
     | SovrnDocsSchema;
   saas_connector_type?: string;
+  enabled_actions?: ActionType[];
 };

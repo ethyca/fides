@@ -7,6 +7,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.ops.models.policy import ActionType
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.api.ops.util.text import to_snake_case
 
@@ -155,3 +156,16 @@ class TestConnectionConfigModel:
         connection_config.save(db)
 
         assert connection_config.system_key == system.fides_key
+
+    def test_enabled_actions(self, db, connection_config):
+        connection_config.enabled_actions = [
+            ActionType.access,
+            ActionType.erasure,
+            ActionType.consent,
+        ]
+        connection_config.save(db)
+        assert connection_config.enabled_actions == [
+            ActionType.access,
+            ActionType.erasure,
+            ActionType.consent,
+        ]

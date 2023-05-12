@@ -28,6 +28,7 @@ from fides.api.ops.models.storage import (
     StorageConfig,
     get_active_default_storage_config,
 )
+from fides.api.ops.schemas.policy import ActionType, DrpAction
 from fides.api.ops.util.data_category import _validate_data_category
 from fides.core.config import CONFIG
 
@@ -39,34 +40,6 @@ class CurrentStep(EnumType):
     consent = "consent"
     email_post_send = "email_post_send"
     post_webhooks = "post_webhooks"
-
-
-class ActionType(str, EnumType):
-    """The purpose of a particular privacy request"""
-
-    access = "access"
-    consent = "consent"
-    erasure = "erasure"
-    update = "update"
-
-
-# action types we actively support in policies/requests
-SUPPORTED_ACTION_TYPES = {ActionType.access, ActionType.consent, ActionType.erasure}
-
-
-class DrpAction(EnumType):
-    """
-    Enum to hold valid DRP actions. For more details, see:
-    https://github.com/consumer-reports-digital-lab/data-rights-protocol#301-supported-rights-actions
-    """
-
-    access = "access"
-    deletion = "deletion"
-    # below are not supported
-    sale_opt_out = "sale:opt_out"
-    sale_opt_in = "sale:opt_in"
-    access_categories = "access:categories"
-    access_specific = "access:specific"
 
 
 def _validate_drp_action(drp_action: Optional[str]) -> None:

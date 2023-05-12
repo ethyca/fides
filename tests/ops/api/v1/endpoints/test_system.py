@@ -33,7 +33,37 @@ def url_invalid_system() -> str:
     return V1_URL_PREFIX + f"/system/not-a-real-system/connection"
 
 
-class TestPatchSystemConnections(TestPatchConnections):
+@pytest.fixture(scope="function")
+def payload():
+    return [
+        {
+            "name": "My Main Postgres DB",
+            "key": "postgres_db_1",
+            "connection_type": "postgres",
+            "access": "write",
+            "secrets": {
+                "url": None,
+                "host": "http://localhost",
+                "port": 5432,
+                "dbname": "test",
+                "db_schema": "test",
+                "username": "test",
+                "password": "test",
+            },
+            "enabled_actions": ["access", "erasure"],
+        }
+    ]
+
+
+class TestPatchSystemConnections:
+    def test_patch_connections_valid_system(
+        self, api_client: TestClient, generate_auth_header, url, payload
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, headers=auth_header, json=payload)
+
+        assert resp.status_code == 200
+
     def test_patch_connections_with_invalid_system(
         self, api_client: TestClient, generate_auth_header, url_invalid_system
     ):

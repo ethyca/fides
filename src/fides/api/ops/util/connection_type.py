@@ -6,7 +6,6 @@ import yaml
 
 from fides.api.ops.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.ops.models.connectionconfig import ConnectionType
-from fides.api.ops.models.policy import SUPPORTED_ACTION_TYPES, ActionType
 from fides.api.ops.schemas.connection_configuration import (
     SaaSSchemaFactory,
     secrets_schemas,
@@ -15,6 +14,7 @@ from fides.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionSystemTypeMap,
     SystemType,
 )
+from fides.api.ops.schemas.policy import SUPPORTED_ACTION_TYPES, ActionType
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.api.ops.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
