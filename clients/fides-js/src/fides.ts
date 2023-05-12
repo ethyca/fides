@@ -99,7 +99,12 @@ const init = async (config: FidesConfig) => {
   // Load any existing user preferences from the browser cookie
   const cookie = getOrMakeFidesCookie(consentDefaults);
 
-  await initOverlay(config);
+  await initOverlay({
+    consentDefaults,
+    experience: config.experience,
+    geolocation: config.geolocation,
+    options: config.options,
+  });
 
   // Initialize the window.Fides object
   _Fides.consent = cookie.consent;

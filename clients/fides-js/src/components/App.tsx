@@ -1,20 +1,28 @@
-import { h } from "preact";
-import { FidesConfig } from "../lib/consent-types";
-import ConsentBanner from "./ConsentBanner";
-import { getConsentContext } from "../lib/consent-context";
+import { FunctionComponent, h } from "preact";
 import {
-  makeConsentDefaults,
+  ExperienceConfig,
+  FidesOptions,
+  UserGeolocation,
+} from "../lib/consent-types";
+import ConsentBanner from "./ConsentBanner";
+import {
+  CookieKeyConsent,
   setConsentCookieAcceptAll,
   setConsentCookieRejectAll,
 } from "../lib/cookie";
 
-const App = ({ config }: { config: FidesConfig }) => {
-  const context = getConsentContext();
-  const consentDefaults = makeConsentDefaults({
-    config: config.consent,
-    context,
-  });
+export interface OverlayProps {
+  consentDefaults: CookieKeyConsent;
+  options: FidesOptions;
+  experience?: ExperienceConfig;
+  geolocation?: UserGeolocation;
+}
 
+const Overlay: FunctionComponent<OverlayProps> = ({
+  consentDefaults,
+  experience,
+  options,
+}) => {
   const onAcceptAll = () => {
     setConsentCookieAcceptAll(consentDefaults);
     // TODO: save to Fides consent request API
@@ -35,16 +43,15 @@ const App = ({ config }: { config: FidesConfig }) => {
 
   return (
     <ConsentBanner
-      bannerTitle={config.experience?.banner_title}
-      bannerDescription={config.experience?.banner_description}
-      confirmationButtonLabel={config.experience?.confirmation_button_label}
-      rejectButtonLabel={config.experience?.reject_button_label}
-      privacyCenterUrl={config.options.privacyCenterUrl}
+      bannerTitle={experience?.banner_title}
+      bannerDescription={experience?.banner_description}
+      confirmationButtonLabel={experience?.confirmation_button_label}
+      rejectButtonLabel={experience?.reject_button_label}
+      privacyCenterUrl={options.privacyCenterUrl}
       onAcceptAll={onAcceptAll}
       onRejectAll={onRejectAll}
-      waitBeforeShow={100}
     />
   );
 };
 
-export default App;
+export default Overlay;

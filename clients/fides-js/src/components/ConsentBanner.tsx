@@ -6,25 +6,25 @@ import "../lib/banner.module.css";
 import { useHasMounted } from "../lib/hooks";
 
 interface BannerProps {
-  bannerTitle?: string;
-  bannerDescription?: string;
-  confirmationButtonLabel?: string;
-  rejectButtonLabel?: string;
-  privacyCenterUrl: string;
   onAcceptAll: () => void;
   onRejectAll: () => void;
-  waitBeforeShow: number;
+  privacyCenterUrl: string;
+  bannerDescription?: string;
+  bannerTitle?: string;
+  confirmationButtonLabel?: string;
+  rejectButtonLabel?: string;
+  waitBeforeShow?: number;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
-  bannerTitle = "Manage your consent",
-  bannerDescription = "This website processes your data respectfully, so we require your consent to use cookies.",
-  confirmationButtonLabel = "Accept All",
-  rejectButtonLabel = "Reject All",
-  privacyCenterUrl,
   onAcceptAll,
   onRejectAll,
-  waitBeforeShow,
+  privacyCenterUrl,
+  bannerDescription = "This website processes your data respectfully, so we require your consent to use cookies.",
+  bannerTitle = "Manage your consent",
+  confirmationButtonLabel = "Accept All",
+  rejectButtonLabel = "Reject All",
+  waitBeforeShow = 100,
 }) => {
   const [isShown, setIsShown] = useState(false);
   const hasMounted = useHasMounted();
