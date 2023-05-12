@@ -47,7 +47,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   }
 
   // TODO: support option to specify top/bottom
-  // TODO: add banner title
   return (
     <div
       id="fides-consent-banner"

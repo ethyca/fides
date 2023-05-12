@@ -99,16 +99,17 @@ To run the interactive test interface, run:
 turbo run test
 ```
 
-For a fully-loaded development & test setup of both the Privacy Center and the
-Fides Consent library, run the following commands in three separate terminals:
-
-[//]: # "fixme- turbo doesn't work right now in privacy center"
+For a fully-loaded development & test setup of both the Privacy Center, run the following commands in two separate terminals:
 
 ```bash
 cd privacy-center && turbo run dev
-cd packages/fides-js && turbo run watch
-npm run cy:open
+cd privacy-center && turbo run cy:open
 ```
+
+There are two ways to test Fides consent components:
+
+1. Navigate to `http://localhost:3000/fides-js-components-demo.html`. This page comes pre-packaged with some default configurations to get up and running quickly with the consent components, and is also the page used by cypress e2e tests. To test other configurations, edit the fidesConfig object passed into `Fides.init()` in `privacy-center/public/fides-js-components-demo.html`.
+2. Navigate to `http://localhost:3000/fides-js-demo.html`. This page, unlike the above, calls the `/api/fides-js` Privacy Center endpoint. This endpoint loads config from the privacy center's legacy `config.json`, so it's closer to how a customer would actually use the `fides-js` package. In addition, we inject only the minimal config into `fides-js`. The overlay is not enabled by default on this page.
 
 ## Deployment
 
