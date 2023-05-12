@@ -93,12 +93,15 @@ const getLocation = async (options: FidesOptions): Promise<UserGeolocation> => {
 };
 
 /**
- * Initialize the Fides Consent Banner or Link, with optional extraOptions to override defaults.
+ * Initialize the Fides Consent overlay components.
+ *
+ * Includes fetching location and experience, if not provided, setting up banner and modal,
+ * showing/hiding links, and showing/hiding the banner.
  *
  * (see the type definition of ConsentBannerOptions for what options are available)
  */
 export const initOverlay = async (config: FidesConfig): Promise<void> => {
-  debugLog(config.options.debug, "Initializing Fides consent...");
+  debugLog(config.options.debug, "Initializing Fides consent overlays...");
 
   debugLog(
     config.options.debug,

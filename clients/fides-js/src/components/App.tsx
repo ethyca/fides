@@ -17,10 +17,20 @@ const App = ({ config }: { config: FidesConfig }) => {
 
   const onAcceptAll = () => {
     setConsentCookieAcceptAll(consentDefaults);
+    // TODO: save to Fides consent request API
+    // eslint-disable-next-line no-console
+    console.error(
+        "Could not save consent record to Fides API, not implemented!"
+    );
   };
 
   const onRejectAll = () => {
     setConsentCookieRejectAll(consentDefaults);
+    // TODO: save to Fides consent request API
+    // eslint-disable-next-line no-console
+    console.error(
+        "Could not save consent record to Fides API, not implemented!"
+    );
   };
 
   return (
