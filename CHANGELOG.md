@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.13.0...main)
 
+### Added 
+
+- Add an automated test to check for `/fides-consent.js` backwards compatibility [#3289](https://github.com/ethyca/fides/pull/3289)
+
 ## [2.13.0](https://github.com/ethyca/fides/compare/2.12.1...2.13.0)
 
 ### Added
