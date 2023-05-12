@@ -1,7 +1,6 @@
-/** @jsx createElement */
-
-import { createElement } from "react";
+import { h } from "preact";
 import { PrivacyNotice } from "../lib/consent-types";
+import Toggle from "./Toggle";
 
 /**
  * A React component (not Preact!!) to render notices and their toggles
@@ -21,9 +20,7 @@ const NoticeToggleTable = ({ notices }: { notices: PrivacyNotice[] }) => {
         >
           <span>{notice.name}</span>
           {/* TODO: CSS to make this look like an actual switch */}
-          <label htmlFor={notice.name}>
-            <input type="checkbox" />
-          </label>
+          <Toggle name={notice.name} />
         </div>
       ))}
     </div>
