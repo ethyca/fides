@@ -20,6 +20,7 @@ The types of changes are:
 ### Added 
 
 - Add an automated test to check for `/fides-consent.js` backwards compatibility [#3289](https://github.com/ethyca/fides/pull/3289)
+- Add infrastructure for consent overlay, add bundled script to `/fides.js` route in privacy-center [#3191](https://github.com/ethyca/fides/pull/3191)
 
 ## [2.13.0](https://github.com/ethyca/fides/compare/2.12.1...2.13.0)
 
