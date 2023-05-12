@@ -35,7 +35,6 @@ router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)
 )
 def get_all_connection_types(
     *,
-    params: Params = Depends(),
     search: Optional[str] = None,
     system_type: Optional[SystemType] = None,
     consent: Optional[bool] = None,
@@ -61,6 +60,9 @@ def get_all_connection_types(
             action_types.add(ActionType.erasure)
         if consent:
             action_types.add(ActionType.consent)
+
+    # set a larger default page size for this endpoint
+    params = Params(page=1, size=100)
 
     return paginate(
         get_connection_types(search, system_type, action_types),
