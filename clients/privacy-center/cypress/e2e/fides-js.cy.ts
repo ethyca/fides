@@ -37,7 +37,7 @@ describe("fides.js API route", () => {
 
       cy.request("/fides.js").then((standardResponse) => {
         expect(standardResponse.body).equals(legacyResponse.body);
-      })
+      });
     });
   });
 
