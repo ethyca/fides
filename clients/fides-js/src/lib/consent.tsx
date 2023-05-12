@@ -1,9 +1,9 @@
 import { h, render } from "preact";
 
-import { FidesConfig, FidesOptions, UserGeolocation } from "./consent-types";
+import { FidesOptions, UserGeolocation } from "./consent-types";
 import { debugLog } from "./consent-utils";
 
-import Overlay, { OverlayProps } from "../components/App";
+import Overlay, { OverlayProps } from "../components/Overlay";
 
 /**
  * Validate the config options
