@@ -5,7 +5,7 @@ import {
   ExperienceConfig,
   ExperienceComponent,
 } from "../lib/consent-types";
-import ConsentBannerButton from "./ConsentBannerButton";
+import Button from "./Button";
 import "../lib/banner.module.css";
 import { useHasMounted } from "../lib/hooks";
 
@@ -83,12 +83,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         id="fides-consent-banner-buttons"
         className="fides-consent-banner-buttons"
       >
-        <ConsentBannerButton
+        <Button
           buttonType={ButtonType.TERTIARY}
           label={managePreferencesLabel}
           onClick={handleManagePreferencesClick}
         />
-        <ConsentBannerButton
+        <Button
           buttonType={ButtonType.SECONDARY}
           label={rejectButtonLabel}
           onClick={() => {
@@ -96,7 +96,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
             setIsShown(false);
           }}
         />
-        <ConsentBannerButton
+        <Button
           buttonType={ButtonType.PRIMARY}
           label={confirmationButtonLabel}
           onClick={() => {

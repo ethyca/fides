@@ -7,7 +7,7 @@ interface ButtonProps {
   onClick?: () => void;
 }
 
-const ConsentBannerButton: FunctionComponent<ButtonProps> = ({
+const Button: FunctionComponent<ButtonProps> = ({
   buttonType,
   label,
   onClick,
@@ -22,4 +22,4 @@ const ConsentBannerButton: FunctionComponent<ButtonProps> = ({
   </button>
 );
 
-export default ConsentBannerButton;
+export default Button;
