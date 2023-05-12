@@ -41,10 +41,31 @@ const validateBannerOptions = (config: FidesConfig): boolean => {
 };
 
 /**
+ * Construct user geolocation str to be ingested by Fides API
+ * Returns null if geolocation cannot be constructed by provided params
+ */
+const constructLocation = (
+  debug: boolean,
+  geoLocation: UserGeolocation
+): string | null => {
+  debugLog(debug, "validating getLocation...");
+  if (geoLocation.location) {
+    return geoLocation.location;
+  }
+  if (geoLocation.country && geoLocation.region) {
+    return `${geoLocation.country}-${geoLocation.region}`;
+  }
+  debugLog(
+    debug,
+    "cannot construct user location from provided geoLocation params..."
+  );
+  return null;
+};
+
+/**
  * Fetch the user's geolocation from an external API
  */
 const getLocation = async (options: FidesOptions): Promise<UserGeolocation> => {
-  // assumes that isGeolocationEnabled is true
   debugLog(options.debug, "Running getLocation...");
   const { geolocationApiUrl } = options;
 
@@ -120,7 +141,7 @@ export const initOverlay = async (config: FidesConfig): Promise<void> => {
     return Promise.resolve();
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     debugLog(config.options.debug, "DOM fully loaded and parsed");
 
     try {
@@ -128,14 +149,28 @@ export const initOverlay = async (config: FidesConfig): Promise<void> => {
         config.options.debug,
         "Adding Fides consent banner CSS & HTML into the DOM..."
       );
-      if (config.options.isGeolocationEnabled) {
-        getLocation(config.options)
-          .then(() => {
-            // todo- get applicable notices using location
-          })
-          .catch(() => {
-            // if something goes wrong with location api, we still want to render notices
-          });
+      let userLocation: UserGeolocation | undefined = config.geolocation;
+      if (
+        !config.experience &&
+        !userLocation &&
+        config.options.isGeolocationEnabled
+      ) {
+        userLocation = await getLocation(config.options);
+        if (constructLocation(config.options.debug, userLocation)) {
+          // todo- get applicable notices using geoLocation
+          debugLog(config.options.debug, "User location found.", userLocation);
+        } else {
+          debugLog(
+            config.options.debug,
+            "User location could not be constructed from location params.",
+            userLocation
+          );
+        }
+      } else {
+        debugLog(
+          config.options.debug,
+          "Geolocation must be enabled if config.geolocation is not provided!"
+        );
       }
 
       render(<App config={config} />, document.body);
