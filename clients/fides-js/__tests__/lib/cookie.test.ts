@@ -204,7 +204,7 @@ describe("makeConsentDefaults", () => {
   };
 
   describe("when global privacy control is not present", () => {
-    const context: ConsentContext = {}
+    const context: ConsentContext = {};
 
     it("returns the default consent values by key", () => {
       expect(makeConsentDefaults({ config, context })).toEqual({
@@ -240,7 +240,7 @@ describe("setConsentCookie", () => {
     default_false: false,
     another_true: true,
     another_false: false,
-  }; 
+  };
 
   it("AcceptAll sets all consent preferences to true", () => {
     setConsentCookieAcceptAll(defaults);
@@ -251,7 +251,7 @@ describe("setConsentCookie", () => {
       default_false: true,
       another_true: true,
       another_false: true,
-    })
+    });
   });
 
   // NOTE: this will need to be updated for notice-only preferences!
@@ -264,6 +264,6 @@ describe("setConsentCookie", () => {
       default_false: false,
       another_true: false,
       another_false: false,
-    })
+    });
   });
 });
