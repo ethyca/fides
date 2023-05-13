@@ -9,6 +9,6 @@ export const debugLog = (
 ): void => {
   if (enabled) {
     // eslint-disable-next-line no-console
-    console.log(...args); // TODO: use console.debug instead?
+    console.log(...args);
   }
 };
