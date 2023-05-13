@@ -105,7 +105,6 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         Overrides the base update method to automatically bump the version of the
         PrivacyExperienceConfig record and also create a new PrivacyExperienceConfigHistory entry
         """
-
         # run through potential updates now
         for key, value in data.items():
             setattr(self, key, value)
@@ -168,7 +167,7 @@ class PrivacyExperienceConfigHistory(ExperienceConfigBase, Base):
 
 
 class PrivacyExperienceBase:
-    """Base Privacy Experience fields that are common between privacy experiences experiences and historical records"""
+    """Base Privacy Experience fields that are common between privacy experiences and historical records"""
 
     disabled = Column(Boolean, nullable=False, default=False)
     component = Column(EnumColumn(ComponentType), nullable=False)
@@ -178,8 +177,8 @@ class PrivacyExperienceBase:
 
 
 class PrivacyExperience(PrivacyExperienceBase, Base):
-    """Stores Privacy Experiences for a given region.
-    An experience is valid for a single region.  There can only be one component per region.
+    """Stores Privacy Experiences for a given just a single region.
+    There can only be one component per region.
     """
 
     experience_config_id = Column(
@@ -197,6 +196,7 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
     )  # Also links to the historical record, so if the version of config gets updated, that
     # triggers a new version of the experience.
 
+    # There can only be one component per region
     __table_args__ = (UniqueConstraint("region", "component", name="region_component"),)
 
     histories = relationship(
@@ -238,12 +238,10 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
         privacy_notice_query = get_privacy_notices_by_region_and_component(
             db, self.region, self.component  # type: ignore[arg-type]
         )
-
         if show_disabled is False:
             privacy_notice_query = privacy_notice_query.filter(
                 PrivacyNotice.disabled.is_(False)
             )
-
         return privacy_notice_query.order_by(PrivacyNotice.created_at.desc()).all()
 
     @classmethod

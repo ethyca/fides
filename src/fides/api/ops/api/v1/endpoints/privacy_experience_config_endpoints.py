@@ -45,14 +45,14 @@ def get_experience_config_or_error(
     """
     Helper method to load ExperienceConfig or throw a 404
     """
-    logger.info("Finding PrivacyExperienceConfig with id '{}'", experience_config_id)
+    logger.info("Finding Privacy Experience Config with id '{}'", experience_config_id)
     experience_config = PrivacyExperienceConfig.get(
         db=db, object_id=experience_config_id
     )
     if not experience_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No PrivacyExperienceConfig found for id '{experience_config_id}'.",
+            detail=f"No Privacy Experience Config found for id '{experience_config_id}'.",
         )
 
     return experience_config
@@ -64,9 +64,19 @@ def remove_config_from_matched_experiences(
     regions_to_unlink: List[PrivacyNoticeRegion],
 ) -> List[PrivacyExperience]:
     """Remove the config from linked PrivacyExperiences"""
+    if not regions_to_unlink:
+        return []
+
+    logger.info(
+        "Unlinking regions {} from Privacy Experience Config '{}'.",
+        human_friendly_list([reg.value for reg in regions_to_unlink]),
+        experience_config.id,
+    )
+
     experiences_to_unlink: List[PrivacyExperience] = experience_config.experiences.filter(  # type: ignore[call-arg]
         PrivacyExperience.region.in_(regions_to_unlink)
     ).all()
+
     for experience in experiences_to_unlink:
         experience.unlink_privacy_experience_config(db)
     return experiences_to_unlink
@@ -115,6 +125,7 @@ def experience_config_list(
         PrivacyExperienceConfig.created_at.desc()
     )
 
+    logger.info("Loading Experience Configs with params {}.", params)
     return fastapi_paginate(privacy_experience_config_query.all(), params=params)
 
 
@@ -176,15 +187,20 @@ def experience_config_create(
     )
 
     logger.info(
-        "Creating experience config of component {} and delivery mechanism.",
-        experience_config_data.component,
-        experience_config_data.delivery_mechanism,
-        experience_config_data.regions,
+        "Creating experience config of component '{}' and delivery mechanism '{}'.",
+        experience_config_data.component.value,
+        experience_config_data.delivery_mechanism.value,
     )
     experience_config = PrivacyExperienceConfig.create(
         db, data=experience_config_dict, check_name=False
     )
 
+    if new_regions:
+        logger.info(
+            "Linking regions: {} to experience config '{}'",
+            human_friendly_list([reg.value for reg in new_regions]),
+            experience_config.id,
+        )
     linked, unlinked, skipped = upsert_privacy_experiences_after_config_update(
         db, experience_config, new_regions
     )
@@ -213,7 +229,7 @@ def experience_config_detail(
     """
     Returns a PrivacyExperienceConfig.
     """
-
+    logger.info("Retrieving experience config with id '{}'.", experience_config_id)
     return get_experience_config_or_error(db, experience_config_id)
 
 
@@ -271,7 +287,7 @@ def experience_config_update(
         regions=regions,
     )
 
-    logger.info("Updating experience config of id '{}'", experience_config.id)
+    logger.info("Updating experience config of id '{}'.", experience_config.id)
     experience_config.update(db=db, data=experience_config_data_dict)
     db.refresh(experience_config)
 
@@ -289,12 +305,19 @@ def experience_config_update(
         ],
     )
 
+    if regions:
+        logger.info(
+            "Verifying or linking regions {} to experience config '{}'.",
+            human_friendly_list([reg.value for reg in regions]),
+            experience_config.id,
+        )
     # Upserting PrivacyExperiences based on regions specified in the request
     (
         linked,
         unlinked_for_conflict,
         skipped,
     ) = upsert_privacy_experiences_after_config_update(db, experience_config, regions)
+
     return ExperienceConfigCreateOrUpdateResponse(
         experience_config=experience_config,
         linked_regions=linked,

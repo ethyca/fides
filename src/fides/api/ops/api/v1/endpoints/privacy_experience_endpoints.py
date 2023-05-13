@@ -117,7 +117,7 @@ def privacy_experience_detail(
 
     show_disabled query params are passed onto optionally filter the embedded notices.
     """
-    logger.info("Fetching privacy experience with id {}", privacy_experience_id)
+    logger.info("Fetching privacy experience with id '{}'.", privacy_experience_id)
     experience: PrivacyExperience = get_privacy_experience_or_error(
         db, privacy_experience_id
     )

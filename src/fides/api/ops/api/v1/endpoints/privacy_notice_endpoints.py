@@ -258,6 +258,7 @@ def create_privacy_notices(
         created_privacy_notices.append(created_privacy_notice)
         affected_regions.update(created_privacy_notice.regions)
 
+    # After created all notices, make sure experiences exist to back all notices.
     upsert_privacy_experiences_after_notice_update(
         db, affected_regions=list(affected_regions)
     )
@@ -366,10 +367,13 @@ def update_privacy_notices(
 
     notices: List[PrivacyNotice] = []
     affected_regions: Set = set()
+
     for update_data, existing_notice in updates_and_existing:
         existing_notice.update(db, data=update_data.dict(exclude_unset=True))
         notices.append(existing_notice)
         affected_regions.update(existing_notice.regions)
+
+    # After updating all notices, make sure experiences exist to back all notices.
     upsert_privacy_experiences_after_notice_update(
         db, affected_regions=list(affected_regions)
     )
