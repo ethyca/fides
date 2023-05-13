@@ -784,7 +784,7 @@ class TestGetExperienceConfigDetail:
         assert response.status_code == 404
         assert (
             response.json()["detail"]
-            == "No PrivacyExperienceConfig found for id 'bad_id'."
+            == "No Privacy Experience Config found for id 'bad_id'."
         )
 
     @pytest.mark.usefixtures(
@@ -920,7 +920,7 @@ class TestUpdateExperienceConfig:
         assert response.status_code == 404
         assert (
             response.json()["detail"]
-            == "No PrivacyExperienceConfig found for id 'bad_experience_id'."
+            == "No Privacy Experience Config found for id 'bad_experience_id'."
         )
 
     def test_update_overlay_banner_experience_config_missing_banner_details(

@@ -21,6 +21,10 @@ The types of changes are:
 
 - Add an automated test to check for `/fides-consent.js` backwards compatibility [#3289](https://github.com/ethyca/fides/pull/3289)
 
+### Changed
+
+- Data model around PrivacyExperiences to better keep Privacy Notices and Experiences in sync [#3292](https://github.com/ethyca/fides/pull/3292)
+
 ## [2.13.0](https://github.com/ethyca/fides/compare/2.12.1...2.13.0)
 
 ### Added
