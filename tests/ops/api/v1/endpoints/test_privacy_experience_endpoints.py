@@ -545,7 +545,7 @@ class TestPrivacyExperienceDetail:
         assert experience_config["link_label"] is None
         assert experience_config["confirmation_button_label"] == "Accept all"
         assert experience_config["reject_button_label"] == "Reject all"
-        assert experience_config["acknowledgement_button_label"] is None
+        assert experience_config["acknowledgement_button_label"] == "Confirm"
         assert experience_config["id"] is not None
         assert experience_config["version"] == 1.0
         assert (
@@ -871,6 +871,7 @@ class TestCreateExperienceConfig:
             "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
             "confirmation_button_label": "Accept all",
             "reject_button_label": "Reject all",
+            "acknowledgement_button_label": "Confirm",
         }
 
     def test_create_experience_config_unauthenticated(self, url, api_client):
@@ -934,7 +935,7 @@ class TestCreateExperienceConfig:
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "The following fields are required when defining a banner: ['banner_title', 'confirmation_button_label', 'reject_button_label']."
+            == "The following fields are required when defining a banner: ['acknowledgement_button_label', 'banner_title', 'confirmation_button_label', 'reject_button_label']."
         )
 
     def test_create_experience_config_missing_link(
@@ -1087,12 +1088,13 @@ class TestCreateExperienceConfig:
                 "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
                 "confirmation_button_label": "Accept all",
                 "reject_button_label": "Reject all",
+                "acknowledgement_button_label": "Confirm",
             },
             headers=auth_header,
         )
         assert response.status_code == 201
         resp = response.json()["experience_config"]
-        assert resp["acknowledgement_button_label"] is None
+        assert resp["acknowledgement_button_label"] == "Confirm"
         assert resp["banner_title"] == "Manage your consent"
         assert (
             resp["banner_description"]
@@ -1201,12 +1203,13 @@ class TestCreateExperienceConfig:
                 "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
                 "confirmation_button_label": "Accept all",
                 "reject_button_label": "Reject all",
+                "acknowledgement_button_label": "Confirm",
             },
             headers=auth_header,
         )
         assert response.status_code == 201
         resp = response.json()["experience_config"]
-        assert resp["acknowledgement_button_label"] is None
+        assert resp["acknowledgement_button_label"] == "Confirm"
         assert resp["banner_title"] == "Manage your consent"
         assert (
             resp["banner_description"]
@@ -1454,6 +1457,7 @@ class TestUpdateExperienceConfig:
                 "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
                 "confirmation_button_label": "Accept all",
                 "reject_button_label": "Reject all",
+                "acknowledgement_button_label": "Confirm",
             },
         )
         yield exp
@@ -1550,7 +1554,7 @@ class TestUpdateExperienceConfig:
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "The following fields are required when defining a banner: ['banner_title', 'confirmation_button_label', 'reject_button_label']."
+            == "The following fields are required when defining a banner: ['acknowledgement_button_label', 'banner_title', 'confirmation_button_label', 'reject_button_label']."
         )
 
     #
@@ -1593,7 +1597,7 @@ class TestUpdateExperienceConfig:
         )
         assert response.status_code == 200
         resp = response.json()["experience_config"]
-        assert resp["acknowledgement_button_label"] is None
+        assert resp["acknowledgement_button_label"] == "Confirm"
         assert resp["banner_title"] == "Manage your consent"
         assert (
             resp["banner_description"]
@@ -1606,6 +1610,7 @@ class TestUpdateExperienceConfig:
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
         assert resp["confirmation_button_label"] == "Accept all"
+        assert resp["acknowledgement_button_label"] == "Confirm"
         assert resp["delivery_mechanism"] == "banner"
         assert resp["link_label"] is None
         assert resp["reject_button_label"] == "Reject all"
@@ -1668,7 +1673,7 @@ class TestUpdateExperienceConfig:
         )
         assert response.status_code == 200
         resp = response.json()["experience_config"]
-        assert resp["acknowledgement_button_label"] is None
+        assert resp["acknowledgement_button_label"] == "Confirm"
         assert resp["banner_title"] == "Manage your consent"
         assert (
             resp["banner_description"]
@@ -1780,7 +1785,7 @@ class TestUpdateExperienceConfig:
         )
         assert response.status_code == 200
         resp = response.json()["experience_config"]
-        assert resp["acknowledgement_button_label"] is None
+        assert resp["acknowledgement_button_label"] == "Confirm"
         assert resp["banner_title"] == "Manage your consent"
         assert (
             resp["banner_description"]
@@ -1894,7 +1899,7 @@ class TestUpdateExperienceConfig:
         )
         assert response.status_code == 200
         resp = response.json()["experience_config"]
-        assert resp["acknowledgement_button_label"] is None
+        assert resp["acknowledgement_button_label"] == "Confirm"
         assert resp["banner_title"] == "Manage your consent"
         assert (
             resp["banner_description"]

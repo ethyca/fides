@@ -72,6 +72,7 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
         if component == ComponentType.overlay:
             if delivery_mechanism == DeliveryMechanism.banner:
                 required_banner_fields = [
+                    "acknowledgement_button_label",
                     "banner_title",
                     "confirmation_button_label",
                     "reject_button_label",

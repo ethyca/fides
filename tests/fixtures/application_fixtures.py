@@ -2132,6 +2132,7 @@ def experience_config_overlay_banner(db: Session) -> Generator:
             "disabled": True,
             "component": ComponentType.overlay,
             "delivery_mechanism": DeliveryMechanism.banner,
+            "acknowledgement_button_label": "Confirm",
         },
     )
     yield exp
