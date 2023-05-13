@@ -134,12 +134,14 @@ class TestGetPrivacyExperiences:
             exp["id"] for exp in data["items"]
         }
 
+    @pytest.mark.usefixtures(
+        "privacy_experience_privacy_center_link",
+    )
     def test_get_privacy_experiences_region_filter(
         self,
         api_client: TestClient,
         generate_auth_header,
         url,
-        privacy_experience_privacy_center_link,
         privacy_experience_overlay_link,
         privacy_experience_overlay_banner,
     ):
@@ -437,6 +439,54 @@ class TestGetPrivacyExperiences:
         assert notices[0]["regions"] == ["us_ca", "us_co"]
         assert notices[0]["id"] == privacy_notice.id
         assert notices[0]["displayed_in_privacy_center"]
+
+    def test_get_privacy_experiences_show_has_config_filter(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        privacy_experience_privacy_center_link,
+        privacy_experience_overlay_link,
+        privacy_experience_overlay_banner,
+        db,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        resp = api_client.get(
+            url + "?has_config=False",
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 0
+        assert len(data["items"]) == 0
+
+        resp = api_client.get(
+            url + "?has_config=True",
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 3
+        assert len(data["items"]) == 3
+        assert {config["id"] for config in data["items"]} == {
+            privacy_experience_privacy_center_link.id,
+            privacy_experience_overlay_link.id,
+            privacy_experience_overlay_banner.id,
+        }
+
+        privacy_experience_privacy_center_link.experience_config_id = None
+        privacy_experience_privacy_center_link.experience_config_history_id = None
+
+        privacy_experience_privacy_center_link.save(db=db)
+        resp = api_client.get(
+            url + "?has_config=False",
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
+        assert data["items"][0]["id"] == privacy_experience_privacy_center_link.id
 
 
 class TestPrivacyExperienceDetail:

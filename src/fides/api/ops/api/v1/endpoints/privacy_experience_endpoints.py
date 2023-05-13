@@ -53,6 +53,7 @@ def privacy_experience_list(
     region: Optional[PrivacyNoticeRegion] = None,
     component: Optional[ComponentType] = None,
     has_notices: Optional[bool] = None,
+    has_config: Optional[bool] = None,
 ) -> AbstractPage[PrivacyExperience]:
     """
     Returns a list of PrivacyExperience records for individual regions with
@@ -73,6 +74,14 @@ def privacy_experience_list(
     if component is not None:
         experience_query = experience_query.filter(
             PrivacyExperience.component == component
+        )
+    if has_config is True:
+        experience_query = experience_query.filter(
+            PrivacyExperience.experience_config_id.isnot(None)
+        )
+    if has_config is False:
+        experience_query = experience_query.filter(
+            PrivacyExperience.experience_config_id.is_(None)
         )
 
     results: List[PrivacyExperience] = []
