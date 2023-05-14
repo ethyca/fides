@@ -384,25 +384,34 @@ def get_snowflake_schemas(
 ) -> Dict[str, Dict[str, List[str]]]:
     """
     Returns Datasets that match the case-sensitivity that may be
-    required by Snowflake.
+    required by Snowflake. Iterates through each schema.table.column
+    the logged in user has access to.
+
+    This is currently required because of the inferred casing of Snowflake,
+    which defaults to upper-case. Anything else must be double-quoted, however
+    `snowflake-sqlalchemy` does not account for this in a flexible manner in
+    it's implementation of the `inspect()` method, forcing everything to what
+    is deemed to be normalized (i.e. lower-case).
+
+    The following code maintains casing as defined in Snowflake which combines
+    well with our DSR implementation in always using double-quoted query syntax.
+
+    It may be worthwhile for us to invest some time in resolving the core issue
+    and being able to fall back to using the connector.
+
+    Reference: https://github.com/snowflakedb/snowflake-sqlalchemy/issues/157
     """
-    schema_cursor = engine.execute(
-        text("SHOW /* sqlalchemy:get_schema_names */ SCHEMAS")
-    )
+    schema_cursor = engine.execute(text("SHOW SCHEMAS"))
     db_schemas = [row[1] for row in schema_cursor]
     metadata: Dict[str, Dict[str, List]] = {}
     for schema in db_schemas:
         if include_dataset_schema(schema=schema, database_type=engine.dialect.name):
             metadata[schema] = {}
-            table_cursor = engine.execute(
-                text(f'SHOW /* sqlalchemy:get_table_names */ TABLES IN "{schema}"')
-            )
+            table_cursor = engine.execute(text(f'SHOW TABLES IN "{schema}"'))
             db_tables = [row[1] for row in table_cursor]
             for table in db_tables:
                 column_cursor = engine.execute(
-                    text(
-                        f'SHOW /* sqlalchemy:get_column_names_by_table */ COLUMNS IN "{schema}"."{table}"'
-                    )
+                    text(f'SHOW COLUMNS IN "{schema}"."{table}"')
                 )
                 columns = [row[2] for row in column_cursor]
                 metadata[schema][table] = columns
