@@ -34,12 +34,19 @@ def upgrade():
         existing_egress = row["egress"]
         system_dependencies = row["system_dependencies"]
         updated_egress = []
+        updated_egress_keys = []
         if existing_egress:
             for egress in existing_egress:
                 updated_egress.append(egress)
+                updated_egress_keys.append(egress["fides_key"])
         for system in system_dependencies:
-            egress = {"fides_key": system, "type": "system", "data_categories": None}
-            updated_egress.append(egress)
+            if system not in updated_egress_keys:
+                egress = {
+                    "fides_key": system,
+                    "type": "system",
+                    "data_categories": None,
+                }
+                updated_egress.append(egress)
 
         update_query: TextClause = text(
             "UPDATE ctl_systems "
