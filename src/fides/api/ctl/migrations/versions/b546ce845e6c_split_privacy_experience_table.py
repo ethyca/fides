@@ -17,6 +17,8 @@ depends_on = None
 
 
 def upgrade():
+    op.execute("delete from privacyexperiencehistory;")
+    op.execute("delete from privacyexperience;")
     op.create_table(
         "privacyexperienceconfig",
         sa.Column("id", sa.String(length=255), nullable=False),
@@ -331,13 +333,7 @@ def downgrade():
         "privacyexperiencehistory",
         type_="foreignkey",
     )
-    op.create_foreign_key(
-        "privacyexperiencehistory_privacy_experience_template_id_fkey",
-        "privacyexperiencehistory",
-        "privacyexperiencetemplate",
-        ["privacy_experience_template_id"],
-        ["id"],
-    )
+
     op.drop_index(
         op.f("ix_privacyexperiencehistory_region"),
         table_name="privacyexperiencehistory",
@@ -439,13 +435,7 @@ def downgrade():
         "privacyexperience",
         type_="foreignkey",
     )
-    op.create_foreign_key(
-        "privacyexperience_privacy_experience_template_id_fkey",
-        "privacyexperience",
-        "privacyexperiencetemplate",
-        ["privacy_experience_template_id"],
-        ["id"],
-    )
+
     op.drop_constraint("region_component", "privacyexperience", type_="unique")
     op.drop_index(op.f("ix_privacyexperience_region"), table_name="privacyexperience")
     op.drop_index(
@@ -553,3 +543,17 @@ def downgrade():
         table_name="privacyexperienceconfig",
     )
     op.drop_table("privacyexperienceconfig")
+    op.create_foreign_key(
+        "privacyexperiencehistory_privacy_experience_template_id_fkey",
+        "privacyexperiencehistory",
+        "privacyexperiencetemplate",
+        ["privacy_experience_template_id"],
+        ["id"],
+    )
+    op.create_foreign_key(
+        "privacyexperience_privacy_experience_template_id_fkey",
+        "privacyexperience",
+        "privacyexperiencetemplate",
+        ["privacy_experience_template_id"],
+        ["id"],
+    )
