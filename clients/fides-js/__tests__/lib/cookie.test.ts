@@ -3,9 +3,14 @@ import {
   CookieKeyConsent,
   FidesCookie,
   getOrMakeFidesCookie,
+  makeConsentDefaults,
   makeFidesCookie,
   saveFidesCookie,
-} from "~/lib/cookie";
+  setConsentCookieAcceptAll,
+  setConsentCookieRejectAll,
+} from "../../src/lib/cookie";
+import type { ConsentConfig } from "../../src/lib/consent-config";
+import type { ConsentContext } from "../../src/lib/consent-context";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
@@ -165,5 +170,100 @@ describe("saveFidesCookie", () => {
     saveFidesCookie(cookie);
     expect(mockSetCookie.mock.calls).toHaveLength(1);
     expect(mockSetCookie.mock.calls[0][2]).toHaveProperty("domain", expected);
+  });
+});
+
+describe("makeConsentDefaults", () => {
+  const config: ConsentConfig = {
+    options: [
+      {
+        cookieKeys: ["default_undefined"],
+        fidesDataUseKey: "provide.service",
+      },
+      {
+        cookieKeys: ["default_true"],
+        default: true,
+        fidesDataUseKey: "improve.system",
+      },
+      {
+        cookieKeys: ["default_false"],
+        default: false,
+        fidesDataUseKey: "personalize.system",
+      },
+      {
+        cookieKeys: ["default_true_with_gpc_false"],
+        default: { value: true, globalPrivacyControl: false },
+        fidesDataUseKey: "advertising.third_party",
+      },
+      {
+        cookieKeys: ["default_false_with_gpc_true"],
+        default: { value: false, globalPrivacyControl: true },
+        fidesDataUseKey: "third_party_sharing.payment_processing",
+      },
+    ],
+  };
+
+  describe("when global privacy control is not present", () => {
+    const context: ConsentContext = {};
+
+    it("returns the default consent values by key", () => {
+      expect(makeConsentDefaults({ config, context })).toEqual({
+        default_true: true,
+        default_false: false,
+        default_true_with_gpc_false: true,
+        default_false_with_gpc_true: false,
+      });
+    });
+  });
+
+  describe("when global privacy control is set", () => {
+    const context: ConsentContext = {
+      globalPrivacyControl: true,
+    };
+
+    it("returns the default consent values by key", () => {
+      expect(makeConsentDefaults({ config, context })).toEqual({
+        default_true: true,
+        default_false: false,
+        default_true_with_gpc_false: false,
+        default_false_with_gpc_true: true,
+      });
+    });
+  });
+});
+
+describe("setConsentCookie", () => {
+  afterEach(() => mockSetCookie.mockClear());
+
+  const defaults: CookieKeyConsent = {
+    default_true: true,
+    default_false: false,
+    another_true: true,
+    another_false: false,
+  };
+
+  it("AcceptAll sets all consent preferences to true", () => {
+    setConsentCookieAcceptAll(defaults);
+    expect(mockSetCookie.mock.calls).toHaveLength(1);
+    const cookie = JSON.parse(mockSetCookie.mock.calls[0][1]);
+    expect(cookie.consent).toEqual({
+      default_true: true,
+      default_false: true,
+      another_true: true,
+      another_false: true,
+    });
+  });
+
+  // NOTE: this will need to be updated for notice-only preferences!
+  it("RejectAll sets all consent preferences to false", () => {
+    setConsentCookieRejectAll(defaults);
+    expect(mockSetCookie.mock.calls).toHaveLength(1);
+    const cookie = JSON.parse(mockSetCookie.mock.calls[0][1]);
+    expect(cookie.consent).toEqual({
+      default_true: false,
+      default_false: false,
+      another_true: false,
+      another_false: false,
+    });
   });
 });

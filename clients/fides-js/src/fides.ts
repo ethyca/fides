@@ -19,7 +19,16 @@
  *         default: true,
  *         fidesDataUseKey: "advertising"
  *       }]
- *     }
+ *     },
+ *     experience: {},
+ *     geolocation: {},
+ *     options: {
+ *           debug: true,
+ *           isDisabled: false,
+ *           isGeolocationEnabled: false,
+ *           geolocationApiUrl: "",
+ *           privacyCenterUrl: "http://localhost:3000"
+ *         }
  *   });
  * </script>
  * ```
@@ -36,8 +45,8 @@
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-import { ConsentConfig } from "./lib/consent-config";
 import { getConsentContext } from "./lib/consent-context";
+import { initOverlay } from "./lib/consent";
 import {
   CookieKeyConsent,
   CookieIdentity,
@@ -45,13 +54,18 @@ import {
   getOrMakeFidesCookie,
   makeConsentDefaults,
 } from "./lib/cookie";
+import {
+  ExperienceConfig,
+  FidesConfig,
+  FidesOptions,
+  UserGeolocation,
+} from "./lib/consent-types";
 
-export interface FidesConfig {
-  consent: ConsentConfig;
-}
-
-type Fides = {
+export type Fides = {
   consent: CookieKeyConsent;
+  experience?: ExperienceConfig;
+  geolocation?: UserGeolocation;
+  options: FidesOptions;
   fides_meta: CookieMeta;
   gtm: typeof gtm;
   identity: CookieIdentity;
@@ -71,28 +85,50 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-// Initialize the global Fides object with the given configuration values
-const init = (config: FidesConfig) => {
-  // Configure the default values
+/**
+ * Initialize the global Fides object with the given configuration values
+ */
+const init = async (config: FidesConfig) => {
+  // Configure the default consent values
   const context = getConsentContext();
-  const defaults = makeConsentDefaults({
+  const consentDefaults = makeConsentDefaults({
     config: config.consent,
     context,
   });
 
   // Load any existing user preferences from the browser cookie
-  const cookie = getOrMakeFidesCookie(defaults);
+  const cookie = getOrMakeFidesCookie(consentDefaults);
+
+  await initOverlay({
+    consentDefaults,
+    experience: config.experience,
+    geolocation: config.geolocation,
+    options: config.options,
+  });
 
   // Initialize the window.Fides object
   _Fides.consent = cookie.consent;
   _Fides.fides_meta = cookie.fides_meta;
   _Fides.identity = cookie.identity;
+  _Fides.experience = config.experience;
+  _Fides.geolocation = config.geolocation;
+  _Fides.options = config.options;
+
   _Fides.initialized = true;
 };
 
 // The global Fides object; this is bound to window.Fides if available
 _Fides = {
   consent: {},
+  experience: undefined,
+  geolocation: {},
+  options: {
+    debug: true,
+    isOverlayDisabled: true,
+    isGeolocationEnabled: false,
+    geolocationApiUrl: "",
+    privacyCenterUrl: "",
+  },
   fides_meta: {},
   identity: {},
   gtm,
@@ -107,8 +143,13 @@ if (typeof window !== "undefined") {
 }
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
+export * from "./lib/consent";
+export * from "./components/ConsentBanner";
 export * from "./lib/consent-config";
 export * from "./lib/consent-context";
+export * from "./lib/consent-types";
+export * from "./lib/consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
+
 export default Fides;

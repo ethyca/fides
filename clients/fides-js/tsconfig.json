@@ -4,7 +4,9 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
     "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
     "moduleResolution": "node",
@@ -13,12 +15,12 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2015",
-
+    "plugins": [{ "name": "typescript-plugin-css-modules" }],
     "baseUrl": "./",
     "paths": {
       "~/*": ["src/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.d.ts"],
+  "include": ["**/*.ts", "**/*.d.ts", "**/*.tsx"],
   "exclude": ["node_modules", "dist"]
 }
