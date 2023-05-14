@@ -1,49 +1,61 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { produce } from "immer";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { useAppSelector } from "~/app/hooks";
 import type { RootState } from "~/app/store";
-import { config as initialConfig } from "~/constants";
 import { Consent, ConsentPreferences } from "~/types/api";
-import { ConfigConsentOption } from "~/types/config";
+import { Config } from "~/types/config";
 
-type State = {
-  consent?: {
-    page: {
-      consentOptions?: ConfigConsentOption[];
-    }
-  };
-};
-const initialState: State = {};
+interface ConfigState {
+  config?: Config;
+}
+const initialState: ConfigState = {};
 
 export const configSlice = createSlice({
   name: "config",
   initialState,
   reducers: {
-    overrideConsentOptions(
-      draftState,
-      { payload }: PayloadAction<ConfigConsentOption[]>
-    ) {
-      if (!draftState.consent) {
-        draftState.consent = {
-          page: {}
-        };
+    /**
+     * Load a new configuration, replacing the current state entirely.
+     */
+    loadConfig(draftState, { payload }: PayloadAction<Config | undefined>) {
+      if (process.env.NODE_ENV === "development") {
+        // eslint-disable-next-line no-console
+        console.log(
+          "Loading Privacy Center configuration into Redux store...",
+          payload?.title
+        );
       }
-      draftState.consent.page.consentOptions = payload;
+      draftState.config = payload;
     },
-
+    /**
+     * Modify the current configuration, by merging a partial config into the current state.
+     */
+    mergeConfig(draftState, { payload }: PayloadAction<Partial<Config>>) {
+      if (!draftState.config) {
+        throw new Error(
+          "Cannot apply mergeConfig into uninitialized Redux state; must use loadConfig first!"
+        );
+      }
+      draftState.config = { ...draftState.config, ...payload };
+    },
     /**
      * When consent preferences are returned from the API, they include the up-to-date description
-     * of the related data use. This overrides the statically configured data use info.
+     * of the related data use. This overrides the currently configured data use info.
      */
     updateConsentOptionsFromApi(
       draftState,
       { payload }: PayloadAction<ConsentPreferences>
     ) {
+      if (!draftState.config) {
+        throw new Error(
+          "Cannot apply updateConsentOptionsFromApi into uninitialized Redux state; must use loadConfig first!"
+        );
+      }
       const consentPreferencesMap = new Map<string, Consent>(
         (payload.consent ?? []).map((consent) => [consent.data_use, consent])
       );
 
-      draftState.consent?.page.consentOptions?.forEach((draftOption) => {
+      draftState.config.consent?.page.consentOptions?.forEach((draftOption) => {
         const apiConsent = consentPreferencesMap.get(
           draftOption.fidesDataUseKey
         );
@@ -59,24 +71,15 @@ export const configSlice = createSlice({
   },
 });
 
+const selectConfig = (state: RootState) => state.config;
+
 export const { reducer } = configSlice;
-export const { updateConsentOptionsFromApi } = configSlice.actions;
-
-/**
- * The stored config state, which is the subset of configs options that can be modified at runtime.
- */
-export const selectConfigState = (state: RootState) => state.config;
-
-/**
- * The app config with all runtime overrides applied.
- */
-export const selectConfig = createSelector(selectConfigState, (configState) =>
-  produce(initialConfig, (draft) => {
-    Object.assign(draft, configState);
-  })
-);
-
-export const selectConfigConsentOptions = createSelector(
-  selectConfig,
-  (config) => config.consent?.page.consentOptions ?? []
-);
+export const { loadConfig, mergeConfig, updateConsentOptionsFromApi } =
+  configSlice.actions;
+export const useConfig = (): Config => {
+  const { config } = useAppSelector(selectConfig);
+  if (!config) {
+    throw new Error("Unable to load Privacy Center configuration!");
+  }
+  return config;
+};

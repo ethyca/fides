@@ -1,5 +1,5 @@
 import { NavList } from "@fidesui/components";
-import { Heading, UnorderedList, VStack } from "@fidesui/react";
+import { Heading, ListItem, UnorderedList, VStack } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React from "react";
 
@@ -21,13 +21,11 @@ const NavListItem = ({
         {title}
       </NavSideBarLink>
       {children.length ? (
-        <UnorderedList>
+        <UnorderedList py={0.5}>
           {children.map((childRoute) => (
-            <NavListItem
-              key={childRoute.title}
-              routerPathname={routerPathname}
-              {...childRoute}
-            />
+            <ListItem key={childRoute.title} listStyleType="none">
+              <NavListItem routerPathname={routerPathname} {...childRoute} />
+            </ListItem>
           ))}
         </UnorderedList>
       ) : null}

@@ -43,6 +43,7 @@ class TestValidateDataUses:
             consent_mechanism=ConsentMechanism.opt_in,
             data_uses=["placeholder"],
             enforcement_level=EnforcementLevel.system_wide,
+            displayed_in_overlay=True,
         )
 
     @pytest.fixture(scope="function")
@@ -494,6 +495,7 @@ class TestGetPrivacyNotices:
                         "consent_mechanism": ConsentMechanism.opt_in,
                         "data_uses": ["advertising"],
                         "enforcement_level": EnforcementLevel.system_wide,
+                        "displayed_in_overlay": True,
                     },
                 )
             )
@@ -539,6 +541,7 @@ class TestGetPrivacyNotices:
                         "consent_mechanism": ConsentMechanism.opt_in,
                         "data_uses": ["advertising"],
                         "enforcement_level": EnforcementLevel.system_wide,
+                        "displayed_in_overlay": True,
                     },
                 )
             )
@@ -575,6 +578,56 @@ class TestGetPrivacyNotices:
             # The most recent privacy_notice will be last added to `privacy_notices` that still remains
             most_recent = privacy_notices.pop()
             assert privacy_notice["name"] == most_recent.name
+
+    @pytest.mark.usefixtures(
+        "system",
+    )
+    def test_can_unescape(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_NOTICE_READ, scopes.PRIVACY_NOTICE_CREATE]
+        )
+
+        escaped_name = "Data Sales &#x27;n&#x27; stuff"
+        unescaped_name = "Data Sales 'n' stuff"
+        PrivacyNotice.create(
+            db=db,
+            data={
+                "name": escaped_name,
+                "description": "a sample privacy notice configuration",
+                "regions": [PrivacyNoticeRegion.us_ca],
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["advertising"],
+                "enforcement_level": EnforcementLevel.system_wide,
+                "displayed_in_overlay": True,
+            },
+        )
+
+        # without the unescaped header, should return the escaped version
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        print(data["items"])
+        assert data["items"][0]["name"] == escaped_name
+
+        # now request with the unescape header
+        unescape_header = {"Unescape-Safestr": "yes"}
+        auth_and_unescape_header = {**auth_header, **unescape_header}
+        resp = api_client.get(
+            url,
+            headers=auth_and_unescape_header,
+        )
+        data = resp.json()
+        print(data["items"])
+        assert data["items"][0]["name"] == unescaped_name
 
 
 class TestGetPrivacyNoticeDetail:
@@ -646,6 +699,67 @@ class TestGetPrivacyNoticeDetail:
         assert data["disabled"] == privacy_notice.disabled
         assert data["displayed_in_overlay"] == privacy_notice.displayed_in_overlay
 
+    def test_get_privacy_notice_unescaped(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_NOTICE_READ, scopes.PRIVACY_NOTICE_CREATE]
+        )
+
+        # post a new privacy notice that has some sneaky characters
+        maybe_dangerous_description = "user's description <script />"
+        resp = api_client.post(
+            V1_URL_PREFIX + PRIVACY_NOTICE,
+            headers=auth_header,
+            json=[
+                {
+                    "name": "test privacy notice 1",
+                    "description": maybe_dangerous_description,
+                    "origin": "privacy_notice_template_1",
+                    "regions": [
+                        PrivacyNoticeRegion.eu_be.value,
+                        PrivacyNoticeRegion.us_ca.value,
+                    ],
+                    "consent_mechanism": ConsentMechanism.opt_in.value,
+                    "data_uses": ["advertising"],
+                    "enforcement_level": EnforcementLevel.system_wide.value,
+                    "displayed_in_overlay": True,
+                }
+            ],
+        )
+        print(f"Created Notice: {resp.text}")
+        assert resp.status_code == 200
+        created_notice = resp.json()[0]
+
+        url = V1_URL_PREFIX + PRIVACY_NOTICE_DETAIL.format(
+            privacy_notice_id=created_notice["id"]
+        )
+
+        # without the unescaped header, should return the escaped version
+        resp = api_client.get(
+            url,
+            # headers={**auth_header, **unescape_header},
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        print(f"Unescaped Response: {data}")
+        assert data["description"] == "user&#x27;s description &lt;script /&gt;"
+
+        # now request with the unescape header
+        unescape_header = {"Unescape-Safestr": "yes"}
+        auth_and_unescape_header = {**auth_header, **unescape_header}
+        print(f"Auth & Unescape Headers: {auth_and_unescape_header}")
+        resp = api_client.get(
+            url,
+            headers=auth_and_unescape_header,
+        )
+        data = resp.json()
+        print(f"Escaped Data: {data}")
+        assert data["description"] == maybe_dangerous_description
+
 
 class TestGetPrivacyNoticesByDataUse:
     @pytest.fixture(scope="function")
@@ -690,6 +804,9 @@ class TestGetPrivacyNoticesByDataUse:
                         created_at=NOW,
                         updated_at=NOW,
                         version=1.0,
+                        displayed_in_overlay=True,
+                        displayed_in_privacy_center=False,
+                        displayed_in_api=False,
                     )
                 ],
                 {
@@ -708,6 +825,9 @@ class TestGetPrivacyNoticesByDataUse:
                             updated_at=NOW,
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
+                            displayed_in_overlay=True,
+                            displayed_in_privacy_center=False,
+                            displayed_in_api=False,
                         )
                     ],
                 },
@@ -728,6 +848,9 @@ class TestGetPrivacyNoticesByDataUse:
                         created_at=NOW,
                         updated_at=NOW,
                         version=1.0,
+                        displayed_in_overlay=True,
+                        displayed_in_privacy_center=False,
+                        displayed_in_api=False,
                     ),
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -741,6 +864,9 @@ class TestGetPrivacyNoticesByDataUse:
                         created_at=NOW,
                         updated_at=NOW,
                         version=1.0,
+                        displayed_in_overlay=True,
+                        displayed_in_privacy_center=False,
+                        displayed_in_api=False,
                     ),
                 ],
                 {
@@ -759,6 +885,9 @@ class TestGetPrivacyNoticesByDataUse:
                             updated_at=NOW,
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
+                            displayed_in_overlay=True,
+                            displayed_in_privacy_center=False,
+                            displayed_in_api=False,
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -773,6 +902,9 @@ class TestGetPrivacyNoticesByDataUse:
                             updated_at=NOW,
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
+                            displayed_in_overlay=True,
+                            displayed_in_privacy_center=False,
+                            displayed_in_api=False,
                         ),
                     ],
                 },
@@ -793,6 +925,9 @@ class TestGetPrivacyNoticesByDataUse:
                         created_at=NOW,
                         updated_at=NOW,
                         version=1.0,
+                        displayed_in_overlay=True,
+                        displayed_in_privacy_center=False,
+                        displayed_in_api=False,
                     ),
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -806,6 +941,9 @@ class TestGetPrivacyNoticesByDataUse:
                         created_at=NOW,
                         updated_at=NOW,
                         version=1.0,
+                        displayed_in_overlay=True,
+                        displayed_in_privacy_center=False,
+                        displayed_in_api=False,
                     ),
                 ],
                 {
@@ -824,6 +962,7 @@ class TestGetPrivacyNoticesByDataUse:
                             updated_at=NOW,
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
+                            displayed_in_overlay=True,
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -838,6 +977,7 @@ class TestGetPrivacyNoticesByDataUse:
                             updated_at=NOW,
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
+                            displayed_in_overlay=True,
                         ),
                     ],
                     "third_party_sharing": [
@@ -855,6 +995,7 @@ class TestGetPrivacyNoticesByDataUse:
                             updated_at=NOW,
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
+                            displayed_in_overlay=True,
                         ),
                     ],
                 },
@@ -876,6 +1017,9 @@ class TestGetPrivacyNoticesByDataUse:
                         created_at=NOW,
                         updated_at=NOW,
                         version=1.0,
+                        displayed_in_overlay=True,
+                        displayed_in_privacy_center=False,
+                        displayed_in_api=False,
                     ),
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -889,6 +1033,9 @@ class TestGetPrivacyNoticesByDataUse:
                         created_at=NOW,
                         updated_at=NOW,
                         version=1.0,
+                        displayed_in_overlay=True,
+                        displayed_in_privacy_center=False,
+                        displayed_in_api=False,
                     ),
                 ],
                 {
@@ -906,6 +1053,9 @@ class TestGetPrivacyNoticesByDataUse:
                             updated_at=NOW,
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
+                            displayed_in_overlay=True,
+                            displayed_in_privacy_center=False,
+                            displayed_in_api=False,
                         ),
                     ],
                     "third_party_sharing": [],
@@ -926,6 +1076,9 @@ class TestGetPrivacyNoticesByDataUse:
                             "third_party_sharing"
                         ],  # data use is not applicable to any system
                         enforcement_level=EnforcementLevel.system_wide,
+                        displayed_in_overlay=True,
+                        displayed_in_privacy_center=False,
+                        displayed_in_api=False,
                     ),
                 ],
                 {"advertising": []},
@@ -947,6 +1100,9 @@ class TestGetPrivacyNoticesByDataUse:
                         created_at=NOW,
                         updated_at=NOW,
                         version=1.0,
+                        displayed_in_overlay=True,
+                        displayed_in_privacy_center=False,
+                        displayed_in_api=False,
                     ),
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -960,6 +1116,9 @@ class TestGetPrivacyNoticesByDataUse:
                         created_at=NOW,
                         updated_at=NOW,
                         version=1.0,
+                        displayed_in_overlay=True,
+                        displayed_in_privacy_center=False,
+                        displayed_in_api=False,
                     ),
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-3",
@@ -973,6 +1132,9 @@ class TestGetPrivacyNoticesByDataUse:
                         created_at=NOW,
                         updated_at=NOW,
                         version=1.0,
+                        displayed_in_overlay=True,
+                        displayed_in_privacy_center=False,
+                        displayed_in_api=False,
                     ),
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-4",
@@ -986,6 +1148,9 @@ class TestGetPrivacyNoticesByDataUse:
                         created_at=NOW,
                         updated_at=NOW,
                         version=1.0,
+                        displayed_in_overlay=True,
+                        displayed_in_privacy_center=False,
+                        displayed_in_api=False,
                     ),
                 ],
                 {
@@ -1004,6 +1169,9 @@ class TestGetPrivacyNoticesByDataUse:
                             updated_at=NOW,
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
+                            displayed_in_overlay=True,
+                            displayed_in_privacy_center=False,
+                            displayed_in_api=False,
                         )
                     ],
                     "provide.service.operations.support.optimization": [
@@ -1022,6 +1190,9 @@ class TestGetPrivacyNoticesByDataUse:
                             updated_at=NOW,
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
+                            displayed_in_overlay=True,
+                            displayed_in_privacy_center=False,
+                            displayed_in_api=False,
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-3",
@@ -1036,6 +1207,9 @@ class TestGetPrivacyNoticesByDataUse:
                             updated_at=NOW,
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
+                            displayed_in_overlay=True,
+                            displayed_in_privacy_center=False,
+                            displayed_in_api=False,
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -1050,6 +1224,9 @@ class TestGetPrivacyNoticesByDataUse:
                             updated_at=NOW,
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
+                            displayed_in_overlay=True,
+                            displayed_in_privacy_center=False,
+                            displayed_in_api=False,
                         ),
                     ],
                 },
@@ -1121,6 +1298,7 @@ class TestPostPrivacyNotices:
             "consent_mechanism": ConsentMechanism.opt_in.value,
             "data_uses": ["advertising"],
             "enforcement_level": EnforcementLevel.system_wide.value,
+            "displayed_in_overlay": True,
         }
 
     @pytest.fixture(scope="function")
@@ -1132,6 +1310,7 @@ class TestPostPrivacyNotices:
             "consent_mechanism": ConsentMechanism.opt_in.value,
             "data_uses": ["personalize"],
             "enforcement_level": EnforcementLevel.system_wide.value,
+            "displayed_in_overlay": True,
         }
 
     def test_post_privacy_notice_unauthenticated(self, url, api_client):
@@ -1365,6 +1544,74 @@ class TestPostPrivacyNotices:
         )
         assert resp.status_code == 200
 
+    def test_post_privacy_notice_opt_in_must_be_displayed_in_overlay(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        notice_request: dict[str, Any],
+        url,
+    ):
+        """
+        Test opt in consent mechanisms must be displayed in overlay at minimum
+        """
+        assert notice_request["consent_mechanism"] == ConsentMechanism.opt_in.value
+        notice_request["displayed_in_overlay"] = False
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
+
+        resp = api_client.post(url, headers=auth_header, json=[notice_request])
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Opt-in notices must be served in an overlay."
+        )
+
+    def test_post_privacy_notice_opt_out_must_be_displayed_in_overlay_or_privacy_center(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        notice_request: dict[str, Any],
+        url,
+    ):
+        """
+        Test opt out consent mechanisms should be in overlay or privacy center at the moment
+        """
+        notice_request["consent_mechanism"] = ConsentMechanism.opt_out.value
+        notice_request["displayed_in_overlay"] = False
+        notice_request["displayed_in_privacy_center"] = False
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
+
+        resp = api_client.post(url, headers=auth_header, json=[notice_request])
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Opt-out notices must be served in an overlay or the privacy center."
+        )
+
+    def test_post_privacy_notice_notice_only_must_be_displayed_in_overlay(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        notice_request: dict[str, Any],
+        url,
+    ):
+        """
+        Test opt out consent mechanisms should be in overlay or privacy center at the moment
+        """
+        notice_request["consent_mechanism"] = ConsentMechanism.notice_only.value
+        notice_request["displayed_in_overlay"] = False
+        notice_request["displayed_in_privacy_center"] = False
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
+
+        resp = api_client.post(url, headers=auth_header, json=[notice_request])
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Notice-only notices must be served in an overlay."
+        )
+
     def test_post_privacy_notice(
         self,
         api_client: TestClient,
@@ -1402,6 +1649,24 @@ class TestPostPrivacyNotices:
         assert response_notice["created_at"] == db_notice.created_at.isoformat()
         assert response_notice["updated_at"] == db_notice.updated_at.isoformat()
         assert response_notice["disabled"] == db_notice.disabled
+
+    def test_post_privacy_notice_duplicate_regions(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        notice_request: dict[str, Any],
+        url,
+    ):
+        """
+        Assert if regions are accidentally duplicated on a notice that this is flagged
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
+        last_region = notice_request["regions"][-1]
+        notice_request["regions"].append(last_region)
+
+        resp = api_client.post(url, headers=auth_header, json=[notice_request])
+        assert resp.status_code == 422
+        assert resp.json()["detail"][0]["msg"] == "Duplicate regions found."
 
     def test_post_privacy_notice_twice_same_name(
         self,
@@ -1558,6 +1823,7 @@ class TestPatchPrivacyNotices:
             ],
             "consent_mechanism": ConsentMechanism.opt_out.value,
             "data_uses": ["advertising"],
+            "displayed_in_overlay": True,
         }
 
     @pytest.fixture(scope="function")
@@ -1915,6 +2181,85 @@ class TestPatchPrivacyNotices:
             ],
         )
         assert resp.status_code == 422
+
+    def test_patch_privacy_notice_opt_in_must_be_displayed_in_overlay(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        patch_privacy_notice_payload: dict[str, Any],
+        url,
+    ):
+        """
+        Test patching a single privacy notice is invalid if opt in notice is not displayed in overlay
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_UPDATE])
+        patch_privacy_notice_payload[
+            "consent_mechanism"
+        ] = ConsentMechanism.opt_in.value
+        patch_privacy_notice_payload["displayed_in_overlay"] = False
+        patch_privacy_notice_payload["displayed_in_privacy_center"] = True
+
+        resp = api_client.patch(
+            url, headers=auth_header, json=[patch_privacy_notice_payload]
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Opt-in notices must be served in an overlay."
+        )
+
+    def test_patch_privacy_notice_opt_out_must_be_displayed_in_overlay_or_pc(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        patch_privacy_notice_payload: dict[str, Any],
+        url,
+    ):
+        """
+        Test patching a single privacy notice is invalid if opt out notice is not displayed in overlay or privacy center
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_UPDATE])
+        assert (
+            patch_privacy_notice_payload["consent_mechanism"]
+            == ConsentMechanism.opt_out.value
+        )
+        patch_privacy_notice_payload["displayed_in_overlay"] = False
+        patch_privacy_notice_payload["displayed_in_privacy_center"] = False
+
+        resp = api_client.patch(
+            url, headers=auth_header, json=[patch_privacy_notice_payload]
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Opt-out notices must be served in an overlay or the privacy center."
+        )
+
+    def test_patch_privacy_notice_notice_only_must_be_displayed_in_overlay(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        patch_privacy_notice_payload: dict[str, Any],
+        url,
+    ):
+        """
+        Test patching a single privacy notice is invalid if notice only is not displayed in overlay
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_UPDATE])
+        patch_privacy_notice_payload[
+            "consent_mechanism"
+        ] = ConsentMechanism.notice_only.value
+        patch_privacy_notice_payload["displayed_in_overlay"] = False
+        patch_privacy_notice_payload["displayed_in_privacy_center"] = True
+
+        resp = api_client.patch(
+            url, headers=auth_header, json=[patch_privacy_notice_payload]
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Notice-only notices must be served in an overlay."
+        )
 
     def test_patch_privacy_notice(
         self,

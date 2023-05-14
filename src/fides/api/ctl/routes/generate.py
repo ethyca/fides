@@ -16,7 +16,7 @@ from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api.v1 import scope_registry
-from fides.api.ops.util.oauth_util import verify_oauth_client_prod
+from fides.api.ops.oauth.utils import verify_oauth_client_prod
 from fides.connectors.models import (
     AWSConfig,
     BigQueryConfig,
@@ -25,7 +25,11 @@ from fides.connectors.models import (
     DatabaseConfig,
     OktaConfig,
 )
-from fides.core.dataset import generate_bigquery_datasets, generate_db_datasets
+from fides.core.dataset import (
+    generate_bigquery_datasets,
+    generate_db_datasets,
+    generate_dynamo_db_datasets,
+)
 from fides.core.system import generate_aws_systems, generate_okta_systems
 from fides.core.utils import validate_db_engine
 
@@ -39,6 +43,7 @@ class ValidTargets(str, Enum):
     DB = "db"
     OKTA = "okta"
     BIGQUERY = "bigquery"
+    DYNAMODB = "dynamodb"
 
 
 class GenerateTypes(str, Enum):
@@ -70,9 +75,10 @@ class Generate(BaseModel):
         target_type = (values.get("target"), values.get("type"))
         valid_target_types = [
             ("aws", "systems"),
-            ("okta", "systems"),
-            ("db", "datasets"),
             ("bigquery", "datasets"),
+            ("db", "datasets"),
+            ("dynamodb", "datasets"),
+            ("okta", "systems"),
         ]
         if target_type not in valid_target_types:
             raise ValueError("Target and Type are not a valid match")
@@ -129,6 +135,7 @@ async def generate(
     * Okta: Systems
     * DB: Datasets
     * BigQuery: Datasets
+    * DynamoDB: Datasets
 
     In the future, this will include options for other Systems & Datasets,
     examples include:
@@ -141,7 +148,6 @@ async def generate(
     )
     generate_config = generate_request_payload.generate.config
     generate_target = generate_request_payload.generate.target.lower()
-
     try:
         if generate_target == "aws" and isinstance(generate_config, AWSConfig):
             generate_results = generate_aws(
@@ -165,6 +171,12 @@ async def generate(
         ):
             generate_results = generate_bigquery(
                 bigquery_config=generate_config,
+            )
+
+        elif generate_target == "dynamodb" and isinstance(generate_config, AWSConfig):
+            generate_results = generate_dynamodb(
+                aws_config=generate_config,
+                organization=organization,
             )
 
     except ConnectorAuthFailureException as error:
@@ -197,6 +209,29 @@ def generate_aws(
     aws_systems = generate_aws_systems(organization=organization, aws_config=aws_config)
 
     return [i.dict(exclude_none=True) for i in aws_systems]
+
+
+def generate_dynamodb(
+    aws_config: AWSConfig, organization: Organization
+) -> List[Dict[str, str]]:
+    """
+    Returns a list of DynamoDB datasets found in AWS.
+    """
+    from fides.connectors.aws import validate_credentials
+
+    log.info("Validating AWS credentials")
+    try:
+        validate_credentials(aws_config)
+    except ConnectorAuthFailureException as error:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(error),
+        )
+
+    log.info("Generating datasets from AWS DynamoDB")
+    aws_resources = [generate_dynamo_db_datasets(aws_config=aws_config)]
+
+    return [i.dict(exclude_none=True) for i in aws_resources]
 
 
 async def generate_okta(

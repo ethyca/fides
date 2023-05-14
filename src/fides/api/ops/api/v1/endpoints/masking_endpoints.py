@@ -7,6 +7,7 @@ from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 from fides.api.ops.api.v1.scope_registry import MASKING_EXEC, MASKING_READ
 from fides.api.ops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
 from fides.api.ops.common_exceptions import NoSuchStrategyException, ValidationError
+from fides.api.ops.oauth.utils import verify_oauth_client_prod
 from fides.api.ops.schemas.masking.masking_api import (
     MaskingAPIRequest,
     MaskingAPIResponse,
@@ -17,7 +18,6 @@ from fides.api.ops.schemas.masking.masking_strategy_description import (
 from fides.api.ops.schemas.policy import PolicyMaskingSpec
 from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.oauth_util import verify_oauth_client_prod
 
 router = APIRouter(tags=["Masking"], prefix=V1_URL_PREFIX)
 

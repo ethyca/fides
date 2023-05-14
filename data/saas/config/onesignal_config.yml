@@ -1,0 +1,56 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: OneSignal
+  type: onesignal
+  description: A sample schema representing the OneSignal connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: onesignal.com
+    - name: app_id
+      label: App ID
+    - name: api_key
+      label: API Key
+
+  external_references:
+    - name: player_id
+      label: Player ID
+      description: Dataset reference to the location of OneSignal Player/Device IDs
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+          - name: Authorization
+            value: Basic <api_key>
+        query_params:
+          - name: app_id
+            value: <app_id>
+
+  test_request:
+    method: GET
+    path: /api/v1/players
+
+  endpoints:
+    - name: devices
+      requests:
+        read:
+          method: GET
+          path: /api/v1/players/<player_id_value>
+          param_values:
+            - name: player_id_value
+              references:
+                - player_id
+        delete:
+          method: DELETE
+          path: /api/v1/players/<player_id>
+          param_values:
+            - name: player_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: devices.id
+                  direction: from

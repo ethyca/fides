@@ -12,19 +12,19 @@ from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequestStatus,
 )
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.lib.schemas.base_class import BaseSchema
 
 
-class ConsentOptionCreate(BaseSchema):
+class ConsentOptionCreate(FidesSchema):
     """Schema for saving the user's preference for a given notice"""
 
     privacy_notice_history_id: str
     preference: UserConsentPreference
 
 
-class PrivacyPreferencesCreateWithCode(BaseSchema):
+class PrivacyPreferencesCreateWithCode(FidesSchema):
     """Schema for saving privacy preferences and accompanying user data
     including the verification code."""
 
@@ -38,14 +38,14 @@ class PrivacyPreferencesCreateWithCode(BaseSchema):
     user_geography: Optional[PrivacyNoticeRegion]
 
 
-class MinimalPrivacyPreferenceHistorySchema(BaseSchema):
+class MinimalPrivacyPreferenceHistorySchema(FidesSchema):
     """Minimal privacy preference history schema for building consent emails"""
 
     preference: UserConsentPreference
     privacy_notice_history: PrivacyNoticeHistorySchema
 
 
-class ConsentReportingSchema(BaseSchema):
+class ConsentReportingSchema(FidesSchema):
     """Schema for consent reporting - largely a join of PrivacyPreferenceHistory and PrivacyRequest"""
 
     id: str = Field(title="The PrivacyPreferenceHistory id")
@@ -92,7 +92,7 @@ class ConsentReportingSchema(BaseSchema):
     user_agent: Optional[str] = Field(title="User agent")
 
 
-class CurrentPrivacyPreferenceSchema(BaseSchema):
+class CurrentPrivacyPreferenceSchema(FidesSchema):
     """Schema to represent the latest saved preference for a given privacy notice
     Note that we return the privacy notice *history* record here though which has the
     contents of the notice the user consented to at the time.
@@ -104,7 +104,7 @@ class CurrentPrivacyPreferenceSchema(BaseSchema):
     privacy_preference_history_id: str
 
 
-class CurrentPrivacyPreferenceReportingSchema(BaseSchema):
+class CurrentPrivacyPreferenceReportingSchema(FidesSchema):
     """Schema to represent the latest saved preference for a given privacy notice
     Note that we return the privacy notice *history* record here though which has the
     contents of the notice the user consented to at the time.

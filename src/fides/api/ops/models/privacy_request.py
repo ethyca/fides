@@ -28,9 +28,14 @@ from fides.api.ops.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
+from fides.api.ops.cryptography.cryptographic_util import hash_with_salt
+from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph_differences import GraphRepr
+from fides.api.ops.models.audit_log import AuditLog
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.models.fides_user import FidesUser
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.policy import (
     ActionType,
@@ -40,7 +45,8 @@ from fides.api.ops.models.policy import (
     WebhookDirection,
     WebhookTypes,
 )
-from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.oauth.jwt import generate_jwe
+from fides.api.ops.schemas.base_class import FidesSchema
 from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.ops.schemas.external_https import SecondPartyResponseFormat, WebhookJWE
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
@@ -60,12 +66,6 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.constants import API_DATE_FORMAT
 from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.core.config import CONFIG
-from fides.lib.cryptography.cryptographic_util import hash_with_salt
-from fides.lib.db.base import Base  # type: ignore[attr-defined]
-from fides.lib.models.audit_log import AuditLog
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.oauth.jwt import generate_jwe
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
@@ -78,7 +78,7 @@ EXECUTION_CHECKPOINTS = [
 ]
 
 
-class ManualAction(BaseSchema):
+class ManualAction(FidesSchema):
     """Surface how to retrieve or mask data in a database-agnostic way
 
     "locators" are similar to the SQL "WHERE" information.
@@ -91,7 +91,7 @@ class ManualAction(BaseSchema):
     update: Optional[Dict[str, Any]]
 
 
-class CheckpointActionRequired(BaseSchema):
+class CheckpointActionRequired(FidesSchema):
     """Describes actions needed on a particular checkpoint.
 
     Examples are a paused collection that needs manual input, a failed collection that

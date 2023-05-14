@@ -14,7 +14,7 @@ from sqlalchemy.util import hybridproperty
 
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import ValidationError
-from fides.lib.db.base_class import Base, FidesBase
+from fides.api.ops.db.base_class import Base, FidesBase
 
 
 class PrivacyNoticeRegion(Enum):
@@ -93,9 +93,9 @@ class PrivacyNoticeBase:
     version = Column(Float, nullable=False, default=1.0)
     disabled = Column(Boolean, nullable=False, default=False)
     has_gpc_flag = Column(Boolean, nullable=False, default=False)
-    displayed_in_privacy_center = Column(Boolean, nullable=False, default=True)
-    displayed_in_overlay = Column(Boolean, nullable=False, default=True)
-    displayed_in_api = Column(Boolean, nullable=False, default=True)
+    displayed_in_privacy_center = Column(Boolean, nullable=False, default=False)
+    displayed_in_overlay = Column(Boolean, nullable=False, default=False)
+    displayed_in_api = Column(Boolean, nullable=False, default=False)
 
     def applies_to_system(self, system: System) -> bool:
         """Privacy Notice applies to System if a data use matches or the Privacy Notice

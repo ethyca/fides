@@ -1,15 +1,12 @@
 import {
   Button,
   Divider,
-  Flex,
   Heading,
-  Image,
   Stack,
   Text,
   useToast,
 } from "@fidesui/react";
 import type { NextPage } from "next";
-import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useMemo } from "react";
 
@@ -19,21 +16,20 @@ import {
   resolveConsentValue,
   saveFidesCookie,
   getOrMakeFidesCookie,
-} from "fides-consent";
+} from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { useLocalStorage } from "~/common/hooks";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import ConsentItemCard from "~/components/ConsentItemCard";
-import { config } from "~/constants";
 import {
-  selectConfigConsentOptions,
   updateConsentOptionsFromApi,
+  useConfig,
 } from "~/features/common/config.slice";
 import {
   selectFidesKeyToConsent,
   selectPersistedFidesKeyToConsent,
-  updateConsentFromApi,
+  updateUserConsentPreferencesFromApi,
   useLazyGetConsentRequestPreferencesQuery,
   usePostConsentRequestVerificationMutation,
   useUpdateConsentRequestPreferencesMutation,
@@ -54,7 +50,11 @@ const Consent: NextPage = () => {
   const persistedFidesKeyToConsent = useAppSelector(
     selectPersistedFidesKeyToConsent
   );
-  const consentOptions = useAppSelector(selectConfigConsentOptions);
+  const config = useConfig();
+  const consentOptions = useMemo(
+    () => config.consent?.page.consentOptions ?? [],
+    [config]
+  );
 
   const getIdVerificationConfigQueryResult = useGetIdVerificationConfigQuery();
   const [
@@ -100,7 +100,7 @@ const Consent: NextPage = () => {
   const storeConsentPreferences = useCallback(
     (data: ConsentPreferences) => {
       dispatch(updateConsentOptionsFromApi(data));
-      dispatch(updateConsentFromApi(data));
+      dispatch(updateUserConsentPreferencesFromApi(data));
     },
     [dispatch]
   );
@@ -255,6 +255,7 @@ const Consent: NextPage = () => {
       },
     });
   }, [
+    config,
     consentContext,
     consentOptions,
     consentRequestId,
@@ -317,99 +318,76 @@ const Consent: NextPage = () => {
   );
 
   return (
-    <div>
-      <Head>
-        <title>Privacy Center</title>
-        <meta name="description" content="Privacy Center" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <Stack as="main" align="center" data-testid="consent">
+      <Stack align="center" py={["6", "16"]} spacing={8} maxWidth="720px">
+        <Stack align="center" spacing={3}>
+          <Heading
+            fontSize={["3xl", "4xl"]}
+            color="gray.600"
+            fontWeight="semibold"
+            textAlign="center"
+          >
+            {config.consent?.page.title}
+          </Heading>
 
-      <header>
-        <Flex
-          bg="gray.100"
-          minHeight={14}
-          p={1}
-          width="100%"
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Image src={config.logo_path} height="68px" alt="Logo" />
-        </Flex>
-      </header>
-
-      <Stack as="main" align="center" data-testid="consent">
-        <Stack align="center" py={["6", "16"]} spacing={8} maxWidth="720px">
-          <Stack align="center" spacing={3}>
-            <Heading
-              fontSize={["3xl", "4xl"]}
-              color="gray.600"
-              fontWeight="semibold"
+          {config.consent?.page.description_subtext?.map((paragraph, index) => (
+            <Text
+              fontSize={["small", "medium"]}
+              fontWeight="medium"
+              maxWidth={624}
               textAlign="center"
+              color="gray.600"
+              data-testid={`description-${index}`}
+              // eslint-disable-next-line react/no-array-index-key
+              key={`description-${index}`}
             >
-              {config.consent?.page.title}
-            </Heading>
+              {paragraph}
+            </Text>
+          ))}
+        </Stack>
 
-            {config.consent?.page.description_subtext?.map(
-              (paragraph, index) => (
-                <Text
-                  fontSize={["small", "medium"]}
-                  fontWeight="medium"
-                  maxWidth={624}
-                  textAlign="center"
-                  color="gray.600"
-                  data-testid={`description-${index}`}
-                  // eslint-disable-next-line react/no-array-index-key
-                  key={`description-${index}`}
-                >
-                  {paragraph}
-                </Text>
-              )
-            )}
-          </Stack>
+        {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
 
-          {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
+        <Stack direction="column" spacing={4}>
+          {items.map((item, index) => (
+            <React.Fragment key={item.option.fidesDataUseKey}>
+              {index > 0 ? <Divider /> : null}
+              <ConsentItemCard {...item} />
+            </React.Fragment>
+          ))}
 
-          <Stack direction="column" spacing={4}>
-            {items.map((item, index) => (
-              <React.Fragment key={item.option.fidesDataUseKey}>
-                {index > 0 ? <Divider /> : null}
-                <ConsentItemCard {...item} />
-              </React.Fragment>
-            ))}
-
-            <Stack
-              direction="row"
-              justifyContent="flex-start"
-              paddingX={12}
-              width="full"
+          <Stack
+            direction="row"
+            justifyContent="flex-start"
+            paddingX={12}
+            width="full"
+          >
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                router.push("/");
+              }}
             >
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  router.push("/");
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                bg="primary.800"
-                _hover={{ bg: "primary.400" }}
-                _active={{ bg: "primary.500" }}
-                colorScheme="primary"
-                size="sm"
-                onClick={() => {
-                  saveUserConsentOptions();
-                }}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
-            </Stack>
+              Cancel
+            </Button>
+            <Button
+              bg="primary.800"
+              _hover={{ bg: "primary.400" }}
+              _active={{ bg: "primary.500" }}
+              colorScheme="primary"
+              size="sm"
+              onClick={() => {
+                saveUserConsentOptions();
+              }}
+              data-testid="save-btn"
+            >
+              Save
+            </Button>
           </Stack>
         </Stack>
       </Stack>
-    </div>
+    </Stack>
   );
 };
 

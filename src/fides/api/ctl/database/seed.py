@@ -19,23 +19,23 @@ from fides.api.ops.api.v1.endpoints.dataset_endpoints import patch_dataset_confi
 from fides.api.ops.api.v1.endpoints.saas_config_endpoints import (
     instantiate_connection_from_template,
 )
+from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
+from fides.api.ops.db.base_class import FidesBase
+from fides.api.ops.models.client import ClientDetail
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.fides_user import FidesUser
+from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.ops.oauth.roles import OWNER
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
     SaasConnectionTemplateValues,
 )
 from fides.api.ops.schemas.dataset import DatasetConfigCtlDataset
 from fides.api.ops.util.connection_util import patch_connection_configs
+from fides.api.ops.util.text import to_snake_case
 from fides.core.config import CONFIG
-from fides.lib.db.base_class import FidesBase
-from fides.lib.exceptions import KeyOrNameAlreadyExists
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import OWNER
-from fides.lib.utils.text import to_snake_case
 
 from .crud import create_resource, get_resource, list_resource, upsert_resources
 from .samples import (
@@ -436,13 +436,14 @@ async def load_samples(async_session: AsyncSession) -> None:
         sample_connections = load_sample_connections_from_project()
         with sync_session() as db_session:
             for connection in sample_connections:
+                assert connection.key, "Connection Key expected!"
                 # If the connection config already exists, skip creation!
                 # NOTE: This creates an edge case where the sample data was
                 # created previously, but has since changed. By not deleting &
                 # recreating here, we allow the "old" data to persist. That's an
                 # acceptable risk here, so we log an INFO message to provide a
                 # breadcrumb back to this code.
-                connection_config = ConnectionConfig.get_by(
+                connection_config: Optional[ConnectionConfig] = ConnectionConfig.get_by(
                     db=db_session, field="key", value=connection.key
                 )
                 if connection_config:

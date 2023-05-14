@@ -6,6 +6,10 @@ import { selectToken } from "~/features/auth";
 import { addCommonHeaders } from "~/features/common/CommonHeaders";
 import { CoreHealthCheck } from "~/types/api";
 
+/**
+ * Note: this one does not extend from baseApi because the health endpoint is
+ * not nested under /api/v1
+ */
 export const healthApi = createApi({
   reducerPath: "healthApi",
   baseQuery: fetchBaseQuery({
