@@ -60,6 +60,11 @@ The types of changes are:
 
 ## [2.12.1](https://github.com/ethyca/fides/compare/2.12.0...2.12.1)
 
+### Added 
+
+- Support pseudonymous consent requests with `fides_user_device_id` for the new consent workflow [#3203](https://github.com/ethyca/fides/pull/3203)
+
+
 ### Changed
 
 - Updated how Docker version checks are handled and added an escape-hatch [#3218](https://github.com/ethyca/fides/pull/3218)
