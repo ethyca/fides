@@ -90,45 +90,6 @@ export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
 };
 
 /**
- * Generate the *default* consent preferences for this session, based on:
- * 1) config: current consent configuration, which defines the options and their
- *    default values (e.g. "data_sales" => true)
- * 2) context: browser context, which can automatically override those defaults
- *    in some cases (e.g. global privacy control => false)
- *
- * Returns the final set of "defaults" that can then be changed according to the
- * user's preferences.
- */
-export const makeConsentDefaults = ({
-  config,
-  context,
-}: {
-  config: ConsentConfig;
-  context: ConsentContext;
-}): CookieKeyConsent => {
-  const defaults: CookieKeyConsent = {};
-  config.options.forEach(({ cookieKeys, default: current }) => {
-    if (current === undefined) {
-      return;
-    }
-
-    const value = resolveConsentValue(current, context);
-
-    cookieKeys.forEach((cookieKey) => {
-      const previous = defaults[cookieKey];
-      if (previous === undefined) {
-        defaults[cookieKey] = value;
-        return;
-      }
-
-      defaults[cookieKey] = previous && value;
-    });
-  });
-
-  return defaults;
-};
-
-/**
  * Attempt to read, parse, and return the current Fides cookie from the browser.
  * If one doesn't exist, make a new default cookie (including generating a new
  * pseudonymous ID) and return the default values.
@@ -216,4 +177,76 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
     },
     CODEC
   );
+};
+
+/**
+ * Generate the *default* consent preferences for this session, based on:
+ * 1) config: current consent configuration, which defines the options and their
+ *    default values (e.g. "data_sales" => true)
+ * 2) context: browser context, which can automatically override those defaults
+ *    in some cases (e.g. global privacy control => false)
+ *
+ * Returns the final set of "defaults" that can then be changed according to the
+ * user's preferences.
+ */
+export const makeConsentDefaults = ({
+  config,
+  context,
+}: {
+  config?: ConsentConfig;
+  context: ConsentContext;
+}): CookieKeyConsent => {
+  const defaults: CookieKeyConsent = {};
+  config?.options.forEach(({ cookieKeys, default: current }) => {
+    if (current === undefined) {
+      return;
+    }
+
+    const value = resolveConsentValue(current, context);
+
+    cookieKeys.forEach((cookieKey) => {
+      const previous = defaults[cookieKey];
+      if (previous === undefined) {
+        defaults[cookieKey] = value;
+        return;
+      }
+
+      defaults[cookieKey] = previous && value;
+    });
+  });
+
+  return defaults;
+};
+
+/**
+ * Given a CookieKeyConsent and a `value`, update and set the fides cookie
+ * such that every key is set to the passed in `value`
+ */
+const setConsentCookieValuesTo = (
+  cookieKeys: CookieKeyConsent,
+  value: boolean
+) => {
+  if (!cookieKeys) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `Unable to set consent cookie values to all ${value}: invalid defaults`
+    );
+    return;
+  }
+  const updatedCookieKeyConsent: CookieKeyConsent = {};
+
+  Object.keys(cookieKeys).forEach((cookieKey) => {
+    updatedCookieKeyConsent[cookieKey] = value;
+  });
+
+  const cookie = getOrMakeFidesCookie();
+  saveFidesCookie({ ...cookie, consent: updatedCookieKeyConsent });
+};
+
+export const setConsentCookieAcceptAll = (defaults: CookieKeyConsent): void => {
+  setConsentCookieValuesTo(defaults, true);
+};
+
+export const setConsentCookieRejectAll = (defaults: CookieKeyConsent): void => {
+  setConsentCookieValuesTo(defaults, false);
 };

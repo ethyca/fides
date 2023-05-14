@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 from fastapi import HTTPException
 from starlette.status import HTTP_400_BAD_REQUEST
@@ -28,3 +28,17 @@ def validate_start_and_end_filters(
                 status_code=HTTP_400_BAD_REQUEST,
                 detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
             )
+
+
+def transform_fields(
+    transformation: Callable, model: object, fields: List[str]
+) -> object:
+    """
+    Takes a callable and returns a transformed object.
+    """
+
+    for name, value in {field: getattr(model, field) for field in fields}.items():
+        if value:
+            setattr(model, name, transformation(value))
+
+    return model

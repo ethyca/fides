@@ -579,6 +579,56 @@ class TestGetPrivacyNotices:
             most_recent = privacy_notices.pop()
             assert privacy_notice["name"] == most_recent.name
 
+    @pytest.mark.usefixtures(
+        "system",
+    )
+    def test_can_unescape(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_NOTICE_READ, scopes.PRIVACY_NOTICE_CREATE]
+        )
+
+        escaped_name = "Data Sales &#x27;n&#x27; stuff"
+        unescaped_name = "Data Sales 'n' stuff"
+        PrivacyNotice.create(
+            db=db,
+            data={
+                "name": escaped_name,
+                "description": "a sample privacy notice configuration",
+                "regions": [PrivacyNoticeRegion.us_ca],
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["advertising"],
+                "enforcement_level": EnforcementLevel.system_wide,
+                "displayed_in_overlay": True,
+            },
+        )
+
+        # without the unescaped header, should return the escaped version
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        print(data["items"])
+        assert data["items"][0]["name"] == escaped_name
+
+        # now request with the unescape header
+        unescape_header = {"Unescape-Safestr": "yes"}
+        auth_and_unescape_header = {**auth_header, **unescape_header}
+        resp = api_client.get(
+            url,
+            headers=auth_and_unescape_header,
+        )
+        data = resp.json()
+        print(data["items"])
+        assert data["items"][0]["name"] == unescaped_name
+
 
 class TestGetPrivacyNoticeDetail:
     @pytest.fixture(scope="function")
@@ -648,6 +698,67 @@ class TestGetPrivacyNoticeDetail:
         assert data["version"] == privacy_notice.version
         assert data["disabled"] == privacy_notice.disabled
         assert data["displayed_in_overlay"] == privacy_notice.displayed_in_overlay
+
+    def test_get_privacy_notice_unescaped(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_NOTICE_READ, scopes.PRIVACY_NOTICE_CREATE]
+        )
+
+        # post a new privacy notice that has some sneaky characters
+        maybe_dangerous_description = "user's description <script />"
+        resp = api_client.post(
+            V1_URL_PREFIX + PRIVACY_NOTICE,
+            headers=auth_header,
+            json=[
+                {
+                    "name": "test privacy notice 1",
+                    "description": maybe_dangerous_description,
+                    "origin": "privacy_notice_template_1",
+                    "regions": [
+                        PrivacyNoticeRegion.eu_be.value,
+                        PrivacyNoticeRegion.us_ca.value,
+                    ],
+                    "consent_mechanism": ConsentMechanism.opt_in.value,
+                    "data_uses": ["advertising"],
+                    "enforcement_level": EnforcementLevel.system_wide.value,
+                    "displayed_in_overlay": True,
+                }
+            ],
+        )
+        print(f"Created Notice: {resp.text}")
+        assert resp.status_code == 200
+        created_notice = resp.json()[0]
+
+        url = V1_URL_PREFIX + PRIVACY_NOTICE_DETAIL.format(
+            privacy_notice_id=created_notice["id"]
+        )
+
+        # without the unescaped header, should return the escaped version
+        resp = api_client.get(
+            url,
+            # headers={**auth_header, **unescape_header},
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        print(f"Unescaped Response: {data}")
+        assert data["description"] == "user&#x27;s description &lt;script /&gt;"
+
+        # now request with the unescape header
+        unescape_header = {"Unescape-Safestr": "yes"}
+        auth_and_unescape_header = {**auth_header, **unescape_header}
+        print(f"Auth & Unescape Headers: {auth_and_unescape_header}")
+        resp = api_client.get(
+            url,
+            headers=auth_and_unescape_header,
+        )
+        data = resp.json()
+        print(f"Escaped Data: {data}")
+        assert data["description"] == maybe_dangerous_description
 
 
 class TestGetPrivacyNoticesByDataUse:
