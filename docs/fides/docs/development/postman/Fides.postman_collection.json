@@ -2,8 +2,7 @@
 	"info": {
 		"_postman_id": "90f366bb-e733-4cca-93b7-75eb599871c2",
 		"name": "Fides",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "1984786"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
