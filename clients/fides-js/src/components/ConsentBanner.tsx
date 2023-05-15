@@ -50,7 +50,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
       window.location.assign(privacyCenterUrl);
     } else {
       onOpenModal();
-      setIsShown(false);
     }
   };
 

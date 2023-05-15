@@ -22,13 +22,13 @@ const ConsentModal = ({
   experience: ExperienceConfig;
   notices: PrivacyNotice[];
 }) => {
-  // TODO: set initial state
+  // TODO: set initial state based on GET /consent-request/id/preferences?
   const [enabledNoticeIds, setEnabledNoticeIds] = useState<
     Array<PrivacyNotice["id"]>
   >([]);
 
   const handleSubmit = () => {
-    // TODO: implement fetch
+    // TODO: implement fetch PATCH against /consent-request/id/preferences?
     const noticeMap = notices.map((notice) => ({
       [notice.id]: enabledNoticeIds.includes(notice.id),
     }));
@@ -50,11 +50,13 @@ const ConsentModal = ({
           <p data-testid="modal-description">
             {experience.component_description}
           </p>
-          <NoticeToggleTable
-            notices={notices}
-            enabledNoticeIds={enabledNoticeIds}
-            onChange={setEnabledNoticeIds}
-          />
+          <div className="modal-notices">
+            <NoticeToggleTable
+              notices={notices}
+              enabledNoticeIds={enabledNoticeIds}
+              onChange={setEnabledNoticeIds}
+            />
+          </div>
           <div className="modal-button-group">
             <Button
               label="Save"

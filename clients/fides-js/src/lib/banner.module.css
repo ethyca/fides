@@ -203,6 +203,10 @@ div#fides-consent-modal {
   height: 100%;
 }
 
+.modal-notices {
+  margin-bottom: 1em;
+}
+
 /** Toggle, adapted from https://kittygiraudel.com/2021/04/05/an-accessible-toggle/ */
 
 @media (prefers-reduced-motion: reduce) {

@@ -21,6 +21,7 @@ const Toggle = ({
         onChange(id);
       }}
       checked={checked}
+      role="switch"
     />
     {/* Mark as `hidden` so it will fall back to a regular checkbox if CSS is not available */}
     <span className="toggle-display" hidden />
