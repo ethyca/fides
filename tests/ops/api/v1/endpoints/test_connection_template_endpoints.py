@@ -32,7 +32,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
-        return V1_URL_PREFIX + CONNECTION_TYPES + "?size=100&"
+        return V1_URL_PREFIX + CONNECTION_TYPES + "?"
 
     def test_get_connection_types_not_authenticated(self, api_client, url):
         resp = api_client.get(url, headers={})
@@ -338,15 +338,14 @@ class TestGetConnectionsActionTypeParams:
 
     @pytest.fixture(scope="function")
     def url(self) -> str:
-        return V1_URL_PREFIX + CONNECTION_TYPES + "?size=100&"
+        return V1_URL_PREFIX + CONNECTION_TYPES + "?"
 
     @pytest.fixture(scope="function")
     def url_with_params(self) -> str:
         return (
             V1_URL_PREFIX
             + CONNECTION_TYPES
-            + "?size=100"
-            + "&consent={consent}"
+            + "?consent={consent}"
             + "&access={access}"
             + "&erasure={erasure}"
         )
