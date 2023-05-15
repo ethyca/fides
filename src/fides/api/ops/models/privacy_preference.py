@@ -18,7 +18,7 @@ from fides.api.ops.common_exceptions import (
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
 )
-from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.db.base_class import Base, JSONTypeOverride
 from fides.api.ops.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeHistory,
@@ -30,7 +30,6 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.core.config import CONFIG
-from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
 
 class UserConsentPreference(Enum):

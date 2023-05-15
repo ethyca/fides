@@ -1,13 +1,9 @@
-import { Heading, Spinner, Stack, Text, useToast } from "@fidesui/react";
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
+import { Heading, Spinner, Stack, Text } from "@fidesui/react";
 import NextLink from "next/link";
 
 import { useAppDispatch } from "~/app/hooks";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { setActiveSystem, useUpdateSystemMutation } from "~/features/system";
-import { PrivacyDeclaration, System } from "~/types/api";
+import { setActiveSystem } from "~/features/system";
+import { System } from "~/types/api";
 
 import { usePrivacyDeclarationData } from "./hooks";
 import PrivacyDeclarationManager from "./PrivacyDeclarationManager";
@@ -17,55 +13,14 @@ interface Props {
 }
 
 const PrivacyDeclarationStep = ({ system }: Props) => {
-  const toast = useToast();
   const dispatch = useAppDispatch();
-  const [updateSystemMutationTrigger] = useUpdateSystemMutation();
-  const { isLoading, ...dataProps } = usePrivacyDeclarationData();
 
-  const handleSave = async (
-    updatedDeclarations: PrivacyDeclaration[],
-    isDelete?: boolean
-  ) => {
-    const systemBodyWithDeclaration = {
-      ...system,
-      privacy_declarations: updatedDeclarations,
-    };
+  const { isLoading, ...dataProps } = usePrivacyDeclarationData({
+    includeDatasets: true,
+  });
 
-    const handleResult = (
-      result:
-        | { data: System }
-        | { error: FetchBaseQueryError | SerializedError }
-    ) => {
-      if (isErrorResult(result)) {
-        const errorMsg = getErrorMessage(
-          result.error,
-          "An unexpected error occurred while updating the system. Please try again."
-        );
-
-        toast(errorToastParams(errorMsg));
-        return false;
-      }
-      toast.closeAll();
-      toast(
-        successToastParams(isDelete ? "Data use deleted" : "Data use saved")
-      );
-      dispatch(setActiveSystem(result.data));
-      return true;
-    };
-
-    const updateSystemResult = await updateSystemMutationTrigger(
-      systemBodyWithDeclaration
-    );
-
-    return handleResult(updateSystemResult);
-  };
-
-  const collisionWarning = () => {
-    toast(
-      errorToastParams(
-        "A declaration already exists with that data use in this system. Please supply a different data use."
-      )
-    );
+  const onSave = (savedSystem: System) => {
+    dispatch(setActiveSystem(savedSystem));
   };
 
   return (
@@ -91,8 +46,8 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
       ) : (
         <PrivacyDeclarationManager
           system={system}
-          onCollision={collisionWarning}
-          onSave={handleSave}
+          onSave={onSave}
+          includeCustomFields
           {...dataProps}
         />
       )}

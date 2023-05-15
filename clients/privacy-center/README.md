@@ -25,9 +25,9 @@ You may configure the appearance of this web application at build time by modify
     - Descriptive information for the type of consent
     - The default consent state (opt in/out):
       - This can be a single boolean which will apply when the user has not modified their consent.
-      - Or this can be an object with consent values that depend on the user's consent context, such as whether they are using Global Privacy Control. See [fides-consent](./packages/fides-consent/README.md#consent-context) for details.
+      - Or this can be an object with consent values that depend on the user's consent context, such as whether they are using Global Privacy Control. See [fides-js](../packages/fides-js/README.md#consent-context) for details.
     - The cookie keys that will be available to
-      [fides-consent.js](./packages/fides-consent/README.md), which can be used to access a user's consent choices on outside of the Privacy Center.
+      [fides.js](../packages/fides-js/README.md), which can be used to access a user's consent choices outside of the Privacy Center.
     - Whether the user's consent choice should be propagated to any configured third party services (executable). Note that currently, only one option may be marked `executable` at a time.
 
 You can also add any CSS you'd like to the page by adding it to the `config.css` file inside the `config` directory.
@@ -64,7 +64,9 @@ Not exactly the most appealing color scheme – but note that wherever those var
 
 ## Development
 
-To serve this application locally, first install your local dependencies by running
+To serve this application locally, first install your local dependencies by installing at the root `client` directory level:
+
+In `/clients`:
 
 ```bash
 npm install
@@ -73,15 +75,18 @@ npm install
 Then, run:
 
 ```bash
-npm run dev
+cd privacy-center
+turbo run dev
 ```
+
+This will automatically build and run the project.
 
 ## Building
 
-To build this application, run:
+To build this application directly, run:
 
 ```bash
-npm run build
+turbo run build
 ```
 
 As a Next application, it will output build artifacts to the `.next` directory.
@@ -91,8 +96,20 @@ As a Next application, it will output build artifacts to the `.next` directory.
 To run the interactive test interface, run:
 
 ```bash
-npm run test
+turbo run test
 ```
+
+For a fully-loaded development & test setup of both the Privacy Center, run the following commands in two separate terminals:
+
+```bash
+cd privacy-center && turbo run dev
+cd privacy-center && turbo run cy:open
+```
+
+There are two ways to test Fides consent components:
+
+1. Navigate to `http://localhost:3000/fides-js-components-demo.html`. This page comes pre-packaged with some default configurations to get up and running quickly with the consent components, and is also the page used by cypress e2e tests. To test other configurations, edit the fidesConfig object passed into `Fides.init()` in `privacy-center/public/fides-js-components-demo.html`.
+2. Navigate to `http://localhost:3000/fides-js-demo.html`. This page, unlike the above, calls the `/api/fides-js` Privacy Center endpoint. This endpoint loads config from the privacy center's legacy `config.json`, so it's closer to how a customer would actually use the `fides-js` package. In addition, we inject only the minimal config into `fides-js`. The overlay is not enabled by default on this page.
 
 ## Deployment
 

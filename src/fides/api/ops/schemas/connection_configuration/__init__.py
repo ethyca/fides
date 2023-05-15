@@ -19,6 +19,12 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_bigquery 
 from fides.api.ops.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema as BigQuerySchema,
 )
+from fides.api.ops.schemas.connection_configuration.connection_secrets_dynamodb import (
+    DynamoDBDocsSchema as DynamoDBDocsSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_dynamodb import (
+    DynamoDBSchema as DynamoDBSchema,
+)
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     EmailDocsSchema as EmailDocsSchema,
 )
@@ -101,6 +107,7 @@ from fides.api.ops.schemas.saas.saas_config import SaaSConfig as SaaSConfig
 secrets_schemas: Dict[str, Any] = {
     ConnectionType.attentive.value: AttentiveSchema,
     ConnectionType.bigquery.value: BigQuerySchema,
+    ConnectionType.dynamodb.value: DynamoDBSchema,
     ConnectionType.fides.value: FidesConnectorSchema,
     ConnectionType.https.value: HttpsSchema,
     ConnectionType.manual_webhook.value: ManualWebhookSchema,
@@ -158,4 +165,5 @@ connection_secrets_schemas = Union[
     TimescaleDocsSchema,
     FidesDocsSchema,
     SovrnDocsSchema,
+    DynamoDBDocsSchema,
 ]

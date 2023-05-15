@@ -20,7 +20,7 @@ import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { PrivacyRequestStatus } from "~/types";
 import { PrivacyRequestOption } from "~/types/config";
-import { hostUrl, config, defaultIdentityInput } from "~/constants";
+import { defaultIdentityInput } from "~/constants";
 import { PhoneInput } from "~/components/phone-input";
 import { ModalViews } from "~/components/modals/types";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
@@ -29,6 +29,8 @@ import {
   nameValidation,
   phoneValidation,
 } from "~/components/modals/validation";
+import { useConfig } from "~/features/common/config.slice";
+import { useSettings } from "~/features/common/settings.slice";
 
 const usePrivacyRequestForm = ({
   onClose,
@@ -43,6 +45,7 @@ const usePrivacyRequestForm = ({
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
 }) => {
+  const settings = useSettings();
   const identityInputs = action?.identity_inputs ?? defaultIdentityInput;
   const toast = useToast();
   const formik = useFormik({
@@ -88,11 +91,14 @@ const usePrivacyRequestForm = ({
         const headers: Headers = new Headers();
         addCommonHeaders(headers, null);
 
-        const response = await fetch(`${hostUrl}/privacy-request`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(body),
-        });
+        const response = await fetch(
+          `${settings.FIDES_API_URL}/privacy-request`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(body),
+          }
+        );
         const data = await response.json();
         if (!response.ok) {
           handleError({
@@ -184,6 +190,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
   setPrivacyRequestId,
   isVerificationRequired,
 }) => {
+  const config = useConfig();
   const action = openAction
     ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
     : null;
@@ -222,9 +229,15 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
       </ModalHeader>
       <chakra.form onSubmit={handleSubmit} data-testid="privacy-request-form">
         <ModalBody>
-          <Text fontSize="sm" color="gray.500" mb={4}>
+          <Text fontSize="sm" color="gray.600" mb={4}>
             {action.description}
           </Text>
+          {action.description_subtext?.map((paragraph, index) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <Text fontSize="sm" color="gray.600" mb={4} key={index}>
+              {paragraph}
+            </Text>
+          ))}
           <Stack>
             {identityInputs.name ? (
               <FormControl
@@ -232,7 +245,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 isInvalid={touched.name && Boolean(errors.name)}
                 isRequired={identityInputs.name === "required"}
               >
-                <FormLabel>Name</FormLabel>
+                <FormLabel fontSize="sm">Name</FormLabel>
                 <Input
                   id="name"
                   name="name"
@@ -251,7 +264,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 isInvalid={touched.email && Boolean(errors.email)}
                 isRequired={identityInputs.email === "required"}
               >
-                <FormLabel>Email</FormLabel>
+                <FormLabel fontSize="sm">Email</FormLabel>
                 <Input
                   id="email"
                   name="email"
@@ -274,7 +287,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 isInvalid={touched.phone && Boolean(errors.phone)}
                 isRequired={identityInputs.phone === "required"}
               >
-                <FormLabel>Phone</FormLabel>
+                <FormLabel fontSize="sm">Phone</FormLabel>
                 <PhoneInput
                   id="phone"
                   name="phone"

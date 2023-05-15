@@ -4,13 +4,20 @@ from typing import Any, Callable, Dict, List, Optional
 
 import boto3
 from botocore.exceptions import ClientError
-from fideslang.models import System, SystemMetadata
+from fideslang.models import (
+    Dataset,
+    DatasetCollection,
+    DatasetField,
+    System,
+    SystemMetadata,
+)
 
 from fides.connectors.models import (
     AWSConfig,
     ConnectorAuthFailureException,
     ConnectorFailureException,
 )
+from fides.core.utils import generate_unique_fides_key
 
 
 def get_aws_client(service: str, aws_config: Optional[AWSConfig]) -> Any:  # type: ignore
@@ -83,6 +90,27 @@ def describe_rds_instances(client: Any) -> Dict[str, List[Dict]]:  # type: ignor
 
 
 @handle_common_aws_errors
+def describe_dynamo_tables(client: Any, table_names: List[str]) -> List[Dict]:  # type: ignore
+    """
+    Returns describe_table response given a 'dynamodb' boto3 client.
+    """
+    describe_tables = []
+    for table in table_names:
+        described_table = client.describe_table(TableName=table)
+        describe_tables.append(described_table["Table"])
+    return describe_tables
+
+
+@handle_common_aws_errors
+def get_dynamo_tables(client: Any) -> List[str]:  # type: ignore
+    """
+    Returns a list of table names response given a 'rds' boto3 client.
+    """
+    list_tables = client.list_tables()
+    return list_tables["TableNames"]
+
+
+@handle_common_aws_errors
 def get_tagging_resources(client: Any) -> List[str]:  # type: ignore
     """
     Returns a list of resource arns given a 'resourcegroupstaggingapi' boto3 client.
@@ -94,6 +122,39 @@ def get_tagging_resources(client: Any) -> List[str]:  # type: ignore
         for resource in page["ResourceTagMappingList"]
     ]
     return found_arns
+
+
+def create_dynamodb_dataset(
+    described_dynamo_tables: List[Dict], organization_key: str = "default_organization"
+) -> Dataset:
+    """
+    Given "describe_table" response(s), build a dataset object to represent
+    each dynamodb table, returning a fides dataset.
+    """
+    # TODO: add something for improved dataset uniqueness, i.e. region/account
+    dataset_name = "DynamoDB"
+    unique_dataset_name = generate_unique_fides_key(dataset_name, "", "")
+    dataset = Dataset(
+        name=dataset_name,
+        fides_key=unique_dataset_name,
+        organization_fides_key=organization_key,
+        collections=[
+            DatasetCollection(
+                name=collection["TableName"],
+                fields=[
+                    DatasetField(
+                        name=field["AttributeName"],
+                        description=f"Fides Generated Description for Column: {field['AttributeName']}",
+                        data_categories=[],
+                        # TODO: include a fieldsmeta if the field is a primary key or secondary sort (and test for both)
+                    )
+                    for field in collection["AttributeDefinitions"]
+                ],
+            )
+            for collection in described_dynamo_tables
+        ],
+    )
+    return dataset
 
 
 def create_redshift_systems(
@@ -224,6 +285,7 @@ def create_tagging_dynamodb_system(
             fidesctl_meta=SystemMetadata(
                 resource_id=arn,
             ),
+            privacy_declarations=[],
         )
     return system
 
@@ -249,5 +311,6 @@ def create_tagging_s3_system(
         fidesctl_meta=SystemMetadata(
             resource_id=arn,
         ),
+        privacy_declarations=[],
     )
     return system

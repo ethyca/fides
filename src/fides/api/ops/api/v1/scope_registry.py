@@ -41,6 +41,7 @@ MESSAGING = "messaging"
 ORGANIZATION = "organization"
 PASSWORD_RESET = "password-reset"
 POLICY = "policy"
+PRIVACY_EXPERIENCE = "privacy-experience"
 PRIVACY_NOTICE = "privacy-notice"
 PRIVACY_PREFERENCE_HISTORY = "privacy-preference-history"
 PRIVACY_REQUEST = "privacy-request"
@@ -155,6 +156,10 @@ ORGANIZATION_DELETE = f"{ORGANIZATION}:{DELETE}"
 POLICY_CREATE_OR_UPDATE = f"{POLICY}:{CREATE_OR_UPDATE}"
 POLICY_DELETE = f"{POLICY}:{DELETE}"
 POLICY_READ = f"{POLICY}:{READ}"
+
+PRIVACY_EXPERIENCE_CREATE = f"{PRIVACY_EXPERIENCE}:{CREATE}"
+PRIVACY_EXPERIENCE_UPDATE = f"{PRIVACY_EXPERIENCE}:{UPDATE}"
+PRIVACY_EXPERIENCE_READ = f"{PRIVACY_EXPERIENCE}:{READ}"
 
 PRIVACY_NOTICE_CREATE = f"{PRIVACY_NOTICE}:{CREATE}"
 PRIVACY_NOTICE_UPDATE = f"{PRIVACY_NOTICE}:{UPDATE}"
@@ -294,6 +299,9 @@ SCOPE_DOCS = {
     POLICY_CREATE_OR_UPDATE: "Create or modify policies",
     POLICY_DELETE: "Remove policies",
     POLICY_READ: "View policies",
+    PRIVACY_EXPERIENCE_CREATE: "Create privacy experiences",
+    PRIVACY_EXPERIENCE_UPDATE: "Update privacy experiences",
+    PRIVACY_EXPERIENCE_READ: "View privacy experiences",
     PRIVACY_NOTICE_CREATE: "Create privacy notices",
     PRIVACY_NOTICE_UPDATE: "Update privacy notices",
     PRIVACY_NOTICE_READ: "View privacy notices",

@@ -39,13 +39,13 @@ from fides.api.ops.api.v1.scope_registry import (
 )
 from fides.api.ops.api.v1.urn_registry import SYSTEM_CONNECTIONS, V1_URL_PREFIX
 from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.oauth.utils import verify_oauth_client, verify_oauth_client_prod
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfigurationWithSecrets,
 )
 from fides.api.ops.util.connection_util import patch_connection_configs
-from fides.api.ops.util.oauth_util import verify_oauth_client, verify_oauth_client_prod
 from fides.api.ops.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
@@ -67,15 +67,15 @@ def get_system(db: Session, fides_key: str) -> System:
     return system
 
 
-async def validate_privacy_declarations_data_uses(
-    db: AsyncSession, system: SystemSchema
-) -> None:
+async def validate_privacy_declarations(db: AsyncSession, system: SystemSchema) -> None:
     """
-    Ensure that the `PrivacyDeclaration`s on the provided `System` resource reference
-    valid `DataUse` records.
+    Ensure that the `PrivacyDeclaration`s on the provided `System` resource are valid:
+     - that they reference valid `DataUse` records
+     - that there are not "duplicate" `PrivacyDeclaration`s as defined by their "logical ID"
 
     If not, a `400` is raised
     """
+    logical_ids = set()
     for privacy_declaration in system.privacy_declarations:
         try:
             await get_resource(
@@ -88,6 +88,14 @@ async def validate_privacy_declarations_data_uses(
                 status_code=HTTP_400_BAD_REQUEST,
                 detail=f"Invalid privacy declaration referencing unknown DataUse {privacy_declaration.data_use}",
             )
+        logical_id = privacy_declaration_logical_id(privacy_declaration)
+        if logical_id in logical_ids:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=f"Duplicate privacy declarations specified with data use {privacy_declaration.data_use}",
+            )
+
+        logical_ids.add(logical_id)
 
 
 @system_connections_router.get(
@@ -162,7 +170,7 @@ async def update(
     Update a System by the fides_key extracted from the request body.  Defined outside of the crud routes
     to add additional "system manager" permission checks.
     """
-    await validate_privacy_declarations_data_uses(db, resource)
+    await validate_privacy_declarations(db, resource)
     return await update_system(resource, db)
 
 
@@ -174,7 +182,7 @@ async def upsert_system(
     updated = 0
     # first pass to validate privacy declarations before proceeding
     for resource in resources:
-        await validate_privacy_declarations_data_uses(db, resource)
+        await validate_privacy_declarations(db, resource)
 
     for resource in resources:
         try:
@@ -219,21 +227,48 @@ async def upsert(
     }
 
 
+def privacy_declaration_logical_id(
+    privacy_declaration: PrivacyDeclaration,
+) -> str:
+    """
+    Helper to standardize a logical 'id' for privacy declarations.
+    As of now, this is based on the `data_use` and the `name` of the declaration, if provided.
+    """
+    return f"{privacy_declaration.data_use}:{privacy_declaration.name or ''}"
+
+
 async def upsert_privacy_declarations(
     db: AsyncSession, resource: SystemSchema, system: System
 ) -> None:
     """Helper to handle the specific upsert logic for privacy declarations"""
 
     async with db.begin():
-        # clear out any existing privacy declarations on the System
-        for existing_declaration in system.privacy_declarations:
-            await db.delete(existing_declaration)
+        # map existing declarations by their logical identifier
+        existing_declarations: Dict[str, PrivacyDeclaration] = {
+            privacy_declaration_logical_id(existing_declaration): existing_declaration
+            for existing_declaration in system.privacy_declarations
+        }
 
-        # iterate through declarations specified on the request and create them
+        # iterate through declarations specified on the request and upsert
+        # looking for "matching" existing declarations based on data_use and name
         for privacy_declaration in resource.privacy_declarations:
+            # prepare our 'payload' for either create or update
             data = privacy_declaration.dict()
-            data["system_id"] = system.id  # add FK back to system
-            PrivacyDeclaration.create(db, data=data)
+            data["system_id"] = system.id  # include FK back to system
+
+            # if we find matching declaration, remove it from our map
+            if existing_declaration := existing_declarations.pop(
+                privacy_declaration_logical_id(privacy_declaration), None
+            ):
+                # and update existing declaration *in place*
+                existing_declaration.update(db, data=data)
+            else:
+                # otherwise, create a new declaration record
+                PrivacyDeclaration.create(db, data=data)
+
+        # delete any existing privacy declarations that have not been "matched" in the request
+        for existing_declarations in existing_declarations.values():
+            await db.delete(existing_declarations)
 
 
 async def update_system(resource: SystemSchema, db: AsyncSession) -> Dict:
@@ -322,7 +357,7 @@ async def create(
     Override `System` create/POST to handle `.privacy_declarations` defined inline,
     for backward compatibility and ease of use for API users.
     """
-    await validate_privacy_declarations_data_uses(db, resource)
+    await validate_privacy_declarations(db, resource)
     # copy out the declarations to be stored separately
     # as they will be processed AFTER the system is added
     privacy_declarations = resource.privacy_declarations

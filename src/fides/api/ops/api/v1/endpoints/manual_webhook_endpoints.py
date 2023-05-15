@@ -28,13 +28,13 @@ from fides.api.ops.api.v1.urn_registry import (
 )
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.ops.oauth.utils import verify_oauth_client
 from fides.api.ops.schemas.manual_webhook_schemas import (
     AccessManualWebhookResponse,
     AccessManualWebhooks,
 )
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
-from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Manual Webhooks"], prefix=V1_URL_PREFIX)
 

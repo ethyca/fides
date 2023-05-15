@@ -8,6 +8,8 @@ import {
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
 
+import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+
 import {
   DataProps,
   PrivacyDeclarationFormComponents,
@@ -21,26 +23,31 @@ interface AccordionProps extends DataProps {
   onEdit: (
     oldDeclaration: PrivacyDeclarationWithId,
     newDeclaration: PrivacyDeclarationWithId
-  ) => Promise<boolean>;
-  onDelete: (declaration: PrivacyDeclarationWithId) => Promise<boolean>;
+  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
+  onDelete: (
+    declaration: PrivacyDeclarationWithId
+  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
+  includeCustomFields?: boolean;
 }
 
 const PrivacyDeclarationAccordionItem = ({
   privacyDeclaration,
   onEdit,
   onDelete,
+  includeCustomFields,
   ...dataProps
 }: { privacyDeclaration: PrivacyDeclarationWithId } & Omit<
   AccordionProps,
   "privacyDeclarations"
 >) => {
-  const handleEdit = (newValues: PrivacyDeclarationWithId) =>
-    onEdit(privacyDeclaration, newValues);
+  const handleEdit = (values: PrivacyDeclarationWithId) =>
+    onEdit(privacyDeclaration, values);
 
   const { initialValues, renderHeader, handleSubmit } =
     usePrivacyDeclarationForm({
       initialValues: privacyDeclaration,
       onSubmit: handleEdit,
+      privacyDeclarationId: privacyDeclaration.id,
       ...dataProps,
     });
 
@@ -55,6 +62,10 @@ const PrivacyDeclarationAccordionItem = ({
         >
           {({ dirty }) => (
             <Form data-testid={`${privacyDeclaration.data_use}-form`}>
+              <FormGuard
+                id={`${privacyDeclaration.id}-form`}
+                name={privacyDeclaration.id}
+              />
               <AccordionButton
                 py={4}
                 borderBottomWidth={isExpanded ? "0px" : "1px"}
@@ -71,7 +82,9 @@ const PrivacyDeclarationAccordionItem = ({
               <AccordionPanel backgroundColor="gray.50" pt={0}>
                 <Stack spacing={4}>
                   <PrivacyDeclarationFormComponents
+                    privacyDeclarationId={privacyDeclaration.id}
                     onDelete={onDelete}
+                    includeCustomFields={includeCustomFields}
                     {...dataProps}
                   />
                 </Stack>

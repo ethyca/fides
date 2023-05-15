@@ -20,36 +20,31 @@ from toml import load as load_toml
 
 from fides.api.ctl.database.session import sync_engine
 from fides.api.ctl.sql_models import DataUse, PrivacyDeclaration
-
-# from fides.api.ctl.database.session import sync_engine, sync_session
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.api.ops.models.privacy_request import generate_request_callback_jwe
-from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
-
-# from fides.api.ops.tasks.scheduled.scheduler import scheduler
-from fides.api.ops.util.cache import get_cache
-
-# from fides.core import api
-from fides.core.config import get_config
-from fides.core.config.config_proxy import ConfigProxy
-from fides.lib.cryptography.schemas.jwt import (
+from fides.api.ops.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
-from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.roles import (
+from fides.api.ops.models.privacy_request import generate_request_callback_jwe
+from fides.api.ops.oauth.jwt import generate_jwe
+from fides.api.ops.oauth.roles import (
     APPROVER,
     CONTRIBUTOR,
     OWNER,
     VIEWER,
     VIEWER_AND_APPROVER,
 )
+from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
+from fides.api.ops.util.cache import get_cache
+from fides.core.config import get_config
+from fides.core.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
+from tests.fixtures.dynamodb_fixtures import *
 from tests.fixtures.email_fixtures import *
 from tests.fixtures.fides_connector_example_fixtures import *
 from tests.fixtures.integration_fixtures import *
@@ -956,6 +951,31 @@ def system(db: Session) -> System:
             "system_id": system.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "advertising",
+            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+            "data_subjects": ["customer"],
+            "dataset_references": None,
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
+    db.refresh(system)
+    return system
+
+
+@pytest.fixture(scope="function")
+def system_multiple_decs(db: Session, system: System) -> System:
+    """
+    Add an additional PrivacyDeclaration onto the base System to test scenarios with
+    multiple PrivacyDeclarations on a given system
+    """
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for third party sharing",
+            "system_id": system.id,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "third_party_sharing",
             "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -13,7 +15,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 def update_messaging_config(
     db: Session, key: FidesKey, config: MessagingConfigRequest
 ) -> MessagingConfigResponse:
-    existing_config_with_key: MessagingConfig = MessagingConfig.get_by(
+    existing_config_with_key: Optional[MessagingConfig] = MessagingConfig.get_by(
         db=db, field="key", value=key
     )
     if not existing_config_with_key:
@@ -47,7 +49,7 @@ def create_or_update_messaging_config(
 
 def delete_messaging_config(db: Session, key: FidesKey) -> None:
     logger.info("Finding messaging config with key '{}'", key)
-    messaging_config: MessagingConfig = MessagingConfig.get_by(
+    messaging_config: Optional[MessagingConfig] = MessagingConfig.get_by(
         db, field="key", value=key
     )
     if not messaging_config:
@@ -59,7 +61,9 @@ def delete_messaging_config(db: Session, key: FidesKey) -> None:
 
 
 def get_messaging_config_by_key(db: Session, key: FidesKey) -> MessagingConfigResponse:
-    config = MessagingConfig.get_by(db=db, field="key", value=key)
+    config: Optional[MessagingConfig] = MessagingConfig.get_by(
+        db=db, field="key", value=key
+    )
     if not config:
         raise MessagingConfigNotFoundException(
             f"No messaging config found with key {key}"
@@ -67,6 +71,6 @@ def get_messaging_config_by_key(db: Session, key: FidesKey) -> MessagingConfigRe
     return MessagingConfigResponse(
         name=config.name,
         key=config.key,
-        service_type=config.service_type.value,
+        service_type=config.service_type.value,  # type: ignore[attr-defined]
         details=config.details,
     )

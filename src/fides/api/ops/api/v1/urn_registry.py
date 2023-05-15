@@ -2,6 +2,9 @@
 V1_URL_PREFIX = "/api/v1"
 YAML = "/yml"
 
+# User Permission URLs
+USER_PERMISSIONS = "/user/{user_id}/permission"
+
 # Config URLs
 CONFIG = "/config"
 
@@ -72,6 +75,10 @@ MESSAGING_TEST = "/messaging/config/test"
 # Policy URLs
 POLICY_LIST = "/dsr/policy"
 POLICY_DETAIL = "/dsr/policy/{policy_key}"
+
+# Privacy Experience URLs
+PRIVACY_EXPERIENCE = "/privacy-experience"
+PRIVACY_EXPERIENCE_DETAIL = "/privacy-experience/{privacy_experience_id}"
 
 # Privacy Notice URLs
 PRIVACY_NOTICE = "/privacy-notice"
@@ -164,9 +171,6 @@ USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
 USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"
 SYSTEM_MANAGER = "/user/{user_id}/system-manager"
 SYSTEM_MANAGER_DETAIL = "/user/{user_id}/system-manager/{system_key}"
-
-# User Permission URLs
-USER_PERMISSIONS = "/user/{user_id}/permission"
 
 # Login URLs
 LOGIN = "/login"

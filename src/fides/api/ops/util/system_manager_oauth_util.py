@@ -10,17 +10,17 @@ from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.api.deps import get_db
-from fides.api.ops.util.oauth_util import (
+from fides.api.ops.common_exceptions import AuthorizationError
+from fides.api.ops.cryptography.schemas.jwt import JWE_PAYLOAD_SYSTEMS
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.oauth.system_manager import SYSTEM_MANAGER_SCOPES
+from fides.api.ops.oauth.utils import (
     copy_func,
     extract_token_and_load_client,
     has_permissions,
     has_scope_subset,
     oauth2_scheme,
 )
-from fides.lib.cryptography.schemas.jwt import JWE_PAYLOAD_SYSTEMS
-from fides.lib.exceptions import AuthorizationError
-from fides.lib.models.client import ClientDetail
-from fides.lib.oauth.system_manager import SYSTEM_MANAGER_SCOPES
 
 
 class SystemAuthContainer:
