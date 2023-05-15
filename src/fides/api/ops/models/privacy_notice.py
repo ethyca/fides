@@ -17,6 +17,12 @@ from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.db.base_class import Base, FidesBase
 
 
+class UserConsentPreference(Enum):
+    opt_in = "opt_in"  # The user wants to opt in to the notice
+    opt_out = "opt_out"  # The user wants to opt out of the notice
+    acknowledge = "acknowledge"  # The user has acknowledged this notice
+
+
 class PrivacyNoticeRegion(Enum):
     """
     Enum is not formalized in the DB because it is subject to frequent change
@@ -165,6 +171,11 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         "PrivacyNoticeHistory", backref="privacy_notice", lazy="dynamic"
     )
 
+    # Attribute that can be temporarily cached as the result of "get_related_privacy_notices"
+    # for a given user, for surfacing CurrentPrivacyPreferences for the user.
+    current_preference = None
+    outdated_preference = None
+
     @hybridproperty
     def privacy_notice_history_id(self) -> Optional[str]:
         """Convenience property that returns the historical privacy notice history id for the current version.
@@ -176,6 +187,24 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             version=self.version
         ).first()
         return history.id if history else None
+
+    @hybridproperty
+    def default_preference(self) -> UserConsentPreference:
+        """Returns the user's default consent preference given the consent
+        mechanism of this notice, or "what is granted to the user"
+
+        For example, if a notice has an opt in consent mechanism, this means
+        that they should be granted the opportunity to opt in, but by
+        default, they *should be opted out*
+        """
+        if self.consent_mechanism == ConsentMechanism.opt_in:
+            return UserConsentPreference.opt_out  # Intentional
+        if self.consent_mechanism == ConsentMechanism.opt_out:
+            return UserConsentPreference.opt_in  # Intentional
+        if self.consent_mechanism == ConsentMechanism.notice_only:
+            return UserConsentPreference.acknowledge
+
+        raise Exception("Invalid notice consent mechanism.")
 
     @classmethod
     def create(

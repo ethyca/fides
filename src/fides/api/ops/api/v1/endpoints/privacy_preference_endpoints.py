@@ -336,7 +336,7 @@ def verify_address(request: Request) -> None:
         ):
             raise HTTPException(
                 status_code=HTTP_403_FORBIDDEN,
-                detail="Can't save privacy preferences from non-approved addresses",
+                detail="Can't interact with privacy preferences from non-approved addresses",
             )
 
 

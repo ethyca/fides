@@ -97,6 +97,10 @@ class TestGetPrivacyExperiences:
         )
         assert len(resp["privacy_notices"]) == 1
         assert resp["privacy_notices"][0]["id"] == privacy_notice.id
+        assert resp["privacy_notices"][0]["consent_mechanism"] == "opt_in"
+        assert resp["privacy_notices"][0]["default_preference"] == "opt_out"
+        assert resp["privacy_notices"][0]["current_preference"] is None
+        assert resp["privacy_notices"][0]["outdated_preference"] is None
 
     def test_get_privacy_experiences_show_disabled_filter(
         self,
@@ -487,6 +491,37 @@ class TestGetPrivacyExperiences:
         assert data["total"] == 1
         assert len(data["items"]) == 1
         assert data["items"][0]["id"] == privacy_experience_privacy_center_link.id
+
+    def test_get_privacy_experiences_fides_user_device_id_filter(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        privacy_notice_us_ca_provide,
+        fides_user_provided_identity,
+        privacy_preference_history_us_ca_provide_for_fides_user,
+        privacy_experience_overlay_banner,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        resp = api_client.get(
+            url + "?fides_user_device_id=FGHIJ_TEST_FIDES",
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert "items" in data
+
+        # assert one experience in the response
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
+        resp = data["items"][0]
+
+        # Assert current preference is displayed for fides user device id
+        assert resp["privacy_notices"][0]["consent_mechanism"] == "opt_in"
+        assert resp["privacy_notices"][0]["default_preference"] == "opt_out"
+        assert resp["privacy_notices"][0]["current_preference"] == "opt_in"
+        assert resp["privacy_notices"][0]["outdated_preference"] is None
 
 
 class TestPrivacyExperienceDetail:

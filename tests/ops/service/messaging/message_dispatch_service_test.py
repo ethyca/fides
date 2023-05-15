@@ -8,8 +8,11 @@ from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.messaging import MessagingConfig
-from fides.api.ops.models.privacy_notice import ConsentMechanism, EnforcementLevel
-from fides.api.ops.models.privacy_preference import UserConsentPreference
+from fides.api.ops.models.privacy_notice import (
+    ConsentMechanism,
+    EnforcementLevel,
+    UserConsentPreference,
+)
 from fides.api.ops.schemas.messaging.messaging import (
     ConsentEmailFulfillmentBodyParams,
     ConsentPreferencesByUser,
