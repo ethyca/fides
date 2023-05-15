@@ -253,18 +253,18 @@ async def log_startup() -> None:
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
+
+    # Set this to prevent secrets getting leaked in stack traces
+    sys.tracebacklimit = 0
+
     await log_startup()
 
     if not CONFIG.database.sync_database_uri:
         raise FidesError("No database uri provided")
 
-    try:
-        await configure_db(
-            CONFIG.database.sync_database_uri, samples=CONFIG.database.load_samples
-        )
-    except Exception as caught_exception:
-        logger.error("EXCEPTION: {}".format(caught_exception.args))
-        raise DatabaseConfigurationError("Failed to configure database!")
+    await configure_db(
+        CONFIG.database.sync_database_uri, samples=CONFIG.database.load_samples
+    )
 
     try:
         create_or_update_parent_user()
