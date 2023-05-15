@@ -2378,8 +2378,9 @@ def test_create_and_process_empty_access_request_dynamodb(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     # Here the results should be empty as no data will be located for that identity
-    assert pr.get_results() == {}
+    results = pr.get_results()
     pr.delete(db=db)
+    assert results == {}
 
 
 @pytest.mark.integration_external
