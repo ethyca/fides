@@ -44,7 +44,6 @@ from fides.api.ops.api.deps import get_api_session
 from fides.api.ops.api.v1.api import api_router
 from fides.api.ops.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.ops.common_exceptions import (
-    DatabaseConfigurationError,
     FunctionalityNotConfigured,
     RedisConnectionError,
 )
