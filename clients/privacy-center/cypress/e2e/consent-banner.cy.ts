@@ -61,7 +61,7 @@ describe("Consent banner", () => {
     geolocation: {},
     options: {
       debug: true,
-      isDisabled: false,
+      isOverlayDisabled: false,
       isGeolocationEnabled: false,
       geolocationApiUrl: "",
       privacyCenterUrl: "http://localhost:3000",
@@ -72,7 +72,7 @@ describe("Consent banner", () => {
     beforeEach(() => {
       // todo- need a better test pattern for overriding default config
       const newTestOptions = testBannerOptions;
-      newTestOptions.options.isDisabled = true;
+      newTestOptions.options.isOverlayDisabled = true;
       cy.visitConsentDemo(newTestOptions);
     });
 
@@ -90,7 +90,7 @@ describe("Consent banner", () => {
     describe("when banner is not disabled", () => {
       beforeEach(() => {
         const newTestOptions = testBannerOptions;
-        newTestOptions.options.isDisabled = false;
+        newTestOptions.options.isOverlayDisabled = false;
         newTestOptions.options.isGeolocationEnabled = false;
         cy.visitConsentDemo(newTestOptions);
       });
@@ -159,7 +159,17 @@ describe("Consent banner", () => {
         });
       });
 
-      it("should navigate to Privacy Center to manage consent options", () => {
+      it("should open modal when experience component = OVERLAY", () => {
+        cy.contains("button", "Manage preferences").click();
+        cy.getByTestId("consent-modal");
+      });
+
+      it("should navigate to Privacy Center when experience component = PRIVACY_CENTER", () => {
+        const newTestOptions = testBannerOptions;
+        newTestOptions.experience!.component =
+          ExperienceComponent.PRIVACY_CENTER;
+        newTestOptions.options.isGeolocationEnabled = false;
+        cy.visitConsentDemo(newTestOptions);
         cy.contains("button", "Manage preferences")
           .should("be.visible")
           .click();
