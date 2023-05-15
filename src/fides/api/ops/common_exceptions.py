@@ -213,3 +213,7 @@ class IdentityVerificationException(FidesopsException):
 
 class NoSuchConnectionTypeSecretSchemaError(Exception):
     """Exception for when a connection type secret schema is not found."""
+
+
+class DatabaseConfigurationError(Exception):
+    """Exception for when database configuration fails."""

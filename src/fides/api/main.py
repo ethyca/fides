@@ -44,6 +44,7 @@ from fides.api.ops.api.deps import get_api_session
 from fides.api.ops.api.v1.api import api_router
 from fides.api.ops.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.ops.common_exceptions import (
+    DatabaseConfigurationError,
     FunctionalityNotConfigured,
     RedisConnectionError,
 )
@@ -254,12 +255,16 @@ async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
     await log_startup()
 
-    if CONFIG.database.sync_database_uri:
+    if not CONFIG.database.sync_database_uri:
+        raise FidesError("No database uri provided")
+
+    try:
         await configure_db(
             CONFIG.database.sync_database_uri, samples=CONFIG.database.load_samples
         )
-    else:
-        raise FidesError("No database uri provided")
+    except Exception as caught_exception:
+        logger.error("EXCEPTION: {}".format(caught_exception.args))
+        raise DatabaseConfigurationError("Failed to configure database!")
 
     try:
         create_or_update_parent_user()
