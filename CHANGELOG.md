@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.13.0...main)
 
+### Changed
+
+- Remove logging within the Celery creation function [#3303](https://github.com/ethyca/fides/pull/3303)
+
 ### Added 
 
 - Add an automated test to check for `/fides-consent.js` backwards compatibility [#3289](https://github.com/ethyca/fides/pull/3289)
