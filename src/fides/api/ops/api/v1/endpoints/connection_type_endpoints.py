@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException, Query
 from fastapi.params import Security
 from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
@@ -35,6 +35,10 @@ router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)
 )
 def get_all_connection_types(
     *,
+    page: int = Query(1, ge=1, description="Page number"),
+    size: int = Query(
+        100, ge=1, le=100, description="Page size"
+    ),  # set a larger default page size for this endpoint
     search: Optional[str] = None,
     system_type: Optional[SystemType] = None,
     consent: Optional[bool] = None,
@@ -61,8 +65,7 @@ def get_all_connection_types(
         if consent:
             action_types.add(ActionType.consent)
 
-    # set a larger default page size for this endpoint
-    params = Params(page=1, size=100)
+    params = Params(page=page, size=size)
 
     return paginate(
         get_connection_types(search, system_type, action_types),
