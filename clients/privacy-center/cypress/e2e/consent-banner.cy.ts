@@ -107,7 +107,7 @@ describe("Consent banner", () => {
           ).within(() => {
             cy.get(
               "button#fides-consent-banner-button-tertiary.fides-consent-banner-button.fides-consent-banner-button-tertiary"
-            ).contains("Manage Preferences");
+            ).contains("Manage preferences");
             cy.get(
               "button#fides-consent-banner-button-secondary.fides-consent-banner-button.fides-consent-banner-button-secondary"
             ).contains("Reject Test");
@@ -160,7 +160,7 @@ describe("Consent banner", () => {
       });
 
       it("should navigate to Privacy Center to manage consent options", () => {
-        cy.contains("button", "Manage Preferences")
+        cy.contains("button", "Manage preferences")
           .should("be.visible")
           .click();
         cy.url().should("equal", "http://localhost:3000/");
