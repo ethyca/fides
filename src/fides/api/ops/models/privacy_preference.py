@@ -19,6 +19,10 @@ from fides.api.ops.common_exceptions import (
     PrivacyNoticeHistoryNotFound,
 )
 from fides.api.ops.db.base_class import Base, JSONTypeOverride
+from fides.api.ops.models.privacy_experience import (
+    PrivacyExperienceConfigHistory,
+    PrivacyExperienceHistory,
+)
 from fides.api.ops.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeHistory,
@@ -49,6 +53,7 @@ class PrivacyPreferenceHistory(Base):
     affected_system_status = Column(
         MutableDict.as_mutable(JSONB), server_default="{}", default=dict
     )
+    anonymized_ip_address = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     # Encrypted email, for reporting
     email = Column(
@@ -89,6 +94,19 @@ class PrivacyPreferenceHistory(Base):
     )
     # Whether the user wants to opt in, opt out, or has acknowledged the notice
     preference = Column(EnumColumn(UserConsentPreference), nullable=False, index=True)
+    # The specific version of the experience config the user was shown to present the relevant notice
+    # Contains the version, language, button labels, description, etc.
+    privacy_experience_config_history_id = Column(
+        String,
+        ForeignKey(PrivacyExperienceConfigHistory.id),
+        nullable=True,
+        index=True,
+    )
+    # The specific version of experience under which the user was presented the relevant notice
+    # Minimal information stored here, mostly the region, version, component type, and how it was delivered.
+    privacy_experience_history_id = Column(
+        String, ForeignKey(PrivacyExperienceHistory.id), nullable=True, index=True
+    )
     # The specific historical record the user consented to
     privacy_notice_history_id = Column(
         String, ForeignKey(PrivacyNoticeHistory.id), nullable=False, index=True
@@ -103,7 +121,7 @@ class PrivacyPreferenceHistory(Base):
     # Systems whose data use match.  This doesn't necessarily mean we propagate. Some may be intentionally skipped later.
     relevant_systems = Column(MutableList.as_mutable(ARRAY(String)))
     # Location where we received the request
-    request_origin = Column(EnumColumn(RequestOrigin))
+    request_origin = Column(EnumColumn(RequestOrigin))  # privacy center, overlay, API
     # Relevant identities are added to the report during request propagation
     secondary_user_ids = Column(
         MutableDict.as_mutable(
@@ -250,10 +268,12 @@ class PrivacyPreferenceHistory(Base):
                 db
             )
 
-        if existing_current_preference_on_provided_identity:
-            existing_current_preference_on_provided_identity.update(
-                db=db, data=current_privacy_preference_data
-            )
+        current_preference: Optional[CurrentPrivacyPreference] = (
+            existing_current_preference_on_provided_identity
+            or existing_current_preference_on_fides_user_device_provided_identity
+        )
+        if current_preference:
+            current_preference.update(db=db, data=current_privacy_preference_data)
         else:
             CurrentPrivacyPreference.create(
                 db=db, data=current_privacy_preference_data, check_name=False

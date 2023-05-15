@@ -35,6 +35,10 @@ from fides.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.ops.models.fides_user import FidesUser
+from fides.api.ops.models.privacy_experience import (
+    PrivacyExperienceConfigHistory,
+    PrivacyExperienceHistory,
+)
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
 from fides.api.ops.models.privacy_preference import (
     CurrentPrivacyPreference,
@@ -47,11 +51,15 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.ops.oauth.utils import verify_oauth_client
+from fides.api.ops.schemas.masking.masking_configuration import (
+    AesEncryptionMaskingConfiguration,
+)
 from fides.api.ops.schemas.privacy_preference import (
     ConsentReportingSchema,
     CurrentPrivacyPreferenceReportingSchema,
     CurrentPrivacyPreferenceSchema,
-    PrivacyPreferencesCreateWithCode,
+    PrivacyPreferencesCreate,
+    PrivacyPreferencesRequest,
 )
 from fides.api.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -59,6 +67,9 @@ from fides.api.ops.schemas.privacy_request import (
     VerificationCode,
 )
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
+    AesEncryptionMaskingStrategy,
+)
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
@@ -115,7 +126,7 @@ def consent_request_verify_for_privacy_preferences(
 
 
 def verify_privacy_notice_and_historical_records(
-    db: Session, data: PrivacyPreferencesCreateWithCode
+    db: Session, data: PrivacyPreferencesRequest
 ) -> None:
     """
     Used when saving privacy preferences: runs a check that makes sure all the privacy notice histories referenced by
@@ -164,6 +175,66 @@ def extract_identity_from_provided_identity(
     return value, hashed_value
 
 
+def mask_ip_address(ip_address: Optional[str]) -> Optional[str]:
+    """Mask IP Address to be saved with the privacy preference"""
+    if not ip_address:
+        return None
+
+    masked: Optional[List[Optional[str]]] = AesEncryptionMaskingStrategy(
+        configuration=AesEncryptionMaskingConfiguration()
+    ).mask(values=[ip_address], request_id=None)
+
+    if masked is not None:
+        return masked[0]
+    return masked
+
+
+def supplement_privacy_preferences_with_user_and_experience_details(
+    db: Session, request: Request, data: PrivacyPreferencesRequest
+) -> PrivacyPreferencesCreate:
+    """
+    Pull additional user information from request headers to record for consent reporting purposes
+
+    Additionally validates experience details exist if provided here.
+    """
+    privacy_experience_history: Optional[PrivacyExperienceHistory] = None
+
+    if data.privacy_experience_history_id:
+        privacy_experience_history = PrivacyExperienceHistory.get(
+            db=db, object_id=data.privacy_experience_history_id
+        )
+        if not privacy_experience_history:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail="Invalid Privacy Experience History Id attached to preferences",
+            )
+
+    if data.experience_config_history_id:
+        privacy_experience_config_history = PrivacyExperienceConfigHistory.get(
+            db=db, object_id=data.experience_config_history_id
+        )
+        if not privacy_experience_config_history:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail="Invalid Experience Config History Id attached to preferences",
+            )
+
+    request_headers = request.headers
+    ip_address: Optional[str] = request.client.host if request.client else None
+    user_agent: Optional[str] = request_headers.get("User-Agent")
+    url_recorded: Optional[str] = request_headers.get("Referer")
+
+    return PrivacyPreferencesCreate(
+        **data.dict(),
+        anonymized_ip_address=mask_ip_address(ip_address),
+        request_origin=privacy_experience_history.component.value  # type: ignore[attr-defined]
+        if privacy_experience_history
+        else None,
+        url_recorded=url_recorded,
+        user_agent=user_agent,
+    )
+
+
 @router.patch(
     CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
     status_code=HTTP_200_OK,
@@ -173,7 +244,8 @@ def save_privacy_preferences_with_verified_identity(
     *,
     consent_request_id: str,
     db: Session = Depends(get_db),
-    data: PrivacyPreferencesCreateWithCode,
+    data: PrivacyPreferencesRequest,
+    request: Request,
 ) -> List[CurrentPrivacyPreference]:
     """Saves privacy preferences in the privacy center.
 
@@ -217,7 +289,9 @@ def save_privacy_preferences_with_verified_identity(
         consent_request=consent_request,
         verified_provided_identity=provided_identity,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=data,
+        request_data=supplement_privacy_preferences_with_user_and_experience_details(
+            db, request, data
+        ),
     )
 
 
@@ -226,7 +300,7 @@ def _save_privacy_preferences_for_identities(
     consent_request: Optional[ConsentRequest],
     verified_provided_identity: Optional[ProvidedIdentity],
     fides_user_provided_identity: Optional[ProvidedIdentity],
-    request_data: PrivacyPreferencesCreateWithCode,
+    request_data: PrivacyPreferencesCreate,
 ) -> List[CurrentPrivacyPreference]:
     """
     Saves privacy preferences (both historical and current records) and creates a privacy request to propagate those
@@ -250,7 +324,10 @@ def _save_privacy_preferences_for_identities(
         historical_preference: PrivacyPreferenceHistory = PrivacyPreferenceHistory.create(
             db=db,
             data={
+                "anonymized_ip_address": request_data.anonymized_ip_address,
                 "email": email,
+                "privacy_experience_config_history_id": request_data.experience_config_history_id,
+                "privacy_experience_history_id": request_data.privacy_experience_history_id,
                 "fides_user_device": fides_user_device_id,
                 "fides_user_device_provided_identity_id": fides_user_provided_identity.id
                 if fides_user_provided_identity
@@ -325,7 +402,7 @@ def save_privacy_preferences(
     *,
     request: Request,
     db: Session = Depends(get_db),
-    data: PrivacyPreferencesCreateWithCode,
+    data: PrivacyPreferencesRequest,
 ) -> List[CurrentPrivacyPreference]:
     """Saves privacy preferences with respect to a fides user device id.
 
@@ -344,7 +421,9 @@ def save_privacy_preferences(
         consent_request=None,
         verified_provided_identity=None,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=data,
+        request_data=supplement_privacy_preferences_with_user_and_experience_details(
+            db, request, data
+        ),
     )
 
 
@@ -426,6 +505,12 @@ def get_historical_consent_report(
             ),
             PrivacyPreferenceHistory.url_recorded.label("url_recorded"),
             PrivacyPreferenceHistory.user_agent.label("user_agent"),
+            PrivacyPreferenceHistory.privacy_experience_history_id.label(
+                "privacy_experience_history_id"
+            ),
+            PrivacyPreferenceHistory.privacy_experience_config_history_id.label(
+                "privacy_experience_config_history_id"
+            ),
         )
         .outerjoin(
             PrivacyRequest,

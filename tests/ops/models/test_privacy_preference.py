@@ -469,3 +469,86 @@ class TestPrivacyPreferenceHistory:
         with pytest.raises(InvalidRequestError):
             # Can't refresh because this preference has been deleted, and consolidated with the other
             db.refresh(fides_user_device_current_preference)
+
+    def test_update_current_privacy_preferences_fides_id_only(
+        self, db, privacy_notice, fides_user_provided_identity
+    ):
+        """Assert that if we save privacy preferences for a fides user device id and current preferences
+        already exists, the current preference is updated correctly."
+        """
+
+        privacy_notice_history = privacy_notice.histories[0]
+        (
+            fides_user_device_id,
+            hashed_device_id,
+        ) = extract_identity_from_provided_identity(
+            fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
+        )
+
+        preference_history_record_for_device = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "email": None,
+                "fides_user_device": fides_user_device_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "hashed_email": None,
+                "hashed_fides_user_device": hashed_device_id,
+                "hashed_phone_number": None,
+                "phone_number": None,
+                "preference": "opt_out",
+                "privacy_notice_history_id": privacy_notice_history.id,
+                "provided_identity_id": None,
+                "request_origin": "privacy_center",
+                "secondary_user_ids": {"ga_client_id": "test"},
+                "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+                "user_geography": "us_ca",
+                "url_recorded": "example.com/privacy_center",
+            },
+            check_name=False,
+        )
+
+        # Assert a CurrentPrivacyPreference record was created when the PrivacyPreferenceHistory was created
+        fides_user_device_current_preference = (
+            preference_history_record_for_device.current_privacy_preference
+        )
+        assert (
+            fides_user_device_current_preference.preference
+            == UserConsentPreference.opt_out
+        )
+        created_at = fides_user_device_current_preference.created_at
+        updated_at = fides_user_device_current_preference.updated_at
+
+        # Save a preference but change the preference from opt out to opt in
+        new_preference_history_record_for_device = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "email": None,
+                "fides_user_device": fides_user_device_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "hashed_email": None,
+                "hashed_fides_user_device": hashed_device_id,
+                "hashed_phone_number": None,
+                "phone_number": None,
+                "preference": "opt_in",
+                "privacy_notice_history_id": privacy_notice_history.id,
+                "provided_identity_id": None,
+                "request_origin": "privacy_center",
+                "secondary_user_ids": {"ga_client_id": "test"},
+                "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+                "user_geography": "us_ca",
+                "url_recorded": "example.com/privacy_center",
+            },
+            check_name=False,
+        )
+
+        # Assert a new CurrentPrivacyPreference record was created when the PrivacyPreferenceHistory was created with email
+        db.refresh(fides_user_device_current_preference)
+        assert (
+            fides_user_device_current_preference.preference
+            == UserConsentPreference.opt_in
+        )
+        assert fides_user_device_current_preference.created_at == created_at
+        assert fides_user_device_current_preference.updated_at > updated_at
+
+        new_preference_history_record_for_device.delete(db)
+        preference_history_record_for_device.delete(db)

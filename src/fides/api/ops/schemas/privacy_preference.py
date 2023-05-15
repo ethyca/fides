@@ -27,7 +27,7 @@ class ConsentOptionCreate(FidesSchema):
     preference: UserConsentPreference
 
 
-class PrivacyPreferencesCreateWithCode(FidesSchema):
+class PrivacyPreferencesRequest(FidesSchema):
     """Schema for saving privacy preferences and accompanying user data
     including the verification code."""
 
@@ -35,10 +35,19 @@ class PrivacyPreferencesCreateWithCode(FidesSchema):
     code: Optional[SafeStr]
     preferences: conlist(ConsentOptionCreate, max_items=50)  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
+    experience_config_history_id: Optional[SafeStr]
+    privacy_experience_history_id: Optional[SafeStr]
+    user_geography: Optional[PrivacyNoticeRegion]
+
+
+class PrivacyPreferencesCreate(PrivacyPreferencesRequest):
+    """Schema for creating privacy preferences that is supplemented with information
+    from the request headers"""
+
+    anonymized_ip_address: Optional[str]
     request_origin: Optional[RequestOrigin]
     url_recorded: Optional[SafeStr]
     user_agent: Optional[SafeStr]
-    user_geography: Optional[PrivacyNoticeRegion]
 
 
 class MinimalPrivacyPreferenceHistorySchema(FidesSchema):
@@ -93,6 +102,12 @@ class ConsentReportingSchema(FidesSchema):
         title="URL of page where preference was recorded"
     )
     user_agent: Optional[str] = Field(title="User agent")
+    experience_config_history_id: Optional[str] = Field(
+        title="The historical config for the experience that the user was presented - contains the experience language"
+    )
+    privacy_experience_history_id: Optional[str] = Field(
+        title="The historical id of the experience that the user was presented - contains the experience type, region, and delivery mechanism"
+    )
 
 
 class CurrentPrivacyPreferenceSchema(FidesSchema):
