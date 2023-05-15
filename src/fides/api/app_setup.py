@@ -158,9 +158,9 @@ async def run_database_startup() -> None:
     except Exception as e:
         logger.error("Error creating parent user: {}", str(e))
         raise FidesError(f"Error creating parent user: {str(e)}")
-    logger.info("Loading config settings into database...")
 
     db = get_api_session()
+    logger.info("Loading config settings into database...")
     try:
         ApplicationConfig.update_config_set(db, CONFIG)
     except Exception as e:

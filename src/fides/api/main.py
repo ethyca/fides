@@ -194,11 +194,21 @@ def read_other_paths(request: Request) -> Response:
 
 @app.on_event("startup")
 async def setup_server() -> None:
-    "Run all of the required setup steps for the webserver."
+    """Run all of the required setup steps for the webserver.
+
+    **NOTE**: The order of operations here _is_ deliberate
+    and must be maintained.
+    """
 
     log_startup()
+
     await run_database_startup()
+
     check_redis()
+
+    if not scheduler.running:
+        scheduler.start()
+
     initiate_scheduled_batch_email_send()
 
     logger.debug("Sending startup analytics events...")
@@ -209,9 +219,6 @@ async def setup_server() -> None:
             event_created_at=datetime.now(tz=timezone.utc),
         )
     )
-
-    if not scheduler.running:
-        scheduler.start()
 
     logger.info(FIDES_ASCII_ART)
     logger.info(f"Fides startup complete! v{VERSION}")
