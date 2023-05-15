@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.12.2b2.post0.dev19"
+    "version": "2.12.2b2.post0.dev20"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -4711,6 +4711,33 @@
         "operationId": "get_all_connection_types_api_v1_connection_type_get",
         "parameters": [
           {
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "description": "Page number",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "description": "Page size",
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "description": "Page size",
+              "default": 100
+            },
+            "name": "size",
+            "in": "query"
+          },
+          {
             "required": false,
             "schema": {
               "title": "Search",
@@ -4752,29 +4779,6 @@
               "type": "boolean"
             },
             "name": "erasure",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Page",
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 1
-            },
-            "name": "page",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Size",
-              "maximum": 100.0,
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 50
-            },
-            "name": "size",
             "in": "query"
           }
         ],
