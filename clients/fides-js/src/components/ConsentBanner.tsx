@@ -25,7 +25,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onAcceptAll,
   onRejectAll,
   waitBeforeShow,
-  managePreferencesLabel,
+  managePreferencesLabel = "Manage preferences",
   onOpenModal,
 }) => {
   const [isShown, setIsShown] = useState(false);

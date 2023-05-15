@@ -1,4 +1,5 @@
 import { h } from "preact";
+import { useState } from "preact/hooks";
 import {
   ButtonType,
   ExperienceConfig,
@@ -20,42 +21,65 @@ const ConsentModal = ({
 }: {
   experience: ExperienceConfig;
   notices: PrivacyNotice[];
-}) => (
-  <div>
-    <div
-      data-testid="consent-modal"
-      id="fides-consent-modal"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div data-testid="modal-content">
-        <h1 data-testid="modal-header" className="modal-header">
-          {experience.component_title}
-        </h1>
-        <p data-testid="modal-description">
-          {experience.component_description}
-        </p>
-        <NoticeToggleTable notices={notices} />
-        <div className="modal-button-group">
-          <Button label="Save" buttonType={ButtonType.SECONDARY} />
-          <Button
-            label={experience.reject_button_label}
-            buttonType={ButtonType.PRIMARY}
+}) => {
+  // TODO: set initial state
+  const [enabledNoticeIds, setEnabledNoticeIds] = useState<
+    Array<PrivacyNotice["id"]>
+  >([]);
+
+  const handleSubmit = () => {
+    // TODO: implement fetch
+    const noticeMap = notices.map((notice) => ({
+      [notice.id]: enabledNoticeIds.includes(notice.id),
+    }));
+    console.log("submitting notice map", noticeMap);
+  };
+
+  return (
+    <div>
+      <div
+        data-testid="consent-modal"
+        id="fides-consent-modal"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div data-testid="modal-content">
+          <h1 data-testid="modal-header" className="modal-header">
+            {experience.component_title}
+          </h1>
+          <p data-testid="modal-description">
+            {experience.component_description}
+          </p>
+          <NoticeToggleTable
+            notices={notices}
+            enabledNoticeIds={enabledNoticeIds}
+            onChange={setEnabledNoticeIds}
           />
-          <Button
-            label={experience.confirmation_button_label}
-            buttonType={ButtonType.PRIMARY}
-          />
+          <div className="modal-button-group">
+            <Button
+              label="Save"
+              buttonType={ButtonType.SECONDARY}
+              onClick={handleSubmit}
+            />
+            <Button
+              label={experience.reject_button_label}
+              buttonType={ButtonType.PRIMARY}
+            />
+            <Button
+              label={experience.confirmation_button_label}
+              buttonType={ButtonType.PRIMARY}
+            />
+          </div>
         </div>
       </div>
+      <div
+        className="modal-overlay"
+        id="modal-overlay"
+        // TODO: is this safe a11y wise?
+        // onClick={onClose}
+      />
     </div>
-    <div
-      className="modal-overlay"
-      id="modal-overlay"
-      // TODO: is this safe a11y wise?
-      // onClick={onClose}
-    />
-  </div>
-);
+  );
+};
 
 export default ConsentModal;

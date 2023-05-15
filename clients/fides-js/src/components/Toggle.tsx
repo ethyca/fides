@@ -1,8 +1,27 @@
-import { h } from "preact";
+/** @jsx createElement */
+import { createElement } from "react";
 
-const Toggle = ({ name }: { name: string }) => (
+const Toggle = ({
+  name,
+  id,
+  checked,
+  onChange,
+}: {
+  name: string;
+  id: string;
+  checked: boolean;
+  onChange: (noticeId: string) => void;
+}) => (
   <label className="toggle" htmlFor={name}>
-    <input type="checkbox" name={name} className="toggle-input" />
+    <input
+      type="checkbox"
+      name={name}
+      className="toggle-input"
+      onChange={() => {
+        onChange(id);
+      }}
+      checked={checked}
+    />
     {/* Mark as `hidden` so it will fall back to a regular checkbox if CSS is not available */}
     <span className="toggle-display" hidden />
   </label>

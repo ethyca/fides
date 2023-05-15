@@ -27,8 +27,6 @@ const preactAliases = {
 export default [
   {
     input: `src/${name}.ts`,
-    // DEFER: Add aliases for typical react imports (see https://preactjs.com/guide/v10/getting-started/#aliasing-in-rollup)
-    // This will be needed if & when we want to leverage other packages written for the React ecosystem
     plugins: [
       alias(preactAliases),
       nodeResolve(),
