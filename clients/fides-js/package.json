@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "preact": "^10.13.2",
+    "react": "^17.0.2",
     "typescript-cookie": "^1.0.6",
     "uuid": "^9.0.0"
   },
