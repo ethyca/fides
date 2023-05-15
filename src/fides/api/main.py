@@ -254,8 +254,9 @@ async def log_startup() -> None:
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
 
-    # Set this to prevent secrets getting leaked in stack traces
-    sys.tracebacklimit = 0
+    # Set this to prevent secrets getting leaked in deep stack traces
+    if not CONFIG.dev_mode:
+        sys.tracebacklimit = 0
 
     await log_startup()
 
