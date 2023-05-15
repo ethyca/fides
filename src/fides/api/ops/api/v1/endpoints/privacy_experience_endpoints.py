@@ -66,6 +66,9 @@ def privacy_experience_list(
 
     'show_disabled' query params are passed along to further filter
     notices as well.
+
+    'fides_user_device_id' query param will stash the current preferences of the given user
+    alongside each notice where applicable.
     """
     logger.info("Finding all Privacy Experiences with pagination params '{}'", params)
     fides_user_provided_identity: Optional[ProvidedIdentity] = None
@@ -125,11 +128,16 @@ def privacy_experience_detail(
     db: Session = Depends(deps.get_db),
     privacy_experience_id: str,
     show_disabled: Optional[bool] = True,
+    fides_user_device_id: Optional[str] = None,
+    request: Request,
 ) -> PrivacyExperience:
     """
     Return a privacy experience for a given region with relevant notices embedded.
 
     show_disabled query params are passed onto optionally filter the embedded notices.
+
+    'fides_user_device_id' query param will stash the current preferences of the given user
+    alongside each notice where applicable.
     """
     logger.info("Fetching privacy experience with id '{}'.", privacy_experience_id)
     experience: PrivacyExperience = get_privacy_experience_or_error(
@@ -142,8 +150,15 @@ def privacy_experience_detail(
             detail=f"Query param show_disabled=False not applicable for disabled privacy experience {privacy_experience_id}.",
         )
 
+    fides_user_provided_identity: Optional[ProvidedIdentity] = None
+    if fides_user_device_id:
+        verify_address(request)
+        fides_user_provided_identity = get_fides_user_device_id_provided_identity(
+            db=db, fides_user_device_id=fides_user_device_id
+        )
+
     # Temporarily stash the privacy notices on the experience for display
     experience.privacy_notices = experience.get_related_privacy_notices(
-        db, show_disabled
+        db, show_disabled, fides_user_provided_identity
     )
     return experience

@@ -492,15 +492,17 @@ class TestGetPrivacyExperiences:
         assert len(data["items"]) == 1
         assert data["items"][0]["id"] == privacy_experience_privacy_center_link.id
 
+    @pytest.mark.usefixtures(
+        "privacy_notice_us_ca_provide",
+        "fides_user_provided_identity",
+        "privacy_preference_history_us_ca_provide_for_fides_user",
+        "privacy_experience_overlay_banner",
+    )
     def test_get_privacy_experiences_fides_user_device_id_filter(
         self,
         api_client: TestClient,
         generate_auth_header,
         url,
-        privacy_notice_us_ca_provide,
-        fides_user_provided_identity,
-        privacy_preference_history_us_ca_provide_for_fides_user,
-        privacy_experience_overlay_banner,
     ):
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
         resp = api_client.get(
@@ -634,6 +636,18 @@ class TestPrivacyExperienceDetail:
         assert body["privacy_notices"][0]["id"] == privacy_notice_us_ca_provide.id
         assert body["privacy_notices"][1]["id"] == privacy_notice.id
 
+        # Assert default preferences displayed only
+        assert body["privacy_notices"][0]["consent_mechanism"] == "opt_in"
+        assert body["privacy_notices"][0]["default_preference"] == "opt_out"
+        assert body["privacy_notices"][0]["current_preference"] is None
+        assert body["privacy_notices"][0]["outdated_preference"] is None
+
+        # Assert default preferences displayed only
+        assert body["privacy_notices"][0]["consent_mechanism"] == "opt_in"
+        assert body["privacy_notices"][0]["default_preference"] == "opt_out"
+        assert body["privacy_notices"][0]["current_preference"] is None
+        assert body["privacy_notices"][0]["outdated_preference"] is None
+
     @pytest.mark.usefixtures(
         "privacy_notice", "privacy_notice_eu_fr_provide_service_frontend_only"
     )
@@ -705,3 +719,30 @@ class TestPrivacyExperienceDetail:
         )
 
         assert resp.json()["privacy_notices"][0]["disabled"] is False
+
+    @pytest.mark.usefixtures(
+        "privacy_notice_us_ca_provide",
+        "fides_user_provided_identity",
+        "privacy_preference_history_us_ca_provide_for_fides_user",
+        "privacy_experience_overlay_banner",
+    )
+    def test_get_privacy_experience_detail_fides_user_device_id_filter(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+
+        resp = api_client.get(
+            url + "?fides_user_device_id=FGHIJ_TEST_FIDES",
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+
+        # Assert current preference is displayed for fides user device id
+        assert data["privacy_notices"][0]["consent_mechanism"] == "opt_in"
+        assert data["privacy_notices"][0]["default_preference"] == "opt_out"
+        assert data["privacy_notices"][0]["current_preference"] == "opt_in"
+        assert data["privacy_notices"][0]["outdated_preference"] is None
