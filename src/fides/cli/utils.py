@@ -43,7 +43,7 @@ from fides.core.config.credentials_settings import (
 )
 from fides.core.config.helpers import get_config_from_file
 from fides.core.config.utils import get_dev_mode
-from fides.core.utils import check_response, echo_green, echo_red
+from fides.common.utils import check_response, echo_green, echo_red
 
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
@@ -98,30 +98,6 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
         echo_red(
             f"Mismatched versions!\nServer Version: {server_version}\nCLI Version: {cli_version}"
         )
-
-
-def pretty_echo(dict_object: Union[Dict, str], color: str = "white") -> None:
-    """
-    Given a dict-like object and a color, pretty click echo it.
-    """
-    click.secho(pprint.pformat(dict_object, indent=2, width=80, compact=True), fg=color)
-
-
-def handle_cli_response(
-    response: requests.Response, verbose: bool = True
-) -> requests.Response:
-    """Viewable CLI response"""
-    if response.status_code >= 200 and response.status_code <= 299:
-        if verbose:
-            pretty_echo(response.json(), "green")
-    else:
-        try:
-            pretty_echo(response.json(), "red")
-        except json.JSONDecodeError:
-            click.secho(response.text, fg="red")
-        finally:
-            sys.exit(1)
-    return response
 
 
 def is_user_registered(config: FidesConfig) -> bool:
@@ -271,16 +247,6 @@ def with_analytics(func: Callable) -> Callable:
                     pass  # cli analytics should fail silently
 
     return update_wrapper(wrapper_func, func)
-
-
-def print_divider(character: str = "-", character_length: int = 10) -> None:
-    """
-    Returns a consistent divider to print to the console for use within fides
-
-    Defaults to using a hyphen of length 10, however this can optionally be
-    overridden as required.
-    """
-    print(character * character_length)
 
 
 def handle_database_credentials_options(

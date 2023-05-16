@@ -19,13 +19,8 @@ from fides.connectors.models import AWSConfig, BigQueryConfig
 from fides.core.api_helpers import list_server_resources
 from fides.core.parse import parse
 
-from .utils import (
-    check_fides_key,
-    echo_green,
-    echo_red,
-    generate_unique_fides_key,
-    get_db_engine,
-)
+from fides.core.utils import check_fides_key, generate_unique_fides_key, get_db_engine
+from fides.common.utils import echo_green, echo_red
 
 SCHEMA_EXCLUSION = {
     "postgresql": ["information_schema"],

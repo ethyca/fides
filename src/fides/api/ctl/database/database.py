@@ -16,8 +16,8 @@ from fides.api.ctl.utils.errors import get_full_exception_name
 from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
 from fides.core.utils import get_db_engine
 
-from .seed import load_default_resources, load_samples
-from .session import async_session
+from fides.api.ctl.database.seed import load_default_resources, load_samples
+from fides.api.ctl.database.session import async_session
 
 DatabaseHealth = Literal["healthy", "unhealthy", "needs migration"]
 
