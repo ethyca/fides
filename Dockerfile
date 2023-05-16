@@ -14,6 +14,7 @@ RUN apt-get update && \
     g++ \
     gnupg \
     gcc \
+    git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
