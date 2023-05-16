@@ -109,6 +109,8 @@ class ConsentReportingSchema(FidesSchema):
     privacy_experience_history_id: Optional[str] = Field(
         title="The historical id of the experience that the user was presented - contains the experience type, region, and delivery mechanism"
     )
+    truncated_ip_address: Optional[str] = Field(title="Truncated ip address")
+    method: Optional[str] = Field(title="Method of consent preference")
 
 
 class CurrentPrivacyPreferenceSchema(FidesSchema):

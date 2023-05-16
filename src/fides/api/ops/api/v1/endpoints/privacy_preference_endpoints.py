@@ -545,8 +545,12 @@ def get_historical_consent_report(
                 "privacy_experience_history_id"
             ),
             PrivacyPreferenceHistory.privacy_experience_config_history_id.label(
-                "privacy_experience_config_history_id"
+                "experience_config_history_id"
             ),
+            PrivacyPreferenceHistory.anonymized_ip_address.label(
+                "truncated_ip_address"
+            ),
+            PrivacyPreferenceHistory.method.label("method"),
         )
         .outerjoin(
             PrivacyRequest,

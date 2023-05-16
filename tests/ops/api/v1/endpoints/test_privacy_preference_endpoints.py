@@ -1158,6 +1158,7 @@ class TestHistoricalPreferences:
         privacy_preference_history,
         privacy_request_with_consent_policy,
         system,
+        privacy_experience_privacy_center_link,
     ) -> None:
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
@@ -1216,6 +1217,18 @@ class TestHistoricalPreferences:
         assert (
             response_body["user_agent"]
             == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24"
+        )
+        assert response_body["method"] == "buttons"
+        assert response_body["truncated_ip_address"] == "92.158.1.0"
+        assert (
+            response_body["experience_config_history_id"]
+            == privacy_experience_privacy_center_link.histories[
+                0
+            ].experience_config_history_id
+        )
+        assert (
+            response_body["privacy_experience_history_id"]
+            == privacy_experience_privacy_center_link.histories[0].id
         )
 
     def test_get_historical_preferences_ordering(
