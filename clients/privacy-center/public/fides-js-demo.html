@@ -20,18 +20,25 @@
   <body>
     <main>
       <h1>fides.js demo page</h1>
-      <p>
-        This page exists to demonstrate and debug the fides.js script. It is
-        used by the Privacy Center's test suite to ensure the a users's consent
-        choices can be accessed by pages that live outside of the Privacy
-        Center.
-      </p>
+      <p>This page exists to demonstrate and debug the fides.js script.</p>
 
       <h2>Was the fides global defined?</h2>
       <pre id="has-fides"></pre>
 
       <h2>Consent JSON</h2>
       <pre id="consent-json"></pre>
+
+      <h2>Consent Banner Link</h2>
+      <a href="#" id="fides-consent-link">Manage Consent</a>
+
+      <h2>Consent Experience</h2>
+      <pre id="consent-experience"></pre>
+
+      <h2>Geolocation</h2>
+      <pre id="consent-geolocation"></pre>
+
+      <h2>Consent Options</h2>
+      <pre id="consent-options"></pre>
     </main>
   </body>
 
@@ -47,6 +54,21 @@
       // Pretty-print the fides consent object and add it to the page.
       document.getElementById("consent-json").textContent = JSON.stringify(
         Fides.consent,
+        null,
+        2
+      );
+
+      // Pretty-print the fides experience config object and add it to the page.
+      document.getElementById("consent-experience").textContent =
+        JSON.stringify(Fides.experience, null, 2);
+
+      // Pretty-print the fides geolocation object and add it to the page.
+      document.getElementById("consent-geolocation").textContent =
+        JSON.stringify(Fides.geolocation, null, 2);
+
+      // Pretty-print the fides options object and add it to the page.
+      document.getElementById("consent-options").textContent = JSON.stringify(
+        Fides.options,
         null,
         2
       );

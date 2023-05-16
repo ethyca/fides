@@ -3,6 +3,7 @@
 import "cypress-wait-until";
 
 import type { AppDispatch } from "~/app/store";
+import type { FidesConfig } from "fides-js";
 
 Cypress.Commands.add("getByTestId", (selector, ...args) =>
   cy.get(`[data-testid='${selector}']`, ...args)
@@ -32,6 +33,15 @@ Cypress.Commands.add("loadConfigFixture", (fixtureName: string, ...args) => {
     cy.dispatch({ type: "config/loadConfig", payload: config }).then(
       () => config
     );
+  });
+});
+
+Cypress.Commands.add("visitConsentDemo", (options?: FidesConfig) => {
+  cy.visit("/fides-js-components-demo.html", {
+    onBeforeLoad: (win) => {
+      // eslint-disable-next-line no-param-reassign
+      win.fidesConfig = options;
+    },
   });
 });
 
@@ -100,7 +110,20 @@ declare global {
         fixtureName: string,
         options?: Partial<Cypress.Timeoutable>
       ): Chainable<any>;
+      /**
+       * Visit the /fides-js-components-demo page and inject config options
+       * @example cy.visitConsentDemo(fidesConfig);
+       */
+      visitConsentDemo(options?: FidesConfig): Chainable<any>;
     }
+  }
+}
+
+// The fides-js-components-demo.html page is wired up to inject the
+// `fidesConfig` into the Fides.init(...) function
+declare global {
+  interface Window {
+    fidesConfig?: FidesConfig;
   }
 }
 
