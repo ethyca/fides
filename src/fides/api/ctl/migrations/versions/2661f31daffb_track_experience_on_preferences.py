@@ -1,15 +1,16 @@
-"""store experience on historical preference
+"""track experience on preferences
 
-Revision ID: 498dbe8af963
+Revision ID: 2661f31daffb
 Revises: b546ce845e6c
-Create Date: 2023-05-15 20:54:13.623611
+Create Date: 2023-05-16 20:05:29.478005
 
 """
 import sqlalchemy as sa
+import sqlalchemy_utils
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "498dbe8af963"
+revision = "2661f31daffb"
 down_revision = "b546ce845e6c"
 branch_labels = None
 depends_on = None
@@ -18,7 +19,14 @@ depends_on = None
 def upgrade():
     op.add_column(
         "privacypreferencehistory",
-        sa.Column("anonymized_ip_address", sa.String(), nullable=True),
+        sa.Column(
+            "anonymized_ip_address",
+            sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "privacypreferencehistory", sa.Column("method", sa.String(), nullable=True)
     )
     op.add_column(
         "privacypreferencehistory",
@@ -77,4 +85,5 @@ def downgrade():
     )
     op.drop_column("privacypreferencehistory", "privacy_experience_history_id")
     op.drop_column("privacypreferencehistory", "privacy_experience_config_history_id")
+    op.drop_column("privacypreferencehistory", "method")
     op.drop_column("privacypreferencehistory", "anonymized_ip_address")

@@ -123,8 +123,12 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
+    @mock.patch(
+        "fides.api.ops.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+    )
     def test_verify_then_set_privacy_preferences(
         self,
+        mock_anonymize,
         run_privacy_request_mock,
         provided_identity_and_consent_request,
         api_client,
@@ -134,6 +138,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         privacy_notice,
     ):
         """Verify code and then return privacy preferences"""
+        masked_ip = "12.214.31.0"  # Mocking because hostname for FastAPI TestClient is "testclient"
+        mock_anonymize.return_value = masked_ip
+
         _, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
 
@@ -277,8 +284,8 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         assert privacy_preference_history.user_agent == "testclient"
         assert privacy_preference_history.privacy_experience_config_history_id is None
         assert privacy_preference_history.privacy_experience_history_id is None
-        assert privacy_preference_history.anonymized_ip_address is not None
-        assert privacy_preference_history.anonymized_ip_address != "test_client"
+        assert mock_anonymize.call_args.args[0] == "testclient"
+        assert privacy_preference_history.anonymized_ip_address == masked_ip
         assert privacy_preference_history.url_recorded is None
 
         # Fetch current privacy preference
@@ -974,6 +981,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             "privacy_experience_history_id": privacy_experience_overlay_banner.histories[
                 0
             ].id,
+            "method": "buttons",
         }
 
     @pytest.mark.usefixtures(
@@ -998,8 +1006,30 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         )
         assert response.status_code == 400
 
+    def test_save_privacy_preferences_bad_experience_id(
+        self,
+        db,
+        api_client,
+        url,
+        request_body,
+    ):
+        """Privacy experiences need to be valid when setting preferences"""
+        request_body["experience_config_history_id"] = "bad_id"
+        response = api_client.patch(
+            url, json=request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 404
+        assert (
+            response.json()["detail"]
+            == f"Experience Config History with it 'bad_id' not found."
+        )
+
+    @mock.patch(
+        "fides.api.ops.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+    )
     def test_save_privacy_preferences_with_respect_to_fides_user_device_id(
         self,
+        mock_anonymize,
         db,
         api_client,
         url,
@@ -1010,6 +1040,8 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         """Assert CurrentPrivacyPreference records were updated and PrivacyPreferenceHistory records were created
         for recordkeeping with respect to the fides user device id in the request
         """
+        masked_ip = "12.214.31.0"
+        mock_anonymize.return_value = masked_ip
         response = api_client.patch(
             url, json=request_body, headers={"Origin": "http://localhost:8080"}
         )
@@ -1073,9 +1105,9 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             privacy_preference_history.privacy_experience_history_id
             == privacy_experience_overlay_banner.histories[0].id
         )
-        assert privacy_preference_history.anonymized_ip_address is not None
-        assert privacy_preference_history.anonymized_ip_address != "test_client"
+        assert privacy_preference_history.anonymized_ip_address == masked_ip
         assert privacy_preference_history.url_recorded is None
+        assert privacy_preference_history.method == "buttons"
 
         current_preference.delete(db)
         privacy_preference_history.delete(db)

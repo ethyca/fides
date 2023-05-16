@@ -38,6 +38,7 @@ class PrivacyPreferencesRequest(FidesSchema):
     experience_config_history_id: Optional[SafeStr]
     privacy_experience_history_id: Optional[SafeStr]
     user_geography: Optional[PrivacyNoticeRegion]
+    method: Optional[SafeStr]
 
 
 class PrivacyPreferencesCreate(PrivacyPreferencesRequest):

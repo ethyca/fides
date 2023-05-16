@@ -53,7 +53,14 @@ class PrivacyPreferenceHistory(Base):
     affected_system_status = Column(
         MutableDict.as_mutable(JSONB), server_default="{}", default=dict
     )
-    anonymized_ip_address = Column(String)
+    anonymized_ip_address = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     # Encrypted email, for reporting
     email = Column(
@@ -83,6 +90,8 @@ class PrivacyPreferenceHistory(Base):
     hashed_fides_user_device = Column(String, index=True)
     # Hashed phone number, for searching
     hashed_phone_number = Column(String, index=True)
+    # Buttons, individual notices
+    method = Column(String)
     # Encrypted phone number, for reporting
     phone_number = Column(
         StringEncryptedType(

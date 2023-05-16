@@ -2,6 +2,7 @@ import pytest
 from sqlalchemy.exc import InvalidRequestError
 
 from fides.api.ops.api.v1.endpoints.privacy_preference_endpoints import (
+    anonymize_ip_address,
     extract_identity_from_provided_identity,
 )
 from fides.api.ops.common_exceptions import (
@@ -552,3 +553,26 @@ class TestPrivacyPreferenceHistory:
 
         new_preference_history_record_for_device.delete(db)
         preference_history_record_for_device.delete(db)
+
+
+class TestAnonymizeIpAddress:
+    def test_anonymize_ip_address_empty_string(self):
+        assert anonymize_ip_address("") is None
+
+    def test_anonymize_ip_address_none(self):
+        assert anonymize_ip_address(None) is None
+
+    def test_anonymize_bad_ip_address(self):
+        assert anonymize_ip_address("bad_address") is None
+
+    def test_anonymize_ip_address_list(self):
+        assert anonymize_ip_address("[]") is None
+
+    def test_anonymize_ipv4(self):
+        assert anonymize_ip_address("12.214.31.144") == "12.214.31.0"
+
+    def test_anonymize_ipv6(self):
+        assert (
+            anonymize_ip_address("2001:0db8:85a3:0000:0000:8a2e:0370:7334")
+            == "2001:0db8:85a3:0000:0000:0000:0000:0000"
+        )

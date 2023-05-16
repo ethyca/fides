@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ipaddress
 from datetime import datetime
 from typing import List, Optional, Tuple
 
@@ -57,9 +58,6 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.ops.oauth.utils import verify_oauth_client
-from fides.api.ops.schemas.masking.masking_configuration import (
-    AesEncryptionMaskingConfiguration,
-)
 from fides.api.ops.schemas.privacy_preference import (
     ConsentReportingSchema,
     CurrentPrivacyPreferenceReportingSchema,
@@ -73,9 +71,6 @@ from fides.api.ops.schemas.privacy_request import (
     VerificationCode,
 )
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
-    AesEncryptionMaskingStrategy,
-)
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
@@ -181,18 +176,30 @@ def extract_identity_from_provided_identity(
     return value, hashed_value
 
 
-def mask_ip_address(ip_address: Optional[str]) -> Optional[str]:
-    """Mask IP Address to be saved with the privacy preference"""
+def anonymize_ip_address(ip_address: Optional[str]) -> Optional[str]:
+    """Mask IP Address to be saved with the privacy preference
+    - For ipv4, set last octet to 0
+    - For ipv6, set last 80 of the 128 bits are set to zero.
+    """
     if not ip_address:
         return None
 
-    masked: Optional[List[Optional[str]]] = AesEncryptionMaskingStrategy(
-        configuration=AesEncryptionMaskingConfiguration()
-    ).mask(values=[ip_address], request_id=None)
+    try:
+        ip_object = ipaddress.ip_address(ip_address)
 
-    if masked is not None:
-        return masked[0]
-    return masked
+        if ip_object.version == 4:
+            ipv4_network = ipaddress.IPv4Network(ip_address + "/24", strict=False)
+            masked_ip_address = str(ipv4_network.network_address)
+            return masked_ip_address.split("/", maxsplit=1)[0]
+
+        if ip_object.version == 6:
+            ipv6_network = ipaddress.IPv6Network(ip_address + "/48", strict=False)
+            return str(ipv6_network.network_address.exploded)
+
+        return None
+
+    except ValueError:
+        return None
 
 
 def _get_request_origin(
@@ -209,7 +216,7 @@ def _get_request_origin(
         if not privacy_experience_config_history:
             raise HTTPException(
                 status_code=HTTP_404_NOT_FOUND,
-                detail="Invalid Experience Config History Id attached to preferences",
+                detail=f"Experience Config History with it '{data.experience_config_history_id}' not found.",
             )
 
     privacy_experience_history = None
@@ -220,7 +227,7 @@ def _get_request_origin(
         if not privacy_experience_history:
             raise HTTPException(
                 status_code=HTTP_404_NOT_FOUND,
-                detail="Invalid Privacy Experience History Id attached to preferences",
+                detail=f"Privacy Experience History '{data.privacy_experience_history_id}' not found.",
             )
 
         if (
@@ -252,7 +259,7 @@ def supplement_privacy_preferences_with_user_and_experience_details(
 
     return PrivacyPreferencesCreate(
         **data.dict(),
-        anonymized_ip_address=mask_ip_address(ip_address),
+        anonymized_ip_address=anonymize_ip_address(ip_address),
         request_origin=_get_request_origin(db, data),
         url_recorded=url_recorded,
         user_agent=user_agent,
