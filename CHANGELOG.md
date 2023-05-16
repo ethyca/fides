@@ -20,8 +20,9 @@ The types of changes are:
 ### Changed
 
 - Remove logging within the Celery creation function [#3303](https://github.com/ethyca/fides/pull/3303)
+- Update how generic endpoint generation works [#3304](https://github.com/ethyca/fides/pull/3304)
 
-### Added 
+### Added
 
 - Add an automated test to check for `/fides-consent.js` backwards compatibility [#3289](https://github.com/ethyca/fides/pull/3289)
 - Add infrastructure for "overlay" consent components (Preact, CSS bundling, etc.) and initial version of consent banner [#3191](https://github.com/ethyca/fides/pull/3191)
