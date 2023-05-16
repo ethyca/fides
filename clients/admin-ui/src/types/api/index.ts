@@ -108,6 +108,7 @@ export type { DrpPrivacyRequestCreate } from "./models/DrpPrivacyRequestCreate";
 export { DrpRegime } from "./models/DrpRegime";
 export type { DrpRevokeRequest } from "./models/DrpRevokeRequest";
 export type { DryRunDatasetResponse } from "./models/DryRunDatasetResponse";
+export type { DynamoDBDocsSchema } from "./models/DynamoDBDocsSchema";
 export type { EmailDocsSchema } from "./models/EmailDocsSchema";
 export type { Endpoint } from "./models/Endpoint";
 export { EnforcementLevel } from "./models/EnforcementLevel";
@@ -116,6 +117,10 @@ export type { ExecutionAndAuditLogResponse } from "./models/ExecutionAndAuditLog
 export type { ExecutionApplicationConfig } from "./models/ExecutionApplicationConfig";
 export type { ExecutionLogDetailResponse } from "./models/ExecutionLogDetailResponse";
 export { ExecutionLogStatus } from "./models/ExecutionLogStatus";
+export type { ExperienceConfigCreate } from "./models/ExperienceConfigCreate";
+export type { ExperienceConfigCreateOrUpdateResponse } from "./models/ExperienceConfigCreateOrUpdateResponse";
+export type { ExperienceConfigResponse } from "./models/ExperienceConfigResponse";
+export type { ExperienceConfigUpdate } from "./models/ExperienceConfigUpdate";
 export type { ExtendedIdentityTypes } from "./models/ExtendedIdentityTypes";
 export type { ExternalDatasetReference } from "./models/ExternalDatasetReference";
 export type { fides__api__ops__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds } from "./models/fides__api__ops__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds";
@@ -181,6 +186,7 @@ export type { Page_CurrentPrivacyPreferenceSchema_ } from "./models/Page_Current
 export type { Page_Dataset_ } from "./models/Page_Dataset_";
 export type { Page_DatasetConfigSchema_ } from "./models/Page_DatasetConfigSchema_";
 export type { Page_ExecutionLogDetailResponse_ } from "./models/Page_ExecutionLogDetailResponse_";
+export type { Page_ExperienceConfigResponse_ } from "./models/Page_ExperienceConfigResponse_";
 export type { Page_MessagingConfigResponse_ } from "./models/Page_MessagingConfigResponse_";
 export type { Page_PolicyResponse_ } from "./models/Page_PolicyResponse_";
 export type { Page_PolicyWebhookResponse_ } from "./models/Page_PolicyWebhookResponse_";
@@ -204,9 +210,7 @@ export type { PolicyWebhookUpdateResponse } from "./models/PolicyWebhookUpdateRe
 export type { PostgreSQLDocsSchema } from "./models/PostgreSQLDocsSchema";
 export type { PrivacyDeclaration } from "./models/PrivacyDeclaration";
 export type { PrivacyDeclarationResponse } from "./models/PrivacyDeclarationResponse";
-export type { PrivacyExperienceCreate } from "./models/PrivacyExperienceCreate";
 export type { PrivacyExperienceResponse } from "./models/PrivacyExperienceResponse";
-export type { PrivacyExperienceWithId } from "./models/PrivacyExperienceWithId";
 export type { PrivacyNoticeCreation } from "./models/PrivacyNoticeCreation";
 export type { PrivacyNoticeHistorySchema } from "./models/PrivacyNoticeHistorySchema";
 export { PrivacyNoticeRegion } from "./models/PrivacyNoticeRegion";

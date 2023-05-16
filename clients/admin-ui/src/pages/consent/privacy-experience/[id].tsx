@@ -15,7 +15,7 @@ import Layout from "~/features/common/Layout";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { COMPONENT_MAP } from "~/features/privacy-experience/constants";
 import PrivacyExperienceForm from "~/features/privacy-experience/form/PrivacyExperienceForm";
-import { useGetPrivacyExperienceByIdQuery } from "~/features/privacy-experience/privacy-experience.slice";
+import { useGetExperienceConfigByIdQuery } from "~/features/privacy-experience/privacy-experience.slice";
 import { ComponentType } from "~/types/api";
 
 const PrivacyExperienceDetailPage = () => {
@@ -28,7 +28,7 @@ const PrivacyExperienceDetailPage = () => {
       : router.query.id;
   }
 
-  const { data, isLoading } = useGetPrivacyExperienceByIdQuery(experienceId);
+  const { data, isLoading } = useGetExperienceConfigByIdQuery(experienceId);
 
   if (isLoading) {
     return (

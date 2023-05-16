@@ -7,12 +7,8 @@ import { ExperienceFormRules } from "./helpers";
  * Banner text form component.
  * Rules:
  *   * Only renders on component_type = OVERLAY
- *   * If the experience only has notice_only notices, renders an "Acknowledgment button" instead of confirm + reject
  */
-const BannerActionForm = ({
-  hasOnlyNoticeOnlyNotices,
-  isOverlay,
-}: ExperienceFormRules) => {
+const BannerActionForm = ({ isOverlay }: ExperienceFormRules) => {
   if (!isOverlay) {
     return null;
   }
@@ -25,29 +21,24 @@ const BannerActionForm = ({
         variant="stacked"
         isRequired
       />
-      {hasOnlyNoticeOnlyNotices ? (
-        <CustomTextInput
-          label="Acknowledgment button label"
-          name="acknowledgement_button_label"
-          variant="stacked"
-          isRequired
-        />
-      ) : (
-        <>
-          <CustomTextInput
-            label="Confirmation button label"
-            name="confirmation_button_label"
-            variant="stacked"
-            isRequired
-          />
-          <CustomTextInput
-            label="Reject button label"
-            name="reject_button_label"
-            variant="stacked"
-            isRequired
-          />
-        </>
-      )}
+      <CustomTextInput
+        label="Acknowledgment button label"
+        name="acknowledgement_button_label"
+        variant="stacked"
+        isRequired
+      />
+      <CustomTextInput
+        label="Confirmation button label"
+        name="confirmation_button_label"
+        variant="stacked"
+        isRequired
+      />
+      <CustomTextInput
+        label="Reject button label"
+        name="reject_button_label"
+        variant="stacked"
+        isRequired
+      />
     </FormSection>
   );
 };
