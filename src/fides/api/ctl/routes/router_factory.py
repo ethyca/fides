@@ -8,7 +8,6 @@ Mostly used for `ctl`-related objects.
 from typing import Dict, List
 
 from fastapi import Depends, HTTPException, Response, Security, status
-from fastapi.routing import APIRoute
 from fideslang import Dataset, FidesModel, FidesModelType, model_map
 from fideslang.validation import FidesKey
 from pydantic import ValidationError as PydanticValidationError
@@ -73,50 +72,41 @@ def generic_router_factory(fides_model: FidesModelType, model_type: str) -> APIR
     Compose all of the individual route factories into a single coherent Router.
     """
 
-    create_router = create_route_factory(fides_model=fides_model, model_type=model_type)
-    list_router = list_route_factory(fides_model=fides_model, model_type=model_type)
-    get_route = get_route_factory(fides_model=fides_model, model_type=model_type)
-    delete_route = delete_route_factory(fides_model=fides_model, model_type=model_type)
-    update_route = update_route_factory(fides_model=fides_model, model_type=model_type)
-    upsert_route = upsert_route_factory(fides_model=fides_model, model_type=model_type)
+    object_router = APIRouter()
 
-    router = APIRouter(
-        routes=[
-            create_router,
-            list_router,
-            get_route,
-            delete_route,
-            update_route,
-            upsert_route,
-        ],
+    create_router = create_router_factory(
+        fides_model=fides_model, model_type=model_type
     )
-    return router
+    list_router = list_router_factory(fides_model=fides_model, model_type=model_type)
+    get_router = get_router_factory(fides_model=fides_model, model_type=model_type)
+    delete_router = delete_router_factory(
+        fides_model=fides_model, model_type=model_type
+    )
+    update_router = update_router_factory(
+        fides_model=fides_model, model_type=model_type
+    )
+    upsert_router = upsert_router_factory(
+        fides_model=fides_model, model_type=model_type
+    )
+
+    object_router.include_router(create_router)
+    object_router.include_router(list_router)
+    object_router.include_router(get_router)
+    object_router.include_router(delete_router)
+    object_router.include_router(update_router)
+    object_router.include_router(upsert_router)
+
+    return object_router
 
 
-def create_route_factory(fides_model: FidesModelType, model_type: str) -> APIRoute:
+def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
     """Return a configured version of a generic 'Create' route."""
 
-    async def create(
-        resource: fides_model,
-        db: AsyncSession = Depends(get_async_db),
-    ) -> Dict:
-        """
-        Create a resource.
+    router = APIRouter(prefix=f"{API_PREFIX}/{model_type}", tags=[fides_model.__name__])
 
-        Payloads with an is_default field can only be set to False,
-        will return a `403 Forbidden`.
-        """
-        sql_model = sql_model_map[model_type]
-        await validate_data_categories(resource, db)
-        if sql_model in models_with_default_field and resource.is_default:
-            raise errors.ForbiddenError(model_type, resource.fides_key)
-        return await create_resource(sql_model, resource.dict(), db)
-
-    route = APIRoute(
-        methods=["post"],
-        tags=[fides_model.__name__],
+    @router.post(
         name="Create",
-        path=f"{API_PREFIX}/{model_type}/",
+        path="/",
         response_model=fides_model,
         status_code=status.HTTP_201_CREATED,
         dependencies=[
@@ -140,26 +130,33 @@ def create_route_factory(fides_model: FidesModelType, model_type: str) -> APIRou
                 }
             },
         },
-        endpoint=create,
     )
-    return route
+    async def create(
+        resource: fides_model,
+        db: AsyncSession = Depends(get_async_db),
+    ) -> Dict:
+        """
+        Create a resource.
+
+        Payloads with an is_default field can only be set to False,
+        will return a `403 Forbidden`.
+        """
+        sql_model = sql_model_map[model_type]
+        await validate_data_categories(resource, db)
+        if sql_model in models_with_default_field and resource.is_default:
+            raise errors.ForbiddenError(model_type, resource.fides_key)
+        return await create_resource(sql_model, resource.dict(), db)
+
+    return router
 
 
-def list_route_factory(fides_model: FidesModelType, model_type: str) -> APIRoute:
+def list_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
     """Return a configured version of a generic 'List' router."""
 
-    async def ls(  # pylint: disable=invalid-name
-        db: AsyncSession = Depends(get_async_db),
-    ) -> List:
-        """Get a list of all of the resources of this type."""
-        sql_model = sql_model_map[model_type]
-        return await list_resource(sql_model, db)
+    router = APIRouter(prefix=f"{API_PREFIX}/{model_type}", tags=[fides_model.__name__])
 
-    # Add the API Route to the Router
-    route = APIRoute(
-        path=f"{API_PREFIX}/{model_type}/",
-        tags=[fides_model.__name__],
-        methods=["get"],
+    @router.get(
+        path="/",
         dependencies=[
             Security(
                 verify_oauth_client_prod,
@@ -168,14 +165,32 @@ def list_route_factory(fides_model: FidesModelType, model_type: str) -> APIRoute
         ],
         response_model=List[fides_model],
         name="List",
-        endpoint=ls,
     )
-    return route
+    async def ls(  # pylint: disable=invalid-name
+        db: AsyncSession = Depends(get_async_db),
+    ) -> List:
+        """Get a list of all of the resources of this type."""
+        sql_model = sql_model_map[model_type]
+        return await list_resource(sql_model, db)
+
+    return router
 
 
-def get_route_factory(fides_model: FidesModelType, model_type: str) -> APIRoute:
+def get_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
     """Return a configured version of a generic Create endpoint."""
 
+    router = APIRouter(prefix=f"{API_PREFIX}/{model_type}", tags=[fides_model.__name__])
+
+    @router.get(
+        path="/{fides_key}",
+        dependencies=[
+            Security(
+                verify_oauth_client_prod,
+                scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
+            )
+        ],
+        response_model=fides_model,
+    )
     async def get(
         fides_key: str,
         db: AsyncSession = Depends(get_async_db),
@@ -184,47 +199,18 @@ def get_route_factory(fides_model: FidesModelType, model_type: str) -> APIRoute:
         sql_model = sql_model_map[model_type]
         return await get_resource_with_custom_fields(sql_model, fides_key, db)
 
-    route = APIRoute(
-        path=f"{API_PREFIX}/{model_type}/" + "{fides_key}",
-        methods=["get"],
-        tags=[fides_model.__name__],
-        dependencies=[
-            Security(
-                verify_oauth_client_prod,
-                scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
-            )
-        ],
-        response_model=fides_model,
-        endpoint=get,
-    )
 
-    return route
+    return router
 
 
-def update_route_factory(fides_model: FidesModelType, model_type: str) -> APIRoute:
+def update_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
     """Return a configured version of a generic 'Update' route."""
 
-    async def update(
-        resource: fides_model,
-        db: AsyncSession = Depends(get_async_db),
-    ) -> Dict:
-        """
-        Update a resource by its fides_key.
+    router = APIRouter(prefix=f"{API_PREFIX}/{model_type}", tags=[fides_model.__name__])
 
-        The `is_default` field cannot be updated and will respond
-        with a `403 Forbidden` if attempted.
-        """
-        sql_model = sql_model_map[model_type]
-        await validate_data_categories(resource, db)
-        await forbid_if_editing_is_default(sql_model, resource.fides_key, resource, db)
-        return await update_resource(sql_model, resource.dict(), db)
-
-    route = APIRoute(
-        path=f"{API_PREFIX}/{model_type}/",
-        tags=[fides_model.__name__],
-        methods=["put"],
+    @router.put(
+        path="/",
         response_model=fides_model,
-        endpoint=update,
         dependencies=[
             Security(
                 verify_oauth_client_prod,
@@ -247,51 +233,32 @@ def update_route_factory(fides_model: FidesModelType, model_type: str) -> APIRou
             },
         },
     )
-
-    return route
-
-
-def upsert_route_factory(fides_model: FidesModelType, model_type: str) -> APIRoute:
-    """Return a configured version of a generic Create endpoint."""
-
-    async def upsert(
-        resources: List[fides_model],
-        response: Response,
+    async def update(
+        resource: fides_model,
         db: AsyncSession = Depends(get_async_db),
     ) -> Dict:
         """
-        For any resource in `resources` that already exists in the database,
-        update the resource by its `fides_key`. Otherwise, create a new resource.
-
-        Responds with a `201 Created` if even a single resource in `resources`
-        did not previously exist. Otherwise, responds with a `200 OK`.
+        Update a resource by its fides_key.
 
         The `is_default` field cannot be updated and will respond
         with a `403 Forbidden` if attempted.
         """
-
         sql_model = sql_model_map[model_type]
-        resource_dicts = [resource.dict() for resource in resources]
-        for resource in resources:
-            await validate_data_categories(resource, db)
+        await validate_data_categories(resource, db)
+        await forbid_if_editing_is_default(sql_model, resource.fides_key, resource, db)
+        return await update_resource(sql_model, resource.dict(), db)
 
-        await forbid_if_editing_any_is_default(sql_model, resource_dicts, db)
-        result = await upsert_resources(sql_model, resource_dicts, db)
-        response.status_code = (
-            status.HTTP_201_CREATED if result[0] > 0 else response.status_code
-        )
 
-        return {
-            "message": f"Upserted {len(resources)} {sql_model.__name__}(s)",
-            "inserted": result[0],
-            "updated": result[1],
-        }
+    return router
 
-    route = APIRoute(
-        path=f"{API_PREFIX}/{model_type}/upsert",
-        methods=["post"],
-        endpoint=upsert,
-        tags=[fides_model.__name__],
+
+def upsert_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
+    """Return a configured version of a generic Create endpoint."""
+
+    router = APIRouter(prefix=f"{API_PREFIX}/{model_type}", tags=[fides_model.__name__])
+
+    @router.post(
+        path="/upsert",
         dependencies=[
             Security(
                 verify_oauth_client_prod,
@@ -339,38 +306,50 @@ def upsert_route_factory(fides_model: FidesModelType, model_type: str) -> APIRou
             },
         },
     )
-
-    return route
-
-
-def delete_route_factory(fides_model: FidesModelType, model_type: str) -> APIRoute:
-    """Return a configured version of a generic 'Delete' route."""
-
-    async def delete(
-        fides_key: str,
+    async def upsert(
+        resources: List[fides_model],
+        response: Response,
         db: AsyncSession = Depends(get_async_db),
     ) -> Dict:
         """
-        Delete a resource by its fides_key.
+        For any resource in `resources` that already exists in the database,
+        update the resource by its `fides_key`. Otherwise, create a new resource.
 
-        Resources that have `is_default=True` cannot be deleted and will respond
-        with a `403 Forbidden`.
+        Responds with a `201 Created` if even a single resource in `resources`
+        did not previously exist. Otherwise, responds with a `200 OK`.
+
+        The `is_default` field cannot be updated and will respond
+        with a `403 Forbidden` if attempted.
         """
+
         sql_model = sql_model_map[model_type]
-        await forbid_if_default(sql_model, fides_key, db)
-        deleted_resource = await delete_resource(sql_model, fides_key, db)
-        # Convert the resource to a dict explicitly for the response
-        deleted_resource_dict = model_map[model_type].from_orm(deleted_resource).dict()
+        resource_dicts = [resource.dict() for resource in resources]
+        for resource in resources:
+            await validate_data_categories(resource, db)
+
+        await forbid_if_editing_any_is_default(sql_model, resource_dicts, db)
+        result = await upsert_resources(sql_model, resource_dicts, db)
+        response.status_code = (
+            status.HTTP_201_CREATED if result[0] > 0 else response.status_code
+        )
+
         return {
-            "message": "resource deleted",
-            "resource": deleted_resource_dict,
+            "message": f"Upserted {len(resources)} {sql_model.__name__}(s)",
+            "inserted": result[0],
+            "updated": result[1],
         }
 
-    route = APIRoute(
-        path=f"{API_PREFIX}/{model_type}/" + "{fides_key}",
-        methods=["delete"],
-        tags=[fides_model.__name__],
-        endpoint=delete,
+
+    return router
+
+
+def delete_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
+    """Return a configured version of a generic 'Delete' route."""
+
+    router = APIRouter(prefix=f"{API_PREFIX}/{model_type}", tags=[fides_model.__name__])
+
+    @router.delete(
+        path="/{fides_key}",
         dependencies=[
             Security(
                 verify_oauth_client_prod,
@@ -393,5 +372,25 @@ def delete_route_factory(fides_model: FidesModelType, model_type: str) -> APIRou
             },
         },
     )
+    async def delete(
+        fides_key: str,
+        db: AsyncSession = Depends(get_async_db),
+    ) -> Dict:
+        """
+        Delete a resource by its fides_key.
 
-    return route
+        Resources that have `is_default=True` cannot be deleted and will respond
+        with a `403 Forbidden`.
+        """
+        sql_model = sql_model_map[model_type]
+        await forbid_if_default(sql_model, fides_key, db)
+        deleted_resource = await delete_resource(sql_model, fides_key, db)
+        # Convert the resource to a dict explicitly for the response
+        deleted_resource_dict = model_map[model_type].from_orm(deleted_resource).dict()
+        return {
+            "message": "resource deleted",
+            "resource": deleted_resource_dict,
+        }
+
+
+    return router
