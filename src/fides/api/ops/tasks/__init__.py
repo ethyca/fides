@@ -44,7 +44,6 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
     """
     Returns a configured version of the Celery application
     """
-    logger.info("Creating Celery app...")
     app = Celery(__name__)
 
     celery_config: Dict[str, Any] = {
@@ -62,7 +61,6 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
 
     app.conf.update(celery_config)
 
-    logger.info("Autodiscovering tasks...")
     app.autodiscover_tasks(
         [
             "fides.api.ops.tasks",

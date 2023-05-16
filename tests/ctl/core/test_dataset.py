@@ -424,9 +424,9 @@ TEST_DATABASE_PARAMETERS = {
         "init_script_path": "tests/ctl/data/example_sql/snowflake_example.sql",
         "is_external": True,
         "expected_collection": {
-            "public": {
-                "visit": ["email", "last_visit"],
-                "login": ["id", "customer_id", "time"],
+            "PUBLIC": {
+                "VISIT": ["EMAIL", "LAST_VISIT"],
+                "LOGIN": ["ID", "CUSTOMER_ID", "TIME"],
             }
         },
     },
