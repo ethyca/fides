@@ -5,19 +5,19 @@ All routes should get imported here and added to the CTL_ROUTER
 """
 from fastapi import APIRouter
 
+from .admin import ADMIN_ROUTER
+from .generate import GENERATE_ROUTER
 from .generic import (
     DATA_CATEGORY_ROUTER,
     DATA_QUALIFIER_ROUTER,
     DATA_SUBJECT_ROUTER,
-    POLICY_ROUTER,
-    DATASET_ROUTER,
     DATA_USE_ROUTER,
-    REGISTRY_ROUTER,
+    DATASET_ROUTER,
     EVALUATION_ROUTER,
     ORGANIZATION_ROUTER,
+    POLICY_ROUTER,
+    REGISTRY_ROUTER,
 )
-from .admin import ADMIN_ROUTER
-from .generate import GENERATE_ROUTER
 from .health import HEALTH_ROUTER
 from .system import SYSTEM_CONNECTIONS_ROUTER, SYSTEM_ROUTER
 from .validate import VALIDATE_ROUTER

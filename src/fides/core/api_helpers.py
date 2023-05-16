@@ -9,8 +9,8 @@ from fideslang.parse import parse_dict
 from fideslang.validation import FidesKey
 from requests import Response
 
-from fides.core import api
 from fides.common.utils import check_response_auth
+from fides.core import api
 
 
 def get_server_resources(

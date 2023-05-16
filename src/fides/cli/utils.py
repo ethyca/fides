@@ -1,14 +1,12 @@
 """Contains reusable utils for the CLI commands."""
 
 import json
-import pprint
-import sys
 from datetime import datetime, timezone
 from functools import update_wrapper
 from importlib.metadata import version
 from os import getenv
 from platform import system
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 import requests
 import rich_click as click
@@ -27,6 +25,7 @@ from requests import get, put
 
 import fides
 from fides.api.ops.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
+from fides.common.utils import check_response, echo_green, echo_red
 from fides.connectors.models import (
     AWSConfig,
     BigQueryConfig,
@@ -43,7 +42,6 @@ from fides.core.config.credentials_settings import (
 )
 from fides.core.config.helpers import get_config_from_file
 from fides.core.config.utils import get_dev_mode
-from fides.common.utils import check_response, echo_green, echo_red
 
 APP = fides.__name__
 PACKAGE = "ethyca-fides"

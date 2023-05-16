@@ -1,3 +1,4 @@
+# type: ignore
 """
 Contains all of the factory functions to generate generic CRUD endpoints.
 

@@ -4,12 +4,12 @@ These utils are designed to be safe to use across Fides, with no potential for c
 These utils should only import from 3rd-party libraries, with zero imports
 from local Fides modules.
 """
+import json
+import pprint
 import sys
 from functools import partial
-import json
 from json.decoder import JSONDecodeError
-import pprint
-from typing import Union, Dict
+from typing import Dict, Union
 
 import click
 import requests

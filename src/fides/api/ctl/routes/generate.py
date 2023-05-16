@@ -35,6 +35,7 @@ from fides.core.utils import validate_db_engine
 
 GENERATE_ROUTER = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
 
+
 class ValidTargets(str, Enum):
     """
     Validation of targets attempted to generate resources from
@@ -101,8 +102,6 @@ class GenerateResponse(BaseModel):
     """
 
     generate_results: Optional[List[Union[Dataset, System]]]
-
-
 
 
 @GENERATE_ROUTER.post(

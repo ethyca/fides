@@ -11,9 +11,8 @@ from fides.common.utils import handle_cli_response
 from fides.connectors.models import AWSConfig, OktaConfig
 from fides.core import api
 from fides.core.api_helpers import get_server_resource, get_server_resources
-from fides.core.parse import parse
-
 from fides.core.filters import filter_aws_systems
+from fides.core.parse import parse
 from fides.core.utils import echo_green, echo_red
 
 

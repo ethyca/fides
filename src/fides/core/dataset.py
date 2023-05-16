@@ -8,6 +8,7 @@ from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import text
 
+from fides.common.utils import echo_green, echo_red
 from fides.connectors.aws import (
     create_dynamodb_dataset,
     describe_dynamo_tables,
@@ -18,9 +19,7 @@ from fides.connectors.bigquery import get_bigquery_engine
 from fides.connectors.models import AWSConfig, BigQueryConfig
 from fides.core.api_helpers import list_server_resources
 from fides.core.parse import parse
-
 from fides.core.utils import check_fides_key, generate_unique_fides_key, get_db_engine
-from fides.common.utils import echo_green, echo_red
 
 SCHEMA_EXCLUSION = {
     "postgresql": ["information_schema"],

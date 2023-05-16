@@ -4,18 +4,17 @@ objects that don't require any extra logic.
 """
 from fideslang import (
     DataCategory,
-    DataUse,
-    DataSubject,
     DataQualifier,
     Dataset,
+    DataSubject,
+    DataUse,
+    Evaluation,
     Organization,
     Policy,
     Registry,
-    Evaluation,
 )
 
 from fides.api.ctl.routes.router_factory import generic_router_factory
-
 
 DATA_CATEGORY_ROUTER = generic_router_factory(
     fides_model=DataCategory, model_type="data_category"

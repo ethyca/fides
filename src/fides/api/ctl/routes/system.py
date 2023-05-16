@@ -5,7 +5,6 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
-from loguru import logger as log
 from pydantic.types import conlist
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
@@ -13,17 +12,20 @@ from starlette import status
 from starlette.status import HTTP_200_OK
 
 from fides.api.ctl.database.crud import (
-    create_resource,
     get_resource,
     get_resource_with_custom_fields,
     list_resource,
 )
 from fides.api.ctl.database.session import get_async_db
-from fides.api.ctl.schemas.system import SystemResponse
-from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
-    PrivacyDeclaration,
-    System,
+from fides.api.ctl.database.system import (
+    create_system,
+    get_system,
+    update_system,
+    upsert_system,
+    validate_privacy_declarations,
 )
+from fides.api.ctl.schemas.system import SystemResponse
+from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1.scope_registry import (
@@ -47,13 +49,6 @@ from fides.api.ops.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
-from fides.api.ctl.database.system import (
-    get_system,
-    update_system,
-    upsert_system,
-    validate_privacy_declarations,
-)
-
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
 SYSTEM_CONNECTIONS_ROUTER = APIRouter(
@@ -225,42 +220,7 @@ async def create(
     Override `System` create/POST to handle `.privacy_declarations` defined inline,
     for backward compatibility and ease of use for API users.
     """
-    await validate_privacy_declarations(db, resource)
-    # copy out the declarations to be stored separately
-    # as they will be processed AFTER the system is added
-    privacy_declarations = resource.privacy_declarations
-
-    # remove the attribute on the system update since the declarations will be created separately
-    delattr(resource, "privacy_declarations")
-
-    # create the system resource using generic creation
-    # the system must be created before the privacy declarations so that it can be referenced
-    created_system = await create_resource(
-        System, resource_dict=resource.dict(), async_session=db
-    )
-
-    privacy_declaration_exception = None
-    try:
-        async with db.begin():
-            # create the specified declarations as records in their own table
-            for privacy_declaration in privacy_declarations:
-                data = privacy_declaration.dict()
-                data["system_id"] = created_system.id  # add FK back to system
-                PrivacyDeclaration.create(
-                    db, data=data
-                )  # create the associated PrivacyDeclaration
-    except Exception as e:
-        log.error(
-            f"Error adding privacy declarations, reverting system creation: {str(privacy_declaration_exception)}"
-        )
-        async with db.begin():
-            await db.delete(created_system)
-        raise e
-
-    async with db.begin():
-        await db.refresh(created_system)
-
-    return created_system
+    return await create_system(resource, db)
 
 
 @SYSTEM_ROUTER.get(

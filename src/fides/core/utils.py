@@ -34,6 +34,7 @@ class Credentials(BaseModel):
     user_id: str
     access_token: str
 
+
 def get_db_engine(connection_string: str) -> Engine:
     """
     Use SQLAlchemy to create a DB engine.
@@ -52,6 +53,7 @@ def get_db_engine(connection_string: str) -> Engine:
         raise Exception(f"Database connection failed with engine:\n{engine}!") from err
     return engine
 
+
 def validate_db_engine(connection_string: str) -> None:
     """
     Use SQLAlchemy to create a DB engine.
@@ -62,6 +64,7 @@ def validate_db_engine(connection_string: str) -> None:
             connection.execute("SELECT 1")
     except SQLAlchemyError as error:
         raise ConnectorAuthFailureException(error)
+
 
 def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
     """

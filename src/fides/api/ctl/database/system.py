@@ -10,10 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from fides.api.ctl.database.crud import (
-    get_resource,
-    update_resource,
-)
+from fides.api.ctl.database.crud import create_resource, get_resource, update_resource
 from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     DataUse,
     PrivacyDeclaration,
@@ -90,12 +87,13 @@ async def upsert_system(
             log.debug(
                 f"Upsert System with fides_key {resource.fides_key} not found, will create"
             )
-            await create(resource=resource, db=db)
+            await create_system(resource=resource, db=db)
             inserted += 1
             continue
         await update_system(resource=resource, db=db)
         updated += 1
     return (inserted, updated)
+
 
 async def upsert_privacy_declarations(
     db: AsyncSession, resource: SystemSchema, system: System
@@ -155,3 +153,49 @@ async def update_system(resource: SystemSchema, db: AsyncSession) -> Dict:
     async with db.begin():
         await db.refresh(updated_system)
     return updated_system
+
+
+async def create_system(
+    resource: SystemSchema,
+    db: AsyncSession,
+) -> Dict:
+    """
+    Override `System` create/POST to handle `.privacy_declarations` defined inline,
+    for backward compatibility and ease of use for API users.
+    """
+    await validate_privacy_declarations(db, resource)
+    # copy out the declarations to be stored separately
+    # as they will be processed AFTER the system is added
+    privacy_declarations = resource.privacy_declarations
+
+    # remove the attribute on the system update since the declarations will be created separately
+    delattr(resource, "privacy_declarations")
+
+    # create the system resource using generic creation
+    # the system must be created before the privacy declarations so that it can be referenced
+    created_system = await create_resource(
+        System, resource_dict=resource.dict(), async_session=db
+    )
+
+    privacy_declaration_exception = None
+    try:
+        async with db.begin():
+            # create the specified declarations as records in their own table
+            for privacy_declaration in privacy_declarations:
+                data = privacy_declaration.dict()
+                data["system_id"] = created_system.id  # add FK back to system
+                PrivacyDeclaration.create(
+                    db, data=data
+                )  # create the associated PrivacyDeclaration
+    except Exception as e:
+        log.error(
+            f"Error adding privacy declarations, reverting system creation: {str(privacy_declaration_exception)}"
+        )
+        async with db.begin():
+            await db.delete(created_system)
+        raise e
+
+    async with db.begin():
+        await db.refresh(created_system)
+
+    return created_system
