@@ -199,7 +199,6 @@ def get_router_factory(fides_model: FidesModelType, model_type: str) -> APIRoute
         sql_model = sql_model_map[model_type]
         return await get_resource_with_custom_fields(sql_model, fides_key, db)
 
-
     return router
 
 
@@ -247,7 +246,6 @@ def update_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         await validate_data_categories(resource, db)
         await forbid_if_editing_is_default(sql_model, resource.fides_key, resource, db)
         return await update_resource(sql_model, resource.dict(), db)
-
 
     return router
 
@@ -339,7 +337,6 @@ def upsert_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
             "updated": result[1],
         }
 
-
     return router
 
 
@@ -391,6 +388,5 @@ def delete_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
             "message": "resource deleted",
             "resource": deleted_resource_dict,
         }
-
 
     return router

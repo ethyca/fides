@@ -14,7 +14,9 @@ from fideslang import (
     Registry,
 )
 
-from fides.api.ctl.routes.router_factory import generic_router_factory  # type: ignore[attr-defined]
+from fides.api.ctl.routes.router_factory import (
+    generic_router_factory,  # type: ignore[attr-defined]
+)
 
 DATA_CATEGORY_ROUTER = generic_router_factory(
     fides_model=DataCategory, model_type="data_category"
