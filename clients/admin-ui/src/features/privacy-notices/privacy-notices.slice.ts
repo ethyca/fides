@@ -36,7 +36,7 @@ const privacyNoticesApi = baseApi.injectEndpoints({
     >({
       query: (params) => ({
         url: `privacy-notice/`,
-        params: { ...params, systems_applicable: false, show_disabled: true },
+        params: { ...params, systems_applicable: true, show_disabled: true },
       }),
       providesTags: () => ["Privacy Notices"],
     }),

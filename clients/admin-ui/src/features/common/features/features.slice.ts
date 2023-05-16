@@ -146,8 +146,7 @@ export const useFeatures = (): Features => {
 
   const version = health?.version;
 
-  // const plus = plusHealth !== undefined;
-  const plus = true;
+  const plus = plusHealth !== undefined;
   const plusVersion = plusHealth?.fidesplus_version;
   const dataFlowScanning = plusHealth
     ? !!plusHealth.system_scanner.enabled
