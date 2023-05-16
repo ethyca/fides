@@ -370,6 +370,7 @@ def _save_privacy_preferences_for_identities(
                 "hashed_email": hashed_email,
                 "hashed_fides_user_device": hashed_device_id,
                 "hashed_phone_number": hashed_phone_number,
+                "method": request_data.method,
                 "phone_number": phone_number,
                 "preference": privacy_preference.preference,
                 "privacy_notice_history_id": privacy_preference.privacy_notice_history_id,

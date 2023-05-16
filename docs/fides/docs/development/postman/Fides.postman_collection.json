@@ -5698,7 +5698,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n   \"browser_identity\": {\n       \"ga_client_id\": \"UA-XXXXXXXXX\",\n       \"ljt_readerID\": \"test_sovrn_id\",\n       \"fides_user_device_id\": \"{{fides_user_device_id}}\"\n   },\n   \"preferences\": [{\n       \"privacy_notice_history_id\": \"{{privacy_notice_history_id}}\",\n       \"preference\": \"opt_out\"\n   }],\n   \"request_origin\": \"privacy_center\",\n   \"url_recorded\": \"example.com/privacy_center\",\n   \"user_agent\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24\",\n   \"user_geography\": \"us_ca\"\n}",
+							"raw": "{\n   \"browser_identity\": {\n       \"ga_client_id\": \"UA-XXXXXXXXX\",\n       \"ljt_readerID\": \"test_sovrn_id\",\n       \"fides_user_device_id\": \"{{fides_user_device_id}}\"\n   },\n   \"preferences\": [{\n       \"privacy_notice_history_id\": \"{{privacy_notice_history_id}}\",\n       \"preference\": \"opt_out\"\n   }],\n   \"user_geography\": \"us_ca\",\n   \"experience_config_history_id\": \"{{experience-config-id}}\",\n   \"privacy_experience_history_id\": \"{{privacy_experience_history_id}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -6116,6 +6116,11 @@
 		},
 		{
 			"key": "experience-config-id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "privacy_experience_history_id",
 			"value": "",
 			"type": "string"
 		}
