@@ -42,7 +42,9 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
     }),
     patchExperienceConfig: build.mutation<
       ExperienceConfigCreateOrUpdateResponse,
-      Partial<ExperienceConfigUpdate> & Pick<ExperienceConfigResponse, "id">
+      // Regions is required
+      Partial<ExperienceConfigUpdate> &
+        Pick<ExperienceConfigResponse, "id" | "regions">
     >({
       query: (payload) => {
         const { id, ...body } = payload;
