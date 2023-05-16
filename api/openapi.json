@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.12.1"
+    "version": "2.13.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3950,7 +3950,7 @@
           "Generate"
         ],
         "summary": "Generate",
-        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n* Okta: Systems\n* DB: Datasets\n* BigQuery: Datasets\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Snowflake: Datasets\n\nAll production deployments should implement HTTPS for security purposes",
+        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n* Okta: Systems\n* DB: Datasets\n* BigQuery: Datasets\n* DynamoDB: Datasets\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Snowflake: Datasets\n\nAll production deployments should implement HTTPS for security purposes",
         "operationId": "generate_api_v1_generate_post",
         "requestBody": {
           "content": {
@@ -4574,359 +4574,6 @@
         ]
       }
     },
-    "/api/v1/user": {
-      "get": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "Get Users",
-        "description": "Returns a paginated list of all users",
-        "operationId": "get_users_api_v1_user_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Username",
-              "type": "string"
-            },
-            "name": "username",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Page",
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 1
-            },
-            "name": "page",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Size",
-              "maximum": 100.0,
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 50
-            },
-            "name": "size",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Page_UserResponse_"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "user:read"
-            ]
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "Create User",
-        "description": "Create a user given a username and password.\nIf `password` is sent as a base64 encoded string, it will automatically be decoded\nserver-side before being encrypted and persisted.\nIf `password` is sent as a plaintext string, it will be encrypted and persisted as is.\n\nThe user is given no roles by default.",
-        "operationId": "create_user_api_v1_user_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Config Path Override",
-              "type": "string",
-              "default": ""
-            },
-            "name": "config_path_override",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Verbose",
-              "type": "boolean",
-              "default": false
-            },
-            "name": "verbose",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserCreate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserCreateResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "user:create"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/user/{user_id}": {
-      "get": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "Get User",
-        "description": "Returns a User based on an Id",
-        "operationId": "get_user_api_v1_user__user_id__get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "User Id",
-              "type": "string"
-            },
-            "name": "user_id",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "user:read"
-            ]
-          }
-        ]
-      },
-      "put": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "Update User",
-        "description": "Update a user given a `user_id`. If the user is not updating their own data,\nthey need the USER_UPDATE scope",
-        "operationId": "update_user_api_v1_user__user_id__put",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "User Id",
-              "type": "string"
-            },
-            "name": "user_id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserUpdate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": []
-          }
-        ]
-      },
-      "delete": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "Delete User",
-        "description": "Deletes the User and associated ClientDetail if applicable.",
-        "operationId": "delete_user_api_v1_user__user_id__delete",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "User Id",
-              "type": "string"
-            },
-            "name": "user_id",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "user:delete"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/login": {
-      "post": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "User Login",
-        "description": "Login the user by creating a client if it doesn't exist, and have that client\ngenerate a token.",
-        "operationId": "user_login_api_v1_login_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Config Path Override",
-              "type": "string",
-              "default": ""
-            },
-            "name": "config_path_override",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Verbose",
-              "type": "boolean",
-              "default": false
-            },
-            "name": "verbose",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserLogin"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserLoginResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/config": {
       "get": {
         "tags": [
@@ -5064,6 +4711,33 @@
         "operationId": "get_all_connection_types_api_v1_connection_type_get",
         "parameters": [
           {
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "description": "Page number",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "description": "Page size",
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "description": "Page size",
+              "default": 100
+            },
+            "name": "size",
+            "in": "query"
+          },
+          {
             "required": false,
             "schema": {
               "title": "Search",
@@ -5105,29 +4779,6 @@
               "type": "boolean"
             },
             "name": "erasure",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Page",
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 1
-            },
-            "name": "page",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Size",
-              "maximum": 100.0,
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 50
-            },
-            "name": "size",
             "in": "query"
           }
         ],
@@ -5554,6 +5205,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/SovrnDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DynamoDBDocsSchema"
                   }
                 ]
               }
@@ -8668,7 +8322,7 @@
           "Privacy Experience"
         ],
         "summary": "Privacy Experience List",
-        "description": "Return a paginated list of `PrivacyExperience` records in this system.\nIncludes some query params to help filter the list if needed",
+        "description": "Return a paginated list of `PrivacyExperience` records in this system.\nIncludes some query params to help filter the list if needed. Returns\nrelevant privacy notices embedded in the experience response.\n\n'region' and 'show_disabled' query params are passed along to further filter\nnotices as well.",
         "operationId": "privacy_experience_list_api_v1_privacy_experience_get",
         "parameters": [
           {
@@ -8737,6 +8391,186 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Page_PrivacyExperienceResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-experience:read"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Privacy Experience"
+        ],
+        "summary": "Privacy Experience Create",
+        "description": "Bulk create Privacy Experiences. Returns related notices in the response.",
+        "operationId": "privacy_experience_create_api_v1_privacy_experience_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Bulk Experience Data",
+                "maxItems": 50,
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PrivacyExperienceCreate"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Privacy Experience Create Api V1 Privacy Experience Post",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PrivacyExperienceResponse"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-experience:create"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Privacy Experience"
+        ],
+        "summary": "Privacy Experience Bulk Update",
+        "description": "Bulk update privacy experiences.  Related notices are returned in the response.",
+        "operationId": "privacy_experience_bulk_update_api_v1_privacy_experience_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Privacy Experience Updates",
+                "maxItems": 50,
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PrivacyExperienceWithId"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Privacy Experience Bulk Update Api V1 Privacy Experience Patch",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PrivacyExperienceResponse"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-experience:update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/privacy-experience/{privacy_experience_id}": {
+      "get": {
+        "tags": [
+          "Privacy Experience"
+        ],
+        "summary": "Privacy Experience Detail",
+        "description": "Get privacy experience with embedded notices.\n\nshow_disabled and region_query params are passed onto optionally filter the embedded notices.",
+        "operationId": "privacy_experience_detail_api_v1_privacy_experience__privacy_experience_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Privacy Experience Id",
+              "type": "string"
+            },
+            "name": "privacy_experience_id",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Show Disabled",
+              "type": "boolean",
+              "default": true
+            },
+            "name": "show_disabled",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            },
+            "name": "region",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyExperienceResponse"
                 }
               }
             }
@@ -12331,6 +12165,153 @@
         ]
       }
     },
+    "/api/v1/user/{user_id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get User",
+        "description": "Returns a User based on an Id",
+        "operationId": "get_user_api_v1_user__user_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:read"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update User",
+        "description": "Update a user given a `user_id`. If the user is not updating their own data,\nthey need the USER_UPDATE scope",
+        "operationId": "update_user_api_v1_user__user_id__put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Delete User",
+        "description": "Deletes the User and associated ClientDetail if applicable.",
+        "operationId": "delete_user_api_v1_user__user_id__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:delete"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/user/{user_id}/reset-password": {
       "post": {
         "tags": [
@@ -12695,6 +12676,212 @@
             ]
           }
         ]
+      }
+    },
+    "/api/v1/user": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get Users",
+        "description": "Returns a paginated list of all users",
+        "operationId": "get_users_api_v1_user_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "name": "username",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_UserResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:read"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Create User",
+        "description": "Create a user given a username and password.\nIf `password` is sent as a base64 encoded string, it will automatically be decoded\nserver-side before being encrypted and persisted.\nIf `password` is sent as a plaintext string, it will be encrypted and persisted as is.\n\nThe user is given no roles by default.",
+        "operationId": "create_user_api_v1_user_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Config Path Override",
+              "type": "string",
+              "default": ""
+            },
+            "name": "config_path_override",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Verbose",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "verbose",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserCreateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:create"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/login": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "User Login",
+        "description": "Login the user by creating a client if it doesn't exist, and have that client\ngenerate a token.",
+        "operationId": "user_login_api_v1_login_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Config Path Override",
+              "type": "string",
+              "default": ""
+            },
+            "name": "config_path_override",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Verbose",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "verbose",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/user/{user_id}/permission": {
@@ -13972,6 +14159,7 @@
           "manual",
           "sovrn",
           "attentive",
+          "dynamodb",
           "manual_webhook",
           "timescale",
           "fides"
@@ -14529,6 +14717,9 @@
               },
               {
                 "$ref": "#/components/schemas/SovrnDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/DynamoDBDocsSchema"
               }
             ]
           },
@@ -15190,7 +15381,7 @@
             "type": "string"
           }
         },
-        "description": "A base template for all other Fidesops Schemas to inherit from."
+        "description": "A base template for all other Fides Schemas to inherit from."
       },
       "DatasetConfigSchema": {
         "title": "DatasetConfigSchema",
@@ -15467,6 +15658,35 @@
           }
         },
         "description": "Response model for dataset dry run"
+      },
+      "DynamoDBDocsSchema": {
+        "title": "DynamoDBDocsSchema",
+        "required": [
+          "region_name",
+          "aws_secret_access_key",
+          "aws_access_key_id"
+        ],
+        "type": "object",
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "region_name": {
+            "title": "Region Name",
+            "type": "string"
+          },
+          "aws_secret_access_key": {
+            "title": "Aws Secret Access Key",
+            "type": "string"
+          },
+          "aws_access_key_id": {
+            "title": "Aws Access Key Id",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "DynamoDB Secrets Schema for API Docs"
       },
       "EmailDocsSchema": {
         "title": "EmailDocsSchema",
@@ -16206,7 +16426,7 @@
             "type": "object"
           }
         },
-        "description": "A base template for all other Fidesops Schemas to inherit from."
+        "description": "A base template for all other Fides Schemas to inherit from."
       },
       "ManualWebhookField": {
         "title": "ManualWebhookField",
@@ -18000,11 +18220,72 @@
         },
         "description": "Extension of base pydantic model to include DB `id` field in the response"
       },
-      "PrivacyExperienceResponse": {
-        "title": "PrivacyExperienceResponse",
+      "PrivacyExperienceCreate": {
+        "title": "PrivacyExperienceCreate",
         "required": [
           "component",
           "delivery_mechanism",
+          "regions"
+        ],
+        "type": "object",
+        "properties": {
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "component": {
+            "$ref": "#/components/schemas/ComponentType"
+          },
+          "delivery_mechanism": {
+            "$ref": "#/components/schemas/DeliveryMechanism"
+          },
+          "regions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          },
+          "component_title": {
+            "title": "Component Title",
+            "type": "string"
+          },
+          "component_description": {
+            "title": "Component Description",
+            "type": "string"
+          },
+          "banner_title": {
+            "title": "Banner Title",
+            "type": "string"
+          },
+          "banner_description": {
+            "title": "Banner Description",
+            "type": "string"
+          },
+          "link_label": {
+            "title": "Link Label",
+            "type": "string"
+          },
+          "confirmation_button_label": {
+            "title": "Confirmation Button Label",
+            "type": "string"
+          },
+          "reject_button_label": {
+            "title": "Reject Button Label",
+            "type": "string"
+          },
+          "acknowledgement_button_label": {
+            "title": "Acknowledgement Button Label",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "An API representation of a PrivacyExperience.\nThis model doesn't include an `id` so that it can be used for creation.\nIt also establishes some fields _required_ for creation"
+      },
+      "PrivacyExperienceResponse": {
+        "title": "PrivacyExperienceResponse",
+        "required": [
           "id",
           "created_at",
           "updated_at",
@@ -18100,6 +18381,71 @@
         "additionalProperties": false,
         "description": "An API representation of a PrivacyExperience used for response payloads"
       },
+      "PrivacyExperienceWithId": {
+        "title": "PrivacyExperienceWithId",
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "component": {
+            "$ref": "#/components/schemas/ComponentType"
+          },
+          "delivery_mechanism": {
+            "$ref": "#/components/schemas/DeliveryMechanism"
+          },
+          "regions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          },
+          "component_title": {
+            "title": "Component Title",
+            "type": "string"
+          },
+          "component_description": {
+            "title": "Component Description",
+            "type": "string"
+          },
+          "banner_title": {
+            "title": "Banner Title",
+            "type": "string"
+          },
+          "banner_description": {
+            "title": "Banner Description",
+            "type": "string"
+          },
+          "link_label": {
+            "title": "Link Label",
+            "type": "string"
+          },
+          "confirmation_button_label": {
+            "title": "Confirmation Button Label",
+            "type": "string"
+          },
+          "reject_button_label": {
+            "title": "Reject Button Label",
+            "type": "string"
+          },
+          "acknowledgement_button_label": {
+            "title": "Acknowledgement Button Label",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "An API representation of a PrivacyExperience that includes an `id` field.\nUsed to help model API responses and update payloads"
+      },
       "PrivacyNoticeCreation": {
         "title": "PrivacyNoticeCreation",
         "required": [
@@ -18161,17 +18507,17 @@
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_overlay": {
             "title": "Displayed In Overlay",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_api": {
             "title": "Displayed In Api",
             "type": "boolean",
-            "default": true
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -18241,17 +18587,17 @@
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_overlay": {
             "title": "Displayed In Overlay",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_api": {
             "title": "Displayed In Api",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "id": {
             "title": "Id",
@@ -18367,17 +18713,17 @@
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_overlay": {
             "title": "Displayed In Overlay",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_api": {
             "title": "Displayed In Api",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "id": {
             "title": "Id",
@@ -18462,17 +18808,17 @@
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_overlay": {
             "title": "Displayed In Overlay",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "displayed_in_api": {
             "title": "Displayed In Api",
             "type": "boolean",
-            "default": true
+            "default": false
           },
           "id": {
             "title": "Id",
@@ -18649,7 +18995,7 @@
             "type": "integer"
           }
         },
-        "description": "A base template for all other Fidesops Schemas to inherit from."
+        "description": "A base template for all other Fides Schemas to inherit from."
       },
       "PrivacyRequestResponse": {
         "title": "PrivacyRequestResponse",
@@ -19613,6 +19959,9 @@
               },
               {
                 "$ref": "#/components/schemas/SovrnDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/DynamoDBDocsSchema"
               }
             ]
           },
@@ -20750,7 +21099,8 @@
           "aws",
           "db",
           "okta",
-          "bigquery"
+          "bigquery",
+          "dynamodb"
         ],
         "type": "string",
         "description": "Validation of targets attempted to generate resources from"

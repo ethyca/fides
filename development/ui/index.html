@@ -891,9 +891,11 @@ additional <a href="#managing-users">user endpoints</a>.</p>
 <p>From the root <code>fidesops</code> directory, run the following:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="nb">cd</span><span class="w"> </span>clients/admin-ui
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="nb">cd</span><span class="w"> </span>clients
 <span class="w">    </span>npm<span class="w"> </span>install
-<span class="w">    </span>npm<span class="w"> </span>run<span class="w"> </span>dev
+<span class="w">    </span><span class="nb">cd</span><span class="w"> </span>admin-ui
+<span class="w">    </span>turbo<span class="w"> </span>run<span class="w"> </span>dev
 </code></pre></div></td></tr></table></div>
 <p>This will navigate you to the <code>admin-ui</code> directory, and run the development environment.</p>
 <p>Visit <code>http://localhost:3000/</code> in your browser, and provide your user credentials to log in.</p>
@@ -908,9 +910,11 @@ will automatically pick up:</p>
 <p>To deploy a full version of the UI from a backend, run the following from the root fidesops directory:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="nb">cd</span><span class="w"> </span>clients/admin-ui
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="nb">cd</span><span class="w"> </span>clients
 <span class="w">    </span>npm<span class="w"> </span>install
-<span class="w">    </span>npm<span class="w"> </span>run<span class="w"> </span>prod-export
+<span class="w">    </span><span class="nb">cd</span><span class="w"> </span>admin-ui
+<span class="w">    </span>turbo<span class="w"> </span>run<span class="w"> </span>prod-export
 </code></pre></div></td></tr></table></div>
 <p>This will build and place the Admin UI files into a location accessible by backend fidesops deployments.</p>
 <p>To test the UI, run <code>nox -s dev</code> from the root directory, and visit <code>http://0.0.0.0:8080/index.html</code>.</p>
