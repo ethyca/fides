@@ -11,7 +11,12 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from sqlalchemy import literal
 from sqlalchemy.orm import Query, Session
-from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
 from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.ops.api.deps import get_db
@@ -43,6 +48,7 @@ from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeHist
 from fides.api.ops.models.privacy_preference import (
     CurrentPrivacyPreference,
     PrivacyPreferenceHistory,
+    RequestOrigin,
 )
 from fides.api.ops.models.privacy_request import (
     ConsentRequest,
@@ -189,26 +195,13 @@ def mask_ip_address(ip_address: Optional[str]) -> Optional[str]:
     return masked
 
 
-def supplement_privacy_preferences_with_user_and_experience_details(
-    db: Session, request: Request, data: PrivacyPreferencesRequest
-) -> PrivacyPreferencesCreate:
+def _get_request_origin(
+    db: Session, data: PrivacyPreferencesRequest
+) -> Optional[RequestOrigin]:
+    """Get the request origin (here privacy center, overlay) from the experience if applicable
+
+    Additionally validate that the experience config history and experience history ids are valid if supplied.
     """
-    Pull additional user information from request headers to record for consent reporting purposes
-
-    Additionally validates experience details exist if provided here.
-    """
-    privacy_experience_history: Optional[PrivacyExperienceHistory] = None
-
-    if data.privacy_experience_history_id:
-        privacy_experience_history = PrivacyExperienceHistory.get(
-            db=db, object_id=data.privacy_experience_history_id
-        )
-        if not privacy_experience_history:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail="Invalid Privacy Experience History Id attached to preferences",
-            )
-
     if data.experience_config_history_id:
         privacy_experience_config_history = PrivacyExperienceConfigHistory.get(
             db=db, object_id=data.experience_config_history_id
@@ -219,6 +212,39 @@ def supplement_privacy_preferences_with_user_and_experience_details(
                 detail="Invalid Experience Config History Id attached to preferences",
             )
 
+    privacy_experience_history = None
+    if data.privacy_experience_history_id:
+        privacy_experience_history = PrivacyExperienceHistory.get(
+            db=db, object_id=data.privacy_experience_history_id
+        )
+        if not privacy_experience_history:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail="Invalid Privacy Experience History Id attached to preferences",
+            )
+
+        if (
+            privacy_experience_history.experience_config_history_id
+            and privacy_experience_history.experience_config_history_id
+            != data.experience_config_history_id
+        ):
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Mismatch between Experience Config History and Experience History detected",
+            )
+
+    return privacy_experience_history.component.value if privacy_experience_history else None  # type: ignore[attr-defined]
+
+
+def supplement_privacy_preferences_with_user_and_experience_details(
+    db: Session, request: Request, data: PrivacyPreferencesRequest
+) -> PrivacyPreferencesCreate:
+    """
+    Pull additional user information from request headers to record for consent reporting purposes
+
+    Additionally validates experience details exist if provided here.
+    """
+
     request_headers = request.headers
     ip_address: Optional[str] = request.client.host if request.client else None
     user_agent: Optional[str] = request_headers.get("User-Agent")
@@ -227,9 +253,7 @@ def supplement_privacy_preferences_with_user_and_experience_details(
     return PrivacyPreferencesCreate(
         **data.dict(),
         anonymized_ip_address=mask_ip_address(ip_address),
-        request_origin=privacy_experience_history.component.value  # type: ignore[attr-defined]
-        if privacy_experience_history
-        else None,
+        request_origin=_get_request_origin(db, data),
         url_recorded=url_recorded,
         user_agent=user_agent,
     )
@@ -326,8 +350,12 @@ def _save_privacy_preferences_for_identities(
             data={
                 "anonymized_ip_address": request_data.anonymized_ip_address,
                 "email": email,
-                "privacy_experience_config_history_id": request_data.experience_config_history_id,
-                "privacy_experience_history_id": request_data.privacy_experience_history_id,
+                "privacy_experience_config_history_id": request_data.experience_config_history_id
+                if request_data.experience_config_history_id
+                else None,
+                "privacy_experience_history_id": request_data.privacy_experience_history_id
+                if request_data.privacy_experience_history_id
+                else None,
                 "fides_user_device": fides_user_device_id,
                 "fides_user_device_provided_identity_id": fides_user_provided_identity.id
                 if fides_user_provided_identity
