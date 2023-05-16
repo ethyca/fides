@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.12.2b2.post0.dev22"
+    "version": "2.12.2b2.post0.dev23"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8891,7 +8891,7 @@
           "Privacy Preference"
         ],
         "summary": "Consent Request Verify For Privacy Preferences",
-        "description": "Verifies the verification code and returns the CurrentPrivacyPreferences if successful.\nThese are just the latest preferences saved for each PrivacyNotice.",
+        "description": "Allows retrieving Current Privacy Preferences through the Privacy Center\n\nVerifies the verification code and retrieves CurrentPrivacyPreferences, which are the latest\npreferences saved for each PrivacyNotice",
         "operationId": "consent_request_verify_for_privacy_preferences_api_v1_consent_request__consent_request_id__verify_for_privacy_preferences_post",
         "parameters": [
           {
@@ -8967,7 +8967,7 @@
           "Privacy Preference"
         ],
         "summary": "Save Privacy Preferences With Verified Identity",
-        "description": "Saves privacy preferences with respect to a verified user identity like an email or phone number\nand optionally a fides user device id.\n\nCreates historical records for these preferences for record keeping, and also updates current preferences.\nCreates a privacy request to propagate preferences to third party systems.",
+        "description": "Saves privacy preferences in the privacy center.\n\nThe ConsentRequest may have been created under an email, phone number, *or* fides user device id.\nPreferences can be saved under both an email *and* a fides user device id, if the email was persisted\nwith the ConsentRequest and the fides user device id is passed in with this secondary request.\n\nCreates historical records for these preferences for record keeping, and also updates current preferences.\nCreates a privacy request to propagate preferences to third party systems.",
         "operationId": "save_privacy_preferences_with_verified_identity_api_v1_consent_request__consent_request_id__privacy_preferences_patch",
         "parameters": [
           {
