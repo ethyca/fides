@@ -11,7 +11,7 @@ from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.oauth.utils import verify_oauth_client_prod
 from fides.core.config import CONFIG
 
-router = APIRouter(prefix=API_PREFIX, tags=["Admin"])
+ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])
 
 
 class DBActions(str, Enum):
@@ -20,7 +20,7 @@ class DBActions(str, Enum):
     reset = "reset"
 
 
-@router.post(
+@ADMIN_ROUTER.post(
     "/admin/db/{action}",
     tags=["Admin"],
     dependencies=[

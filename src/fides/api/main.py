@@ -19,10 +19,9 @@ from starlette.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
 
 import fides
-from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.database.seed import create_or_update_parent_user
-from fides.api.ctl.routes import admin, generate, generic, health, system, validate
+from fides.api.ctl.routes import CTL_ROUTER
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
     get_admin_index_as_response,
@@ -71,15 +70,7 @@ from fides.core.config import CONFIG, check_required_webserver_config_values
 
 VERSION = fides.__version__
 
-ROUTERS = generic.routers + [  # type: ignore[attr-defined]
-    admin.router,
-    generate.router,
-    health.router,
-    validate.router,
-    view.router,
-    system.system_connections_router,
-    system.system_router,
-]
+ROUTERS = [CTL_ROUTER, api_router]
 
 
 def create_fides_app(
@@ -127,7 +118,6 @@ def create_fides_app(
 
     for router in routers:
         fastapi_app.include_router(router)
-    fastapi_app.include_router(api_router)
 
     if security_env == "dev":
         # This removes auth requirements for specific endpoints

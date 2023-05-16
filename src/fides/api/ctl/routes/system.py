@@ -51,8 +51,8 @@ from fides.api.ops.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_request_body_cli,
 )
 
-system_router = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
-system_connections_router = APIRouter(
+SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
+SYSTEM_CONNECTIONS_ROUTER = APIRouter(
     tags=["System"], prefix=f"{V1_URL_PREFIX}{SYSTEM_CONNECTIONS}"
 )
 
@@ -98,7 +98,7 @@ async def validate_privacy_declarations(db: AsyncSession, system: SystemSchema) 
         logical_ids.add(logical_id)
 
 
-@system_connections_router.get(
+@SYSTEM_CONNECTIONS_ROUTER.get(
     "",
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
     status_code=HTTP_200_OK,
@@ -116,7 +116,7 @@ def get_system_connections(
     return paginate(query.order_by(ConnectionConfig.name.asc()), params=params)
 
 
-@system_connections_router.patch(
+@SYSTEM_CONNECTIONS_ROUTER.patch(
     "",
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
     status_code=HTTP_200_OK,
@@ -139,7 +139,7 @@ def patch_connections(
     return patch_connection_configs(db, configs, system)
 
 
-@system_router.put(
+@SYSTEM_ROUTER.put(
     "/",
     response_model=SystemResponse,
     responses={
@@ -199,7 +199,7 @@ async def upsert_system(
     return (inserted, updated)
 
 
-@system_router.post(
+@SYSTEM_ROUTER.post(
     "/upsert",
     dependencies=[
         Security(
@@ -297,7 +297,7 @@ async def update_system(resource: SystemSchema, db: AsyncSession) -> Dict:
     return updated_system
 
 
-@system_router.delete(
+@SYSTEM_ROUTER.delete(
     "/{fides_key}",
     responses={
         status.HTTP_403_FORBIDDEN: {
@@ -338,7 +338,7 @@ async def delete(
     }
 
 
-@system_router.post(
+@SYSTEM_ROUTER.post(
     "/",
     response_model=SystemResponse,
     status_code=status.HTTP_201_CREATED,
@@ -395,7 +395,7 @@ async def create(
     return created_system
 
 
-@system_router.get(
+@SYSTEM_ROUTER.get(
     "/",
     dependencies=[
         Security(
@@ -413,7 +413,7 @@ async def ls(  # pylint: disable=invalid-name
     return await list_resource(System, db)
 
 
-@system_router.get(
+@SYSTEM_ROUTER.get(
     "/{fides_key}",
     dependencies=[
         Security(

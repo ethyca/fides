@@ -1,15 +1,38 @@
 """
-Contains all of the generic CRUD endpoints that can be
-generated programmatically for each resource.
+This module generates all of the routers for the boilerplate/generic
+objects that don't require any extra logic.
 """
+from fideslang import (
+    DataCategory,
+    DataUse,
+    DataSubject,
+    DataQualifier,
+    Dataset,
+    Organization,
+    Policy,
+    Registry,
+    Evaluation,
+)
 
-from typing import List
+from fides.api.ctl.routes.router_factory import generic_router_factory
 
-from fideslang import model_map
 
-from fides.api.ctl.routes.generic_endpoint_utils import generic_router_factory
-from fides.api.ctl.utils.api_router import APIRouter
-
-routers: List[APIRouter] = []
-for model_type, fides_model in model_map.items():
-    routers += [generic_router_factory(fides_model=fides_model, model_type=model_type)]
+DATA_CATEGORY_ROUTER = generic_router_factory(
+    fides_model=DataCategory, model_type="data_category"
+)
+DATA_USE_ROUTER = generic_router_factory(fides_model=DataUse, model_type="data_use")
+DATA_SUBJECT_ROUTER = generic_router_factory(
+    fides_model=DataSubject, model_type="data_subject"
+)
+DATA_QUALIFIER_ROUTER = generic_router_factory(
+    fides_model=DataQualifier, model_type="data_qualifier"
+)
+DATASET_ROUTER = generic_router_factory(fides_model=Dataset, model_type="dataset")
+ORGANIZATION_ROUTER = generic_router_factory(
+    fides_model=Organization, model_type="organization"
+)
+POLICY_ROUTER = generic_router_factory(fides_model=Policy, model_type="policy")
+REGISTRY_ROUTER = generic_router_factory(fides_model=Registry, model_type="registry")
+EVALUATION_ROUTER = generic_router_factory(
+    fides_model=Evaluation, model_type="evaluation"
+)

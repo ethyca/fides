@@ -1,12 +1,7 @@
-# type: ignore
-# pylint: disable=redefined-outer-name,cell-var-from-loop
-
 """
 Contains all of the factory functions to generate generic CRUD endpoints.
 
-Generally used for `ctl`-related objects.
-
-NOTE: Each Generic factory follows the same basic pattern
+Mostly used for `ctl`-related objects.
 """
 
 from typing import Dict, List
