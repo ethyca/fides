@@ -43,6 +43,9 @@
               description: "a test sample privacy notice configuration",
               regions: ["us_ca"],
               consent_mechanism: "opt_in",
+              default_preference: "opt_out",
+              current_preference: null,
+              outdated_preference: null,
               has_gpc_flag: true,
               data_uses: ["advertising", "third_party_sharing"],
               enforcement_level: "system_wide",
@@ -58,7 +61,11 @@
             },
           ],
         },
-        geolocation: {},
+        geolocation: {
+          country: "US",
+          location: "US-CA",
+          region: "CA"
+        },
         options: {
           debug: true,
           isOverlayDisabled: false,
@@ -98,8 +105,8 @@
       <h2>Consent JSON</h2>
       <pre id="consent-json"></pre>
 
-      <h2>Consent Banner Link</h2>
-      <a href="#" id="fides-consent-link">Manage Consent</a>
+      <h2>Consent Modal Link</h2>
+      <a id="fides-consent-modal-link">Manage Consent</a>
 
       <h2>Consent Experience</h2>
       <pre id="consent-experience"></pre>

@@ -1,5 +1,7 @@
 import { ConsentConfig } from "./consent-config";
 
+export const FIDES_MODAL_LINK = "fides-consent-modal-link";
+
 export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.
   consent?: ConsentConfig;
@@ -49,6 +51,9 @@ export type PrivacyNotice = {
   description?: string;
   regions: Array<string>;
   consent_mechanism: ConsentMechanism;
+  default_preference: ConsentPreference;
+  current_preference: ConsentPreference | null;
+  outdated_preference: ConsentPreference | null;
   has_gpc_flag: boolean;
   data_uses: Array<string>;
   enforcement_level: EnforcementLevel;
@@ -72,6 +77,11 @@ export enum ConsentMechanism {
   OPT_IN = "opt_in",
   OPT_OUT = "opt_out",
   NOTICE_ONLY = "notice_only",
+}
+
+export enum ConsentPreference {
+  OPT_IN = "opt_in",
+  OPT_OUT = "opt_out",
 }
 
 export enum ExperienceComponent {

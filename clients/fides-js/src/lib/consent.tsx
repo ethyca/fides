@@ -1,9 +1,16 @@
-import { h, render } from "preact";
+import {h, render} from "preact";
 
-import { FidesOptions, UserGeolocation } from "./consent-types";
-import { debugLog } from "./consent-utils";
+import {
+  ConsentPreference,
+  ExperienceComponent,
+  ExperienceDeliveryMechanism, FIDES_MODAL_LINK,
+  FidesOptions,
+  UserGeolocation
+} from "./consent-types";
+import {debugLog} from "./consent-utils";
 
-import Overlay, { OverlayProps } from "../components/Overlay";
+import Overlay, {OverlayProps} from "../components/Overlay";
+import {getConsentContext} from "./consent-context";
 
 /**
  * Validate the config options
@@ -42,10 +49,17 @@ const validateOptions = (options: FidesOptions): boolean => {
  * Returns null if geolocation cannot be constructed by provided params
  */
 const constructLocation = (
-  geoLocation: UserGeolocation,
+  geoLocation?: UserGeolocation,
   debug: boolean = false
 ): string | null => {
-  debugLog(debug, "validating getLocation...");
+  debugLog(debug, "constructing geolocation...");
+  if (!geoLocation) {
+    debugLog(
+        debug,
+        "cannot construct user location since geoLocation is undefined"
+    );
+    return null;
+  }
   if (geoLocation.location) {
     return geoLocation.location;
   }
@@ -65,8 +79,8 @@ const constructLocation = (
 /**
  * Fetch the user's geolocation from an external API
  */
-const getLocation = async (
-  geolocationApiUrl: string,
+const getGeolocation = async (
+  geolocationApiUrl?: string,
   debug: boolean = false
 ): Promise<UserGeolocation> => {
   debugLog(debug, "Running getLocation...");
@@ -112,6 +126,51 @@ const getLocation = async (
   }
 };
 
+
+/**
+ * Hide pre-existing link in the DOM if we do not need to trigger a modal
+ */
+const hideModalLink = (debug: boolean): void => {
+  // TODO- it's possible that this element does not exist by the time this method runs
+  const modalLinkEl: HTMLElement | null = document.getElementById(FIDES_MODAL_LINK);
+  if (modalLinkEl) {
+    debugLog(
+        debug,
+        "modal link element exists, attempting to hide it",
+    );
+    // TODO: hide link
+    // eslint-disable-next-line no-param-reassign
+    modalLinkEl.style.display = 'none';
+  }
+  debugLog(
+      debug,
+      "modal link element does not exist, so there is nothing to hide",
+  );
+}
+
+/**
+ * Update the pre-existing modal link in the DOM to trigger the modal
+ */
+const bindModalLinkToModal = (debug: boolean): void => {
+  // TODO- it's possible that this element does not exist by the time this method runs
+  const modalLinkEl: HTMLElement | null = document.getElementById(FIDES_MODAL_LINK);
+  if (
+      modalLinkEl &&
+      // TODO: does this need to be an HTMLAnchorElement?
+      modalLinkEl instanceof HTMLAnchorElement
+  ) {
+    debugLog(
+        debug,
+        `Fides modal link element found, updating click event to trigger modal`
+    );
+    modalLinkEl.onclick = () => {
+      // TODO: render modal component
+    }
+  } else {
+    throw new Error("Fides modal link element could not be found")
+  }
+}
+
 /**
  * Initialize the Fides Consent overlay components.
  *
@@ -130,88 +189,119 @@ export const initOverlay = async ({
 
   debugLog(
     options.debug,
-    "Validating Fides consent banner options...",
+    "Validating Fides consent overlay options...",
     options
   );
   if (!validateOptions(options)) {
-    return Promise.reject(new Error("Invalid banner options"));
+    hideModalLink(options.debug)
+    return Promise.reject(new Error("Invalid overlay options"));
   }
 
   if (options.isOverlayDisabled) {
     debugLog(
       options.debug,
-      "Fides consent banner is disabled, skipping banner initialization!"
+      "Fides consent overlay is disabled, skipping overlay initialization!"
     );
+    hideModalLink(options.debug)
     return Promise.resolve();
   }
 
-  async function renderFidesOverlay() {
+  if (experience && experience.component !== ExperienceComponent.OVERLAY) {
+    hideModalLink(options.debug)
+    return Promise.resolve();
+  }
+
+  async function getExperience(userLocationString: String) {
+    debugLog(
+        options.debug,
+        "Fetching experience where component === privacy_center...",
+        userLocationString
+    );
+    // TODO: GET experience using location and user id (if exists)
+    return undefined
+  }
+
+  async function renderFidesOverlay(): Promise<void> {
     try {
       debugLog(
         options.debug,
-        "Rending Fides overlay CSS & HTML into the DOM..."
+        "Rendering Fides overlay CSS & HTML into the DOM..."
       );
+      let effectiveGeolocation = geolocation;
+      let effectiveExperience = experience;
 
-      // Fetch the user location (if not pre-loaded)
-      let userLocation: UserGeolocation | undefined = geolocation;
-      if (
-        !userLocation &&
-        options.isGeolocationEnabled &&
-        options.geolocationApiUrl
-      ) {
-        userLocation = await getLocation(
-          options.geolocationApiUrl,
-          options.debug
-        );
-        if (constructLocation(userLocation, options.debug)) {
-          // todo- get applicable notices using geoLocation
-          debugLog(options.debug, "User location found.", userLocation);
-        } else {
+      if (!experience) {
+        if (!constructLocation(geolocation)) {
+          if (options.isGeolocationEnabled) {
+            effectiveGeolocation = await getGeolocation(
+                options.geolocationApiUrl,
+                options.debug
+            );
+          } else {
+            throw new Error(`User location is required but could not be retrieved because geolocation is disabled.`);
+          }
+        }
+        const userLocationString = constructLocation(effectiveGeolocation)
+        if (!userLocationString) {
+          throw new Error(`User location could not be constructed from location params: ${effectiveGeolocation}.`);
+        }
+        effectiveExperience = await getExperience(userLocationString);
+        if (!effectiveExperience) {
           debugLog(
-            options.debug,
-            "User location could not be constructed from location params.",
-            userLocation
+              options.debug,
+              `No relevant experience found based on user location.`,
+              userLocationString
           );
+          hideModalLink(options.debug);
+          return await Promise.resolve()
+        }
+      }
+
+      if (!effectiveExperience?.privacy_notices || effectiveExperience.privacy_notices.length === 0) {
+        debugLog(
+            options.debug,
+            `No relevant notices in the privacy experience.`,
+            effectiveExperience
+        );
+        hideModalLink(options.debug);
+        return await Promise.resolve()
+      }
+
+      if (getConsentContext().globalPrivacyControl && effectiveExperience) {
+        effectiveExperience.privacy_notices.forEach(notice => {
+          if (notice.has_gpc_flag) {
+            // todo- send consent request downstream automatically with PATCH {{host}}/privacy-preferences
+          }
+        })
+      }
+
+
+      if (effectiveExperience && effectiveExperience.component === ExperienceComponent.OVERLAY) {
+        if (effectiveExperience.delivery_mechanism === ExperienceDeliveryMechanism.BANNER) {
+          hideModalLink(options.debug)
+          // Render the Overlay to the DOM!
+          render(
+              <Overlay
+                  consentDefaults={consentDefaults}
+                  options={options}
+                  experience={experience}
+                  geolocation={effectiveGeolocation}
+              />,
+              document.body
+          );
+          debugLog(options.debug, "Fides overlay is now showing!");
+        }
+        else if (effectiveExperience.delivery_mechanism === ExperienceDeliveryMechanism.LINK) {
+          bindModalLinkToModal(options.debug)
         }
       } else {
-        debugLog(
-          options.debug,
-          "Geolocation must be enabled if config.geolocation is not provided!"
-        );
+        hideModalLink(options.debug);
       }
-
-      // Render the Overlay to the DOM!
-      render(
-        <Overlay
-          consentDefaults={consentDefaults}
-          options={options}
-          experience={experience}
-          geolocation={userLocation}
-        />,
-        document.body
-      );
-      debugLog(options.debug, "Fides overlay is now showing!");
-
-      // Look for a "#fides-consent-link" element in the DOM and update it to link to the Privacy Center
-      // DEFER: Revisit whether or not this "link" logic is needed
-      const consentLinkEl = document.getElementById("fides-consent-link");
-      if (
-        consentLinkEl &&
-        consentLinkEl instanceof HTMLAnchorElement &&
-        options.privacyCenterUrl
-      ) {
-        debugLog(
-          options.debug,
-          `Fides consent link el found, replacing href with ${options.privacyCenterUrl}`
-        );
-        consentLinkEl.href = options.privacyCenterUrl;
-        // TODO: depending on notices / experience config, we update onclick of this link to nav to PC or open modal,
-        // or hide link entirely
-      } else {
-        debugLog(options.debug, "Fides consent link el not found");
-      }
+      return await Promise.resolve();
     } catch (e) {
+      hideModalLink(options.debug);
       debugLog(options.debug, e);
+      return Promise.reject(e)
     }
   }
 

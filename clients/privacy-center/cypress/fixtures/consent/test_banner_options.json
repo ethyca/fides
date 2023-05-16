@@ -1,0 +1,64 @@
+{
+  "consent": {
+    "options": [
+      {
+        "cookieKeys": ["data_sales"],
+        "default": true,
+        "fidesDataUseKey": "data_use.sales"
+      },
+      {
+        "cookieKeys": ["tracking"],
+        "default": false,
+        "fidesDataUseKey": "advertising"
+      }
+    ]
+  },
+  "experience": {
+    "version": "1.0",
+    "component": "overlay",
+    "delivery_mechanism": "banner",
+    "regions": ["us_ca", "us_co"],
+    "component_title": "Manage your consent",
+    "component_description":
+    "On this page you can opt in and out of these data uses cases",
+    "banner_title": "Manage your consent",
+    "banner_description":
+    "This test website is overriding the banner description label.",
+    "confirmation_button_label": "Accept Test",
+    "reject_button_label": "Reject Test",
+    "privacy_notices": [
+      {
+        "name": "Test privacy notice",
+        "description": "a test sample privacy notice configuration",
+        "regions": ["us_ca"],
+        "consent_mechanism": "opt_in",
+        "default_preference": "opt_out",
+        "current_preference": null,
+        "outdated_preference": null,
+        "has_gpc_flag": true,
+        "data_uses": ["advertising", "third_party_sharing"],
+        "enforcement_level": "system_wide",
+        "displayed_in_overlay": true,
+        "displayed_in_api": true,
+        "displayed_in_privacy_center": false,
+        "id": "pri_4bed96d0-b9e3-4596-a807-26b783836374",
+        "created_at": "2023-04-24T21:29:08.870351+00:00",
+        "updated_at": "2023-04-24T21:29:08.870351+00:00",
+        "version": 1.0,
+        "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4f"
+      }
+    ]
+  },
+  "geolocation": {
+    "country": "US",
+    "location": "US-CA",
+    "region": "CA"
+  },
+  "options": {
+    "debug": true,
+    "isOverlayDisabled": false,
+    "isGeolocationEnabled": false,
+    "geolocationApiUrl": "",
+    "privacyCenterUrl": "http://localhost:3000"
+  }
+}
