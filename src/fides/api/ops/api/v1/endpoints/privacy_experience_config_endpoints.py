@@ -292,6 +292,9 @@ def experience_config_update(
     db.refresh(experience_config)
 
     current_regions: List[PrivacyNoticeRegion] = experience_config.regions
+
+    # Unlink any PrivacyExperiences that are currently linked but not included in the request.
+    # Only the FK is removed; Privacy Experiences themselves are not deleted.
     not_included_in_request: List[
         PrivacyExperience
     ] = remove_config_from_matched_experiences(
@@ -311,7 +314,8 @@ def experience_config_update(
             human_friendly_list([reg.value for reg in regions]),
             experience_config.id,
         )
-    # Upserting PrivacyExperiences based on regions specified in the request
+    # Upserting PrivacyExperiences based on regions specified in the request.
+    # Valid Privacy Experiences will be linked via FK to the given Experience Config.
     (
         linked,
         unlinked_for_conflict,
