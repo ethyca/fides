@@ -60,7 +60,7 @@ jobs:
               echo ::set-output name=match::true
           fi
 
-      # We don't upload to Test PyPI if it is a real release
+      # We only upload to Test PyPI if it is a non-"prod" tag (not release or beta)
       - name: Upload to test pypi
         if: steps.check-tag.outputs.match != 'true'
         run: twine upload --repository testpypi dist/*
@@ -68,10 +68,20 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
 
-
+      # Upload to PyPI if it is a "prod" tag (release or beta)
       - name: Upload to pypi
         if: steps.check-tag.outputs.match == 'true'
         run: twine upload dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+
+      # Notify Fidesplus about a feature (non-prod) tag to trigger an integrated build
+      - name: Send Repository Dispatch Event
+        if: steps.check-tag.outputs.match != 'true'
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          client-payload: '{"tag": "${{ github.ref_name }}"}'
+          event-type: new-fides-feature-tag
+          repository: ethyca/fidesops-plus
+          token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
