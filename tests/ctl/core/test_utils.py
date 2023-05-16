@@ -7,7 +7,8 @@ import pytest
 import requests
 from fideslang.models import DatasetCollection, DatasetField
 
-from fides.core import utils
+from fides.core import utils as core_utils
+from fides.common import utils as common_utils
 from fides.core.config import get_config
 
 
@@ -42,7 +43,7 @@ def test_nested_collection_fields() -> Generator:
 @pytest.mark.unit
 def test_get_db_engine(test_config_path) -> None:
     conn_str = get_config(test_config_path).database.sync_database_uri
-    engine = utils.get_db_engine(conn_str)
+    engine = core_utils.get_db_engine(conn_str)
     assert str(engine.url) == conn_str
 
 
@@ -56,7 +57,7 @@ def test_nested_fields_unpacked(
     """
     collection = test_nested_collection_fields
     collected_field_names = []
-    for field in utils.get_all_level_fields(collection.dict()["fields"]):
+    for field in core_utils.get_all_level_fields(collection.dict()["fields"]):
         collected_field_names.append(field["name"])
     assert len(collected_field_names) == 5
 
@@ -73,7 +74,7 @@ def test_get_manifest_list(tmp_path: PosixPath) -> None:
         print(test_file)
         test_file.write_text("content")
 
-    manifest_list = utils.get_manifest_list(str(test_dir))
+    manifest_list = core_utils.get_manifest_list(str(test_dir))
     assert len(manifest_list) == 2
 
 
@@ -82,7 +83,7 @@ def test_get_manifest_list(tmp_path: PosixPath) -> None:
     [("foo", "foo"), ("@foo#", "_foo_"), (":_foo)bar!123$", "__foo_bar_123_")],
 )
 def test_sanitize_fides_key(fides_key: str, sanitized_fides_key: str) -> None:
-    assert sanitized_fides_key == utils.sanitize_fides_key(fides_key)
+    assert sanitized_fides_key == core_utils.sanitize_fides_key(fides_key)
 
 
 @pytest.mark.unit
@@ -91,7 +92,7 @@ def test_sanitize_fides_key(fides_key: str, sanitized_fides_key: str) -> None:
     [("foo", "foo"), ("@foo#", "_foo_"), (":_foo)bar!123$", "__foo_bar_123_")],
 )
 def test_check_fides_key(fides_key: str, sanitized_fides_key: str) -> None:
-    assert sanitized_fides_key == utils.check_fides_key(fides_key)
+    assert sanitized_fides_key == core_utils.check_fides_key(fides_key)
 
 
 @pytest.mark.unit
@@ -106,20 +107,20 @@ class TestGitIsDirty:
     """
 
     def test_not_dirty(self) -> None:
-        assert not utils.git_is_dirty("tests/ctl/data/example_sql/")
+        assert not core_utils.git_is_dirty("tests/ctl/data/example_sql/")
 
     def test_new_file_is_dirty(self) -> None:
         test_file = "tests/ctl/data/example_sql/new_file.txt"
         with open(test_file, "w") as file:
             file.write("test file")
-        assert utils.git_is_dirty()
+        assert core_utils.git_is_dirty()
         os.remove(test_file)
 
 
 @pytest.mark.unit
 def test_repeatable_unique_key() -> None:
     expected_unique_fides_key = "test_dataset_87ccd73621"
-    unique_fides_key = utils.generate_unique_fides_key(
+    unique_fides_key = core_utils.generate_unique_fides_key(
         "test_dataset", "test_host", "test_name"
     )
     assert unique_fides_key == expected_unique_fides_key
@@ -136,9 +137,9 @@ class TestCheckResponseAuth:
         """
         response = requests.get("/api/v1/cryptography/encryption/key")
         with pytest.raises(SystemExit):
-            utils.check_response_auth(response)
+            common_utils.check_response_auth(response)
 
     def test_check_response_auth_ok(self) -> None:
         """Verify that a response object is returned if no auth errors."""
         response = requests.get("/health")
-        assert utils.check_response_auth(response)
+        assert common_utils.check_response_auth(response)
