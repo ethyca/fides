@@ -108,7 +108,7 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
             query_config = self.query_config(node)
             for attribute_definition in query_config.attribute_definitions:  # type: ignore
                 attribute_name = attribute_definition["AttributeName"]
-                for identifier in input_data[attribute_name]:
+                for identifier in input_data.get(attribute_name, []):
                     selected_input_data = input_data
                     selected_input_data[attribute_name] = [identifier]
                     query_param = query_config.generate_query(

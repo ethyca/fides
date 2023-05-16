@@ -32,7 +32,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
-        return V1_URL_PREFIX + CONNECTION_TYPES + "?size=100&"
+        return V1_URL_PREFIX + CONNECTION_TYPES + "?"
 
     def test_get_connection_types_not_authenticated(self, api_client, url):
         resp = api_client.get(url, headers={})
@@ -79,6 +79,53 @@ class TestGetConnections:
         assert "https" not in [item["identifier"] for item in data]
         assert "custom" not in [item["identifier"] for item in data]
         assert "manual" not in [item["identifier"] for item in data]
+
+    def test_get_connection_types_size_param(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ) -> None:
+        """Test to ensure size param works as expected since it overrides default value"""
+
+        # ensure default size is 100 (effectively testing that here since we have > 50 connectors)
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(url, headers=auth_header)
+        data = resp.json()["items"]
+        assert resp.status_code == 200
+        assert (
+            len(data)
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 4
+        )  # there are 4 connection types that are not returned by the endpoint
+        # this value is > 50, so we've efectively tested our "default" size is
+        # > than the default of 50 (it's 100!)
+
+        # ensure specifying size works as expected
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(url + "size=50", headers=auth_header)
+        data = resp.json()["items"]
+        assert resp.status_code == 200
+        assert (
+            len(data) == 50
+        )  # should be 50 items in response since we explicitly set size=50
+
+        # ensure specifying size and page works as expected
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(url + "size=2", headers=auth_header)
+        data = resp.json()["items"]
+        assert resp.status_code == 200
+        assert (
+            len(data) == 2
+        )  # should be 2 items in response since we explicitly set size=2
+        page_1_response = data  # save this response for comparison below
+        # now get second page
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(url + "size=2&page=2", headers=auth_header)
+        data = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(data) == 2  # should be 2 items on second page too
+        # second page should be different than first page!
+        assert data != page_1_response
 
     def test_search_connection_types(
         self,
@@ -338,15 +385,14 @@ class TestGetConnectionsActionTypeParams:
 
     @pytest.fixture(scope="function")
     def url(self) -> str:
-        return V1_URL_PREFIX + CONNECTION_TYPES + "?size=100&"
+        return V1_URL_PREFIX + CONNECTION_TYPES + "?"
 
     @pytest.fixture(scope="function")
     def url_with_params(self) -> str:
         return (
             V1_URL_PREFIX
             + CONNECTION_TYPES
-            + "?size=100"
-            + "&consent={consent}"
+            + "?consent={consent}"
             + "&access={access}"
             + "&erasure={erasure}"
         )

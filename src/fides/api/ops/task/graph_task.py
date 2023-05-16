@@ -91,6 +91,7 @@ def retry(
                     # Run access or erasure request
                     return func(*args, **kwargs)
                 except PrivacyRequestPaused as ex:
+                    traceback.print_exc()
                     logger.warning(
                         "Privacy request {} paused {}",
                         method_name,
@@ -100,6 +101,7 @@ def retry(
                     # Re-raise to stop privacy request execution on pause.
                     raise
                 except PrivacyRequestErasureEmailSendRequired as exc:
+                    traceback.print_exc()
                     self.log_end(action_type, ex=None, success_override_msg=exc)
                     self.resources.cache_erasure(
                         f"{self.traversal_node.address.value}", 0
@@ -109,6 +111,7 @@ def retry(
                     CollectionDisabled,
                     NotSupportedForCollection,
                 ) as exc:
+                    traceback.print_exc()
                     logger.warning(
                         "Skipping collection {} for privacy_request: {}",
                         self.traversal_node.address,
@@ -117,6 +120,7 @@ def retry(
                     self.log_skipped(action_type, exc)
                     return default_return
                 except SkippingConsentPropagation as exc:
+                    traceback.print_exc()
                     logger.warning(
                         "Skipping consent propagation on collection {} for privacy_request: {}",
                         self.traversal_node.address,
@@ -132,6 +136,7 @@ def retry(
                         )
                     return default_return
                 except BaseException as ex:  # pylint: disable=W0703
+                    traceback.print_exc()
                     func_delay *= CONFIG.execution.task_retry_backoff
                     logger.warning(
                         "Retrying {} {} in {} seconds...",
@@ -410,7 +415,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     ) -> None:
         """On completion activities"""
         if ex:
-            traceback.print_exc()
             logger.warning(
                 "Ending {}, {} with failure {}",
                 self.resources.request.id,

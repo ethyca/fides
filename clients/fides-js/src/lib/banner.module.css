@@ -1,0 +1,155 @@
+/**
+* Default CSS styles for the banner
+*/
+:root {
+  --fides-consent-overlay-font-family: inherit;
+  --fides-consent-overlay-font-size: 16px;
+  --fides-consent-overlay-font-size-title: 18px;
+  --fides-consent-overlay-background: #fff;
+  --fides-consent-overlay-text-color: #24292f;
+  --fides-consent-overlay-padding: 0.75em 2em 1em;
+
+  --fides-consent-overlay-button-background: #eee;
+  --fides-consent-overlay-button-text-color: #24292f;
+  --fides-consent-overlay-button-hover-background: #ccc;
+  --fides-consent-overlay-button-border-radius: 4px;
+  --fides-consent-overlay-button-padding: 0.5em 1em;
+
+  --fides-consent-overlay-button-primary-background: #464b83;
+  --fides-consent-overlay-button-primary-text-color: #fff;
+  --fides-consent-overlay-button-primary-hover-background: #3f4375;
+
+  --fides-consent-overlay-button-secondary-background: var(
+    --fides-consent-overlay-button-background
+  );
+  --fides-consent-overlay-button-secondary-text-color: var(
+    --fides-consent-overlay-button-text-color
+  );
+  --fides-consent-overlay-button-secondary-hover-background: var(
+    --fides-consent-overlay-button-hover-background
+  );
+
+  --fides-consent-overlay-button-tertiary-background: var(
+    --fides-consent-overlay-button-background
+  );
+  --fides-consent-overlay-button-tertiary-text-color: var(
+    --fides-consent-overlay-button-text-color
+  );
+  --fides-consent-overlay-button-tertiary-hover-background: var(
+    --fides-consent-overlay-button-hover-background
+  );
+}
+
+div#fides-consent-banner {
+  font-family: var(--fides-consent-overlay-font-family);
+  font-size: var(--fides-consent-overlay-font-size);
+  background: var(--fides-consent-overlay-background);
+  color: var(--fides-consent-overlay-text-color);
+  box-sizing: border-box;
+  padding: var(--fides-consent-overlay-padding);
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 1s;
+}
+
+div#fides-consent-banner.fides-consent-banner-bottom {
+  position: fixed;
+  z-index: 1;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  transform: translateY(0%);
+}
+
+div#fides-consent-banner.fides-consent-banner-bottom.fides-consent-banner-hidden {
+  transform: translateY(100%);
+}
+
+div#fides-consent-banner.fides-consent-banner-top {
+  position: fixed;
+  z-index: 1;
+  width: 100%;
+  top: 0;
+  left: 0;
+  transform: translateY(0%);
+}
+
+div#fides-consent-banner.fides-consent-banner-top.fides-consent-banner-hidden {
+  transform: translateY(-100%);
+}
+
+div#fides-consent-banner-title {
+  font-size: var(--fides-consent-overlay-font-size-title);
+  margin-top: 0.5em;
+  margin-right: 2em;
+  min-width: 33%;
+  flex: 1;
+}
+
+div#fides-consent-banner-description {
+  margin-top: 0.5em;
+  margin-right: 2em;
+  min-width: 33%;
+  flex: 1;
+}
+
+div#fides-consent-banner-buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+button.fides-consent-banner-button {
+  display: inline-block;
+  flex: auto;
+  cursor: pointer;
+  text-align: center;
+  margin: 0;
+  margin-top: 0.25em;
+  margin-right: 0.5em;
+  padding: var(--fides-consent-overlay-button-padding);
+  background: var(--fides-consent-overlay-button-background);
+  color: var(--fides-consent-overlay-button-text-color);
+  border: none;
+  border-radius: var(--fides-consent-overlay-button-border-radius);
+
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  text-decoration: none;
+}
+
+button.fides-consent-banner-button:hover {
+  background: var(--fides-consent-overlay-button-hover-background);
+}
+
+button.fides-consent-banner-button.fides-consent-banner-button-primary {
+  background: var(--fides-consent-overlay-button-primary-background);
+  color: var(--fides-consent-overlay-button-primary-text-color);
+}
+
+button.fides-consent-banner-button.fides-consent-banner-button-primary:hover {
+  background: var(--fides-consent-overlay-button-primary-hover-background);
+}
+
+button.fides-consent-banner-button.fides-consent-banner-button-secondary {
+  background: var(--fides-consent-overlay-button-secondary-background);
+  color: var(--fides-consent-overlay-button-secondary-text-color);
+}
+
+button.fides-consent-banner-button.fides-consent-banner-button-secondary:hover {
+  background: var(--fides-consent-overlay-button-secondary-hover-background);
+}
+
+button.fides-consent-banner-button.fides-consent-banner-button-tertiary {
+  background: var(--fides-consent-overlay-button-tertiary-background);
+  color: var(--fides-consent-overlay-button-tertiary-text-color);
+}
+
+button.fides-consent-banner-button.fides-consent-banner-button-tertiary:hover {
+  background: var(--fides-consent-overlay-button-tertiary-hover-background);
+}

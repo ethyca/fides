@@ -2358,6 +2358,33 @@ def dynamodb_resources(
 
 @pytest.mark.integration_external
 @pytest.mark.integration_dynamodb
+def test_create_and_process_empty_access_request_dynamodb(
+    db,
+    cache,
+    policy,
+    run_privacy_request_task,
+):
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": "thiscustomerdoesnot@exist.com"},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
+    )
+    # Here the results should be empty as no data will be located for that identity
+    results = pr.get_results()
+    pr.delete(db=db)
+    assert results == {}
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_dynamodb
 def test_create_and_process_access_request_dynamodb(
     dynamodb_resources,
     db,
