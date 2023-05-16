@@ -4,6 +4,62 @@ import { createElement } from "react";
 import { PrivacyNotice } from "../lib/consent-types";
 import Toggle from "./Toggle";
 import Divider from "./Divider";
+import { useDisclosure } from "../lib/hooks";
+
+const NoticeToggle = ({
+  notice,
+  checked,
+  onToggle,
+}: {
+  notice: PrivacyNotice;
+  checked: boolean;
+  onToggle: (noticeId: PrivacyNotice["id"]) => void;
+}) => {
+  const {
+    isOpen,
+    getButtonProps,
+    getDisclosureProps,
+    onToggle: toggleDescription,
+  } = useDisclosure({
+    id: notice.id,
+  });
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.code === "Space" || event.code === "Enter") {
+      toggleDescription();
+    }
+  };
+
+  return (
+    <div
+      className={
+        isOpen ? "notice-toggle notice-toggle-expanded" : "notice-toggle"
+      }
+    >
+      <div key={notice.id} className="notice-toggle-title">
+        <span
+          // style={{ width: "100%" }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...getButtonProps()}
+          className="notice-toggle-trigger"
+        >
+          {notice.name}
+        </span>
+        <Toggle
+          name={notice.name}
+          id={notice.id}
+          checked={checked}
+          onChange={onToggle}
+        />
+      </div>
+      {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+      <p {...getDisclosureProps()}>{notice.description}</p>
+    </div>
+  );
+};
 
 /**
  * A React component (not Preact!!) to render notices and their toggles
@@ -38,21 +94,11 @@ const NoticeToggleTable = ({
         const isLast = idx === notices.length - 1;
         return (
           <div>
-            <div
-              key={notice.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <span>{notice.name}</span>
-              <Toggle
-                name={notice.name}
-                id={notice.id}
-                checked={checked}
-                onChange={handleToggle}
-              />
-            </div>
+            <NoticeToggle
+              notice={notice}
+              checked={checked}
+              onToggle={handleToggle}
+            />
             {!isLast ? <Divider /> : null}
           </div>
         );
