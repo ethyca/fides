@@ -63,7 +63,9 @@ const Overlay: FunctionComponent<OverlayProps> = ({
         <ConsentModal
           experience={experience}
           notices={privacyNotices}
-          // onClose={() => setModalIsOpen(false)}
+          onClose={() => setModalIsOpen(false)}
+          onAcceptAll={onAcceptAll}
+          onRejectAll={onRejectAll}
         />
       ) : null}
     </div>

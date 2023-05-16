@@ -46,6 +46,7 @@
   --fides-consent-overlay-primary-active-disabled-color: #bda4f7;
   --fides-consent-overlay-inactive-color: #cbd5e0;
   --fides-consent-overlay-disabled-color: #e1e7ee;
+  --fides-consent-overlay-row-divider-color: #e2e8f0;
 }
 
 div#fides-consent-banner {
@@ -296,4 +297,11 @@ div#fides-consent-modal {
   .toggle-input:focus:not(:focus-visible) + .toggle-display {
     outline: 0;
   }
+}
+
+/* Divider */
+
+.divider {
+  border-width: 0px 0px 1px;
+  border-color: var(--fides-consent-overlay-row-divider-color);
 }

@@ -18,9 +18,15 @@ import Button from "./Button";
 const ConsentModal = ({
   experience,
   notices,
+  onClose,
+  onAcceptAll,
+  onRejectAll,
 }: {
   experience: ExperienceConfig;
   notices: PrivacyNotice[];
+  onClose: () => void;
+  onAcceptAll: () => void;
+  onRejectAll: () => void;
 }) => {
   // TODO: set initial state based on GET /consent-request/id/preferences?
   const [enabledNoticeIds, setEnabledNoticeIds] = useState<
@@ -33,6 +39,17 @@ const ConsentModal = ({
       [notice.id]: enabledNoticeIds.includes(notice.id),
     }));
     console.log("submitting notice map", noticeMap);
+    onClose();
+  };
+
+  const handleAcceptAll = () => {
+    onAcceptAll();
+    onClose();
+  };
+
+  const handleRejectAll = () => {
+    onRejectAll();
+    onClose();
   };
 
   return (
@@ -66,20 +83,17 @@ const ConsentModal = ({
             <Button
               label={experience.reject_button_label}
               buttonType={ButtonType.PRIMARY}
+              onClick={handleRejectAll}
             />
             <Button
               label={experience.confirmation_button_label}
               buttonType={ButtonType.PRIMARY}
+              onClick={handleAcceptAll}
             />
           </div>
         </div>
       </div>
-      <div
-        className="modal-overlay"
-        id="modal-overlay"
-        // TODO: is this safe a11y wise?
-        // onClick={onClose}
-      />
+      <div className="modal-overlay" id="modal-overlay" />
     </div>
   );
 };

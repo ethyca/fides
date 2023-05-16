@@ -3,6 +3,7 @@ import { createElement } from "react";
 
 import { PrivacyNotice } from "../lib/consent-types";
 import Toggle from "./Toggle";
+import Divider from "./Divider";
 
 /**
  * A React component (not Preact!!) to render notices and their toggles
@@ -32,20 +33,27 @@ const NoticeToggleTable = ({
 
   return (
     <div>
-      {notices.map((notice) => {
+      {notices.map((notice, idx) => {
         const checked = enabledNoticeIds.indexOf(notice.id) !== -1;
+        const isLast = idx === notices.length - 1;
         return (
-          <div
-            key={notice.id}
-            style={{ display: "flex", justifyContent: "space-between" }}
-          >
-            <span>{notice.name}</span>
-            <Toggle
-              name={notice.name}
-              id={notice.id}
-              checked={checked}
-              onChange={handleToggle}
-            />
+          <div>
+            <div
+              key={notice.id}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <span>{notice.name}</span>
+              <Toggle
+                name={notice.name}
+                id={notice.id}
+                checked={checked}
+                onChange={handleToggle}
+              />
+            </div>
+            {!isLast ? <Divider /> : null}
           </div>
         );
       })}
