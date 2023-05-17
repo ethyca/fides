@@ -26,6 +26,7 @@ The types of changes are:
 - Add an automated test to check for `/fides-consent.js` backwards compatibility [#3289](https://github.com/ethyca/fides/pull/3289)
 - Add infrastructure for "overlay" consent components (Preact, CSS bundling, etc.) and initial version of consent banner [#3191](https://github.com/ethyca/fides/pull/3191)
 - Support pseudonymous consent requests with `fides_user_device_id` for the new consent workflow [#3203](https://github.com/ethyca/fides/pull/3203)
+- Added config-driven rendering to consent components [#3316](https://github.com/ethyca/fides/pull/3316)
 
 ## [2.13.0](https://github.com/ethyca/fides/compare/2.12.1...2.13.0)
 
