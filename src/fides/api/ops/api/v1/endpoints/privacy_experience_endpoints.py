@@ -11,7 +11,6 @@ from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOU
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1 import urn_registry as urls
-from fides.api.ops.api.v1.endpoints.privacy_preference_endpoints import verify_address
 from fides.api.ops.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.ops.models.privacy_request import ProvidedIdentity
@@ -73,7 +72,6 @@ def privacy_experience_list(
     logger.info("Finding all Privacy Experiences with pagination params '{}'", params)
     fides_user_provided_identity: Optional[ProvidedIdentity] = None
     if fides_user_device_id:
-        verify_address(request)
         fides_user_provided_identity = get_fides_user_device_id_provided_identity(
             db=db, fides_user_device_id=fides_user_device_id
         )
@@ -152,7 +150,6 @@ def privacy_experience_detail(
 
     fides_user_provided_identity: Optional[ProvidedIdentity] = None
     if fides_user_device_id:
-        verify_address(request)
         fides_user_provided_identity = get_fides_user_device_id_provided_identity(
             db=db, fides_user_device_id=fides_user_device_id
         )

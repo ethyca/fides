@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import List, Optional, Tuple
-from urllib.parse import urlparse
 
 from fastapi import Depends, HTTPException, Request
 from fastapi.params import Security
@@ -12,12 +11,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from sqlalchemy import literal
 from sqlalchemy.orm import Query, Session
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_400_BAD_REQUEST,
-    HTTP_403_FORBIDDEN,
-    HTTP_404_NOT_FOUND,
-)
+from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.ops.api.deps import get_db
@@ -67,10 +61,8 @@ from fides.api.ops.schemas.privacy_request import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.consent_util import (
-    get_fides_user_device_id_provided_identity,
     get_or_create_fides_user_device_id_provided_identity,
 )
-from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Privacy Preference"], prefix=V1_URL_PREFIX)
@@ -324,62 +316,6 @@ def _save_privacy_preferences_for_identities(
     return upserted_current_preferences
 
 
-def verify_address(request: Request) -> None:
-    """Verify request is coming from approved address"""
-    origin = request.headers.get("Origin") or request.headers.get("Referer")
-
-    if origin:
-        parsed_url = urlparse(origin)
-        if (
-            parsed_url.scheme + "://" + parsed_url.netloc
-            not in CONFIG.security.cors_origins
-        ):
-            raise HTTPException(
-                status_code=HTTP_403_FORBIDDEN,
-                detail="Can't interact with privacy preferences from non-approved addresses",
-            )
-
-
-@router.get(
-    PRIVACY_PREFERENCES,
-    status_code=HTTP_200_OK,
-    response_model=Page[CurrentPrivacyPreferenceSchema],
-)
-def get_privacy_preferences_by_device_id(
-    *,
-    request: Request,
-    fides_user_device_id: str,
-    db: Session = Depends(get_db),
-    params: Params = Depends(),
-) -> AbstractPage[CurrentPrivacyPreference]:
-    """Retrieves privacy preferences with respect to a fides user device id."""
-    verify_address(request)
-    fides_user_provided_identity: Optional[
-        ProvidedIdentity
-    ] = get_fides_user_device_id_provided_identity(
-        db=db, fides_user_device_id=fides_user_device_id
-    )
-
-    if not fides_user_provided_identity:
-        raise HTTPException(
-            status_code=HTTP_403_FORBIDDEN,
-            detail="Provided identity not found",
-        )
-
-    logger.info(
-        "Getting privacy preferences with respect to fides user provided identity"
-    )
-    query: Query[CurrentPrivacyPreference] = (
-        db.query(CurrentPrivacyPreference)
-        .filter(
-            CurrentPrivacyPreference.fides_user_device_provided_identity_id
-            == fides_user_provided_identity.id
-        )
-        .order_by(CurrentPrivacyPreference.updated_at.desc())
-    )
-    return paginate(query, params)
-
-
 @router.patch(
     PRIVACY_PREFERENCES,
     status_code=HTTP_200_OK,
@@ -397,7 +333,6 @@ def save_privacy_preferences(
     Creates a privacy request to propagate preferences to third party systems.
     """
     verify_privacy_notice_and_historical_records(db=db, data=data)
-    verify_address(request)
 
     fides_user_provided_identity = get_or_create_fides_user_device_id_provided_identity(
         db=db, identity_data=data.browser_identity
