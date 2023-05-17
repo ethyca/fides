@@ -1957,6 +1957,18 @@ def fides_user_provided_identity(db):
 
 
 @pytest.fixture(scope="function")
+def fides_user_provided_identity_and_consent_request(db, fides_user_provided_identity):
+    consent_request_data = {
+        "provided_identity_id": fides_user_provided_identity.id,
+    }
+    consent_request = ConsentRequest.create(db, data=consent_request_data)
+
+    yield fides_user_provided_identity, consent_request
+    fides_user_provided_identity.delete(db=db)
+    consent_request.delete(db=db)
+
+
+@pytest.fixture(scope="function")
 def executable_consent_request(
     db,
     provided_identity_and_consent_request,
