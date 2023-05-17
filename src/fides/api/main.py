@@ -1,6 +1,7 @@
 """
 Contains the code that sets up the API.
 """
+import sys
 from datetime import datetime, timezone
 from logging import WARNING
 from typing import Callable, Optional
@@ -199,6 +200,8 @@ async def setup_server() -> None:
     **NOTE**: The order of operations here _is_ deliberate
     and must be maintained.
     """
+    if not CONFIG.dev_mode:
+        sys.tracebacklimit = 0
 
     log_startup()
 
