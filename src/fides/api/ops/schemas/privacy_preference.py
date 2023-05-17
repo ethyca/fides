@@ -35,7 +35,6 @@ class PrivacyPreferencesRequest(FidesSchema):
     code: Optional[SafeStr]
     preferences: conlist(ConsentOptionCreate, max_items=50)  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
-    experience_config_history_id: Optional[SafeStr]
     privacy_experience_history_id: Optional[SafeStr]
     user_geography: Optional[PrivacyNoticeRegion]
     method: Optional[SafeStr]
@@ -43,9 +42,10 @@ class PrivacyPreferencesRequest(FidesSchema):
 
 class PrivacyPreferencesCreate(PrivacyPreferencesRequest):
     """Schema for creating privacy preferences that is supplemented with information
-    from the request headers"""
+    from the request headers and the experience"""
 
     anonymized_ip_address: Optional[str]
+    experience_config_history_id: Optional[SafeStr]
     request_origin: Optional[RequestOrigin]
     url_recorded: Optional[SafeStr]
     user_agent: Optional[SafeStr]

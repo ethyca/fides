@@ -975,9 +975,6 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             ],
             "policy_key": consent_policy.key,
             "user_geography": "us_ca",
-            "experience_config_history_id": privacy_experience_overlay_banner.histories[
-                0
-            ].experience_config_history_id,
             "privacy_experience_history_id": privacy_experience_overlay_banner.histories[
                 0
             ].id,
@@ -1008,20 +1005,19 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
 
     def test_save_privacy_preferences_bad_experience_id(
         self,
-        db,
         api_client,
         url,
         request_body,
     ):
         """Privacy experiences need to be valid when setting preferences"""
-        request_body["experience_config_history_id"] = "bad_id"
+        request_body["privacy_experience_history_id"] = "bad_id"
         response = api_client.patch(
             url, json=request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 404
         assert (
             response.json()["detail"]
-            == f"Experience Config History with it 'bad_id' not found."
+            == f"Privacy Experience History 'bad_id' not found."
         )
 
     @mock.patch(

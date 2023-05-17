@@ -202,24 +202,18 @@ def anonymize_ip_address(ip_address: Optional[str]) -> Optional[str]:
         return None
 
 
-def _get_request_origin(
+def _get_request_origin_and_config(
     db: Session, data: PrivacyPreferencesRequest
-) -> Optional[RequestOrigin]:
-    """Get the request origin (here privacy center, overlay) from the experience if applicable
-
-    Additionally validate that the experience config history and experience history ids are valid if supplied.
+) -> Tuple[Optional[str], Optional[str]]:
     """
-    if data.experience_config_history_id:
-        privacy_experience_config_history = PrivacyExperienceConfigHistory.get(
-            db=db, object_id=data.experience_config_history_id
-        )
-        if not privacy_experience_config_history:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail=f"Experience Config History with it '{data.experience_config_history_id}' not found.",
-            )
+    Extract details to save with the privacy preferences preferences from the
+    Experience history if applicable: request origin (privacy center, overlay)
+    and the Experience Config history.
 
-    privacy_experience_history = None
+    Additionally validate that the experience config history is valid if supplied.
+    """
+    privacy_experience_history: Optional[PrivacyExperienceHistory] = None
+    experience_config_id: Optional[str] = None
     if data.privacy_experience_history_id:
         privacy_experience_history = PrivacyExperienceHistory.get(
             db=db, object_id=data.privacy_experience_history_id
@@ -229,38 +223,37 @@ def _get_request_origin(
                 status_code=HTTP_404_NOT_FOUND,
                 detail=f"Privacy Experience History '{data.privacy_experience_history_id}' not found.",
             )
+        experience_config_id = privacy_experience_history.experience_config_history_id
 
-        if (
-            privacy_experience_history.experience_config_history_id
-            and privacy_experience_history.experience_config_history_id
-            != data.experience_config_history_id
-        ):
-            raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Mismatch between Experience Config History and Experience History detected",
-            )
-
-    return privacy_experience_history.component.value if privacy_experience_history else None  # type: ignore[attr-defined]
+    origin: Optional[str] = (
+        privacy_experience_history.component.value  # type: ignore[attr-defined]
+        if privacy_experience_history
+        else None
+    )
+    return origin, experience_config_id
 
 
 def supplement_privacy_preferences_with_user_and_experience_details(
     db: Session, request: Request, data: PrivacyPreferencesRequest
 ) -> PrivacyPreferencesCreate:
     """
-    Pull additional user information from request headers to record for consent reporting purposes
+    Pull additional user information from request headers and experience to record for consent reporting purposes
 
-    Additionally validates experience details exist if provided here.
     """
 
     request_headers = request.headers
     ip_address: Optional[str] = request.client.host if request.client else None
     user_agent: Optional[str] = request_headers.get("User-Agent")
     url_recorded: Optional[str] = request_headers.get("Referer")
+    request_origin, experience_config_history_id = _get_request_origin_and_config(
+        db, data
+    )
 
     return PrivacyPreferencesCreate(
         **data.dict(),
         anonymized_ip_address=anonymize_ip_address(ip_address),
-        request_origin=_get_request_origin(db, data),
+        experience_config_history_id=experience_config_history_id,
+        request_origin=request_origin,
         url_recorded=url_recorded,
         user_agent=user_agent,
     )
