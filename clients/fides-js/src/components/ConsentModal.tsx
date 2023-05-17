@@ -28,13 +28,13 @@ const ConsentModal = ({
   onAcceptAll: () => void;
   onRejectAll: () => void;
 }) => {
-  // TODO: set initial state based on GET /consent-request/id/preferences?
+  // DEFER: set initial state based on GET /consent-request/id/privacy-preferences?
   const [enabledNoticeIds, setEnabledNoticeIds] = useState<
     Array<PrivacyNotice["id"]>
   >([]);
 
   const handleSubmit = () => {
-    // TODO: implement fetch PATCH against /consent-request/id/preferences?
+    // DEFER: implement fetch PATCH against /consent-request/id/privacy-preferences?
     const noticeMap = notices.map((notice) => ({
       [notice.id]: enabledNoticeIds.includes(notice.id),
     }));
