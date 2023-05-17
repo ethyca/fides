@@ -3,13 +3,13 @@ import { stubPlus } from "cypress/support/stubs";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
-const OVERLAY_EXPERIENCE_ID = "pri_4076d6dd-a728-4f2d-9a5c-98f35d7a5a86";
-const DISABLED_EXPERIENCE_ID = "pri_75d2b3dc-6f7c-4a36-95ee-3088bd1b4572";
+const OVERLAY_EXPERIENCE_ID = "pri_33fd622e-a63a-4847-b910-3b3fdf8c109f";
+const DISABLED_EXPERIENCE_ID = "pri_66b689cb-44ae-4124-8ae8-7dc6d79eff84";
 
 describe("Privacy experiences", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/privacy-experience*", {
+    cy.intercept("GET", "/api/v1/experience-config*", {
       fixture: "privacy-experiences/list.json",
     }).as("getExperiences");
     stubPlus(true);
@@ -66,7 +66,7 @@ describe("Privacy experiences", () => {
   });
 
   it("can show an empty state", () => {
-    cy.intercept("GET", "/api/v1/privacy-experience*", {
+    cy.intercept("GET", "/api/v1/experience-config*", {
       body: { items: [], page: 1, size: 10, total: 0 },
     }).as("getEmptyExperiences");
     cy.visit(PRIVACY_EXPERIENCE_ROUTE);
@@ -105,8 +105,8 @@ describe("Privacy experiences", () => {
     });
 
     it("can click a row to go to the experience page", () => {
-      cy.intercept("GET", "/api/v1/privacy-experience/pri*", {
-        fixture: "privacy-experiences/experience.json",
+      cy.intercept("GET", "/api/v1/experience-config/pri*", {
+        fixture: "privacy-experiences/experienceConfig.json",
       }).as("getExperienceDetail");
       cy.getByTestId(`row-${OVERLAY_EXPERIENCE_ID}`).click();
       cy.wait("@getExperienceDetail");
@@ -116,9 +116,9 @@ describe("Privacy experiences", () => {
 
     describe("enabling and disabling", () => {
       beforeEach(() => {
-        cy.intercept("PATCH", "/api/v1/privacy-experience*", {
-          fixture: "privacy-experiences/list.json",
-        }).as("patchExperiences");
+        cy.intercept("PATCH", "/api/v1/experience-config/*", {
+          fixture: "privacy-experiences/experienceConfig.json",
+        }).as("patchExperience");
       });
 
       it("can enable an experience", () => {
@@ -129,11 +129,10 @@ describe("Privacy experiences", () => {
           cy.getByTestId("toggle-Enable").click();
         });
 
-        cy.wait("@patchExperiences").then((interception) => {
-          const { body } = interception.request;
-          expect(body).to.eql([
-            { id: DISABLED_EXPERIENCE_ID, disabled: false },
-          ]);
+        cy.wait("@patchExperience").then((interception) => {
+          const { body, url } = interception.request;
+          expect(url).to.contain(DISABLED_EXPERIENCE_ID);
+          expect(body).to.eql({ disabled: false, regions: ["eu_fr", "eu_ie"] });
         });
         // redux should requery after invalidation
         cy.wait("@getExperiences");
@@ -149,9 +148,10 @@ describe("Privacy experiences", () => {
 
         cy.getByTestId("confirmation-modal");
         cy.getByTestId("continue-btn").click();
-        cy.wait("@patchExperiences").then((interception) => {
-          const { body } = interception.request;
-          expect(body).to.eql([{ id: OVERLAY_EXPERIENCE_ID, disabled: true }]);
+        cy.wait("@patchExperience").then((interception) => {
+          const { body, url } = interception.request;
+          expect(url).to.contain(OVERLAY_EXPERIENCE_ID);
+          expect(body).to.eql({ disabled: true, regions: ["us_ca"] });
         });
         // redux should requery after invalidation
         cy.wait("@getExperiences");
@@ -161,98 +161,33 @@ describe("Privacy experiences", () => {
 
   describe("form", () => {
     beforeEach(() => {
-      cy.intercept("PATCH", "/api/v1/privacy-experience*", {
-        fixture: "privacy-experiences/list.json",
-      }).as("patchExperiences");
+      cy.intercept("PATCH", "/api/v1/experience-config/*", {
+        fixture: "privacy-experiences/experienceConfig.json",
+      }).as("patchExperience");
     });
     interface Props {
-      mechanisms: ("opt_in" | "opt_out" | "notice_only")[];
       component?: "overlay" | "privacy_center";
     }
     /**
      * Helper function to swap out notices and components in a stubbed experience
-     * @example stubExperience({mechanisms: ["notice_only", "opt_in"], component: "overlay"})
+     * @example stubExperience({component: "overlay"})
      */
-    const stubExperience = ({ mechanisms, component }: Props) => {
-      const notices = [];
-      mechanisms.forEach((mechanism) => {
-        cy.fixture(`privacy-notices/${mechanism}.json`).then((notice) =>
-          notices.push(notice)
-        );
-      });
-      cy.fixture("privacy-experiences/experience.json").then((experience) => {
-        const updatedExperience = {
-          ...experience,
-          privacy_notices: mechanisms ? notices : experience.privacy_notices,
-          component: component ?? experience.component,
-        };
-        cy.intercept("GET", "/api/v1/privacy-experience/pri*", {
-          body: updatedExperience,
-        });
-      });
+    const stubExperience = ({ component }: Props) => {
+      cy.fixture("privacy-experiences/experienceConfig.json").then(
+        (experience) => {
+          const updatedExperience = {
+            ...experience,
+            component: component ?? experience.component,
+          };
+          cy.intercept("GET", "/api/v1/experience-config/pri*", {
+            body: updatedExperience,
+          });
+        }
+      );
     };
 
-    it("renders opt_in notice with banner as delivery mechanism", () => {
-      stubExperience({ mechanisms: ["opt_in"], component: "overlay" });
-      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
-      cy.getByTestId("privacy-center-messaging-form").should("not.exist");
-
-      cy.getByTestId("delivery-mechanism-form").within(() => {
-        cy.getSelectValueContainer("input-delivery_mechanism").within(() => {
-          cy.get("input").should("be.disabled");
-        });
-        cy.getSelectValueContainer("input-delivery_mechanism").should(
-          "contain",
-          "Banner"
-        );
-      });
-      cy.getByTestId("banner-text-form");
-      cy.getByTestId("banner-action-form");
-    });
-
-    it("renders notice_only notice with acknowledgment btn and banner as mechanism", () => {
-      stubExperience({ mechanisms: ["notice_only"], component: "overlay" });
-      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
-      cy.getByTestId("privacy-center-messaging-form").should("not.exist");
-
-      cy.getByTestId("delivery-mechanism-form").within(() => {
-        cy.getSelectValueContainer("input-delivery_mechanism").within(() => {
-          cy.get("input").should("be.disabled");
-        });
-        cy.getSelectValueContainer("input-delivery_mechanism").should(
-          "contain",
-          "Banner"
-        );
-      });
-      cy.getByTestId("banner-text-form");
-      cy.getByTestId("banner-action-form").within(() => {
-        cy.getByTestId("input-confirmation_button_label").should("not.exist");
-        cy.getByTestId("input-reject_button_label").should("not.exist");
-        cy.getByTestId("input-acknowledgement_button_label");
-      });
-    });
-
-    it("renders notice_only combined with other notices with confirm/reject btns", () => {
-      stubExperience({
-        mechanisms: ["notice_only", "opt_in"],
-        component: "overlay",
-      });
-      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
-      cy.getByTestId("privacy-center-messaging-form").should("not.exist");
-
-      cy.getByTestId("delivery-mechanism-form");
-      cy.getByTestId("banner-text-form");
-      cy.getByTestId("banner-action-form").within(() => {
-        cy.getByTestId("input-confirmation_button_label");
-        cy.getByTestId("input-reject_button_label");
-        cy.getByTestId("input-acknowledgement_button_label").should(
-          "not.exist"
-        );
-      });
-    });
-
     it("renders opt_out notice with all options available", () => {
-      stubExperience({ mechanisms: ["opt_out"], component: "overlay" });
+      stubExperience({ component: "overlay" });
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
       cy.getByTestId("privacy-center-messaging-form").should("not.exist");
 
@@ -267,7 +202,6 @@ describe("Privacy experiences", () => {
 
     it("renders privacy center overlays without banner form sections", () => {
       stubExperience({
-        mechanisms: ["opt_in", "opt_out", "notice_only"],
         component: "privacy_center",
       });
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
@@ -278,8 +212,7 @@ describe("Privacy experiences", () => {
     });
 
     it("can submit an overlay form", () => {
-      // opt_out is the most permissive, so use that one
-      stubExperience({ mechanisms: ["opt_out"], component: "overlay" });
+      stubExperience({ component: "overlay" });
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
 
       const payload = {
@@ -292,32 +225,34 @@ describe("Privacy experiences", () => {
       };
       cy.selectOption("input-delivery_mechanism", "Banner");
       Object.entries(payload).forEach(([key, value]) => {
-        cy.getByTestId(`input-${key}`).type(value);
+        if (key !== "delivery_mechanism") {
+          cy.getByTestId(`input-${key}`).clear().type(value);
+        }
       });
       cy.getByTestId("save-btn").click();
-      cy.wait("@patchExperiences").then((interception) => {
+      cy.wait("@patchExperience").then((interception) => {
         const { body } = interception.request;
         Object.entries(payload).forEach(([key, value]) => {
-          expect(body[0][key]).to.eql(value);
+          expect(body[key]).to.eql(value);
         });
       });
     });
 
     it("can submit a privacy center form", () => {
-      stubExperience({ mechanisms: ["opt_out"], component: "privacy_center" });
+      stubExperience({ component: "privacy_center" });
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
       const payload = {
         link_label: "link label",
         component_description: "title",
       };
       Object.entries(payload).forEach(([key, value]) => {
-        cy.getByTestId(`input-${key}`).type(value);
+        cy.getByTestId(`input-${key}`).clear().type(value);
       });
       cy.getByTestId("save-btn").click();
-      cy.wait("@patchExperiences").then((interception) => {
+      cy.wait("@patchExperience").then((interception) => {
         const { body } = interception.request;
         Object.entries(payload).forEach(([key, value]) => {
-          expect(body[0][key]).to.eql(value);
+          expect(body[key]).to.eql(value);
         });
       });
     });
