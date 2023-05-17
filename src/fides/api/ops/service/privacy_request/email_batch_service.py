@@ -130,6 +130,8 @@ def initiate_scheduled_batch_email_send() -> None:
     if CONFIG.test_mode:
         return
 
+    assert scheduler.running, "Scheduler is not running! Cannot add Batch Email job."
+
     logger.info("Initiating scheduler for batch email send")
     scheduler.add_job(
         func=send_email_batch,
