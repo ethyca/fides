@@ -620,9 +620,7 @@ class TestRegisterCustomFunctions:
     def test_function_loader(self):
         """Verify that all override implementations can be loaded by RestrictedPython"""
 
-        overrides_path = (
-            "src/fides/api/ops/service/saas_request/override_implementations"
-        )
+        overrides_path = "src/fides/api/service/saas_request/override_implementations"
 
         for filename in os.listdir(overrides_path):
             if filename.endswith(".py") and filename != "__init__.py":
