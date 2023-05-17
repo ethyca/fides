@@ -56,6 +56,24 @@ describe("Consent banner", () => {
           version: 1.0,
           privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
         },
+        {
+          name: "Essential",
+          description:
+            "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
+          regions: ["us_ca"],
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+          has_gpc_flag: true,
+          data_uses: ["provide.service"],
+          enforcement_level: EnforcementLevel.SYSTEM_WIDE,
+          displayed_in_overlay: true,
+          displayed_in_api: true,
+          displayed_in_privacy_center: false,
+          id: "pri_4bed96d0-b9e3-4596-a807-26b783836375",
+          created_at: "2023-04-24T21:29:08.870351+00:00",
+          updated_at: "2023-04-24T21:29:08.870351+00:00",
+          version: 1.0,
+          privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
+        },
       ],
     },
     geolocation: {},
@@ -159,21 +177,35 @@ describe("Consent banner", () => {
         });
       });
 
-      it("should open modal when experience component = OVERLAY", () => {
-        cy.contains("button", "Manage preferences").click();
-        cy.getByTestId("consent-modal");
+      describe("modal", () => {
+        it("should open modal when experience component = OVERLAY", () => {
+          cy.contains("button", "Manage preferences").click();
+          cy.getByTestId("consent-modal");
+        });
+
+        it("can toggle the notices", () => {
+          cy.contains("button", "Manage preferences").click();
+          cy.getByTestId("toggle-Test privacy notice").click();
+          cy.getByTestId("toggle-Essential").click();
+          // DEFER: intercept and check the API call once it is hooked up
+          cy.getByTestId("Save-btn").click();
+          // Modal should close after saving
+          cy.getByTestId("consent-modal").should("not.exist");
+        });
       });
 
-      it("should navigate to Privacy Center when experience component = PRIVACY_CENTER", () => {
-        const newTestOptions = testBannerOptions;
-        newTestOptions.experience!.component =
-          ExperienceComponent.PRIVACY_CENTER;
-        newTestOptions.options.isGeolocationEnabled = false;
-        cy.visitConsentDemo(newTestOptions);
-        cy.contains("button", "Manage preferences")
-          .should("be.visible")
-          .click();
-        cy.url().should("equal", "http://localhost:3000/");
+      describe("privacy center", () => {
+        it("should navigate to Privacy Center when experience component = PRIVACY_CENTER", () => {
+          const newTestOptions = testBannerOptions;
+          newTestOptions.experience!.component =
+            ExperienceComponent.PRIVACY_CENTER;
+          newTestOptions.options.isGeolocationEnabled = false;
+          cy.visitConsentDemo(newTestOptions);
+          cy.contains("button", "Manage preferences")
+            .should("be.visible")
+            .click();
+          cy.url().should("equal", "http://localhost:3000/");
+        });
       });
 
       it.skip("should save the consent request to the Fides API", () => {

@@ -12,7 +12,7 @@ const Toggle = ({
   checked: boolean;
   onChange: (noticeId: string) => void;
 }) => (
-  <label className="toggle" htmlFor={name}>
+  <label className="toggle" htmlFor={name} data-testid={`toggle-${name}`}>
     <input
       type="checkbox"
       name={name}

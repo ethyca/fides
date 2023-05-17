@@ -38,7 +38,6 @@ const NoticeToggle = ({
     >
       <div key={notice.id} className="notice-toggle-title">
         <span
-          // style={{ width: "100%" }}
           role="button"
           tabIndex={0}
           onKeyDown={handleKeyDown}
