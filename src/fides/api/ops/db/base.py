@@ -16,8 +16,9 @@ from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import Policy, Rule, RuleTarget
 from fides.api.ops.models.privacy_experience import (
     PrivacyExperience,
+    PrivacyExperienceConfig,
+    PrivacyExperienceConfigHistory,
     PrivacyExperienceHistory,
-    PrivacyExperienceTemplate,
 )
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
 from fides.api.ops.models.privacy_preference import (

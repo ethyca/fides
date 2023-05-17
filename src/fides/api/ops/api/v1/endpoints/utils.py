@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Callable, List, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 from fastapi import HTTPException
 from starlette.status import HTTP_400_BAD_REQUEST
@@ -42,3 +42,18 @@ def transform_fields(
             setattr(model, name, transformation(value))
 
     return model
+
+
+def human_friendly_list(item_list: List[Any]) -> str:
+    """Util to turn a list into a human friendly string for better error messages"""
+    if not item_list:
+        return ""
+
+    stringified_list = [str(item) for item in item_list]
+
+    length = len(stringified_list)
+    if length == 1:
+        return stringified_list[0]
+    if length == 2:
+        return " and ".join(stringified_list)
+    return ", ".join(stringified_list[0:-1]) + f", and {stringified_list[-1]}"

@@ -7,21 +7,20 @@ import type { DeliveryMechanism } from "./DeliveryMechanism";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
- * An API representation of a PrivacyExperience that includes an `id` field.
- * Used to help model API responses and update payloads
+ * Updating ExperienceConfig - requires regions to be patched specifically
  */
-export type PrivacyExperienceWithId = {
-  disabled?: boolean;
-  component?: ComponentType;
-  delivery_mechanism?: DeliveryMechanism;
-  regions?: Array<PrivacyNoticeRegion>;
-  component_title?: string;
-  component_description?: string;
+export type ExperienceConfigUpdate = {
+  acknowledgement_button_label?: string;
   banner_title?: string;
   banner_description?: string;
-  link_label?: string;
+  component?: ComponentType;
+  component_title?: string;
+  component_description?: string;
   confirmation_button_label?: string;
+  delivery_mechanism?: DeliveryMechanism;
+  disabled?: boolean;
+  is_default?: boolean;
+  link_label?: string;
   reject_button_label?: string;
-  acknowledgement_button_label?: string;
-  id: string;
+  regions: Array<PrivacyNoticeRegion>;
 };
