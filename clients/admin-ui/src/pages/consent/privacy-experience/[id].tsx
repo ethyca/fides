@@ -94,8 +94,7 @@ const PrivacyExperienceDetailPage = () => {
         <Text fontSize="sm" mb={8}>
           Configure the text of your privacy overlay, privacy banner, and the
           text of the buttons which users will click to accept, reject, manage,
-          and save their preferences. This privacy overlay contains opt-in
-          privacy notices and must be delivered with a banner.
+          and save their preferences.
         </Text>
         <Box data-testid="privacy-experience-detail-page">
           <PrivacyExperienceForm privacyExperience={data} />
