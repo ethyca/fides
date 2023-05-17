@@ -11,9 +11,7 @@ from fides.api.schemas.saas.strategy_configuration import OAuth2BaseConfiguratio
 from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fides.api.service.connectors.saas.authenticated_client import (
-    AuthenticatedClient,
-)
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import assign_placeholders, map_param_values
 

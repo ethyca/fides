@@ -18,9 +18,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from toml import load as load_toml
 
-from fides.api.ctl.database.session import sync_engine
-from fides.api.ctl.sql_models import DataUse, PrivacyDeclaration
-from fides.api.main import app
 from fides.api.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -29,6 +26,9 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
+from fides.api.ctl.database.session import sync_engine
+from fides.api.ctl.sql_models import DataUse, PrivacyDeclaration
+from fides.api.main import app
 from fides.api.models.privacy_request import generate_request_callback_jwe
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import (

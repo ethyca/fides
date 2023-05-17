@@ -3,12 +3,6 @@ from typing import Dict, List
 from fideslang import FidesModelType
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fides.api.ctl.database.crud import get_resource, list_resource
-from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
-    models_with_default_field,
-)
-from fides.api.ctl.utils import errors
-from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.api.v1.scope_registry import (
     CTL_DATASET,
     CTL_POLICY,
@@ -21,6 +15,12 @@ from fides.api.api.v1.scope_registry import (
     REGISTRY,
     SYSTEM,
 )
+from fides.api.ctl.database.crud import get_resource, list_resource
+from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
+    models_with_default_field,
+)
+from fides.api.ctl.utils import errors
+from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.db.base import Base  # type: ignore[attr-defined]
 
 API_PREFIX = "/api/v1"

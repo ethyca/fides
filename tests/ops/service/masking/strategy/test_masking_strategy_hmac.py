@@ -2,9 +2,7 @@ from datetime import datetime
 
 from fides.api.schemas.masking.masking_configuration import HmacMaskingConfiguration
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fides.api.service.masking.strategy.masking_strategy_hmac import (
-    HmacMaskingStrategy,
-)
+from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 
 from ....test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 

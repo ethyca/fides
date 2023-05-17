@@ -21,7 +21,6 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.api.deps import get_config_proxy, get_db
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
@@ -40,6 +39,7 @@ from fides.api.common_exceptions import (
     IdentityVerificationException,
     MessageDispatchException,
 )
+from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.messaging import get_messaging_method
 from fides.api.models.privacy_request import (
     Consent,

@@ -5,12 +5,8 @@ import pytest
 from requests import Response
 
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.schemas.saas.strategy_configuration import (
-    LinkPaginationConfiguration,
-)
-from fides.api.service.pagination.pagination_strategy_link import (
-    LinkPaginationStrategy,
-)
+from fides.api.schemas.saas.strategy_configuration import LinkPaginationConfiguration
+from fides.api.service.pagination.pagination_strategy_link import LinkPaginationStrategy
 
 
 @pytest.fixture(scope="function")

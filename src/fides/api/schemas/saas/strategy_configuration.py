@@ -4,10 +4,7 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, root_validator, validator
 
 from fides.api.schemas.saas.saas_config import Header, QueryParam, SaaSRequest
-from fides.api.schemas.saas.shared_schemas import (
-    ConnectorParamRef,
-    IdentityParamRef,
-)
+from fides.api.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
 
 
 class StrategyConfiguration(BaseModel):

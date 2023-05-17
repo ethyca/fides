@@ -19,7 +19,6 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
-from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.api.deps import get_db
 from fides.api.api.v1.endpoints.consent_request_endpoints import (
     _get_consent_request_and_provided_identity,
@@ -40,6 +39,7 @@ from fides.api.api.v1.urn_registry import (
     PRIVACY_PREFERENCES,
     V1_URL_PREFIX,
 )
+from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
 from fides.api.models.privacy_preference import (

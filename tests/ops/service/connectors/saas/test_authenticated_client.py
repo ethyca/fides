@@ -6,10 +6,7 @@ from typing import Any, Dict
 import pytest
 from requests import ConnectionError, Response, Session
 
-from fides.api.common_exceptions import (
-    ClientUnsuccessfulException,
-    ConnectionException,
-)
+from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.schemas.saas.saas_config import ClientConfig
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams

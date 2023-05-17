@@ -16,9 +16,7 @@ from fides.api.models.policy import (
     _is_ancestor_of_contained_categories,
 )
 from fides.api.models.storage import StorageConfig
-from fides.api.service.masking.strategy.masking_strategy_hash import (
-    HashMaskingStrategy,
-)
+from fides.api.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )

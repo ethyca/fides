@@ -10,9 +10,7 @@ from fides.api.schemas.saas.strategy_configuration import StrategyConfiguration
 from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fides.api.service.connectors.saas.authenticated_client import (
-    AuthenticatedClient,
-)
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,

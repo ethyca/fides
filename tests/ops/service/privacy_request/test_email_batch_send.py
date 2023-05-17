@@ -15,9 +15,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.messaging.messaging import ConsentPreferencesByUser
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.api.schemas.privacy_preference import (
-    MinimalPrivacyPreferenceHistorySchema,
-)
+from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.privacy_request.email_batch_service import (

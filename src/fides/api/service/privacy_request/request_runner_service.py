@@ -63,9 +63,7 @@ from fides.api.service.connectors.consent_email_connector import (
 from fides.api.service.connectors.erasure_email_connector import (
     ERASURE_EMAIL_CONNECTOR_TYPES,
 )
-from fides.api.service.connectors.fides_connector import (
-    filter_fides_connector_datasets,
-)
+from fides.api.service.connectors.fides_connector import filter_fides_connector_datasets
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.task.filter_results import filter_data_categories

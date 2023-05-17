@@ -5,11 +5,11 @@ from fastapi import Depends, Security
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from fides.api.api.v1 import scope_registry
 from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.crud import list_resource  # type: ignore[attr-defined]
 from fides.api.ctl.sql_models import Evaluation  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
-from fides.api.api.v1 import scope_registry
 from fides.api.oauth.utils import verify_oauth_client_prod
 
 router = APIRouter(

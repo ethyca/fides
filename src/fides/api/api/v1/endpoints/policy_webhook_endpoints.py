@@ -18,10 +18,7 @@ from fides.api.api.v1.endpoints.connection_endpoints import (
     get_connection_config_or_error,
 )
 from fides.api.api.v1.endpoints.policy_endpoints import get_policy_or_error
-from fides.api.common_exceptions import (
-    KeyOrNameAlreadyExists,
-    WebhookOrderException,
-)
+from fides.api.common_exceptions import KeyOrNameAlreadyExists, WebhookOrderException
 from fides.api.db.base_class import get_key_from_data
 from fides.api.models.policy import (
     Policy,

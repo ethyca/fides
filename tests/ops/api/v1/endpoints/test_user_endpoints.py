@@ -16,7 +16,6 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.ctl.sql_models import PrivacyDeclaration, System
 from fides.api.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     SCOPE_REGISTRY,
@@ -44,6 +43,7 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
+from fides.api.ctl.sql_models import PrivacyDeclaration, System
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions

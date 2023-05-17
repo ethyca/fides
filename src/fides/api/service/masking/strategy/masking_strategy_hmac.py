@@ -12,9 +12,7 @@ from fides.api.schemas.masking.masking_strategy_description import (
     MaskingStrategyConfigurationDescription,
     MaskingStrategyDescription,
 )
-from fides.api.service.masking.strategy.format_preservation import (
-    FormatPreservation,
-)
+from fides.api.service.masking.strategy.format_preservation import FormatPreservation
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.util.encryption.hmac_encryption_scheme import hmac_encrypt_return_str
 from fides.api.util.encryption.secrets_util import SecretsUtil

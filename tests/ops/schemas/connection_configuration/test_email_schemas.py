@@ -12,9 +12,7 @@ from fides.api.schemas.connection_configuration.connection_secrets_email import 
     ExtendedIdentityTypes,
     IdentityTypes,
 )
-from fides.api.service.connectors.email.sovrn_connector import (
-    SOVRN_REQUIRED_IDENTITY,
-)
+from fides.api.service.connectors.email.sovrn_connector import SOVRN_REQUIRED_IDENTITY
 
 
 class TestEmailSchema:

@@ -17,7 +17,6 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.ctl.sql_models import DataCategory  # type: ignore
 from fides.api.api import deps
 from fides.api.api.v1 import scope_registry
 from fides.api.api.v1 import urn_registry as urls
@@ -29,6 +28,7 @@ from fides.api.common_exceptions import (
     RuleTargetValidationError,
     RuleValidationError,
 )
+from fides.api.ctl.sql_models import DataCategory  # type: ignore
 from fides.api.models.client import ClientDetail
 from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.models.storage import StorageConfig

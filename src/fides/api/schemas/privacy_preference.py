@@ -8,10 +8,7 @@ from fides.api.custom_types import SafeStr
 from fides.api.models.policy import ActionType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.models.privacy_preference import RequestOrigin, UserConsentPreference
-from fides.api.models.privacy_request import (
-    ExecutionLogStatus,
-    PrivacyRequestStatus,
-)
+from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.redis_cache import Identity

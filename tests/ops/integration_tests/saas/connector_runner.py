@@ -3,8 +3,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.cryptography import cryptographic_util
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import (

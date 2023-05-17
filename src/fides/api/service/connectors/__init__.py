@@ -8,22 +8,16 @@ from typing import Any, Dict
 
 from fides.api.models.connectionconfig import ConnectionConfig as ConnectionConfig
 from fides.api.models.connectionconfig import ConnectionType as ConnectionType
-from fides.api.service.connectors.base_connector import (
-    BaseConnector as BaseConnector,
-)
+from fides.api.service.connectors.base_connector import BaseConnector as BaseConnector
 from fides.api.service.connectors.dynamodb_connector import (
     DynamoDBConnector as DynamoDBConnector,
 )
-from fides.api.service.connectors.email.attentive_connector import (
-    AttentiveConnector,
-)
+from fides.api.service.connectors.email.attentive_connector import AttentiveConnector
 from fides.api.service.connectors.email.sovrn_connector import SovrnConnector
 from fides.api.service.connectors.fides_connector import (
     FidesConnector as FidesConnector,
 )
-from fides.api.service.connectors.http_connector import (
-    HTTPSConnector as HTTPSConnector,
-)
+from fides.api.service.connectors.http_connector import HTTPSConnector as HTTPSConnector
 from fides.api.service.connectors.manual_connector import (
     ManualConnector as ManualConnector,
 )
@@ -33,9 +27,7 @@ from fides.api.service.connectors.manual_webhook_connector import (
 from fides.api.service.connectors.mongodb_connector import (
     MongoDBConnector as MongoDBConnector,
 )
-from fides.api.service.connectors.saas_connector import (
-    SaaSConnector as SaaSConnector,
-)
+from fides.api.service.connectors.saas_connector import SaaSConnector as SaaSConnector
 from fides.api.service.connectors.sql_connector import (
     BigQueryConnector as BigQueryConnector,
 )
@@ -45,9 +37,7 @@ from fides.api.service.connectors.sql_connector import (
 from fides.api.service.connectors.sql_connector import (
     MicrosoftSQLServerConnector as MicrosoftSQLServerConnector,
 )
-from fides.api.service.connectors.sql_connector import (
-    MySQLConnector as MySQLConnector,
-)
+from fides.api.service.connectors.sql_connector import MySQLConnector as MySQLConnector
 from fides.api.service.connectors.sql_connector import (
     PostgreSQLConnector as PostgreSQLConnector,
 )

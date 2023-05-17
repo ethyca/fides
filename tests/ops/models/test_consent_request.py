@@ -1,9 +1,9 @@
 from unittest import mock
 
-from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.api.v1.endpoints.consent_request_endpoints import (
     queue_privacy_request_to_propagate_consent_old_workflow,
 )
+from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.graph.config import CollectionAddress
 from fides.api.models.privacy_request import (
     Consent,

@@ -3,8 +3,8 @@ from typing import Any, Dict, Generic, List, Optional
 
 from sqlalchemy.orm import Query, Session
 
-from fides.api.ctl.sql_models import Organization  # type: ignore[attr-defined]
 from fides.api.common_exceptions import MessageDispatchException
+from fides.api.ctl.sql_models import Organization  # type: ignore[attr-defined]
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.privacy_request import PrivacyRequest

@@ -4,9 +4,7 @@ import pydash
 from requests import Response
 
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
-from fides.api.schemas.saas.strategy_configuration import (
-    CursorPaginationConfiguration,
-)
+from fides.api.schemas.saas.strategy_configuration import CursorPaginationConfiguration
 from fides.api.service.pagination.pagination_strategy import PaginationStrategy
 
 

@@ -11,10 +11,10 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.ctl.sql_models import System  # type: ignore
 from fides.api.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.common_exceptions import ValidationError as FidesValidationError
+from fides.api.ctl.sql_models import System  # type: ignore
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus

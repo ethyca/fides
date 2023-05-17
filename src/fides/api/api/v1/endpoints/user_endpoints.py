@@ -22,7 +22,6 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
-from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.api import deps
 from fides.api.api.deps import get_db
 from fides.api.api.v1 import urn_registry as urls
@@ -42,6 +41,7 @@ from fides.api.api.v1.urn_registry import V1_URL_PREFIX
 from fides.api.common_exceptions import AuthenticationError, AuthorizationError
 from fides.api.cryptography.cryptographic_util import b64_str_to_str
 from fides.api.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
+from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions

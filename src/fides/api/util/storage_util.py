@@ -7,9 +7,7 @@ from fides.api.schemas.storage.storage import (
     StorageSecretsS3,
     StorageType,
 )
-from fides.api.schemas.storage.storage_secrets_docs_only import (
-    possible_storage_secrets,
-)
+from fides.api.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
 
 
 def get_schema_for_secrets(

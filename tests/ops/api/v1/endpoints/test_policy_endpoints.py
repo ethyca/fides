@@ -20,10 +20,7 @@ from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTar
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
-from fides.api.util.data_category import (
-    DataCategory,
-    generate_fides_data_categories,
-)
+from fides.api.util.data_category import DataCategory, generate_fides_data_categories
 
 
 class TestGetPolicies:

@@ -14,6 +14,11 @@ from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 
 import fides
+from fides.api.analytics import (
+    accessed_through_local_host,
+    in_docker_container,
+    send_analytics_event,
+)
 from fides.api.app_setup import (
     check_redis,
     create_fides_app,
@@ -27,11 +32,6 @@ from fides.api.ctl.ui import (
     get_ui_file_map,
     match_route,
     path_is_in_ui_directory,
-)
-from fides.api.analytics import (
-    accessed_through_local_host,
-    in_docker_container,
-    send_analytics_event,
 )
 from fides.api.schemas.analytics import Event, ExtraData
 

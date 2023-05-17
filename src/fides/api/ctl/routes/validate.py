@@ -7,9 +7,9 @@ from typing import Callable, Dict, Union
 from fastapi import Response, Security, status
 from pydantic import BaseModel
 
+from fides.api.api.v1 import scope_registry
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.utils.api_router import APIRouter
-from fides.api.api.v1 import scope_registry
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.connectors.models import (
     AWSConfig,

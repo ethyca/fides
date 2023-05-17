@@ -4,10 +4,7 @@ from fideslang.models import Dataset
 from pydantic import BaseModel, validator
 
 from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.api.util.saas_util import (
-    load_config_from_string,
-    load_dataset_from_string,
-)
+from fides.api.util.saas_util import load_config_from_string, load_dataset_from_string
 
 
 class ConnectorTemplate(BaseModel):

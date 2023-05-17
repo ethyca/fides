@@ -5,13 +5,8 @@ from loguru import logger
 from requests import Response
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.schemas.saas.shared_schemas import (
-    ConnectorParamRef,
-    SaaSRequestParams,
-)
-from fides.api.schemas.saas.strategy_configuration import (
-    OffsetPaginationConfiguration,
-)
+from fides.api.schemas.saas.shared_schemas import ConnectorParamRef, SaaSRequestParams
+from fides.api.schemas.saas.strategy_configuration import OffsetPaginationConfiguration
 from fides.api.service.pagination.pagination_strategy import PaginationStrategy
 
 

@@ -29,10 +29,8 @@ from fides.api.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.cryptography.cryptographic_util import hash_with_salt
-from fides.api.db.base_class import (
-    Base,  # type: ignore[attr-defined]
-    JSONTypeOverride,
-)
+from fides.api.db.base_class import Base  # type: ignore[attr-defined]
+from fides.api.db.base_class import JSONTypeOverride
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph_differences import GraphRepr
 from fides.api.models.audit_log import AuditLog

@@ -18,11 +18,7 @@ from fides.api.api.v1.urn_registry import V1_URL_PREFIX
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.oauth.roles import APPROVER, OWNER, RoleRegistryEnum
-from fides.api.oauth.utils import (
-    get_current_user,
-    oauth2_scheme,
-    verify_oauth_client,
-)
+from fides.api.oauth.utils import get_current_user, oauth2_scheme, verify_oauth_client
 from fides.api.schemas.user_permission import (
     UserPermissionsCreate,
     UserPermissionsEdit,

@@ -11,9 +11,7 @@ from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import ActionType, Policy
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.connectors.saas.authenticated_client import (
-    AuthenticatedClient,
-)
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,

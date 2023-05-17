@@ -5,9 +5,7 @@ from fides.api.service.pagination.pagination_strategy import PaginationStrategy
 from fides.api.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
-from fides.api.service.pagination.pagination_strategy_link import (
-    LinkPaginationStrategy,
-)
+from fides.api.service.pagination.pagination_strategy_link import LinkPaginationStrategy
 from fides.api.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )

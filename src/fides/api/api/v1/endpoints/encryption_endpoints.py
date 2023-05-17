@@ -11,10 +11,7 @@ from fides.api.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.cryptography import cryptographic_util
-from fides.api.cryptography.cryptographic_util import (
-    b64_str_to_bytes,
-    bytes_to_b64_str,
-)
+from fides.api.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.encryption_request import (
     AesDecryptionRequest,

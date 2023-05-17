@@ -28,10 +28,7 @@ from fides.api.api.v1.urn_registry import (
     CONNECTIONS,
     V1_URL_PREFIX,
 )
-from fides.api.common_exceptions import (
-    ClientUnsuccessfulException,
-    ConnectionException,
-)
+from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionTestStatus,

@@ -14,9 +14,7 @@ from fides.api.db.base_class import Base
 from fides.api.models.audit_log import AuditLog
 
 # Intentionally importing SystemManager here to build the FidesUser.systems relationship
-from fides.api.models.system_manager import (  # type: ignore[unused-import]
-    SystemManager,
-)
+from fides.api.models.system_manager import SystemManager  # type: ignore[unused-import]
 
 if TYPE_CHECKING:
     from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]

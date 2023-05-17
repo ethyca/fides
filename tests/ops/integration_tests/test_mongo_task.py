@@ -8,12 +8,7 @@ import pytest
 from bson import ObjectId
 from fideslang.models import Dataset
 
-from fides.api.graph.config import (
-    Collection,
-    FieldAddress,
-    GraphDataset,
-    ScalarField,
-)
+from fides.api.graph.config import Collection, FieldAddress, GraphDataset, ScalarField
 from fides.api.graph.data_type import (
     IntTypeConverter,
     ObjectIdTypeConverter,

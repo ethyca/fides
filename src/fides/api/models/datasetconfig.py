@@ -6,8 +6,8 @@ from loguru import logger
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import Session, relationship
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.common_exceptions import ValidationError
+from fides.api.ctl.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.db.base_class import Base
 from fides.api.graph.config import (
     Collection,

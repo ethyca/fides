@@ -15,12 +15,12 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.ctl.sql_models import DataUse, System  # type: ignore
 from fides.api.api import deps
 from fides.api.api.v1 import scope_registry
 from fides.api.api.v1 import urn_registry as urls
 from fides.api.api.v1.endpoints.utils import transform_fields
 from fides.api.common_exceptions import ValidationError
+from fides.api.ctl.sql_models import DataUse, System  # type: ignore
 from fides.api.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeRegion,

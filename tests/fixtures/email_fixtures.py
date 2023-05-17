@@ -11,9 +11,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.service.connectors import SovrnConnector
-from fides.api.service.connectors.email.attentive_connector import (
-    AttentiveConnector,
-)
+from fides.api.service.connectors.email.attentive_connector import AttentiveConnector
 
 
 @pytest.fixture(scope="function")

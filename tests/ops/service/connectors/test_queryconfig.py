@@ -23,9 +23,7 @@ from fides.api.service.connectors.query_config import (
     MongoQueryConfig,
     SQLQueryConfig,
 )
-from fides.api.service.masking.strategy.masking_strategy_hash import (
-    HashMaskingStrategy,
-)
+from fides.api.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
 from fides.api.util.data_category import DataCategory
 
 from ...task.traversal_data import combined_mongo_postgresql_graph, integration_db_graph

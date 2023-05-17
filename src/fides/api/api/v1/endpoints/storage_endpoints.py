@@ -65,12 +65,8 @@ from fides.api.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
-from fides.api.schemas.storage.storage_secrets_docs_only import (
-    possible_storage_secrets,
-)
-from fides.api.service.storage.storage_authenticator_service import (
-    secrets_are_valid,
-)
+from fides.api.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
+from fides.api.service.storage.storage_authenticator_service import secrets_are_valid
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii

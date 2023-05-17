@@ -8,9 +8,7 @@ from pydantic import BaseModel, validator
 from fides.api import common_exceptions
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.util.data_category import (
-    DataCategory as DefaultTaxonomyDataCategories,
-)
+from fides.api.util.data_category import DataCategory as DefaultTaxonomyDataCategories
 
 
 def validate_data_categories_against_db(

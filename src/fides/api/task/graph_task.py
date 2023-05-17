@@ -45,9 +45,7 @@ from fides.api.task.refine_target_path import FieldPathNodeInput
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import NodeInput, Row, append, partition
-from fides.api.util.consent_util import (
-    add_errored_system_status_for_consent_reporting,
-)
+from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from fides.core.config import CONFIG

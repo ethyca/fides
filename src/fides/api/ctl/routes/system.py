@@ -12,6 +12,16 @@ from sqlalchemy.orm import Session
 from starlette import status
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
+from fides.api.api import deps
+from fides.api.api.v1.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_READ,
+    SYSTEM_CREATE,
+    SYSTEM_DELETE,
+    SYSTEM_READ,
+    SYSTEM_UPDATE,
+)
+from fides.api.api.v1.urn_registry import SYSTEM_CONNECTIONS, V1_URL_PREFIX
 from fides.api.ctl.database.crud import (
     create_resource,
     get_resource,
@@ -28,16 +38,6 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
 )
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ctl.utils.errors import NotFoundError
-from fides.api.api import deps
-from fides.api.api.v1.scope_registry import (
-    CONNECTION_CREATE_OR_UPDATE,
-    CONNECTION_READ,
-    SYSTEM_CREATE,
-    SYSTEM_DELETE,
-    SYSTEM_READ,
-    SYSTEM_UPDATE,
-)
-from fides.api.api.v1.urn_registry import SYSTEM_CONNECTIONS, V1_URL_PREFIX
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.oauth.utils import verify_oauth_client, verify_oauth_client_prod
 from fides.api.schemas.connection_configuration.connection_config import (

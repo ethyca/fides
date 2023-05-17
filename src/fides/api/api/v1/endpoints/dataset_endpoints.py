@@ -22,7 +22,6 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.api import deps
 from fides.api.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -43,6 +42,7 @@ from fides.api.common_exceptions import (
     TraversalError,
     ValidationError,
 )
+from fides.api.ctl.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType

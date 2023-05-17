@@ -102,10 +102,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.oauth.utils import verify_callback_oauth, verify_oauth_client
-from fides.api.schemas.dataset import (
-    CollectionAddressResponse,
-    DryRunDatasetResponse,
-)
+from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
 from fides.api.schemas.messaging.messaging import (
     FidesopsMessage,

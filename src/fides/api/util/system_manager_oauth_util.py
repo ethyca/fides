@@ -8,10 +8,10 @@ from fideslang.models import System as SystemSchema
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.api.deps import get_db
 from fides.api.common_exceptions import AuthorizationError
 from fides.api.cryptography.schemas.jwt import JWE_PAYLOAD_SYSTEMS
+from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.models.client import ClientDetail
 from fides.api.oauth.system_manager import SYSTEM_MANAGER_SCOPES
 from fides.api.oauth.utils import (
