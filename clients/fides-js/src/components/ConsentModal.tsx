@@ -5,7 +5,7 @@ import {
   ExperienceConfig,
   PrivacyNotice,
 } from "../lib/consent-types";
-import NoticeToggleTable from "./NoticeToggleTable";
+import NoticeToggles from "./NoticeToggles";
 import Button from "./Button";
 
 /**
@@ -68,7 +68,7 @@ const ConsentModal = ({
             {experience.component_description}
           </p>
           <div className="modal-notices">
-            <NoticeToggleTable
+            <NoticeToggles
               notices={notices}
               enabledNoticeIds={enabledNoticeIds}
               onChange={setEnabledNoticeIds}

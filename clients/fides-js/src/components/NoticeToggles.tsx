@@ -66,7 +66,7 @@ const NoticeToggle = ({
  * We use React instead of Preact so that this component can be shared with
  * the Privacy Center React app.
  */
-const NoticeToggleTable = ({
+const NoticeToggles = ({
   notices,
   enabledNoticeIds,
   onChange,
@@ -106,4 +106,4 @@ const NoticeToggleTable = ({
   );
 };
 
-export default NoticeToggleTable;
+export default NoticeToggles;
