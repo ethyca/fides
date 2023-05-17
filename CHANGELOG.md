@@ -40,6 +40,7 @@ The types of changes are:
 - A JavaScript modal to copy a script tag for `fides.js` [#3238](https://github.com/ethyca/fides/pull/3238)
 - Access and erasure support for OneSignal [#3199](https://github.com/ethyca/fides/pull/3199)
 - Add the ability to "inject" location into `/fides.js` bundles and cache responses for one hour [#3272](https://github.com/ethyca/fides/pull/3272)
+- Added an `automigrate` database setting [#3220](https://github.com/ethyca/fides/pull/3220)
 
 ### Changed
 
