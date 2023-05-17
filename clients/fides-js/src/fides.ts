@@ -101,6 +101,9 @@ const init = async (config: FidesConfig) => {
 
   // TODO: generate device id if it doesn't exist
 
+
+  // TODO: GPC overrides
+
   await initOverlay({
     consentDefaults,
     experience: config.experience,

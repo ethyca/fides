@@ -3,14 +3,16 @@ import { h, render } from "preact";
 import {
   ComponentType,
   DeliveryMechanism,
-  FIDES_MODAL_LINK,
-  FidesOptions,
-  UserGeolocation,
+  FidesOptions, UserGeolocation,
 } from "./consent-types";
 import { debugLog } from "./consent-utils";
 
 import Overlay, { OverlayProps } from "../components/Overlay";
 import { getConsentContext } from "./consent-context";
+import {getExperience} from "~/services/fides/consent";
+import {getGeolocation} from "~/services/external/geolocation";
+import {constructLocation} from "~/utils/consent";
+import {bindModalLinkToModal, hideModalLink} from "./consent-links";
 
 /**
  * Validate the config options
@@ -44,130 +46,26 @@ const validateOptions = (options: FidesOptions): boolean => {
   return true;
 };
 
-/**
- * Construct user geolocation str to be ingested by Fides API
- * Returns null if geolocation cannot be constructed by provided params
- */
-const constructLocation = (
-  geoLocation?: UserGeolocation,
-  debug: boolean = false
-): string | null => {
-  debugLog(debug, "constructing geolocation...");
-  if (!geoLocation) {
-    debugLog(
-      debug,
-      "cannot construct user location since geoLocation is undefined"
-    );
-    return null;
-  }
-  if (geoLocation.location) {
-    return geoLocation.location;
-  }
-  if (geoLocation.country && geoLocation.region) {
-    return `${geoLocation.country}-${geoLocation.region}`;
-  }
-  if (geoLocation.country) {
-    return geoLocation.country;
-  }
-  debugLog(
-    debug,
-    "cannot construct user location from provided geoLocation params..."
-  );
-  return null;
-};
 
 /**
- * Fetch the user's geolocation from an external API
+ * Determines if and when to call the API to retrieve geolocation
  */
-const getGeolocation = async (
-  geolocationApiUrl?: string,
-  debug: boolean = false
-): Promise<UserGeolocation> => {
-  debugLog(debug, "Running getLocation...");
-
-  if (!geolocationApiUrl) {
-    debugLog(
-      debug,
-      "Location cannot be found due to no configured geoLocationApiUrl."
-    );
-    return {};
+const retrieveEffectiveGeolocation = async(options: FidesOptions, geolocation: UserGeolocation | undefined): Promise<UserGeolocation | undefined> => {
+  let effectiveGeolocation;
+  if (!constructLocation(geolocation)) {
+    if (options.isGeolocationEnabled) {
+      effectiveGeolocation = await getGeolocation(
+          options.geolocationApiUrl,
+          options.debug
+      );
+    } else {
+      throw new Error(
+          `User location is required but could not be retrieved because geolocation is disabled.`
+      );
+    }
   }
-
-  debugLog(debug, `Calling geolocation API: GET ${geolocationApiUrl}...`);
-  const fetchOptions: RequestInit = {
-    mode: "cors",
-  };
-  const response = await fetch(geolocationApiUrl, fetchOptions);
-
-  if (!response.ok) {
-    debugLog(
-      debug,
-      "Error getting location from geolocation API, returning {}. Response:",
-      response
-    );
-    return {};
-  }
-
-  try {
-    const body = await response.json();
-    debugLog(
-      debug,
-      "Got location response from geolocation API, returning:",
-      body
-    );
-    return body;
-  } catch (e) {
-    debugLog(
-      debug,
-      "Error parsing response body from geolocation API, returning {}. Response:",
-      response
-    );
-    return {};
-  }
-};
-
-/**
- * Hide pre-existing link in the DOM if we do not need to trigger a modal
- */
-const hideModalLink = (debug: boolean): void => {
-  // TODO- it's possible that this element does not exist by the time this method runs
-  const modalLinkEl: HTMLElement | null =
-    document.getElementById(FIDES_MODAL_LINK);
-  if (modalLinkEl) {
-    debugLog(debug, "modal link element exists, attempting to hide it");
-    // TODO: hide link
-    // eslint-disable-next-line no-param-reassign
-    modalLinkEl.style.display = "none";
-  }
-  debugLog(
-    debug,
-    "modal link element does not exist, so there is nothing to hide"
-  );
-};
-
-/**
- * Update the pre-existing modal link in the DOM to trigger the modal
- */
-const bindModalLinkToModal = (debug: boolean): void => {
-  // TODO- it's possible that this element does not exist by the time this method runs
-  const modalLinkEl: HTMLElement | null =
-    document.getElementById(FIDES_MODAL_LINK);
-  if (
-    modalLinkEl &&
-    // TODO: does this need to be an HTMLAnchorElement?
-    modalLinkEl instanceof HTMLAnchorElement
-  ) {
-    debugLog(
-      debug,
-      `Fides modal link element found, updating click event to trigger modal`
-    );
-    modalLinkEl.onclick = () => {
-      // TODO: render modal component
-    };
-  } else {
-    throw new Error("Fides modal link element could not be found");
-  }
-};
+  return effectiveGeolocation
+}
 
 /**
  * Initialize the Fides Consent overlay components.
@@ -209,16 +107,6 @@ export const initOverlay = async ({
     return Promise.resolve();
   }
 
-  async function getExperience(userLocationString: String) {
-    debugLog(
-      options.debug,
-      "Fetching experience where component === privacy_center...",
-      userLocationString
-    );
-    // TODO: GET experience using location and user id (if exists)
-    return undefined;
-  }
-
   async function renderFidesOverlay(): Promise<void> {
     try {
       debugLog(
@@ -229,30 +117,21 @@ export const initOverlay = async ({
       let effectiveExperience = experience;
 
       if (!experience) {
-        if (!constructLocation(geolocation)) {
-          if (options.isGeolocationEnabled) {
-            effectiveGeolocation = await getGeolocation(
-              options.geolocationApiUrl,
-              options.debug
-            );
-          } else {
-            throw new Error(
-              `User location is required but could not be retrieved because geolocation is disabled.`
-            );
-          }
-        }
+        // If experience is not provided, we need to retrieve it via the Fides API.
+        // In order to retrieve it, we first need a valid geolocation, which is either provided
+        // OR can be obtained via the Fides API
+        effectiveGeolocation = await retrieveEffectiveGeolocation(options, geolocation)
         const userLocationString = constructLocation(effectiveGeolocation);
         if (!userLocationString) {
           throw new Error(
-            `User location could not be constructed from location params: ${effectiveGeolocation}.`
+              `User location could not be constructed from location params: ${effectiveGeolocation}.`
           );
         }
-        effectiveExperience = await getExperience(userLocationString);
+        effectiveExperience = await getExperience(userLocationString, options.debug);
         if (!effectiveExperience) {
           debugLog(
             options.debug,
-            `No relevant experience found based on user location.`,
-            userLocationString
+            `No relevant experience found.`
           );
           hideModalLink(options.debug);
           return await Promise.resolve();
