@@ -28,8 +28,8 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
 )
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ctl.utils.errors import NotFoundError
-from fides.api.ops.api import deps
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api import deps
+from fides.api.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     SYSTEM_CREATE,
@@ -37,16 +37,16 @@ from fides.api.ops.api.v1.scope_registry import (
     SYSTEM_READ,
     SYSTEM_UPDATE,
 )
-from fides.api.ops.api.v1.urn_registry import SYSTEM_CONNECTIONS, V1_URL_PREFIX
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.oauth.utils import verify_oauth_client, verify_oauth_client_prod
-from fides.api.ops.schemas.connection_configuration.connection_config import (
+from fides.api.api.v1.urn_registry import SYSTEM_CONNECTIONS, V1_URL_PREFIX
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.oauth.utils import verify_oauth_client, verify_oauth_client_prod
+from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfigurationWithSecrets,
 )
-from fides.api.ops.util.connection_util import patch_connection_configs
-from fides.api.ops.util.system_manager_oauth_util import (
+from fides.api.util.connection_util import patch_connection_configs
+from fides.api.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )

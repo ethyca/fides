@@ -5,15 +5,15 @@ from unittest.mock import Mock
 
 import pytest
 
-from fides.api.ops.graph.config import CollectionAddress
-from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.graph.traversal import Traversal, TraversalNode
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
-from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.ops.service.connectors.saas_query_config import SaaSQueryConfig
+from fides.api.graph.config import CollectionAddress
+from fides.api.graph.graph import DatasetGraph
+from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
+from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.service.connectors.saas_query_config import SaaSQueryConfig
 from fides.core.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
 

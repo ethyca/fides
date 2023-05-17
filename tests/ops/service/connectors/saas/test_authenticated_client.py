@@ -6,18 +6,18 @@ from typing import Any, Dict
 import pytest
 from requests import ConnectionError, Response, Session
 
-from fides.api.ops.common_exceptions import (
+from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.ops.schemas.saas.saas_config import ClientConfig
-from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.ops.service.connectors.saas.authenticated_client import (
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.schemas.saas.saas_config import ClientConfig
+from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
     get_retry_after,
 )
-from fides.api.ops.util.saas_util import load_config_with_replacement
+from fides.api.util.saas_util import load_config_with_replacement
 
 
 @pytest.fixture

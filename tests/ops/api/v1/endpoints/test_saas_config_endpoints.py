@@ -7,7 +7,7 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     CLIENT_READ,
     CONNECTION_AUTHORIZE,
     CONNECTOR_TEMPLATE_REGISTER,
@@ -15,14 +15,14 @@ from fides.api.ops.api.v1.scope_registry import (
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     AUTHORIZE,
     REGISTER_CONNECTOR_TEMPLATE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,

@@ -95,7 +95,7 @@ def worker(ctx: click.Context) -> None:
     Start a Celery worker for the Fides webserver.
     """
     # This has to be here to avoid a circular dependency
-    from fides.api.ops.worker import start_worker
+    from fides.api.worker import start_worker
 
     start_worker()
 

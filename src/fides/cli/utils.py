@@ -26,7 +26,7 @@ from fideslog.sdk.python.utils import (
 from requests import get, put
 
 import fides
-from fides.api.ops.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
+from fides.api.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
 from fides.connectors.models import (
     AWSConfig,
     BigQueryConfig,

@@ -1,29 +1,29 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import (
+from fides.api.common_exceptions import (
     DataCategoryNotSupported,
     PolicyValidationError,
     RuleValidationError,
     StorageConfigNotFoundException,
 )
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.policy import (
+from fides.api.models.client import ClientDetail
+from fides.api.models.policy import (
     ActionType,
     Policy,
     Rule,
     RuleTarget,
     _is_ancestor_of_contained_categories,
 )
-from fides.api.ops.models.storage import StorageConfig
-from fides.api.ops.service.masking.strategy.masking_strategy_hash import (
+from fides.api.models.storage import StorageConfig
+from fides.api.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
 )
-from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
+from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
-from fides.api.ops.util.data_category import DataCategory
-from fides.api.ops.util.text import to_snake_case
+from fides.api.util.data_category import DataCategory
+from fides.api.util.text import to_snake_case
 
 
 def test_policy_sets_slug(

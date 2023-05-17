@@ -4,19 +4,19 @@ from typing import Tuple
 import pytest
 from httpx import Client
 
-from fides.api.ops.graph.traversal import TraversalNode
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.policy import ActionType, Policy
-from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fides.api.ops.service.connectors.fides.fides_client import FidesClient
-from fides.api.ops.service.connectors.fides_connector import (
+from fides.api.graph.traversal import TraversalNode
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.policy import ActionType, Policy
+from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.service.connectors.fides.fides_client import FidesClient
+from fides.api.service.connectors.fides_connector import (
     DEFAULT_POLLING_INTERVAL,
     DEFAULT_POLLING_TIMEOUT,
     FidesConnector,
     filter_fides_connector_datasets,
 )
-from fides.api.ops.service.privacy_request import request_service
+from fides.api.service.privacy_request import request_service
 from tests.ops.graph.graph_test_util import assert_rows_match, generate_node
 
 

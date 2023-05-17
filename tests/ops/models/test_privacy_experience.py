@@ -1,9 +1,9 @@
-from fides.api.ops.models.privacy_experience import (
+from fides.api.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
     PrivacyExperience,
 )
-from fides.api.ops.models.privacy_notice import (
+from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNotice,

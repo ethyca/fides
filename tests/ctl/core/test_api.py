@@ -25,7 +25,7 @@ from fides.api.ctl.routes import health
 from fides.api.ctl.routes.util import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
 from fides.api.ctl.schemas.system import PrivacyDeclarationResponse
 from fides.api.ctl.sql_models import Dataset, PrivacyDeclaration, System
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     CREATE,
     DELETE,
     POLICY_CREATE_OR_UPDATE,
@@ -38,8 +38,8 @@ from fides.api.ops.api.v1.scope_registry import (
     SYSTEM_UPDATE,
     UPDATE,
 )
-from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
-from fides.api.ops.oauth.roles import OWNER, VIEWER
+from fides.api.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.oauth.roles import OWNER, VIEWER
 from fides.core import api as _api
 from fides.core.config import FidesConfig, get_config
 

@@ -2,23 +2,23 @@ from typing import Any, Dict, List, cast
 
 from requests import PreparedRequest
 
-from fides.api.ops.graph.traversal import TraversalNode
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.saas.strategy_configuration import StrategyConfiguration
-from fides.api.ops.service.authentication.authentication_strategy import (
+from fides.api.graph.traversal import TraversalNode
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.policy import Policy
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.saas.strategy_configuration import StrategyConfiguration
+from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fides.api.ops.service.connectors.saas.authenticated_client import (
+from fides.api.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
 )
-from fides.api.ops.service.saas_request.saas_request_override_factory import (
+from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.ops.util.collection_util import Row
-from fides.api.ops.util.saas_util import assign_placeholders
+from fides.api.util.collection_util import Row
+from fides.api.util.saas_util import assign_placeholders
 
 
 @register("planet_express_user_access", [SaaSRequestType.READ])

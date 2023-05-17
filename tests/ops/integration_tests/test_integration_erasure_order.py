@@ -5,22 +5,22 @@ from unittest import mock
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import TraversalError
-from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.graph.traversal import TraversalNode
-from fides.api.ops.models.policy import ActionType, Policy
-from fides.api.ops.models.privacy_request import ExecutionLog, PrivacyRequest
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.connectors.saas.authenticated_client import (
+from fides.api.common_exceptions import TraversalError
+from fides.api.graph.graph import DatasetGraph
+from fides.api.graph.traversal import TraversalNode
+from fides.api.models.policy import ActionType, Policy
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
+from fides.api.schemas.redis_cache import Identity
+from fides.api.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
 )
-from fides.api.ops.service.saas_request.saas_request_override_factory import (
+from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.ops.task import graph_task
-from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.api.ops.util.collection_util import Row
+from fides.api.task import graph_task
+from fides.api.task.graph_task import get_cached_data_for_erasures
+from fides.api.util.collection_util import Row
 from fides.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 

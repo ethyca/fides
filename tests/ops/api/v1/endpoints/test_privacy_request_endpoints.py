@@ -14,11 +14,11 @@ from fastapi import HTTPException, status
 from fastapi_pagination import Params
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
+from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
     validate_manual_input,
 )
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
@@ -31,7 +31,7 @@ from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_VIEW_DATA,
     STORAGE_CREATE_OR_UPDATE,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     DATASETS,
     PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     PRIVACY_REQUEST_APPROVE,
@@ -50,21 +50,21 @@ from fides.api.ops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
 )
-from fides.api.ops.cryptography.schemas.jwt import (
+from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.api.ops.graph.config import CollectionAddress
-from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.models.application_config import ApplicationConfig
-from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.policy import ActionType, CurrentStep, Policy
-from fides.api.ops.models.privacy_request import (
+from fides.api.graph.config import CollectionAddress
+from fides.api.graph.graph import DatasetGraph
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.audit_log import AuditLog, AuditLogAction
+from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.policy import ActionType, CurrentStep, Policy
+from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     ManualAction,
@@ -73,22 +73,22 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequestNotifications,
     PrivacyRequestStatus,
 )
-from fides.api.ops.oauth.jwt import generate_jwe
-from fides.api.ops.oauth.roles import APPROVER, VIEWER
-from fides.api.ops.schemas.dataset import DryRunDatasetResponse
-from fides.api.ops.schemas.masking.masking_secrets import SecretType
-from fides.api.ops.schemas.messaging.messaging import (
+from fides.api.oauth.jwt import generate_jwe
+from fides.api.oauth.roles import APPROVER, VIEWER
+from fides.api.schemas.dataset import DryRunDatasetResponse
+from fides.api.schemas.masking.masking_secrets import SecretType
+from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
     MessagingServiceType,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
-from fides.api.ops.schemas.policy import PolicyResponse
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.task import graph_task
-from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
-from fides.api.ops.util.cache import (
+from fides.api.schemas.policy import PolicyResponse
+from fides.api.schemas.redis_cache import Identity
+from fides.api.task import graph_task
+from fides.api.tasks import MESSAGING_QUEUE_NAME
+from fides.api.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
     get_masking_secret_cache_key,

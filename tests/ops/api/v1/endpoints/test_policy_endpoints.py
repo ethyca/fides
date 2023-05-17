@@ -5,22 +5,22 @@ from uuid import uuid4
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1 import scope_registry as scopes
-from fides.api.ops.api.v1.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI
-from fides.api.ops.api.v1.urn_registry import POLICY_LIST as POLICY_CREATE_URI
-from fides.api.ops.api.v1.urn_registry import RULE_DETAIL as RULE_DETAIL_URI
-from fides.api.ops.api.v1.urn_registry import RULE_LIST as RULE_CREATE_URI
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1 import scope_registry as scopes
+from fides.api.api.v1.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI
+from fides.api.api.v1.urn_registry import POLICY_LIST as POLICY_CREATE_URI
+from fides.api.api.v1.urn_registry import RULE_DETAIL as RULE_DETAIL_URI
+from fides.api.api.v1.urn_registry import RULE_LIST as RULE_CREATE_URI
+from fides.api.api.v1.urn_registry import (
     RULE_TARGET_DETAIL,
     RULE_TARGET_LIST,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
-from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
+from fides.api.models.client import ClientDetail
+from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
-from fides.api.ops.util.data_category import (
+from fides.api.util.data_category import (
     DataCategory,
     generate_fides_data_categories,
 )

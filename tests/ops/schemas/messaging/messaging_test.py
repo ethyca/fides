@@ -1,6 +1,6 @@
 import pytest
 
-from fides.api.ops.schemas.messaging.messaging import (
+from fides.api.schemas.messaging.messaging import (
     SubjectIdentityVerificationBodyParams,
 )
 

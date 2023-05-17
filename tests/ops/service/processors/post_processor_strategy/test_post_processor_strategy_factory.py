@@ -1,13 +1,13 @@
 import pytest
 
-from fides.api.ops.common_exceptions import NoSuchStrategyException, ValidationError
-from fides.api.ops.service.processors.post_processor_strategy.post_processor_strategy import (
+from fides.api.common_exceptions import NoSuchStrategyException, ValidationError
+from fides.api.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-from fides.api.ops.service.processors.post_processor_strategy.post_processor_strategy_filter import (
+from fides.api.service.processors.post_processor_strategy.post_processor_strategy_filter import (
     FilterPostProcessorStrategy,
 )
-from fides.api.ops.service.processors.post_processor_strategy.post_processor_strategy_unwrap import (
+from fides.api.service.processors.post_processor_strategy.post_processor_strategy_unwrap import (
     UnwrapPostProcessorStrategy,
 )
 

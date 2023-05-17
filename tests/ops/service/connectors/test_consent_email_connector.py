@@ -2,31 +2,31 @@ from unittest import mock
 
 import pytest
 
-from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionTestStatus
-from fides.api.ops.models.privacy_notice import ConsentMechanism, EnforcementLevel
-from fides.api.ops.models.privacy_preference import UserConsentPreference
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
+from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.connectionconfig import AccessLevel, ConnectionTestStatus
+from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
+from fides.api.models.privacy_preference import UserConsentPreference
+from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
     ExtendedEmailSchema,
     ExtendedIdentityTypes,
 )
-from fides.api.ops.schemas.messaging.messaging import (
+from fides.api.schemas.messaging.messaging import (
     ConsentPreferencesByUser,
     MessagingActionType,
 )
-from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.api.ops.schemas.privacy_preference import (
+from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
+from fides.api.schemas.privacy_preference import (
     MinimalPrivacyPreferenceHistorySchema,
 )
-from fides.api.ops.schemas.privacy_request import Consent
-from fides.api.ops.service.connectors.consent_email_connector import (
+from fides.api.schemas.privacy_request import Consent
+from fides.api.service.connectors.consent_email_connector import (
     GenericConsentEmailConnector,
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
     send_single_consent_email,
 )
-from fides.api.ops.service.privacy_request.request_runner_service import (
+from fides.api.service.privacy_request.request_runner_service import (
     get_consent_email_connection_configs,
 )
 

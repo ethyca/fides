@@ -6,7 +6,7 @@ from unittest.mock import Mock
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
     CLIENT_READ,
@@ -15,7 +15,7 @@ from fides.api.ops.api.v1.scope_registry import (
     SCOPE_REGISTRY,
     STORAGE_READ,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
     CLIENT_SCOPE,
@@ -25,18 +25,18 @@ from fides.api.ops.api.v1.urn_registry import (
     TOKEN,
     V1_URL_PREFIX,
 )
-from fides.api.ops.common_exceptions import OAuth2TokenException
-from fides.api.ops.cryptography.schemas.jwt import (
+from fides.api.common_exceptions import OAuth2TokenException
+from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.api.ops.models.authentication_request import AuthenticationRequest
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.oauth.jwt import generate_jwe
-from fides.api.ops.oauth.roles import OWNER
-from fides.api.ops.oauth.utils import extract_payload
+from fides.api.models.authentication_request import AuthenticationRequest
+from fides.api.models.client import ClientDetail
+from fides.api.oauth.jwt import generate_jwe
+from fides.api.oauth.roles import OWNER
+from fides.api.oauth.utils import extract_payload
 from fides.core.config import CONFIG
 
 

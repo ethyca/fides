@@ -14,12 +14,12 @@ from sqlalchemy.orm import Session, make_transient
 from sqlalchemy.orm.attributes import flag_modified
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_CONFIGS,
     DATASET_VALIDATE,
@@ -28,8 +28,8 @@ from fides.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
 
 
 def _reject_key(dict: Dict, key: str) -> Dict:

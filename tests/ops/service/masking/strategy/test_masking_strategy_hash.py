@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from fides.api.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
-from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fides.api.ops.service.masking.strategy.masking_strategy_hash import (
+from fides.api.schemas.masking.masking_configuration import HashMaskingConfiguration
+from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+from fides.api.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
 )
 

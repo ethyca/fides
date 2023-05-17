@@ -2,21 +2,21 @@ from unittest import mock
 
 import pytest
 
-from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionTestStatus
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
+from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.connectionconfig import AccessLevel, ConnectionTestStatus
+from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettings,
     EmailSchema,
     IdentityTypes,
 )
-from fides.api.ops.schemas.messaging.messaging import MessagingActionType
-from fides.api.ops.service.connectors.erasure_email_connector import (
+from fides.api.schemas.messaging.messaging import MessagingActionType
+from fides.api.service.connectors.erasure_email_connector import (
     GenericErasureEmailConnector,
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
     send_single_erasure_email,
 )
-from fides.api.ops.service.privacy_request.request_runner_service import (
+from fides.api.service.privacy_request.request_runner_service import (
     get_erasure_email_connection_configs,
 )
 

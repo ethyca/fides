@@ -8,12 +8,12 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     STORAGE_ACTIVE_DEFAULT,
     STORAGE_BY_KEY,
     STORAGE_CONFIG,
@@ -25,12 +25,12 @@ from fides.api.ops.api.v1.urn_registry import (
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists, KeyValidationError
-from fides.api.ops.models.application_config import ApplicationConfig
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.storage import StorageConfig, default_storage_config_name
-from fides.api.ops.schemas.storage.data_upload_location_response import DataUpload
-from fides.api.ops.schemas.storage.storage import (
+from fides.api.common_exceptions import KeyOrNameAlreadyExists, KeyValidationError
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.client import ClientDetail
+from fides.api.models.storage import StorageConfig, default_storage_config_name
+from fides.api.schemas.storage.data_upload_location_response import DataUpload
+from fides.api.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
     S3AuthMethod,

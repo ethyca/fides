@@ -6,23 +6,23 @@ from fideslang.models import Dataset
 from pydantic import ValidationError
 from sqlalchemy.exc import InvalidRequestError
 
-from fides.api.ops.db.session import get_db_session
-from fides.api.ops.graph.config import CollectionAddress
-from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.models.connectionconfig import (
+from fides.api.db.session import get_db_session
+from fides.api.graph.config import CollectionAddress
+from fides.api.graph.graph import DatasetGraph
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
-from fides.api.ops.models.policy import CurrentStep
-from fides.api.ops.models.privacy_request import (
+from fides.api.models.datasetconfig import convert_dataset_to_graph
+from fides.api.models.policy import CurrentStep
+from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLog,
     PrivacyRequest,
 )
-from fides.api.ops.task import graph_task
-from fides.api.ops.task.graph_task import get_cached_data_for_erasures
+from fides.api.task import graph_task
+from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.core.config import CONFIG
 from tests.fixtures.application_fixtures import integration_secrets
 

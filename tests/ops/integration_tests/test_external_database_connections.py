@@ -5,12 +5,12 @@ import pytest
 from sqlalchemy import inspect
 from toml import load as load_toml
 
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.ops.schemas.connection_configuration import (
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.schemas.connection_configuration import (
     RedshiftSchema,
     SnowflakeSchema,
 )
-from fides.api.ops.service.connectors import (
+from fides.api.service.connectors import (
     RedshiftConnector,
     SnowflakeConnector,
     get_connector,

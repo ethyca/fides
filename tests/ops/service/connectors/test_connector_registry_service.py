@@ -5,13 +5,13 @@ from unittest.mock import Mock
 import yaml
 from fideslang.models import DatasetCollection
 
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.schemas.saas.connector_template import ConnectorTemplate
-from fides.api.ops.service.connectors.saas.connector_registry_service import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.schemas.saas.connector_template import ConnectorTemplate
+from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     update_saas_configs,
 )
-from fides.api.ops.util.saas_util import (
+from fides.api.util.saas_util import (
     encode_file_contents,
     load_config_from_string,
     load_dataset_from_string,

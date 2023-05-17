@@ -6,11 +6,11 @@ import requests_mock
 from sendgrid.helpers.mail import Email, To
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.models.messaging import MessagingConfig
-from fides.api.ops.models.privacy_notice import ConsentMechanism, EnforcementLevel
-from fides.api.ops.models.privacy_preference import UserConsentPreference
-from fides.api.ops.schemas.messaging.messaging import (
+from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.messaging import MessagingConfig
+from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
+from fides.api.models.privacy_preference import UserConsentPreference
+from fides.api.schemas.messaging.messaging import (
     ConsentEmailFulfillmentBodyParams,
     ConsentPreferencesByUser,
     EmailForActionType,
@@ -21,13 +21,13 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceType,
     SubjectIdentityVerificationBodyParams,
 )
-from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.api.ops.schemas.privacy_preference import (
+from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
+from fides.api.schemas.privacy_preference import (
     MinimalPrivacyPreferenceHistorySchema,
 )
-from fides.api.ops.schemas.privacy_request import Consent
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.messaging.message_dispatch_service import (
+from fides.api.schemas.privacy_request import Consent
+from fides.api.schemas.redis_cache import Identity
+from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_TEMPLATE_NAME,
     _compose_twilio_mail,
     _get_dispatcher_from_config_type,

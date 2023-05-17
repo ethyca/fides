@@ -1,16 +1,16 @@
 import pytest
 
-from fides.api.ops.common_exceptions import StorageUploadError
-from fides.api.ops.schemas.storage.storage import (
+from fides.api.common_exceptions import StorageUploadError
+from fides.api.schemas.storage.storage import (
     S3AuthMethod,
     StorageSecrets,
     StorageSecretsS3,
     StorageType,
 )
-from fides.api.ops.service.storage.storage_authenticator_service import (
+from fides.api.service.storage.storage_authenticator_service import (
     secrets_are_valid,
 )
-from fides.api.ops.util.storage_authenticator import get_s3_session
+from fides.api.util.storage_authenticator import get_s3_session
 
 
 class TestGetS3Session:

@@ -13,15 +13,15 @@ from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import (
+from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.models.application_config import ApplicationConfig
-from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
-from fides.api.ops.models.policy import CurrentStep, PolicyPostWebhook
-from fides.api.ops.models.privacy_request import (
+from fides.api.graph.graph import DatasetGraph
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.audit_log import AuditLog, AuditLogAction
+from fides.api.models.policy import CurrentStep, PolicyPostWebhook
+from fides.api.models.privacy_request import (
     ActionType,
     CheckpointActionRequired,
     ExecutionLog,
@@ -30,38 +30,38 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.ops.schemas.external_https import SecondPartyResponseFormat
-from fides.api.ops.schemas.masking.masking_configuration import (
+from fides.api.schemas.external_https import SecondPartyResponseFormat
+from fides.api.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
     MaskingConfiguration,
 )
-from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.ops.schemas.messaging.messaging import (
+from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
+from fides.api.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     MessagingActionType,
     MessagingServiceType,
 )
-from fides.api.ops.schemas.policy import Rule
-from fides.api.ops.schemas.privacy_request import Consent
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.schemas.saas.saas_config import SaaSRequest
-from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.ops.service.connectors.dynamodb_connector import DynamoDBConnector
-from fides.api.ops.service.connectors.saas_connector import SaaSConnector
-from fides.api.ops.service.connectors.sql_connector import (
+from fides.api.schemas.policy import Rule
+from fides.api.schemas.privacy_request import Consent
+from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.saas.saas_config import SaaSRequest
+from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.service.connectors.dynamodb_connector import DynamoDBConnector
+from fides.api.service.connectors.saas_connector import SaaSConnector
+from fides.api.service.connectors.sql_connector import (
     RedshiftConnector,
     SnowflakeConnector,
 )
-from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
+from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.api.service.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
-from fides.api.ops.service.privacy_request.request_runner_service import (
+from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
     needs_batch_email_send,
     run_webhooks_and_report_status,
 )
-from fides.api.ops.util.data_category import DataCategory
+from fides.api.util.data_category import DataCategory
 from fides.core.config import CONFIG
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5

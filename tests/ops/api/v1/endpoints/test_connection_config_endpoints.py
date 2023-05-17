@@ -10,22 +10,22 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
     STORAGE_DELETE,
 )
-from fides.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.connectionconfig import (
+from fides.api.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.manual_webhook import AccessManualWebhook
-from fides.api.ops.models.privacy_request import PrivacyRequestStatus
-from fides.api.ops.oauth.roles import APPROVER, OWNER, VIEWER
+from fides.api.models.manual_webhook import AccessManualWebhook
+from fides.api.models.privacy_request import PrivacyRequestStatus
+from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
 from tests.fixtures.application_fixtures import integration_secrets
 
 page_size = Params().size

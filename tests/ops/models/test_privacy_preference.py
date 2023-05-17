@@ -1,20 +1,20 @@
 import pytest
 from sqlalchemy.exc import InvalidRequestError
 
-from fides.api.ops.api.v1.endpoints.privacy_preference_endpoints import (
+from fides.api.api.v1.endpoints.privacy_preference_endpoints import (
     extract_identity_from_provided_identity,
 )
-from fides.api.ops.common_exceptions import (
+from fides.api.common_exceptions import (
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
 )
-from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
-from fides.api.ops.models.privacy_preference import (
+from fides.api.models.privacy_notice import PrivacyNoticeRegion
+from fides.api.models.privacy_preference import (
     PrivacyPreferenceHistory,
     RequestOrigin,
     UserConsentPreference,
 )
-from fides.api.ops.models.privacy_request import (
+from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     ProvidedIdentity,
     ProvidedIdentityType,

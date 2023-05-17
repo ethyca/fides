@@ -3,28 +3,28 @@ from unittest import mock
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.models.messaging import MessagingConfig
-from fides.api.ops.models.policy import ActionType, Policy
-from fides.api.ops.models.privacy_preference import UserConsentPreference
-from fides.api.ops.models.privacy_request import (
+from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.messaging import MessagingConfig
+from fides.api.models.policy import ActionType, Policy
+from fides.api.models.privacy_preference import UserConsentPreference
+from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.ops.schemas.messaging.messaging import ConsentPreferencesByUser
-from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.api.ops.schemas.privacy_preference import (
+from fides.api.schemas.messaging.messaging import ConsentPreferencesByUser
+from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
+from fides.api.schemas.privacy_preference import (
     MinimalPrivacyPreferenceHistorySchema,
 )
-from fides.api.ops.schemas.privacy_request import Consent
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.privacy_request.email_batch_service import (
+from fides.api.schemas.privacy_request import Consent
+from fides.api.schemas.redis_cache import Identity
+from fides.api.service.privacy_request.email_batch_service import (
     EmailExitState,
     send_email_batch,
 )
-from fides.api.ops.util.cache import get_all_cache_keys_for_privacy_request, get_cache
+from fides.api.util.cache import get_all_cache_keys_for_privacy_request, get_cache
 from fides.core.config import get_config
 from tests.fixtures.application_fixtures import (
     _create_privacy_request_for_policy,

@@ -5,28 +5,28 @@ import pytest
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from fideslang.models import Dataset
 
-from fides.api.ops.graph.config import (
+from fides.api.graph.config import (
     CollectionAddress,
     FieldAddress,
     FieldPath,
     ObjectField,
     ScalarField,
 )
-from fides.api.ops.graph.graph import DatasetGraph, Edge
-from fides.api.ops.graph.traversal import Traversal, TraversalNode
-from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
-from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
-from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fides.api.ops.service.connectors.query_config import (
+from fides.api.graph.graph import DatasetGraph, Edge
+from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.datasetconfig import convert_dataset_to_graph
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.masking.masking_configuration import HashMaskingConfiguration
+from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+from fides.api.service.connectors.query_config import (
     DynamoDBQueryConfig,
     MongoQueryConfig,
     SQLQueryConfig,
 )
-from fides.api.ops.service.masking.strategy.masking_strategy_hash import (
+from fides.api.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
 )
-from fides.api.ops.util.data_category import DataCategory
+from fides.api.util.data_category import DataCategory
 
 from ...task.traversal_data import combined_mongo_postgresql_graph, integration_db_graph
 from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets

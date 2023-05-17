@@ -1,10 +1,10 @@
 import pytest
 
-from fides.api.ops.schemas.connection_configuration import SovrnSchema
-from fides.api.ops.schemas.connection_configuration.connection_secrets_attentive import (
+from fides.api.schemas.connection_configuration import SovrnSchema
+from fides.api.schemas.connection_configuration.connection_secrets_attentive import (
     AttentiveSchema,
 )
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
+from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettings,
     AdvancedSettingsWithExtendedIdentityTypes,
     EmailSchema,
@@ -12,7 +12,7 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_email imp
     ExtendedIdentityTypes,
     IdentityTypes,
 )
-from fides.api.ops.service.connectors.email.sovrn_connector import (
+from fides.api.service.connectors.email.sovrn_connector import (
     SOVRN_REQUIRED_IDENTITY,
 )
 
