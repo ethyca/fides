@@ -15,12 +15,7 @@ const BannerActionForm = ({ isOverlay }: ExperienceFormRules) => {
 
   return (
     <FormSection title="Banner actions" data-testid="banner-action-form">
-      <CustomTextInput
-        name="link_label"
-        label="Link label"
-        variant="stacked"
-        isRequired
-      />
+      <CustomTextInput name="link_label" label="Link label" variant="stacked" />
       <CustomTextInput
         label="Acknowledgment button label"
         name="acknowledgement_button_label"

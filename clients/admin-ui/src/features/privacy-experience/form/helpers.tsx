@@ -44,7 +44,7 @@ const privacyCenterValidationSchema = Yup.object().shape({
 const bannerValidationSchema = Yup.object().shape({
   banner_title: Yup.string().required().label("Banner title"),
   banner_description: Yup.string().nullable(),
-  link_label: Yup.string().required().label("Link label"),
+  link_label: Yup.string().label("Link label").nullable(),
 });
 
 const buttonGroupValidationSchema = Yup.object().shape({
