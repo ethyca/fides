@@ -298,7 +298,7 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
         return self
 
     @staticmethod
-    def get_experience_by_component_and_region(
+    def get_experience_by_region_and_component(
         db: Session, region: PrivacyNoticeRegion, component: ComponentType
     ) -> Optional[PrivacyExperience]:
         """Load an experience for a given region and component type"""
@@ -316,28 +316,25 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
         db: Session, region: PrivacyNoticeRegion
     ) -> Tuple[Optional[PrivacyExperience], Optional[PrivacyExperience]]:
         """Load both the overlay and privacy center experience for a given region"""
-        overlay_experience: Optional[PrivacyExperience] = (
-            db.query(PrivacyExperience)
-            .filter(
-                PrivacyExperience.region == region,
-                PrivacyExperience.component == ComponentType.overlay,
-            )
-            .first()
+        overlay_experience: Optional[
+            PrivacyExperience
+        ] = PrivacyExperience.get_experience_by_region_and_component(
+            db=db, region=region, component=ComponentType.overlay
         )
 
-        privacy_center_experience: Optional[PrivacyExperience] = (
-            db.query(PrivacyExperience)
-            .filter(
-                PrivacyExperience.region == region,
-                PrivacyExperience.component == ComponentType.privacy_center,
-            )
-            .first()
+        privacy_center_experience: Optional[
+            PrivacyExperience
+        ] = PrivacyExperience.get_experience_by_region_and_component(
+            db=db, region=region, component=ComponentType.privacy_center
         )
 
         return overlay_experience, privacy_center_experience
 
     def unlink_privacy_experience_config(self, db: Session) -> PrivacyExperience:
-        """Remove config from experience"""
+        """Remove config from experience
+
+        Removes the FK, does not remove Privacy Experiences or Privacy Experience Configs
+        """
         return self.update(
             db,
             data={

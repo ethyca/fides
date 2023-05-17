@@ -191,7 +191,7 @@ class TestPrivacyExperience:
 
     def test_get_experience_by_component_and_region(self, db):
         assert (
-            PrivacyExperience.get_experience_by_component_and_region(
+            PrivacyExperience.get_experience_by_region_and_component(
                 db, PrivacyNoticeRegion.eu_at, ComponentType.overlay
             )
             is None
@@ -207,13 +207,13 @@ class TestPrivacyExperience:
         )
 
         assert (
-            PrivacyExperience.get_experience_by_component_and_region(
+            PrivacyExperience.get_experience_by_region_and_component(
                 db, PrivacyNoticeRegion.eu_at, ComponentType.overlay
             )
             is None
         )
         assert (
-            PrivacyExperience.get_experience_by_component_and_region(
+            PrivacyExperience.get_experience_by_region_and_component(
                 db, PrivacyNoticeRegion.eu_at, ComponentType.privacy_center
             )
             == pc_exp

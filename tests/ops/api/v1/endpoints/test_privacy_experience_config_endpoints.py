@@ -452,7 +452,7 @@ class TestCreateExperienceConfig:
         """
 
         assert (
-            PrivacyExperience.get_experience_by_component_and_region(
+            PrivacyExperience.get_experience_by_region_and_component(
                 db, PrivacyNoticeRegion.us_ny, ComponentType.overlay
             )
             is None
@@ -1044,7 +1044,7 @@ class TestUpdateExperienceConfig:
         """
 
         assert (
-            PrivacyExperience.get_experience_by_component_and_region(
+            PrivacyExperience.get_experience_by_region_and_component(
                 db, PrivacyNoticeRegion.us_ny, ComponentType.overlay
             )
             is None
