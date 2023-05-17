@@ -432,6 +432,13 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#fides-db-migrate" class="md-nav__link">
+    migrate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fides-db-reset" class="md-nav__link">
     reset
   </a>
@@ -1251,6 +1258,13 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#fides-db-migrate" class="md-nav__link">
+    migrate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fides-db-reset" class="md-nav__link">
     reset
   </a>
@@ -1715,10 +1729,27 @@ _Note: The common MANIFESTS_DIR argument _always_ defaults to &quot;.fides/&quot
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-db-init">fides db init</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Initialize the Fides database.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>Initialize the Fides database.
+
+**WARNING**: Deprecated, use `migrate` instead.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides db init [OPTIONS]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-db-migrate">fides db migrate</h4>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>Runs the latest migrations for the Fides database
+
+Will automatically initialize a fresh database.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides db migrate [OPTIONS]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.

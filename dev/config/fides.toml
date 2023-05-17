@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "511f762d39b168735d35c815364c88fe" # string
+analytics_id = "250e3a513590fb056d1f8ee06cefe312" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -35,6 +35,11 @@ server_port = "8080" # string
 #-- DATABASE --#
 #--------------------------------------------------------------------#
 [database] # Configuration settings for the application database.
+
+# Automatically runs migrations on webserver startup. If set to
+# `false`, will require the user to run migrations manually via the CLI
+# or API. WARNING: Must be set to `true` for first-time startup.
+automigrate = true # boolean
 
 # Number of concurrent database connections Fides will use for API
 # requests. Note that the pool begins with no connections, but as they
