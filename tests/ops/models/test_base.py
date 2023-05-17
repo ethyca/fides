@@ -75,28 +75,37 @@ def test_update_key(db: Session, storage_config, privacy_request):
     assert "complete" == privacy_request.status.value
 
 
-def test_save_key(db: Session, storage_config, privacy_request):
-    # Test prevent saving bad keys.
-    storage_config.key = "bad key"
-    with pytest.raises(KeyValidationError) as exc:
+class TestSaveKey:
+    def test_save_key_invalid(self, db: Session, storage_config):
+        "Test prevent saving bad keys."
+        storage_config.key = "bad key"
+        with pytest.raises(FidesValidationError) as exc:
+            storage_config.save(db)
+
+        error_output = str(exc.value)
+        expected_output = "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: bad key"
+        print(error_output)
+        assert error_output == expected_output
+
+    def test_save_key_none(self, db: Session, storage_config):
+        "Test key required on applicable models."
+        storage_config.key = None
+        with pytest.raises(AssertionError) as exc:
+            storage_config.save(db)
+
+        error_output = str(exc.value)
+        print(error_output)
+        assert error_output == "Key on class 'StorageConfig' cannot be empty!"
+
+    def test_save_key_valid(self, db: Session, storage_config):
+        "Test save with valid key"
+        storage_config.key = "valid_key"
         storage_config.save(db)
+        assert storage_config.key == "valid_key"
 
-    assert str(exc.value) == "Key 'bad key' on StorageConfig is invalid."
-
-    # Test key required on applicable models
-    storage_config.key = None
-    with pytest.raises(KeyValidationError) as exc:
-        storage_config.save(db)
-
-    assert str(exc.value) == "Key 'None' on StorageConfig is invalid."
-
-    # Test save with valid key
-    storage_config.key = "valid_key"
-    storage_config.save(db)
-    assert storage_config.key == "valid_key"
-
-    # Test save on model with no key required
-    assert hasattr(privacy_request, "key") is False
-    privacy_request.status = "complete"
-    privacy_request.save(db)
-    assert "complete" == privacy_request.status.value  # type: ignore
+    def test_save_key_privacy_request(self, db: Session, privacy_request):
+        # Test save on model with no key required
+        assert hasattr(privacy_request, "key") is False
+        privacy_request.status = "complete"
+        privacy_request.save(db)
+        assert "complete" == privacy_request.status.value  # type: ignore
