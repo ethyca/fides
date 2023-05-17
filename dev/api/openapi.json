@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.13.1b0.post0.dev2"
+    "version": "2.13.1b0.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8322,7 +8322,7 @@
           "Privacy Experience"
         ],
         "summary": "Privacy Experience List",
-        "description": "Return a paginated list of `PrivacyExperience` records in this system.\nIncludes some query params to help filter the list if needed. Returns\nrelevant privacy notices embedded in the experience response.\n\n'region' and 'show_disabled' query params are passed along to further filter\nnotices as well.",
+        "description": "Returns a list of PrivacyExperience records for individual regions with\nrelevant privacy notices embedded in the response.\n\n'show_disabled' query params are passed along to further filter\nnotices as well.",
         "operationId": "privacy_experience_list_api_v1_privacy_experience_get",
         "parameters": [
           {
@@ -8358,6 +8358,15 @@
               "type": "boolean"
             },
             "name": "has_notices",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Has Config",
+              "type": "boolean"
+            },
+            "name": "has_config",
             "in": "query"
           },
           {
@@ -8413,118 +8422,6 @@
             ]
           }
         ]
-      },
-      "post": {
-        "tags": [
-          "Privacy Experience"
-        ],
-        "summary": "Privacy Experience Create",
-        "description": "Bulk create Privacy Experiences. Returns related notices in the response.",
-        "operationId": "privacy_experience_create_api_v1_privacy_experience_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "title": "Bulk Experience Data",
-                "maxItems": 50,
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/PrivacyExperienceCreate"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Privacy Experience Create Api V1 Privacy Experience Post",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PrivacyExperienceResponse"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "privacy-experience:create"
-            ]
-          }
-        ]
-      },
-      "patch": {
-        "tags": [
-          "Privacy Experience"
-        ],
-        "summary": "Privacy Experience Bulk Update",
-        "description": "Bulk update privacy experiences.  Related notices are returned in the response.",
-        "operationId": "privacy_experience_bulk_update_api_v1_privacy_experience_patch",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "title": "Privacy Experience Updates",
-                "maxItems": 50,
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/PrivacyExperienceWithId"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Privacy Experience Bulk Update Api V1 Privacy Experience Patch",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PrivacyExperienceResponse"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "privacy-experience:update"
-            ]
-          }
-        ]
       }
     },
     "/api/v1/privacy-experience/{privacy_experience_id}": {
@@ -8533,7 +8430,7 @@
           "Privacy Experience"
         ],
         "summary": "Privacy Experience Detail",
-        "description": "Get privacy experience with embedded notices.\n\nshow_disabled and region_query params are passed onto optionally filter the embedded notices.",
+        "description": "Return a privacy experience for a given region with relevant notices embedded.\n\nshow_disabled query params are passed onto optionally filter the embedded notices.",
         "operationId": "privacy_experience_detail_api_v1_privacy_experience__privacy_experience_id__get",
         "parameters": [
           {
@@ -8553,14 +8450,6 @@
               "default": true
             },
             "name": "show_disabled",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "$ref": "#/components/schemas/PrivacyNoticeRegion"
-            },
-            "name": "region",
             "in": "query"
           }
         ],
@@ -8590,6 +8479,252 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "privacy-experience:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/experience-config": {
+      "get": {
+        "tags": [
+          "Privacy Experience Config"
+        ],
+        "summary": "Experience Config List",
+        "description": "Returns a list of PrivacyExperienceConfig resources.  These resources have common titles, descriptions, and\nlabels that can be shared between multiple experiences.",
+        "operationId": "experience_config_list_api_v1_experience_config_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Show Disabled",
+              "type": "boolean",
+              "default": true
+            },
+            "name": "show_disabled",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ComponentType"
+            },
+            "name": "component",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            },
+            "name": "region",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ExperienceConfigResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-experience:read"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Privacy Experience Config"
+        ],
+        "summary": "Experience Config Create",
+        "description": "Create Experience Config and then attempt to upsert Experiences and link to ExperienceConfig",
+        "operationId": "experience_config_create_api_v1_experience_config_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExperienceConfigCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperienceConfigCreateOrUpdateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-experience:create",
+              "privacy-experience:update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/experience-config/{experience_config_id}": {
+      "get": {
+        "tags": [
+          "Privacy Experience Config"
+        ],
+        "summary": "Experience Config Detail",
+        "description": "Returns a PrivacyExperienceConfig.",
+        "operationId": "experience_config_detail_api_v1_experience_config__experience_config_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Experience Config Id",
+              "type": "string"
+            },
+            "name": "experience_config_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperienceConfigResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-experience:read"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Privacy Experience Config"
+        ],
+        "summary": "Experience Config Update",
+        "description": "Update Experience Config and then attempt to upsert Experiences and link back to ExperienceConfig.\n\nAll regions that should be linked to this ExperienceConfig (or remain linked) need to be\nincluded in this request.",
+        "operationId": "experience_config_update_api_v1_experience_config__experience_config_id__patch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Experience Config Id",
+              "type": "string"
+            },
+            "name": "experience_config_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExperienceConfigUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperienceConfigCreateOrUpdateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-experience:update"
             ]
           }
         ]
@@ -15924,6 +16059,262 @@
         ],
         "description": "Enum for execution log statuses, reflecting where they are in their workflow"
       },
+      "ExperienceConfigCreate": {
+        "title": "ExperienceConfigCreate",
+        "required": [
+          "component",
+          "component_title",
+          "delivery_mechanism",
+          "regions"
+        ],
+        "type": "object",
+        "properties": {
+          "acknowledgement_button_label": {
+            "title": "Acknowledgement Button Label",
+            "type": "string"
+          },
+          "banner_title": {
+            "title": "Banner Title",
+            "type": "string"
+          },
+          "banner_description": {
+            "title": "Banner Description",
+            "type": "string"
+          },
+          "component": {
+            "$ref": "#/components/schemas/ComponentType"
+          },
+          "component_title": {
+            "title": "Component Title",
+            "type": "string"
+          },
+          "component_description": {
+            "title": "Component Description",
+            "type": "string"
+          },
+          "confirmation_button_label": {
+            "title": "Confirmation Button Label",
+            "type": "string"
+          },
+          "delivery_mechanism": {
+            "$ref": "#/components/schemas/DeliveryMechanism"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean",
+            "default": false
+          },
+          "link_label": {
+            "title": "Link Label",
+            "type": "string"
+          },
+          "reject_button_label": {
+            "title": "Reject Button Label",
+            "type": "string"
+          },
+          "regions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          }
+        },
+        "description": "An API representation to create ExperienceConfig.\nThis model doesn't include an `id` so that it can be used for creation.\nIt also establishes some fields _required_ for creation"
+      },
+      "ExperienceConfigCreateOrUpdateResponse": {
+        "title": "ExperienceConfigCreateOrUpdateResponse",
+        "required": [
+          "experience_config",
+          "linked_regions",
+          "unlinked_regions",
+          "skipped_regions"
+        ],
+        "type": "object",
+        "properties": {
+          "experience_config": {
+            "$ref": "#/components/schemas/ExperienceConfigResponse"
+          },
+          "linked_regions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          },
+          "unlinked_regions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          },
+          "skipped_regions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          }
+        },
+        "description": "Schema with the created/updated experience config with regions that succeeded or failed"
+      },
+      "ExperienceConfigResponse": {
+        "title": "ExperienceConfigResponse",
+        "required": [
+          "id",
+          "experience_config_history_id",
+          "version",
+          "created_at",
+          "updated_at",
+          "regions"
+        ],
+        "type": "object",
+        "properties": {
+          "acknowledgement_button_label": {
+            "title": "Acknowledgement Button Label",
+            "type": "string"
+          },
+          "banner_title": {
+            "title": "Banner Title",
+            "type": "string"
+          },
+          "banner_description": {
+            "title": "Banner Description",
+            "type": "string"
+          },
+          "component": {
+            "$ref": "#/components/schemas/ComponentType"
+          },
+          "component_title": {
+            "title": "Component Title",
+            "type": "string"
+          },
+          "component_description": {
+            "title": "Component Description",
+            "type": "string"
+          },
+          "confirmation_button_label": {
+            "title": "Confirmation Button Label",
+            "type": "string"
+          },
+          "delivery_mechanism": {
+            "$ref": "#/components/schemas/DeliveryMechanism"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean",
+            "default": false
+          },
+          "link_label": {
+            "title": "Link Label",
+            "type": "string"
+          },
+          "reject_button_label": {
+            "title": "Reject Button Label",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "experience_config_history_id": {
+            "title": "Experience Config History Id",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "number"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "regions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          }
+        },
+        "description": "An API representation of ExperienceConfig used for response payloads"
+      },
+      "ExperienceConfigUpdate": {
+        "title": "ExperienceConfigUpdate",
+        "required": [
+          "regions"
+        ],
+        "type": "object",
+        "properties": {
+          "acknowledgement_button_label": {
+            "title": "Acknowledgement Button Label",
+            "type": "string"
+          },
+          "banner_title": {
+            "title": "Banner Title",
+            "type": "string"
+          },
+          "banner_description": {
+            "title": "Banner Description",
+            "type": "string"
+          },
+          "component": {
+            "$ref": "#/components/schemas/ComponentType"
+          },
+          "component_title": {
+            "title": "Component Title",
+            "type": "string"
+          },
+          "component_description": {
+            "title": "Component Description",
+            "type": "string"
+          },
+          "confirmation_button_label": {
+            "title": "Confirmation Button Label",
+            "type": "string"
+          },
+          "delivery_mechanism": {
+            "$ref": "#/components/schemas/DeliveryMechanism"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean",
+            "default": false
+          },
+          "link_label": {
+            "title": "Link Label",
+            "type": "string"
+          },
+          "reject_button_label": {
+            "title": "Reject Button Label",
+            "type": "string"
+          },
+          "regions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          }
+        },
+        "description": "Updating ExperienceConfig - requires regions to be patched specifically"
+      },
       "ExtendedIdentityTypes": {
         "title": "ExtendedIdentityTypes",
         "required": [
@@ -17403,6 +17794,40 @@
           }
         }
       },
+      "Page_ExperienceConfigResponse_": {
+        "title": "Page[ExperienceConfigResponse]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExperienceConfigResponse"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
       "Page_MessagingConfigResponse_": {
         "title": "Page[MessagingConfigResponse]",
         "required": [
@@ -18220,72 +18645,10 @@
         },
         "description": "Extension of base pydantic model to include DB `id` field in the response"
       },
-      "PrivacyExperienceCreate": {
-        "title": "PrivacyExperienceCreate",
-        "required": [
-          "component",
-          "delivery_mechanism",
-          "regions"
-        ],
-        "type": "object",
-        "properties": {
-          "disabled": {
-            "title": "Disabled",
-            "type": "boolean",
-            "default": false
-          },
-          "component": {
-            "$ref": "#/components/schemas/ComponentType"
-          },
-          "delivery_mechanism": {
-            "$ref": "#/components/schemas/DeliveryMechanism"
-          },
-          "regions": {
-            "minItems": 1,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrivacyNoticeRegion"
-            }
-          },
-          "component_title": {
-            "title": "Component Title",
-            "type": "string"
-          },
-          "component_description": {
-            "title": "Component Description",
-            "type": "string"
-          },
-          "banner_title": {
-            "title": "Banner Title",
-            "type": "string"
-          },
-          "banner_description": {
-            "title": "Banner Description",
-            "type": "string"
-          },
-          "link_label": {
-            "title": "Link Label",
-            "type": "string"
-          },
-          "confirmation_button_label": {
-            "title": "Confirmation Button Label",
-            "type": "string"
-          },
-          "reject_button_label": {
-            "title": "Reject Button Label",
-            "type": "string"
-          },
-          "acknowledgement_button_label": {
-            "title": "Acknowledgement Button Label",
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "description": "An API representation of a PrivacyExperience.\nThis model doesn't include an `id` so that it can be used for creation.\nIt also establishes some fields _required_ for creation"
-      },
       "PrivacyExperienceResponse": {
         "title": "PrivacyExperienceResponse",
         "required": [
+          "region",
           "id",
           "created_at",
           "updated_at",
@@ -18305,44 +18668,11 @@
           "delivery_mechanism": {
             "$ref": "#/components/schemas/DeliveryMechanism"
           },
-          "regions": {
-            "minItems": 1,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrivacyNoticeRegion"
-            }
+          "region": {
+            "$ref": "#/components/schemas/PrivacyNoticeRegion"
           },
-          "component_title": {
-            "title": "Component Title",
-            "type": "string"
-          },
-          "component_description": {
-            "title": "Component Description",
-            "type": "string"
-          },
-          "banner_title": {
-            "title": "Banner Title",
-            "type": "string"
-          },
-          "banner_description": {
-            "title": "Banner Description",
-            "type": "string"
-          },
-          "link_label": {
-            "title": "Link Label",
-            "type": "string"
-          },
-          "confirmation_button_label": {
-            "title": "Confirmation Button Label",
-            "type": "string"
-          },
-          "reject_button_label": {
-            "title": "Reject Button Label",
-            "type": "string"
-          },
-          "acknowledgement_button_label": {
-            "title": "Acknowledgement Button Label",
-            "type": "string"
+          "experience_config": {
+            "$ref": "#/components/schemas/ExperienceConfigResponse"
           },
           "id": {
             "title": "Id",
@@ -18366,10 +18696,6 @@
             "title": "Privacy Experience History Id",
             "type": "string"
           },
-          "privacy_experience_template_id": {
-            "title": "Privacy Experience Template Id",
-            "type": "string"
-          },
           "privacy_notices": {
             "title": "Privacy Notices",
             "type": "array",
@@ -18380,71 +18706,6 @@
         },
         "additionalProperties": false,
         "description": "An API representation of a PrivacyExperience used for response payloads"
-      },
-      "PrivacyExperienceWithId": {
-        "title": "PrivacyExperienceWithId",
-        "required": [
-          "id"
-        ],
-        "type": "object",
-        "properties": {
-          "disabled": {
-            "title": "Disabled",
-            "type": "boolean",
-            "default": false
-          },
-          "component": {
-            "$ref": "#/components/schemas/ComponentType"
-          },
-          "delivery_mechanism": {
-            "$ref": "#/components/schemas/DeliveryMechanism"
-          },
-          "regions": {
-            "minItems": 1,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrivacyNoticeRegion"
-            }
-          },
-          "component_title": {
-            "title": "Component Title",
-            "type": "string"
-          },
-          "component_description": {
-            "title": "Component Description",
-            "type": "string"
-          },
-          "banner_title": {
-            "title": "Banner Title",
-            "type": "string"
-          },
-          "banner_description": {
-            "title": "Banner Description",
-            "type": "string"
-          },
-          "link_label": {
-            "title": "Link Label",
-            "type": "string"
-          },
-          "confirmation_button_label": {
-            "title": "Confirmation Button Label",
-            "type": "string"
-          },
-          "reject_button_label": {
-            "title": "Reject Button Label",
-            "type": "string"
-          },
-          "acknowledgement_button_label": {
-            "title": "Acknowledgement Button Label",
-            "type": "string"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "description": "An API representation of a PrivacyExperience that includes an `id` field.\nUsed to help model API responses and update payloads"
       },
       "PrivacyNoticeCreation": {
         "title": "PrivacyNoticeCreation",
@@ -18618,10 +18879,56 @@
       "PrivacyNoticeRegion": {
         "title": "PrivacyNoticeRegion",
         "enum": [
+          "us_al",
+          "us_ak",
+          "us_az",
+          "us_ar",
           "us_ca",
           "us_co",
-          "us_va",
+          "us_ct",
+          "us_de",
+          "us_fl",
+          "us_ga",
+          "us_hi",
+          "us_id",
+          "us_il",
+          "us_in",
+          "us_ia",
+          "us_ks",
+          "us_ky",
+          "us_la",
+          "us_me",
+          "us_md",
+          "us_ma",
+          "us_mi",
+          "us_mn",
+          "us_ms",
+          "us_mo",
+          "us_mt",
+          "us_ne",
+          "us_nv",
+          "us_nh",
+          "us_nj",
+          "us_nm",
+          "us_ny",
+          "us_nc",
+          "us_nd",
+          "us_oh",
+          "us_ok",
+          "us_or",
+          "us_pa",
+          "us_ri",
+          "us_sc",
+          "us_sd",
+          "us_tn",
+          "us_tx",
           "us_ut",
+          "us_vt",
+          "us_va",
+          "us_wa",
+          "us_wv",
+          "us_wi",
+          "us_wy",
           "eu_be",
           "eu_bg",
           "eu_cz",
