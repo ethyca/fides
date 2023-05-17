@@ -19,11 +19,9 @@
     "delivery_mechanism": "banner",
     "regions": ["us_ca", "us_co"],
     "component_title": "Manage your consent",
-    "component_description":
-    "On this page you can opt in and out of these data uses cases",
+    "component_description": "On this page you can opt in and out of these data uses cases",
     "banner_title": "Manage your consent",
-    "banner_description":
-    "This test website is overriding the banner description label.",
+    "banner_description": "This test website is overriding the banner description label.",
     "confirmation_button_label": "Accept Test",
     "reject_button_label": "Reject Test",
     "privacy_notices": [

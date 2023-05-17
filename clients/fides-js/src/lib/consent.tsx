@@ -1,16 +1,16 @@
-import {h, render} from "preact";
+import { h, render } from "preact";
 
 import {
-  ConsentPreference,
   ExperienceComponent,
-  ExperienceDeliveryMechanism, FIDES_MODAL_LINK,
+  ExperienceDeliveryMechanism,
+  FIDES_MODAL_LINK,
   FidesOptions,
-  UserGeolocation
+  UserGeolocation,
 } from "./consent-types";
-import {debugLog} from "./consent-utils";
+import { debugLog } from "./consent-utils";
 
-import Overlay, {OverlayProps} from "../components/Overlay";
-import {getConsentContext} from "./consent-context";
+import Overlay, { OverlayProps } from "../components/Overlay";
+import { getConsentContext } from "./consent-context";
 
 /**
  * Validate the config options
@@ -55,8 +55,8 @@ const constructLocation = (
   debugLog(debug, "constructing geolocation...");
   if (!geoLocation) {
     debugLog(
-        debug,
-        "cannot construct user location since geoLocation is undefined"
+      debug,
+      "cannot construct user location since geoLocation is undefined"
     );
     return null;
   }
@@ -126,50 +126,48 @@ const getGeolocation = async (
   }
 };
 
-
 /**
  * Hide pre-existing link in the DOM if we do not need to trigger a modal
  */
 const hideModalLink = (debug: boolean): void => {
   // TODO- it's possible that this element does not exist by the time this method runs
-  const modalLinkEl: HTMLElement | null = document.getElementById(FIDES_MODAL_LINK);
+  const modalLinkEl: HTMLElement | null =
+    document.getElementById(FIDES_MODAL_LINK);
   if (modalLinkEl) {
-    debugLog(
-        debug,
-        "modal link element exists, attempting to hide it",
-    );
+    debugLog(debug, "modal link element exists, attempting to hide it");
     // TODO: hide link
     // eslint-disable-next-line no-param-reassign
-    modalLinkEl.style.display = 'none';
+    modalLinkEl.style.display = "none";
   }
   debugLog(
-      debug,
-      "modal link element does not exist, so there is nothing to hide",
+    debug,
+    "modal link element does not exist, so there is nothing to hide"
   );
-}
+};
 
 /**
  * Update the pre-existing modal link in the DOM to trigger the modal
  */
 const bindModalLinkToModal = (debug: boolean): void => {
   // TODO- it's possible that this element does not exist by the time this method runs
-  const modalLinkEl: HTMLElement | null = document.getElementById(FIDES_MODAL_LINK);
+  const modalLinkEl: HTMLElement | null =
+    document.getElementById(FIDES_MODAL_LINK);
   if (
-      modalLinkEl &&
-      // TODO: does this need to be an HTMLAnchorElement?
-      modalLinkEl instanceof HTMLAnchorElement
+    modalLinkEl &&
+    // TODO: does this need to be an HTMLAnchorElement?
+    modalLinkEl instanceof HTMLAnchorElement
   ) {
     debugLog(
-        debug,
-        `Fides modal link element found, updating click event to trigger modal`
+      debug,
+      `Fides modal link element found, updating click event to trigger modal`
     );
     modalLinkEl.onclick = () => {
       // TODO: render modal component
-    }
+    };
   } else {
-    throw new Error("Fides modal link element could not be found")
+    throw new Error("Fides modal link element could not be found");
   }
-}
+};
 
 /**
  * Initialize the Fides Consent overlay components.
@@ -193,7 +191,7 @@ export const initOverlay = async ({
     options
   );
   if (!validateOptions(options)) {
-    hideModalLink(options.debug)
+    hideModalLink(options.debug);
     return Promise.reject(new Error("Invalid overlay options"));
   }
 
@@ -202,23 +200,23 @@ export const initOverlay = async ({
       options.debug,
       "Fides consent overlay is disabled, skipping overlay initialization!"
     );
-    hideModalLink(options.debug)
+    hideModalLink(options.debug);
     return Promise.resolve();
   }
 
   if (experience && experience.component !== ExperienceComponent.OVERLAY) {
-    hideModalLink(options.debug)
+    hideModalLink(options.debug);
     return Promise.resolve();
   }
 
   async function getExperience(userLocationString: String) {
     debugLog(
-        options.debug,
-        "Fetching experience where component === privacy_center...",
-        userLocationString
+      options.debug,
+      "Fetching experience where component === privacy_center...",
+      userLocationString
     );
     // TODO: GET experience using location and user id (if exists)
-    return undefined
+    return undefined;
   }
 
   async function renderFidesOverlay(): Promise<void> {
@@ -234,65 +232,79 @@ export const initOverlay = async ({
         if (!constructLocation(geolocation)) {
           if (options.isGeolocationEnabled) {
             effectiveGeolocation = await getGeolocation(
-                options.geolocationApiUrl,
-                options.debug
+              options.geolocationApiUrl,
+              options.debug
             );
           } else {
-            throw new Error(`User location is required but could not be retrieved because geolocation is disabled.`);
+            throw new Error(
+              `User location is required but could not be retrieved because geolocation is disabled.`
+            );
           }
         }
-        const userLocationString = constructLocation(effectiveGeolocation)
+        const userLocationString = constructLocation(effectiveGeolocation);
         if (!userLocationString) {
-          throw new Error(`User location could not be constructed from location params: ${effectiveGeolocation}.`);
+          throw new Error(
+            `User location could not be constructed from location params: ${effectiveGeolocation}.`
+          );
         }
         effectiveExperience = await getExperience(userLocationString);
         if (!effectiveExperience) {
           debugLog(
-              options.debug,
-              `No relevant experience found based on user location.`,
-              userLocationString
+            options.debug,
+            `No relevant experience found based on user location.`,
+            userLocationString
           );
           hideModalLink(options.debug);
-          return await Promise.resolve()
+          return await Promise.resolve();
         }
       }
 
-      if (!effectiveExperience?.privacy_notices || effectiveExperience.privacy_notices.length === 0) {
+      if (
+        !effectiveExperience?.privacy_notices ||
+        effectiveExperience.privacy_notices.length === 0
+      ) {
         debugLog(
-            options.debug,
-            `No relevant notices in the privacy experience.`,
-            effectiveExperience
+          options.debug,
+          `No relevant notices in the privacy experience.`,
+          effectiveExperience
         );
         hideModalLink(options.debug);
-        return await Promise.resolve()
+        return await Promise.resolve();
       }
 
       if (getConsentContext().globalPrivacyControl && effectiveExperience) {
-        effectiveExperience.privacy_notices.forEach(notice => {
+        effectiveExperience.privacy_notices.forEach((notice) => {
           if (notice.has_gpc_flag) {
             // todo- send consent request downstream automatically with PATCH {{host}}/privacy-preferences
           }
-        })
+        });
       }
 
-
-      if (effectiveExperience && effectiveExperience.component === ExperienceComponent.OVERLAY) {
-        if (effectiveExperience.delivery_mechanism === ExperienceDeliveryMechanism.BANNER) {
-          hideModalLink(options.debug)
+      if (
+        effectiveExperience &&
+        effectiveExperience.component === ExperienceComponent.OVERLAY
+      ) {
+        if (
+          effectiveExperience.delivery_mechanism ===
+          ExperienceDeliveryMechanism.BANNER
+        ) {
+          hideModalLink(options.debug);
           // Render the Overlay to the DOM!
           render(
-              <Overlay
-                  consentDefaults={consentDefaults}
-                  options={options}
-                  experience={experience}
-                  geolocation={effectiveGeolocation}
-              />,
-              document.body
+            <Overlay
+              consentDefaults={consentDefaults}
+              options={options}
+              experience={experience}
+              geolocation={effectiveGeolocation}
+            />,
+            document.body
           );
           debugLog(options.debug, "Fides overlay is now showing!");
-        }
-        else if (effectiveExperience.delivery_mechanism === ExperienceDeliveryMechanism.LINK) {
-          bindModalLinkToModal(options.debug)
+        } else if (
+          effectiveExperience.delivery_mechanism ===
+          ExperienceDeliveryMechanism.LINK
+        ) {
+          bindModalLinkToModal(options.debug);
         }
       } else {
         hideModalLink(options.debug);
@@ -301,7 +313,7 @@ export const initOverlay = async ({
     } catch (e) {
       hideModalLink(options.debug);
       debugLog(options.debug, e);
-      return Promise.reject(e)
+      return Promise.reject(e);
     }
   }
 
