@@ -55,7 +55,7 @@ import {
   makeConsentDefaults,
 } from "./lib/cookie";
 import {
-  ExperienceConfig,
+  PrivacyExperience,
   FidesConfig,
   FidesOptions,
   UserGeolocation,
@@ -63,7 +63,7 @@ import {
 
 export type Fides = {
   consent: CookieKeyConsent;
-  experience?: ExperienceConfig;
+  experience?: PrivacyExperience;
   geolocation?: UserGeolocation;
   options: FidesOptions;
   fides_meta: CookieMeta;

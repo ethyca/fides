@@ -1,6 +1,6 @@
 import { FunctionComponent, h } from "preact";
 import {
-  ExperienceConfig,
+  PrivacyExperience,
   FidesOptions,
   UserGeolocation,
 } from "../lib/consent-types";
@@ -14,7 +14,7 @@ import {
 export interface OverlayProps {
   consentDefaults: CookieKeyConsent;
   options: FidesOptions;
-  experience?: ExperienceConfig;
+  experience?: PrivacyExperience;
   geolocation?: UserGeolocation;
 }
 
@@ -43,10 +43,10 @@ const Overlay: FunctionComponent<OverlayProps> = ({
 
   return (
     <ConsentBanner
-      bannerTitle={experience?.banner_title}
-      bannerDescription={experience?.banner_description}
-      confirmationButtonLabel={experience?.confirmation_button_label}
-      rejectButtonLabel={experience?.reject_button_label}
+      bannerTitle={experience?.experience_config?.banner_title}
+      bannerDescription={experience?.experience_config?.banner_description}
+      confirmationButtonLabel={experience?.experience_config?.confirmation_button_label}
+      rejectButtonLabel={experience?.experience_config?.reject_button_label}
       privacyCenterUrl={options.privacyCenterUrl}
       onAcceptAll={onAcceptAll}
       onRejectAll={onRejectAll}

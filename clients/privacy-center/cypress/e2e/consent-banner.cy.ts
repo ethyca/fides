@@ -1,7 +1,7 @@
 import {
   CONSENT_COOKIE_NAME,
-  ExperienceComponent,
-  ExperienceDeliveryMechanism,
+  ComponentType,
+  DeliveryMechanism,
   FidesCookie,
 } from "fides-js";
 
@@ -160,7 +160,7 @@ describe("Consent banner", () => {
     describe("when experience component is not an overlay", () => {
       beforeEach(() => {
         cy.fixture("consent/test_banner_options.json").then((config) => {
-          config.experience.component = ExperienceComponent.PRIVACY_CENTER;
+          config.experience.component = ComponentType.PRIVACY_CENTER;
           cy.visitConsentDemo(config);
         });
       });
@@ -307,7 +307,7 @@ describe("Consent banner", () => {
       beforeEach(() => {
         cy.fixture("consent/test_banner_options.json").then((config) => {
           config.experience.delivery_mechanism =
-            ExperienceDeliveryMechanism.LINK;
+            DeliveryMechanism.LINK;
           cy.visitConsentDemo(config);
         });
       });
@@ -327,23 +327,6 @@ describe("Consent banner", () => {
           // TODO: add when we have link binding working
           expect(false).is.eql(true);
         });
-      });
-    });
-    describe("when experience delivery mechanism is api", function () {
-      beforeEach(() => {
-        cy.fixture("consent/test_banner_options.json").then((config) => {
-          config.experience.delivery_mechanism =
-            ExperienceDeliveryMechanism.API;
-          cy.visitConsentDemo(config);
-        });
-      });
-      it("does not render", () => {
-        cy.get("div#fides-consent-banner").should("not.exist");
-        cy.contains("button", "Accept Test").should("not.exist");
-      });
-      it.skip("hides the modal link", () => {
-        // TODO: add when we have link binding working
-        expect(false).is.eql(true);
       });
     });
   });

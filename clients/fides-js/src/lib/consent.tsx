@@ -1,8 +1,8 @@
 import { h, render } from "preact";
 
 import {
-  ExperienceComponent,
-  ExperienceDeliveryMechanism,
+  ComponentType,
+  DeliveryMechanism,
   FIDES_MODAL_LINK,
   FidesOptions,
   UserGeolocation,
@@ -204,7 +204,7 @@ export const initOverlay = async ({
     return Promise.resolve();
   }
 
-  if (experience && experience.component !== ExperienceComponent.OVERLAY) {
+  if (experience && experience.component !== ComponentType.OVERLAY) {
     hideModalLink(options.debug);
     return Promise.resolve();
   }
@@ -282,11 +282,11 @@ export const initOverlay = async ({
 
       if (
         effectiveExperience &&
-        effectiveExperience.component === ExperienceComponent.OVERLAY
+        effectiveExperience.component === ComponentType.OVERLAY
       ) {
         if (
           effectiveExperience.delivery_mechanism ===
-          ExperienceDeliveryMechanism.BANNER
+          DeliveryMechanism.BANNER
         ) {
           hideModalLink(options.debug);
           // Render the Overlay to the DOM!
@@ -302,7 +302,7 @@ export const initOverlay = async ({
           debugLog(options.debug, "Fides overlay is now showing!");
         } else if (
           effectiveExperience.delivery_mechanism ===
-          ExperienceDeliveryMechanism.LINK
+          DeliveryMechanism.LINK
         ) {
           bindModalLinkToModal(options.debug);
         }
