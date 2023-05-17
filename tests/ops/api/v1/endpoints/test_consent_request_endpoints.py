@@ -174,7 +174,7 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.service._verification.dispatch_message")
+    @patch("fides.api.service._verification.dispatch_message")
     def test_consent_request(self, mock_dispatch_message, api_client, url):
         data = {"email": "test@example.com"}
         response = api_client.post(url, json=data)
@@ -186,7 +186,7 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.service._verification.dispatch_message")
+    @patch("fides.api.service._verification.dispatch_message")
     def test_consent_request_identity_present(
         self,
         mock_dispatch_message,
@@ -216,7 +216,7 @@ class TestConsentRequest:
         "messaging_config",
         "sovrn_email_connection_config",
     )
-    @patch("fides.api.ops.service._verification.dispatch_message")
+    @patch("fides.api.service._verification.dispatch_message")
     def test_consent_request_subject_verification_disabled_no_email(
         self, mock_dispatch_message, api_client, url
     ):
@@ -230,7 +230,7 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.service._verification.dispatch_message")
+    @patch("fides.api.service._verification.dispatch_message")
     def test_consent_request_phone_number(self, mock_dispatch_message, api_client, url):
         data = {"phone_number": "+3368675309"}
         response = api_client.post(url, json=data)
@@ -242,7 +242,7 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.service._verification.dispatch_message")
+    @patch("fides.api.service._verification.dispatch_message")
     def test_consent_request_email_and_phone_use_config(
         self,
         mock_dispatch_message,
@@ -269,7 +269,7 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.service._verification.dispatch_message")
+    @patch("fides.api.service._verification.dispatch_message")
     def test_consent_request_email_and_phone_default_to_email(
         self,
         mock_dispatch_message,
@@ -345,7 +345,7 @@ class TestConsentVerify:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_verify_no_email_provided(
         self,
         mock_verify_identity: MagicMock,
@@ -379,7 +379,7 @@ class TestConsentVerify:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_verify_no_consent_present(
         self,
         mock_verify_identity: MagicMock,
@@ -401,7 +401,7 @@ class TestConsentVerify:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_verify_consent_preferences(
         self,
         mock_verify_identity: MagicMock,
@@ -538,7 +538,7 @@ class TestGetConsentUnverified:
         assert response.status_code == 400
         assert "turned off" in response.json()["detail"]
 
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_unverified_no_email_provided(
         self,
         mock_verify_identity: MagicMock,
@@ -566,7 +566,7 @@ class TestGetConsentUnverified:
         assert not mock_verify_identity.called
         assert "missing" in response.json()["detail"]
 
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_unverified_no_consent_present(
         self,
         mock_verify_identity: MagicMock,
@@ -582,7 +582,7 @@ class TestGetConsentUnverified:
         assert not mock_verify_identity.called
         assert response.json()["consent"] is None
 
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_unverified_consent_preferences(
         self,
         mock_verify_identity: MagicMock,
@@ -704,7 +704,7 @@ class TestSaveConsent:
         "subject_identity_verification_required", "automatically_approved"
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_verify_then_set_consent_preferences(
         self,
@@ -802,7 +802,7 @@ class TestSaveConsent:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_set_consent_preferences_no_email_provided(
         self, mock_verify_identity: MagicMock, db, api_client, verification_code
     ):
@@ -857,9 +857,9 @@ class TestSaveConsent:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required", "automatically_approved"
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_set_consent_consent_preferences(
         self,
@@ -962,9 +962,9 @@ class TestSaveConsent:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required", "require_manual_request_approval"
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_set_consent_preferences_privacy_request_pending_when_id_verification_required(
         self,
@@ -1016,7 +1016,7 @@ class TestSaveConsent:
         assert consent_request.privacy_request.status == PrivacyRequestStatus.pending
         assert not mock_run_privacy_request.called
 
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_set_consent_consent_preferences_without_verification(
         self,
         mock_verify_identity: MagicMock,

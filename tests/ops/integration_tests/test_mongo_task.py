@@ -1098,7 +1098,7 @@ class TestRetrievingDataMongo:
         traversal_node = TraversalNode(node)
         return traversal_node
 
-    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data(
         self,
         mock_incoming_edges: Mock,
@@ -1120,7 +1120,7 @@ class TestRetrievingDataMongo:
 
         assert results[0]["customer_id"] == 1
 
-    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_no_input(
         self,
         mock_incoming_edges: Mock,
@@ -1158,7 +1158,7 @@ class TestRetrievingDataMongo:
         )
         assert results == []
 
-    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
         self,
         mock_incoming_edges: Mock,

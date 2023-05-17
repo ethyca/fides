@@ -53,7 +53,7 @@ class TestSaaSQueryConfig:
         )
 
     @mock.patch(
-        "fides.api.ops.models.privacy_request.PrivacyRequest.get_cached_identity_data"
+        "fides.api.models.privacy_request.PrivacyRequest.get_cached_identity_data"
     )
     def test_generate_requests(
         self,
@@ -351,7 +351,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.body == "name%5Bfirst%5D=MASKED&name%5Blast%5D=MASKED"
 
     @mock.patch(
-        "fides.api.ops.models.privacy_request.PrivacyRequest.get_cached_identity_data"
+        "fides.api.models.privacy_request.PrivacyRequest.get_cached_identity_data"
     )
     def test_get_read_requests_by_identity(
         self,

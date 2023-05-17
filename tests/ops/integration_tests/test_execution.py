@@ -96,7 +96,7 @@ class TestDeleteCollection:
         )
         assert pr.get_results() == {}
 
-    @mock.patch("fides.api.ops.task.graph_task.GraphTask.log_start")
+    @mock.patch("fides.api.task.graph_task.GraphTask.log_start")
     @pytest.mark.asyncio
     async def test_delete_collection_while_in_progress(
         self,
@@ -361,7 +361,7 @@ class TestSkipDisabledCollection:
         assert mongo_logs.count() == 9
         assert mongo_logs.filter_by(status="skipped").count() == 9
 
-    @mock.patch("fides.api.ops.task.graph_task.GraphTask.log_start")
+    @mock.patch("fides.api.task.graph_task.GraphTask.log_start")
     @pytest.mark.asyncio
     async def test_run_disabled_collections_in_progress(
         self,
@@ -648,9 +648,7 @@ async def test_restart_graph_from_failure(
     integration_mongodb_config.save(db)
 
     # Rerun access request using cached results
-    with mock.patch(
-        "fides.api.ops.task.graph_task.fideslog_graph_rerun"
-    ) as mock_log_event:
+    with mock.patch("fides.api.task.graph_task.fideslog_graph_rerun") as mock_log_event:
         await graph_task.run_access_request(
             privacy_request,
             policy,
@@ -779,9 +777,7 @@ async def test_restart_graph_from_failure_during_erasure(
     integration_postgres_config.save(db)
 
     # Rerun erasure portion of request using cached results
-    with mock.patch(
-        "fides.api.ops.task.graph_task.fideslog_graph_rerun"
-    ) as mock_log_event:
+    with mock.patch("fides.api.task.graph_task.fideslog_graph_rerun") as mock_log_event:
         await graph_task.run_erasure(
             privacy_request,
             policy,

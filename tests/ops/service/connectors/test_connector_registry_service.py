@@ -64,13 +64,13 @@ class TestConnectionRegistry:
         assert mailchimp_template.human_readable == "Mailchimp"
 
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.replace_dataset_placeholders"
+        "fides.api.service.connectors.saas.connector_registry_service.replace_dataset_placeholders"
     )
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.replace_config_placeholders"
+        "fides.api.service.connectors.saas.connector_registry_service.replace_config_placeholders"
     )
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config_from_string"
+        "fides.api.service.connectors.saas.connector_registry_service.load_config_from_string"
     )
     def test_update_config_additions(
         self,
@@ -97,13 +97,13 @@ class TestConnectionRegistry:
         )
 
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.replace_dataset_placeholders"
+        "fides.api.service.connectors.saas.connector_registry_service.replace_dataset_placeholders"
     )
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.replace_config_placeholders"
+        "fides.api.service.connectors.saas.connector_registry_service.replace_config_placeholders"
     )
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config_from_string"
+        "fides.api.service.connectors.saas.connector_registry_service.load_config_from_string"
     )
     def test_update_config_removals(
         self,

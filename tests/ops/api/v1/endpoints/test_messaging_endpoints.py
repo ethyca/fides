@@ -1286,7 +1286,7 @@ class TestPutDefaultMessagingConfigSecrets:
         assert "field required" in response.text
         assert "extra fields not permitted" in response.text
 
-    @mock.patch("fides.api.ops.models.messaging.MessagingConfig.set_secrets")
+    @mock.patch("fides.api.models.messaging.MessagingConfig.set_secrets")
     def test_update_default_set_secrets_error(
         self,
         set_secrets_mock: Mock,
@@ -1833,7 +1833,7 @@ class TestTestMesage:
         "info",
         [{"phone_number": "+19198675309"}, {"email": "some@email.com"}],
     )
-    @patch("fides.api.ops.api.v1.endpoints.messaging_endpoints.dispatch_message")
+    @patch("fides.api.api.v1.endpoints.messaging_endpoints.dispatch_message")
     def test_test_message(
         self, mock_dispatch_message, info, generate_auth_header, url, api_client
     ):
@@ -1863,7 +1863,7 @@ class TestTestMesage:
         assert response.status_code == 400
 
     @patch(
-        "fides.api.ops.api.v1.endpoints.messaging_endpoints.dispatch_message",
+        "fides.api.api.v1.endpoints.messaging_endpoints.dispatch_message",
         side_effect=MessageDispatchException("No service"),
     )
     def test_test_message_dispatch_error(

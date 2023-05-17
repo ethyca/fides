@@ -165,7 +165,7 @@ integration_secrets = {
 @pytest.fixture(scope="session", autouse=True)
 def mock_upload_logic() -> Generator:
     with mock.patch(
-        "fides.api.ops.service.storage.storage_uploader_service.upload_to_s3"
+        "fides.api.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
         yield _fixture
 

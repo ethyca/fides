@@ -151,9 +151,7 @@ class TestSaasConnector:
             traversal_node, Policy(), PrivacyRequest(id="123"), {}
         ) == [{}]
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
-    )
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_input_values(
         self, mock_send: Mock, saas_example_config, saas_example_connection_config
     ):
@@ -218,9 +216,7 @@ class TestSaasConnector:
             == []
         )
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
-    )
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_grouped_input_values(
         self, mock_send: Mock, saas_example_config, saas_example_connection_config
     ):
@@ -285,9 +281,7 @@ class TestSaasConnector:
             == []
         )
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
-    )
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_skip_missing_param_values_masking(
         self, mock_send: Mock, saas_example_config, saas_example_connection_config
     ):
@@ -621,9 +615,7 @@ class TestSaasConnectorRunConsentRequest:
             privacy_preference_history.affected_system_status == {}
         ), "Updated to skipped in graph task, not updated here"
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
-    )
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_preferences_executable(
         self,
         mock_send,

@@ -87,7 +87,7 @@ async def test_wunderkind_consent_request_task_old_workflow(
 @pytest.mark.integration_saas
 @pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
-@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+@mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 async def test_wunderkind_consent_prepared_requests_old_workflow(
     mocked_client_send,
     db,
@@ -214,7 +214,7 @@ async def test_wunderkind_consent_request_task_new_workflow(
 @pytest.mark.integration_saas
 @pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
-@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+@mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 async def test_wunderkind_errored_logging_new_workflow(
     mocked_client_send,
     db,
@@ -290,7 +290,7 @@ async def test_wunderkind_errored_logging_new_workflow(
 @pytest.mark.integration_saas
 @pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
-@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+@mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 async def test_wunderkind_consent_prepared_requests_new_workflow(
     mocked_client_send,
     db,

@@ -45,7 +45,7 @@ class TestGetEncryptionKey:
         assert response.status_code == 403
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.encryption_endpoints.cryptographic_util.generate_secure_random_string"
+        "fides.api.api.v1.endpoints.encryption_endpoints.cryptographic_util.generate_secure_random_string"
     )
     def test_get_encryption_key(
         self,

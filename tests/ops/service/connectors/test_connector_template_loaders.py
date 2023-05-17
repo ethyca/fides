@@ -141,7 +141,7 @@ class TestCustomConnectorTemplateLoader:
         assert connector_templates == {}
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_template_loader_invalid_template(
         self,
@@ -179,7 +179,7 @@ class TestCustomConnectorTemplateLoader:
         ]
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_template_loader_invalid_functions(
         self,
@@ -207,7 +207,7 @@ class TestCustomConnectorTemplateLoader:
         assert connector_templates == {}
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_template_loader_custom_connector_functions_disabled(
         self,
@@ -246,7 +246,7 @@ class TestCustomConnectorTemplateLoader:
         ]
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_template_loader_custom_connector_functions_disabled_custom_functions(
         self,
@@ -286,7 +286,7 @@ class TestCustomConnectorTemplateLoader:
         }
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_template_loader(
         self,
@@ -335,7 +335,7 @@ class TestCustomConnectorTemplateLoader:
         ]
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_loaders_have_separate_instances(
         self,
@@ -367,7 +367,7 @@ class TestCustomConnectorTemplateLoader:
         assert file_connector_templates != custom_connector_templates
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
     )
     def test_custom_connector_save_template(
         self,
@@ -434,10 +434,10 @@ class TestCustomConnectorTemplateLoader:
         assert "Import of 'os' module is not allowed." == str(exc.value)
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.delete"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
     )
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_replacement_replaceable_with_update_available(
         self,
@@ -472,10 +472,10 @@ class TestCustomConnectorTemplateLoader:
         mock_delete.assert_called_once()
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.delete"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
     )
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_replacement_replaceable_with_update_not_available(
         self,
@@ -515,10 +515,10 @@ class TestCustomConnectorTemplateLoader:
         mock_delete.assert_not_called()
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.delete"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
     )
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_replacement_not_replaceable(
         self,
@@ -558,7 +558,7 @@ class TestCustomConnectorTemplateLoader:
         mock_delete.assert_not_called()
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
     )
     def test_replaceable_template_for_existing_template(
         self, mock_create_or_update: MagicMock, zendesk_config, replaceable_zendesk_zip
@@ -578,7 +578,7 @@ class TestCustomConnectorTemplateLoader:
         assert custom_config["version"] == existing_config["version"]
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
     )
     def test_replaceable_template_for_new_template(
         self, mock_create_or_update: MagicMock, replaceable_planet_express_zip
@@ -597,7 +597,7 @@ class TestCustomConnectorTemplateLoader:
         assert custom_config["version"] == "0.0.1"
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
     )
     def test_non_replaceable_template(
         self,

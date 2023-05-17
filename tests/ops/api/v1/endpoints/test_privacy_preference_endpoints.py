@@ -126,7 +126,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "subject_identity_verification_required", "automatically_approved"
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_verify_then_set_privacy_preferences(
         self,
@@ -198,7 +198,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "subject_identity_verification_not_required", "automatically_approved"
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_set_privacy_preferences_privacy_center_fides_user_device_id_only(
         self,
@@ -323,7 +323,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_set_privacy_preferences_no_email_provided(
         self,
         mock_verify_identity: MagicMock,
@@ -431,9 +431,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required", "automatically_approved"
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_set_privacy_preferences(
         self,
@@ -554,9 +554,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required", "automatically_approved"
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_set_privacy_preferences_bad_policy_key(
         self,
@@ -615,9 +615,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         privacy_preference_history_created.delete(db)
 
     @pytest.mark.usefixtures("automatically_approved")
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_set_privacy_preferences_without_verification_required(
         self,
@@ -683,7 +683,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "subject_identity_verification_required", "automatically_approved"
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_verify_then_set_privacy_preferences_with_additional_fides_user_device_id(
         self,
@@ -837,7 +837,7 @@ class TestPrivacyPreferenceVerify:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_verify_no_email_provided(
         self,
         mock_verify_identity: MagicMock,
@@ -871,7 +871,7 @@ class TestPrivacyPreferenceVerify:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_verify_no_privacy_preferences_present(
         self,
         mock_verify_identity: MagicMock,

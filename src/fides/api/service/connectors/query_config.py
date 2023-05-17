@@ -56,7 +56,7 @@ class QueryConfig(Generic[T], ABC):
         """
         Return dictionary of rules mapped to update-able field paths on a given collection
         Example:
-        {<fides.api.ops.models.policy.Rule object at 0xffff9160e190>: [FieldPath('name'), FieldPath('code'), FieldPath('ccn')]}
+        {<fides.api.models.policy.Rule object at 0xffff9160e190>: [FieldPath('name'), FieldPath('code'), FieldPath('ccn')]}
         """
         rule_updates: Dict[Rule, List[FieldPath]] = {}
         for rule in policy.rules:  # type: ignore[attr-defined]

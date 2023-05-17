@@ -82,7 +82,7 @@ class TestUploadData:
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 404 == response.status_code
 
-    @mock.patch("fides.api.ops.api.v1.endpoints.storage_endpoints.upload")
+    @mock.patch("fides.api.api.v1.endpoints.storage_endpoints.upload")
     def test_post_upload_data(
         self,
         mock_post_upload_data: Mock,
@@ -399,7 +399,7 @@ class TestPutStorageConfigSecretsS3:
             == "23451345834789"
         )
 
-    @mock.patch("fides.api.ops.api.v1.endpoints.storage_endpoints.secrets_are_valid")
+    @mock.patch("fides.api.api.v1.endpoints.storage_endpoints.secrets_are_valid")
     def test_put_config_secrets_and_verify(
         self,
         mock_valid: Mock,
@@ -441,7 +441,7 @@ class TestPutStorageConfigSecretsS3:
         }
 
     @mock.patch(
-        "fides.api.ops.service.storage.storage_authenticator_service.get_s3_session"
+        "fides.api.service.storage.storage_authenticator_service.get_s3_session"
     )
     def test_put_s3_config_secrets_and_verify(
         self,
@@ -1012,7 +1012,7 @@ class TestPutDefaultStorageConfig:
         assert "field required" in response.text
         assert "bucket" in response.text
 
-    @mock.patch("fides.api.ops.models.storage.StorageConfig.create_or_update")
+    @mock.patch("fides.api.models.storage.StorageConfig.create_or_update")
     def test_put_default_config_key_or_name_exists(
         self,
         mock_create_or_update: Mock,
@@ -1037,7 +1037,7 @@ class TestPutDefaultStorageConfig:
 
         assert 400 == response.status_code
 
-    @mock.patch("fides.api.ops.models.storage.StorageConfig.create_or_update")
+    @mock.patch("fides.api.models.storage.StorageConfig.create_or_update")
     def test_put_default_config_key_error(
         self,
         mock_create_or_update: Mock,
@@ -1121,7 +1121,7 @@ class TestPutDefaultStorageConfigSecretsS3:
             ]
         }
 
-    @mock.patch("fides.api.ops.models.storage.StorageConfig.set_secrets")
+    @mock.patch("fides.api.models.storage.StorageConfig.set_secrets")
     def test_update_default_set_secrets_error(
         self,
         set_secrets_mock: Mock,
@@ -1170,7 +1170,7 @@ class TestPutDefaultStorageConfigSecretsS3:
             == "23451345834789"
         )
 
-    @mock.patch("fides.api.ops.api.v1.endpoints.storage_endpoints.secrets_are_valid")
+    @mock.patch("fides.api.api.v1.endpoints.storage_endpoints.secrets_are_valid")
     def test_put_default_config_secrets_and_verify(
         self,
         mock_valid: Mock,
@@ -1212,7 +1212,7 @@ class TestPutDefaultStorageConfigSecretsS3:
         }
 
     @mock.patch(
-        "fides.api.ops.service.storage.storage_authenticator_service.get_s3_session"
+        "fides.api.service.storage.storage_authenticator_service.get_s3_session"
     )
     def test_put_default_s3_config_secrets_and_verify(
         self,

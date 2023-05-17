@@ -330,7 +330,7 @@ class TestPatchConnections:
             == "ensure this value has at most 50 items"
         )
 
-    @mock.patch("fides.api.ops.util.connection_util.queue_privacy_request")
+    @mock.patch("fides.api.util.connection_util.queue_privacy_request")
     def test_disable_manual_webhook(
         self,
         mock_queue,
@@ -552,7 +552,7 @@ class TestPatchConnections:
         bigquery_resource.delete(db)
         manual_webhook_resource.delete(db)
 
-    @mock.patch("fides.api.ops.db.base_class.OrmWrappedFidesBase.create_or_update")
+    @mock.patch("fides.api.db.base_class.OrmWrappedFidesBase.create_or_update")
     def test_patch_connections_failed_response(
         self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
     ) -> None:
@@ -1162,7 +1162,7 @@ class TestDeleteConnection:
             is None
         )
 
-    @mock.patch("fides.api.ops.util.connection_util.queue_privacy_request")
+    @mock.patch("fides.api.util.connection_util.queue_privacy_request")
     def test_delete_manual_webhook_connection_config(
         self,
         mock_queue,

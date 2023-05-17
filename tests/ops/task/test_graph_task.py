@@ -689,7 +689,7 @@ class TestGraphTaskAffectedConsentSystems:
         return GraphTask(tn, task_resources)
 
     @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.SaaSConnector.run_consent_request"
+        "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
     )
     def test_skipped_consent_task_for_connector(
         self,
@@ -738,7 +738,7 @@ class TestGraphTaskAffectedConsentSystems:
         assert logs.first().status == ExecutionLogStatus.skipped
 
     @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.SaaSConnector.run_consent_request"
+        "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
     )
     def test_errored_consent_task_for_connector_no_relevant_preferences(
         self,

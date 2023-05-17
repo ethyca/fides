@@ -63,10 +63,10 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
 
     app.autodiscover_tasks(
         [
-            "fides.api.ops.tasks",
-            "fides.api.ops.tasks.scheduled",
-            "fides.api.ops.service.privacy_request",
-            "fides.api.ops.service.privacy_request.request_runner_service",
+            "fides.api.tasks",
+            "fides.api.tasks.scheduled",
+            "fides.api.service.privacy_request",
+            "fides.api.service.privacy_request.request_runner_service",
         ]
     )
 

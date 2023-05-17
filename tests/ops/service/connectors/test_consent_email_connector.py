@@ -145,9 +145,7 @@ class TestConsentEmailConnectorMethods:
             == filtered_identities
         )
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.dispatch_message"
-    )
+    @mock.patch("fides.api.service.connectors.consent_email_connector.dispatch_message")
     def test_send_single_consent_email_no_org_defined(self, mock_dispatch, db):
         with pytest.raises(MessageDispatchException) as exc:
             send_single_consent_email(
@@ -182,9 +180,7 @@ class TestConsentEmailConnectorMethods:
             == "Cannot send an email to third-party vendor. No organization name found."
         )
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.dispatch_message"
-    )
+    @mock.patch("fides.api.service.connectors.consent_email_connector.dispatch_message")
     def test_send_single_consent_email_old_workflow(
         self, mock_dispatch, test_fides_org, db, messaging_config
     ):
@@ -249,9 +245,7 @@ class TestConsentEmailConnectorMethods:
             == "Test notification of users' consent preference changes from Test Org"
         )
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.dispatch_message"
-    )
+    @mock.patch("fides.api.service.connectors.consent_email_connector.dispatch_message")
     def test_send_single_consent_email_preferences_by_privacy_notice(
         self, mock_dispatch, test_fides_org, db, messaging_config
     ):
@@ -496,7 +490,7 @@ class TestSovrnConnector:
         assert status == ConnectionTestStatus.failed
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email"
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email"
     )
     def test_test_connection_call(
         self, mock_send_email, db, test_sovrn_consent_email_connector
