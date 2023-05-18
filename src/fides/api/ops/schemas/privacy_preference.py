@@ -28,8 +28,7 @@ class ConsentOptionCreate(FidesSchema):
 
 
 class PrivacyPreferencesRequest(FidesSchema):
-    """Schema for saving privacy preferences and accompanying user data
-    including the verification code."""
+    """Request body for creating PrivacyPreferences."""
 
     browser_identity: Identity
     code: Optional[SafeStr]
@@ -37,7 +36,7 @@ class PrivacyPreferencesRequest(FidesSchema):
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
     privacy_experience_history_id: Optional[SafeStr]
     user_geography: Optional[PrivacyNoticeRegion]
-    method: Optional[SafeStr]
+    method: Optional[ConsentMethod]
 
 
 class PrivacyPreferencesCreate(PrivacyPreferencesRequest):

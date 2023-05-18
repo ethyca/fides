@@ -5698,7 +5698,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n   \"browser_identity\": {\n       \"ga_client_id\": \"UA-XXXXXXXXX\",\n       \"ljt_readerID\": \"test_sovrn_id\",\n       \"fides_user_device_id\": \"{{fides_user_device_id}}\"\n   },\n   \"preferences\": [{\n       \"privacy_notice_history_id\": \"{{privacy_notice_history_id}}\",\n       \"preference\": \"opt_out\"\n   }],\n   \"user_geography\": \"us_ca\",\n   \"privacy_experience_history_id\": \"{{privacy_experience_history_id}}\",\n   \"method\": \"buttons\"\n}",
+							"raw": "{\n   \"browser_identity\": {\n       \"ga_client_id\": \"UA-XXXXXXXXX\",\n       \"ljt_readerID\": \"test_sovrn_id\",\n       \"fides_user_device_id\": \"{{fides_user_device_id}}\"\n   },\n   \"preferences\": [{\n       \"privacy_notice_history_id\": \"{{privacy_notice_history_id}}\",\n       \"preference\": \"opt_out\"\n   }],\n   \"user_geography\": \"us_ca\",\n   \"privacy_experience_history_id\": \"{{privacy_experience_history_id}}\",\n   \"method\": \"button\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
