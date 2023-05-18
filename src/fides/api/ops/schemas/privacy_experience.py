@@ -9,7 +9,9 @@ from fides.api.custom_types import SafeStr
 from fides.api.ops.models.privacy_experience import ComponentType, DeliveryMechanism
 from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.ops.schemas.base_class import FidesSchema
-from fides.api.ops.schemas.privacy_notice import PrivacyNoticeResponse
+from fides.api.ops.schemas.privacy_notice import (
+    PrivacyNoticeResponseWithUserPreferences,
+)
 
 
 class ExperienceConfigSchema(FidesSchema):
@@ -179,5 +181,5 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
     updated_at: datetime
     version: float
     privacy_experience_history_id: str
-    privacy_notices: Optional[List[PrivacyNoticeResponse]]
+    privacy_notices: Optional[List[PrivacyNoticeResponseWithUserPreferences]]
     experience_config: Optional[ExperienceConfigResponse]

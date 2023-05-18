@@ -1,6 +1,7 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from fides.api.ops.api.deps import get_api_session
 from fides.api.ops.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
@@ -14,6 +15,7 @@ from fides.api.ops.models.privacy_notice import (
     EnforcementLevel,
     PrivacyNotice,
     PrivacyNoticeRegion,
+    UserConsentPreference,
 )
 
 
@@ -385,6 +387,105 @@ class TestPrivacyExperience:
             privacy_experience.get_related_privacy_notices(db, show_disabled=False)
             == []
         )
+
+    def test_get_related_notices_no_privacy_preference_for_fides_user_device_id(
+        self,
+        db,
+        privacy_notice_us_ca_provide,
+        privacy_preference_history_us_ca_provide,
+        fides_user_provided_identity,
+    ):
+        privacy_experience = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": ComponentType.overlay,
+                "delivery_mechanism": DeliveryMechanism.banner,
+                "region": "us_ca",
+            },
+        )
+
+        notices = privacy_experience.get_related_privacy_notices(db)
+        assert notices == [privacy_notice_us_ca_provide]
+        # No preference here, because no user passed in.
+        assert notices[0].default_preference == UserConsentPreference.opt_out
+        assert notices[0].current_preference is None
+        assert notices[0].outdated_preference is None
+
+        notices = privacy_experience.get_related_privacy_notices(
+            db, fides_user_provided_identity=fides_user_provided_identity
+        )
+        assert notices == [privacy_notice_us_ca_provide]
+        # User has no preferences saved for this notice
+        assert notices[0].default_preference == UserConsentPreference.opt_out
+        assert notices[0].current_preference is None
+        assert notices[0].outdated_preference is None
+
+    def test_get_related_privacy_notices_with_fides_user_device_id_preferences(
+        self,
+        db,
+        privacy_notice_us_ca_provide,
+        privacy_preference_history_us_ca_provide_for_fides_user,
+        fides_user_provided_identity,
+    ):
+        privacy_experience = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": ComponentType.overlay,
+                "delivery_mechanism": DeliveryMechanism.banner,
+                "region": "us_ca",
+            },
+        )
+
+        notices = privacy_experience.get_related_privacy_notices(db)
+        assert notices == [privacy_notice_us_ca_provide]
+        # No preference here, because no user passed in.
+        assert notices[0].current_preference is None
+        assert notices[0].outdated_preference is None
+
+        current_saved_preference = (
+            privacy_preference_history_us_ca_provide_for_fides_user.current_privacy_preference
+        )
+        assert current_saved_preference.preference == UserConsentPreference.opt_in
+
+        # Current preference returned for given user
+        notices = privacy_experience.get_related_privacy_notices(
+            db, fides_user_provided_identity=fides_user_provided_identity
+        )
+        assert notices == [privacy_notice_us_ca_provide]
+        assert notices[0].default_preference == UserConsentPreference.opt_out
+        assert notices[0].current_preference == UserConsentPreference.opt_in
+        assert notices[0].outdated_preference is None
+
+        # Update privacy notice
+        privacy_notice_us_ca_provide.update(
+            db=db,
+            data={
+                "data_uses": ["improve"],
+                "enforcement_level": EnforcementLevel.frontend,
+            },
+        )
+
+        # Current preference for the given user is now None, and opt in preference is the "outdated" preference because it
+        # corresponds to a preference for an older version
+        refreshed_notices = privacy_experience.get_related_privacy_notices(
+            db, fides_user_provided_identity=fides_user_provided_identity
+        )
+
+        assert refreshed_notices == [privacy_notice_us_ca_provide]
+        assert refreshed_notices[0].default_preference == UserConsentPreference.opt_out
+        assert refreshed_notices[0].current_preference is None
+        assert refreshed_notices[0].outdated_preference == UserConsentPreference.opt_in
+
+        privacy_experience.histories[0].delete(db)
+        privacy_experience.delete(db)
+
+        another_session = get_api_session()
+        requeried = privacy_experience.get_related_privacy_notices(another_session)
+        # Assert current/outdated preferences are None when requeried in another session w/ no device id
+        assert requeried[0].default_preference == UserConsentPreference.opt_out
+        assert requeried[0].current_preference is None
+        assert requeried[0].outdated_preference is None
+        another_session.close()
 
     def test_create_multiple_experiences_of_same_component_type(self, db):
         """We can only have one experience per component type per region"""

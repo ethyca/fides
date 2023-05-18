@@ -5718,41 +5718,6 @@
 					"response": []
 				},
 				{
-					"name": "Privacy Preferences by Fides User Device Id",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/privacy-preferences?fides_user_device_id={{fides_user_device_id}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"privacy-preferences"
-							],
-							"query": [
-								{
-									"key": "fides_user_device_id",
-									"value": "{{fides_user_device_id}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Get Historical Preferences",
 					"request": {
 						"auth": {

@@ -15,6 +15,8 @@ from fides.api.ops.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeRegion,
 )
+from fides.api.ops.models.privacy_preference import CurrentPrivacyPreference
+from fides.api.ops.models.privacy_request import ProvidedIdentity
 
 
 class ComponentType(Enum):
@@ -229,11 +231,14 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
         self,
         db: Session,
         show_disabled: Optional[bool] = True,
+        fides_user_provided_identity: Optional[ProvidedIdentity] = None,
     ) -> List[PrivacyNotice]:
         """Return privacy notices that overlap on at least one region
         and match on ComponentType
 
         If show_disabled=False, only return enabled notices.
+        If fides user provided identity supplied, additionally lookup any saved
+        preferences for that user id
         """
         privacy_notice_query = get_privacy_notices_by_region_and_component(
             db, self.region, self.component  # type: ignore[arg-type]
@@ -242,7 +247,30 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
             privacy_notice_query = privacy_notice_query.filter(
                 PrivacyNotice.disabled.is_(False)
             )
-        return privacy_notice_query.order_by(PrivacyNotice.created_at.desc()).all()
+
+        if not fides_user_provided_identity:
+            return privacy_notice_query.order_by(PrivacyNotice.created_at.desc()).all()
+
+        notices: List[PrivacyNotice] = []
+        for notice in privacy_notice_query.order_by(PrivacyNotice.created_at.desc()):
+            saved_preference: Optional[
+                CurrentPrivacyPreference
+            ] = CurrentPrivacyPreference.get_preference_for_notice_and_fides_user_device(
+                db=db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                privacy_notice=notice,
+            )
+            if saved_preference:
+                # Temporarily cache the preference for the given fides user device id in memory.
+                if saved_preference.preference_matches_latest_version:
+                    notice.current_preference = saved_preference.preference
+                    notice.outdated_preference = None
+                else:
+                    notice.current_preference = None
+                    notice.outdated_preference = saved_preference.preference
+            notices.append(notice)
+
+        return notices
 
     @classmethod
     def create(
