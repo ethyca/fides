@@ -111,7 +111,7 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
                         <TrashCanSolidIcon />
                       </Box>
                     </HStack>
-                    <Box maxH="calc(100vh - 484px)">
+                    <Box>
                       {fields && fields.length > 0
                         ? fields.map((_field: Field, index: number) => (
                             <HStack
