@@ -6,10 +6,11 @@ from datetime import datetime, timezone
 from logging import WARNING
 from typing import Callable, Optional
 
-from fastapi import HTTPException, Request, Response, status
+from fastapi import Depends, HTTPException, Request, Response, Security, status
 from fastapi.responses import FileResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
+from sqlalchemy.orm import Session
 from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 
@@ -19,6 +20,7 @@ from fides.api.analytics import (
     in_docker_container,
     send_analytics_event,
 )
+from fides.api.api import deps
 from fides.api.app_setup import (
     check_redis,
     create_fides_app,
@@ -26,6 +28,7 @@ from fides.api.app_setup import (
     run_database_startup,
 )
 from fides.api.ctl.routes.util import API_PREFIX
+from fides.api.ctl.sql_models import AuditLogResource
 from fides.api.ctl.ui import (
     get_admin_index_as_response,
     get_path_to_admin_ui_file,
@@ -239,3 +242,30 @@ def start_webserver(port: int = 8080) -> None:
         server.config.log_level,
     )
     server.run()
+
+
+@app.middleware("http")
+async def action_to_audit_log(
+    request: Request,
+    call_next: Callable,
+) -> Response:
+    """Log basic information about every non-GET request handled by the server."""
+    response = await call_next(request)
+    if request.method == "GET":
+        return response
+    else:
+        db: Session = deps.get_api_session()
+        try:
+            AuditLogResource.create(
+                db=db,
+                data={
+                    "user_id": "root",
+                    "request_path": request.scope["path"],
+                    "request_type": request.method,
+                    "fides_keys": ["key1", "key2"],
+                    "extra_data": {"key": "value"},
+                },
+            )
+        except Exception as err:
+            logger.info(err)
+        return response
