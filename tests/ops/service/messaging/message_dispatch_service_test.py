@@ -6,14 +6,14 @@ import requests_mock
 from sendgrid.helpers.mail import Email, To
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.models.messaging import MessagingConfig
-from fides.api.ops.models.privacy_notice import (
+from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.messaging import MessagingConfig
+from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     UserConsentPreference,
 )
-from fides.api.ops.schemas.messaging.messaging import (
+from fides.api.schemas.messaging.messaging import (
     ConsentEmailFulfillmentBodyParams,
     ConsentPreferencesByUser,
     EmailForActionType,
@@ -24,13 +24,11 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceType,
     SubjectIdentityVerificationBodyParams,
 )
-from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.api.ops.schemas.privacy_preference import (
-    MinimalPrivacyPreferenceHistorySchema,
-)
-from fides.api.ops.schemas.privacy_request import Consent
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.messaging.message_dispatch_service import (
+from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
+from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
+from fides.api.schemas.privacy_request import Consent
+from fides.api.schemas.redis_cache import Identity
+from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_TEMPLATE_NAME,
     _compose_twilio_mail,
     _get_dispatcher_from_config_type,
@@ -76,7 +74,7 @@ def test_message_body():
 @pytest.mark.unit
 class TestMessageDispatchService:
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     def test_email_dispatch_mailgun_success(
         self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
@@ -101,7 +99,7 @@ class TestMessageDispatchService:
         )
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     def test_email_dispatch_mailgun_config_not_found(
         self, mock_mailgun_dispatcher: Mock, db: Session
@@ -123,7 +121,7 @@ class TestMessageDispatchService:
         mock_mailgun_dispatcher.assert_not_called()
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     def test_email_dispatch_mailgun_config_no_secrets(
         self, mock_mailgun_dispatcher: Mock, db: Session
@@ -191,7 +189,7 @@ class TestMessageDispatchService:
             )
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     def test_email_dispatch_mailgun_test_message(
         self, mock_mailgun_dispatcher, db, messaging_config
@@ -213,7 +211,7 @@ class TestMessageDispatchService:
         )
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._twilio_email_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._twilio_email_dispatcher"
     )
     def test_email_dispatch_twilio_email_test_message(
         self, mock_twilio_dispatcher, db, messaging_config_twilio_email
@@ -235,7 +233,7 @@ class TestMessageDispatchService:
         )
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
     )
     def test_email_dispatch_twilio_sms_test_message(
         self, mock_twilio_dispatcher, db, messaging_config_twilio_sms
@@ -276,7 +274,7 @@ class TestMessageDispatchService:
         )
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
     )
     def test_sms_dispatch_twilio_success(
         self, mock_twilio_dispatcher: Mock, db: Session, messaging_config_twilio_sms
@@ -313,7 +311,7 @@ class TestMessageDispatchService:
         assert "No phone identity supplied." in str(err.value)
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
     )
     def test_sms_dispatch_twilio_config_not_found(
         self, mock_twilio_dispatcher: Mock, db: Session
@@ -336,7 +334,7 @@ class TestMessageDispatchService:
         mock_twilio_dispatcher.assert_not_called()
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
     )
     def test_sms_dispatch_twilio_config_no_secrets(
         self, mock_mailgun_dispatcher: Mock, db: Session
@@ -370,7 +368,7 @@ class TestMessageDispatchService:
         messaging_config.delete(db)
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
     )
     def test_dispatch_no_identity(
         self, mock_mailgun_dispatcher: Mock, db: Session
@@ -400,7 +398,7 @@ class TestMessageDispatchService:
         mock_mailgun_dispatcher.assert_not_called()
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
     )
     def test_dispatch_no_service_type(
         self, mock_mailgun_dispatcher: Mock, db: Session
@@ -437,7 +435,7 @@ class TestMessageDispatchService:
         assert _get_dispatcher_from_config_type("bad") is None
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     def test_email_dispatch_consent_request_email_fulfillment_for_sovrn_old_workflow(
         self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
@@ -475,7 +473,7 @@ class TestMessageDispatchService:
         )
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     def test_email_dispatch_consent_request_email_fulfillment_for_sovrn_new_workflow(
         self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
@@ -605,7 +603,7 @@ class TestTwilioSmsDispatcher:
         assert "must be provided" in str(exc.value)
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     def test_subject_override_for_email(
         self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
@@ -631,7 +629,7 @@ class TestTwilioSmsDispatcher:
         )
 
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
     )
     def test_sms_subject_override_ignored(
         self, mock_twilio_dispatcher: Mock, db: Session, messaging_config_twilio_sms

@@ -1,13 +1,13 @@
 import json
 from datetime import datetime
 
-from fides.api.ops.cryptography.schemas.jwt import (
+from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.api.ops.oauth.jwt import generate_jwe
-from fides.api.ops.oauth.utils import extract_payload, is_token_expired
+from fides.api.oauth.jwt import generate_jwe
+from fides.api.oauth.utils import extract_payload, is_token_expired
 from fides.core.config import CONFIG
 
 

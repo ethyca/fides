@@ -10,30 +10,30 @@ from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.testclient import TestClient
 
-from fides.api.ctl.sql_models import DataUse as sql_DataUse
-from fides.api.ops.api.v1 import scope_registry as scopes
-from fides.api.ops.api.v1.endpoints.privacy_notice_endpoints import (
+from fides.api.api.v1 import scope_registry as scopes
+from fides.api.api.v1.endpoints.privacy_notice_endpoints import (
     validate_notice_data_uses,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     PRIVACY_NOTICE,
     PRIVACY_NOTICE_BY_DATA_USE,
     PRIVACY_NOTICE_DETAIL,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.privacy_experience import (
+from fides.api.ctl.sql_models import DataUse as sql_DataUse
+from fides.api.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
     PrivacyExperience,
 )
-from fides.api.ops.models.privacy_notice import (
+from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNotice,
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
 )
-from fides.api.ops.schemas.privacy_notice import (
+from fides.api.schemas.privacy_notice import (
     PrivacyNoticeCreation,
     PrivacyNoticeResponse,
 )

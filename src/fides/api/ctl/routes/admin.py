@@ -3,12 +3,12 @@ from typing import Dict
 
 from fastapi import Security
 
+from fides.api.api.v1 import scope_registry
 from fides.api.ctl.database import database
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
-from fides.api.ops.api.v1 import scope_registry
-from fides.api.ops.oauth.utils import verify_oauth_client_prod
+from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.core.config import CONFIG
 
 ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])

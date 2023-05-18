@@ -4,12 +4,12 @@ from html import escape
 import pytest
 from fastapi import HTTPException
 
-from fides.api.ops.api.v1.endpoints.utils import (
+from fides.api.api.v1.endpoints.utils import (
     human_friendly_list,
     transform_fields,
     validate_start_and_end_filters,
 )
-from fides.api.ops.schemas.privacy_notice import PrivacyNotice
+from fides.api.schemas.privacy_notice import PrivacyNotice
 
 
 class TestValidateStartAndEndFilters:

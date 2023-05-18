@@ -7,12 +7,12 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     CONSENT_READ,
     CURRENT_PRIVACY_PREFERENCE_READ,
     PRIVACY_PREFERENCE_HISTORY_READ,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
     CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
     CURRENT_PRIVACY_PREFERENCES_REPORT,
@@ -20,20 +20,20 @@ from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_PREFERENCES,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.privacy_preference import (
+from fides.api.models.privacy_preference import (
     ConsentMethod,
     CurrentPrivacyPreference,
     PrivacyPreferenceHistory,
     RequestOrigin,
     UserConsentPreference,
 )
-from fides.api.ops.models.privacy_request import (
+from fides.api.models.privacy_request import (
     ConsentRequest,
     ExecutionLogStatus,
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
-from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
+from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.core.config import CONFIG
 
 
@@ -122,10 +122,10 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "subject_identity_verification_required", "automatically_approved", "system"
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
     def test_verify_then_set_privacy_preferences(
         self,
@@ -201,10 +201,10 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "subject_identity_verification_not_required", "automatically_approved"
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
     def test_set_privacy_preferences_privacy_center_fides_user_device_id_only(
         self,
@@ -352,7 +352,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_set_privacy_preferences_no_email_provided(
         self,
         mock_verify_identity: MagicMock,
@@ -463,9 +463,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "consent_policy",
         "system",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_set_privacy_preferences(
         self,
@@ -584,9 +584,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required", "automatically_approved"
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_set_privacy_preferences_bad_policy_key(
         self,
@@ -645,9 +645,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         privacy_preference_history_created.delete(db)
 
     @pytest.mark.usefixtures("automatically_approved", "system")
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_set_privacy_preferences_without_verification_required(
         self,
@@ -712,7 +712,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "subject_identity_verification_required", "automatically_approved", "system"
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_verify_then_set_privacy_preferences_with_additional_fides_user_device_id(
         self,
@@ -866,7 +866,7 @@ class TestPrivacyPreferenceVerify:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_verify_no_email_provided(
         self,
         mock_verify_identity: MagicMock,
@@ -900,7 +900,7 @@ class TestPrivacyPreferenceVerify:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_verify_no_privacy_preferences_present(
         self,
         mock_verify_identity: MagicMock,
@@ -1029,7 +1029,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         )
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
     def test_save_privacy_preferences_with_respect_to_fides_user_device_id(
         self,

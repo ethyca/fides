@@ -1,8 +1,8 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import ValidationError
-from fides.api.ops.models.privacy_notice import (
+from fides.api.common_exceptions import ValidationError
+from fides.api.models.privacy_notice import (
     ConsentMechanism,
     PrivacyNotice,
     PrivacyNoticeHistory,

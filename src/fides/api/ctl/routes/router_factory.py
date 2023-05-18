@@ -14,6 +14,7 @@ from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
+from fides.api.api.v1.scope_registry import CREATE, DELETE, READ, UPDATE
 from fides.api.ctl.database.crud import (
     create_resource,
     delete_resource,
@@ -37,9 +38,8 @@ from fides.api.ctl.sql_models import (
 )
 from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
-from fides.api.ops.api.v1.scope_registry import CREATE, DELETE, READ, UPDATE
-from fides.api.ops.oauth.utils import verify_oauth_client_prod
-from fides.api.ops.schemas.dataset import validate_data_categories_against_db
+from fides.api.oauth.utils import verify_oauth_client_prod
+from fides.api.schemas.dataset import validate_data_categories_against_db
 
 
 async def get_data_categories_from_db(async_session: AsyncSession) -> List[FidesKey]:

@@ -14,23 +14,23 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
+from fides.api.common_exceptions import SystemManagerException
 from fides.api.ctl.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ctl.sql_models import System
-from fides.api.ops.common_exceptions import SystemManagerException
-from fides.api.ops.models.application_config import ApplicationConfig
-from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.audit_log import AuditLog, AuditLogAction
+from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.fides_user import FidesUser
-from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
-from fides.api.ops.models.messaging import MessagingConfig
-from fides.api.ops.models.policy import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.messaging import MessagingConfig
+from fides.api.models.policy import (
     ActionType,
     Policy,
     PolicyPostWebhook,
@@ -38,58 +38,56 @@ from fides.api.ops.models.policy import (
     Rule,
     RuleTarget,
 )
-from fides.api.ops.models.privacy_experience import (
+from fides.api.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
     PrivacyExperience,
     PrivacyExperienceConfig,
 )
-from fides.api.ops.models.privacy_notice import (
+from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNotice,
     PrivacyNoticeRegion,
 )
-from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
-from fides.api.ops.models.privacy_request import (
+from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
     PrivacyRequest,
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
-from fides.api.ops.models.registration import UserRegistration
-from fides.api.ops.models.storage import (
+from fides.api.models.registration import UserRegistration
+from fides.api.models.storage import (
     ResponseFormat,
     StorageConfig,
     _create_local_default_storage,
     default_storage_config_name,
 )
-from fides.api.ops.oauth.roles import APPROVER, VIEWER
-from fides.api.ops.schemas.messaging.messaging import (
+from fides.api.oauth.roles import APPROVER, VIEWER
+from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
 )
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.schemas.storage.storage import (
+from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.storage.storage import (
     FileNaming,
     S3AuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
 )
-from fides.api.ops.service.connectors.fides.fides_client import FidesClient
-from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
-    HmacMaskingStrategy,
-)
-from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
+from fides.api.service.connectors.fides.fides_client import FidesClient
+from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
+from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
-from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite import (
+from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
-from fides.api.ops.util.data_category import DataCategory
+from fides.api.util.data_category import DataCategory
 from fides.core.config import CONFIG
 from fides.core.config.helpers import load_file
 
@@ -166,7 +164,7 @@ integration_secrets = {
 @pytest.fixture(scope="session", autouse=True)
 def mock_upload_logic() -> Generator:
     with mock.patch(
-        "fides.api.ops.service.storage.storage_uploader_service.upload_to_s3"
+        "fides.api.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
         yield _fixture
 

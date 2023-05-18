@@ -1,8 +1,8 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from fides.api.ops.api.deps import get_api_session
-from fides.api.ops.models.privacy_experience import (
+from fides.api.api.deps import get_api_session
+from fides.api.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
     PrivacyExperience,
@@ -10,7 +10,7 @@ from fides.api.ops.models.privacy_experience import (
     upsert_privacy_experiences_after_config_update,
     upsert_privacy_experiences_after_notice_update,
 )
-from fides.api.ops.models.privacy_notice import (
+from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNotice,

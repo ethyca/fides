@@ -4,18 +4,18 @@ import pytest
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1 import scope_registry as scopes
-from fides.api.ops.api.v1.endpoints.privacy_experience_config_endpoints import (
+from fides.api.api.v1 import scope_registry as scopes
+from fides.api.api.v1.endpoints.privacy_experience_config_endpoints import (
     get_experience_config_or_error,
 )
-from fides.api.ops.api.v1.urn_registry import EXPERIENCE_CONFIG, V1_URL_PREFIX
-from fides.api.ops.models.privacy_experience import (
+from fides.api.api.v1.urn_registry import EXPERIENCE_CONFIG, V1_URL_PREFIX
+from fides.api.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
     PrivacyExperience,
     PrivacyExperienceConfig,
 )
-from fides.api.ops.models.privacy_notice import (
+from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNotice,
