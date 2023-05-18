@@ -20,6 +20,7 @@ from fides.api.api.v1.urn_registry import (
     PRIVACY_NOTICE_DETAIL,
     V1_URL_PREFIX,
 )
+from fides.api.ctl.sql_models import DataUse as sql_DataUse
 from fides.api.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
