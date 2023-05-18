@@ -229,7 +229,7 @@ export const setConsentCookieFromPrivacyNotices = ({
   const noticeMap = new Map<string, boolean>(
     privacyNotices.map((notice) => [
       // DEFER(fides#3281): use notice key
-      notice.name,
+      notice.id,
       enabledPrivacyNoticeIds.includes(notice.id),
     ])
   );

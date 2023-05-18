@@ -1,5 +1,5 @@
 import { h } from "preact";
-import { useState } from "preact/hooks";
+import { useMemo, useState } from "preact/hooks";
 import {
   ButtonType,
   ExperienceConfig,
@@ -7,6 +7,7 @@ import {
 } from "../lib/consent-types";
 import NoticeToggles from "./NoticeToggles";
 import Button from "./Button";
+import { getOrMakeFidesCookie } from "../lib/cookie";
 
 /**
  * TODO: a11y reqs
@@ -30,10 +31,14 @@ const ConsentModal = ({
   onAcceptAll: () => void;
   onRejectAll: () => void;
 }) => {
-  // DEFER: set initial state based on GET /consent-request/id/privacy-preferences?
+  const initialEnabledNoticeIds = useMemo(() => {
+    const cookie = getOrMakeFidesCookie();
+    return Object.keys(cookie.consent).filter((key) => cookie.consent[key]);
+  }, []);
+
   const [enabledNoticeIds, setEnabledNoticeIds] = useState<
     Array<PrivacyNotice["id"]>
-  >([]);
+  >(initialEnabledNoticeIds);
 
   const handleSave = () => {
     onSave(enabledNoticeIds);
