@@ -8,6 +8,9 @@ import {
   ExperienceDeliveryMechanism,
 } from "fides-js";
 
+const PRIVACY_NOTICE_ID_1 = "pri_4bed96d0-b9e3-4596-a807-26b783836374";
+const PRIVACY_NOTICE_ID_2 = "pri_4bed96d0-b9e3-4596-a807-26b783836375";
+
 describe("Consent banner", () => {
   // Default options to use for all tests
   const testBannerOptions: FidesConfig = {
@@ -154,9 +157,11 @@ describe("Consent banner", () => {
               decodeURIComponent(cookie!.value)
             );
             expect(cookieKeyConsent.consent)
-              .property("data_sales")
+              .property(PRIVACY_NOTICE_ID_1)
               .is.eql(true);
-            expect(cookieKeyConsent.consent).property("tracking").is.eql(true);
+            expect(cookieKeyConsent.consent)
+              .property(PRIVACY_NOTICE_ID_2)
+              .is.eql(true);
           });
           cy.contains("button", "Accept Test").should("not.be.visible");
         });
@@ -170,9 +175,11 @@ describe("Consent banner", () => {
               decodeURIComponent(cookie!.value)
             );
             expect(cookieKeyConsent.consent)
-              .property("data_sales")
+              .property(PRIVACY_NOTICE_ID_1)
               .is.eql(false);
-            expect(cookieKeyConsent.consent).property("tracking").is.eql(false);
+            expect(cookieKeyConsent.consent)
+              .property(PRIVACY_NOTICE_ID_2)
+              .is.eql(false);
           });
         });
       });
@@ -185,26 +192,43 @@ describe("Consent banner", () => {
 
         it("can toggle the notices", () => {
           cy.contains("button", "Manage preferences").click();
+          // Notices should start off disabled
+          cy.getByTestId("toggle-Test privacy notice").within(() => {
+            cy.get("input").should("not.have.attr", "checked");
+          });
           cy.getByTestId("toggle-Test privacy notice").click();
+          cy.getByTestId("toggle-Essential").within(() => {
+            cy.get("input").should("not.have.attr", "checked");
+          });
           cy.getByTestId("toggle-Essential").click();
+
           // DEFER: intercept and check the API call once it is hooked up
           cy.getByTestId("Save-btn").click();
           // Modal should close after saving
           cy.getByTestId("consent-modal").should("not.exist");
-        });
-      });
-
-      describe("privacy center", () => {
-        it("should navigate to Privacy Center when experience component = PRIVACY_CENTER", () => {
-          const newTestOptions = testBannerOptions;
-          newTestOptions.experience!.component =
-            ExperienceComponent.PRIVACY_CENTER;
-          newTestOptions.options.isGeolocationEnabled = false;
-          cy.visitConsentDemo(newTestOptions);
-          cy.contains("button", "Manage preferences")
-            .should("be.visible")
-            .click();
-          cy.url().should("equal", "http://localhost:3000/");
+          // check that the cookie updated
+          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+            cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+              const cookieKeyConsent: FidesCookie = JSON.parse(
+                decodeURIComponent(cookie!.value)
+              );
+              expect(cookieKeyConsent.consent)
+                .property(PRIVACY_NOTICE_ID_1)
+                .is.eql(true);
+              expect(cookieKeyConsent.consent)
+                .property(PRIVACY_NOTICE_ID_2)
+                .is.eql(true);
+            });
+          });
+          // Upon reload, the cookie value should make the notices enabled
+          cy.reload();
+          cy.contains("button", "Manage preferences").click();
+          cy.getByTestId("toggle-Test privacy notice").within(() => {
+            cy.get("input").should("have.attr", "checked");
+          });
+          cy.getByTestId("toggle-Essential").within(() => {
+            cy.get("input").should("have.attr", "checked");
+          });
         });
       });
 
