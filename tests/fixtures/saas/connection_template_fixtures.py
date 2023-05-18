@@ -4,18 +4,18 @@ from typing import Optional
 
 import pytest
 
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.schemas.connection_configuration.connection_config import (
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateValues,
 )
-from fides.api.ops.service.connectors.saas.connector_registry_service import (
+from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     ConnectorTemplate,
     create_connection_config_from_template_no_save,
     upsert_dataset_config_from_template,
 )
-from fides.api.ops.util.connection_util import validate_secrets
+from fides.api.util.connection_util import validate_secrets
 
 
 @pytest.fixture(scope="function")

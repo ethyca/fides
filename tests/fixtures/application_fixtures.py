@@ -14,23 +14,23 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
+from fides.api.common_exceptions import SystemManagerException
 from fides.api.ctl.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ctl.sql_models import System
-from fides.api.ops.common_exceptions import SystemManagerException
-from fides.api.ops.models.application_config import ApplicationConfig
-from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.audit_log import AuditLog, AuditLogAction
+from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.fides_user import FidesUser
-from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
-from fides.api.ops.models.messaging import MessagingConfig
-from fides.api.ops.models.policy import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.messaging import MessagingConfig
+from fides.api.models.policy import (
     ActionType,
     Policy,
     PolicyPostWebhook,
@@ -38,57 +38,56 @@ from fides.api.ops.models.policy import (
     Rule,
     RuleTarget,
 )
-from fides.api.ops.models.privacy_experience import (
+from fides.api.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
     PrivacyExperience,
+    PrivacyExperienceConfig,
 )
-from fides.api.ops.models.privacy_notice import (
+from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNotice,
     PrivacyNoticeRegion,
 )
-from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
-from fides.api.ops.models.privacy_request import (
+from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
     PrivacyRequest,
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
-from fides.api.ops.models.registration import UserRegistration
-from fides.api.ops.models.storage import (
+from fides.api.models.registration import UserRegistration
+from fides.api.models.storage import (
     ResponseFormat,
     StorageConfig,
     _create_local_default_storage,
     default_storage_config_name,
 )
-from fides.api.ops.oauth.roles import APPROVER, VIEWER
-from fides.api.ops.schemas.messaging.messaging import (
+from fides.api.oauth.roles import APPROVER, VIEWER
+from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
 )
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.schemas.storage.storage import (
+from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.storage.storage import (
     FileNaming,
     S3AuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
 )
-from fides.api.ops.service.connectors.fides.fides_client import FidesClient
-from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
-    HmacMaskingStrategy,
-)
-from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
+from fides.api.service.connectors.fides.fides_client import FidesClient
+from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
+from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
-from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite import (
+from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
-from fides.api.ops.util.data_category import DataCategory
+from fides.api.util.data_category import DataCategory
 from fides.core.config import CONFIG
 from fides.core.config.helpers import load_file
 
@@ -165,7 +164,7 @@ integration_secrets = {
 @pytest.fixture(scope="session", autouse=True)
 def mock_upload_logic() -> Generator:
     with mock.patch(
-        "fides.api.ops.service.storage.storage_uploader_service.upload_to_s3"
+        "fides.api.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
         yield _fixture
 
@@ -1511,6 +1510,23 @@ def privacy_preference_history_us_ca_provide(
 
 
 @pytest.fixture(scope="function")
+def privacy_preference_history_us_ca_provide_for_fides_user(
+    db: Session, privacy_notice_us_ca_provide, fides_user_provided_identity
+) -> Generator:
+    pref_1 = PrivacyPreferenceHistory.create(
+        db=db,
+        data={
+            "preference": "opt_in",
+            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+            "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
@@ -1993,6 +2009,7 @@ def privacy_preference_history(
     db,
     provided_identity_and_consent_request,
     privacy_notice,
+    privacy_experience_privacy_center_link,
 ):
     provided_identity, consent_request = provided_identity_and_consent_request
     privacy_notice_history = privacy_notice.histories[0]
@@ -2000,7 +2017,15 @@ def privacy_preference_history(
     preference_history_record = PrivacyPreferenceHistory.create(
         db=db,
         data={
+            "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
+            "method": "button",
+            "privacy_experience_config_history_id": privacy_experience_privacy_center_link.histories[
+                0
+            ].experience_config_history_id,
+            "privacy_experience_history_id": privacy_experience_privacy_center_link.histories[
+                0
+            ].id,
             "preference": "opt_out",
             "privacy_notice_history_id": privacy_notice_history.id,
             "provided_identity_id": provided_identity.id,
@@ -2048,52 +2073,92 @@ def consent_records(
 
 
 @pytest.fixture(scope="function")
-def privacy_experience_privacy_center_link(db: Session) -> Generator:
+def experience_config_privacy_center(db: Session) -> Generator:
+    exp = PrivacyExperienceConfig.create(
+        db=db,
+        data={
+            "component": "privacy_center",
+            "delivery_mechanism": "link",
+            "component_title": "Control your privacy",
+            "link_label": "Manage your preferences",
+        },
+    )
+    yield exp
+    for history in exp.histories:
+        history.delete(db)
+    exp.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_experience_privacy_center_link(
+    db: Session, experience_config_privacy_center
+) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
             "component": ComponentType.privacy_center,
+            "disabled": False,
             "delivery_mechanism": DeliveryMechanism.link,
-            "regions": [
-                PrivacyNoticeRegion.us_ca,
-                PrivacyNoticeRegion.us_co,
-            ],
+            "region": PrivacyNoticeRegion.us_co,
+            "experience_config_id": experience_config_privacy_center.id,
+            "experience_config_history_id": experience_config_privacy_center.histories[
+                0
+            ].id,
+        },
+    )
+
+    yield privacy_experience
+    for history in privacy_experience.histories:
+        history.delete(db)
+    privacy_experience.delete(db)
+
+
+@pytest.fixture(scope="function")
+def experience_config_overlay_link(db: Session) -> Generator:
+    exp = PrivacyExperienceConfig.create(
+        db=db,
+        data={
+            "component": "overlay",
+            "delivery_mechanism": "link",
             "component_title": "Manage your consent preferences",
             "component_description": "On this page you can opt in and out of these data uses cases",
             "link_label": "Manage your privacy",
         },
     )
-
-    yield privacy_experience
+    yield exp
+    for history in exp.histories:
+        history.delete(db)
+    exp.delete(db)
 
 
 @pytest.fixture(scope="function")
-def privacy_experience_overlay_link(db: Session) -> Generator:
+def privacy_experience_overlay_link(
+    db: Session, experience_config_overlay_link
+) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
             "component": ComponentType.overlay,
             "delivery_mechanism": DeliveryMechanism.link,
-            "regions": [PrivacyNoticeRegion.eu_fr],
-            "component_title": "Manage your consent preferences",
-            "component_description": "On this page you can opt in and out of these data uses cases",
-            "link_label": "Manage your privacy",
+            "region": PrivacyNoticeRegion.eu_fr,
+            "experience_config_id": experience_config_overlay_link.id,
+            "experience_config_history_id": experience_config_overlay_link.histories[
+                0
+            ].id,
         },
     )
 
     yield privacy_experience
+    for history in privacy_experience.histories:
+        history.delete(db)
+    privacy_experience.delete(db)
 
 
 @pytest.fixture(scope="function")
-def privacy_experience_overlay_banner(db: Session) -> Generator:
-    privacy_experience = PrivacyExperience.create(
+def experience_config_overlay_banner(db: Session) -> Generator:
+    exp = PrivacyExperienceConfig.create(
         db=db,
         data={
-            "component": ComponentType.overlay,
-            "delivery_mechanism": DeliveryMechanism.banner,
-            "regions": [
-                PrivacyNoticeRegion.us_ca,
-            ],
             "component_title": "Manage your consent",
             "component_description": "On this page you can opt in and out of these data uses cases",
             "banner_title": "Manage your consent",
@@ -2101,7 +2166,36 @@ def privacy_experience_overlay_banner(db: Session) -> Generator:
             "confirmation_button_label": "Accept all",
             "reject_button_label": "Reject all",
             "disabled": True,
+            "component": ComponentType.overlay,
+            "delivery_mechanism": DeliveryMechanism.banner,
+            "acknowledgement_button_label": "Confirm",
+        },
+    )
+    yield exp
+    for history in exp.histories:
+        history.delete(db)
+    exp.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_experience_overlay_banner(
+    db: Session, experience_config_overlay_banner
+) -> Generator:
+    privacy_experience = PrivacyExperience.create(
+        db=db,
+        data={
+            "component": ComponentType.overlay,
+            "delivery_mechanism": DeliveryMechanism.banner,
+            "region": PrivacyNoticeRegion.us_ca,
+            "experience_config_id": experience_config_overlay_banner.id,
+            "experience_config_history_id": experience_config_overlay_banner.histories[
+                0
+            ].id,
+            "disabled": True,
         },
     )
 
     yield privacy_experience
+    for history in privacy_experience.histories:
+        history.delete(db)
+    privacy_experience.delete(db)

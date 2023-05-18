@@ -14,7 +14,7 @@ from fideslang.validation import FidesKey
 # DEFER: This can be changed to importlib.resources once we drop support for Python 3.8
 from importlib_resources import files
 
-from fides.api.ops.schemas.connection_configuration.connection_config import (
+from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
 )
 from fides.core.parse import parse

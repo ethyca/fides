@@ -5,15 +5,13 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import Organization
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.service.connectors import SovrnConnector
-from fides.api.ops.service.connectors.email.attentive_connector import (
-    AttentiveConnector,
-)
+from fides.api.service.connectors import SovrnConnector
+from fides.api.service.connectors.email.attentive_connector import AttentiveConnector
 
 
 @pytest.fixture(scope="function")

@@ -8,49 +8,49 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-  usePatchPrivacyExperienceMutation,
-  usePostPrivacyExperienceMutation,
+  usePatchExperienceConfigMutation,
+  usePostExperienceConfigMutation,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import {
-  PrivacyExperienceCreate,
-  PrivacyExperienceResponse,
-} from "~/types/api";
+import { ExperienceConfigCreate, ExperienceConfigResponse } from "~/types/api";
 
 import BannerActionForm from "./BannerActionForm";
 import BannerTextForm from "./BannerTextForm";
 import DeliveryMechanismForm from "./DeliveryMechanismForm";
 import {
   defaultInitialValues,
-  transformPrivacyExperienceResponseToCreation,
+  transformExperienceConfigResponseToCreation,
   useExperienceFormRules,
 } from "./helpers";
 import PrivacyCenterMessagingForm from "./PrivacyCenterMessagingForm";
 
-const PrivacyNoticeForm = ({
+const PrivacyExperienceForm = ({
   privacyExperience: passedInPrivacyExperience,
 }: {
-  privacyExperience?: PrivacyExperienceResponse;
+  privacyExperience?: ExperienceConfigResponse;
 }) => {
   const router = useRouter();
   const toast = useToast();
   const initialValues = passedInPrivacyExperience
-    ? transformPrivacyExperienceResponseToCreation(passedInPrivacyExperience)
+    ? transformExperienceConfigResponseToCreation(passedInPrivacyExperience)
     : defaultInitialValues;
 
-  const [patchExperiencesMutationTrigger] = usePatchPrivacyExperienceMutation();
-  const [postExperiencesMutationTrigger] = usePostPrivacyExperienceMutation();
+  const [patchExperiencesMutationTrigger] = usePatchExperienceConfigMutation();
+  const [postExperiencesMutationTrigger] = usePostExperienceConfigMutation();
 
   const isEditing = useMemo(
     () => !!passedInPrivacyExperience,
     [passedInPrivacyExperience]
   );
 
-  const handleSubmit = async (values: PrivacyExperienceCreate) => {
+  const handleSubmit = async (values: ExperienceConfigCreate) => {
     let result;
-    if (isEditing) {
-      result = await patchExperiencesMutationTrigger([values]);
+    if (isEditing && passedInPrivacyExperience) {
+      result = await patchExperiencesMutationTrigger({
+        ...values,
+        id: passedInPrivacyExperience.id,
+      });
     } else {
-      result = await postExperiencesMutationTrigger([values]);
+      result = await postExperiencesMutationTrigger(values);
     }
 
     if (isErrorResult(result)) {
@@ -67,13 +67,8 @@ const PrivacyNoticeForm = ({
     }
   };
 
-  const associatedNotices = passedInPrivacyExperience
-    ? passedInPrivacyExperience.privacy_notices
-    : undefined;
-
   const { validationSchema, ...rules } = useExperienceFormRules({
     privacyExperience: initialValues,
-    privacyNotices: associatedNotices,
   });
 
   return (
@@ -142,4 +137,4 @@ const PrivacyNoticeForm = ({
   );
 };
 
-export default PrivacyNoticeForm;
+export default PrivacyExperienceForm;
