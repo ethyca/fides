@@ -160,7 +160,7 @@ def list_router_factory(fides_model: FidesModelType, model_type: str) -> APIRout
         dependencies=[
             Security(
                 verify_oauth_client_prod,
-                scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[fides_model]}:{READ}"],
+                scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
             )
         ],
         response_model=List[fides_model],
