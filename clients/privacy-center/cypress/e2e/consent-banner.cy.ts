@@ -5,13 +5,30 @@ import {
   FidesCookie,
 } from "fides-js";
 
+/**
+ * Helper function to swap out config
+ * @example stubExperience({options: {"overlay"}})
+ */
+const stubConfig = ({ consent, experience, geolocation, options }: any) => {
+  // these props are of "any" type because I don't need all required props to override the default config
+  cy.fixture("consent/test_banner_options.json").then((config) => {
+    const updatedConfig = {
+      consent: Object.assign(config.consent, consent),
+      experience: Object.assign(config.experience, experience),
+      geolocation: Object.assign(config.geolocation, geolocation),
+      options: Object.assign(config.options, options),
+    };
+    cy.visitConsentDemo(updatedConfig);
+  });
+};
+
 describe("Consent banner", () => {
   describe("when overlay is disabled", () => {
     beforeEach(() => {
-      // todo- need a better test pattern for overriding default config
-      cy.fixture("consent/test_banner_options.json").then((config) => {
-        config.options.isOverlayDisabled = true;
-        cy.visitConsentDemo(config);
+      stubConfig({
+        options: {
+          isOverlayDisabled: true,
+        },
       });
     });
 
@@ -27,9 +44,10 @@ describe("Consent banner", () => {
   describe("when overlay is not disabled", () => {
     describe("happy path", () => {
       beforeEach(() => {
-        cy.fixture("consent/test_banner_options.json").then((config) => {
-          config.options.isOverlayDisabled = false;
-          cy.visitConsentDemo(config);
+        stubConfig({
+          options: {
+            isOverlayDisabled: false,
+          },
         });
       });
       it("should render the expected HTML banner", () => {
@@ -157,9 +175,10 @@ describe("Consent banner", () => {
     });
     describe("when experience component is not an overlay", () => {
       beforeEach(() => {
-        cy.fixture("consent/test_banner_options.json").then((config) => {
-          config.experience.component = ComponentType.PRIVACY_CENTER;
-          cy.visitConsentDemo(config);
+        stubConfig({
+          experience: {
+            component: ComponentType.PRIVACY_CENTER,
+          },
         });
       });
 
@@ -174,14 +193,13 @@ describe("Consent banner", () => {
 
     describe("when experience is not provided, and valid geolocation is provided", () => {
       beforeEach(() => {
-        cy.fixture("consent/test_banner_options.json").then((config) => {
-          config.experience = undefined;
-          config.geolocation = {
+        stubConfig({
+          experience: undefined,
+          geolocation: {
             country: "US",
             location: "US-CA",
             region: "CA",
-          };
-          cy.visitConsentDemo(config);
+          },
         });
       });
 
@@ -196,11 +214,12 @@ describe("Consent banner", () => {
 
     describe("when experience is not provided, and geolocation is not provided", () => {
       beforeEach(() => {
-        cy.fixture("consent/test_banner_options.json").then((config) => {
-          config.experience = undefined;
-          config.geolocation = undefined;
-          config.options.isGeolocationEnabled = true;
-          cy.visitConsentDemo(config);
+        stubConfig({
+          experience: undefined,
+          geolocation: undefined,
+          options: {
+            isGeolocationEnabled: true,
+          },
         });
       });
 
@@ -209,7 +228,7 @@ describe("Consent banner", () => {
         expect(false).is.eql(true);
       });
 
-      describe("when geolocation is successful", function () {
+      describe("when geolocation is successful", () => {
         // TODO: add when we have geolocation and experience API calls
         it.skip("retrieves experience from API", () => {
           expect(false).is.eql(true);
@@ -223,7 +242,7 @@ describe("Consent banner", () => {
         });
       });
 
-      describe("when geolocation is not successful", function () {
+      describe("when geolocation is not successful", () => {
         // TODO: add when we have geolocation API call
         it.skip("does not render", () => {
           expect(false).is.eql(true);
@@ -238,13 +257,14 @@ describe("Consent banner", () => {
     // TODO: it should be possible in the future to filter for experience on just country
     describe("when experience is not provided, and geolocation is invalid", () => {
       beforeEach(() => {
-        cy.fixture("consent/test_banner_options.json").then((config) => {
-          config.experience = undefined;
-          config.geolocation = {
+        stubConfig({
+          experience: undefined,
+          geolocation: {
             country: "US",
-          };
-          config.options.isGeolocationEnabled = true;
-          cy.visitConsentDemo(config);
+          },
+          options: {
+            isGeolocationEnabled: true,
+          },
         });
       });
 
@@ -260,11 +280,12 @@ describe("Consent banner", () => {
 
     describe("when experience is not provided, and geolocation is not provided, but geolocation is disabled", () => {
       beforeEach(() => {
-        cy.fixture("consent/test_banner_options.json").then((config) => {
-          config.experience = undefined;
-          config.geolocation = undefined;
-          config.options.isGeolocationEnabled = false;
-          cy.visitConsentDemo(config);
+        stubConfig({
+          experience: undefined,
+          geolocation: undefined,
+          options: {
+            isGeolocationEnabled: false,
+          },
         });
       });
 
@@ -280,9 +301,10 @@ describe("Consent banner", () => {
 
     describe("when experience contains no notices", () => {
       beforeEach(() => {
-        cy.fixture("consent/test_banner_options.json").then((config) => {
-          config.experience.privacy_notices = [];
-          cy.visitConsentDemo(config);
+        stubConfig({
+          experience: {
+            privacy_notices: [],
+          },
         });
       });
 
@@ -298,10 +320,10 @@ describe("Consent banner", () => {
 
     describe("when experience delivery mechanism is link", () => {
       beforeEach(() => {
-        cy.fixture("consent/test_banner_options.json").then((config) => {
-          config.experience.delivery_mechanism =
-            DeliveryMechanism.LINK;
-          cy.visitConsentDemo(config);
+        stubConfig({
+          experience: {
+            delivery_mechanism: DeliveryMechanism.LINK,
+          },
         });
       });
 

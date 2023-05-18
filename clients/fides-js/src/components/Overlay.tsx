@@ -45,7 +45,9 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     <ConsentBanner
       bannerTitle={experience?.experience_config?.banner_title}
       bannerDescription={experience?.experience_config?.banner_description}
-      confirmationButtonLabel={experience?.experience_config?.confirmation_button_label}
+      confirmationButtonLabel={
+        experience?.experience_config?.confirmation_button_label
+      }
       rejectButtonLabel={experience?.experience_config?.reject_button_label}
       privacyCenterUrl={options.privacyCenterUrl}
       onAcceptAll={onAcceptAll}

@@ -65,7 +65,7 @@ export type ExperienceConfig = {
   created_at: string;
   updated_at: string;
   regions: Array<string>;
-}
+};
 
 export type PrivacyNotice = {
   name?: string;
@@ -137,17 +137,17 @@ export type PrivacyPreferencesCreateWithCode = {
   browser_identity: Identity;
   code?: string;
   preferences: Array<ConsentOptionCreate>;
-  policy_key?: string;  // Will use default consent policy if not supplied
+  policy_key?: string; // Will use default consent policy if not supplied
   request_origin?: RequestOrigin;
   url_recorded?: string;
   user_agent?: string;
   user_geography?: string;
-}
+};
 
 export type ConsentOptionCreate = {
-  privacy_notice_history_id: string
-  preference: UserConsentPreference
-}
+  privacy_notice_history_id: string;
+  preference: UserConsentPreference;
+};
 
 export type Identity = {
   phone_number?: string;
@@ -155,10 +155,10 @@ export type Identity = {
   ga_client_id?: string;
   ljt_readerID?: string;
   fides_user_device_id?: string;
-}
+};
 
 export enum RequestOrigin {
   privacy_center = "privacy_center",
   overlay = "overlay",
-  api = "api"
+  api = "api",
 }

@@ -1,4 +1,4 @@
-import {FidesOptions, UserGeolocation} from "./consent-types";
+import { FidesOptions, UserGeolocation } from "./consent-types";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner
@@ -20,14 +20,14 @@ export const debugLog = (
  * Returns null if geolocation cannot be constructed by provided params
  */
 export const constructLocation = (
-    geoLocation?: UserGeolocation,
-    debug: boolean = false
+  geoLocation?: UserGeolocation,
+  debug: boolean = false
 ): string | null => {
   debugLog(debug, "constructing geolocation...");
   if (!geoLocation) {
     debugLog(
-        debug,
-        "cannot construct user location since geoLocation is undefined"
+      debug,
+      "cannot construct user location since geoLocation is undefined"
     );
     return null;
   }
@@ -41,8 +41,8 @@ export const constructLocation = (
     return geoLocation.country;
   }
   debugLog(
-      debug,
-      "cannot construct user location from provided geoLocation params..."
+    debug,
+    "cannot construct user location from provided geoLocation params..."
   );
   return null;
 };
@@ -68,9 +68,9 @@ export const validateOptions = (options: FidesOptions): boolean => {
       new URL(options.privacyCenterUrl);
     } catch (e) {
       debugLog(
-          options.debug,
-          "Invalid options: privacyCenterUrl is an invalid URL!",
-          options.privacyCenterUrl
+        options.debug,
+        "Invalid options: privacyCenterUrl is an invalid URL!",
+        options.privacyCenterUrl
       );
       return false;
     }
