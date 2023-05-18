@@ -10,6 +10,10 @@ import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
 import CustomInput from "../forms/CustomInput";
 import { ButtonGroup as ManualButtonGroup } from "./ButtonGroup";
 import { Field } from "./types";
+import { CustomSelect } from "~/features/common/form/inputs";
+import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
+import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
+import { useAppSelector } from "~/app/hooks";
 
 type DSRCustomizationFormProps = {
   data: Field[];
@@ -22,6 +26,9 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
   isSubmitting = false,
   onSaveClick,
 }) => {
+  const { isLoading: isLoadingDataCategories } = useGetAllDataCategoriesQuery();
+  const allDataCategories = useAppSelector(selectDataCategories);
+
   const router = useRouter();
   const { errorAlert } = useAlert();
 
@@ -38,6 +45,10 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
     onSaveClick(values, actions);
   };
 
+  if (isLoadingDataCategories) {
+    return null;
+  }
+
   return (
     <Formik
       enableReinitialize
@@ -49,6 +60,7 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
                 {
                   pii_field: "",
                   dsr_package_label: "",
+                  data_categories: [],
                 },
               ] as Field[]),
       }}
@@ -68,6 +80,7 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
               .min(1, "DSR Package Label must have at least one character")
               .max(200, "DSR Package Label has a maximum of 200 characters")
               .label("DSR Package Label"),
+            data_categories: Yup.array(Yup.string()).label("Data Category"),
           })
         ),
       })}
@@ -93,13 +106,12 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
                     >
                       <Box w="416px">PII Field</Box>
                       <Box w="416px">DSR Package Label</Box>
-                      <Box />
+                      <Box w="416px">Data Categories</Box>
+                      <Box visibility="hidden">
+                        <TrashCanSolidIcon />
+                      </Box>
                     </HStack>
-                    <Box
-                      maxH="calc(100vh - 484px)"
-                      paddingRight="13px"
-                      overflow="auto"
-                    >
+                    <Box maxH="calc(100vh - 484px)">
                       {fields && fields.length > 0
                         ? fields.map((_field: Field, index: number) => (
                             <HStack
@@ -107,8 +119,9 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
                               key={index}
                               mt={index > 0 ? "12px" : undefined}
                               spacing="24px"
+                              align="flex-start"
                             >
-                              <Box h="57px" w="416px">
+                              <Box minH="57px" w="416px">
                                 <CustomInput
                                   autoFocus={index === 0}
                                   displayHelpIcon={false}
@@ -116,11 +129,22 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
                                   name={`fields.${index}.pii_field`}
                                 />
                               </Box>
-                              <Box h="57px" w="416px">
+                              <Box minH="57px" w="416px">
                                 <CustomInput
                                   displayHelpIcon={false}
                                   isRequired
                                   name={`fields.${index}.dsr_package_label`}
+                                />
+                              </Box>
+                              <Box minH="57px" w="416px">
+                                <CustomSelect
+                                  name={`fields.${index}.data_categories`}
+                                  options={allDataCategories.map((data) => ({
+                                    value: data.fides_key,
+                                    label: data.fides_key,
+                                  }))}
+                                  isRequired
+                                  isMulti
                                 />
                               </Box>
                               <Box
@@ -146,6 +170,7 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
                         fieldArrayProps.push({
                           pii_field: "",
                           dsr_package_label: "",
+                          data_categories: [],
                         });
                       }}
                       _hover={{ cursor: "pointer" }}
