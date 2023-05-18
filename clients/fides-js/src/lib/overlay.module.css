@@ -5,26 +5,44 @@
   /* Colors */
   --fides-consent-overlay-primary-color: #8243f2;
   --fides-consent-overlay-background-color: #f7fafc;
+  --fides-consent-overlay-font-color: #4a5568;
+  --fides-consent-overlay-hover-color: #edf2f7;
   /* Buttons */
-  --fides-consent-overlay-primary-button-background-color: #824ef2;
+  --fides-consent-overlay-primary-button-background-color: var(
+    --fides-consent-overlay-primary-color
+  );
   --fides-consent-overlay-primary-button-background-hover-color: #9569f4;
   --fides-consent-overlay-primary-button-text-color: #ffffff;
   --fides-consent-overlay-primary-button-border-color: transparent;
-  --fides-consent-overlay-secondary-button-background-color: #f7fafc;
-  --fides-consent-overlay-secondary-button-background-hover-color: #edf2f7;
+  --fides-consent-overlay-secondary-button-background-color: var(
+    --fides-consent-overlay-background-color
+  );
+  --fides-consent-overlay-secondary-button-background-hover-color: var(
+    --fides-consent-overlay-hover-color
+  );
   --fides-consent-overlay-secondary-button-text-color: #2d3748;
-  --fides-consent-overlay-secondary-button-border-color: #824ef2;
+  --fides-consent-overlay-secondary-button-border-color: var(
+    --fides-consent-overlay-primary-color
+  );
   /* Text */
-  --fides-consent-overlay-title-font-color: #4a5568;
-  --fides-consent-overlay-body-font-color: #4a5568;
+  --fides-consent-overlay-title-font-color: var(
+    --fides-consent-overlay-font-color
+  );
+  --fides-consent-overlay-body-font-color: var(
+    --fides-consent-overlay-font-color
+  );
   /* Switches */
-  --fides-consent-overlay-primary-active-color: #824ef2;
+  --fides-consent-overlay-primary-active-color: var(
+    --fides-consent-overlay-primary-color
+  );
   --fides-consent-overlay-primary-active-disabled-color: #bda4f7;
   --fides-consent-overlay-inactive-color: #cbd5e0;
   --fides-consent-overlay-disabled-color: #e1e7ee;
   /* Dividers */
   --fides-consent-overlay-row-divider-color: #e2e8f0;
-  --fides-consent-overlay-row-hover-color: #edf2f7;
+  --fides-consent-overlay-row-hover-color: var(
+    --fides-consent-overlay-hover-color
+  );
 
   /* Everything else */
   --fides-consent-overlay-font-family: "inherit";
