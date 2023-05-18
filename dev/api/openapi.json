@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.13.1b0.post0.dev4"
+    "version": "2.13.1b0.post0.dev5"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -9137,7 +9137,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PrivacyPreferencesCreateWithCode"
+                "$ref": "#/components/schemas/PrivacyPreferencesRequest"
               }
             }
           },
@@ -9183,7 +9183,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PrivacyPreferencesCreateWithCode"
+                "$ref": "#/components/schemas/PrivacyPreferencesRequest"
               }
             }
           },
@@ -14345,6 +14345,15 @@
         ],
         "description": "An enumeration."
       },
+      "ConsentMethod": {
+        "title": "ConsentMethod",
+        "enum": [
+          "button",
+          "gpc",
+          "api"
+        ],
+        "description": "An enumeration."
+      },
       "ConsentOptionCreate": {
         "title": "ConsentOptionCreate",
         "required": [
@@ -14572,6 +14581,26 @@
           "user_agent": {
             "title": "User agent",
             "type": "string"
+          },
+          "experience_config_history_id": {
+            "title": "The historical config for the experience that the user was presented - contains the experience language",
+            "type": "string"
+          },
+          "privacy_experience_history_id": {
+            "title": "The historical id of the experience that the user was presented - contains the experience type, region, and delivery mechanism",
+            "type": "string"
+          },
+          "truncated_ip_address": {
+            "title": "Truncated ip address",
+            "type": "string"
+          },
+          "method": {
+            "title": "Method of consent preference",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentMethod"
+              }
+            ]
           }
         },
         "description": "Schema for consent reporting - largely a join of PrivacyPreferenceHistory and PrivacyRequest"
@@ -19198,8 +19227,8 @@
         "additionalProperties": false,
         "description": "An API representation of a PrivacyNotice that includes an `id` field.\nUsed to help model API responses and update payloads"
       },
-      "PrivacyPreferencesCreateWithCode": {
-        "title": "PrivacyPreferencesCreateWithCode",
+      "PrivacyPreferencesRequest": {
+        "title": "PrivacyPreferencesRequest",
         "required": [
           "browser_identity",
           "preferences"
@@ -19226,22 +19255,18 @@
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
-          "request_origin": {
-            "$ref": "#/components/schemas/RequestOrigin"
-          },
-          "url_recorded": {
-            "title": "Url Recorded",
-            "type": "string"
-          },
-          "user_agent": {
-            "title": "User Agent",
+          "privacy_experience_history_id": {
+            "title": "Privacy Experience History Id",
             "type": "string"
           },
           "user_geography": {
             "$ref": "#/components/schemas/PrivacyNoticeRegion"
+          },
+          "method": {
+            "$ref": "#/components/schemas/ConsentMethod"
           }
         },
-        "description": "Schema for saving privacy preferences and accompanying user data\nincluding the verification code."
+        "description": "Request body for creating PrivacyPreferences."
       },
       "PrivacyRequestCreate": {
         "title": "PrivacyRequestCreate",
