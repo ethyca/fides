@@ -1,5 +1,5 @@
 from html import escape, unescape
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from fastapi import Depends, Request, Security
 from fastapi_pagination import Page, Params
@@ -21,6 +21,9 @@ from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.endpoints.utils import transform_fields
 from fides.api.ops.common_exceptions import ValidationError
+from fides.api.ops.models.privacy_experience import (
+    upsert_privacy_experiences_after_notice_update,
+)
 from fides.api.ops.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeRegion,
@@ -240,6 +243,7 @@ def create_privacy_notices(
 
     # Loop through and create the new privacy notices
     created_privacy_notices: List[PrivacyNotice] = []
+    affected_regions: Set = set()
     for privacy_notice in privacy_notices:
         privacy_notice = transform_fields(
             transformation=escape,
@@ -252,6 +256,12 @@ def create_privacy_notices(
             check_name=False,
         )
         created_privacy_notices.append(created_privacy_notice)
+        affected_regions.update(created_privacy_notice.regions)
+
+    # After created all notices, make sure experiences exist to back all notices.
+    upsert_privacy_experiences_after_notice_update(
+        db, affected_regions=list(affected_regions)
+    )
 
     return created_privacy_notices
 
@@ -354,7 +364,18 @@ def update_privacy_notices(
     updates_and_existing: List[
         Tuple[schemas.PrivacyNoticeWithId, PrivacyNotice]
     ] = prepare_privacy_notice_patches(privacy_notice_updates, db)
-    return [
+
+    notices: List[PrivacyNotice] = []
+    affected_regions: Set = set()
+
+    for update_data, existing_notice in updates_and_existing:
         existing_notice.update(db, data=update_data.dict(exclude_unset=True))
-        for (update_data, existing_notice) in updates_and_existing
-    ]
+        notices.append(existing_notice)
+        affected_regions.update(existing_notice.regions)
+
+    # After updating all notices, make sure experiences exist to back all notices.
+    upsert_privacy_experiences_after_notice_update(
+        db, affected_regions=list(affected_regions)
+    )
+
+    return notices

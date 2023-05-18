@@ -42,6 +42,7 @@ from fides.api.ops.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
     PrivacyExperience,
+    PrivacyExperienceConfig,
 )
 from fides.api.ops.models.privacy_notice import (
     ConsentMechanism,
@@ -1511,6 +1512,23 @@ def privacy_preference_history_us_ca_provide(
 
 
 @pytest.fixture(scope="function")
+def privacy_preference_history_us_ca_provide_for_fides_user(
+    db: Session, privacy_notice_us_ca_provide, fides_user_provided_identity
+) -> Generator:
+    pref_1 = PrivacyPreferenceHistory.create(
+        db=db,
+        data={
+            "preference": "opt_in",
+            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+            "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
@@ -1957,6 +1975,18 @@ def fides_user_provided_identity(db):
 
 
 @pytest.fixture(scope="function")
+def fides_user_provided_identity_and_consent_request(db, fides_user_provided_identity):
+    consent_request_data = {
+        "provided_identity_id": fides_user_provided_identity.id,
+    }
+    consent_request = ConsentRequest.create(db, data=consent_request_data)
+
+    yield fides_user_provided_identity, consent_request
+    fides_user_provided_identity.delete(db=db)
+    consent_request.delete(db=db)
+
+
+@pytest.fixture(scope="function")
 def executable_consent_request(
     db,
     provided_identity_and_consent_request,
@@ -2036,52 +2066,92 @@ def consent_records(
 
 
 @pytest.fixture(scope="function")
-def privacy_experience_privacy_center_link(db: Session) -> Generator:
+def experience_config_privacy_center(db: Session) -> Generator:
+    exp = PrivacyExperienceConfig.create(
+        db=db,
+        data={
+            "component": "privacy_center",
+            "delivery_mechanism": "link",
+            "component_title": "Control your privacy",
+            "link_label": "Manage your preferences",
+        },
+    )
+    yield exp
+    for history in exp.histories:
+        history.delete(db)
+    exp.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_experience_privacy_center_link(
+    db: Session, experience_config_privacy_center
+) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
             "component": ComponentType.privacy_center,
+            "disabled": False,
             "delivery_mechanism": DeliveryMechanism.link,
-            "regions": [
-                PrivacyNoticeRegion.us_ca,
-                PrivacyNoticeRegion.us_co,
-            ],
+            "region": PrivacyNoticeRegion.us_co,
+            "experience_config_id": experience_config_privacy_center.id,
+            "experience_config_history_id": experience_config_privacy_center.histories[
+                0
+            ].id,
+        },
+    )
+
+    yield privacy_experience
+    for history in privacy_experience.histories:
+        history.delete(db)
+    privacy_experience.delete(db)
+
+
+@pytest.fixture(scope="function")
+def experience_config_overlay_link(db: Session) -> Generator:
+    exp = PrivacyExperienceConfig.create(
+        db=db,
+        data={
+            "component": "overlay",
+            "delivery_mechanism": "link",
             "component_title": "Manage your consent preferences",
             "component_description": "On this page you can opt in and out of these data uses cases",
             "link_label": "Manage your privacy",
         },
     )
-
-    yield privacy_experience
+    yield exp
+    for history in exp.histories:
+        history.delete(db)
+    exp.delete(db)
 
 
 @pytest.fixture(scope="function")
-def privacy_experience_overlay_link(db: Session) -> Generator:
+def privacy_experience_overlay_link(
+    db: Session, experience_config_overlay_link
+) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
             "component": ComponentType.overlay,
             "delivery_mechanism": DeliveryMechanism.link,
-            "regions": [PrivacyNoticeRegion.eu_fr],
-            "component_title": "Manage your consent preferences",
-            "component_description": "On this page you can opt in and out of these data uses cases",
-            "link_label": "Manage your privacy",
+            "region": PrivacyNoticeRegion.eu_fr,
+            "experience_config_id": experience_config_overlay_link.id,
+            "experience_config_history_id": experience_config_overlay_link.histories[
+                0
+            ].id,
         },
     )
 
     yield privacy_experience
+    for history in privacy_experience.histories:
+        history.delete(db)
+    privacy_experience.delete(db)
 
 
 @pytest.fixture(scope="function")
-def privacy_experience_overlay_banner(db: Session) -> Generator:
-    privacy_experience = PrivacyExperience.create(
+def experience_config_overlay_banner(db: Session) -> Generator:
+    exp = PrivacyExperienceConfig.create(
         db=db,
         data={
-            "component": ComponentType.overlay,
-            "delivery_mechanism": DeliveryMechanism.banner,
-            "regions": [
-                PrivacyNoticeRegion.us_ca,
-            ],
             "component_title": "Manage your consent",
             "component_description": "On this page you can opt in and out of these data uses cases",
             "banner_title": "Manage your consent",
@@ -2089,7 +2159,36 @@ def privacy_experience_overlay_banner(db: Session) -> Generator:
             "confirmation_button_label": "Accept all",
             "reject_button_label": "Reject all",
             "disabled": True,
+            "component": ComponentType.overlay,
+            "delivery_mechanism": DeliveryMechanism.banner,
+            "acknowledgement_button_label": "Confirm",
+        },
+    )
+    yield exp
+    for history in exp.histories:
+        history.delete(db)
+    exp.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_experience_overlay_banner(
+    db: Session, experience_config_overlay_banner
+) -> Generator:
+    privacy_experience = PrivacyExperience.create(
+        db=db,
+        data={
+            "component": ComponentType.overlay,
+            "delivery_mechanism": DeliveryMechanism.banner,
+            "region": PrivacyNoticeRegion.us_ca,
+            "experience_config_id": experience_config_overlay_banner.id,
+            "experience_config_history_id": experience_config_overlay_banner.histories[
+                0
+            ].id,
+            "disabled": True,
         },
     )
 
     yield privacy_experience
+    for history in privacy_experience.histories:
+        history.delete(db)
+    privacy_experience.delete(db)

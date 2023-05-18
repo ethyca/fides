@@ -6,9 +6,11 @@ Defines the logging format to be used throughout the API server code.
 import logging
 import sys
 from types import FrameType
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from loguru import logger
+
+from fides.core.config import CONFIG
 
 
 class FidesAPIHandler(logging.Handler):
@@ -105,3 +107,29 @@ def setup(level: str, serialize: str = "", desination: str = "") -> None:
             ).loguru_config(),
         ]
     )
+
+
+def obfuscate_message(message: str) -> str:
+    """
+    Obfuscate specific bits of information that might get logged.
+
+    Currently being obfuscated:
+        - Database username + password
+    """
+
+    strings_to_replace: List[str] = [
+        f"{CONFIG.database.user}:{CONFIG.database.password}"
+    ]
+
+    for string in strings_to_replace:
+        result = message.replace(string, "*****")
+
+    return result
+
+
+# Loguru doesn't export the Record type so this can't be properly typed
+# Taken from the following issue:
+# https://github.com/Delgan/loguru/issues/537#issuecomment-986259036
+def format_and_obfuscate(record) -> str:  # type: ignore[no-untyped-def]
+    record["extra"]["obfuscated_message"] = obfuscate_message(record["message"])
+    return "[{level}] {extra[obfuscated_message]}\n{exception}"

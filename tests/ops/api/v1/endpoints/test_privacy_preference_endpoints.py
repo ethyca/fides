@@ -32,9 +32,7 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.api.ops.schemas.redis_cache import Identity
 from fides.core.config import CONFIG
-from tests.conftest import generate_auth_header, generate_role_header_for_user
 
 
 class TestSavePrivacyPreferencesPrivacyCenter:
@@ -139,7 +137,6 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         db: Session,
         request_body,
         privacy_notice,
-        system,
     ):
         """Verify code and then return privacy preferences"""
         _, consent_request = provided_identity_and_consent_request
@@ -180,6 +177,92 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         db.refresh(consent_request)
         assert consent_request.privacy_request_id
 
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY.format(consent_request_id=consent_request.id)}",
+            json={"code": verification_code},
+        )
+        assert response.status_code == 200
+        assert len(response.json()["items"]) == 1
+        response_json = response.json()["items"][0]
+        assert response_json["id"] is not None
+        assert response_json["preference"] == "opt_out"
+        assert (
+            response_json["privacy_notice_history"]
+            == PrivacyNoticeHistorySchema.from_orm(privacy_notice.histories[0]).dict()
+        )
+
+        privacy_preference_history.delete(db=db)
+        assert run_privacy_request_mock.called
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_not_required", "automatically_approved"
+    )
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_set_privacy_preferences_privacy_center_fides_user_device_id_only(
+        self,
+        run_privacy_request_mock,
+        fides_user_provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        db: Session,
+        request_body,
+        privacy_notice,
+    ):
+        """Test the workflow where consent preferences were saved in the privacy center against
+        a fides user device id only - no email or phone number.  This ProvidedIdentity needs to be
+        saved as the PrivacyPreferenceHistory.fides_user_device_provided_identity_id record.
+
+        Also asserts these same preferences can be retrieved via the consent request verify endpoint
+        """
+        (
+            fides_user_provided_identity,
+            consent_request,
+        ) = fides_user_provided_identity_and_consent_request
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+
+        response_json = response.json()[0]
+        created_privacy_preference_history_id = response_json[
+            "privacy_preference_history_id"
+        ]
+        privacy_preference_history = (
+            db.query(PrivacyPreferenceHistory)
+            .filter(
+                PrivacyPreferenceHistory.id == created_privacy_preference_history_id
+            )
+            .first()
+        )
+        assert privacy_preference_history.email is None
+        assert (
+            privacy_preference_history.fides_user_device
+            == fides_user_provided_identity.encrypted_value["value"]
+        )
+        assert privacy_preference_history.provided_identity is None
+        assert (
+            privacy_preference_history.fides_user_device_provided_identity
+            == fides_user_provided_identity,
+            "Assert fides user device provided identity ",
+        )
+        assert privacy_preference_history.phone_number is None
+        assert privacy_preference_history.preference == UserConsentPreference.opt_out
+
+        assert response_json["preference"] == "opt_out"
+
+        assert (
+            response_json["privacy_notice_history"]
+            == PrivacyNoticeHistorySchema.from_orm(privacy_notice.histories[0]).dict()
+        )
+        db.refresh(consent_request)
+        assert consent_request.privacy_request_id
+
+        # Assert preferences can be retrieved under fides user device id only
         response = api_client.post(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY.format(consent_request_id=consent_request.id)}",
             json={"code": verification_code},
@@ -611,7 +694,6 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         db: Session,
         request_body,
         privacy_notice,
-        system,
     ):
         """Verify code and then return privacy preferences
 
@@ -878,19 +960,6 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
     @pytest.mark.usefixtures(
         "privacy_notice",
     )
-    def test_save_privacy_preferences_from_outside_domain(
-        self, api_client, url, request_body
-    ):
-        response = api_client.patch(
-            url,
-            json=request_body,
-            headers={"Origin": "https://www.outside_request.com"},
-        )
-        assert response.status_code == 403
-
-    @pytest.mark.usefixtures(
-        "privacy_notice",
-    )
     def test_no_fides_user_device_id_supplied(self, api_client, url, request_body):
         del request_body["browser_identity"]["fides_user_device_id"]
         response = api_client.patch(
@@ -961,133 +1030,6 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert (
             privacy_preference_history.fides_user_device == "ABCDE_TEST_FIDES"
         )  # Cached here for reporting
-
-
-class TestGetPrivacyPreferencesForFidesDeviceId:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return (
-            V1_URL_PREFIX
-            + PRIVACY_PREFERENCES
-            + "?fides_user_device_id=FGHIJ_TEST_FIDES"
-        )
-
-    @pytest.fixture(scope="function")
-    def preference_data(self, privacy_notice, consent_policy):
-        return {
-            "browser_identity": {
-                "ga_client_id": "test",
-                "fides_user_device_id": "FGHIJ_TEST_FIDES",
-            },
-            "preferences": [
-                {
-                    "privacy_notice_history_id": privacy_notice.histories[0].id,
-                    "preference": "opt_out",
-                }
-            ],
-            "policy_key": consent_policy.key,
-            "request_origin": "privacy_center",
-            "url_recorded": "example.com/privacy_center",
-            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2)...",
-            "user_geography": "us_ca",
-        }
-
-    @pytest.mark.usefixtures(
-        "privacy_notice",
-    )
-    def test_get_privacy_preferences_from_outside_domain(self, api_client, url):
-        response = api_client.get(
-            url,
-            headers={"Origin": "https://www.outside_request.com"},
-        )
-        assert response.status_code == 403
-
-    @pytest.mark.usefixtures(
-        "privacy_notice",
-    )
-    def test_no_fides_user_device_id_supplied_as_query_param(self, api_client, url):
-        response = api_client.get(
-            V1_URL_PREFIX + PRIVACY_PREFERENCES,
-            headers={"Origin": "http://localhost:8080"},
-        )
-        assert response.status_code == 422
-
-    @pytest.mark.usefixtures(
-        "privacy_notice",
-    )
-    def test_get_privacy_preferences_no_provided_identity_exists(self, api_client, url):
-        response = api_client.get(url, headers={"Origin": "http://localhost:8080"})
-        assert response.status_code == 403
-
-    @pytest.mark.usefixtures("privacy_notice", "fides_user_provided_identity")
-    def test_get_privacy_preferences_with_respect_to_fides_user_device_id_none_saved(
-        self, api_client, url
-    ):
-        response = api_client.get(url, headers={"Origin": "http://localhost:8080"})
-        assert response.status_code == 200
-        assert response.json() == {"items": [], "total": 0, "page": 1, "size": 50}
-
-    def test_get_privacy_preferences_with_respect_to_fides_user_device_id(
-        self,
-        db,
-        api_client,
-        url,
-        preference_data,
-        privacy_notice,
-        fides_user_provided_identity,
-    ):
-        # Make request to save some preferences first
-        response = api_client.patch(
-            url, json=preference_data, headers={"Origin": "http://localhost:8080"}
-        )
-        assert response.status_code == 200
-
-        response = api_client.get(url, headers={"Origin": "http://localhost:8080"})
-        assert response.status_code == 200
-        assert response.json()["total"] == 1
-        assert response.json()["page"] == 1
-        assert response.json()["size"] == 50
-        items = response.json()["items"][0]
-
-        assert items["preference"] == "opt_out"
-        assert items["privacy_notice_history"]["id"] == privacy_notice.histories[0].id
-
-        privacy_preference_history_id = items["privacy_preference_history_id"]
-
-        # Fetch current privacy preference
-        current_preference = CurrentPrivacyPreference.get(db, object_id=items["id"])
-        # Get corresponding historical preference
-        privacy_preference_history = current_preference.privacy_preference_history
-        assert privacy_preference_history.id == privacy_preference_history_id
-
-        fides_user_device_provided_identity = (
-            privacy_preference_history.fides_user_device_provided_identity
-        )
-        # Same fides user device identity is on both the historical and current record
-        assert (
-            current_preference.fides_user_device_provided_identity
-            == fides_user_device_provided_identity
-            == fides_user_provided_identity
-        )
-        assert (
-            fides_user_device_provided_identity.hashed_value
-            == ProvidedIdentity.hash_value("FGHIJ_TEST_FIDES")
-        )
-        assert (
-            fides_user_device_provided_identity.encrypted_value["value"]
-            == "FGHIJ_TEST_FIDES"
-        )
-        # Values also cached on the historical record for reporting
-        assert (
-            privacy_preference_history.hashed_fides_user_device
-            == ProvidedIdentity.hash_value("FGHIJ_TEST_FIDES")
-        )  # Cached here for reporting
-        assert (
-            privacy_preference_history.fides_user_device == "FGHIJ_TEST_FIDES"
-        )  # Cached here for reporting
-
-        current_preference.delete(db)
-        privacy_preference_history.delete(db)
 
 
 class TestHistoricalPreferences:

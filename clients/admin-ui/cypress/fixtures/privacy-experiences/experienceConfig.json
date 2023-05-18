@@ -1,0 +1,20 @@
+{
+  "acknowledgement_button_label": "ok",
+  "banner_title": "Title",
+  "banner_description": "desc",
+  "component": "overlay",
+  "component_title": "two",
+  "component_description": null,
+  "confirmation_button_label": "yes",
+  "delivery_mechanism": "link",
+  "disabled": false,
+  "is_default": false,
+  "link_label": "Manage preferences",
+  "reject_button_label": "no",
+  "id": "pri_33fd622e-a63a-4847-b910-3b3fdf8c109f",
+  "experience_config_history_id": "pri_691d010f-946c-4302-8b2e-c533cbe39409",
+  "version": 3.0,
+  "created_at": "2023-05-16T17:05:19.710987+00:00",
+  "updated_at": "2023-05-16T17:06:24.231571+00:00",
+  "regions": ["us_ca"]
+}

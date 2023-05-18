@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import List, Optional, Tuple
-from urllib.parse import urlparse
 
 from fastapi import Depends, HTTPException, Request
 from fastapi.params import Security
@@ -12,12 +11,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from sqlalchemy import literal
 from sqlalchemy.orm import Query, Session
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_400_BAD_REQUEST,
-    HTTP_403_FORBIDDEN,
-    HTTP_404_NOT_FOUND,
-)
+from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.ops.api.deps import get_db
@@ -67,10 +61,8 @@ from fides.api.ops.schemas.privacy_request import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.consent_util import (
-    get_fides_user_device_id_provided_identity,
     get_or_create_fides_user_device_id_provided_identity,
 )
-from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Privacy Preference"], prefix=V1_URL_PREFIX)
@@ -88,8 +80,10 @@ def consent_request_verify_for_privacy_preferences(
     db: Session = Depends(get_db),
     data: VerificationCode,
 ) -> AbstractPage[CurrentPrivacyPreference]:
-    """Verifies the verification code and returns the CurrentPrivacyPreferences if successful.
-    These are just the latest preferences saved for each PrivacyNotice.
+    """Allows retrieving Current Privacy Preferences through the Privacy Center
+
+    Verifies the verification code and retrieves CurrentPrivacyPreferences, which are the latest
+    preferences saved for each PrivacyNotice
     """
     _, provided_identity = _get_consent_request_and_provided_identity(
         db=db,
@@ -102,11 +96,19 @@ def consent_request_verify_for_privacy_preferences(
             status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
         )
 
+    # Fides user device id provided identities are saved in a different column from the
+    # other provided identity types on privacy preference records
+    field_name: str = (
+        "fides_user_device_provided_identity_id"
+        if provided_identity.field_name == ProvidedIdentityType.fides_user_device_id
+        else "provided_identity_id"
+    )
+
     logger.info("Getting current privacy preferences for verified provided identity")
 
     query = (
         db.query(CurrentPrivacyPreference)
-        .filter(CurrentPrivacyPreference.provided_identity_id == provided_identity.id)
+        .filter_by(**{field_name: provided_identity.id})
         .order_by(CurrentPrivacyPreference.privacy_notice_id)
     )
     return paginate(query, params)
@@ -173,8 +175,11 @@ def save_privacy_preferences_with_verified_identity(
     db: Session = Depends(get_db),
     data: PrivacyPreferencesCreateWithCode,
 ) -> List[CurrentPrivacyPreference]:
-    """Saves privacy preferences with respect to a verified user identity like an email or phone number
-    and optionally a fides user device id.
+    """Saves privacy preferences in the privacy center.
+
+    The ConsentRequest may have been created under an email, phone number, *or* fides user device id.
+    Preferences can be saved under both an email *and* a fides user device id, if the email was persisted
+    with the ConsentRequest and the fides user device id is passed in with this secondary request.
 
     Creates historical records for these preferences for record keeping, and also updates current preferences.
     Creates a privacy request to propagate preferences to third party systems.
@@ -190,14 +195,21 @@ def save_privacy_preferences_with_verified_identity(
             status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
         )
 
-    try:
-        fides_user_provided_identity = (
-            get_or_create_fides_user_device_id_provided_identity(
-                db=db, identity_data=data.browser_identity
+    if provided_identity.field_name == ProvidedIdentityType.fides_user_device_id:
+        # If consent request was saved against a fides user device id only, this is our primary identity
+        # This workflow is for when customers don't want to collect email/phone number.
+        fides_user_provided_identity = provided_identity
+        provided_identity = None  # type: ignore[assignment]
+    else:
+        # Get the fides user device id from the dictionary of browser identifiers
+        try:
+            fides_user_provided_identity = (
+                get_or_create_fides_user_device_id_provided_identity(
+                    db=db, identity_data=data.browser_identity
+                )
             )
-        )
-    except HTTPException:
-        fides_user_provided_identity = None
+        except HTTPException:
+            fides_user_provided_identity = None
 
     logger.info("Saving privacy preferences")
     return _save_privacy_preferences_for_identities(
@@ -304,62 +316,6 @@ def _save_privacy_preferences_for_identities(
     return upserted_current_preferences
 
 
-def verify_address(request: Request) -> None:
-    """Verify request is coming from approved address"""
-    origin = request.headers.get("Origin") or request.headers.get("Referer")
-
-    if origin:
-        parsed_url = urlparse(origin)
-        if (
-            parsed_url.scheme + "://" + parsed_url.netloc
-            not in CONFIG.security.cors_origins
-        ):
-            raise HTTPException(
-                status_code=HTTP_403_FORBIDDEN,
-                detail="Can't save privacy preferences from non-approved addresses",
-            )
-
-
-@router.get(
-    PRIVACY_PREFERENCES,
-    status_code=HTTP_200_OK,
-    response_model=Page[CurrentPrivacyPreferenceSchema],
-)
-def get_privacy_preferences_by_device_id(
-    *,
-    request: Request,
-    fides_user_device_id: str,
-    db: Session = Depends(get_db),
-    params: Params = Depends(),
-) -> AbstractPage[CurrentPrivacyPreference]:
-    """Retrieves privacy preferences with respect to a fides user device id."""
-    verify_address(request)
-    fides_user_provided_identity: Optional[
-        ProvidedIdentity
-    ] = get_fides_user_device_id_provided_identity(
-        db=db, fides_user_device_id=fides_user_device_id
-    )
-
-    if not fides_user_provided_identity:
-        raise HTTPException(
-            status_code=HTTP_403_FORBIDDEN,
-            detail="Provided identity not found",
-        )
-
-    logger.info(
-        "Getting privacy preferences with respect to fides user provided identity"
-    )
-    query: Query[CurrentPrivacyPreference] = (
-        db.query(CurrentPrivacyPreference)
-        .filter(
-            CurrentPrivacyPreference.fides_user_device_provided_identity_id
-            == fides_user_provided_identity.id
-        )
-        .order_by(CurrentPrivacyPreference.updated_at.desc())
-    )
-    return paginate(query, params)
-
-
 @router.patch(
     PRIVACY_PREFERENCES,
     status_code=HTTP_200_OK,
@@ -377,7 +333,6 @@ def save_privacy_preferences(
     Creates a privacy request to propagate preferences to third party systems.
     """
     verify_privacy_notice_and_historical_records(db=db, data=data)
-    verify_address(request)
 
     fides_user_provided_identity = get_or_create_fides_user_device_id_provided_identity(
         db=db, identity_data=data.browser_identity

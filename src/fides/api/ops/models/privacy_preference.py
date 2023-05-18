@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, Type
+from typing import Any, Dict, Optional, Type
 
 from sqlalchemy import ARRAY, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -23,6 +23,7 @@ from fides.api.ops.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
+    UserConsentPreference,
 )
 from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
@@ -30,12 +31,6 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.core.config import CONFIG
-
-
-class UserConsentPreference(Enum):
-    opt_in = "opt_in"  # The user wants to opt in to the notice
-    opt_out = "opt_out"  # The user wants to opt out of the notice
-    acknowledge = "acknowledge"  # The user has acknowledged this notice
 
 
 class RequestOrigin(Enum):
@@ -306,6 +301,7 @@ class CurrentPrivacyPreference(Base):
     )
 
     # Relationships
+    privacy_notice = relationship(PrivacyNotice)
     privacy_notice_history = relationship(PrivacyNoticeHistory)
     privacy_preference_history = relationship(
         PrivacyPreferenceHistory, cascade="delete, delete-orphan", single_parent=True
@@ -316,3 +312,31 @@ class CurrentPrivacyPreference(Base):
     fides_user_device_provided_identity = relationship(
         ProvidedIdentity, foreign_keys=[fides_user_device_provided_identity_id]
     )
+
+    @property
+    def preference_matches_latest_version(self) -> bool:
+        """Returns True if the latest saved preference corresponds to the
+        latest version for this Notice"""
+        return (
+            self.privacy_notice.privacy_notice_history_id
+            == self.privacy_notice_history_id
+        )
+
+    @classmethod
+    def get_preference_for_notice_and_fides_user_device(
+        cls,
+        db: Session,
+        fides_user_provided_identity: ProvidedIdentity,
+        privacy_notice: PrivacyNotice,
+    ) -> Optional[CurrentPrivacyPreference]:
+        """Retrieves the CurrentPrivacyPreference for the user with the given identity
+        for the given notice"""
+        return (
+            db.query(CurrentPrivacyPreference)
+            .filter(
+                CurrentPrivacyPreference.fides_user_device_provided_identity_id
+                == fides_user_provided_identity.id,
+                CurrentPrivacyPreference.privacy_notice_id == privacy_notice.id,
+            )
+            .first()
+        )

@@ -6,8 +6,11 @@ from pydantic import Field, conlist
 
 from fides.api.custom_types import SafeStr
 from fides.api.ops.models.policy import ActionType
-from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
-from fides.api.ops.models.privacy_preference import RequestOrigin, UserConsentPreference
+from fides.api.ops.models.privacy_notice import (
+    PrivacyNoticeRegion,
+    UserConsentPreference,
+)
+from fides.api.ops.models.privacy_preference import RequestOrigin
 from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequestStatus,

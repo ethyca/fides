@@ -1,22 +1,15 @@
 from __future__ import annotations
 
-from typing import List
-
 import pytest
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_403_FORBIDDEN
+from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1 import scope_registry as scopes
-from fides.api.ops.api.v1.endpoints.privacy_experience_endpoints import (
-    get_privacy_experience_or_error,
-)
 from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_EXPERIENCE,
     PRIVACY_EXPERIENCE_DETAIL,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.privacy_experience import ComponentType, DeliveryMechanism
-from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
 
 
 class TestGetPrivacyExperiences:
@@ -81,28 +74,33 @@ class TestGetPrivacyExperiences:
         assert resp["disabled"] is False
         assert resp["component"] == "privacy_center"
         assert resp["delivery_mechanism"] == "link"
-        assert resp["regions"] == ["us_ca", "us_co"]
-        assert resp["component_title"] == "Manage your consent preferences"
+        assert resp["region"] == "us_co"
+        assert resp["version"] == 1.0
+        # Assert experience config is nested
+        experience_config = resp["experience_config"]
+        assert experience_config["component_title"] == "Control your privacy"
+        assert experience_config["banner_title"] is None
+        assert experience_config["banner_description"] is None
+        assert experience_config["link_label"] == "Manage your preferences"
+        assert experience_config["confirmation_button_label"] is None
+        assert experience_config["reject_button_label"] is None
+        assert experience_config["acknowledgement_button_label"] is None
+        assert experience_config["id"] is not None
+        assert experience_config["version"] == 1
         assert (
-            resp["component_description"]
-            == "On this page you can opt in and out of these data uses cases"
+            experience_config["experience_config_history_id"]
+            == privacy_experience_privacy_center_link.experience_config.experience_config_history_id
         )
-        assert resp["banner_title"] is None
-        assert resp["banner_description"] is None
-        assert resp["link_label"] == "Manage your privacy"
-        assert resp["confirmation_button_label"] is None
-        assert resp["reject_button_label"] is None
-        assert resp["acknowledgement_button_label"] is None
-        assert resp["id"] is not None
-        assert resp["version"] == 1
-        assert resp["privacy_experience_history_id"] is not None
-        assert resp["privacy_experience_template_id"] is None
         assert (
             resp["privacy_experience_history_id"]
             == privacy_experience_privacy_center_link.privacy_experience_history_id
         )
         assert len(resp["privacy_notices"]) == 1
         assert resp["privacy_notices"][0]["id"] == privacy_notice.id
+        assert resp["privacy_notices"][0]["consent_mechanism"] == "opt_in"
+        assert resp["privacy_notices"][0]["default_preference"] == "opt_out"
+        assert resp["privacy_notices"][0]["current_preference"] is None
+        assert resp["privacy_notices"][0]["outdated_preference"] is None
 
     def test_get_privacy_experiences_show_disabled_filter(
         self,
@@ -140,12 +138,14 @@ class TestGetPrivacyExperiences:
             exp["id"] for exp in data["items"]
         }
 
+    @pytest.mark.usefixtures(
+        "privacy_experience_privacy_center_link",
+    )
     def test_get_privacy_experiences_region_filter(
         self,
         api_client: TestClient,
         generate_auth_header,
         url,
-        privacy_experience_privacy_center_link,
         privacy_experience_overlay_link,
         privacy_experience_overlay_banner,
     ):
@@ -159,19 +159,16 @@ class TestGetPrivacyExperiences:
         assert data["total"] == 1
         assert len(data["items"]) == 1
         assert data["items"][0]["id"] == privacy_experience_overlay_link.id
-        assert data["items"][0]["regions"] == [
-            reg.value for reg in privacy_experience_overlay_link.regions
-        ]
+        assert data["items"][0]["region"] == "eu_fr"
         resp = api_client.get(
             url + "?region=us_ca",
             headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
-        assert data["total"] == 2
-        assert len(data["items"]) == 2
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
         assert {exp["id"] for exp in data["items"]} == {
-            privacy_experience_privacy_center_link.id,
             privacy_experience_overlay_banner.id,
         }
 
@@ -299,7 +296,7 @@ class TestGetPrivacyExperiences:
             first_experience["id"] == privacy_experience_overlay_banner.id
         )  # Most recently created
         assert first_experience["component"] == "overlay"
-        assert first_experience["regions"] == ["us_ca"]
+        assert first_experience["region"] == "us_ca"
         assert len(first_experience["privacy_notices"]) == 2
 
         # Notices match on region and "overlay"
@@ -320,7 +317,7 @@ class TestGetPrivacyExperiences:
             second_experience["id"] == privacy_experience_overlay_link.id
         )  # Most recently created
         assert second_experience["component"] == "overlay"
-        assert second_experience["regions"] == ["eu_fr"]
+        assert second_experience["region"] == "eu_fr"
         assert len(second_experience["privacy_notices"]) == 1
 
         # Notices match on region and "overlay"
@@ -339,7 +336,7 @@ class TestGetPrivacyExperiences:
             third_experience["id"] == privacy_experience_privacy_center_link.id
         )  # Most recently created
         assert third_experience["component"] == "privacy_center"
-        assert third_experience["regions"] == ["us_ca", "us_co"]
+        assert third_experience["region"] == "us_co"
         assert len(third_experience["privacy_notices"]) == 2
 
         # Notices match on region and "overlay"
@@ -393,7 +390,7 @@ class TestGetPrivacyExperiences:
         assert len(data["items"]) == 1
 
         assert data["items"][0]["id"] == privacy_experience_privacy_center_link.id
-        assert data["items"][0]["regions"] == ["us_ca", "us_co"]
+        assert data["items"][0]["region"] == "us_co"
 
         notices = data["items"][0]["privacy_notices"]
         assert len(notices) == 2
@@ -439,7 +436,7 @@ class TestGetPrivacyExperiences:
         assert len(data["items"]) == 1
 
         assert data["items"][0]["id"] == privacy_experience_privacy_center_link.id
-        assert data["items"][0]["regions"] == ["us_ca", "us_co"]
+        assert data["items"][0]["region"] == "us_co"
 
         notices = data["items"][0]["privacy_notices"]
         assert len(notices) == 1
@@ -447,211 +444,86 @@ class TestGetPrivacyExperiences:
         assert notices[0]["id"] == privacy_notice.id
         assert notices[0]["displayed_in_privacy_center"]
 
-
-class TestCreatePrivacyExperiences:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return V1_URL_PREFIX + PRIVACY_EXPERIENCE
-
-    @pytest.fixture(scope="function")
-    def request_data(self) -> List[dict]:
-        return [
-            {
-                "component": "overlay",
-                "delivery_mechanism": "banner",
-                "regions": ["eu_it", "eu_es", "eu_fr"],
-                "component_title": "Control your privacy",
-                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
-                "banner_title": "Manage your consent",
-                "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
-                "confirmation_button_label": "Accept all",
-                "reject_button_label": "Reject all",
-            }
-        ]
-
-    def test_create_privacy_experiences_unauthenticated(self, url, api_client):
-        resp = api_client.post(url)
-        assert resp.status_code == 401
-
-    def test_create_privacy_experiences_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header
+    def test_get_privacy_experiences_show_has_config_filter(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        privacy_experience_privacy_center_link,
+        privacy_experience_overlay_link,
+        privacy_experience_overlay_banner,
+        db,
     ):
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
-        resp = api_client.post(
-            url,
+        resp = api_client.get(
+            url + "?has_config=False",
             headers=auth_header,
         )
-        assert resp.status_code == 403
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 0
+        assert len(data["items"]) == 0
 
-    @pytest.mark.parametrize(
-        "role,expected_status",
-        [
-            ("owner", HTTP_201_CREATED),
-            ("contributor", HTTP_201_CREATED),
-            ("viewer_and_approver", HTTP_403_FORBIDDEN),
-            ("viewer", HTTP_403_FORBIDDEN),
-            ("approver", HTTP_403_FORBIDDEN),
-        ],
+        resp = api_client.get(
+            url + "?has_config=True",
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 3
+        assert len(data["items"]) == 3
+        assert {config["id"] for config in data["items"]} == {
+            privacy_experience_privacy_center_link.id,
+            privacy_experience_overlay_link.id,
+            privacy_experience_overlay_banner.id,
+        }
+
+        privacy_experience_privacy_center_link.experience_config_id = None
+        privacy_experience_privacy_center_link.experience_config_history_id = None
+
+        privacy_experience_privacy_center_link.save(db=db)
+        resp = api_client.get(
+            url + "?has_config=False",
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
+        assert data["items"][0]["id"] == privacy_experience_privacy_center_link.id
+
+    @pytest.mark.usefixtures(
+        "privacy_notice_us_ca_provide",
+        "fides_user_provided_identity",
+        "privacy_preference_history_us_ca_provide_for_fides_user",
+        "privacy_experience_overlay_banner",
     )
-    def test_create_privacy_experience_with_roles(
-        self,
-        role,
-        expected_status,
-        api_client: TestClient,
-        url,
-        generate_role_header,
-        request_data,
-    ) -> None:
-        auth_header = generate_role_header(roles=[role])
-        response = api_client.post(url, json=request_data, headers=auth_header)
-        assert response.status_code == expected_status
-
-    def test_post_privacy_experience_duplicate_regions(
+    def test_get_privacy_experiences_fides_user_device_id_filter(
         self,
         api_client: TestClient,
         generate_auth_header,
-        request_data,
         url,
     ):
-        """
-        Assert if regions are accidentally duplicated on a notice that this is flagged
-        """
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_CREATE])
-        last_region = request_data[0]["regions"][-1]
-        request_data[0]["regions"].append(last_region)
-
-        resp = api_client.post(url, headers=auth_header, json=request_data)
-        assert resp.status_code == 422
-        assert resp.json()["detail"][0]["msg"] == "Duplicate regions found."
-
-    @pytest.mark.usefixtures("privacy_notice")
-    def test_create_privacy_experiences(
-        self,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        request_data,
-        privacy_notice_eu_fr_provide_service_frontend_only,
-    ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_CREATE])
-
-        resp = api_client.post(url, headers=auth_header, json=request_data)
-        assert resp.status_code == 201
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        resp = api_client.get(
+            url + "?fides_user_device_id=FGHIJ_TEST_FIDES",
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
         data = resp.json()
-        assert len(data) == 1
-        data = data[0]
-        assert data["disabled"] is False
-        assert data["component"] == "overlay"
-        assert data["delivery_mechanism"] == "banner"
-        assert data["regions"] == ["eu_it", "eu_es", "eu_fr"]
-        assert data["component_title"] == "Control your privacy"
-        assert (
-            data["component_description"]
-            == "We care about your privacy. Opt in and opt out of the data use cases below."
-        )
-        assert data["banner_title"] == "Manage your consent"
-        assert (
-            data["banner_description"]
-            == "By clicking accept you consent to one of these methods by us and our third parties."
-        )
-        assert data["link_label"] is None
-        assert data["confirmation_button_label"] == "Accept all"
-        assert data["reject_button_label"] == "Reject all"
-        assert data["acknowledgement_button_label"] is None
-        assert data["version"] == 1.0
-        assert data["created_at"] is not None
-        assert data["updated_at"] is not None
 
-        assert len(data["privacy_notices"]) == 1
-        assert (
-            data["privacy_notices"][0]["id"]
-            == privacy_notice_eu_fr_provide_service_frontend_only.id
-        )
+        assert "items" in data
 
-        created_privacy_experience_id = data["id"]
-        experience = get_privacy_experience_or_error(
-            db, experience_id=created_privacy_experience_id
-        )
+        # assert one experience in the response
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
+        resp = data["items"][0]
 
-        # Assert qualities of associated created experience
-        assert experience.histories.count() == 1
-        history = experience.histories[0]
-        assert data["privacy_experience_history_id"] == history.id
-        assert history.privacy_experience_id == experience.id
-        assert history.version == 1.0
-        assert not history.disabled
-        assert history.component == ComponentType.overlay
-        assert history.delivery_mechanism == DeliveryMechanism.banner
-        assert history.regions == [
-            PrivacyNoticeRegion.eu_it,
-            PrivacyNoticeRegion.eu_es,
-            PrivacyNoticeRegion.eu_fr,
-        ]
-        assert history.component_title == "Control your privacy"
-        assert (
-            history.component_description
-            == "We care about your privacy. Opt in and opt out of the data use cases below."
-        )
-        assert history.banner_title == "Manage your consent"
-        assert history.link_label is None
-        assert history.confirmation_button_label == "Accept all"
-        assert history.reject_button_label == "Reject all"
-        assert history.acknowledgement_button_label is None
-        assert history.version == 1.0
-        assert history.created_at is not None
-        assert history.updated_at is not None
-
-        db.delete(history)
-        db.delete(experience)
-
-    @pytest.mark.usefixtures("privacy_notice")
-    def test_create_privacy_experiences_min_fields(
-        self,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-    ):
-        data = [
-            {
-                "regions": ["us_ca"],
-                "delivery_mechanism": "link",
-                "component": "privacy_center",
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_CREATE])
-
-        resp = api_client.post(url, headers=auth_header, json=data)
-        assert resp.status_code == 201
-        data = resp.json()
-        assert len(data) == 1
-        data = data[0]
-        assert data["disabled"] is False
-        assert data["component"] == "privacy_center"
-        assert data["delivery_mechanism"] == "link"
-        assert data["regions"] == ["us_ca"]
-        assert data["component_title"] is None
-        assert data["component_description"] is None
-        assert data["banner_title"] is None
-        assert data["banner_description"] is None
-        assert data["link_label"] is None
-        assert data["confirmation_button_label"] is None
-        assert data["reject_button_label"] is None
-        assert data["acknowledgement_button_label"] is None
-        assert data["version"] == 1.0
-        assert data["created_at"] is not None
-        assert data["updated_at"] is not None
-
-        created_privacy_experience_id = data["id"]
-        experience = get_privacy_experience_or_error(
-            db, experience_id=created_privacy_experience_id
-        )
-        history = experience.histories[0]
-        assert history.version == 1.0
-
-        db.delete(history)
-        db.delete(experience)
+        # Assert current preference is displayed for fides user device id
+        assert resp["privacy_notices"][0]["consent_mechanism"] == "opt_in"
+        assert resp["privacy_notices"][0]["default_preference"] == "opt_out"
+        assert resp["privacy_notices"][0]["current_preference"] == "opt_in"
+        assert resp["privacy_notices"][0]["outdated_preference"] is None
 
 
 class TestPrivacyExperienceDetail:
@@ -729,25 +601,33 @@ class TestPrivacyExperienceDetail:
         assert body["disabled"] is True
         assert body["component"] == "overlay"
         assert body["delivery_mechanism"] == "banner"
-        assert body["regions"] == ["us_ca"]
-        assert body["component_title"] == "Manage your consent"
+        assert body["region"] == "us_ca"
+        experience_config = body["experience_config"]
+        assert experience_config["component_title"] == "Manage your consent"
         assert (
-            body["component_description"]
+            experience_config["component_description"]
             == "On this page you can opt in and out of these data uses cases"
         )
-        assert body["banner_title"] == "Manage your consent"
+        assert experience_config["banner_title"] == "Manage your consent"
         assert (
-            body["banner_description"]
+            experience_config["banner_description"]
             == "We use cookies to recognize visitors and remember their preferences"
         )
-        assert body["link_label"] is None
-        assert body["confirmation_button_label"] == "Accept all"
-        assert body["reject_button_label"] == "Reject all"
-        assert body["acknowledgement_button_label"] is None
+        assert experience_config["link_label"] is None
+        assert experience_config["confirmation_button_label"] == "Accept all"
+        assert experience_config["reject_button_label"] == "Reject all"
+        assert experience_config["acknowledgement_button_label"] == "Confirm"
+        assert experience_config["id"] is not None
+        assert experience_config["version"] == 1.0
+        assert (
+            experience_config["experience_config_history_id"]
+            == privacy_experience_overlay_banner.experience_config_history_id
+        )
+
         assert body["id"] == privacy_experience_overlay_banner.id
         assert body["created_at"] is not None
         assert body["updated_at"] is not None
-        assert body["version"] is not None
+        assert body["version"] == 1.0
         assert (
             body["privacy_experience_history_id"]
             == privacy_experience_overlay_banner.histories[0].id
@@ -756,68 +636,17 @@ class TestPrivacyExperienceDetail:
         assert body["privacy_notices"][0]["id"] == privacy_notice_us_ca_provide.id
         assert body["privacy_notices"][1]["id"] == privacy_notice.id
 
-    @pytest.mark.usefixtures(
-        "privacy_notice", "privacy_notice_eu_fr_provide_service_frontend_only"
-    )
-    def test_get_privacy_experience_detail_bad_region_filter(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        privacy_experience_overlay_banner,
-    ):
-        """Region filter for an experience can restrict embedded notices to just that region"""
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        # Assert default preferences displayed only
+        assert body["privacy_notices"][0]["consent_mechanism"] == "opt_in"
+        assert body["privacy_notices"][0]["default_preference"] == "opt_out"
+        assert body["privacy_notices"][0]["current_preference"] is None
+        assert body["privacy_notices"][0]["outdated_preference"] is None
 
-        resp = api_client.get(url + "?region=eu_it", headers=auth_header)
-        assert resp.status_code == 400
-        assert (
-            resp.json()["detail"]
-            == f"Region query param eu_it not applicable for privacy experience {privacy_experience_overlay_banner.id}."
-        )
-
-    @pytest.mark.usefixtures("privacy_notice_eu_fr_provide_service_frontend_only")
-    def test_get_privacy_experience_detail_region_filter(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        privacy_experience_privacy_center_link,  # regions ca/co
-        privacy_notice,  # regions ca/co,
-        privacy_notice_us_co_third_party_sharing,  # regions co
-    ):
-        """Region filter for an experience can restrict embedded notices to just that region"""
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
-
-        resp = api_client.get(
-            V1_URL_PREFIX
-            + PRIVACY_EXPERIENCE_DETAIL.format(
-                privacy_experience_id=privacy_experience_privacy_center_link.id
-            ),
-            headers=auth_header,
-        )
-        # Sanity check
-        assert resp.status_code == 200
-        assert len(resp.json()["privacy_notices"]) == 2
-        assert resp.json()["id"] == privacy_experience_privacy_center_link.id
-        assert (
-            resp.json()["privacy_notices"][0]["id"]
-            == privacy_notice_us_co_third_party_sharing.id
-        )
-        assert resp.json()["privacy_notices"][1]["id"] == privacy_notice.id
-
-        # Now filter just on ca to get just the ca notices
-        resp = api_client.get(
-            V1_URL_PREFIX
-            + PRIVACY_EXPERIENCE_DETAIL.format(
-                privacy_experience_id=privacy_experience_privacy_center_link.id
-            )
-            + "?region=us_ca",
-            headers=auth_header,
-        )
-        assert len(resp.json()["privacy_notices"]) == 1
-        assert resp.json()["id"] == privacy_experience_privacy_center_link.id
-        assert resp.json()["privacy_notices"][0]["id"] == privacy_notice.id
+        # Assert default preferences displayed only
+        assert body["privacy_notices"][0]["consent_mechanism"] == "opt_in"
+        assert body["privacy_notices"][0]["default_preference"] == "opt_out"
+        assert body["privacy_notices"][0]["current_preference"] is None
+        assert body["privacy_notices"][0]["outdated_preference"] is None
 
     @pytest.mark.usefixtures(
         "privacy_notice", "privacy_notice_eu_fr_provide_service_frontend_only"
@@ -891,191 +720,29 @@ class TestPrivacyExperienceDetail:
 
         assert resp.json()["privacy_notices"][0]["disabled"] is False
 
-
-class TestUpdatePrivacyExperiences:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return V1_URL_PREFIX + PRIVACY_EXPERIENCE
-
-    @pytest.fixture(scope="function")
-    def request_data(self, privacy_experience_privacy_center_link) -> List[dict]:
-        return [
-            {
-                "component": ComponentType.privacy_center.value,
-                "delivery_mechanism": DeliveryMechanism.link.value,
-                "regions": [
-                    PrivacyNoticeRegion.us_ca.value,
-                    PrivacyNoticeRegion.us_co.value,
-                    PrivacyNoticeRegion.us_va.value,
-                ],
-                "component_title": "Manage your consent preferences with Fides!",
-                "id": privacy_experience_privacy_center_link.id,
-            }
-        ]
-
-    def test_update_privacy_experiences_unauthenticated(self, url, api_client):
-        resp = api_client.patch(url)
-        assert resp.status_code == 401
-
-    def test_update_privacy_experiences_wrong_scope(
+    @pytest.mark.usefixtures(
+        "privacy_notice_us_ca_provide",
+        "fides_user_provided_identity",
+        "privacy_preference_history_us_ca_provide_for_fides_user",
+        "privacy_experience_overlay_banner",
+    )
+    def test_get_privacy_experience_detail_fides_user_device_id_filter(
         self,
-        url,
         api_client: TestClient,
         generate_auth_header,
-        request_data,
+        url,
     ):
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
-        resp = api_client.patch(
-            url,
-            json=request_data,
+
+        resp = api_client.get(
+            url + "?fides_user_device_id=FGHIJ_TEST_FIDES",
             headers=auth_header,
         )
-        assert resp.status_code == 403
-
-    @pytest.mark.parametrize(
-        "role,expected_status",
-        [
-            ("owner", HTTP_200_OK),
-            ("contributor", HTTP_200_OK),
-            ("viewer_and_approver", HTTP_403_FORBIDDEN),
-            ("viewer", HTTP_403_FORBIDDEN),
-            ("approver", HTTP_403_FORBIDDEN),
-        ],
-    )
-    def test_update_privacy_experience_with_roles(
-        self,
-        role,
-        expected_status,
-        api_client: TestClient,
-        url,
-        generate_role_header,
-        request_data,
-    ) -> None:
-        auth_header = generate_role_header(roles=[role])
-        response = api_client.patch(url, json=request_data, headers=auth_header)
-        assert response.status_code == expected_status
-
-    def test_update_privacy_experiences_duplicate_ids(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        request_data,
-    ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
-        dupe = request_data[0]
-        request_data.append(dupe)
-        resp = api_client.patch(url, headers=auth_header, json=request_data)
-        assert resp.status_code == 422
-        assert (
-            resp.json()["detail"]
-            == "Duplicate privacy experience ids submitted in request."
-        )
-
-    def test_update_privacy_experiences_bad_ids(
-        self,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        request_data,
-    ):
-        request_data[0]["id"] = "bad_id"
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
-        resp = api_client.patch(url, headers=auth_header, json=request_data)
-        assert resp.status_code == 404
-        assert resp.json()["detail"] == "No PrivacyExperience found for id bad_id."
-
-    def test_update_privacy_experiences(
-        self,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        request_data,
-        privacy_notice,
-        privacy_experience_privacy_center_link,
-    ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
-
-        resp = api_client.patch(url, headers=auth_header, json=request_data)
         assert resp.status_code == 200
         data = resp.json()
-        assert len(data) == 1
-        data = data[0]
-        assert data["disabled"] is False
-        assert data["component"] == "privacy_center"
-        assert data["delivery_mechanism"] == "link"
-        assert data["regions"] == ["us_ca", "us_co", "us_va"]
-        assert data["component_title"] == "Manage your consent preferences with Fides!"
-        assert (
-            data["component_description"]
-            == privacy_experience_privacy_center_link.component_description
-        )
-        assert data["banner_title"] is None
-        assert data["banner_description"] is None
-        assert data["link_label"] == "Manage your privacy"
-        assert data["confirmation_button_label"] is None
-        assert data["reject_button_label"] is None
-        assert data["acknowledgement_button_label"] is None
-        assert data["version"] == 2.0
-        assert data["created_at"] is not None
-        assert data["updated_at"] is not None
 
-        assert len(data["privacy_notices"]) == 1
-        assert data["privacy_notices"][0]["id"] == privacy_notice.id
-
-        db.refresh(privacy_experience_privacy_center_link)
-
-        # Assert qualities of associated created experience
-        assert privacy_experience_privacy_center_link.histories.count() == 2
-        history = privacy_experience_privacy_center_link.histories[1]
-        assert data["privacy_experience_history_id"] == history.id
-        assert (
-            history.privacy_experience_id == privacy_experience_privacy_center_link.id
-        )
-        assert history.version == 2.0
-        assert not history.disabled
-        assert history.component == ComponentType.privacy_center
-        assert history.delivery_mechanism == DeliveryMechanism.link
-        assert history.regions == [
-            PrivacyNoticeRegion.us_ca,
-            PrivacyNoticeRegion.us_co,
-            PrivacyNoticeRegion.us_va,
-        ]
-        assert history.component_title == "Manage your consent preferences with Fides!"
-        assert (
-            history.component_description
-            == "On this page you can opt in and out of these data uses cases"
-        )
-        assert history.banner_title is None
-        assert history.link_label == "Manage your privacy"
-        assert history.confirmation_button_label is None
-        assert history.reject_button_label is None
-        assert history.acknowledgement_button_label is None
-        assert history.version == 2.0
-        assert history.created_at is not None
-        assert history.updated_at is not None
-
-    def test_update_one_field(
-        self,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        request_data,
-        privacy_experience_privacy_center_link,
-    ):
-        assert privacy_experience_privacy_center_link.disabled is False
-
-        data = {"id": privacy_experience_privacy_center_link.id, "disabled": True}
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
-
-        resp = api_client.patch(url, headers=auth_header, json=[data])
-        assert resp.status_code == 200
-        assert resp.json()[0]["id"] == privacy_experience_privacy_center_link.id
-        assert resp.json()[0]["disabled"] is True
-
-        db.refresh(privacy_experience_privacy_center_link)
-
-        assert privacy_experience_privacy_center_link.disabled is True
+        # Assert current preference is displayed for fides user device id
+        assert data["privacy_notices"][0]["consent_mechanism"] == "opt_in"
+        assert data["privacy_notices"][0]["default_preference"] == "opt_out"
+        assert data["privacy_notices"][0]["current_preference"] == "opt_in"
+        assert data["privacy_notices"][0]["outdated_preference"] is None

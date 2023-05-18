@@ -1,32 +1,23 @@
 from typing import List, Optional
 
-from fastapi import Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Request, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
-from pydantic import conlist
 from sqlalchemy.orm import Session
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_201_CREATED,
-    HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-)
+from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
+from fides.api.ops.models.privacy_request import ProvidedIdentity
 from fides.api.ops.oauth.utils import verify_oauth_client
-from fides.api.ops.schemas.privacy_experience import (
-    PrivacyExperienceCreate,
-    PrivacyExperienceResponse,
-    PrivacyExperienceWithId,
-)
+from fides.api.ops.schemas.privacy_experience import PrivacyExperienceResponse
 from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.consent_util import get_fides_user_device_id_provided_identity
 
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
 
@@ -64,16 +55,27 @@ def privacy_experience_list(
     region: Optional[PrivacyNoticeRegion] = None,
     component: Optional[ComponentType] = None,
     has_notices: Optional[bool] = None,
+    has_config: Optional[bool] = None,
+    fides_user_device_id: Optional[str] = None,
+    request: Request,
 ) -> AbstractPage[PrivacyExperience]:
     """
-    Return a paginated list of `PrivacyExperience` records in this system.
-    Includes some query params to help filter the list if needed. Returns
-    relevant privacy notices embedded in the experience response.
+    Returns a list of PrivacyExperience records for individual regions with
+    relevant privacy notices embedded in the response.
 
-    'region' and 'show_disabled' query params are passed along to further filter
+    'show_disabled' query params are passed along to further filter
     notices as well.
+
+    'fides_user_device_id' query param will stash the current preferences of the given user
+    alongside each notice where applicable.
     """
     logger.info("Finding all Privacy Experiences with pagination params '{}'", params)
+    fides_user_provided_identity: Optional[ProvidedIdentity] = None
+    if fides_user_device_id:
+        fides_user_provided_identity = get_fides_user_device_id_provided_identity(
+            db=db, fides_user_device_id=fides_user_device_id
+        )
+
     experience_query = db.query(PrivacyExperience)
 
     if show_disabled is False:
@@ -81,12 +83,18 @@ def privacy_experience_list(
             PrivacyExperience.disabled.is_(False)
         )
     if region is not None:
-        experience_query = experience_query.filter(
-            PrivacyExperience.regions.contains([region])
-        )
+        experience_query = experience_query.filter(PrivacyExperience.region == region)
     if component is not None:
         experience_query = experience_query.filter(
             PrivacyExperience.component == component
+        )
+    if has_config is True:
+        experience_query = experience_query.filter(
+            PrivacyExperience.experience_config_id.isnot(None)
+        )
+    if has_config is False:
+        experience_query = experience_query.filter(
+            PrivacyExperience.experience_config_id.is_(None)
         )
 
     results: List[PrivacyExperience] = []
@@ -95,40 +103,14 @@ def privacy_experience_list(
     ):
         privacy_notices: List[
             PrivacyNotice
-        ] = privacy_experience.get_related_privacy_notices(db, region, show_disabled)
+        ] = privacy_experience.get_related_privacy_notices(
+            db, show_disabled, fides_user_provided_identity
+        )
         privacy_experience.privacy_notices = privacy_notices
         if not (has_notices and not privacy_notices):
             results.append(privacy_experience)
 
     return fastapi_paginate(results, params=params)
-
-
-@router.post(
-    urls.PRIVACY_EXPERIENCE,
-    status_code=HTTP_201_CREATED,
-    response_model=List[PrivacyExperienceResponse],
-    dependencies=[
-        Security(verify_oauth_client, scopes=[scope_registry.PRIVACY_EXPERIENCE_CREATE])
-    ],
-)
-def privacy_experience_create(
-    *,
-    db: Session = Depends(deps.get_db),
-    bulk_experience_data: conlist(PrivacyExperienceCreate, max_items=50),  # type: ignore
-) -> List[PrivacyExperience]:
-    """
-    Bulk create Privacy Experiences. Returns related notices in the response.
-    """
-    logger.info("Creating privacy experiences")
-    experiences: List[PrivacyExperience] = []
-    for experience_data in bulk_experience_data:
-        experience = PrivacyExperience.create(
-            db, data=experience_data.dict(exclude_unset=True), check_name=False
-        )
-        # Temporarily stash the privacy notices on the experience for display
-        experience.privacy_notices = experience.get_related_privacy_notices(db)
-        experiences.append(experience)
-    return experiences
 
 
 @router.get(
@@ -144,22 +126,21 @@ def privacy_experience_detail(
     db: Session = Depends(deps.get_db),
     privacy_experience_id: str,
     show_disabled: Optional[bool] = True,
-    region: Optional[PrivacyNoticeRegion] = None,
+    fides_user_device_id: Optional[str] = None,
+    request: Request,
 ) -> PrivacyExperience:
     """
-    Get privacy experience with embedded notices.
+    Return a privacy experience for a given region with relevant notices embedded.
 
-    show_disabled and region_query params are passed onto optionally filter the embedded notices.
+    show_disabled query params are passed onto optionally filter the embedded notices.
+
+    'fides_user_device_id' query param will stash the current preferences of the given user
+    alongside each notice where applicable.
     """
-    logger.info("Fetching privacy experience with it {}", privacy_experience_id)
+    logger.info("Fetching privacy experience with id '{}'.", privacy_experience_id)
     experience: PrivacyExperience = get_privacy_experience_or_error(
         db, privacy_experience_id
     )
-    if region and region not in experience.regions:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Region query param {region.value} not applicable for privacy experience {privacy_experience_id}.",
-        )
 
     if show_disabled is False and experience.disabled:
         raise HTTPException(
@@ -167,53 +148,14 @@ def privacy_experience_detail(
             detail=f"Query param show_disabled=False not applicable for disabled privacy experience {privacy_experience_id}.",
         )
 
+    fides_user_provided_identity: Optional[ProvidedIdentity] = None
+    if fides_user_device_id:
+        fides_user_provided_identity = get_fides_user_device_id_provided_identity(
+            db=db, fides_user_device_id=fides_user_device_id
+        )
+
     # Temporarily stash the privacy notices on the experience for display
     experience.privacy_notices = experience.get_related_privacy_notices(
-        db, region, show_disabled
+        db, show_disabled, fides_user_provided_identity
     )
     return experience
-
-
-def ensure_unique_ids(
-    privacy_experience_updates: List[PrivacyExperienceWithId],
-) -> None:
-    """Verifies privacy experience ids are unique in request to avoid unexpected behavior"""
-    request_ids: List[str] = [update.id for update in privacy_experience_updates]
-    if len(request_ids) != len(set(request_ids)):
-        raise HTTPException(
-            HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Duplicate privacy experience ids submitted in request.",
-        )
-
-
-@router.patch(
-    urls.PRIVACY_EXPERIENCE,
-    status_code=HTTP_200_OK,
-    response_model=List[PrivacyExperienceResponse],
-    dependencies=[
-        Security(verify_oauth_client, scopes=[scope_registry.PRIVACY_EXPERIENCE_UPDATE])
-    ],
-)
-def privacy_experience_bulk_update(
-    *,
-    db: Session = Depends(deps.get_db),
-    privacy_experience_updates: conlist(PrivacyExperienceWithId, max_items=50),  # type: ignore
-) -> List[PrivacyExperience]:
-    """
-    Bulk update privacy experiences.  Related notices are returned in the response.
-    """
-    ensure_unique_ids(privacy_experience_updates)
-
-    loaded_privacy_experiences: List[PrivacyExperience] = [
-        get_privacy_experience_or_error(db, experience_update.id)
-        for experience_update in privacy_experience_updates
-    ]
-
-    return [
-        existing_experience.update(
-            db, data=experience_update_data.dict(exclude_unset=True)
-        )
-        for (existing_experience, experience_update_data) in zip(
-            loaded_privacy_experiences, privacy_experience_updates
-        )
-    ]

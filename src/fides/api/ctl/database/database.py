@@ -40,9 +40,11 @@ def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
     command.upgrade(alembic_config, revision)
 
 
-async def init_db(database_url: str, samples: bool = False) -> None:
+async def migrate_db(database_url: str, samples: bool = False) -> None:
     """
-    Runs the migrations and creates all of the database objects.
+    Runs migrations and creates database objects if needed.
+
+    Safe to run on an existing database when upgrading Fides version.
     """
     log.info("Initializing database")
     alembic_config = get_alembic_config(database_url)
@@ -103,7 +105,7 @@ async def configure_db(database_url: str, samples: bool = False) -> None:
     """Set up the db to be used by the app."""
     try:
         create_db_if_not_exists(database_url)
-        await init_db(database_url, samples=samples)
+        await migrate_db(database_url, samples=samples)
     except InvalidCiphertextError as cipher_error:
         log.error(
             "Unable to configure database due to a decryption error! Check to ensure your `app_encryption_key` has not changed."

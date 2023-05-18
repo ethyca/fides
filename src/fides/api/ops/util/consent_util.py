@@ -6,11 +6,8 @@ from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.privacy_notice import EnforcementLevel
-from fides.api.ops.models.privacy_preference import (
-    PrivacyPreferenceHistory,
-    UserConsentPreference,
-)
+from fides.api.ops.models.privacy_notice import EnforcementLevel, UserConsentPreference
+from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
