@@ -5,7 +5,7 @@ import pytest
 from requests import Response
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.schemas.saas.saas_config import SaaSRequest
+from fides.api.schemas.saas.saas_config import HttpRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.schemas.saas.strategy_configuration import OffsetPaginationConfiguration
 from fides.api.service.pagination.pagination_strategy_offset import (
@@ -220,7 +220,7 @@ def test_validate_request():
             "limit": 10,
         },
     }
-    SaaSRequest(
+    HttpRequest(
         method="GET", path="/test", query_params=query_params, pagination=pagination
     )
 
@@ -236,7 +236,7 @@ def test_validate_request_missing_param():
         },
     }
     with pytest.raises(ValueError) as exc:
-        SaaSRequest(
+        HttpRequest(
             method="GET", path="/test", query_params=query_params, pagination=pagination
         )
     assert "Query param 'page' not found." in str(exc.value)

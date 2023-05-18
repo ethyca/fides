@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from fideslang.models import FidesCollectionKey, FidesDatasetReference
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, Extra, root_validator, validator
+from pydantic import BaseModel, EmailStr, Extra, root_validator, validator
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.graph.config import (
@@ -83,6 +83,14 @@ class QueryParam(BaseModel):
 
 
 class SaaSRequest(BaseModel):
+    """
+    A base class to encapsulate the different request types that can be leveraged in a SaaS config.
+
+    Currently, the two supported request subtypes are `HttpRequest` and `EmailRequest`
+    """
+
+
+class HttpRequest(SaaSRequest):
     """
     A single request with static or dynamic path, headers, query, and body params.
     Also specifies the names and sources for the param values needed to build the request.
@@ -206,12 +214,53 @@ class SaaSRequest(BaseModel):
         return values
 
 
+### Email requests
+
+
+class EmailRequestIdentityTypes(BaseModel):
+    email: bool
+    phone_number: bool
+    cookie_ids: List[str] = []
+
+
+class EmailRequestAdvancedSettings(BaseModel):
+    """Advanced EmailRequest settings"""
+
+    identity_types: EmailRequestIdentityTypes
+
+
+class EmailRequest(BaseModel):
+    """Generic schema for email requests"""
+
+    third_party_vendor_name: str
+    recipient_email_address: EmailStr
+    # is below field no longer needed if we support an EmailRequest config on `test_request` root-level field?
+    # test_email_address: Optional[EmailStr]
+    advanced_settings: EmailRequestAdvancedSettings
+
+    @root_validator
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """At least one identity or browser identity needs to be specified on setup"""
+        advanced_settings = values.get("advanced_settings")
+        if not advanced_settings:
+            raise ValueError("Must supply advanced settings.")
+
+        identities = advanced_settings.identity_types
+        if (
+            not identities.email
+            and not identities.phone_number
+            and not identities.cookie_ids
+        ):
+            raise ValueError("Must supply at least one identity_type.")
+        return values
+
+
 class SaaSRequestMap(BaseModel):
     """A map of actions to SaaS requests"""
 
-    read: Union[SaaSRequest, List[SaaSRequest]] = []
-    update: Optional[SaaSRequest]
-    delete: Optional[SaaSRequest]
+    read: Union[HttpRequest, List[HttpRequest]] = []
+    update: Optional[HttpRequest]
+    delete: Optional[HttpRequest]
 
 
 class ConsentRequestMap(BaseModel):
@@ -223,14 +272,14 @@ class ConsentRequestMap(BaseModel):
     @validator("opt_in", "opt_out")
     def validate_list_field(
         cls,
-        field_value: Union[SaaSRequest, List[SaaSRequest]],
-    ) -> List[SaaSRequest]:
+        field_value: Union[HttpRequest, List[HttpRequest]],
+    ) -> List[HttpRequest]:
         """Convert all opt_in/opt_out request formats to a list of requests.
 
         We allow either a single request or a list of requests to be defined, but this makes
         sure that everything is a list once that data has been read in.
         """
-        if isinstance(field_value, SaaSRequest):
+        if isinstance(field_value, HttpRequest):
             return [field_value]
         return field_value
 
@@ -360,10 +409,11 @@ class SaaSConfig(SaaSConfigBase):
     external_references: Optional[List[ExternalDatasetReference]]
     client_config: ClientConfig
     endpoints: List[Endpoint]
-    test_request: SaaSRequest
-    data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
+    test_request: SaaSRequest  # could this be an email request?
+    # data_protection_request: Optional[HttpRequest] = None  # GDPR Delete
     rate_limit_config: Optional[RateLimitConfig]
     consent_requests: Optional[ConsentRequestMap]
+    data_erasure_request: Optional[SaaSRequest]
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
@@ -376,7 +426,7 @@ class SaaSConfig(SaaSConfigBase):
         for endpoint in self.endpoints:
             fields: List[Field] = []
 
-            read_requests: List[SaaSRequest] = []
+            read_requests: List[HttpRequest] = []
             if endpoint.requests.read:
                 read_requests = (
                     endpoint.requests.read

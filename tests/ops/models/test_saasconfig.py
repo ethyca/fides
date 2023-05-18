@@ -10,9 +10,9 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.saas.saas_config import (
     ConnectorParam,
     Endpoint,
+    HttpRequest,
     ParamValue,
     SaaSConfig,
-    SaaSRequest,
 )
 
 
@@ -25,11 +25,11 @@ def test_saas_configs(saas_example_config) -> None:
 @pytest.mark.unit_saas
 def test_saas_request_without_method_or_path():
     with pytest.raises(ValidationError) as exc:
-        SaaSRequest(path="/test")
+        HttpRequest(path="/test")
     assert "A request must specify a method" in str(exc.value)
 
     with pytest.raises(ValidationError) as exc:
-        SaaSRequest(method="GET")
+        HttpRequest(method="GET")
     assert "A request must specify a path" in str(exc.value)
 
 
@@ -39,7 +39,7 @@ def test_saas_request_override():
     Verify that valid request configs with override function
     can be deserialized into SaaSRequest
     """
-    SaaSRequest(request_override="test_override")
+    HttpRequest(request_override="test_override")
 
     pv = ParamValue(
         name="test_param",
@@ -49,9 +49,9 @@ def test_saas_request_override():
             )
         ],
     )
-    SaaSRequest(request_override="test_override", param_values=[pv])
+    HttpRequest(request_override="test_override", param_values=[pv])
 
-    SaaSRequest(
+    HttpRequest(
         request_override="test_override",
         param_values=[pv],
         grouped_inputs=["test_param"],
@@ -65,15 +65,15 @@ def test_saas_request_override_invalid_properties():
     and various additional, unallowed properties are properly rejected
     """
     with pytest.raises(ValidationError) as exc:
-        SaaSRequest(request_override="test_override", path="/test")
+        HttpRequest(request_override="test_override", path="/test")
     assert "Invalid properties" in str(exc.value) and "path" in str(exc.value)
 
     with pytest.raises(ValidationError) as exc:
-        SaaSRequest(request_override="test_override", method="GET")
+        HttpRequest(request_override="test_override", method="GET")
     assert "Invalid properties" in str(exc.value) and "method" in str(exc.value)
 
     with pytest.raises(ValidationError) as exc:
-        SaaSRequest(request_override="test_override", path="/test", method="GET")
+        HttpRequest(request_override="test_override", path="/test", method="GET")
     assert (
         "Invalid properties" in str(exc.value)
         and "path" in str(exc.value)
@@ -81,7 +81,7 @@ def test_saas_request_override_invalid_properties():
     )
 
     with pytest.raises(ValidationError) as exc:
-        SaaSRequest(request_override="test_override", body="testbody")
+        HttpRequest(request_override="test_override", body="testbody")
     assert "Invalid properties" in str(exc.value) and "body" in str(exc.value)
 
 
@@ -256,12 +256,12 @@ class TestConnectorParam:
             name="tickets",
             requests={
                 "read": [
-                    SaaSRequest(
+                    HttpRequest(
                         method="GET",
                         path="/tickets",
                         param_values=[ParamValue(name="email", identity="email")],
                     ),
-                    SaaSRequest(
+                    HttpRequest(
                         method="GET",
                         path="/tickets",
                         param_values=[
@@ -277,7 +277,7 @@ class TestConnectorParam:
             name="tickets",
             requests={
                 "read": [
-                    SaaSRequest(
+                    HttpRequest(
                         method="GET",
                         path="/tickets",
                         grouped_inputs=["a", "b"],
@@ -304,7 +304,7 @@ class TestConnectorParam:
                             ),
                         ],
                     ),
-                    SaaSRequest(
+                    HttpRequest(
                         method="GET",
                         path="/tickets",
                         grouped_inputs=["a", "b"],
@@ -341,7 +341,7 @@ class TestConnectorParam:
                 name="tickets",
                 requests={
                     "read": [
-                        SaaSRequest(
+                        HttpRequest(
                             method="GET",
                             path="/tickets",
                             grouped_inputs=["a", "b"],
@@ -368,7 +368,7 @@ class TestConnectorParam:
                                 ),
                             ],
                         ),
-                        SaaSRequest(
+                        HttpRequest(
                             method="GET",
                             path="/tickets",
                             grouped_inputs=["b", "c"],

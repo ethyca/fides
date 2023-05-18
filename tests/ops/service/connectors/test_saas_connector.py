@@ -15,7 +15,7 @@ from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
-from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
+from fides.api.schemas.saas.saas_config import HttpRequest, ParamValue, SaaSConfig
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas_connector import SaaSConnector
@@ -32,7 +32,7 @@ class TestSaasConnector:
         """
         Test that _handle_errored_response method correctly clears an errored response if `ignore_errors` is True
         """
-        fake_request: SaaSRequest = SaaSRequest(
+        fake_request: HttpRequest = HttpRequest(
             path="test/path", method=HTTPMethod.GET, ignore_errors=True
         )
         fake_errored_response: Response = Response()
@@ -51,7 +51,7 @@ class TestSaasConnector:
         """
         Test that _handle_errored_response method doesn't touch an errored response if `ignore_errors` is False.
         """
-        fake_request: SaaSRequest = SaaSRequest(
+        fake_request: HttpRequest = HttpRequest(
             path="test/path", method=HTTPMethod.GET, ignore_errors=False
         )
         fake_errored_response: Response = Response()
@@ -72,7 +72,7 @@ class TestSaasConnector:
         """
         Test that _handle_errored_response method doesn't touch a good (non-errored) response.
         """
-        fake_request: SaaSRequest = SaaSRequest(
+        fake_request: HttpRequest = HttpRequest(
             path="test/path", method=HTTPMethod.GET, ignore_errors=True
         )
         nested_field_key = "nested_field"
@@ -92,7 +92,7 @@ class TestSaasConnector:
 
     def test_unwrap_response_data_with_data_path(self):
         nested_field_key = "nested_field"
-        fake_request: SaaSRequest = SaaSRequest(
+        fake_request: HttpRequest = HttpRequest(
             path="test/path",
             method=HTTPMethod.GET,
             ignore_errors=True,
@@ -112,7 +112,7 @@ class TestSaasConnector:
         assert response_body[nested_field_key] == unwrapped
 
     def test_unwrap_response_data_no_data_path(self):
-        fake_request: SaaSRequest = SaaSRequest(
+        fake_request: HttpRequest = HttpRequest(
             path="test/path", method=HTTPMethod.GET, ignore_errors=True
         )
         nested_field_key = "nested_field"
@@ -361,7 +361,7 @@ class TestSaaSConnectorMethods:
     ):
         connector: SaaSConnector = get_connector(segment_connection_config)
         connector.set_saas_request_state(
-            SaaSRequest(path="test_path", method=HTTPMethod.GET)
+            HttpRequest(path="test_path", method=HTTPMethod.GET)
         )
         # Base ClientConfig uses bearer auth
         assert connector.get_client_config().authentication.strategy == "bearer"
@@ -369,7 +369,7 @@ class TestSaaSConnectorMethods:
         segment_user_endpoint = next(
             end for end in connector.saas_config.endpoints if end.name == "segment_user"
         )
-        saas_request: SaaSRequest = segment_user_endpoint.requests.read
+        saas_request: HttpRequest = segment_user_endpoint.requests.read
         connector.set_saas_request_state(saas_request)
 
         client = connector.create_client()
@@ -384,11 +384,11 @@ class TestSaaSConnectorMethods:
         segment_connection_config.saas_config["rate_limit_config"] = rate_limit_config
         connector: SaaSConnector = get_connector(segment_connection_config)
         connector.set_saas_request_state(
-            SaaSRequest(path="test_path", method=HTTPMethod.GET)
+            HttpRequest(path="test_path", method=HTTPMethod.GET)
         )
         assert connector.get_rate_limit_config().enabled is True
 
-        request_with_rate_limits = SaaSRequest(
+        request_with_rate_limits = HttpRequest(
             path="test_path",
             method=HTTPMethod.GET,
             rate_limit_config={"enabled": False},
@@ -410,12 +410,12 @@ class TestConsentRequests:
         )
 
         opt_in_request: List[
-            SaaSRequest
+            HttpRequest
         ] = connector._get_consent_requests_by_preference(opt_in=True)
         assert opt_in_request[0].path == "/allowlists/add"
 
         opt_out_request: List[
-            SaaSRequest
+            HttpRequest
         ] = connector._get_consent_requests_by_preference(opt_in=False)
 
         assert opt_out_request[0].path == "/allowlists/delete"
@@ -658,7 +658,7 @@ class TestRelevantConsentIdentities:
     ):
         connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
 
-        request = SaaSRequest(
+        request = HttpRequest(
             method=HTTPMethod.POST,
             path="/allowlists/add",
             param_values=[ParamValue(identity="email", name="email")],
@@ -671,7 +671,7 @@ class TestRelevantConsentIdentities:
     ):
         connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
 
-        request = SaaSRequest(
+        request = HttpRequest(
             method=HTTPMethod.POST,
             path="/allowlists/add",
             param_values=[ParamValue(identity="email", name="email")],

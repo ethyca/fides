@@ -44,7 +44,7 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.policy import Rule
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.redis_cache import Identity
-from fides.api.schemas.saas.saas_config import SaaSRequest
+from fides.api.schemas.saas.saas_config import HttpRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors.dynamodb_connector import DynamoDBConnector
 from fides.api.service.connectors.saas_connector import SaaSConnector
@@ -594,7 +594,7 @@ def test_create_and_process_erasure_request_saas(
 
     connector = SaaSConnector(mailchimp_connection_config)
     connector.set_saas_request_state(
-        SaaSRequest(path="test_path", method=HTTPMethod.GET)
+        HttpRequest(path="test_path", method=HTTPMethod.GET)
     )  # dummy request as connector requires it
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,

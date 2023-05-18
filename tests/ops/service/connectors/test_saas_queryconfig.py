@@ -11,7 +11,7 @@ from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
+from fides.api.schemas.saas.saas_config import HttpRequest, ParamValue, SaaSConfig
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors.saas_query_config import SaaSQueryConfig
 from fides.core.config import CONFIG
@@ -430,7 +430,7 @@ class TestSaaSQueryConfig:
         assert saas_request is None
 
         # Define delete request on conversations endpoint
-        endpoints["conversations"].requests.delete = SaaSRequest(
+        endpoints["conversations"].requests.delete = HttpRequest(
             method="DELETE", path="/api/0/<conversation>/<conversation_id>/"
         )
         # Delete endpoint not used because masking_strict is True
@@ -445,18 +445,18 @@ class TestSaaSQueryConfig:
         CONFIG.execution.masking_strict = False
 
         # Now delete endpoint is selected as conversations masking request
-        saas_request: SaaSRequest = query_config.get_masking_request()
+        saas_request: HttpRequest = query_config.get_masking_request()
         assert saas_request.path == "/api/0/<conversation>/<conversation_id>/"
         assert saas_request.method == "DELETE"
 
         # Define GDPR Delete
-        data_protection_request = SaaSRequest(method="PUT", path="/api/0/gdpr_delete")
+        data_protection_request = HttpRequest(method="PUT", path="/api/0/gdpr_delete")
         query_config = SaaSQueryConfig(
             conversations, endpoints, {}, data_protection_request
         )
 
         # Assert GDPR Delete takes priority over Delete
-        saas_request: SaaSRequest = query_config.get_masking_request()
+        saas_request: HttpRequest = query_config.get_masking_request()
         assert saas_request.path == "/api/0/gdpr_delete"
         assert saas_request.method == "PUT"
 
@@ -569,7 +569,7 @@ class TestSaaSQueryConfig:
             {},
         )
 
-        read_request = SaaSRequest(  # Contrived request - we often don't have request bodies for read requests.
+        read_request = HttpRequest(  # Contrived request - we often don't have request bodies for read requests.
             method="GET",
             path="/api/0/user/",
             body='{"email": "<email>"}',

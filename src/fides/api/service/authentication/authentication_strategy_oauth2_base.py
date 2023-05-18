@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException, OAuth2TokenException
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.schemas.saas.saas_config import ClientConfig, SaaSRequest
+from fides.api.schemas.saas.saas_config import ClientConfig, HttpRequest
 from fides.api.schemas.saas.strategy_configuration import OAuth2BaseConfiguration
 from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -50,7 +50,7 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
     @staticmethod
     def _call_token_request(
         action: Literal["access", "refresh"],
-        token_request: SaaSRequest,
+        token_request: HttpRequest,
         connection_config: ConnectionConfig,
     ) -> Dict[str, Any]:
         """

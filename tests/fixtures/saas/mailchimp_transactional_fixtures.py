@@ -13,7 +13,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.schemas.saas.saas_config import SaaSRequest
+from fides.api.schemas.saas.saas_config import HttpRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors import SaaSConnector
 from fides.api.util.saas_util import (
@@ -115,7 +115,7 @@ def reset_mailchimp_transactional_data(
     """
     connector = SaaSConnector(mailchimp_transactional_connection_config)
     connector.set_saas_request_state(
-        SaaSRequest(path="test_path", method=HTTPMethod.GET)
+        HttpRequest(path="test_path", method=HTTPMethod.GET)
     )  # dummy request as connector requires it
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,

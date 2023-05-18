@@ -13,7 +13,7 @@ from fides.api.graph.config import ScalarField
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.saas.saas_config import Endpoint, SaaSConfig, SaaSRequest
+from fides.api.schemas.saas.saas_config import Endpoint, HttpRequest, SaaSConfig
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.connectors.query_config import QueryConfig
 from fides.api.util import saas_util
@@ -39,7 +39,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         node: TraversalNode,
         endpoints: Dict[str, Endpoint],
         secrets: Dict[str, Any],
-        data_protection_request: Optional[SaaSRequest] = None,
+        data_protection_request: Optional[HttpRequest] = None,
         privacy_request: Optional[PrivacyRequest] = None,
     ):
         super().__init__(node)
@@ -49,9 +49,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self.data_protection_request = data_protection_request
         self.privacy_request = privacy_request
         self.action: Optional[str] = None
-        self.current_request: Optional[SaaSRequest] = None
+        self.current_request: Optional[HttpRequest] = None
 
-    def get_read_requests_by_identity(self) -> List[SaaSRequest]:
+    def get_read_requests_by_identity(self) -> List[HttpRequest]:
         """
         Returns the appropriate request configs based on the current collection and identity
         """
@@ -74,8 +74,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         return read_requests if not filtered_requests else filtered_requests
 
     def _requests_using_identity(
-        self, requests: List[SaaSRequest]
-    ) -> List[SaaSRequest]:
+        self, requests: List[HttpRequest]
+    ) -> List[HttpRequest]:
         """Filters for the requests using the provided identity"""
 
         return [
@@ -90,14 +90,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
     def get_erasure_request_by_action(
         self, action: Literal["update", "delete"]
-    ) -> Optional[SaaSRequest]:
+    ) -> Optional[HttpRequest]:
         """
         Returns the appropriate request config based on the
         current collection and preferred erasure action (update or delete)
         """
 
         collection_name = self.node.address.collection
-        request: Optional[SaaSRequest] = getattr(
+        request: Optional[HttpRequest] = getattr(
             self.endpoints[collection_name].requests, action
         )
         if request:
@@ -112,16 +112,16 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             )
         return request
 
-    def get_masking_request(self) -> Optional[SaaSRequest]:
+    def get_masking_request(self) -> Optional[HttpRequest]:
         """
         Returns a tuple of the preferred action and SaaSRequest to use for masking.
         An update request is preferred, but we can use a gdpr delete endpoint or
         delete endpoint if not MASKING_STRICT.
         """
 
-        update: Optional[SaaSRequest] = self.get_erasure_request_by_action("update")
-        gdpr_delete: Optional[SaaSRequest] = None
-        delete: Optional[SaaSRequest] = None
+        update: Optional[HttpRequest] = self.get_erasure_request_by_action("update")
+        gdpr_delete: Optional[HttpRequest] = None
+        delete: Optional[HttpRequest] = None
 
         if not CONFIG.execution.masking_strict:
             gdpr_delete = self.data_protection_request
@@ -155,7 +155,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self,
         input_data: Dict[str, List[Any]],
         policy: Optional[Policy],
-        read_request: SaaSRequest,
+        read_request: HttpRequest,
     ) -> List[SaaSRequestParams]:
         """
         Takes the identity and reference values from input_data and combines them
@@ -204,7 +204,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         return request_params
 
-    def _filtered_secrets(self, current_request: SaaSRequest) -> Dict[str, Any]:
+    def _filtered_secrets(self, current_request: HttpRequest) -> Dict[str, Any]:
         """Return a filtered map of secrets used by the request"""
         param_names = [
             param_value.connector_param
@@ -315,7 +315,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         The fields in the row are masked according to the policy and added to the request body
         if specified by the body field of the masking request.
         """
-        current_request: SaaSRequest = self.get_masking_request()  # type: ignore
+        current_request: HttpRequest = self.get_masking_request()  # type: ignore
         param_values: Dict[str, Any] = self.generate_update_param_values(
             row, policy, request, current_request
         )
@@ -326,7 +326,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self,
         policy: Policy,
         privacy_request: PrivacyRequest,
-        consent_request: SaaSRequest,
+        consent_request: HttpRequest,
     ) -> SaaSRequestParams:
         """
         Prepares SaaSRequestParams with the info needed to make an opt-out or opt-in http request.
@@ -345,7 +345,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         row: Row,
         policy: Policy,
         privacy_request: PrivacyRequest,
-        saas_request: SaaSRequest,
+        saas_request: HttpRequest,
     ) -> Dict[str, Any]:
         """
         A utility that generates the update request param values
@@ -415,7 +415,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         return param_values
 
     def generate_update_request_params(
-        self, param_values: dict[str, Any], update_request: SaaSRequest
+        self, param_values: dict[str, Any], update_request: HttpRequest
     ) -> SaaSRequestParams:
         """
         A utility that, based on the provided param values and update request,

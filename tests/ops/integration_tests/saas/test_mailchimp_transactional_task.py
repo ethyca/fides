@@ -12,7 +12,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.schemas.saas.saas_config import SaaSRequest
+from fides.api.schemas.saas.saas_config import HttpRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors import SaaSConnector, get_connector
 from fides.api.service.privacy_request.request_runner_service import (
@@ -88,7 +88,7 @@ async def test_mailchimp_transactional_consent_request_task_old_workflow(
 
     connector = SaaSConnector(mailchimp_transactional_connection_config)
     connector.set_saas_request_state(
-        SaaSRequest(path="test_path", method=HTTPMethod.GET)
+        HttpRequest(path="test_path", method=HTTPMethod.GET)
     )  # dummy request as connector requires it
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
@@ -260,7 +260,7 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow(
 
     connector = SaaSConnector(mailchimp_transactional_connection_config)
     connector.set_saas_request_state(
-        SaaSRequest(path="test_path", method=HTTPMethod.GET)
+        HttpRequest(path="test_path", method=HTTPMethod.GET)
     )  # dummy request as connector requires it
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,

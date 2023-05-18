@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, root_validator, validator
 
-from fides.api.schemas.saas.saas_config import Header, QueryParam, SaaSRequest
+from fides.api.schemas.saas.saas_config import Header, HttpRequest, QueryParam
 from fides.api.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
 
 
@@ -144,8 +144,8 @@ class OAuth2BaseConfiguration(StrategyConfiguration):
     """
 
     expires_in: Optional[int]
-    token_request: SaaSRequest
-    refresh_request: Optional[SaaSRequest]
+    token_request: HttpRequest
+    refresh_request: Optional[HttpRequest]
 
 
 class OAuth2AuthorizationCodeConfiguration(OAuth2BaseConfiguration):
@@ -154,4 +154,4 @@ class OAuth2AuthorizationCodeConfiguration(OAuth2BaseConfiguration):
     the authorization request for the Authorization Code flow.
     """
 
-    authorization_request: SaaSRequest
+    authorization_request: HttpRequest

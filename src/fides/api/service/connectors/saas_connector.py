@@ -19,8 +19,8 @@ from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.saas.saas_config import (
     ClientConfig,
     ConsentRequestMap,
+    HttpRequest,
     ParamValue,
-    SaaSRequest,
 )
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.connectors.base_connector import BaseConnector
@@ -55,7 +55,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.secrets = cast(Dict, configuration.secrets)
         self.current_collection_name: Optional[str] = None
         self.current_privacy_request: Optional[PrivacyRequest] = None
-        self.current_saas_request: Optional[SaaSRequest] = None
+        self.current_saas_request: Optional[HttpRequest] = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
         """
@@ -105,7 +105,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.current_collection_name = node.address.collection
         self.current_privacy_request = privacy_request
 
-    def set_saas_request_state(self, current_saas_request: SaaSRequest) -> None:
+    def set_saas_request_state(self, current_saas_request: HttpRequest) -> None:
         """
         Sets the class state for the current saas request
         """
@@ -121,7 +121,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
-        test_request: SaaSRequest = self.saas_config.test_request
+        test_request: HttpRequest = self.saas_config.test_request
         self.set_saas_request_state(test_request)
         prepared_request = map_param_values(
             "test",
@@ -170,9 +170,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # 1) If a collection can be retrieved by using different identities such as email or phone number
         # 2) The complete set of results for a collection is made up of subsets. For example, to retrieve all tickets
         #    we must change a 'status' query param from 'active' to 'pending' and finally 'closed'
-        read_requests: List[SaaSRequest] = query_config.get_read_requests_by_identity()
+        read_requests: List[HttpRequest] = query_config.get_read_requests_by_identity()
         delete_request: Optional[
-            SaaSRequest
+            HttpRequest
         ] = query_config.get_erasure_request_by_action("delete")
 
         if not read_requests:
@@ -266,7 +266,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self,
         prepared_request: SaaSRequestParams,
         identity_data: Dict[str, Any],
-        saas_request: SaaSRequest,
+        saas_request: HttpRequest,
     ) -> Tuple[List[Row], Optional[SaaSRequestParams]]:
         """
         Executes the prepared request and handles response postprocessing and pagination.
@@ -431,7 +431,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     @staticmethod
     def relevant_consent_identities(
-        matching_consent_requests: List[SaaSRequest], identity_data: Dict[str, Any]
+        matching_consent_requests: List[HttpRequest], identity_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Pull the identities that are relevant to consent requests on this connector"""
         related_identities: Dict[str, Any] = {}
@@ -480,7 +480,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             )
 
         matching_consent_requests: List[
-            SaaSRequest
+            HttpRequest
         ] = self._get_consent_requests_by_preference(should_opt_in)
 
         query_config.action = (
@@ -544,7 +544,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     @staticmethod
     def _handle_errored_response(
-        saas_request: SaaSRequest, response: Response
+        saas_request: HttpRequest, response: Response
     ) -> Response:
         """
         Checks if given Response is an error and if SaasRequest is configured to ignore errors.
@@ -560,7 +560,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         return response
 
     @staticmethod
-    def _unwrap_response_data(saas_request: SaaSRequest, response: Response) -> Any:
+    def _unwrap_response_data(saas_request: HttpRequest, response: Response) -> Any:
         """
         Unwrap given Response using data_path in the given SaasRequest
         """
@@ -620,7 +620,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         privacy_request: PrivacyRequest,
         rows: List[Row],
         query_config: SaaSQueryConfig,
-        masking_request: SaaSRequest,
+        masking_request: HttpRequest,
         secrets: Any,
     ) -> int:
         """
@@ -660,7 +660,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             )
             raise FidesopsException(str(exc))
 
-    def _get_consent_requests_by_preference(self, opt_in: bool) -> List[SaaSRequest]:
+    def _get_consent_requests_by_preference(self, opt_in: bool) -> List[HttpRequest]:
         """Helper to either pull out the opt-in requests or the opt out requests that were defined."""
         consent_requests: Optional[
             ConsentRequestMap

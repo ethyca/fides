@@ -13,7 +13,7 @@ from fides.api.common_exceptions import FidesopsException, ValidationError
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
 from fides.api.graph.config import Collection, CollectionAddress, Field, GraphDataset
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.saas.saas_config import SaaSRequest
+from fides.api.schemas.saas.saas_config import HttpRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.core.config.helpers import load_file
 
@@ -295,7 +295,7 @@ def assign_placeholders(value: Any, param_values: Dict[str, Any]) -> Optional[An
 def map_param_values(
     action: str,
     context: str,
-    current_request: SaaSRequest,
+    current_request: HttpRequest,
     param_values: Dict[str, Any],
 ) -> SaaSRequestParams:
     """
