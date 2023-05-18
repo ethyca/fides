@@ -102,8 +102,9 @@ const retrieveEffectiveGeolocation = async(options: FidesOptions, geolocation: U
           options.debug
       );
     } else {
-      throw new Error(
-          `User location is required but could not be retrieved because geolocation is disabled.`
+      debugLog(
+          options.debug,
+          `User location is required but could not be retrieved because geolocation is disabled.`,
       );
     }
   }

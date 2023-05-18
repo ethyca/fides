@@ -5,7 +5,6 @@ import {debugLog} from "./consent-utils";
  * Update to show the pre-existing modal link in the DOM to trigger the modal
  */
 export const showModalLinkAndSetOnClick = (debug: boolean): void => {
-    // TODO- it's possible that this element does not exist by the time this method runs
     const modalLinkEl: HTMLElement | null =
         document.getElementById(FIDES_MODAL_LINK);
     if (
@@ -18,8 +17,11 @@ export const showModalLinkAndSetOnClick = (debug: boolean): void => {
         modalLinkEl.onclick = () => {
             // TODO: render modal component
         };
-        modalLinkEl.style.display = ""
+        modalLinkEl.style.display = "inline"
     } else {
-        throw new Error("Fides modal link element could not be found");
+        debugLog(
+            debug,
+            `Fides modal link element could not be found`
+        );
     }
 };

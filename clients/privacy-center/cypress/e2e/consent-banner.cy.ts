@@ -15,13 +15,12 @@ describe("Consent banner", () => {
       });
     });
 
-    it("does not render", () => {
+    it("does not render banner", () => {
       cy.get("div#fides-consent-banner").should("not.exist");
       cy.contains("button", "Accept Test").should("not.exist");
     });
-    it.skip("hides the modal link", () => {
-      // TODO: add when we have link binding working
-      expect(false).is.eql(true);
+    it("does not render modal link", () => {
+      cy.get("#fides-consent-modal-link").should("not.be.visible");
     });
   });
 
@@ -65,9 +64,8 @@ describe("Consent banner", () => {
           });
         });
       });
-      it.skip("hides the modal link", () => {
-        // TODO: add when we have link binding working
-        expect(false).is.eql(true);
+      it("does not render modal link", () => {
+        cy.get("#fides-consent-modal-link").should("not.be.visible");
       });
 
       it("should allow accepting all", () => {
@@ -165,13 +163,12 @@ describe("Consent banner", () => {
         });
       });
 
-      it("does not render", () => {
+      it("does not render banner", () => {
         cy.get("div#fides-consent-banner").should("not.exist");
         cy.contains("button", "Accept Test").should("not.exist");
       });
-      it.skip("hides the modal link", () => {
-        // TODO: add when we have link binding working
-        expect(false).is.eql(true);
+      it("does not render modal link", () => {
+        cy.get("#fides-consent-modal-link").should("not.be.visible");
       });
     });
 
@@ -192,9 +189,8 @@ describe("Consent banner", () => {
         // TODO: add when we are able to retrieve geolocation via API from fides.js
         expect(false).is.eql(true);
       });
-      it.skip("hides the modal link", () => {
-        // TODO: add when we have link binding working
-        expect(false).is.eql(true);
+      it("does not render modal link", () => {
+        cy.get("#fides-consent-modal-link").should("not.be.visible");
       });
     });
 
@@ -257,9 +253,8 @@ describe("Consent banner", () => {
         expect(false).is.eql(true);
       });
 
-      it.skip("hides the modal link", () => {
-        // TODO: add when we have link binding working
-        expect(false).is.eql(true);
+      it("does not render modal link", () => {
+        cy.get("#fides-consent-modal-link").should("not.be.visible");
       });
     });
 
@@ -273,14 +268,13 @@ describe("Consent banner", () => {
         });
       });
 
-      it("does not render", () => {
+      it("does not render banner", () => {
         cy.get("div#fides-consent-banner").should("not.exist");
         cy.contains("button", "Accept Test").should("not.exist");
       });
 
-      it.skip("hides the modal link", () => {
-        // TODO: add when we have link binding working
-        expect(false).is.eql(true);
+      it("does not render modal link", () => {
+        cy.get("#fides-consent-modal-link").should("not.be.visible");
       });
     });
 
@@ -292,14 +286,13 @@ describe("Consent banner", () => {
         });
       });
 
-      it("does not render", () => {
+      it("does not render banner", () => {
         cy.get("div#fides-consent-banner").should("not.exist");
         cy.contains("button", "Accept Test").should("not.exist");
       });
 
-      it.skip("hides the modal link", () => {
-        // TODO: add when we have link binding working
-        expect(false).is.eql(true);
+      it("does not render modal link", () => {
+        cy.get("#fides-consent-modal-link").should("not.be.visible");
       });
     });
 
@@ -317,9 +310,8 @@ describe("Consent banner", () => {
         cy.contains("button", "Accept Test").should("not.exist");
       });
 
-      it.skip("shows the modal link", () => {
-        // TODO: add when we have link binding working
-        expect(false).is.eql(true);
+      it("shows the modal link", () => {
+        cy.get("#fides-consent-modal-link").should("be.visible");
       });
 
       describe("modal link click", () => {
