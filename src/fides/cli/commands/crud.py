@@ -3,7 +3,8 @@ import rich_click as click
 import yaml
 
 from fides.cli.options import fides_key_argument, resource_type_argument
-from fides.cli.utils import handle_cli_response, print_divider, with_analytics
+from fides.cli.utils import with_analytics
+from fides.common.utils import handle_cli_response, print_divider
 from fides.core import api as _api
 from fides.core.api_helpers import get_server_resource, list_server_resources
 from fides.core.utils import echo_green, echo_red

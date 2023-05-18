@@ -10,7 +10,7 @@ If you're looking for a general getting started guide, please see the [Overview]
 
 ### API URLs
 
-We define API URLs for specific API versions as constants within `fides.api.ops.api.v1.urn_registry` (where `v1` can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the `APIRouter` class instantiation with a different base path (ie. `/api/v2` instead of `/api/v1`). For example:
+We define API URLs for specific API versions as constants within `fides.api.api.v1.urn_registry` (where `v1` can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the `APIRouter` class instantiation with a different base path (ie. `/api/v2` instead of `/api/v1`). For example:
 
 ```sh
 PRIVACY_REQUEST = "/privacy-request"
@@ -29,8 +29,8 @@ SQLAlchemy is an Object Relational Mapper, allowing us to avoid writing direct d
 
 ### Adding models
 
-Database tables are defined with model classes. Model files should live in `src/fides/api/ops/models/`. Individual model classes must inherit from our custom base class at `fides.api.ops.db.base_class.Base` to ensure uniformity within the database. Multiple models per file are encouraged so long as they fit the same logical delineation within the project. An example model declaration is added below. For a comprehensive guide see: <https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping>
-You should also import your model in `src/fides/api/ops/db/base.py` so it is visible for alembic.
+Database tables are defined with model classes. Model files should live in `src/fides/api/models/`. Individual model classes must inherit from our custom base class at `fides.api.db.base_class.Base` to ensure uniformity within the database. Multiple models per file are encouraged so long as they fit the same logical delineation within the project. An example model declaration is added below. For a comprehensive guide see: <https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping>
+You should also import your model in `src/fides/api/db/base.py` so it is visible for alembic.
 
 ```python
 class Book(Base):
@@ -48,7 +48,7 @@ When models are added to the project, we must then add them to the database in a
 
 Once you've added database tables via project models, you're ready to read, write, and update them via Python code. Some examples of common use cases here are listed below. Official documentation is here: <https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query>.
 
-- Import our application's database session: `from fides.api.ops.db.session import get_db_session`
+- Import our application's database session: `from fides.api.db.session import get_db_session`
 - Instantiate the database interaction object:
 
 ```python

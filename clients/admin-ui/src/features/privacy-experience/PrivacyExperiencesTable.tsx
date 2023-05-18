@@ -14,12 +14,12 @@ import {
   EnablePrivacyExperienceCell,
 } from "~/features/privacy-experience/cells";
 import {
-  selectAllPrivacyExperiences,
+  selectAllExperienceConfigs,
   selectPage,
   selectPageSize,
-  useGetAllPrivacyExperiencesQuery,
+  useGetAllExperienceConfigsQuery,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import { PrivacyExperienceResponse, ScopeRegistryEnum } from "~/types/api";
+import { ExperienceConfigResponse, ScopeRegistryEnum } from "~/types/api";
 
 import JavaScriptTag from "./JavaScriptTag";
 
@@ -28,22 +28,22 @@ const PrivacyExperiencesTable = () => {
   // Subscribe to get all privacy experiences
   const page = useAppSelector(selectPage);
   const pageSize = useAppSelector(selectPageSize);
-  const { isLoading } = useGetAllPrivacyExperiencesQuery({
+  const { isLoading } = useGetAllExperienceConfigsQuery({
     page,
     size: pageSize,
   });
-  const privacyExperiences = useAppSelector(selectAllPrivacyExperiences);
+  const privacyExperiences = useAppSelector(selectAllExperienceConfigs);
   // Permissions
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.PRIVACY_EXPERIENCE_UPDATE,
   ]);
-  const handleRowClick = ({ id }: PrivacyExperienceResponse) => {
+  const handleRowClick = ({ id }: ExperienceConfigResponse) => {
     if (userCanUpdate) {
       router.push(`${PRIVACY_EXPERIENCE_ROUTE}/${id}`);
     }
   };
 
-  const columns: Column<PrivacyExperienceResponse>[] = useMemo(
+  const columns: Column<ExperienceConfigResponse>[] = useMemo(
     () => [
       { Header: "Location", accessor: "regions", Cell: MultiTagCell },
       {
@@ -97,7 +97,7 @@ const PrivacyExperiencesTable = () => {
       <Box alignSelf="end">
         <JavaScriptTag />
       </Box>
-      <FidesTable<PrivacyExperienceResponse>
+      <FidesTable<ExperienceConfigResponse>
         columns={columns}
         data={privacyExperiences}
         onRowClick={userCanUpdate ? handleRowClick : undefined}

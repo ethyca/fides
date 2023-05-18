@@ -1,7 +1,7 @@
 import pytest
 from pydantic.error_wrappers import ValidationError
 
-from fides.api.ops.schemas.limiter.rate_limit_config import (
+from fides.api.schemas.limiter.rate_limit_config import (
     RateLimit,
     RateLimitConfig,
     RateLimitPeriod,

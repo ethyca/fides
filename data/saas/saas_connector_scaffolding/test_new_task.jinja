@@ -1,6 +1,6 @@
 import pytest
 
-from fides.api.ops.models.policy import Policy
+from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 

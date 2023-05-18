@@ -20,7 +20,9 @@ The types of changes are:
 ### Changed
 
 - Remove logging within the Celery creation function [#3303](https://github.com/ethyca/fides/pull/3303)
+- Update how generic endpoint generation works [#3304](https://github.com/ethyca/fides/pull/3304)
 - Restrict strack-trace logging when not in Dev mode [#3081](https://github.com/ethyca/fides/pull/3081)
+- Moved all of the dirs from `fides.api.ops` into `fides.api` [#3318](https://github.com/ethyca/fides/pull/3318)
 
 ### Added
 
@@ -32,6 +34,12 @@ The types of changes are:
 
 - Maintain casing differences within Snowflake datasets for proper DSR execution [#3245](https://github.com/ethyca/fides/pull/3245)
 - Support pseudonymous consent requests with `fides_user_device_id` for the new consent workflow [#3203](https://github.com/ethyca/fides/pull/3203)
+- Fides user device id filter to GET Privacy Experience List endpoint to stash user preferences on embedded notices [#3302](https://github.com/ethyca/fides/pull/3302)
+
+### Changed
+
+- Data model around PrivacyExperiences to better keep Privacy Notices and Experiences in sync [#3292](https://github.com/ethyca/fides/pull/3292)
+- UI calls to support new PrivacyExperiences data model [#3313](https://github.com/ethyca/fides/pull/3313)
 
 ## [2.13.0](https://github.com/ethyca/fides/compare/2.12.1...2.13.0)
 

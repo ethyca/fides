@@ -10,25 +10,30 @@ from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.testclient import TestClient
 
-from fides.api.ctl.sql_models import DataUse as sql_DataUse
-from fides.api.ops.api.v1 import scope_registry as scopes
-from fides.api.ops.api.v1.endpoints.privacy_notice_endpoints import (
+from fides.api.api.v1 import scope_registry as scopes
+from fides.api.api.v1.endpoints.privacy_notice_endpoints import (
     validate_notice_data_uses,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     PRIVACY_NOTICE,
     PRIVACY_NOTICE_BY_DATA_USE,
     PRIVACY_NOTICE_DETAIL,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.privacy_notice import (
+from fides.api.ctl.sql_models import DataUse as sql_DataUse
+from fides.api.models.privacy_experience import (
+    ComponentType,
+    DeliveryMechanism,
+    PrivacyExperience,
+)
+from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNotice,
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
 )
-from fides.api.ops.schemas.privacy_notice import (
+from fides.api.schemas.privacy_notice import (
     PrivacyNoticeCreation,
     PrivacyNoticeResponse,
 )
@@ -1626,6 +1631,18 @@ class TestPostPrivacyNotices:
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
 
         before_creation = datetime.now().isoformat()
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.eu_be
+        )
+        assert overlay_exp is None
+        assert privacy_center_exp is None
+
+        (
+            ca_overlay_exp,
+            ca_privacy_center_exp,
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        assert ca_overlay_exp is None
+        assert ca_privacy_center_exp is None
 
         resp = api_client.post(url, headers=auth_header, json=[notice_request])
         assert resp.status_code == 200
@@ -1649,6 +1666,36 @@ class TestPostPrivacyNotices:
         assert response_notice["created_at"] == db_notice.created_at.isoformat()
         assert response_notice["updated_at"] == db_notice.updated_at.isoformat()
         assert response_notice["disabled"] == db_notice.disabled
+
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.eu_be
+        )
+        assert overlay_exp is not None
+        assert privacy_center_exp is None
+
+        assert overlay_exp.component == ComponentType.overlay
+        assert overlay_exp.delivery_mechanism == DeliveryMechanism.banner
+        assert overlay_exp.version == 1.0
+        assert overlay_exp.disabled is False
+        assert overlay_exp.experience_config_id is None
+        assert overlay_exp.experience_config_history_id is None
+
+        (
+            ca_overlay_exp,
+            ca_privacy_center_exp,
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        assert ca_overlay_exp is not None
+        assert ca_privacy_center_exp is None
+
+        assert ca_overlay_exp.component == ComponentType.overlay
+        assert ca_overlay_exp.delivery_mechanism == DeliveryMechanism.banner
+        assert ca_overlay_exp.version == 1.0
+        assert ca_overlay_exp.disabled is False
+        assert ca_overlay_exp.experience_config_id is None
+        assert ca_overlay_exp.experience_config_history_id is None
+
+        overlay_exp.histories[0].delete(db)
+        overlay_exp.delete(db)
 
     def test_post_privacy_notice_duplicate_regions(
         self,
@@ -2273,6 +2320,12 @@ class TestPatchPrivacyNotices:
         """
         Test patching a single privacy notice
         """
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
+        assert overlay_exp is None
+        assert privacy_center_exp is None
+
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_UPDATE])
 
         before_update = datetime.now().isoformat()
@@ -2366,6 +2419,17 @@ class TestPatchPrivacyNotices:
         ]
         assert response_notice["consent_mechanism"] == db_notice.consent_mechanism.value
         assert response_notice["data_uses"] == db_notice.data_uses
+
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
+        assert overlay_exp.component == ComponentType.overlay
+        assert overlay_exp.delivery_mechanism == DeliveryMechanism.banner
+        assert overlay_exp.version == 1.0
+
+        assert privacy_center_exp.component == ComponentType.privacy_center
+        assert privacy_center_exp.delivery_mechanism == DeliveryMechanism.link
+        assert privacy_center_exp.version == 1.0
 
     def test_patch_multiple_privacy_notices(
         self,
