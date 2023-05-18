@@ -1,29 +1,10 @@
-import {FIDES_MODAL_LINK} from "~/lib/consent-types";
-import {debugLog} from "~/lib/consent-utils";
+import {FIDES_MODAL_LINK} from "./consent-types";
+import {debugLog} from "./consent-utils";
 
 /**
- * Hide pre-existing link in the DOM if we do not need to trigger a modal
+ * Update to show the pre-existing modal link in the DOM to trigger the modal
  */
-export const hideModalLink = (debug: boolean): void => {
-    // TODO- it's possible that this element does not exist by the time this method runs
-    const modalLinkEl: HTMLElement | null =
-        document.getElementById(FIDES_MODAL_LINK);
-    if (modalLinkEl) {
-        debugLog(debug, "modal link element exists, attempting to hide it");
-        // TODO: hide link
-        // eslint-disable-next-line no-param-reassign
-        modalLinkEl.style.display = "none";
-    }
-    debugLog(
-        debug,
-        "modal link element does not exist, so there is nothing to hide"
-    );
-};
-
-/**
- * Update the pre-existing modal link in the DOM to trigger the modal
- */
-export const bindModalLinkToModal = (debug: boolean): void => {
+export const showModalLinkAndSetOnClick = (debug: boolean): void => {
     // TODO- it's possible that this element does not exist by the time this method runs
     const modalLinkEl: HTMLElement | null =
         document.getElementById(FIDES_MODAL_LINK);
@@ -32,11 +13,12 @@ export const bindModalLinkToModal = (debug: boolean): void => {
     ) {
         debugLog(
             debug,
-            `Fides modal link element found, updating click event to trigger modal`
+            `Fides modal link element found, updating to show it and set click event to trigger modal`
         );
         modalLinkEl.onclick = () => {
             // TODO: render modal component
         };
+        modalLinkEl.style.display = ""
     } else {
         throw new Error("Fides modal link element could not be found");
     }

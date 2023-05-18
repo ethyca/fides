@@ -1,5 +1,5 @@
 import {UserGeolocation} from "~/lib/consent-types";
-import {debugLog} from "~/lib/consent-utils";
+import {debugLog} from "../../lib/consent-utils"
 
 /**
  * Fetch the user's geolocation from an external API

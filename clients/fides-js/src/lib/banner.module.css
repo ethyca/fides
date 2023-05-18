@@ -40,6 +40,10 @@
   );
 }
 
+#fides-consent-modal-link {
+  display: none;
+}
+
 div#fides-consent-banner {
   font-family: var(--fides-consent-overlay-font-family);
   font-size: var(--fides-consent-overlay-font-size);
