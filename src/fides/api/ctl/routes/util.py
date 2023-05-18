@@ -8,7 +8,6 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     models_with_default_field,
 )
 from fides.api.ctl.utils import errors
-from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api.v1.scope_registry import (
     CTL_DATASET,
     CTL_POLICY,
@@ -24,18 +23,6 @@ from fides.api.ops.api.v1.scope_registry import (
 from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
 
 API_PREFIX = "/api/v1"
-
-
-def get_resource_type(router: APIRouter) -> str:
-    """
-    Get the resource type from the prefix of an API router
-    Args:
-        router: Api router from which to extract the resource type
-
-    Returns:
-        The router's resource type
-    """
-    return router.prefix.replace(f"{API_PREFIX}/", "", 1)
 
 
 async def forbid_if_editing_is_default(

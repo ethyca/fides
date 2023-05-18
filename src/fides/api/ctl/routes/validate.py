@@ -57,10 +57,10 @@ class ValidateResponse(BaseModel):
     message: str
 
 
-router = APIRouter(tags=["Validate"], prefix=f"{API_PREFIX}/validate")
+VALIDATE_ROUTER = APIRouter(tags=["Validate"], prefix=f"{API_PREFIX}/validate")
 
 
-@router.post(
+@VALIDATE_ROUTER.post(
     "/",
     dependencies=[
         Security(verify_oauth_client_prod, scopes=[scope_registry.VALIDATE_EXEC])

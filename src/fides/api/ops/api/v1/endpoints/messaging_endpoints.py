@@ -71,7 +71,7 @@ from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.core.config.config_proxy import ConfigProxy
 
-router = APIRouter(tags=["messaging"], prefix=V1_URL_PREFIX)
+router = APIRouter(tags=["Messaging"], prefix=V1_URL_PREFIX)
 
 
 @router.post(

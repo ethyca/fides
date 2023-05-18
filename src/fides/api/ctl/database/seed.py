@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.database.session import sync_session
-from fides.api.ctl.routes.system import upsert_system
+from fides.api.ctl.database.system import upsert_system
 from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     Dataset,
     sql_model_map,

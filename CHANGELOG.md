@@ -20,6 +20,7 @@ The types of changes are:
 ### Changed
 
 - Remove logging within the Celery creation function [#3303](https://github.com/ethyca/fides/pull/3303)
+- Update how generic endpoint generation works [#3304](https://github.com/ethyca/fides/pull/3304)
 - Restrict strack-trace logging when not in Dev mode [#3081](https://github.com/ethyca/fides/pull/3081)
 
 ### Added
