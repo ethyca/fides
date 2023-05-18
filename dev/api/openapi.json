@@ -2,9 +2,60 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.13.1b0.post0.dev5"
+    "version": "2.13.1b0.post0.dev6"
   },
   "paths": {
+    "/api/v1/admin/db/{action}": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Admin"
+        ],
+        "summary": "Db Action",
+        "description": "Initiate one of the enumerated DBActions.",
+        "operationId": "db_action_api_v1_admin_db__action__post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/DBActions"
+            },
+            "name": "action",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Db Action Api V1 Admin Db  Action  Post",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "database:reset"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/data_category": {
       "get": {
         "tags": [
@@ -13,18 +64,6 @@
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
         "operationId": "List_api_v1_data_category_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_category"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -36,16 +75,6 @@
                   "items": {
                     "$ref": "#/components/schemas/DataCategory"
                   }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -66,18 +95,6 @@
         "summary": "Update",
         "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_data_category_put",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_category"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -138,19 +155,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
-        "operationId": "create_api_v1_data_category_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_category"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
+        "operationId": "Create_api_v1_data_category_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -223,16 +228,6 @@
             },
             "name": "fides_key",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_category"
-            },
-            "name": "resource_type",
-            "in": "query"
           }
         ],
         "responses": {
@@ -281,16 +276,6 @@
             },
             "name": "fides_key",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_category"
-            },
-            "name": "resource_type",
-            "in": "query"
           }
         ],
         "responses": {
@@ -347,18 +332,6 @@
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_data_category_upsert_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_category"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -437,438 +410,6 @@
         ]
       }
     },
-    "/api/v1/data_qualifier": {
-      "get": {
-        "tags": [
-          "DataQualifier"
-        ],
-        "summary": "List",
-        "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_data_qualifier_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_qualifier"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response List Api V1 Data Qualifier Get",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataQualifier"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "data_qualifier:read"
-            ]
-          }
-        ]
-      },
-      "put": {
-        "tags": [
-          "DataQualifier"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "update_api_v1_data_qualifier_put",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_qualifier"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DataQualifier"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataQualifier"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_qualifier",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "data_qualifier:update"
-            ]
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "DataQualifier"
-        ],
-        "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
-        "operationId": "create_api_v1_data_qualifier_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_qualifier"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DataQualifier"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataQualifier"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_qualifier",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "data_qualifier:create"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/data_qualifier/{fides_key}": {
-      "get": {
-        "tags": [
-          "DataQualifier"
-        ],
-        "summary": "Get",
-        "description": "Get a resource by its fides_key.",
-        "operationId": "get_api_v1_data_qualifier__fides_key__get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_qualifier"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataQualifier"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "data_qualifier:read"
-            ]
-          }
-        ]
-      },
-      "delete": {
-        "tags": [
-          "DataQualifier"
-        ],
-        "summary": "Delete",
-        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
-        "operationId": "delete_api_v1_data_qualifier__fides_key__delete",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_qualifier"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Delete Api V1 Data Qualifier  Fides Key  Delete",
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_qualifier",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "data_qualifier:delete"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/data_qualifier/upsert": {
-      "post": {
-        "tags": [
-          "DataQualifier"
-        ],
-        "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "upsert_api_v1_data_qualifier_upsert_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_qualifier"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "title": "Resources",
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/DataQualifier"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Upsert Api V1 Data Qualifier Upsert Post",
-                  "type": "object"
-                },
-                "example": {
-                  "message": "Upserted 3 data_qualifier(s)",
-                  "inserted": 0,
-                  "updated": 3
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "example": {
-                  "message": "Upserted 3 data_qualifier(s)",
-                  "inserted": 1,
-                  "updated": 2
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "DataCategory",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "data_qualifier:create",
-              "data_qualifier:update"
-            ]
-          }
-        ]
-      }
-    },
     "/api/v1/data_subject": {
       "get": {
         "tags": [
@@ -877,18 +418,6 @@
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
         "operationId": "List_api_v1_data_subject_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_subject"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -900,16 +429,6 @@
                   "items": {
                     "$ref": "#/components/schemas/DataSubject"
                   }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -930,18 +449,6 @@
         "summary": "Update",
         "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_data_subject_put",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_subject"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1002,19 +509,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
-        "operationId": "create_api_v1_data_subject_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_subject"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
+        "operationId": "Create_api_v1_data_subject_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1087,16 +582,6 @@
             },
             "name": "fides_key",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_subject"
-            },
-            "name": "resource_type",
-            "in": "query"
           }
         ],
         "responses": {
@@ -1145,16 +630,6 @@
             },
             "name": "fides_key",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_subject"
-            },
-            "name": "resource_type",
-            "in": "query"
           }
         ],
         "responses": {
@@ -1211,18 +686,6 @@
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_data_subject_upsert_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_subject"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1301,36 +764,75 @@
         ]
       }
     },
-    "/api/v1/data_use": {
+    "/api/v1/data_qualifier": {
       "get": {
         "tags": [
-          "DataUse"
+          "DataQualifier"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_data_use_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_use"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
+        "operationId": "List_api_v1_data_qualifier_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 Data Use Get",
+                  "title": "Response List Api V1 Data Qualifier Get",
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/DataUse"
+                    "$ref": "#/components/schemas/DataQualifier"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "data_qualifier:read"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "DataQualifier"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
+        "operationId": "update_api_v1_data_qualifier_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataQualifier"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataQualifier"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_qualifier",
+                    "fides_key": "example.key"
                   }
                 }
               }
@@ -1342,6 +844,299 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "data_qualifier:update"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "DataQualifier"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
+        "operationId": "Create_api_v1_data_qualifier_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataQualifier"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataQualifier"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_qualifier",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "data_qualifier:create"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/data_qualifier/{fides_key}": {
+      "get": {
+        "tags": [
+          "DataQualifier"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_api_v1_data_qualifier__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataQualifier"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "data_qualifier:read"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "DataQualifier"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
+        "operationId": "delete_api_v1_data_qualifier__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Delete Api V1 Data Qualifier  Fides Key  Delete",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_qualifier",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "data_qualifier:delete"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/data_qualifier/upsert": {
+      "post": {
+        "tags": [
+          "DataQualifier"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
+        "operationId": "upsert_api_v1_data_qualifier_upsert_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DataQualifier"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Upsert Api V1 Data Qualifier Upsert Post",
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Upserted 3 data_qualifier(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 data_qualifier(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "data_qualifier:create",
+              "data_qualifier:update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/data_use": {
+      "get": {
+        "tags": [
+          "DataUse"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_api_v1_data_use_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Api V1 Data Use Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataUse"
+                  }
                 }
               }
             }
@@ -1362,18 +1157,6 @@
         "summary": "Update",
         "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_data_use_put",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_use"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1434,19 +1217,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
-        "operationId": "create_api_v1_data_use_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_use"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
+        "operationId": "Create_api_v1_data_use_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1519,16 +1290,6 @@
             },
             "name": "fides_key",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_use"
-            },
-            "name": "resource_type",
-            "in": "query"
           }
         ],
         "responses": {
@@ -1577,16 +1338,6 @@
             },
             "name": "fides_key",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_use"
-            },
-            "name": "resource_type",
-            "in": "query"
           }
         ],
         "responses": {
@@ -1643,18 +1394,6 @@
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_data_use_upsert_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_use"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1741,18 +1480,6 @@
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
         "operationId": "List_api_v1_dataset_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "dataset"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1764,16 +1491,6 @@
                   "items": {
                     "$ref": "#/components/schemas/Dataset"
                   }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1794,18 +1511,6 @@
         "summary": "Update",
         "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_dataset_put",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "dataset"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1866,19 +1571,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
-        "operationId": "create_api_v1_dataset_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "dataset"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
+        "operationId": "Create_api_v1_dataset_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1951,16 +1644,6 @@
             },
             "name": "fides_key",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "dataset"
-            },
-            "name": "resource_type",
-            "in": "query"
           }
         ],
         "responses": {
@@ -2009,16 +1692,6 @@
             },
             "name": "fides_key",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "dataset"
-            },
-            "name": "resource_type",
-            "in": "query"
           }
         ],
         "responses": {
@@ -2075,18 +1748,6 @@
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_dataset_upsert_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "dataset"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2165,1302 +1826,6 @@
         ]
       }
     },
-    "/api/v1/organization": {
-      "get": {
-        "tags": [
-          "Organization"
-        ],
-        "summary": "List",
-        "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_organization_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "organization"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response List Api V1 Organization Get",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Organization"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "organization:read"
-            ]
-          }
-        ]
-      },
-      "put": {
-        "tags": [
-          "Organization"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "update_api_v1_organization_put",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "organization"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Organization"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Organization"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "organization",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "organization:update"
-            ]
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "Organization"
-        ],
-        "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
-        "operationId": "create_api_v1_organization_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "organization"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Organization"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Organization"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "organization",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "organization:create"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/organization/{fides_key}": {
-      "get": {
-        "tags": [
-          "Organization"
-        ],
-        "summary": "Get",
-        "description": "Get a resource by its fides_key.",
-        "operationId": "get_api_v1_organization__fides_key__get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "organization"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Organization"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "organization:read"
-            ]
-          }
-        ]
-      },
-      "delete": {
-        "tags": [
-          "Organization"
-        ],
-        "summary": "Delete",
-        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
-        "operationId": "delete_api_v1_organization__fides_key__delete",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "organization"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Delete Api V1 Organization  Fides Key  Delete",
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "organization",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "organization:delete"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/organization/upsert": {
-      "post": {
-        "tags": [
-          "Organization"
-        ],
-        "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "upsert_api_v1_organization_upsert_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "organization"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "title": "Resources",
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Organization"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Upsert Api V1 Organization Upsert Post",
-                  "type": "object"
-                },
-                "example": {
-                  "message": "Upserted 3 organization(s)",
-                  "inserted": 0,
-                  "updated": 3
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "example": {
-                  "message": "Upserted 3 organization(s)",
-                  "inserted": 1,
-                  "updated": 2
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "DataCategory",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "organization:create",
-              "organization:update"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/policy": {
-      "get": {
-        "tags": [
-          "Policy"
-        ],
-        "summary": "List",
-        "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_policy_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "policy"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response List Api V1 Policy Get",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/fideslang__models__Policy"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "ctl_policy:read"
-            ]
-          }
-        ]
-      },
-      "put": {
-        "tags": [
-          "Policy"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "update_api_v1_policy_put",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "policy"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/fideslang__models__Policy"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/fideslang__models__Policy"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "policy",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "ctl_policy:update"
-            ]
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "Policy"
-        ],
-        "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
-        "operationId": "create_api_v1_policy_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "policy"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/fideslang__models__Policy"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/fideslang__models__Policy"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "policy",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "ctl_policy:create"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/policy/{fides_key}": {
-      "get": {
-        "tags": [
-          "Policy"
-        ],
-        "summary": "Get",
-        "description": "Get a resource by its fides_key.",
-        "operationId": "get_api_v1_policy__fides_key__get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "policy"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/fideslang__models__Policy"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "ctl_policy:read"
-            ]
-          }
-        ]
-      },
-      "delete": {
-        "tags": [
-          "Policy"
-        ],
-        "summary": "Delete",
-        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
-        "operationId": "delete_api_v1_policy__fides_key__delete",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "policy"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Delete Api V1 Policy  Fides Key  Delete",
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "policy",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "ctl_policy:delete"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/policy/upsert": {
-      "post": {
-        "tags": [
-          "Policy"
-        ],
-        "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "upsert_api_v1_policy_upsert_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "policy"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "title": "Resources",
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/fideslang__models__Policy"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Upsert Api V1 Policy Upsert Post",
-                  "type": "object"
-                },
-                "example": {
-                  "message": "Upserted 3 policy(s)",
-                  "inserted": 0,
-                  "updated": 3
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "example": {
-                  "message": "Upserted 3 policy(s)",
-                  "inserted": 1,
-                  "updated": 2
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "DataCategory",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "ctl_policy:create",
-              "ctl_policy:update"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/registry": {
-      "get": {
-        "tags": [
-          "Registry"
-        ],
-        "summary": "List",
-        "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_registry_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "registry"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response List Api V1 Registry Get",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Registry"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "registry:read"
-            ]
-          }
-        ]
-      },
-      "put": {
-        "tags": [
-          "Registry"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "update_api_v1_registry_put",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "registry"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Registry"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Registry"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "registry",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "registry:update"
-            ]
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "Registry"
-        ],
-        "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
-        "operationId": "create_api_v1_registry_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "registry"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Registry"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Registry"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "registry",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "registry:create"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/registry/{fides_key}": {
-      "get": {
-        "tags": [
-          "Registry"
-        ],
-        "summary": "Get",
-        "description": "Get a resource by its fides_key.",
-        "operationId": "get_api_v1_registry__fides_key__get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "registry"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Registry"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "registry:read"
-            ]
-          }
-        ]
-      },
-      "delete": {
-        "tags": [
-          "Registry"
-        ],
-        "summary": "Delete",
-        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
-        "operationId": "delete_api_v1_registry__fides_key__delete",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "registry"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Delete Api V1 Registry  Fides Key  Delete",
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "registry",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "registry:delete"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/registry/upsert": {
-      "post": {
-        "tags": [
-          "Registry"
-        ],
-        "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "upsert_api_v1_registry_upsert_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "registry"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "title": "Resources",
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Registry"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Upsert Api V1 Registry Upsert Post",
-                  "type": "object"
-                },
-                "example": {
-                  "message": "Upserted 3 registry(s)",
-                  "inserted": 0,
-                  "updated": 3
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "example": {
-                  "message": "Upserted 3 registry(s)",
-                  "inserted": 1,
-                  "updated": 2
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "DataCategory",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "registry:create",
-              "registry:update"
-            ]
-          }
-        ]
-      }
-    },
     "/api/v1/evaluation": {
       "get": {
         "tags": [
@@ -3469,18 +1834,6 @@
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
         "operationId": "List_api_v1_evaluation_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "evaluation"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -3492,16 +1845,6 @@
                   "items": {
                     "$ref": "#/components/schemas/Evaluation"
                   }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -3522,18 +1865,6 @@
         "summary": "Update",
         "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_evaluation_put",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "evaluation"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3594,19 +1925,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
-        "operationId": "create_api_v1_evaluation_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "evaluation"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
+        "operationId": "Create_api_v1_evaluation_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -3679,16 +1998,6 @@
             },
             "name": "fides_key",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "evaluation"
-            },
-            "name": "resource_type",
-            "in": "query"
           }
         ],
         "responses": {
@@ -3737,16 +2046,6 @@
             },
             "name": "fides_key",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "evaluation"
-            },
-            "name": "resource_type",
-            "in": "query"
           }
         ],
         "responses": {
@@ -3803,18 +2102,6 @@
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_evaluation_upsert_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "evaluation"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3888,57 +2175,6 @@
             "OAuth2ClientCredentialsBearer": [
               "evaluation:create",
               "evaluation:update"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/admin/db/{action}": {
-      "post": {
-        "tags": [
-          "Admin",
-          "Admin"
-        ],
-        "summary": "Db Action",
-        "description": "Initiate one of the enumerated DBActions.",
-        "operationId": "db_action_api_v1_admin_db__action__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/DBActions"
-            },
-            "name": "action",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Db Action Api V1 Admin Db  Action  Post",
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "database:reset"
             ]
           }
         ]
@@ -4054,19 +2290,50 @@
         }
       }
     },
-    "/api/v1/validate": {
-      "post": {
+    "/api/v1/organization": {
+      "get": {
         "tags": [
-          "Validate"
+          "Organization"
         ],
-        "summary": "Validate",
-        "description": "Endpoint used to validate different resource targets.",
-        "operationId": "validate_api_v1_validate_post",
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_api_v1_organization_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Api V1 Organization Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "organization:read"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
+        "operationId": "update_api_v1_organization_put",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ValidateRequest"
+                "$ref": "#/components/schemas/Organization"
               }
             }
           },
@@ -4078,7 +2345,21 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidateResponse"
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "organization",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -4097,26 +2378,60 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "validate:exec"
+              "organization:update"
             ]
           }
         ]
-      }
-    },
-    "/view/evaluations": {
-      "get": {
+      },
+      "post": {
         "tags": [
-          "View"
+          "Organization"
         ],
-        "summary": "Evaluation View",
-        "description": "Returns an html document with a list of evaluations",
-        "operationId": "evaluation_view_view_evaluations_get",
+        "summary": "Create",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
+        "operationId": "Create_api_v1_organization_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
-          "200": {
+          "201": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "organization",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           }
@@ -4124,7 +2439,914 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "evaluation:read"
+              "organization:create"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/organization/{fides_key}": {
+      "get": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_api_v1_organization__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "organization:read"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
+        "operationId": "delete_api_v1_organization__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Delete Api V1 Organization  Fides Key  Delete",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "organization",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "organization:delete"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/organization/upsert": {
+      "post": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
+        "operationId": "upsert_api_v1_organization_upsert_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Upsert Api V1 Organization Upsert Post",
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Upserted 3 organization(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 organization(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "organization:create",
+              "organization:update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/policy": {
+      "get": {
+        "tags": [
+          "Policy"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_api_v1_policy_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Api V1 Policy Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/fideslang__models__Policy"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_policy:read"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Policy"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
+        "operationId": "update_api_v1_policy_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/fideslang__models__Policy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fideslang__models__Policy"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "policy",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_policy:update"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Policy"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
+        "operationId": "Create_api_v1_policy_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/fideslang__models__Policy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fideslang__models__Policy"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "policy",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_policy:create"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/policy/{fides_key}": {
+      "get": {
+        "tags": [
+          "Policy"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_api_v1_policy__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fideslang__models__Policy"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_policy:read"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Policy"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
+        "operationId": "delete_api_v1_policy__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Delete Api V1 Policy  Fides Key  Delete",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "policy",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_policy:delete"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/policy/upsert": {
+      "post": {
+        "tags": [
+          "Policy"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
+        "operationId": "upsert_api_v1_policy_upsert_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/fideslang__models__Policy"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Upsert Api V1 Policy Upsert Post",
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Upserted 3 policy(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 policy(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_policy:create",
+              "ctl_policy:update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/registry": {
+      "get": {
+        "tags": [
+          "Registry"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_api_v1_registry_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Api V1 Registry Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Registry"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "registry:read"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Registry"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
+        "operationId": "update_api_v1_registry_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Registry"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Registry"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "registry",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "registry:update"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Registry"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
+        "operationId": "Create_api_v1_registry_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Registry"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Registry"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "registry",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "registry:create"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/registry/{fides_key}": {
+      "get": {
+        "tags": [
+          "Registry"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_api_v1_registry__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Registry"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "registry:read"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Registry"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
+        "operationId": "delete_api_v1_registry__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Delete Api V1 Registry  Fides Key  Delete",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "registry",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "registry:delete"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/registry/upsert": {
+      "post": {
+        "tags": [
+          "Registry"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
+        "operationId": "upsert_api_v1_registry_upsert_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Registry"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Upsert Api V1 Registry Upsert Post",
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Upserted 3 registry(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 registry(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "registry:create",
+              "registry:update"
             ]
           }
         ]
@@ -4569,6 +3791,55 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "system:delete"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/validate": {
+      "post": {
+        "tags": [
+          "Validate"
+        ],
+        "summary": "Validate",
+        "description": "Endpoint used to validate different resource targets.",
+        "operationId": "validate_api_v1_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "validate:exec"
             ]
           }
         ]
@@ -11269,7 +10540,7 @@
     "/api/v1/messaging/config": {
       "get": {
         "tags": [
-          "messaging"
+          "Messaging"
         ],
         "summary": "Get Configs",
         "description": "Retrieves configs for messaging.",
@@ -11331,7 +10602,7 @@
       },
       "post": {
         "tags": [
-          "messaging"
+          "Messaging"
         ],
         "summary": "Post Config",
         "description": "Given a messaging config, create corresponding MessagingConfig object, provided no config already exists",
@@ -11380,7 +10651,7 @@
     "/api/v1/messaging/config/{config_key}": {
       "get": {
         "tags": [
-          "messaging"
+          "Messaging"
         ],
         "summary": "Get Config By Key",
         "description": "Retrieves configs for messaging service by key.",
@@ -11429,7 +10700,7 @@
       },
       "delete": {
         "tags": [
-          "messaging"
+          "Messaging"
         ],
         "summary": "Delete Config By Key",
         "description": "Deletes messaging configs by key.",
@@ -11471,7 +10742,7 @@
       },
       "patch": {
         "tags": [
-          "messaging"
+          "Messaging"
         ],
         "summary": "Patch Config By Key",
         "description": "Updates config for messaging by key, provided config with key can be found.",
@@ -11532,7 +10803,7 @@
     "/api/v1/messaging/default/active": {
       "get": {
         "tags": [
-          "messaging"
+          "Messaging"
         ],
         "summary": "Get Active Default Config",
         "description": "Retrieves the active default messaging config.",
@@ -11561,7 +10832,7 @@
     "/api/v1/messaging/default/status": {
       "get": {
         "tags": [
-          "messaging"
+          "Messaging"
         ],
         "summary": "Get Messaging Status",
         "description": "Determines the status of the active default messaging config",
@@ -11594,7 +10865,7 @@
     "/api/v1/messaging/default": {
       "put": {
         "tags": [
-          "messaging"
+          "Messaging"
         ],
         "summary": "Put Default Config",
         "description": "Updates default messaging config for given service type.",
@@ -11643,7 +10914,7 @@
     "/api/v1/messaging/default/{service_type}/secret": {
       "put": {
         "tags": [
-          "messaging"
+          "Messaging"
         ],
         "summary": "Put Default Config Secrets",
         "operationId": "put_default_config_secrets_api_v1_messaging_default__service_type__secret_put",
@@ -11715,7 +10986,7 @@
     "/api/v1/messaging/config/{config_key}/secret": {
       "put": {
         "tags": [
-          "messaging"
+          "Messaging"
         ],
         "summary": "Put Config Secrets",
         "description": "Add or update secrets for messaging config.",
@@ -11790,7 +11061,7 @@
     "/api/v1/messaging/default/{service_type}": {
       "get": {
         "tags": [
-          "messaging"
+          "Messaging"
         ],
         "summary": "Get Default Config By Type",
         "description": "Retrieves default config for messaging service by type.",
@@ -11839,7 +11110,7 @@
     "/api/v1/messaging/config/test": {
       "post": {
         "tags": [
-          "messaging"
+          "Messaging"
         ],
         "summary": "Send Test Message",
         "description": "Sends a test message.",
