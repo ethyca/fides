@@ -61,7 +61,8 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         prod = Build the fides webserver/CLI and tag it as the current application version.
         test = Build the fides webserver/CLI the same as `prod`, but tag it as `local`.
     """
-    build_platform = get_platform(session.posargs)
+    # build_platform = get_platform(session.posargs)
+    prod_build_platforms = "linux/amd64,linux/arm64"
 
     # This check needs to be here so it has access to the session to throw an error
     if image == "prod":
@@ -95,6 +96,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         session.log(f"  - {privacy_center_image_tag}")
         session.run(
             "docker",
+            "buildx",
             "build",
             "--target=prod_pc",
             "--tag",
@@ -106,6 +108,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         session.log(f"  - {sample_app_image_tag}")
         session.run(
             "docker",
+            "buildx",
             "build",
             "clients/sample-app",
             "--tag",
@@ -118,10 +121,11 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     tag = build_matrix[image]["tag"]
     build_command = (
         "docker",
+        "buildx",
         "build",
         f"--target={target}",
         "--platform",
-        build_platform,
+        prod_build_platforms,
         "--tag",
         tag(),
         ".",
@@ -236,3 +240,111 @@ def push(session: nox.Session, tag: str) -> None:
         session.run("docker", "tag", sample_app_prod, sample_app_latest, external=True)
         session.run("docker", "push", sample_app_latest, external=True)
         session.run("docker", "push", sample_app_prod, external=True)
+
+
+@nox.session()
+@nox.parametrize(
+    "image",
+    [
+        nox.param("admin_ui", id="admin-ui"),
+        nox.param("privacy_center", id="privacy-center"),
+        nox.param("prod", id="prod"),
+    ],
+)
+def multi_arch_push(session: nox.Session, image: str, machine_type: str = "") -> None:
+    """
+    Build various Docker images.
+
+    Params:
+        admin-ui = Build the Next.js Admin UI application.
+        privacy-center = Build the Next.js Privacy Center application.
+        prod = Build the fides webserver/CLI and tag it as the current application version.
+    """
+    prod_build_platforms = "linux/amd64,linux/arm64"
+
+    # This check needs to be here so it has access to the session to throw an error
+    try:
+        import git  # pylint: disable=unused-import
+    except ModuleNotFoundError:
+        session.error(
+            "Building the prod image requires the GitPython module! Please run 'pip install gitpython' and try again"
+        )
+
+    # # # This command was also required locally one time, but I haven't tested in here successfully yet
+    # # # docker buildx create --use --name fides linux/amd64
+    # # Create the builder
+    # session.log("Creating builder")
+    # session.run(
+    #     "docker",
+    #     "buildx",
+    #     "create",
+    #     "--use",
+    #     "--name",
+    #     "fides",
+    #     "linux/amd64",
+    # )
+
+    # The lambdas are a workaround to lazily evaluate get_current_image
+    # This allows the dev deployment to run without requirements
+    build_matrix = {
+        "prod": {"tag": get_current_image, "target": "prod"},
+        "admin_ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
+        "privacy_center": {"tag": lambda: IMAGE_LOCAL_PC, "target": "frontend"},
+    }
+
+    # When building for release, there are additional images that need
+    # to get built. These images are outside of the primary `ethyca/fides`
+    # image so some additional logic is required.
+
+    if image == "prod":
+        tag_name = get_current_tag()
+    session.log("Building extra images:")
+    privacy_center_image_tag = f"{PRIVACY_CENTER_IMAGE}:{tag_name}"
+    session.log(f"  - {privacy_center_image_tag}")
+    session.run(
+        "docker",
+        "buildx",
+        "build",
+        "--target=prod_pc",
+        "--tag",
+        privacy_center_image_tag,
+        "--platform",
+        prod_build_platforms,
+        # "--push",
+        ".",
+        external=True,
+    )
+    sample_app_image_tag = f"{SAMPLE_APP_IMAGE}:{tag_name}"
+    session.log(f"  - {sample_app_image_tag}")
+    session.run(
+        "docker",
+        "buildx",
+        "build",
+        "clients/sample-app",
+        "--tag",
+        sample_app_image_tag,
+        "--platform",
+        prod_build_platforms,
+        # "--push",
+        external=True,
+    )
+
+    # Build the main ethyca/fides image
+    target = build_matrix[image]["target"]
+    tag = build_matrix[image]["tag"]
+    build_command = (
+        "docker",
+        "buildx",
+        "build",
+        f"--target={target}",
+        "--platform",
+        prod_build_platforms,
+        # "--push",
+        "--tag",
+        tag(),
+        ".",
+    )
+    if "nocache" in session.posargs:
+        build_command = (*build_command, "--no-cache")
+
+    session.run(*build_command, external=True)
