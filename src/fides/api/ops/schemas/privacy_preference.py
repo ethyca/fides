@@ -10,7 +10,7 @@ from fides.api.ops.models.privacy_notice import (
     PrivacyNoticeRegion,
     UserConsentPreference,
 )
-from fides.api.ops.models.privacy_preference import RequestOrigin
+from fides.api.ops.models.privacy_preference import ConsentMethod, RequestOrigin
 from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequestStatus,
@@ -110,7 +110,7 @@ class ConsentReportingSchema(FidesSchema):
         title="The historical id of the experience that the user was presented - contains the experience type, region, and delivery mechanism"
     )
     truncated_ip_address: Optional[str] = Field(title="Truncated ip address")
-    method: Optional[str] = Field(title="Method of consent preference")
+    method: Optional[ConsentMethod] = Field(title="Method of consent preference")
 
 
 class CurrentPrivacyPreferenceSchema(FidesSchema):

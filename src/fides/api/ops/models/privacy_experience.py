@@ -321,8 +321,6 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
 
             PrivacyExperienceHistory.create(db, data=history_data, check_name=False)
 
-        # Cache privacy notices for display
-        self.privacy_notices = self.get_related_privacy_notices(db)
         return self
 
     @staticmethod

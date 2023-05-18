@@ -21,6 +21,7 @@ from fides.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.ops.models.privacy_preference import (
+    ConsentMethod,
     CurrentPrivacyPreference,
     PrivacyPreferenceHistory,
     RequestOrigin,
@@ -202,8 +203,12 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
+    @mock.patch(
+        "fides.api.ops.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+    )
     def test_set_privacy_preferences_privacy_center_fides_user_device_id_only(
         self,
+        mock_anonymize,
         run_privacy_request_mock,
         fides_user_provided_identity_and_consent_request,
         api_client,
@@ -218,6 +223,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
 
         Also asserts these same preferences can be retrieved via the consent request verify endpoint
         """
+        masked_ip = "12.214.31.0"
+        mock_anonymize.return_value = masked_ip
+
         (
             fides_user_provided_identity,
             consent_request,
@@ -978,7 +986,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             "privacy_experience_history_id": privacy_experience_overlay_banner.histories[
                 0
             ].id,
-            "method": "buttons",
+            "method": "button",
         }
 
     @pytest.mark.usefixtures(
@@ -1103,7 +1111,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         )
         assert privacy_preference_history.anonymized_ip_address == masked_ip
         assert privacy_preference_history.url_recorded is None
-        assert privacy_preference_history.method == "buttons"
+        assert privacy_preference_history.method == ConsentMethod.button
 
         current_preference.delete(db)
         privacy_preference_history.delete(db)
@@ -1214,7 +1222,7 @@ class TestHistoricalPreferences:
             response_body["user_agent"]
             == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24"
         )
-        assert response_body["method"] == "buttons"
+        assert response_body["method"] == "button"
         assert response_body["truncated_ip_address"] == "92.158.1.0"
         assert (
             response_body["experience_config_history_id"]

@@ -2021,7 +2021,7 @@ def privacy_preference_history(
         data={
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
-            "method": "buttons",
+            "method": "button",
             "privacy_experience_config_history_id": privacy_experience_privacy_center_link.histories[
                 0
             ].experience_config_history_id,

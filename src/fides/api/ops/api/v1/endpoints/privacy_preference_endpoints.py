@@ -12,12 +12,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from sqlalchemy import literal
 from sqlalchemy.orm import Query, Session
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-)
+from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.ops.api.deps import get_db
@@ -41,15 +36,11 @@ from fides.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.ops.models.fides_user import FidesUser
-from fides.api.ops.models.privacy_experience import (
-    PrivacyExperienceConfigHistory,
-    PrivacyExperienceHistory,
-)
+from fides.api.ops.models.privacy_experience import PrivacyExperienceHistory
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
 from fides.api.ops.models.privacy_preference import (
     CurrentPrivacyPreference,
     PrivacyPreferenceHistory,
-    RequestOrigin,
 )
 from fides.api.ops.models.privacy_request import (
     ConsentRequest,

@@ -371,6 +371,7 @@ def update_privacy_notices(
     for update_data, existing_notice in updates_and_existing:
         existing_notice.update(db, data=update_data.dict(exclude_unset=True))
         notices.append(existing_notice)
+
         affected_regions.update(existing_notice.regions)
 
     # After updating all notices, make sure experiences exist to back all notices.

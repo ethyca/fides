@@ -19,10 +19,6 @@ from fides.api.ops.common_exceptions import (
     PrivacyNoticeHistoryNotFound,
 )
 from fides.api.ops.db.base_class import Base, JSONTypeOverride
-from fides.api.ops.models.privacy_experience import (
-    PrivacyExperienceConfigHistory,
-    PrivacyExperienceHistory,
-)
 from fides.api.ops.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeHistory,
@@ -41,6 +37,12 @@ class RequestOrigin(Enum):
     privacy_center = "privacy_center"
     overlay = "overlay"
     api = "api"
+
+
+class ConsentMethod(Enum):
+    button = "button"
+    gpc = "gpc"
+    individual_notice = "api"
 
 
 class PrivacyPreferenceHistory(Base):
@@ -90,8 +92,8 @@ class PrivacyPreferenceHistory(Base):
     hashed_fides_user_device = Column(String, index=True)
     # Hashed phone number, for searching
     hashed_phone_number = Column(String, index=True)
-    # Buttons, individual notices
-    method = Column(String)
+    # Button, individual notices
+    method = Column(EnumColumn(ConsentMethod))
     # Encrypted phone number, for reporting
     phone_number = Column(
         StringEncryptedType(
@@ -107,14 +109,14 @@ class PrivacyPreferenceHistory(Base):
     # Contains the version, language, button labels, description, etc.
     privacy_experience_config_history_id = Column(
         String,
-        ForeignKey(PrivacyExperienceConfigHistory.id),
+        ForeignKey("privacyexperienceconfighistory.id"),
         nullable=True,
         index=True,
     )
     # The specific version of experience under which the user was presented the relevant notice
     # Minimal information stored here, mostly the region, version, component type, and how it was delivered.
     privacy_experience_history_id = Column(
-        String, ForeignKey(PrivacyExperienceHistory.id), nullable=True, index=True
+        String, ForeignKey("privacyexperiencehistory.id"), nullable=True, index=True
     )
     # The specific historical record the user consented to
     privacy_notice_history_id = Column(
