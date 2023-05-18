@@ -206,6 +206,7 @@ describe("Consent banner", () => {
           cy.getByTestId("Save-btn").click();
           // Modal should close after saving
           cy.getByTestId("consent-modal").should("not.exist");
+
           // check that the cookie updated
           cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
             cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
@@ -220,7 +221,16 @@ describe("Consent banner", () => {
                 .is.eql(true);
             });
           });
-          // Upon reload, the cookie value should make the notices enabled
+
+          // check that window.Fides.consent updated
+          cy.window().then((win) => {
+            expect(win.Fides.consent).to.eql({
+              [PRIVACY_NOTICE_ID_1]: true,
+              [PRIVACY_NOTICE_ID_2]: true,
+            });
+          });
+
+          // Upon reload, window.Fides should make the notices enabled
           cy.reload();
           cy.contains("button", "Manage preferences").click();
           cy.getByTestId("toggle-Test privacy notice").within(() => {

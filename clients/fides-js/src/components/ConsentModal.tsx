@@ -7,7 +7,6 @@ import {
 } from "../lib/consent-types";
 import NoticeToggles from "./NoticeToggles";
 import Button from "./Button";
-import { getOrMakeFidesCookie } from "../lib/cookie";
 
 /**
  * TODO: a11y reqs
@@ -31,10 +30,13 @@ const ConsentModal = ({
   onAcceptAll: () => void;
   onRejectAll: () => void;
 }) => {
-  const initialEnabledNoticeIds = useMemo(() => {
-    const cookie = getOrMakeFidesCookie();
-    return Object.keys(cookie.consent).filter((key) => cookie.consent[key]);
-  }, []);
+  const initialEnabledNoticeIds = useMemo(
+    () =>
+      Object.keys(window.Fides.consent).filter(
+        (key) => window.Fides.consent[key]
+      ),
+    []
+  );
 
   const [enabledNoticeIds, setEnabledNoticeIds] = useState<
     Array<PrivacyNotice["id"]>

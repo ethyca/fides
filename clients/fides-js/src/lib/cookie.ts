@@ -4,7 +4,6 @@ import { getCookie, setCookie, Types } from "typescript-cookie";
 import { ConsentConfig } from "./consent-config";
 import { ConsentContext } from "./consent-context";
 import { resolveConsentValue } from "./consent-value";
-import { PrivacyNotice } from "./consent-types";
 
 /**
  * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
@@ -217,23 +216,4 @@ export const makeConsentDefaults = ({
   });
 
   return defaults;
-};
-
-export const setConsentCookieFromPrivacyNotices = ({
-  privacyNotices,
-  enabledPrivacyNoticeIds,
-}: {
-  privacyNotices: PrivacyNotice[];
-  enabledPrivacyNoticeIds: Array<PrivacyNotice["id"]>;
-}) => {
-  const noticeMap = new Map<string, boolean>(
-    privacyNotices.map((notice) => [
-      // DEFER(fides#3281): use notice key
-      notice.id,
-      enabledPrivacyNoticeIds.includes(notice.id),
-    ])
-  );
-  const cookie = getOrMakeFidesCookie();
-  const consent = Object.fromEntries(noticeMap);
-  saveFidesCookie({ ...cookie, consent });
 };

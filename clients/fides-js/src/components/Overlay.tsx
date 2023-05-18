@@ -7,12 +7,10 @@ import {
   UserGeolocation,
 } from "../lib/consent-types";
 import ConsentBanner from "./ConsentBanner";
-import {
-  CookieKeyConsent,
-  setConsentCookieFromPrivacyNotices,
-} from "../lib/cookie";
+import { CookieKeyConsent } from "../lib/cookie";
 import ConsentModal from "./ConsentModal";
-import { debugLog } from "../lib/consent-utils";
+
+import { updateConsentPreferences } from "../lib/preferences";
 
 export interface OverlayProps {
   consentDefaults: CookieKeyConsent;
@@ -21,7 +19,7 @@ export interface OverlayProps {
   geolocation?: UserGeolocation;
 }
 
-const Overlay: FunctionComponent<OverlayProps> = ({ experience, options }) => {
+const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
   if (!experience) {
@@ -29,40 +27,25 @@ const Overlay: FunctionComponent<OverlayProps> = ({ experience, options }) => {
   }
   const privacyNotices = experience.privacy_notices ?? [];
 
-  const mockPatch = () => {
-    // TODO: save to Fides consent request API
-    // eslint-disable-next-line no-console
-    console.error(
-      "Could not save consent record to Fides API, not implemented!"
-    );
-  };
-
   const onAcceptAll = () => {
     const allNoticeIds = privacyNotices.map((notice) => notice.id);
-    setConsentCookieFromPrivacyNotices({
+    updateConsentPreferences({
       privacyNotices,
       enabledPrivacyNoticeIds: allNoticeIds,
     });
-    mockPatch();
   };
 
   const onRejectAll = () => {
-    setConsentCookieFromPrivacyNotices({
-      privacyNotices,
-      enabledPrivacyNoticeIds: [],
-    });
-    mockPatch();
+    updateConsentPreferences({ privacyNotices, enabledPrivacyNoticeIds: [] });
   };
 
   const onSavePreferences = (
     enabledPrivacyNoticeIds: Array<PrivacyNotice["id"]>
   ) => {
-    debugLog(options.debug, enabledPrivacyNoticeIds);
-    setConsentCookieFromPrivacyNotices({
+    updateConsentPreferences({
       privacyNotices,
       enabledPrivacyNoticeIds,
     });
-    mockPatch();
   };
 
   return (
