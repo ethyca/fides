@@ -4,8 +4,8 @@ import pytest
 from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1 import scope_registry as scopes
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1 import scope_registry as scopes
+from fides.api.api.v1.urn_registry import (
     PRIVACY_EXPERIENCE,
     PRIVACY_EXPERIENCE_DETAIL,
     V1_URL_PREFIX,

@@ -58,9 +58,9 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestCreate,
     VerificationCode,
 )
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.consent_util import (
+from fides.api.schemas.redis_cache import Identity
+from fides.api.util.api_router import APIRouter
+from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.core.config.config_proxy import ConfigProxy

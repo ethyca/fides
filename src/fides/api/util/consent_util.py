@@ -5,10 +5,10 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.privacy_notice import EnforcementLevel, UserConsentPreference
-from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
-from fides.api.ops.models.privacy_request import (
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.privacy_notice import EnforcementLevel, UserConsentPreference
+from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
     ProvidedIdentity,

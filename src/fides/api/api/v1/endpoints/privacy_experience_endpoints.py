@@ -8,16 +8,16 @@ from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from fides.api.ops.api import deps
-from fides.api.ops.api.v1 import scope_registry
-from fides.api.ops.api.v1 import urn_registry as urls
-from fides.api.ops.models.privacy_experience import ComponentType, PrivacyExperience
-from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
-from fides.api.ops.models.privacy_request import ProvidedIdentity
-from fides.api.ops.oauth.utils import verify_oauth_client
-from fides.api.ops.schemas.privacy_experience import PrivacyExperienceResponse
-from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.consent_util import get_fides_user_device_id_provided_identity
+from fides.api.api import deps
+from fides.api.api.v1 import scope_registry
+from fides.api.api.v1 import urn_registry as urls
+from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
+from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
+from fides.api.models.privacy_request import ProvidedIdentity
+from fides.api.oauth.utils import verify_oauth_client
+from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
+from fides.api.util.api_router import APIRouter
+from fides.api.util.consent_util import get_fides_user_device_id_provided_identity
 
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
 

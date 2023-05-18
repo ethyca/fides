@@ -9,14 +9,14 @@ from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, and_, or_
 from sqlalchemy.orm import Query, Session, relationship
 from sqlalchemy.util import hybridproperty
 
-from fides.api.ops.db.base_class import Base
-from fides.api.ops.models.privacy_notice import (
+from fides.api.db.base_class import Base
+from fides.api.models.privacy_notice import (
     ConsentMechanism,
     PrivacyNotice,
     PrivacyNoticeRegion,
 )
-from fides.api.ops.models.privacy_preference import CurrentPrivacyPreference
-from fides.api.ops.models.privacy_request import ProvidedIdentity
+from fides.api.models.privacy_preference import CurrentPrivacyPreference
+from fides.api.models.privacy_request import ProvidedIdentity
 
 
 class ComponentType(Enum):

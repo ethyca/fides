@@ -13,12 +13,12 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.ops.api import deps
-from fides.api.ops.api.v1 import scope_registry
-from fides.api.ops.api.v1 import urn_registry as urls
-from fides.api.ops.api.v1.endpoints.utils import human_friendly_list
-from fides.api.ops.api.v1.scope_registry import PRIVACY_EXPERIENCE_UPDATE
-from fides.api.ops.models.privacy_experience import (
+from fides.api.api import deps
+from fides.api.api.v1 import scope_registry
+from fides.api.api.v1 import urn_registry as urls
+from fides.api.api.v1.endpoints.utils import human_friendly_list
+from fides.api.api.v1.scope_registry import PRIVACY_EXPERIENCE_UPDATE
+from fides.api.models.privacy_experience import (
     ComponentType,
     DeliveryMechanism,
     PrivacyExperience,
@@ -26,15 +26,15 @@ from fides.api.ops.models.privacy_experience import (
     config_incompatible_with_region,
     upsert_privacy_experiences_after_config_update,
 )
-from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
-from fides.api.ops.oauth.utils import verify_oauth_client
-from fides.api.ops.schemas.privacy_experience import (
+from fides.api.models.privacy_notice import PrivacyNoticeRegion
+from fides.api.oauth.utils import verify_oauth_client
+from fides.api.schemas.privacy_experience import (
     ExperienceConfigCreate,
     ExperienceConfigCreateOrUpdateResponse,
     ExperienceConfigResponse,
     ExperienceConfigUpdate,
 )
-from fides.api.ops.util.api_router import APIRouter
+from fides.api.util.api_router import APIRouter
 
 router = APIRouter(tags=["Privacy Experience Config"], prefix=urls.V1_URL_PREFIX)
 

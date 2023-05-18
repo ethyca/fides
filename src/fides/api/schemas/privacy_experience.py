@@ -6,12 +6,10 @@ from typing import Any, Dict, List, Optional
 from pydantic import Extra, root_validator, validator
 
 from fides.api.custom_types import SafeStr
-from fides.api.ops.models.privacy_experience import ComponentType, DeliveryMechanism
-from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
-from fides.api.ops.schemas.base_class import FidesSchema
-from fides.api.ops.schemas.privacy_notice import (
-    PrivacyNoticeResponseWithUserPreferences,
-)
+from fides.api.models.privacy_experience import ComponentType, DeliveryMechanism
+from fides.api.models.privacy_notice import PrivacyNoticeRegion
+from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.privacy_notice import PrivacyNoticeResponseWithUserPreferences
 
 
 class ExperienceConfigSchema(FidesSchema):
