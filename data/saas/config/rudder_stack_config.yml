@@ -1,0 +1,76 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: RudderStack SaaS Config
+  type: rudderstack
+  description: A sample schema representing the RudderStack connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: api.rudderstack.com
+    - name: token
+
+  external_references:
+    - name: user_id
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: bearer
+      configuration:
+        token: <token>
+
+  test_request:
+    method: GET
+    path: /v2/regulations
+
+  consent_requests:
+    opt_in:
+      - method: GET
+        path: /v2/regulations
+        data_path: data
+        postprocessors:
+          - strategy: filter
+            configuration:
+              field: attributes.email
+              value:
+              identity: email
+            exact: false
+            case_sensitive: false
+      - method: DELETE
+        path: /v2/regulations/<regulation_id>
+        param_values:
+          - name: regulation_id
+            references:
+              - dataset: <instance_fides_key>
+                field: regulation.id
+                direction: from
+    opt_out:
+      method: POST
+      path: /v2/regulations
+      headers: 
+        - name: Content-Type
+          value: application/json
+      body: |
+        {
+          "regulationType": "suppress_with_delete",
+            "destinationIds": [
+              "27OeyCriZ4vGFiOFPihSMgr0Nt1"
+            ],
+             "users": [
+            {
+               "userId": "<user_id_value>",
+                "phone": "+123456789",
+                "email": "<email>"
+            }
+          ]
+        }
+      param_values:
+        - name: email
+          identity: email
+        - name: user_id_value
+          references:
+            - user_id
+
+  endpoints: []
