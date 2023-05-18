@@ -14,7 +14,7 @@ from fides.api.api.v1.endpoints.saas_config_endpoints import (
 )
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.ctl.database.session import sync_session
-from fides.api.ctl.routes.system import upsert_system
+from fides.api.ctl.database.system import upsert_system
 from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     Dataset,
     sql_model_map,

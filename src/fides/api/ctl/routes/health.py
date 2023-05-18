@@ -17,6 +17,7 @@ from fides.api.util.logger import Pii
 from fides.core.config import CONFIG
 
 CacheHealth = Literal["healthy", "unhealthy", "no cache configured"]
+HEALTH_ROUTER = APIRouter(tags=["Health"])
 
 
 class CoreHealthCheck(BaseModel):
@@ -28,9 +29,6 @@ class CoreHealthCheck(BaseModel):
     cache: CacheHealth
     workers_enabled: bool
     workers: List[Optional[str]]
-
-
-router = APIRouter(tags=["Health"])
 
 
 def get_cache_health() -> str:
@@ -46,7 +44,7 @@ def get_cache_health() -> str:
         return "unhealthy"
 
 
-@router.get(
+@HEALTH_ROUTER.get(
     "/health",
     response_model=CoreHealthCheck,
     responses={

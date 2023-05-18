@@ -33,6 +33,8 @@ from fides.core.dataset import (
 from fides.core.system import generate_aws_systems, generate_okta_systems
 from fides.core.utils import validate_db_engine
 
+GENERATE_ROUTER = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
+
 
 class ValidTargets(str, Enum):
     """
@@ -102,10 +104,7 @@ class GenerateResponse(BaseModel):
     generate_results: Optional[List[Union[Dataset, System]]]
 
 
-router = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
-
-
-@router.post(
+@GENERATE_ROUTER.post(
     "/",
     status_code=status.HTTP_200_OK,
     dependencies=[

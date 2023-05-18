@@ -10,10 +10,10 @@ import fides
 from fides.cli.utils import (
     FIDES_ASCII_ART,
     check_server,
-    print_divider,
     send_init_analytics,
     with_analytics,
 )
+from fides.common.utils import print_divider
 from fides.core.config.create import create_and_update_config_file
 from fides.core.deploy import (
     check_docker_version,

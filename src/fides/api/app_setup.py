@@ -18,10 +18,9 @@ from fides.api.api.deps import get_api_session
 from fides.api.api.v1.api import api_router
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
-from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.database.seed import create_or_update_parent_user
-from fides.api.ctl.routes import admin, crud, generate, health, system, validate
+from fides.api.ctl.routes import CTL_ROUTER
 from fides.api.ctl.utils.errors import FidesError
 from fides.api.ctl.utils.logger import setup as setup_logging
 from fides.api.models.application_config import ApplicationConfig
@@ -43,15 +42,7 @@ from fides.core.config import CONFIG
 
 VERSION = fides.__version__
 
-ROUTERS = crud.routers + [  # type: ignore[attr-defined]
-    admin.router,
-    generate.router,
-    health.router,
-    validate.router,
-    view.router,
-    system.system_connections_router,
-    system.system_router,
-]
+ROUTERS = [CTL_ROUTER, api_router]
 
 
 def create_fides_app(
@@ -98,7 +89,6 @@ def create_fides_app(
 
     for router in routers:
         fastapi_app.include_router(router)
-    fastapi_app.include_router(api_router)
 
     if security_env == "dev":
         # This removes auth requirements for specific endpoints
