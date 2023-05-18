@@ -8,7 +8,6 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     models_with_default_field,
 )
 from fides.api.ctl.utils import errors
-from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api.v1.scope_registry import (
     CTL_DATASET,
     CTL_POLICY,
