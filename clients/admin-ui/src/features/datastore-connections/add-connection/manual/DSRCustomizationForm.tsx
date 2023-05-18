@@ -80,7 +80,7 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
               .min(1, "DSR Package Label must have at least one character")
               .max(200, "DSR Package Label has a maximum of 200 characters")
               .label("DSR Package Label"),
-            data_categories: Yup.array(Yup.string()).label("Data Category"),
+            data_categories: Yup.array(Yup.string()).label("Data Categories"),
           })
         ),
       })}
