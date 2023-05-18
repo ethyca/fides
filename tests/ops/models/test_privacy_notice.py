@@ -1,11 +1,13 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import ValidationError
-from fides.api.models.privacy_notice import (
+from fides.api.ops.common_exceptions import ValidationError
+from fides.api.ops.models.privacy_notice import (
+    ConsentMechanism,
     PrivacyNotice,
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
+    UserConsentPreference,
     check_conflicting_data_uses,
     new_data_use_conflicts_with_existing_use,
 )
@@ -30,6 +32,18 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.created_at is not None
         assert privacy_notice.updated_at is not None
         assert privacy_notice.id is not None
+        assert privacy_notice.consent_mechanism == ConsentMechanism.opt_in
+        assert privacy_notice.default_preference == UserConsentPreference.opt_out
+
+    def test_default_preference_property(self, privacy_notice):
+        assert privacy_notice.consent_mechanism == ConsentMechanism.opt_in
+        assert privacy_notice.default_preference == UserConsentPreference.opt_out
+
+        privacy_notice.consent_mechanism = ConsentMechanism.opt_out
+        assert privacy_notice.default_preference == UserConsentPreference.opt_in
+
+        privacy_notice.consent_mechanism = ConsentMechanism.notice_only
+        assert privacy_notice.default_preference == UserConsentPreference.acknowledge
 
     def test_update_no_updates_no_history(
         self, db: Session, privacy_notice: PrivacyNotice

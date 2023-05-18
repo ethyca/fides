@@ -17,15 +17,68 @@ from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.db.base_class import Base, FidesBase
 
 
+class UserConsentPreference(Enum):
+    opt_in = "opt_in"  # The user wants to opt in to the notice
+    opt_out = "opt_out"  # The user wants to opt out of the notice
+    acknowledge = "acknowledge"  # The user has acknowledged this notice
+
+
 class PrivacyNoticeRegion(Enum):
     """
     Enum is not formalized in the DB because it is subject to frequent change
     """
 
+    us_al = "us_al"  # alabama
+    us_ak = "us_ak"  # alaska
+    us_az = "us_az"  # arizona
+    us_ar = "us_ar"  # arkansas
     us_ca = "us_ca"  # california
     us_co = "us_co"  # colorado
-    us_va = "us_va"  # virginia
+    us_ct = "us_ct"  # connecticut
+    us_de = "us_de"  # delaware
+    us_fl = "us_fl"  # florida
+    us_ga = "us_ga"  # georgia
+    us_hi = "us_hi"  # hawaii
+    us_id = "us_id"  # idaho
+    us_il = "us_il"  # illinois
+    us_in = "us_in"  # indiana
+    us_ia = "us_ia"  # iowa
+    us_ks = "us_ks"  # kansas
+    us_ky = "us_ky"  # kentucky
+    us_la = "us_la"  # louisiana
+    us_me = "us_me"  # maine
+    us_md = "us_md"  # maryland
+    us_ma = "us_ma"  # massachusetts
+    us_mi = "us_mi"  # michigan
+    us_mn = "us_mn"  # minnesota
+    us_ms = "us_ms"  # mississippi
+    us_mo = "us_mo"  # missouri
+    us_mt = "us_mt"  # montana
+    us_ne = "us_ne"  # nebraska
+    us_nv = "us_nv"  # nevada
+    us_nh = "us_nh"  # new hampshire
+    us_nj = "us_nj"  # new jersey
+    us_nm = "us_nm"  # new mexico
+    us_ny = "us_ny"  # new york
+    us_nc = "us_nc"  # north carolina
+    us_nd = "us_nd"  # north dakota
+    us_oh = "us_oh"  # ohio
+    us_ok = "us_ok"  # oklahoma
+    us_or = "us_or"  # oregon
+    us_pa = "us_pa"  # pennsylvania
+    us_ri = "us_ri"  # rhode island
+    us_sc = "us_sc"  # south carolina
+    us_sd = "us_sd"  # south dakota
+    us_tn = "us_tn"  # tennessee
+    us_tx = "us_tx"  # texas
     us_ut = "us_ut"  # utah
+    us_vt = "us_vt"  # vermont
+    us_va = "us_va"  # virginia
+    us_wa = "us_wa"  # washington
+    us_wv = "us_wv"  # west virginia
+    us_wi = "us_wi"  # wisconsin
+    us_wy = "us_wy"  # wyoming
+
     eu_be = "eu_be"  # belgium
     eu_bg = "eu_bg"  # bulgaria
     eu_cz = "eu_cz"  # czechia
@@ -118,6 +171,11 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         "PrivacyNoticeHistory", backref="privacy_notice", lazy="dynamic"
     )
 
+    # Attribute that can be temporarily cached as the result of "get_related_privacy_notices"
+    # for a given user, for surfacing CurrentPrivacyPreferences for the user.
+    current_preference = None
+    outdated_preference = None
+
     @hybridproperty
     def privacy_notice_history_id(self) -> Optional[str]:
         """Convenience property that returns the historical privacy notice history id for the current version.
@@ -129,6 +187,24 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             version=self.version
         ).first()
         return history.id if history else None
+
+    @hybridproperty
+    def default_preference(self) -> UserConsentPreference:
+        """Returns the user's default consent preference given the consent
+        mechanism of this notice, or "what is granted to the user"
+
+        For example, if a notice has an opt in consent mechanism, this means
+        that they should be granted the opportunity to opt in, but by
+        default, they *should be opted out*
+        """
+        if self.consent_mechanism == ConsentMechanism.opt_in:
+            return UserConsentPreference.opt_out  # Intentional
+        if self.consent_mechanism == ConsentMechanism.opt_out:
+            return UserConsentPreference.opt_in  # Intentional
+        if self.consent_mechanism == ConsentMechanism.notice_only:
+            return UserConsentPreference.acknowledge
+
+        raise Exception("Invalid notice consent mechanism.")
 
     @classmethod
     def create(

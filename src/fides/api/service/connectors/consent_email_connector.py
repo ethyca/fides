@@ -9,13 +9,14 @@ from fides.api.models.connectionconfig import (
     ConnectionTestStatus,
     ConnectionType,
 )
-from fides.api.models.policy import ActionType
-from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
-from fides.api.models.privacy_preference import (
-    PrivacyPreferenceHistory,
+from fides.api.ops.models.policy import ActionType
+from fides.api.ops.models.privacy_notice import (
+    ConsentMechanism,
+    EnforcementLevel,
     UserConsentPreference,
 )
-from fides.api.models.privacy_request import (
+from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,

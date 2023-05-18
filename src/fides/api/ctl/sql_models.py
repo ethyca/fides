@@ -503,7 +503,7 @@ class CustomFieldDefinition(Base):
     )
     allow_list_id = Column(String, ForeignKey(CustomFieldValueList.id), nullable=True)
     resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
-    field_definition = Column(String, index=True)
+    field_definition = Column(String)
     custom_field = relationship(
         "CustomField",
         back_populates="custom_field_definition",

@@ -28,16 +28,16 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.api.cryptography.cryptographic_util import hash_with_salt
-from fides.api.db.base_class import Base  # type: ignore[attr-defined]
-from fides.api.db.base_class import JSONTypeOverride
-from fides.api.graph.config import CollectionAddress
-from fides.api.graph.graph_differences import GraphRepr
-from fides.api.models.audit_log import AuditLog
-from fides.api.models.client import ClientDetail
-from fides.api.models.fides_user import FidesUser
-from fides.api.models.manual_webhook import AccessManualWebhook
-from fides.api.models.policy import (
+from fides.api.ops.cryptography.cryptographic_util import hash_with_salt
+from fides.api.ops.db.base_class import Base  # type: ignore[attr-defined]
+from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.graph.graph_differences import GraphRepr
+from fides.api.ops.models.audit_log import AuditLog
+from fides.api.ops.models.client import ClientDetail
+from fides.api.ops.models.fides_user import FidesUser
+from fides.api.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.ops.models.policy import (
     ActionType,
     CurrentStep,
     Policy,

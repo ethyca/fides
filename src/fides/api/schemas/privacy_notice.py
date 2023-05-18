@@ -9,6 +9,7 @@ from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNoticeRegion,
+    UserConsentPreference,
 )
 from fides.api.schemas.base_class import FidesSchema
 
@@ -128,6 +129,21 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
     updated_at: datetime
     version: float
     privacy_notice_history_id: str
+
+
+class PrivacyNoticeResponseWithUserPreferences(PrivacyNoticeResponse):
+    """
+    If retrieving notices for a given user, also return the default preferences for that notice
+    and any saved preferences.
+    """
+
+    default_preference: UserConsentPreference  # The default preference for this notice
+    current_preference: Optional[
+        UserConsentPreference
+    ]  # The current saved preference for the given user if it exists
+    outdated_preference: Optional[
+        UserConsentPreference
+    ]  # If no current preference, check if we have a preference saved for a previous version.
 
 
 class PrivacyNoticeHistorySchema(PrivacyNoticeCreation, PrivacyNoticeWithId):

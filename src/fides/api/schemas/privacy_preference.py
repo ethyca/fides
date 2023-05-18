@@ -5,13 +5,19 @@ from fideslang.validation import FidesKey
 from pydantic import Field, conlist
 
 from fides.api.custom_types import SafeStr
-from fides.api.models.policy import ActionType
-from fides.api.models.privacy_notice import PrivacyNoticeRegion
-from fides.api.models.privacy_preference import RequestOrigin, UserConsentPreference
-from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
-from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.api.schemas.redis_cache import Identity
+from fides.api.ops.models.policy import ActionType
+from fides.api.ops.models.privacy_notice import (
+    PrivacyNoticeRegion,
+    UserConsentPreference,
+)
+from fides.api.ops.models.privacy_preference import RequestOrigin
+from fides.api.ops.models.privacy_request import (
+    ExecutionLogStatus,
+    PrivacyRequestStatus,
+)
+from fides.api.ops.schemas.base_class import FidesSchema
+from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
+from fides.api.ops.schemas.redis_cache import Identity
 
 
 class ConsentOptionCreate(FidesSchema):
