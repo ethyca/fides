@@ -1,0 +1,72 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: Gladly Dataset
+    description: A sample dataset representing the Gladly connector for Fides
+    collections:
+      - name: customer
+        fields:
+          - name: address
+            data_categories: [user.location]
+            fidesops_meta:
+              data_type: string
+          - name: customAttributes
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: albums
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: singles
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+          - name: emails
+            fidesops_meta:
+              data_type: 'object[]'
+            fields:
+              - name: normalized
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: original
+                data_categories: [user.contact.email]
+                fidesops_meta:
+                  data_type: string
+          - name: externalCustomerId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: phones
+            fidesops_meta:
+              data_type: 'object[]'
+            fields:
+              - name: normalized
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: original
+                data_categories: [user.contact.phone_number]
+                fidesops_meta:
+                  data_type: string
+              - name: regionCode
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: type
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+          - name: id
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: createdAt
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
