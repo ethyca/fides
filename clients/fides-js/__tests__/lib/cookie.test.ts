@@ -6,11 +6,11 @@ import {
   makeConsentDefaults,
   makeFidesCookie,
   saveFidesCookie,
-  setConsentCookieAcceptAll,
-  setConsentCookieRejectAll,
+  setConsentCookieFromPrivacyNotices,
 } from "../../src/lib/cookie";
 import type { ConsentConfig } from "../../src/lib/consent-config";
 import type { ConsentContext } from "../../src/lib/consent-context";
+import { PrivacyNotice } from "~/fides";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
@@ -235,35 +235,51 @@ describe("makeConsentDefaults", () => {
 describe("setConsentCookie", () => {
   afterEach(() => mockSetCookie.mockClear());
 
-  const defaults: CookieKeyConsent = {
-    default_true: true,
-    default_false: false,
-    another_true: true,
-    another_false: false,
-  };
+  const privacyNotices = [
+    { id: "essential" },
+    { id: "data_sales" },
+    { id: "tracking" },
+  ] as PrivacyNotice[];
 
-  it("AcceptAll sets all consent preferences to true", () => {
-    setConsentCookieAcceptAll(defaults);
+  it("can set all privacy notices to true in the cookie", () => {
+    setConsentCookieFromPrivacyNotices({
+      privacyNotices,
+      enabledPrivacyNoticeIds: ["essential", "data_sales", "tracking"],
+    });
     expect(mockSetCookie.mock.calls).toHaveLength(1);
     const cookie = JSON.parse(mockSetCookie.mock.calls[0][1]);
     expect(cookie.consent).toEqual({
-      default_true: true,
-      default_false: true,
-      another_true: true,
-      another_false: true,
+      essential: true,
+      data_sales: true,
+      tracking: true,
     });
   });
 
-  // NOTE: this will need to be updated for notice-only preferences!
-  it("RejectAll sets all consent preferences to false", () => {
-    setConsentCookieRejectAll(defaults);
+  it("can reject all privacy notices", () => {
+    setConsentCookieFromPrivacyNotices({
+      privacyNotices,
+      enabledPrivacyNoticeIds: [],
+    });
     expect(mockSetCookie.mock.calls).toHaveLength(1);
     const cookie = JSON.parse(mockSetCookie.mock.calls[0][1]);
     expect(cookie.consent).toEqual({
-      default_true: false,
-      default_false: false,
-      another_true: false,
-      another_false: false,
+      essential: false,
+      data_sales: false,
+      tracking: false,
+    });
+  });
+
+  it("can set some privacy notices to true", () => {
+    setConsentCookieFromPrivacyNotices({
+      privacyNotices,
+      enabledPrivacyNoticeIds: ["essential"],
+    });
+    expect(mockSetCookie.mock.calls).toHaveLength(1);
+    const cookie = JSON.parse(mockSetCookie.mock.calls[0][1]);
+    expect(cookie.consent).toEqual({
+      essential: true,
+      data_sales: false,
+      tracking: false,
     });
   });
 });
