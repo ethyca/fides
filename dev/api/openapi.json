@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.13.1b0.post0.dev6"
+    "version": "2.13.1b0.post0.dev7"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -6294,7 +6294,7 @@
                 "maxItems": 50,
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/fides__api__ops__schemas__policy__Policy"
+                  "$ref": "#/components/schemas/fides__api__schemas__policy__Policy"
                 }
               }
             }
@@ -13021,7 +13021,7 @@
             "type": "string"
           },
           "keyfile_creds": {
-            "$ref": "#/components/schemas/fides__api__ops__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds"
+            "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds"
           }
         },
         "additionalProperties": false,
@@ -21012,7 +21012,7 @@
         },
         "description": "Schema for displaying a minimal amount of information about the webhook and its order"
       },
-      "fides__api__ops__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds": {
+      "fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds": {
         "title": "KeyfileCreds",
         "required": [
           "project_id"
@@ -21063,7 +21063,7 @@
         },
         "description": "Schema that holds BigQuery keyfile key/vals"
       },
-      "fides__api__ops__schemas__policy__Policy": {
+      "fides__api__schemas__policy__Policy": {
         "title": "Policy",
         "required": [
           "name"
