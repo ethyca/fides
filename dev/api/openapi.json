@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.13.1b0.post0.dev3"
+    "version": "2.13.1b0.post0.dev4"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8322,7 +8322,7 @@
           "Privacy Experience"
         ],
         "summary": "Privacy Experience List",
-        "description": "Returns a list of PrivacyExperience records for individual regions with\nrelevant privacy notices embedded in the response.\n\n'show_disabled' query params are passed along to further filter\nnotices as well.",
+        "description": "Returns a list of PrivacyExperience records for individual regions with\nrelevant privacy notices embedded in the response.\n\n'show_disabled' query params are passed along to further filter\nnotices as well.\n\n'fides_user_device_id' query param will stash the current preferences of the given user\nalongside each notice where applicable.",
         "operationId": "privacy_experience_list_api_v1_privacy_experience_get",
         "parameters": [
           {
@@ -8367,6 +8367,15 @@
               "type": "boolean"
             },
             "name": "has_config",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Fides User Device Id",
+              "type": "string"
+            },
+            "name": "fides_user_device_id",
             "in": "query"
           },
           {
@@ -8430,7 +8439,7 @@
           "Privacy Experience"
         ],
         "summary": "Privacy Experience Detail",
-        "description": "Return a privacy experience for a given region with relevant notices embedded.\n\nshow_disabled query params are passed onto optionally filter the embedded notices.",
+        "description": "Return a privacy experience for a given region with relevant notices embedded.\n\nshow_disabled query params are passed onto optionally filter the embedded notices.\n\n'fides_user_device_id' query param will stash the current preferences of the given user\nalongside each notice where applicable.",
         "operationId": "privacy_experience_detail_api_v1_privacy_experience__privacy_experience_id__get",
         "parameters": [
           {
@@ -8450,6 +8459,15 @@
               "default": true
             },
             "name": "show_disabled",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Fides User Device Id",
+              "type": "string"
+            },
+            "name": "fides_user_device_id",
             "in": "query"
           }
         ],
@@ -9154,70 +9172,6 @@
       }
     },
     "/api/v1/privacy-preferences": {
-      "get": {
-        "tags": [
-          "Privacy Preference"
-        ],
-        "summary": "Get Privacy Preferences By Device Id",
-        "description": "Retrieves privacy preferences with respect to a fides user device id.",
-        "operationId": "get_privacy_preferences_by_device_id_api_v1_privacy_preferences_get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides User Device Id",
-              "type": "string"
-            },
-            "name": "fides_user_device_id",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Page",
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 1
-            },
-            "name": "page",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Size",
-              "maximum": 100.0,
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 50
-            },
-            "name": "size",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Page_CurrentPrivacyPreferenceSchema_"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
       "patch": {
         "tags": [
           "Privacy Preference"
@@ -18700,7 +18654,7 @@
             "title": "Privacy Notices",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/PrivacyNoticeResponse"
+              "$ref": "#/components/schemas/PrivacyNoticeResponseWithUserPreferences"
             }
           }
         },
@@ -19057,6 +19011,115 @@
         },
         "additionalProperties": false,
         "description": "An API representation of a PrivacyNotice used for response payloads"
+      },
+      "PrivacyNoticeResponseWithUserPreferences": {
+        "title": "PrivacyNoticeResponseWithUserPreferences",
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "version",
+          "privacy_notice_history_id",
+          "default_preference"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "internal_description": {
+            "title": "Internal Description",
+            "type": "string"
+          },
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "regions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          },
+          "consent_mechanism": {
+            "$ref": "#/components/schemas/ConsentMechanism"
+          },
+          "data_uses": {
+            "title": "Data Uses",
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enforcement_level": {
+            "$ref": "#/components/schemas/EnforcementLevel"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "has_gpc_flag": {
+            "title": "Has Gpc Flag",
+            "type": "boolean",
+            "default": false
+          },
+          "displayed_in_privacy_center": {
+            "title": "Displayed In Privacy Center",
+            "type": "boolean",
+            "default": false
+          },
+          "displayed_in_overlay": {
+            "title": "Displayed In Overlay",
+            "type": "boolean",
+            "default": false
+          },
+          "displayed_in_api": {
+            "title": "Displayed In Api",
+            "type": "boolean",
+            "default": false
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "title": "Version",
+            "type": "number"
+          },
+          "privacy_notice_history_id": {
+            "title": "Privacy Notice History Id",
+            "type": "string"
+          },
+          "default_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "current_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "outdated_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          }
+        },
+        "additionalProperties": false,
+        "description": "If retrieving notices for a given user, also return the default preferences for that notice\nand any saved preferences."
       },
       "PrivacyNoticeWithId": {
         "title": "PrivacyNoticeWithId",
