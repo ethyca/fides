@@ -4,6 +4,7 @@ import { getCookie, setCookie, Types } from "typescript-cookie";
 import { ConsentConfig } from "./consent-config";
 import { ConsentContext } from "./consent-context";
 import { resolveConsentValue } from "./consent-value";
+import { PrivacyNotice } from "./consent-types";
 
 /**
  * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
@@ -218,35 +219,21 @@ export const makeConsentDefaults = ({
   return defaults;
 };
 
-/**
- * Given a CookieKeyConsent and a `value`, update and set the fides cookie
- * such that every key is set to the passed in `value`
- */
-const setConsentCookieValuesTo = (
-  cookieKeys: CookieKeyConsent,
-  value: boolean
-) => {
-  if (!cookieKeys) {
-    // eslint-disable-next-line no-console
-    console.error(
-      `Unable to set consent cookie values to all ${value}: invalid defaults`
-    );
-    return;
-  }
-  const updatedCookieKeyConsent: CookieKeyConsent = {};
-
-  Object.keys(cookieKeys).forEach((cookieKey) => {
-    updatedCookieKeyConsent[cookieKey] = value;
-  });
-
+export const setConsentCookieFromPrivacyNotices = ({
+  privacyNotices,
+  enabledPrivacyNoticeIds,
+}: {
+  privacyNotices: PrivacyNotice[];
+  enabledPrivacyNoticeIds: Array<PrivacyNotice["id"]>;
+}) => {
+  const noticeMap = new Map<string, boolean>(
+    privacyNotices.map((notice) => [
+      // DEFER(fides#3281): use notice key
+      notice.name,
+      enabledPrivacyNoticeIds.includes(notice.id),
+    ])
+  );
   const cookie = getOrMakeFidesCookie();
-  saveFidesCookie({ ...cookie, consent: updatedCookieKeyConsent });
-};
-
-export const setConsentCookieAcceptAll = (defaults: CookieKeyConsent): void => {
-  setConsentCookieValuesTo(defaults, true);
-};
-
-export const setConsentCookieRejectAll = (defaults: CookieKeyConsent): void => {
-  setConsentCookieValuesTo(defaults, false);
+  const consent = Object.fromEntries(noticeMap);
+  saveFidesCookie({ ...cookie, consent });
 };

@@ -26,8 +26,7 @@ const ConsentModal = ({
   experience: ExperienceConfig;
   notices: PrivacyNotice[];
   onClose: () => void;
-  // DEFER: properly type this once we interface with the API
-  onSave: (payload: any) => void;
+  onSave: (enabledNoticeIds: Array<PrivacyNotice["id"]>) => void;
   onAcceptAll: () => void;
   onRejectAll: () => void;
 }) => {
@@ -36,11 +35,8 @@ const ConsentModal = ({
     Array<PrivacyNotice["id"]>
   >([]);
 
-  const handleSubmit = () => {
-    const noticeMap = notices.map((notice) => ({
-      [notice.id]: enabledNoticeIds.includes(notice.id),
-    }));
-    onSave(noticeMap);
+  const handleSave = () => {
+    onSave(enabledNoticeIds);
     onClose();
   };
 
@@ -80,7 +76,7 @@ const ConsentModal = ({
             <Button
               label="Save"
               buttonType={ButtonType.SECONDARY}
-              onClick={handleSubmit}
+              onClick={handleSave}
             />
             <Button
               label={experience.reject_button_label}
