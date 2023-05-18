@@ -19,12 +19,15 @@ const ConsentModal = ({
   experience,
   notices,
   onClose,
+  onSave,
   onAcceptAll,
   onRejectAll,
 }: {
   experience: ExperienceConfig;
   notices: PrivacyNotice[];
   onClose: () => void;
+  // DEFER: properly type this once we interface with the API
+  onSave: (payload: any) => void;
   onAcceptAll: () => void;
   onRejectAll: () => void;
 }) => {
@@ -34,11 +37,10 @@ const ConsentModal = ({
   >([]);
 
   const handleSubmit = () => {
-    // DEFER: implement fetch PATCH against /consent-request/id/privacy-preferences?
     const noticeMap = notices.map((notice) => ({
       [notice.id]: enabledNoticeIds.includes(notice.id),
     }));
-    console.log("submitting notice map", noticeMap);
+    onSave(noticeMap);
     onClose();
   };
 

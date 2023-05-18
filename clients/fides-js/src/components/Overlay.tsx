@@ -12,6 +12,7 @@ import {
   setConsentCookieRejectAll,
 } from "../lib/cookie";
 import ConsentModal from "./ConsentModal";
+import { debugLog } from "../lib/consent-utils";
 
 export interface OverlayProps {
   consentDefaults: CookieKeyConsent;
@@ -44,6 +45,12 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     );
   };
 
+  // DEFER: properly type this payload and implement fetch PATCH
+  // against /consent-request/id/privacy-preferences?
+  const onSavePreferences = (payload: any) => {
+    debugLog(options.debug, payload);
+  };
+
   if (!experience) {
     return null;
   }
@@ -53,7 +60,6 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     <div id="fides-js-root">
       <ConsentBanner
         experience={experience}
-        privacyCenterUrl={options.privacyCenterUrl}
         onAcceptAll={onAcceptAll}
         onRejectAll={onRejectAll}
         waitBeforeShow={100}
@@ -66,6 +72,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
           onClose={() => setModalIsOpen(false)}
           onAcceptAll={onAcceptAll}
           onRejectAll={onRejectAll}
+          onSave={onSavePreferences}
         />
       ) : null}
     </div>
