@@ -579,3 +579,15 @@ class CustomField(Base):
     )
 
     UniqueConstraint("resource_type", "resource_id", "custom_field_definition_id")
+
+
+class AuditLogResource(Base):
+    """The log of user actions against fides resources."""
+
+    __tablename__ = "audit_log_resource"
+
+    user_id = Column(String, nullable=True, index=True)
+    request_path = Column(String, nullable=True)
+    request_type = Column(String, nullable=True)
+    fides_keys = Column(ARRAY(String), nullable=True)
+    extra_data = Column(JSON, nullable=True)
