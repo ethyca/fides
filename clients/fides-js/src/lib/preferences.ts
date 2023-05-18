@@ -36,7 +36,7 @@ export const updateConsentPreferences = ({
 
   // 2. Update the window.Fides.consent object
   debugLog(debug, "Updating window.Fides");
-  // window.Fides.consent = consentCookieKey;
+  window.Fides.consent = consentCookieKey;
 
   // 3. Save preferences to the cookie
   debugLog(debug, "Saving preferences to cookie");
