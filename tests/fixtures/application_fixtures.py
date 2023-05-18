@@ -2009,6 +2009,7 @@ def privacy_preference_history(
     db,
     provided_identity_and_consent_request,
     privacy_notice,
+    privacy_experience_privacy_center_link,
 ):
     provided_identity, consent_request = provided_identity_and_consent_request
     privacy_notice_history = privacy_notice.histories[0]
@@ -2016,7 +2017,15 @@ def privacy_preference_history(
     preference_history_record = PrivacyPreferenceHistory.create(
         db=db,
         data={
+            "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
+            "method": "button",
+            "privacy_experience_config_history_id": privacy_experience_privacy_center_link.histories[
+                0
+            ].experience_config_history_id,
+            "privacy_experience_history_id": privacy_experience_privacy_center_link.histories[
+                0
+            ].id,
             "preference": "opt_out",
             "privacy_notice_history_id": privacy_notice_history.id,
             "provided_identity_id": provided_identity.id,

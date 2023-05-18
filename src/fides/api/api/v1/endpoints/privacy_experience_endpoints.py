@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fastapi import Depends, HTTPException, Request, Security
+from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
@@ -57,7 +57,6 @@ def privacy_experience_list(
     has_notices: Optional[bool] = None,
     has_config: Optional[bool] = None,
     fides_user_device_id: Optional[str] = None,
-    request: Request,
 ) -> AbstractPage[PrivacyExperience]:
     """
     Returns a list of PrivacyExperience records for individual regions with
@@ -127,7 +126,6 @@ def privacy_experience_detail(
     privacy_experience_id: str,
     show_disabled: Optional[bool] = True,
     fides_user_device_id: Optional[str] = None,
-    request: Request,
 ) -> PrivacyExperience:
     """
     Return a privacy experience for a given region with relevant notices embedded.

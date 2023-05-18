@@ -102,6 +102,7 @@ async def async_session(test_client):
 @pytest.fixture(scope="session")
 def api_client():
     """Return a client used to make API requests"""
+
     with TestClient(app) as c:
         yield c
 
