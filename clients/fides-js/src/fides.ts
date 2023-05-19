@@ -213,14 +213,14 @@ const init = async ({
       options.debug,
       "Fides consent overlay is disabled, skipping overlay initialization!"
     );
-    return
+    return;
   }
   if (experience && experience.component !== ComponentType.OVERLAY) {
     debugLog(
       options.debug,
       "No experience found with overlay component, skipping overlay initialization!"
     );
-    return
+    return;
   }
   await initOverlay({
     consentDefaults,

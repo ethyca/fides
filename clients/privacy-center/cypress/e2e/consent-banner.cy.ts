@@ -1,12 +1,15 @@
-import FidesConfig, {
+import {
   CONSENT_COOKIE_NAME,
   ComponentType,
   DeliveryMechanism,
   FidesCookie,
 } from "fides-js";
-import {FidesOptions, PrivacyExperience, UserGeolocation} from "fides-js/src/lib/consent-types";
-import {ConsentConfig} from "fides-js/src/lib/consent-config";
-
+import {
+  FidesOptions,
+  PrivacyExperience,
+  UserGeolocation,
+} from "fides-js/src/lib/consent-types";
+import { ConsentConfig } from "fides-js/src/lib/consent-config";
 
 export interface FidesConfigTesting {
   // We don't need all required props to override the default config
@@ -20,7 +23,12 @@ export interface FidesConfigTesting {
  * Helper function to swap out config
  * @example stubExperience({experience: {component: ComponentType.PRIVACY_CENTER}})
  */
-const stubConfig = ({ consent, experience, geolocation, options }: Partial<FidesConfigTesting>) => {
+const stubConfig = ({
+  consent,
+  experience,
+  geolocation,
+  options,
+}: Partial<FidesConfigTesting>) => {
   cy.fixture("consent/test_banner_options.json").then((config) => {
     const updatedConfig = {
       consent: Object.assign(config.consent, consent),
