@@ -26,6 +26,17 @@ export const settingsSlice = createSlice({
       }
       draftState.settings = payload;
     },
+    /**
+     * Override existing settings with passed in values
+     *
+     * Used for tests
+     */
+    overrideSettings(
+      draftState,
+      { payload }: PayloadAction<PrivacyCenterClientSettings>
+    ) {
+      draftState.settings = { ...draftState.settings, ...payload };
+    },
   },
 });
 

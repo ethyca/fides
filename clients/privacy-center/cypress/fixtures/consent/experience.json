@@ -1,0 +1,67 @@
+{
+  "items": [
+    {
+      "component": "privacy_center",
+      "created_at": "2023-05-19T20:32:19.975647+00:00",
+      "delivery_mechanism": "link",
+      "disabled": false,
+      "experience_config": null,
+      "id": "pri_ab6c407d-f17d-42fe-a312-de0ad177357d",
+      "privacy_experience_history_id": "pri_fa266d8f-67c4-430c-b62b-5b6d6221cca6",
+      "privacy_notices": [
+        {
+          "consent_mechanism": "opt_in",
+          "created_at": "2023-05-19T20:32:19.956242+00:00",
+          "current_preference": null,
+          "data_uses": ["train_ai_system"],
+          "default_preference": "opt_out",
+          "description": "hey this is important",
+          "disabled": false,
+          "displayed_in_api": true,
+          "displayed_in_overlay": true,
+          "displayed_in_privacy_center": true,
+          "enforcement_level": "system_wide",
+          "has_gpc_flag": true,
+          "id": "pri_2d1e758a-2678-4a7c-a514-fbf97a994e66",
+          "internal_description": null,
+          "name": "Test",
+          "origin": null,
+          "outdated_preference": null,
+          "privacy_notice_history_id": "pri_80aae907-b79c-4c4c-8573-61a8b9eb85df",
+          "regions": ["us_ca"],
+          "updated_at": "2023-05-19T20:32:19.956242+00:00",
+          "version": 1.0
+        },
+        {
+          "consent_mechanism": "opt_out",
+          "created_at": "2023-05-15T19:43:58.930314+00:00",
+          "current_preference": null,
+          "data_uses": ["advertising.third_party.personalized"],
+          "default_preference": "opt_in",
+          "description": "Provide opt-out consent for the use of data in ways that may be considered “data sales” under US state privacy regulations.",
+          "disabled": false,
+          "displayed_in_api": false,
+          "displayed_in_overlay": false,
+          "displayed_in_privacy_center": true,
+          "enforcement_level": "frontend",
+          "has_gpc_flag": false,
+          "id": "pri_9d60c347-af22-44d0-bcbb-9a4007c3e08e",
+          "internal_description": null,
+          "name": "Data Sales",
+          "origin": null,
+          "outdated_preference": null,
+          "privacy_notice_history_id": "pri_feee1bb4-c55c-454b-932e-072d9bd33165",
+          "regions": ["us_ca", "us_co"],
+          "updated_at": "2023-05-15T19:43:58.930314+00:00",
+          "version": 1.0
+        }
+      ],
+      "region": "us_ca",
+      "updated_at": "2023-05-19T20:32:19.975647+00:00",
+      "version": 1.0
+    }
+  ],
+  "page": 1,
+  "size": 50,
+  "total": 4
+}

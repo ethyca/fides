@@ -7,7 +7,7 @@ import {
   ComponentType,
   ConsentPreferences,
   ConsentPreferencesWithVerificationCode,
-  PrivacyExperienceResponse,
+  Page_PrivacyExperienceResponse_,
   PrivacyNoticeRegion,
 } from "~/types/api";
 
@@ -50,7 +50,7 @@ export const consentApi = baseApi.injectEndpoints({
       }),
     }),
     getPrivacyExperience: build.query<
-      PrivacyExperienceResponse,
+      Page_PrivacyExperienceResponse_,
       PrivacyNoticeRegion
     >({
       query: (region) => ({
@@ -156,6 +156,6 @@ export const selectPrivacyExperience = createSelector(
       return undefined;
     }
     return consentApi.endpoints.getPrivacyExperience.select(region)(RootState)
-      ?.data;
+      ?.data?.items[0];
   }
 );

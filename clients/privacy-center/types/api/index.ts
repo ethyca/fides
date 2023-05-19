@@ -13,6 +13,7 @@ export { EnforcementLevel } from "./models/EnforcementLevel";
 export type { ExperienceConfigResponse } from "./models/ExperienceConfigResponse";
 export type { Identity } from "./models/Identity";
 export type { IdentityVerificationConfigResponse } from "./models/IdentityVerificationConfigResponse";
+export type { Page_PrivacyExperienceResponse_ } from "./models/Page_PrivacyExperienceResponse_";
 export type { PrivacyExperienceResponse } from "./models/PrivacyExperienceResponse";
 export { PrivacyNoticeRegion } from "./models/PrivacyNoticeRegion";
 export type { PrivacyNoticeResponse } from "./models/PrivacyNoticeResponse";

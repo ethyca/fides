@@ -143,6 +143,10 @@ describe("Consent settings", () => {
         { fixture: "consent/verify" }
       ).as("postConsentRequestVerify");
 
+      cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
+        fixture: "consent/experience.json",
+      }).as("getExperience");
+
       cy.intercept(
         "PATCH",
         `${API_URL}/consent-request/consent-request-id/preferences`,
@@ -154,6 +158,17 @@ describe("Consent settings", () => {
       cy.visit("/consent");
       cy.getByTestId("consent");
       cy.loadConfigFixture("config/config_consent.json").as("config");
+    });
+
+    it("renders from privacy notices", () => {
+      cy.overrideSettings({
+        IS_OVERLAY_DISABLED: false,
+      });
+      const PRIVACY_NOTICE_ID_1 = "pri_2d1e758a-2678-4a7c-a514-fbf97a994e66";
+      const PRIVACY_NOTICE_ID_2 = "pri_9d60c347-af22-44d0-bcbb-9a4007c3e08e";
+      cy.getByTestId("consent");
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`);
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`);
     });
 
     it("lets the user update their consent", () => {
