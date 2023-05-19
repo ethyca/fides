@@ -143,6 +143,7 @@ const init = async ({
   _Fides.experience = experience;
   _Fides.geolocation = geolocation;
   _Fides.options = options;
+  _Fides.initialized = true;
 
   // TODO: generate device id if it doesn't exist
 
@@ -212,21 +213,21 @@ const init = async ({
       options.debug,
       "Fides consent overlay is disabled, skipping overlay initialization!"
     );
-  } else if (experience && experience.component !== ComponentType.OVERLAY) {
+    return
+  }
+  if (experience && experience.component !== ComponentType.OVERLAY) {
     debugLog(
       options.debug,
       "No experience found with overlay component, skipping overlay initialization!"
     );
-  } else {
-    await initOverlay({
-      consentDefaults,
-      experience: effectiveExperience,
-      geolocation: effectiveGeolocation,
-      options,
-    }).catch(() => {});
+    return
   }
-
-  _Fides.initialized = true;
+  await initOverlay({
+    consentDefaults,
+    experience: effectiveExperience,
+    geolocation: effectiveGeolocation,
+    options,
+  }).catch(() => {});
 };
 
 // The global Fides object; this is bound to window.Fides if available
