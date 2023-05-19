@@ -1705,7 +1705,10 @@ class TestPostPrivacyNotices:
 
         resp = api_client.post(url, headers=auth_header, json=[notice_request])
         assert resp.status_code == 422
-        assert "FidesKeys must only contain alphanumeric characters" in resp.json()
+        assert (
+            "FidesKeys must only contain alphanumeric characters"
+            in resp.json()["detail"][0]["msg"]
+        )
 
     def test_post_privacy_notice(
         self,

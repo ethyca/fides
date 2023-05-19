@@ -7,12 +7,27 @@ Create Date: 2023-05-18 19:48:33.268790
 """
 import sqlalchemy as sa
 from alembic import op
+from fideslang.validation import FidesKey, FidesValidationError
 
 # revision identifiers, used by Alembic.
+from sqlalchemy import text
+from sqlalchemy.engine import ResultProxy
+
 revision = "8a71872089e4"
 down_revision = "2661f31daffb"
 branch_labels = None
 depends_on = None
+
+
+def validate_fides_key_suitability(names: ResultProxy, table_name: str) -> None:
+    for row in names:
+        name: str = row["name"].strip(" ")
+        try:
+            FidesKey.validate(name)
+        except FidesValidationError as exc:
+            raise Exception(
+                f"Cannot auto-migrate, adjust existing {table_name} name: '{name}' to remove invalid characters: {exc}."
+            )
 
 
 def upgrade():
@@ -21,6 +36,17 @@ def upgrade():
 
     Notice keys are not unique.
     """
+    bind = op.get_bind()
+    existing_history_names: ResultProxy = bind.execute(
+        text("select name from privacynoticehistory;")
+    )
+    validate_fides_key_suitability(existing_history_names, "privacynoticehistory")
+
+    existing_notice_names: ResultProxy = bind.execute(
+        text("select name from privacynotice;")
+    )
+    validate_fides_key_suitability(existing_notice_names, "privacynotice")
+
     op.add_column("privacynotice", sa.Column("notice_key", sa.String(), nullable=True))
     op.add_column(
         "privacynoticehistory", sa.Column("notice_key", sa.String(), nullable=True)
