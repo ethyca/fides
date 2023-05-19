@@ -7,7 +7,7 @@ interface ButtonProps {
   onClick?: () => void;
 }
 
-const ConsentBannerButton: FunctionComponent<ButtonProps> = ({
+const Button: FunctionComponent<ButtonProps> = ({
   buttonType,
   label,
   onClick,
@@ -17,9 +17,10 @@ const ConsentBannerButton: FunctionComponent<ButtonProps> = ({
     id={`fides-consent-banner-button-${buttonType.valueOf()}`}
     className={`fides-consent-banner-button fides-consent-banner-button-${buttonType.valueOf()}`}
     onClick={onClick}
+    data-testid={`${label}-btn`}
   >
     {label || ""}
   </button>
 );
 
-export default ConsentBannerButton;
+export default Button;

@@ -144,7 +144,7 @@ if (typeof window !== "undefined") {
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
 export * from "./lib/consent";
-export * from "./components/ConsentBanner";
+export * from "./components";
 export * from "./lib/consent-config";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";

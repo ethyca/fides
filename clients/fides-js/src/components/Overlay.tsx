@@ -1,15 +1,16 @@
 import { FunctionComponent, h } from "preact";
+import { useState } from "preact/hooks";
 import {
   ExperienceConfig,
   FidesOptions,
+  PrivacyNotice,
   UserGeolocation,
 } from "../lib/consent-types";
 import ConsentBanner from "./ConsentBanner";
-import {
-  CookieKeyConsent,
-  setConsentCookieAcceptAll,
-  setConsentCookieRejectAll,
-} from "../lib/cookie";
+import { CookieKeyConsent } from "../lib/cookie";
+import ConsentModal from "./ConsentModal";
+
+import { updateConsentPreferences } from "../lib/preferences";
 
 export interface OverlayProps {
   consentDefaults: CookieKeyConsent;
@@ -18,39 +19,55 @@ export interface OverlayProps {
   geolocation?: UserGeolocation;
 }
 
-const Overlay: FunctionComponent<OverlayProps> = ({
-  consentDefaults,
-  experience,
-  options,
-}) => {
+const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+
+  if (!experience) {
+    return null;
+  }
+  const privacyNotices = experience.privacy_notices ?? [];
+
   const onAcceptAll = () => {
-    setConsentCookieAcceptAll(consentDefaults);
-    // TODO: save to Fides consent request API
-    // eslint-disable-next-line no-console
-    console.error(
-      "Could not save consent record to Fides API, not implemented!"
-    );
+    const allNoticeIds = privacyNotices.map((notice) => notice.id);
+    updateConsentPreferences({
+      privacyNotices,
+      enabledPrivacyNoticeIds: allNoticeIds,
+    });
   };
 
   const onRejectAll = () => {
-    setConsentCookieRejectAll(consentDefaults);
-    // TODO: save to Fides consent request API
-    // eslint-disable-next-line no-console
-    console.error(
-      "Could not save consent record to Fides API, not implemented!"
-    );
+    updateConsentPreferences({ privacyNotices, enabledPrivacyNoticeIds: [] });
+  };
+
+  const onSavePreferences = (
+    enabledPrivacyNoticeIds: Array<PrivacyNotice["id"]>
+  ) => {
+    updateConsentPreferences({
+      privacyNotices,
+      enabledPrivacyNoticeIds,
+    });
   };
 
   return (
-    <ConsentBanner
-      bannerTitle={experience?.banner_title}
-      bannerDescription={experience?.banner_description}
-      confirmationButtonLabel={experience?.confirmation_button_label}
-      rejectButtonLabel={experience?.reject_button_label}
-      privacyCenterUrl={options.privacyCenterUrl}
-      onAcceptAll={onAcceptAll}
-      onRejectAll={onRejectAll}
-    />
+    <div id="fides-js-root">
+      <ConsentBanner
+        experience={experience}
+        onAcceptAll={onAcceptAll}
+        onRejectAll={onRejectAll}
+        waitBeforeShow={100}
+        onOpenModal={() => setModalIsOpen(true)}
+      />
+      {modalIsOpen ? (
+        <ConsentModal
+          experience={experience}
+          notices={privacyNotices}
+          onClose={() => setModalIsOpen(false)}
+          onAcceptAll={onAcceptAll}
+          onRejectAll={onRejectAll}
+          onSave={onSavePreferences}
+        />
+      ) : null}
+    </div>
   );
 };
 
