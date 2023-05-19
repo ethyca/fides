@@ -1,5 +1,5 @@
 import { h } from "preact";
-import { useState } from "preact/hooks";
+import { useMemo, useState } from "preact/hooks";
 import {
   ButtonType,
   ExperienceConfig,
@@ -19,26 +19,31 @@ const ConsentModal = ({
   experience,
   notices,
   onClose,
+  onSave,
   onAcceptAll,
   onRejectAll,
 }: {
   experience: ExperienceConfig;
   notices: PrivacyNotice[];
   onClose: () => void;
+  onSave: (enabledNoticeIds: Array<PrivacyNotice["id"]>) => void;
   onAcceptAll: () => void;
   onRejectAll: () => void;
 }) => {
-  // DEFER: set initial state based on GET /consent-request/id/privacy-preferences?
+  const initialEnabledNoticeIds = useMemo(
+    () =>
+      Object.keys(window.Fides.consent).filter(
+        (key) => window.Fides.consent[key]
+      ),
+    []
+  );
+
   const [enabledNoticeIds, setEnabledNoticeIds] = useState<
     Array<PrivacyNotice["id"]>
-  >([]);
+  >(initialEnabledNoticeIds);
 
-  const handleSubmit = () => {
-    // DEFER: implement fetch PATCH against /consent-request/id/privacy-preferences?
-    const noticeMap = notices.map((notice) => ({
-      [notice.id]: enabledNoticeIds.includes(notice.id),
-    }));
-    console.log("submitting notice map", noticeMap);
+  const handleSave = () => {
+    onSave(enabledNoticeIds);
     onClose();
   };
 
@@ -78,7 +83,7 @@ const ConsentModal = ({
             <Button
               label="Save"
               buttonType={ButtonType.SECONDARY}
-              onClick={handleSubmit}
+              onClick={handleSave}
             />
             <Button
               label={experience.reject_button_label}

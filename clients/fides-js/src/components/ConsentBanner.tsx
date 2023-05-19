@@ -1,17 +1,12 @@
 import { h, FunctionComponent } from "preact";
 import { useState, useEffect } from "preact/hooks";
-import {
-  ButtonType,
-  ExperienceConfig,
-  ExperienceComponent,
-} from "../lib/consent-types";
+import { ButtonType, ExperienceConfig } from "../lib/consent-types";
 import Button from "./Button";
 import "../lib/overlay.module.css";
 import { useHasMounted } from "../lib/hooks";
 
 interface BannerProps {
   experience: ExperienceConfig;
-  privacyCenterUrl: string;
   onAcceptAll: () => void;
   onRejectAll: () => void;
   waitBeforeShow?: number;
@@ -21,7 +16,6 @@ interface BannerProps {
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
   experience,
-  privacyCenterUrl,
   onAcceptAll,
   onRejectAll,
   waitBeforeShow,
@@ -46,11 +40,8 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   }, [setIsShown, waitBeforeShow]);
 
   const handleManagePreferencesClick = (): void => {
-    if (experience.component === ExperienceComponent.PRIVACY_CENTER) {
-      window.location.assign(privacyCenterUrl);
-    } else {
-      onOpenModal();
-    }
+    onOpenModal();
+    setIsShown(false);
   };
 
   if (!hasMounted) {

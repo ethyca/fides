@@ -3,15 +3,14 @@ import { useState } from "preact/hooks";
 import {
   ExperienceConfig,
   FidesOptions,
+  PrivacyNotice,
   UserGeolocation,
 } from "../lib/consent-types";
 import ConsentBanner from "./ConsentBanner";
-import {
-  CookieKeyConsent,
-  setConsentCookieAcceptAll,
-  setConsentCookieRejectAll,
-} from "../lib/cookie";
+import { CookieKeyConsent } from "../lib/cookie";
 import ConsentModal from "./ConsentModal";
+
+import { updateConsentPreferences } from "../lib/preferences";
 
 export interface OverlayProps {
   consentDefaults: CookieKeyConsent;
@@ -20,40 +19,39 @@ export interface OverlayProps {
   geolocation?: UserGeolocation;
 }
 
-const Overlay: FunctionComponent<OverlayProps> = ({
-  consentDefaults,
-  experience,
-  options,
-}) => {
+const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const onAcceptAll = () => {
-    setConsentCookieAcceptAll(consentDefaults);
-    // TODO: save to Fides consent request API
-    // eslint-disable-next-line no-console
-    console.error(
-      "Could not save consent record to Fides API, not implemented!"
-    );
-  };
-
-  const onRejectAll = () => {
-    setConsentCookieRejectAll(consentDefaults);
-    // TODO: save to Fides consent request API
-    // eslint-disable-next-line no-console
-    console.error(
-      "Could not save consent record to Fides API, not implemented!"
-    );
-  };
 
   if (!experience) {
     return null;
   }
   const privacyNotices = experience.privacy_notices ?? [];
 
+  const onAcceptAll = () => {
+    const allNoticeIds = privacyNotices.map((notice) => notice.id);
+    updateConsentPreferences({
+      privacyNotices,
+      enabledPrivacyNoticeIds: allNoticeIds,
+    });
+  };
+
+  const onRejectAll = () => {
+    updateConsentPreferences({ privacyNotices, enabledPrivacyNoticeIds: [] });
+  };
+
+  const onSavePreferences = (
+    enabledPrivacyNoticeIds: Array<PrivacyNotice["id"]>
+  ) => {
+    updateConsentPreferences({
+      privacyNotices,
+      enabledPrivacyNoticeIds,
+    });
+  };
+
   return (
     <div id="fides-js-root">
       <ConsentBanner
         experience={experience}
-        privacyCenterUrl={options.privacyCenterUrl}
         onAcceptAll={onAcceptAll}
         onRejectAll={onRejectAll}
         waitBeforeShow={100}
@@ -66,6 +64,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
           onClose={() => setModalIsOpen(false)}
           onAcceptAll={onAcceptAll}
           onRejectAll={onRejectAll}
+          onSave={onSavePreferences}
         />
       ) : null}
     </div>
