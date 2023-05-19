@@ -1,4 +1,5 @@
 import pytest
+from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ValidationError
@@ -27,7 +28,7 @@ class TestPrivacyNoticeModel:
         assert history_object.data_uses == privacy_notice.data_uses
         assert history_object.version == privacy_notice.version
         assert history_object.privacy_notice_id == privacy_notice.id
-        assert history_object.notice_key == privacy_notice.key
+        assert history_object.notice_key == privacy_notice.notice_key
 
         # make sure our create method still auto-populates as needed
         assert privacy_notice.created_at is not None
@@ -758,7 +759,11 @@ class TestPrivacyNoticeModel:
             == "name_of_my_privacy_notice"
         )
 
-        assert privacy_notice.generate_notice_key("") == ""
+        with pytest.raises(FidesValidationError):
+            privacy_notice.generate_notice_key("Dawn's Bookstore")
+
+        with pytest.raises(FidesValidationError):
+            privacy_notice.generate_notice_key("")
 
         with pytest.raises(Exception):
             privacy_notice.generate_notice_key(1)

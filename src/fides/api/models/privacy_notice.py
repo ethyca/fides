@@ -163,11 +163,13 @@ class PrivacyNoticeBase:
         return False
 
     @classmethod
-    def generate_notice_key(cls, name: Optional[str]) -> str:
+    def generate_notice_key(cls, name: Optional[str]) -> FidesKey:
         """Generate a notice key from a notice name"""
         if not isinstance(name, str):
             raise Exception("Privacy notice keys must be generated from a string.")
-        return re.sub(r"\s+", "_", name.lower().strip())
+        notice_key: str = re.sub(r"\s+", "_", name.lower().strip())
+        FidesKey.validate(notice_key)
+        return notice_key
 
 
 class PrivacyNotice(PrivacyNoticeBase, Base):

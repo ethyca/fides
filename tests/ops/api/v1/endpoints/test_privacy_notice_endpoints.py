@@ -607,7 +607,7 @@ class TestGetPrivacyNotices:
             db=db,
             data={
                 "name": escaped_name,
-                "notice_key": PrivacyNotice.generate_notice_key(escaped_name),
+                "notice_key": "test_data_sales_n_stuff",
                 "description": "a sample privacy notice configuration",
                 "regions": [PrivacyNoticeRegion.us_ca],
                 "consent_mechanism": ConsentMechanism.opt_in,
@@ -1693,6 +1693,20 @@ class TestPostPrivacyNotices:
             == "Notice-only notices must be served in an overlay."
         )
 
+    def test_post_privacy_notice_bad_notice_key(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        notice_request: dict[str, Any],
+        url,
+    ):
+        notice_request["notice_key"] = "My Notice's Key"
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
+
+        resp = api_client.post(url, headers=auth_header, json=[notice_request])
+        assert resp.status_code == 422
+        assert "FidesKeys must only contain alphanumeric characters" in resp.json()
+
     def test_post_privacy_notice(
         self,
         api_client: TestClient,
@@ -1940,6 +1954,7 @@ class TestPatchPrivacyNotices:
         return {
             "id": privacy_notice.id,
             "name": "updated privacy notice name",
+            "notice_key": "updated_privacy_notice_key",
             "disabled": True,
             "regions": [
                 PrivacyNoticeRegion.us_ca.value,
@@ -2427,6 +2442,7 @@ class TestPatchPrivacyNotices:
         assert response_notice["updated_at"] < datetime.now().isoformat()
         assert response_notice["updated_at"] > before_update
         assert response_notice["disabled"]
+        assert response_notice["notice_key"] == "updated_privacy_notice_key"
 
         # assert our old history record has the old privacy notice data
         history_record: PrivacyNoticeHistory = (

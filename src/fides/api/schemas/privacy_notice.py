@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from fideslang.validation import FidesKey
 from pydantic import Extra, conlist, root_validator, validator
 
 from fides.api.models.privacy_notice import (
@@ -23,7 +24,7 @@ class PrivacyNotice(FidesSchema):
     """
 
     name: Optional[str]
-    notice_key: Optional[str]
+    notice_key: Optional[FidesKey]
     description: Optional[str]
     internal_description: Optional[str]
     origin: Optional[str]
@@ -106,7 +107,7 @@ class PrivacyNoticeCreation(PrivacyNotice):
     """
 
     name: str
-    notice_key: str
+    notice_key: FidesKey
     regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
     consent_mechanism: ConsentMechanism
     data_uses: conlist(str, min_items=1)  # type: ignore
