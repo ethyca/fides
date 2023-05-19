@@ -1,11 +1,4 @@
-import {
-  Button,
-  Divider,
-  Heading,
-  Stack,
-  Text,
-  useToast,
-} from "@fidesui/react";
+import { Button, Heading, Stack, Text, useToast } from "@fidesui/react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useMemo } from "react";
@@ -21,7 +14,6 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { useLocalStorage } from "~/common/hooks";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
-import ConsentItemCard from "~/components/ConsentItemCard";
 import {
   updateConsentOptionsFromApi,
   useConfig,
@@ -39,6 +31,7 @@ import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { ConsentPreferences } from "~/types/api";
 import { GpcBanner } from "~/features/consent/GpcMessages";
 import { GpcStatus } from "~/features/consent/types";
+import ConfigDrivenConsent from "~/components/consent/ConfigDrivenConsentItem";
 
 const Consent: NextPage = () => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
@@ -294,29 +287,6 @@ const Consent: NextPage = () => {
     redirectToIndex,
   ]);
 
-  const items = useMemo(
-    () =>
-      consentOptions.map((option) => {
-        const defaultValue = resolveConsentValue(
-          option.default,
-          consentContext
-        );
-        const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
-        const gpcStatus = getGpcStatus({
-          value,
-          consentOption: option,
-          consentContext,
-        });
-
-        return {
-          option,
-          value,
-          gpcStatus,
-        };
-      }),
-    [consentContext, consentOptions, fidesKeyToConsent]
-  );
-
   return (
     <Stack as="main" align="center" data-testid="consent">
       <Stack align="center" py={["6", "16"]} spacing={8} maxWidth="720px">
@@ -349,13 +319,7 @@ const Consent: NextPage = () => {
         {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
 
         <Stack direction="column" spacing={4}>
-          {items.map((item, index) => (
-            <React.Fragment key={item.option.fidesDataUseKey}>
-              {index > 0 ? <Divider /> : null}
-              <ConsentItemCard {...item} />
-            </React.Fragment>
-          ))}
-
+          <ConfigDrivenConsent consentOptions={consentOptions} />
           <Stack
             direction="row"
             justifyContent="flex-start"
