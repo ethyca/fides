@@ -2,7 +2,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from fides.api.ops.models.custom_connector_template import CustomConnectorTemplate
+from fides.api.models.custom_connector_template import CustomConnectorTemplate
 
 
 class TestCustomConnectorTemplate:

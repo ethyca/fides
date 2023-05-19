@@ -2,7 +2,7 @@ from typing import Dict, List, Optional, Union
 
 from fideslang.models import DataSubject, DataUse, FidesModel, Organization, System
 
-from fides.cli.utils import pretty_echo
+from fides.common.utils import pretty_echo
 from fides.core.api_helpers import (
     get_server_resource,
     get_server_resources,

@@ -12,6 +12,6 @@ include src/fides/templates/fides_datamap_template.xlsx
 recursive-include src/fides/data *
 recursive-include src/fides/ui-build *
 
-graft src/fides/api/ops/email_templates/templates
+graft src/fides/api/email_templates/templates
 
 global-exclude *.pyc

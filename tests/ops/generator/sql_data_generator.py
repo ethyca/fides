@@ -6,9 +6,9 @@ from faker import Faker
 from sqlalchemy import Boolean, Column, Float, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
-from fides.api.ops.graph.config import CollectionAddress, Field, ScalarField
-from fides.api.ops.graph.data_type import DataType
-from fides.api.ops.graph.traversal import Row, Traversal, TraversalNode
+from fides.api.graph.config import CollectionAddress, Field, ScalarField
+from fides.api.graph.data_type import DataType
+from fides.api.graph.traversal import Row, Traversal, TraversalNode
 
 Base = declarative_base()
 

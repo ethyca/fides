@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from fides.api.ops.util.collection_util import (
+from fides.api.util.collection_util import (
     append,
     filter_nonempty_values,
     merge_dicts,

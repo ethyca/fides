@@ -1,24 +1,24 @@
 from unittest import mock
 
-from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
-from fides.api.ops.api.v1.endpoints.consent_request_endpoints import (
+from fides.api.api.v1.endpoints.consent_request_endpoints import (
     queue_privacy_request_to_propagate_consent_old_workflow,
 )
-from fides.api.ops.graph.config import CollectionAddress
-from fides.api.ops.models.privacy_request import (
+from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
+from fides.api.graph.config import CollectionAddress
+from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
-from fides.api.ops.schemas.policy import PolicyResponse
-from fides.api.ops.schemas.privacy_request import (
+from fides.api.schemas.policy import PolicyResponse
+from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     ConsentPreferences,
     ConsentWithExecutableStatus,
     PrivacyRequestResponse,
 )
-from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.schemas.redis_cache import Identity
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
@@ -118,7 +118,7 @@ def test_consent_request(db):
 
 class TestQueuePrivacyRequestToPropagateConsentHelper:
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
+        "fides.api.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
     )
     def test_queue_privacy_request_to_propagate_consent(
         self, mock_create_privacy_request, db, consent_policy
@@ -169,7 +169,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         provided_identity.delete(db)
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
+        "fides.api.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
     )
     def test_do_not_queue_privacy_request_if_no_executable_preferences(
         self, mock_create_privacy_request, db, consent_policy
@@ -208,7 +208,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         assert not mock_create_privacy_request.called
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
+        "fides.api.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
     )
     def test_merge_in_browser_identity_with_provided_identity(
         self, mock_create_privacy_request, db, consent_policy
