@@ -340,6 +340,13 @@ class System(Base, FidesBase):
         lazy="selectin",
     )
 
+    connection_configs = relationship(
+        "ConnectionConfig",
+        # back_populates="systems",
+        uselist=False,
+        lazy="selectin",
+    )
+
     @classmethod
     def get_data_uses(
         cls: Type[System], systems: List[System], include_parents: bool = True

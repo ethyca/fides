@@ -9,11 +9,14 @@ import DataTabs, { type TabData } from "~/features/common/DataTabs";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
-import { System } from "~/types/api";
+import { System, SystemResponse } from "~/types/api";
 
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
 import SystemInformationForm from "./SystemInformationForm";
 import UnmountWarning from "./UnmountWarning";
+import AddConnection from "~/features/datastore-connections/add-connection/AddConnection";
+import EditConnection from "~/features/datastore-connections/edit-connection/EditConnection";
+import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 
 // The toast doesn't seem to handle next links well, so use buttons with onClick
 // handlers instead
@@ -76,7 +79,7 @@ const SystemFormTabs = ({
   const router = useRouter();
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const activeSystem = useAppSelector(selectActiveSystem);
+  const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
 
   const handleSuccess = (system: System) => {
     // show a save message if this is the first time the system was saved
@@ -209,6 +212,25 @@ const SystemFormTabs = ({
             </Text>
           </Box>
           <DataFlowAccordion system={activeSystem} isSystemTab />
+        </Box>
+      ) : null,
+      isDisabled: !activeSystem,
+    },
+    {
+      label: "Integrations",
+      content: activeSystem ? (
+        <Box width={{ base: "100%", lg: "70%" }}>
+          <Box px={6} paddingBottom={2}>
+            <Text fontSize="sm" lineHeight={5} fontWeight="medium">
+              Integrations are used to process privacy requests like access,
+              erasure, portability, rectification, and consent. Many common
+              systems have API integrations that we can use to automatically
+              process privacy requests. However, email and manual integrations
+              are also available for the systems & functions where API
+              integrations are not available or the preference.
+            </Text>
+          </Box>
+          <ConnectionForm connectionConfig={activeSystem.connection_config} systemFidesKey={activeSystem.fides_key} />
         </Box>
       ) : null,
       isDisabled: !activeSystem,

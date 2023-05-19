@@ -63,6 +63,14 @@ const systemApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Datamap", "System", "Privacy Notices"],
     }),
+    patchSystemConnectionConfigs: build.mutation<UpsertResponse, System[]>({
+      query: (systems) => ({
+        url: `/system/upsert`,
+        method: "PATCH",
+        body: systems,
+      }),
+      invalidatesTags: ["Datamap", "System"],
+    }),
   }),
 });
 

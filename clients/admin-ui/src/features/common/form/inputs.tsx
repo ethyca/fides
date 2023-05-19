@@ -182,10 +182,11 @@ const SelectInput = ({
     );
   };
   const handleChangeSingle = (newValue: SingleValue<Option>) => {
+    // console.log()
     if (newValue) {
-      field.onChange(fieldName)(newValue.value);
+      setFieldValue(fieldName, newValue.value);
     } else if (isClearable) {
-      field.onChange(fieldName)("");
+      setFieldValue(fieldName, "");
     }
   };
 
