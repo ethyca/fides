@@ -5439,34 +5439,6 @@
 					"response": []
 				},
 				{
-					"name": "Privacy Experience Detail",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/privacy-experience/{{privacy_experience_id}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"privacy-experience",
-								"{{privacy_experience_id}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Experience Config",
 					"request": {
 						"auth": {
