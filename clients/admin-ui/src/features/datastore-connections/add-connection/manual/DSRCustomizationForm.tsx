@@ -5,15 +5,15 @@ import { useRouter } from "next/router";
 import React from "react";
 import * as Yup from "yup";
 
+import { useAppSelector } from "~/app/hooks";
+import { CustomSelect } from "~/features/common/form/inputs";
 import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
+import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 
 import CustomInput from "../forms/CustomInput";
 import { ButtonGroup as ManualButtonGroup } from "./ButtonGroup";
 import { Field } from "./types";
-import { CustomSelect } from "~/features/common/form/inputs";
-import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
-import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
-import { useAppSelector } from "~/app/hooks";
 
 type DSRCustomizationFormProps = {
   data: Field[];
@@ -139,10 +139,12 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
                               <Box minH="57px" w="416px">
                                 <CustomSelect
                                   name={`fields.${index}.data_categories`}
-                                  options={allDataCategories.map((data) => ({
-                                    value: data.fides_key,
-                                    label: data.fides_key,
-                                  }))}
+                                  options={allDataCategories.map(
+                                    (data_category) => ({
+                                      value: data_category.fides_key,
+                                      label: data_category.fides_key,
+                                    })
+                                  )}
                                   isRequired
                                   isMulti
                                 />
