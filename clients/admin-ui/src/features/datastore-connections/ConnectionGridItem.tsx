@@ -81,10 +81,10 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
           {connectionData.name}
         </Text>
         <Spacer />
-        <ConnectionStatusBadge disabled={connectionData.disabled} />
+        <ConnectionStatusBadge disabled={!!connectionData.disabled} />
         <ConnectionMenu
           connection_key={connectionData.key}
-          disabled={connectionData.disabled}
+          disabled={!!connectionData.disabled}
           name={connectionData.name}
           connection_type={connectionData.connection_type}
           access_type={connectionData.access}
@@ -101,7 +101,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
       <Flex mt="0px" justifyContent="center" alignItems="center">
         <TestData
           succeeded={connectionData.last_test_succeeded}
-          timestamp={connectionData.last_test_timestamp}
+          timestamp={connectionData.last_test_timestamp || ""}
         />
         <Spacer />
         <Button

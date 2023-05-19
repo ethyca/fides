@@ -40,10 +40,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   // TODO: look into creating new system_connections endpoints for other calls like the secrets one
   return (
     <>
-      <ConnectionList
-        onChange={onConnectionChange}
-        connectionConfig={connectionConfig}
-      />
+      <ConnectionList onChange={onConnectionChange} />
       {connectionOption?.type === SystemType.DATABASE ? (
         <DatabaseForm
           connectionConfig={connectionConfig}

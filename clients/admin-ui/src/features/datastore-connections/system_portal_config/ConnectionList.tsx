@@ -138,7 +138,6 @@ const ConnectionList = ({ onChange }: ListProps) => {
       {isSuccess && sortedItems ? (
         <Select
           onChange={(e) => {
-            setSelectedOption(JSON.stringify(e.target.value));
             onChange(e);
           }}
         >
