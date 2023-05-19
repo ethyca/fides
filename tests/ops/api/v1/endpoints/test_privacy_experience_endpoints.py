@@ -18,18 +18,9 @@ class TestGetPrivacyExperiences:
         return V1_URL_PREFIX + PRIVACY_EXPERIENCE
 
     def test_get_privacy_experiences_unauthenticated(self, url, api_client):
+        """This is a public endpoint"""
         resp = api_client.get(url)
-        assert resp.status_code == 401
-
-    def test_get_privacy_experiences_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header
-    ):
-        auth_header = generate_auth_header(scopes=[scopes.STORAGE_READ])
-        resp = api_client.get(
-            url,
-            headers=auth_header,
-        )
-        assert resp.status_code == 403
+        assert resp.status_code == 200
 
     @pytest.mark.parametrize(
         "role,expected_status",
@@ -38,12 +29,13 @@ class TestGetPrivacyExperiences:
             ("contributor", HTTP_200_OK),
             ("viewer_and_approver", HTTP_200_OK),
             ("viewer", HTTP_200_OK),
-            ("approver", HTTP_403_FORBIDDEN),
+            ("approver", HTTP_200_OK),
         ],
     )
     def test_get_privacy_experience_with_roles(
         self, role, expected_status, api_client: TestClient, url, generate_role_header
     ) -> None:
+        """This is a public endpoint"""
         auth_header = generate_role_header(roles=[role])
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == expected_status
@@ -51,15 +43,12 @@ class TestGetPrivacyExperiences:
     def test_get_privacy_experiences(
         self,
         api_client: TestClient,
-        generate_auth_header,
         url,
         privacy_notice,
         privacy_experience_privacy_center_link,
     ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
         resp = api_client.get(
             url,
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -105,16 +94,13 @@ class TestGetPrivacyExperiences:
     def test_get_privacy_experiences_show_disabled_filter(
         self,
         api_client: TestClient,
-        generate_auth_header,
         url,
         privacy_experience_privacy_center_link,
         privacy_experience_overlay_link,
         privacy_experience_overlay_banner,
     ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
         resp = api_client.get(
             url,
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -123,7 +109,6 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?show_disabled=False",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -144,15 +129,12 @@ class TestGetPrivacyExperiences:
     def test_get_privacy_experiences_region_filter(
         self,
         api_client: TestClient,
-        generate_auth_header,
         url,
         privacy_experience_overlay_link,
         privacy_experience_overlay_banner,
     ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
         resp = api_client.get(
             url + "?region=eu_fr",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -162,7 +144,6 @@ class TestGetPrivacyExperiences:
         assert data["items"][0]["region"] == "eu_fr"
         resp = api_client.get(
             url + "?region=us_ca",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -174,13 +155,11 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?region=bad_region",
-            headers=auth_header,
         )
         assert resp.status_code == 422
 
         resp = api_client.get(
             url + "?region=eu_it",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         assert resp.json()["total"] == 0
@@ -188,16 +167,13 @@ class TestGetPrivacyExperiences:
     def test_get_privacy_experiences_components_filter(
         self,
         api_client: TestClient,
-        generate_auth_header,
         url,
         privacy_experience_privacy_center_link,
         privacy_experience_overlay_link,
         privacy_experience_overlay_banner,
     ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
         resp = api_client.get(
             url + "?component=overlay",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -210,7 +186,6 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?component=privacy_center",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -222,7 +197,6 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?component=bad_type",
-            headers=auth_header,
         )
         assert resp.status_code == 422
 
@@ -232,12 +206,10 @@ class TestGetPrivacyExperiences:
         "privacy_experience_overlay_banner",
     )
     def test_get_privacy_experiences_has_notices_no_notices(
-        self, api_client: TestClient, generate_auth_header, url
+        self, api_client: TestClient, url
     ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
         resp = api_client.get(
             url + "?has_notices=True",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -251,12 +223,10 @@ class TestGetPrivacyExperiences:
         "privacy_notice_eu_cy_provide_service_frontend_only",
     )
     def test_get_privacy_experiences_has_notices_no_regions_overlap(
-        self, api_client: TestClient, generate_auth_header, url
+        self, api_client: TestClient, url
     ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
         resp = api_client.get(
             url + "?has_notices=True",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -270,7 +240,6 @@ class TestGetPrivacyExperiences:
     def test_get_privacy_experiences_has_notices(
         self,
         api_client: TestClient,
-        generate_auth_header,
         url,
         privacy_experience_privacy_center_link,
         privacy_experience_overlay_link,
@@ -280,10 +249,8 @@ class TestGetPrivacyExperiences:
         privacy_notice_eu_fr_provide_service_frontend_only,
         privacy_notice_us_ca_provide,
     ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
         resp = api_client.get(
             url + "?has_notices=True",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -371,17 +338,14 @@ class TestGetPrivacyExperiences:
     def test_filter_on_notices_and_region(
         self,
         api_client: TestClient,
-        generate_auth_header,
         url,
         privacy_experience_privacy_center_link,
         privacy_notice,
         privacy_notice_us_co_third_party_sharing,
     ):
         """Region filter propagates through to the notices too"""
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
         resp = api_client.get(
             url + "?has_notices=True&region=us_co",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -413,7 +377,6 @@ class TestGetPrivacyExperiences:
     def test_filter_on_notices_and_region_and_show_disabled_is_false(
         self,
         api_client: TestClient,
-        generate_auth_header,
         db,
         url,
         privacy_experience_privacy_center_link,
@@ -424,10 +387,8 @@ class TestGetPrivacyExperiences:
         privacy_notice_us_co_third_party_sharing.disabled = True
         privacy_notice_us_co_third_party_sharing.save(db)
 
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
         resp = api_client.get(
             url + "?has_notices=True&region=us_co&show_disabled=False",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -454,10 +415,8 @@ class TestGetPrivacyExperiences:
         privacy_experience_overlay_banner,
         db,
     ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
         resp = api_client.get(
             url + "?has_config=False",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -466,7 +425,6 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?has_config=True",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -484,7 +442,6 @@ class TestGetPrivacyExperiences:
         privacy_experience_privacy_center_link.save(db=db)
         resp = api_client.get(
             url + "?has_config=False",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -501,13 +458,10 @@ class TestGetPrivacyExperiences:
     def test_get_privacy_experiences_fides_user_device_id_filter(
         self,
         api_client: TestClient,
-        generate_auth_header,
         url,
     ):
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
         resp = api_client.get(
             url + "?fides_user_device_id=FGHIJ_TEST_FIDES",
-            headers=auth_header,
         )
         assert resp.status_code == 200
         data = resp.json()

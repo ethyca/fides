@@ -4,7 +4,21 @@ from datetime import datetime
 from typing import Any, Callable, List, Optional, Tuple
 
 from fastapi import HTTPException
+from slowapi import Limiter
+from slowapi.util import get_remote_address  # type: ignore
 from starlette.status import HTTP_400_BAD_REQUEST
+
+from fides.core.config import CONFIG
+
+# Used for rate limiting with Slow API
+# Decorate individual routes to deviate from the default rate limits
+fides_limiter = Limiter(
+    default_limits=[CONFIG.security.request_rate_limit],
+    headers_enabled=True,
+    key_prefix=CONFIG.security.rate_limit_prefix,
+    key_func=get_remote_address,
+    retry_after="http-date",
+)
 
 
 def validate_start_and_end_filters(

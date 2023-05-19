@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fastapi import Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Request, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
@@ -11,6 +11,7 @@ from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOU
 from fides.api.api import deps
 from fides.api.api.v1 import scope_registry
 from fides.api.api.v1 import urn_registry as urls
+from fides.api.api.v1.endpoints.utils import fides_limiter
 from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.models.privacy_request import ProvidedIdentity
@@ -18,6 +19,7 @@ from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import get_fides_user_device_id_provided_identity
+from fides.core.config import CONFIG
 
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
 
@@ -43,10 +45,8 @@ def get_privacy_experience_or_error(
     urls.PRIVACY_EXPERIENCE,
     status_code=HTTP_200_OK,
     response_model=Page[PrivacyExperienceResponse],
-    dependencies=[
-        Security(verify_oauth_client, scopes=[scope_registry.PRIVACY_EXPERIENCE_READ])
-    ],
 )
+@fides_limiter.limit(CONFIG.security.public_request_rate_limit)
 def privacy_experience_list(
     *,
     db: Session = Depends(deps.get_db),
@@ -57,6 +57,8 @@ def privacy_experience_list(
     has_notices: Optional[bool] = None,
     has_config: Optional[bool] = None,
     fides_user_device_id: Optional[str] = None,
+    request: Request,  # required for rate limiting
+    response: Response,  # required for rate limiting
 ) -> AbstractPage[PrivacyExperience]:
     """
     Returns a list of PrivacyExperience records for individual regions with
