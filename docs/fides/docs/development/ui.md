@@ -1,20 +1,20 @@
 
 ## Local Development
 
-To test the UI locally, clone the [FidesOps repository](https://github.com/ethyca/fidesops/), and ensure you have [Node.js](https://nodejs.org/en/download/) installed to run the application.
+To test the UI locally, clone the [Fides repository](https://github.com/ethyca/fides/), and ensure you have [Node.js](https://nodejs.org/en/download/) installed to run the application.
 
 ### Creating the root user
 
 A root user can be created by adding a `root_username` and `root_password` to the
-security section of `fidesops.toml` file, or by setting `FIDESOPS__SECURITY__ROOT_USERNAME`
-and `FIDESOPS__SECURITY__ROOT_PASSWORD` environment variables.
+security section of `fides.toml` file, or by setting `FIDES__SECURITY__ROOT_USERNAME`
+and `FIDES__SECURITY__ROOT_PASSWORD` environment variables.
 
 This will allow you to login in with a root user that can be used to access
 additional [user endpoints](#managing-users).
 
 ### Accessing the Control Panel
 
-From the root `fidesops` directory, run the following:
+From the root `fides` directory, run the following:
 
 ``` sh
     cd clients
@@ -41,7 +41,7 @@ echo NEXTAUTH_SECRET=`openssl rand -base64 32` >> .env.local
 
 Fidesops automatically serves a version of the UI when running `nox -s dev`.
 
-To deploy a full version of the UI from a backend, run the following from the root fidesops directory:
+To deploy a full version of the UI from a backend, run the following from the root fides directory:
 
 ```sh
     cd clients
@@ -50,6 +50,6 @@ To deploy a full version of the UI from a backend, run the following from the ro
     turbo run prod-export
 ```
 
-This will build and place the Admin UI files into a location accessible by backend fidesops deployments.
+This will build and place the Admin UI files into a location accessible by backend fides deployments.
 
 To test the UI, run `nox -s dev` from the root directory, and visit `http://0.0.0.0:8080/index.html`.
