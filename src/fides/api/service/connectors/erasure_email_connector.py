@@ -35,7 +35,10 @@ from fides.core.config import get_config
 
 CONFIG = get_config()
 
-ERASURE_EMAIL_CONNECTOR_TYPES = [ConnectionType.attentive]
+ERASURE_EMAIL_CONNECTOR_TYPES = [
+    ConnectionType.generic_erasure_email,
+    ConnectionType.attentive,
+]
 
 
 class GenericErasureEmailConnector(BaseEmailConnector):

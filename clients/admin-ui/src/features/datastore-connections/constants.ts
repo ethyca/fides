@@ -34,7 +34,11 @@ export const CONNECTOR_LOGOS_PATH = "/images/connector-logos/";
  * List of connection type image key/value pairs
  */
 export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
+  [ConnectionType.ATTENTIVE, "attentive.svg"],
   [ConnectionType.BIGQUERY, "bigquery.svg"],
+  [ConnectionType.DYNAMODB, "dynamodb.svg"],
+  [ConnectionType.GENERIC_CONSENT_EMAIL, "ethyca.svg"],
+  [ConnectionType.GENERIC_ERASURE_EMAIL, "ethyca.svg"],
   [ConnectionType.MANUAL_WEBHOOK, "manual_webhook.svg"],
   [ConnectionType.MARIADB, "mariadb.svg"],
   [ConnectionType.MONGODB, "mongodb.svg"],
@@ -43,10 +47,8 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
   [ConnectionType.POSTGRES, "postgres.svg"],
   [ConnectionType.REDSHIFT, "redshift.svg"],
   [ConnectionType.SNOWFLAKE, "snowflake.svg"],
-  [ConnectionType.TIMESCALE, "timescaledb.svg"],
   [ConnectionType.SOVRN, "sovrn.svg"],
-  [ConnectionType.ATTENTIVE, "attentive.svg"],
-  [ConnectionType.DYNAMODB, "dynamodb.svg"],
+  [ConnectionType.TIMESCALE, "timescaledb.svg"],
 ]);
 
 /**

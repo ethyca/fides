@@ -31,6 +31,9 @@ from fides.api.schemas.connection_configuration.connection_secrets_email import 
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     EmailSchema as EmailSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_email import (
+    ExtendedEmailSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_fides import (
     FidesConnectorSchema,
     FidesDocsSchema,
@@ -109,6 +112,8 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.bigquery.value: BigQuerySchema,
     ConnectionType.dynamodb.value: DynamoDBSchema,
     ConnectionType.fides.value: FidesConnectorSchema,
+    ConnectionType.generic_consent_email.value: ExtendedEmailSchema,
+    ConnectionType.generic_erasure_email.value: EmailSchema,
     ConnectionType.https.value: HttpsSchema,
     ConnectionType.manual_webhook.value: ManualWebhookSchema,
     ConnectionType.mariadb.value: MariaDBSchema,
