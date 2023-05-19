@@ -26,10 +26,13 @@
   },
   "dependencies": {
     "preact": "^10.13.2",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "typescript-cookie": "^1.0.6",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-alias": "^5.0.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@types/node": "^18.16.3",
     "@types/uuid": "^9.0.1",

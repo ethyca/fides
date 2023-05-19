@@ -1,35 +1,36 @@
 import { h, FunctionComponent } from "preact";
 import { useState, useEffect } from "preact/hooks";
-import { ButtonType } from "../lib/consent-types";
-import ConsentBannerButton from "./ConsentBannerButton";
+import { ButtonType, ExperienceConfig } from "../lib/consent-types";
+import Button from "./Button";
 import "../lib/banner.module.css";
 import { useHasMounted } from "../lib/hooks";
 
 interface BannerProps {
+  experience: ExperienceConfig;
   onAcceptAll: () => void;
   onRejectAll: () => void;
-  privacyCenterUrl: string;
-  bannerDescription?: string;
-  bannerTitle?: string;
-  confirmationButtonLabel?: string;
-  rejectButtonLabel?: string;
-  managePreferencesLabel?: string;
   waitBeforeShow?: number;
+  managePreferencesLabel?: string;
+  onOpenModal: () => void;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
+  experience,
   onAcceptAll,
   onRejectAll,
-  privacyCenterUrl,
-  bannerDescription = "This website processes your data respectfully, so we require your consent to use cookies.",
-  bannerTitle = "Manage your consent",
-  confirmationButtonLabel = "Accept All",
-  managePreferencesLabel = "Manage Preferences",
-  rejectButtonLabel = "Reject All",
-  waitBeforeShow = 100,
+  waitBeforeShow,
+  managePreferencesLabel = "Manage preferences",
+  onOpenModal,
 }) => {
   const [isShown, setIsShown] = useState(false);
   const hasMounted = useHasMounted();
+  const {
+    banner_title: bannerTitle = "Manage your consent",
+    banner_description:
+      bannerDescription = "This website processes your data respectfully, so we require your consent to use cookies.",
+    confirmation_button_label: confirmationButtonLabel = "Accept All",
+    reject_button_label: rejectButtonLabel = "Reject All",
+  } = experience;
 
   useEffect(() => {
     const delayBanner = setTimeout(() => {
@@ -38,10 +39,9 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     return () => clearTimeout(delayBanner);
   }, [setIsShown, waitBeforeShow]);
 
-  const navigateToPrivacyCenter = (): void => {
-    if (privacyCenterUrl) {
-      window.location.assign(privacyCenterUrl);
-    }
+  const handleManagePreferencesClick = (): void => {
+    onOpenModal();
+    setIsShown(false);
   };
 
   if (!hasMounted) {
@@ -73,12 +73,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         id="fides-consent-banner-buttons"
         className="fides-consent-banner-buttons"
       >
-        <ConsentBannerButton
+        <Button
           buttonType={ButtonType.TERTIARY}
           label={managePreferencesLabel}
-          onClick={navigateToPrivacyCenter}
+          onClick={handleManagePreferencesClick}
         />
-        <ConsentBannerButton
+        <Button
           buttonType={ButtonType.SECONDARY}
           label={rejectButtonLabel}
           onClick={() => {
@@ -86,7 +86,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
             setIsShown(false);
           }}
         />
-        <ConsentBannerButton
+        <Button
           buttonType={ButtonType.PRIMARY}
           label={confirmationButtonLabel}
           onClick={() => {
