@@ -149,7 +149,7 @@ button.fides-consent-banner-button:hover {
 button.fides-consent-banner-button.fides-consent-banner-button-primary {
   background: var(--fides-consent-overlay-primary-button-background-color);
   color: var(--fides-consent-overlay-primary-button-text-color);
-  border-color: var(--fides-consent-overlay-primary-button-border-color);
+  border: none;
 }
 
 button.fides-consent-banner-button.fides-consent-banner-button-primary:hover {
@@ -161,7 +161,7 @@ button.fides-consent-banner-button.fides-consent-banner-button-primary:hover {
 button.fides-consent-banner-button.fides-consent-banner-button-secondary {
   background: var(--fides-consent-overlay-secondary-button-background-color);
   color: var(--fides-consent-overlay-secondary-button-text-color);
-  border-color: var(--fides-consent-overlay-secondary-button-border-color);
+  border: 1px solid var(--fides-consent-overlay-primary-button-background-color);
 }
 
 button.fides-consent-banner-button.fides-consent-banner-button-secondary:hover {
