@@ -44,6 +44,7 @@ class TestValidateDataUses:
     def privacy_notice_request(self):
         return PrivacyNoticeCreation(
             name="sample privacy notice",
+            notice_key="sample_privacy_notice",
             regions=[PrivacyNoticeRegion.us_ca],
             consent_mechanism=ConsentMechanism.opt_in,
             data_uses=["placeholder"],
@@ -495,6 +496,7 @@ class TestGetPrivacyNotices:
                     db=db,
                     data={
                         "name": name,
+                        "notice_key": PrivacyNotice.generate_notice_key(name),
                         "description": "a sample privacy notice configuration",
                         "regions": [PrivacyNoticeRegion.us_ca],
                         "consent_mechanism": ConsentMechanism.opt_in,
@@ -541,6 +543,7 @@ class TestGetPrivacyNotices:
                     db=db,
                     data={
                         "name": name,
+                        "notice_key": PrivacyNotice.generate_notice_key(name),
                         "description": "a sample privacy notice configuration",
                         "regions": [PrivacyNoticeRegion.us_ca],
                         "consent_mechanism": ConsentMechanism.opt_in,
@@ -604,6 +607,7 @@ class TestGetPrivacyNotices:
             db=db,
             data={
                 "name": escaped_name,
+                "notice_key": PrivacyNotice.generate_notice_key(escaped_name),
                 "description": "a sample privacy notice configuration",
                 "regions": [PrivacyNoticeRegion.us_ca],
                 "consent_mechanism": ConsentMechanism.opt_in,
@@ -721,6 +725,7 @@ class TestGetPrivacyNoticeDetail:
             json=[
                 {
                     "name": "test privacy notice 1",
+                    "notice_key": "test_privacy_notice_1",
                     "description": maybe_dangerous_description,
                     "origin": "privacy_notice_template_1",
                     "regions": [
@@ -799,6 +804,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-1",
                         name=f"{PRIVACY_NOTICE_NAME}-1",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-1"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                             PrivacyNoticeRegion.us_co,
@@ -819,6 +827,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
                             name=f"{PRIVACY_NOTICE_NAME}-1",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-1"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_ca,
                                 PrivacyNoticeRegion.us_co,
@@ -843,6 +854,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-1",
                         name=f"{PRIVACY_NOTICE_NAME}-1",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-1"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                             PrivacyNoticeRegion.us_co,
@@ -860,6 +874,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-2",
                         name=f"{PRIVACY_NOTICE_NAME}-2",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-2"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.eu_be,
                         ],
@@ -879,6 +896,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
                             name=f"{PRIVACY_NOTICE_NAME}-1",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-1"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_ca,
                                 PrivacyNoticeRegion.us_co,
@@ -897,6 +917,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
                             name=f"{PRIVACY_NOTICE_NAME}-2",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-2"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.eu_be,
                             ],
@@ -920,6 +943,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-1",
                         name=f"{PRIVACY_NOTICE_NAME}-1",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-1"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                             PrivacyNoticeRegion.us_co,
@@ -937,6 +963,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-2",
                         name=f"{PRIVACY_NOTICE_NAME}-2",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-2"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.eu_be,
                         ],
@@ -955,6 +984,9 @@ class TestGetPrivacyNoticesByDataUse:
                     "advertising": [
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-1"
+                            ),
                             name=f"{PRIVACY_NOTICE_NAME}-1",
                             regions=[
                                 PrivacyNoticeRegion.us_ca,
@@ -972,6 +1004,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
                             name=f"{PRIVACY_NOTICE_NAME}-2",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-2"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.eu_be,
                             ],
@@ -989,6 +1024,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
                             name=f"{PRIVACY_NOTICE_NAME}-1",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-1"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_ca,
                                 PrivacyNoticeRegion.us_co,
@@ -1011,6 +1049,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-1",
                         name=f"{PRIVACY_NOTICE_NAME}-1",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-1"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                             PrivacyNoticeRegion.us_co,
@@ -1029,6 +1070,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-2",
                         name=f"{PRIVACY_NOTICE_NAME}-2",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-2"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.eu_be,
                         ],
@@ -1048,6 +1092,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
                             name=f"{PRIVACY_NOTICE_NAME}-2",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-2"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.eu_be,
                             ],
@@ -1072,6 +1119,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-1",
                         name=f"{PRIVACY_NOTICE_NAME}-1",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-1"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                             PrivacyNoticeRegion.us_co,
@@ -1095,6 +1145,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-1",
                         name=f"{PRIVACY_NOTICE_NAME}-1",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-1"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                             PrivacyNoticeRegion.us_co,
@@ -1112,6 +1165,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-2",
                         name=f"{PRIVACY_NOTICE_NAME}-2",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-2"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                         ],
@@ -1128,6 +1184,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-3",
                         name=f"{PRIVACY_NOTICE_NAME}-3",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-3"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_co,
                         ],
@@ -1144,6 +1203,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-4",
                         name=f"{PRIVACY_NOTICE_NAME}-4",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-4"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_va,
                         ],
@@ -1163,6 +1225,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
                             name=f"{PRIVACY_NOTICE_NAME}-1",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-1"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_ca,
                                 PrivacyNoticeRegion.us_co,
@@ -1183,6 +1248,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-4",
                             name=f"{PRIVACY_NOTICE_NAME}-4",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-4"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_va,
                             ],
@@ -1202,6 +1270,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-3",
                             name=f"{PRIVACY_NOTICE_NAME}-3",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-3"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_co,
                             ],
@@ -1219,6 +1290,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
                             name=f"{PRIVACY_NOTICE_NAME}-2",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-2"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_ca,
                             ],
@@ -1294,6 +1368,7 @@ class TestPostPrivacyNotices:
     def notice_request(self, load_default_data_uses) -> Dict[str, Any]:
         return {
             "name": "test privacy notice 1",
+            "notice_key": "test_privacy_notice_1",
             "description": "my test privacy notice",
             "origin": "privacy_notice_template_1",
             "regions": [
@@ -1310,6 +1385,7 @@ class TestPostPrivacyNotices:
     def notice_request_2(self, load_default_data_uses) -> Dict[str, Any]:
         return {
             "name": "test privacy notice 2",
+            "notice_key": "test_privacy_notice_2",
             # no description or origin on this request just to verify their optionality
             "regions": [PrivacyNoticeRegion.us_ca.value],
             "consent_mechanism": ConsentMechanism.opt_in.value,

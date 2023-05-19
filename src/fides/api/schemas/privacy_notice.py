@@ -23,6 +23,7 @@ class PrivacyNotice(FidesSchema):
     """
 
     name: Optional[str]
+    notice_key: Optional[str]
     description: Optional[str]
     internal_description: Optional[str]
     origin: Optional[str]
@@ -105,6 +106,7 @@ class PrivacyNoticeCreation(PrivacyNotice):
     """
 
     name: str
+    notice_key: str
     regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
     consent_mechanism: ConsentMechanism
     data_uses: conlist(str, min_items=1)  # type: ignore

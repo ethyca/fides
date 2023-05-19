@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
@@ -149,6 +150,7 @@ class PrivacyNoticeBase:
     displayed_in_privacy_center = Column(Boolean, nullable=False, default=False)
     displayed_in_overlay = Column(Boolean, nullable=False, default=False)
     displayed_in_api = Column(Boolean, nullable=False, default=False)
+    notice_key = Column(String, nullable=False)
 
     def applies_to_system(self, system: System) -> bool:
         """Privacy Notice applies to System if a data use matches or the Privacy Notice
@@ -159,6 +161,13 @@ class PrivacyNoticeBase:
                 if system_data_use == privacy_notice_data_use:
                     return True
         return False
+
+    @classmethod
+    def generate_notice_key(cls, name: Optional[str]) -> str:
+        """Generate a notice key from a notice name"""
+        if not isinstance(name, str):
+            raise Exception("Privacy notice keys must be generated from a string.")
+        return re.sub(r"\s+", "_", name.lower().strip())
 
 
 class PrivacyNotice(PrivacyNoticeBase, Base):
@@ -244,6 +253,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             # and is no longer the history record 'id' column
             history_data = {
                 "name": self.name,
+                "notice_key": self.notice_key,
                 "description": self.description or None,
                 "origin": self.origin or None,
                 "regions": self.regions,
