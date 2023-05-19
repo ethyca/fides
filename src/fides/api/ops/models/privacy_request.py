@@ -307,7 +307,7 @@ class PrivacyRequest(Base, IdentityVerificationMixin):  # pylint: disable=R0904
         for key in all_keys:
             cache.delete(key)
 
-        for provided_identity in self.provided_identities:
+        for provided_identity in self.provided_identities:  # type: ignore[attr-defined]
             provided_identity.delete(db=db)
         super().delete(db=db)
 

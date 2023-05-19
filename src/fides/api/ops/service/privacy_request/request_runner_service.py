@@ -334,7 +334,7 @@ async def run_privacy_request(
             if not proceed:
                 return
         try:
-            policy.rules[0]  # type: ignore[attr-undefined]
+            policy.rules[0]  # type: ignore[attr-defined]
         except IndexError:
             raise common_exceptions.MisconfiguredPolicyException(
                 f"Policy with key {policy.key} must contain at least one Rule."
