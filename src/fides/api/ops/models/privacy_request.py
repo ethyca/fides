@@ -11,7 +11,8 @@ from celery.result import AsyncResult
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy import Boolean, Column, DateTime
-from sqlalchemy import Enum as EnumColumn
+
+# from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict, MutableList
@@ -33,6 +34,7 @@ from fides.api.ops.db.base_class import (
     Base,  # type: ignore[attr-defined]
     JSONTypeOverride,
 )
+from fides.api.ops.db.util import EnumColumn
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph_differences import GraphRepr
 from fides.api.ops.models.audit_log import AuditLog

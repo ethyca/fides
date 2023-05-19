@@ -1028,9 +1028,6 @@ def bulk_restart_privacy_request_from_failure(
 
     succeeded: List[PrivacyRequestResponse] = []
     failed: List[Dict[str, Any]] = []
-
-    #    privacy_request = PrivacyRequest.get(db, object_id=request_id)
-
     for privacy_request_id in privacy_request_ids:
         privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
 
