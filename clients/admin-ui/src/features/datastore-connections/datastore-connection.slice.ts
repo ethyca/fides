@@ -3,6 +3,7 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { baseApi } from "~/features/common/api.slice";
 import {
   BulkPutDataset,
+  ConnectionConfigurationResponse,
   Page_DatasetConfigSchema_,
   SystemType,
 } from "~/types/api";
@@ -15,7 +16,6 @@ import {
   CreateAccessManualWebhookResponse,
   CreateSaasConnectionConfigRequest,
   CreateSaasConnectionConfigResponse,
-  DatastoreConnection,
   DatastoreConnectionParams,
   DatastoreConnectionRequest,
   DatastoreConnectionResponse,
@@ -206,7 +206,10 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Datastore Connection"],
     }),
-    getDatastoreConnectionByKey: build.query<DatastoreConnection, string>({
+    getDatastoreConnectionByKey: build.query<
+      ConnectionConfigurationResponse,
+      string
+    >({
       query: (key) => ({
         url: `${CONNECTION_ROUTE}/${key}`,
       }),

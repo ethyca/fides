@@ -2,7 +2,11 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import { System } from "~/types/api";
+import {
+  System,
+  ConnectionConfigurationResponse,
+  BulkPutConnectionConfiguration,
+} from "~/types/api";
 
 interface SystemDeleteResponse {
   message: string;
@@ -63,13 +67,32 @@ const systemApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Datamap", "System", "Privacy Notices"],
     }),
-    patchSystemConnectionConfigs: build.mutation<UpsertResponse, System[]>({
-      query: (systems) => ({
-        url: `/system/upsert`,
+    patchSystemConnectionConfigs: build.mutation<
+      BulkPutConnectionConfiguration,
+      {
+        systemFidesKey: string;
+        connectionConfigs: Omit<
+          ConnectionConfigurationResponse,
+          "created_at"
+        >[];
+      }
+    >({
+      query: ({ systemFidesKey, connectionConfigs }) => ({
+        url: `/system/${systemFidesKey}/connection`,
         method: "PATCH",
-        body: systems,
+        body: connectionConfigs,
       }),
-      invalidatesTags: ["Datamap", "System"],
+      invalidatesTags: ["Datamap", "System", "Datastore Connection"],
+    }),
+
+    getSystemConnectionConfigs: build.query<
+      ConnectionConfigurationResponse[],
+      string
+    >({
+      query: (systemFidesKey) => ({
+        url: `/system/${systemFidesKey}/connection`,
+      }),
+      providesTags: ["Datamap", "System", "Datastore Connection"],
     }),
   }),
 });
@@ -81,6 +104,8 @@ export const {
   useUpdateSystemMutation,
   useDeleteSystemMutation,
   useUpsertSystemsMutation,
+  usePatchSystemConnectionConfigsMutation,
+  useGetSystemConnectionConfigsQuery,
 } = systemApi;
 
 export interface State {

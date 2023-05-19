@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Center,
   Flex,
   Input,
@@ -9,13 +8,11 @@ import {
   SearchLineIcon,
   Spinner,
   Text,
-  SimpleGrid,
-  Select
+  Select,
 } from "@fidesui/react";
 import { debounce } from "common/utils";
 import {
   selectConnectionTypeFilters,
-  selectConnectionTypeState,
   setSearch,
   useGetAllConnectionTypesQuery,
 } from "connection-type/connection-type.slice";
@@ -29,17 +26,13 @@ import React, {
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
-import Restrict from "~/features/common/Restrict";
-import ConnectorTemplateUploadModal from "~/features/connector-templates/ConnectorTemplateUploadModal";
-import { ConnectionSystemTypeMap, ScopeRegistryEnum } from "~/types/api";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+} from "~/types/api";
 
-import Breadcrumb from "../add-connection/Breadcrumb";
 import ConnectionTypeFilter from "../add-connection/ConnectionTypeFilter";
-import ConnectionTypeList from "../add-connection/ConnectionTypeList";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
-import { CustomSelect, Option } from "~/features/common/form/inputs";
-import { ConnectionOption } from "datastore-connections/system_portal_config/ConnectionForm";
-import SelectDropdown from "~/features/common/dropdown/SelectDropdown"
 
 type ItemProps = {
   data: ConnectionSystemTypeMap;
@@ -75,13 +68,15 @@ const ConnectinListItem = ({ data }: ItemProps) => {
 
 type ListProps = {
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  connectionConfig?: ConnectionConfigurationResponse;
 };
-const ConnectionList = ({ onChange }: ListProps) => {
+const ConnectionList = ({ onChange, connectionConfig }: ListProps) => {
   const dispatch = useDispatch();
   const filters = useAppSelector(selectConnectionTypeFilters);
   const { data, isFetching, isLoading, isSuccess } =
     useGetAllConnectionTypesQuery(filters);
 
+  const [selectedOption, setSelectedOption] = useState<string>();
   const handleSearchChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length === 0 || event.target.value.length > 1) {
@@ -109,14 +104,30 @@ const ConnectionList = ({ onChange }: ListProps) => {
     () =>
       sortedItems
         ? sortedItems.map((item) => ({
-              label: item.human_readable,
-              value: item
-
+            label: item.human_readable,
+            value: item,
           }))
         : [],
     [sortedItems]
   );
 
+  useMemo(() => {
+    console.log("inside here", connectionConfig, sortedItems);
+    if (connectionConfig && sortedItems) {
+      const c = sortedItems.find(
+        (c) => c.identifier === connectionConfig.connection_type
+      );
+      console.log("futher inside", c);
+      onChange({
+        target: {
+          value: JSON.stringify(c),
+        },
+      } as React.ChangeEvent<HTMLSelectElement>);
+      // setSelectedOption(JSON.stringify(c))
+    }
+  }, [connectionConfig, sortedItems]);
+
+  console.log("selected option", selectedOption);
   return (
     <>
       <Flex alignItems="center" gap="4" mb="24px" minWidth="fit-content">
@@ -143,9 +154,16 @@ const ConnectionList = ({ onChange }: ListProps) => {
         </Center>
       )}
       {isSuccess && sortedItems ? (
-        <Select onChange={onChange} >
-          {dropDownOptions.map((item)=>(
-            <option key={item.label} value={JSON.stringify(item.value)}>{item.label}</option>
+        <Select
+          onChange={(e) => {
+            setSelectedOption(JSON.stringify(e.target.value));
+            onChange(e);
+          }}
+        >
+          {dropDownOptions.map((item) => (
+            <option key={item.label} value={JSON.stringify(item.value)}>
+              {item.label}
+            </option>
           ))}
         </Select>
       ) : null}

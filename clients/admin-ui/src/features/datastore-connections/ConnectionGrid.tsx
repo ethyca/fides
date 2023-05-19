@@ -10,7 +10,7 @@ import {
   selectDatastoreConnectionFilters,
   setPage,
 } from "./datastore-connection.slice";
-import { DatastoreConnection } from "./types";
+import { ConnectionConfigurationResponse } from "~/types/api";
 
 const useConnectionGrid = () => {
   const dispatch = useDispatch();
@@ -32,7 +32,7 @@ const useConnectionGrid = () => {
 };
 
 type ConnectionGridProps = {
-  items: DatastoreConnection[];
+  items: ConnectionConfigurationResponse[];
   total: number;
 };
 

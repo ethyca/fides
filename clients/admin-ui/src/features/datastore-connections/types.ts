@@ -1,4 +1,5 @@
 import {
+  ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   ConnectionType,
   DatasetConfigCtlDataset,
@@ -132,7 +133,7 @@ export type DatastoreConnectionRequest = {
 };
 
 export type DatastoreConnectionResponse = {
-  succeeded: DatastoreConnection[];
+  succeeded: ConnectionConfigurationResponse[];
   failed: [
     {
       message: string;
@@ -141,22 +142,10 @@ export type DatastoreConnectionResponse = {
   ];
 };
 
-export type DatastoreConnection = {
-  name: string;
-  key: string;
-  description?: string;
-  disabled: boolean;
-  connection_type: ConnectionType;
-  access: AccessLevel;
-  created_at: string;
-  updated_at?: string;
-  last_test_timestamp: string;
-  last_test_succeeded: boolean;
-  saas_config?: SaasConfig;
-};
-
-export const isDatastoreConnection = (obj: any): obj is DatastoreConnection =>
-  (obj as DatastoreConnection).connection_type !== undefined;
+export const isDatastoreConnection = (
+  obj: any
+): obj is ConnectionConfigurationResponse =>
+  (obj as ConnectionConfigurationResponse).connection_type !== undefined;
 
 export const isConnectionSystemTypeMap = (
   obj: any
@@ -174,7 +163,7 @@ export type DatastoreConnectionParams = {
 };
 
 export type DatastoreConnectionsResponse = {
-  items: DatastoreConnection[];
+  items: ConnectionConfigurationResponse[];
   total: number;
   page: number;
   size: number;
@@ -224,7 +213,7 @@ export type CreateSaasConnectionConfigRequest = {
 };
 
 export type CreateSaasConnectionConfigResponse = {
-  connection: DatastoreConnection;
+  connection: ConnectionConfigurationResponse;
   dataset: {
     fides_key: string;
   };

@@ -20,7 +20,7 @@ class SystemResponse(System):
         description=PrivacyDeclarationResponse.__doc__,
     )
 
-    connection_config: Optional[ConnectionConfigurationResponse] = Field(
+    connection_configs: Optional[ConnectionConfigurationResponse] = Field(
         description=ConnectionConfigurationResponse.__doc__,
     )
 

@@ -18,7 +18,6 @@ import {
   VStack,
 } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
-import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaReponse,
@@ -27,15 +26,17 @@ import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import React, { useEffect, useRef } from "react";
 
-import { useAppSelector } from "~/app/hooks";
-import { ConnectionType } from "~/types/api";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  ConnectionType,
+} from "~/types/api";
 
 import {
   DatabaseConnectorParametersFormFields,
   SaasConnectorParametersFormFields,
 } from "../types";
 import { fillInDefaults } from "./helpers";
-import ConnectionList from "../ConnectionList";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
@@ -57,6 +58,8 @@ type ConnectorParametersFormProps = {
    * Text for the test button. Defaults to "Test connection"
    */
   testButtonLabel?: string;
+  connection?: ConnectionConfigurationResponse;
+  connectionOption: ConnectionSystemTypeMap;
 };
 
 const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
@@ -66,13 +69,13 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   onSaveClick,
   onTestConnectionClick,
   testButtonLabel = "Test connection",
+  connectionOption,
+  connection,
 }) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
 
-  const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState
-  );
+
 
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
 

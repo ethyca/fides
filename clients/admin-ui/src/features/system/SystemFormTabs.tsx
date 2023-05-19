@@ -230,7 +230,10 @@ const SystemFormTabs = ({
               integrations are not available or the preference.
             </Text>
           </Box>
-          <ConnectionForm connectionConfig={activeSystem.connection_config} systemFidesKey={activeSystem.fides_key} />
+          <ConnectionForm
+            connectionConfig={activeSystem.connection_configs}
+            systemFidesKey={activeSystem.fides_key}
+          />
         </Box>
       ) : null,
       isDisabled: !activeSystem,

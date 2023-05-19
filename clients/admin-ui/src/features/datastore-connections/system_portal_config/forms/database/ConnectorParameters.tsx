@@ -1,24 +1,18 @@
 import { Box } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
-import {
-  selectConnectionTypeState,
-  setConnection,
-} from "connection-type/connection-type.slice";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
-import {
-  usePatchDatastoreConnectionMutation,
-  useUpdateDatastoreConnectionSecretsMutation,
-} from "datastore-connections/datastore-connection.slice";
-import {
-  DatastoreConnectionRequest,
-  DatastoreConnectionSecretsRequest,
-} from "datastore-connections/types";
+import { useUpdateDatastoreConnectionSecretsMutation } from "datastore-connections/datastore-connection.slice";
+import { usePatchSystemConnectionConfigsMutation } from "~/features/system/system.slice";
+import { DatastoreConnectionSecretsRequest } from "datastore-connections/types";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
 
-import { useAppSelector } from "~/app/hooks";
-import { ConnectionType } from "~/types/api";
+import {
+  AccessLevel,
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  ConnectionType,
+} from "~/types/api";
 
 import ConnectorParametersForm from "../ConnectorParametersForm";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
@@ -28,49 +22,49 @@ import {
 } from "../../types";
 
 type ConnectorParametersProps = {
-  data: ConnectionTypeSecretSchemaReponse;
-  /**
-   * Parent callback invoked when a connection is initially created
-   */
-  onConnectionCreated?: () => void;
+  secretsSchema: ConnectionTypeSecretSchemaReponse;
   /**
    * Parent callback when Test Connection is clicked
    */
   onTestConnectionClick: (value: any) => void;
   systemFidesKey: string;
+  connectionOption: ConnectionSystemTypeMap;
+  connectionConfig?: ConnectionConfigurationResponse;
 };
 
 export const useDatabaseConnector = ({
-  onConnectionCreated,
-  data,
+  secretsSchema,
   systemFidesKey,
-}: Pick<ConnectorParametersProps, "onConnectionCreated" | "data"| "systemFidesKey">) => {
-  const dispatch = useDispatch();
+  connectionOption,
+  connectionConfig,
+}: Pick<
+  ConnectorParametersProps,
+  "secretsSchema" | "systemFidesKey" | "connectionOption" | "connectionConfig"
+>) => {
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState
-  );
-
-  const [patchDatastoreConnection] = usePatchDatastoreConnectionMutation();
+  const [patchDatastoreConnection] = usePatchSystemConnectionConfigsMutation();
   const [updateDatastoreConnectionSecrets] =
     useUpdateDatastoreConnectionSecretsMutation();
 
   const handleSubmit = async (values: BaseConnectorParametersFields) => {
     try {
       setIsSubmitting(true);
-      const params1: DatastoreConnectionRequest = {
-        access: "write",
+      const params1: Omit<ConnectionConfigurationResponse, "created_at"> = {
+        access: AccessLevel.WRITE,
         connection_type: connectionOption?.identifier as ConnectionType,
         description: values.description,
         disabled: false,
         key: formatKey(values.instance_key as string),
         name: values.name,
       };
-      const payload = await patchDatastoreConnection(params1).unwrap();
+      const payload = await patchDatastoreConnection({
+        systemFidesKey,
+        connectionConfigs: [params1],
+      }).unwrap();
       if (payload.failed?.length > 0) {
         errorAlert(payload.failed[0].message);
       } else {
@@ -78,7 +72,7 @@ export const useDatabaseConnector = ({
           connection_key: payload.succeeded[0].key,
           secrets: {},
         };
-        Object.entries(data.properties).forEach((key) => {
+        Object.entries(secretsSchema.properties).forEach((key) => {
           params2.secrets[key[0]] = values[key[0]];
         });
         const payload2 = await updateDatastoreConnectionSecrets(
@@ -93,13 +87,11 @@ export const useDatabaseConnector = ({
             </>
           );
         } else {
-          dispatch(setConnection(payload.succeeded[0]));
           successAlert(
-            `Connector successfully ${connection?.key ? "updated" : "added"}!`
+            `Connector successfully ${
+              connectionConfig?.key ? "updated" : "added"
+            }!`
           );
-          if (!connection?.key && onConnectionCreated) {
-            onConnectionCreated();
-          }
         }
       }
     } catch (error) {
@@ -109,22 +101,28 @@ export const useDatabaseConnector = ({
     }
   };
 
-  return { isSubmitting, handleSubmit, connectionOption };
+  return { isSubmitting, handleSubmit };
 };
 
-export const DatabaseConnectorParameters: React.FC<ConnectorParametersProps> = ({
-  data,
-  onConnectionCreated,
+export const DatabaseConnectorParameters: React.FC<
+  ConnectorParametersProps
+> = ({
+  secretsSchema,
   onTestConnectionClick,
+  systemFidesKey,
+  connectionOption,
+  connectionConfig,
 }) => {
   const defaultValues = {
     description: "",
     instance_key: "",
     name: "",
   } as DatabaseConnectorParametersFormFields;
-  const { isSubmitting, handleSubmit, connectionOption } = useDatabaseConnector(
-    { onConnectionCreated, data }
-  );
+  const { isSubmitting, handleSubmit } = useDatabaseConnector({
+    secretsSchema,
+    systemFidesKey,
+    connectionOption,
+  });
 
   return (
     <>
@@ -135,11 +133,13 @@ export const DatabaseConnectorParameters: React.FC<ConnectorParametersProps> = (
         processing a privacy request in your Dataset configuration.
       </Box>
       <ConnectorParametersForm
-        data={data}
+        data={secretsSchema}
         defaultValues={defaultValues}
         isSubmitting={isSubmitting}
         onSaveClick={handleSubmit}
         onTestConnectionClick={onTestConnectionClick}
+        connectionOption={connectionOption}
+        connection={connectionConfig}
       />
     </>
   );

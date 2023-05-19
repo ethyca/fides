@@ -1,41 +1,48 @@
 import { DatabaseConnectorParameters } from "./ConnectorParameters";
+import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import {
-  useGetConnectionTypeSecretSchemaQuery,
-} from "~/features/connection-type";
-import { ConnectionSystemTypeMap, SystemType } from "~/types/api";
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  SystemType,
+} from "~/types/api";
 import { useState } from "react";
 import TestConnection from "datastore-connections/add-connection/TestConnection";
 import { SlideFade, Box } from "@fidesui/react";
 
 type Props = {
+  connectionConfig?: ConnectionConfigurationResponse;
   connectionOption: ConnectionSystemTypeMap;
   systemFidesKey: string;
 };
 
-export const DatabaseForm = ({ connectionOption, systemFidesKey }: Props) => {
+export const DatabaseForm = ({
+  connectionOption,
+  systemFidesKey,
+  connectionConfig,
+}: Props) => {
   const skip = connectionOption.type === SystemType.MANUAL;
 
-  const { data, isFetching, isLoading, isSuccess } =
-    useGetConnectionTypeSecretSchemaQuery(connectionOption!.identifier, {
+  const { data: secretsSchema } = useGetConnectionTypeSecretSchemaQuery(
+    connectionOption!.identifier,
+    {
       skip,
-    });
-
+    }
+  );
   const [response, setResponse] = useState<any>();
 
   const handleTestConnectionClick = (value: any) => {
     setResponse(value);
   };
-  if (!data) {
+  if (!secretsSchema) {
     return null;
   }
-
-
-
 
   return (
     <>
       <DatabaseConnectorParameters
-        data={data}
+        secretsSchema={secretsSchema}
+        connectionOption={connectionOption}
+        connectionConfig={connectionConfig}
         onTestConnectionClick={handleTestConnectionClick}
         systemFidesKey={systemFidesKey}
       />

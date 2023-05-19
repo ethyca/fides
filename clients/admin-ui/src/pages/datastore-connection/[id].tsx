@@ -15,8 +15,11 @@ import {
 } from "~/features/connection-type";
 import { datastoreConnectionApi } from "~/features/datastore-connections";
 import EditConnection from "~/features/datastore-connections/edit-connection/EditConnection";
-import { DatastoreConnection } from "~/features/datastore-connections/types";
-import { ConnectionSystemTypeMap, ConnectionType } from "~/types/api";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  ConnectionType,
+} from "~/types/api";
 
 const EditDatastoreConnection: NextPage = () => {
   const dispatch = useAppDispatch();
@@ -27,7 +30,7 @@ const EditDatastoreConnection: NextPage = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const getConnectionOption = (
-    data: DatastoreConnection,
+    data: ConnectionConfigurationResponse,
     options: ConnectionSystemTypeMap[]
   ): ConnectionSystemTypeMap | undefined => {
     const item = options.find(

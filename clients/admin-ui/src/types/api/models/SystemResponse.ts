@@ -117,5 +117,5 @@ export type SystemResponse = {
    * Do *NOT* add "secrets" to this schema.
    *
    */
-  connection_config?: ConnectionConfigurationResponse;
+  connection_configs?: ConnectionConfigurationResponse;
 };

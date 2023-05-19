@@ -10,7 +10,7 @@ import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import ConnectionTypeLogo from "./ConnectionTypeLogo";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
-import { DatastoreConnection } from "./types";
+import { ConnectionConfigurationResponse } from "~/types/api";
 
 type TestDataProps = {
   succeeded?: boolean;
@@ -40,7 +40,7 @@ const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
 };
 
 type ConnectionGridItemProps = {
-  connectionData: DatastoreConnection;
+  connectionData: ConnectionConfigurationResponse;
 };
 
 const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
