@@ -4,8 +4,11 @@ import type { RootState } from "~/app/store";
 import { VerificationType } from "~/components/modals/types";
 import { baseApi } from "~/features/common/api.slice";
 import {
+  ComponentType,
   ConsentPreferences,
   ConsentPreferencesWithVerificationCode,
+  PrivacyExperienceResponse,
+  PrivacyNoticeRegion,
 } from "~/types/api";
 import { ConfigConsentOption } from "~/types/config";
 
@@ -47,6 +50,21 @@ export const consentApi = baseApi.injectEndpoints({
         credentials: "include",
       }),
     }),
+    getPrivacyExperience: build.query<
+      PrivacyExperienceResponse,
+      PrivacyNoticeRegion
+    >({
+      query: (region) => ({
+        url: "privacy-experience/",
+        params: {
+          component: ComponentType.PRIVACY_CENTER,
+          region, // TODO: get from geolocation API?
+          has_notices: true,
+          show_disabled: false,
+        },
+      }),
+      providesTags: ["Privacy Experience"],
+    }),
   }),
 });
 
@@ -61,11 +79,14 @@ type State = {
   fidesKeyToConsent: FidesKeyToConsent;
   /** The consent choices stored on the server (returned by the most recent API call). */
   persistedFidesKeyToConsent: FidesKeyToConsent;
+  /** The region the user is in */
+  region: PrivacyNoticeRegion | undefined;
 };
 
 const initialState: State = {
   fidesKeyToConsent: {},
   persistedFidesKeyToConsent: {},
+  region: undefined,
 };
 
 export const consentSlice = createSlice({
@@ -100,6 +121,10 @@ export const consentSlice = createSlice({
           consent.opt_in;
       });
     },
+
+    setRegion(draftState, { payload }: PayloadAction<PrivacyNoticeRegion>) {
+      draftState.region = payload;
+    },
   },
 });
 
@@ -117,4 +142,20 @@ export const selectFidesKeyToConsent = createSelector(
 export const selectPersistedFidesKeyToConsent = createSelector(
   selectConsentState,
   (state) => state.persistedFidesKeyToConsent
+);
+
+// Privacy experience
+export const selectExperienceRegion = createSelector(
+  selectConsentState,
+  (state) => state.region
+);
+export const selectPrivacyExperience = createSelector(
+  [(RootState) => RootState, selectExperienceRegion],
+  (RootState, region) => {
+    if (!region) {
+      return undefined;
+    }
+    return consentApi.endpoints.getPrivacyExperience.select(region)(RootState)
+      ?.data;
+  }
 );
