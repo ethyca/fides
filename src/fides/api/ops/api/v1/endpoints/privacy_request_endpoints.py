@@ -602,7 +602,7 @@ def get_request_status(
     # Conditionally embed execution log details in the response.
     if verbose:
         logger.info("Finding execution and audit log details")
-        PrivacyRequest.execution_and_audit_logs_by_dataset = property(  # type: ignore[attr-defined]
+        PrivacyRequest.execution_and_audit_logs_by_dataset = property(
             execution_and_audit_logs_by_dataset_name
         )
     else:

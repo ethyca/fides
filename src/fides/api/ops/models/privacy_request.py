@@ -256,6 +256,11 @@ class PrivacyRequest(Base, IdentityVerificationMixin):  # pylint: disable=R0904
     due_date = Column(DateTime(timezone=True), nullable=True)
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
+    # Non-DB fields that are optionally added throughout the codebase
+    action_required_details: Optional[CheckpointActionRequired] = None
+    execution_and_audit_logs_by_dataset: Optional[property] = None
+    resume_endpoint: Optional[str] = None
+
     @property
     def days_left(self: PrivacyRequest) -> Union[int, None]:
         if self.due_date is None:
@@ -342,7 +347,7 @@ class PrivacyRequest(Base, IdentityVerificationMixin):  # pylint: disable=R0904
         Retrieves persisted identity fields from the DB.
         """
         schema = Identity()
-        for field in self.provided_identities:
+        for field in self.provided_identities:  # type: ignore[attr-defined]
             setattr(
                 schema,
                 field.field_name.value,
