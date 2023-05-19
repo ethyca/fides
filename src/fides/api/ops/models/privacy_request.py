@@ -170,7 +170,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
     )
 
 
-class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
+class PrivacyRequest(Base, IdentityVerificationMixin):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests.
     A privacy request is a database record representing the request's
@@ -959,7 +959,7 @@ class ConsentRequest(IdentityVerificationMixin, Base):
     def verify_identity(
         self,
         db: Session,
-        provided_code: str,
+        provided_code: str = None,
     ) -> None:
         """
         A method to call the internal identity verification method provided by the

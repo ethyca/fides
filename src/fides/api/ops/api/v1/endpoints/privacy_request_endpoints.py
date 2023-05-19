@@ -602,7 +602,7 @@ def get_request_status(
     # Conditionally embed execution log details in the response.
     if verbose:
         logger.info("Finding execution and audit log details")
-        PrivacyRequest.execution_and_audit_logs_by_dataset = property(
+        PrivacyRequest.execution_and_audit_logs_by_dataset = property(  # type: ignore[attr-defined]
             execution_and_audit_logs_by_dataset_name
         )
     else:
@@ -1243,7 +1243,7 @@ def verify_identification_code(
         )
         queue_privacy_request(privacy_request.id)
 
-    return privacy_request
+    return privacy_request  # type: ignore[return-value]
 
 
 @router.patch(
@@ -1572,7 +1572,7 @@ def resume_privacy_request_from_requires_input(
         privacy_request_id=privacy_request.id,
     )
 
-    return privacy_request
+    return privacy_request  # type: ignore[return-value]
 
 
 def create_privacy_request_func(
@@ -1752,4 +1752,4 @@ def _process_privacy_request_restart(
         from_step=failed_step.value,
     )
 
-    return privacy_request
+    return privacy_request  # type: ignore
