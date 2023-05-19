@@ -8,6 +8,9 @@ import {
   ExperienceDeliveryMechanism,
 } from "fides-js";
 
+const PRIVACY_NOTICE_ID_1 = "pri_4bed96d0-b9e3-4596-a807-26b783836374";
+const PRIVACY_NOTICE_ID_2 = "pri_4bed96d0-b9e3-4596-a807-26b783836375";
+
 describe("Consent banner", () => {
   // Default options to use for all tests
   const testBannerOptions: FidesConfig = {
@@ -56,12 +59,30 @@ describe("Consent banner", () => {
           version: 1.0,
           privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
         },
+        {
+          name: "Essential",
+          description:
+            "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
+          regions: ["us_ca"],
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+          has_gpc_flag: true,
+          data_uses: ["provide.service"],
+          enforcement_level: EnforcementLevel.SYSTEM_WIDE,
+          displayed_in_overlay: true,
+          displayed_in_api: true,
+          displayed_in_privacy_center: false,
+          id: "pri_4bed96d0-b9e3-4596-a807-26b783836375",
+          created_at: "2023-04-24T21:29:08.870351+00:00",
+          updated_at: "2023-04-24T21:29:08.870351+00:00",
+          version: 1.0,
+          privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
+        },
       ],
     },
     geolocation: {},
     options: {
       debug: true,
-      isDisabled: false,
+      isOverlayDisabled: false,
       isGeolocationEnabled: false,
       geolocationApiUrl: "",
       privacyCenterUrl: "http://localhost:3000",
@@ -72,7 +93,7 @@ describe("Consent banner", () => {
     beforeEach(() => {
       // todo- need a better test pattern for overriding default config
       const newTestOptions = testBannerOptions;
-      newTestOptions.options.isDisabled = true;
+      newTestOptions.options.isOverlayDisabled = true;
       cy.visitConsentDemo(newTestOptions);
     });
 
@@ -90,7 +111,7 @@ describe("Consent banner", () => {
     describe("when banner is not disabled", () => {
       beforeEach(() => {
         const newTestOptions = testBannerOptions;
-        newTestOptions.options.isDisabled = false;
+        newTestOptions.options.isOverlayDisabled = false;
         newTestOptions.options.isGeolocationEnabled = false;
         cy.visitConsentDemo(newTestOptions);
       });
@@ -107,7 +128,7 @@ describe("Consent banner", () => {
           ).within(() => {
             cy.get(
               "button#fides-consent-banner-button-tertiary.fides-consent-banner-button.fides-consent-banner-button-tertiary"
-            ).contains("Manage Preferences");
+            ).contains("Manage preferences");
             cy.get(
               "button#fides-consent-banner-button-secondary.fides-consent-banner-button.fides-consent-banner-button-secondary"
             ).contains("Reject Test");
@@ -136,9 +157,11 @@ describe("Consent banner", () => {
               decodeURIComponent(cookie!.value)
             );
             expect(cookieKeyConsent.consent)
-              .property("data_sales")
+              .property(PRIVACY_NOTICE_ID_1)
               .is.eql(true);
-            expect(cookieKeyConsent.consent).property("tracking").is.eql(true);
+            expect(cookieKeyConsent.consent)
+              .property(PRIVACY_NOTICE_ID_2)
+              .is.eql(true);
           });
           cy.contains("button", "Accept Test").should("not.be.visible");
         });
@@ -152,18 +175,113 @@ describe("Consent banner", () => {
               decodeURIComponent(cookie!.value)
             );
             expect(cookieKeyConsent.consent)
-              .property("data_sales")
+              .property(PRIVACY_NOTICE_ID_1)
               .is.eql(false);
-            expect(cookieKeyConsent.consent).property("tracking").is.eql(false);
+            expect(cookieKeyConsent.consent)
+              .property(PRIVACY_NOTICE_ID_2)
+              .is.eql(false);
           });
         });
       });
 
-      it("should navigate to Privacy Center to manage consent options", () => {
-        cy.contains("button", "Manage Preferences")
-          .should("be.visible")
-          .click();
-        cy.url().should("equal", "http://localhost:3000/");
+      describe("modal", () => {
+        it("should open modal when experience component = OVERLAY", () => {
+          cy.contains("button", "Manage preferences").click();
+          cy.getByTestId("consent-modal");
+        });
+
+        it("can toggle the notices", () => {
+          cy.contains("button", "Manage preferences").click();
+          // Notices should start off disabled
+          cy.getByTestId("toggle-Test privacy notice").within(() => {
+            cy.get("input").should("not.have.attr", "checked");
+          });
+          cy.getByTestId("toggle-Test privacy notice").click();
+          cy.getByTestId("toggle-Essential").within(() => {
+            cy.get("input").should("not.have.attr", "checked");
+          });
+          cy.getByTestId("toggle-Essential").click();
+
+          // DEFER: intercept and check the API call once it is hooked up
+          cy.getByTestId("Save-btn").click();
+          // Modal should close after saving
+          cy.getByTestId("consent-modal").should("not.exist");
+
+          // check that the cookie updated
+          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+            cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+              const cookieKeyConsent: FidesCookie = JSON.parse(
+                decodeURIComponent(cookie!.value)
+              );
+              expect(cookieKeyConsent.consent)
+                .property(PRIVACY_NOTICE_ID_1)
+                .is.eql(true);
+              expect(cookieKeyConsent.consent)
+                .property(PRIVACY_NOTICE_ID_2)
+                .is.eql(true);
+            });
+          });
+
+          // check that window.Fides.consent updated
+          cy.window().then((win) => {
+            expect(win.Fides.consent).to.eql({
+              [PRIVACY_NOTICE_ID_1]: true,
+              [PRIVACY_NOTICE_ID_2]: true,
+            });
+          });
+
+          // Upon reload, window.Fides should make the notices enabled
+          cy.reload();
+          cy.contains("button", "Manage preferences").click();
+          cy.getByTestId("toggle-Test privacy notice").within(() => {
+            cy.get("input").should("have.attr", "checked");
+          });
+          cy.getByTestId("toggle-Essential").within(() => {
+            cy.get("input").should("have.attr", "checked");
+          });
+        });
+      });
+
+      it("overwrites privacy notices that no longer exist", () => {
+        const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+        const now = "2023-04-28T12:00:00.000Z";
+        const legacyNotices = {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        };
+        const originalCookie = {
+          identity: { fides_user_device_id: uuid },
+          fides_meta: { version: "0.9.0", createdAt: now },
+          consent: legacyNotices,
+        };
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
+        cy.contains("button", "Manage preferences").click();
+
+        // Save new preferences
+        cy.getByTestId("toggle-Test privacy notice").click();
+        cy.getByTestId("toggle-Essential").click();
+        cy.getByTestId("Save-btn").click();
+
+        // New privacy notice values only, no legacy ones
+        const expectedConsent = {
+          [PRIVACY_NOTICE_ID_1]: true,
+          [PRIVACY_NOTICE_ID_2]: true,
+        };
+        // check that the cookie updated
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const cookieKeyConsent: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value)
+            );
+            expect(cookieKeyConsent.consent).eql(expectedConsent);
+          });
+        });
+
+        // check that window.Fides.consent updated
+        cy.window().then((win) => {
+          expect(win.Fides.consent).to.eql(expectedConsent);
+        });
       });
 
       it.skip("should save the consent request to the Fides API", () => {
