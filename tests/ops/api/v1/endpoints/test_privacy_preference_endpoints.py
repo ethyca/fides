@@ -728,9 +728,8 @@ class TestSavePrivacyPreferencesPrivacyCenter:
 
         Besides having a verified identity, we also have the fides_user_device_id from the browser
         """
-        request_body["browser_identity"][
-            "fides_user_device_id"
-        ] = "test_fides_user_device_id"
+        test_device_id = "2da1690a-65b6-447b-879b-d33089c04ba5"
+        request_body["browser_identity"]["fides_user_device_id"] = test_device_id
         _, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
 
@@ -782,12 +781,10 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             response_json["privacy_notice_history"]
             == PrivacyNoticeHistorySchema.from_orm(privacy_notice.histories[0]).dict()
         )
-        assert (
-            privacy_preference_history.fides_user_device == "test_fides_user_device_id"
-        )
+        assert privacy_preference_history.fides_user_device == test_device_id
         assert (
             privacy_preference_history.hashed_fides_user_device
-            == ProvidedIdentity.hash_value("test_fides_user_device_id")
+            == ProvidedIdentity.hash_value(test_device_id)
         )
         assert (
             privacy_preference_history.fides_user_device_provided_identity_id
@@ -802,11 +799,11 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert (
             fides_user_device_provided_identity.encrypted_value["value"]
-            == "test_fides_user_device_id"
+            == test_device_id
         )
         assert (
             fides_user_device_provided_identity.hashed_value
-            == ProvidedIdentity.hash_value("test_fides_user_device_id")
+            == ProvidedIdentity.hash_value(test_device_id)
         )
 
         privacy_preference_history.delete(db=db)
@@ -973,7 +970,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         return {
             "browser_identity": {
                 "ga_client_id": "test",
-                "fides_user_device_id": "ABCDE_TEST_FIDES",
+                "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
             },
             "preferences": [
                 {
@@ -1044,6 +1041,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         """Assert CurrentPrivacyPreference records were updated and PrivacyPreferenceHistory records were created
         for recordkeeping with respect to the fides user device id in the request
         """
+        test_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
         masked_ip = "12.214.31.0"
         mock_anonymize.return_value = masked_ip
         response = api_client.patch(
@@ -1077,19 +1075,19 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         )
         assert (
             fides_user_device_provided_identity.hashed_value
-            == ProvidedIdentity.hash_value("ABCDE_TEST_FIDES")
+            == ProvidedIdentity.hash_value(test_device_id)
         )
         assert (
             fides_user_device_provided_identity.encrypted_value["value"]
-            == "ABCDE_TEST_FIDES"
+            == test_device_id
         )
         # Values also cached on the historical record for reporting
         assert (
             privacy_preference_history.hashed_fides_user_device
-            == ProvidedIdentity.hash_value("ABCDE_TEST_FIDES")
+            == ProvidedIdentity.hash_value(test_device_id)
         )  # Cached here for reporting
         assert (
-            privacy_preference_history.fides_user_device == "ABCDE_TEST_FIDES"
+            privacy_preference_history.fides_user_device == test_device_id
         )  # Cached here for reporting
 
         # Test items that are pulled from request headers or client
