@@ -31,7 +31,7 @@ import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { ConsentPreferences } from "~/types/api";
 import { GpcBanner } from "~/features/consent/GpcMessages";
 import { GpcStatus } from "~/features/consent/types";
-import ConfigDrivenConsent from "~/components/consent/ConfigDrivenConsentItem";
+import ConsentToggles from "~/components/consent/ConsentToggles";
 
 const Consent: NextPage = () => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
@@ -319,7 +319,7 @@ const Consent: NextPage = () => {
         {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
 
         <Stack direction="column" spacing={4}>
-          <ConfigDrivenConsent consentOptions={consentOptions} />
+          <ConsentToggles />
           <Stack
             direction="row"
             justifyContent="flex-start"

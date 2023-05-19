@@ -10,7 +10,6 @@ import {
   PrivacyExperienceResponse,
   PrivacyNoticeRegion,
 } from "~/types/api";
-import { ConfigConsentOption } from "~/types/config";
 
 import { FidesKeyToConsent } from "./types";
 
@@ -72,6 +71,7 @@ export const {
   usePostConsentRequestVerificationMutation,
   useLazyGetConsentRequestPreferencesQuery,
   useUpdateConsentRequestPreferencesMutation,
+  useGetPrivacyExperienceQuery,
 } = consentApi;
 
 type State = {
@@ -96,10 +96,10 @@ export const consentSlice = createSlice({
     changeConsent(
       draftState,
       {
-        payload: { option, value },
-      }: PayloadAction<{ option: ConfigConsentOption; value: boolean }>
+        payload: { key, value },
+      }: PayloadAction<{ key: string; value: boolean }>
     ) {
-      draftState.fidesKeyToConsent[option.fidesDataUseKey] = value;
+      draftState.fidesKeyToConsent[key] = value;
     },
 
     /**
@@ -129,7 +129,7 @@ export const consentSlice = createSlice({
 });
 
 export const { reducer } = consentSlice;
-export const { changeConsent, updateUserConsentPreferencesFromApi } =
+export const { changeConsent, updateUserConsentPreferencesFromApi, setRegion } =
   consentSlice.actions;
 
 export const selectConsentState = (state: RootState) => state.consent;

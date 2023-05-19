@@ -38,7 +38,6 @@ const ConsentItem = ({
 }: ConsentItemProps) => {
   const handleRadioChange = (radioValue: string) => {
     onChange(radioValue === "true");
-    // dispatch(changeConsent({ option, value: radioValue === "true" }));
   };
 
   return (

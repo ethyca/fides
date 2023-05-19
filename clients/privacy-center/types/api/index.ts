@@ -4,7 +4,7 @@
 
 export { ComponentType } from "./models/ComponentType";
 export type { Consent } from "./models/Consent";
-export type { ConsentMechanism } from "./models/ConsentMechanism";
+export { ConsentMechanism } from "./models/ConsentMechanism";
 export type { ConsentPreferences } from "./models/ConsentPreferences";
 export type { ConsentPreferencesWithVerificationCode } from "./models/ConsentPreferencesWithVerificationCode";
 export type { ConsentWithExecutableStatus } from "./models/ConsentWithExecutableStatus";

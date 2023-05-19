@@ -7,15 +7,16 @@ import {
   selectFidesKeyToConsent,
 } from "~/features/consent/consent.slice";
 import { getGpcStatus } from "~/features/consent/helpers";
-import { ConfigConsentOption } from "~/types/config";
 
+import { useConfig } from "~/features/common/config.slice";
 import ConsentItem from "./ConsentItem";
 
-const ConfigDrivenConsent = ({
-  consentOptions,
-}: {
-  consentOptions: ConfigConsentOption[];
-}) => {
+const ConfigDrivenConsent = () => {
+  const config = useConfig();
+  const consentOptions = useMemo(
+    () => config.consent?.page.consentOptions ?? [],
+    [config]
+  );
   const dispatch = useAppDispatch();
   const consentContext = useMemo(() => getConsentContext(), []);
   const fidesKeyToConsent = useAppSelector(selectFidesKeyToConsent);
@@ -34,7 +35,7 @@ const ConfigDrivenConsent = ({
         });
 
         return {
-          option,
+          ...option,
           value,
           gpcStatus,
         };
@@ -44,13 +45,12 @@ const ConfigDrivenConsent = ({
   return (
     <>
       {items.map((item, index) => {
-        const { fidesDataUseKey, highlight, url, name, description } =
-          item.option;
+        const { fidesDataUseKey, highlight, url, name, description } = item;
         const handleChange = (value: boolean) => {
-          dispatch(changeConsent({ option: item.option, value }));
+          dispatch(changeConsent({ key: fidesDataUseKey, value }));
         };
         return (
-          <React.Fragment key={item.option.fidesDataUseKey}>
+          <React.Fragment key={fidesDataUseKey}>
             {index > 0 ? <Divider /> : null}
             <ConsentItem
               id={fidesDataUseKey}
