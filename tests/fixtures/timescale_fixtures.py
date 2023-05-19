@@ -5,13 +5,13 @@ import pytest
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import drop_database
 
-from fides.api.ops.db.session import get_db_engine, get_db_session
-from fides.api.ops.models.connectionconfig import (
+from fides.api.db.session import get_db_engine, get_db_session
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.service.connectors import TimescaleConnector
+from fides.api.service.connectors import TimescaleConnector
 from fides.core.config import CONFIG
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 

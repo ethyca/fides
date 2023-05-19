@@ -5,13 +5,13 @@ from unittest.mock import Mock
 import yaml
 from fideslang.models import DatasetCollection
 
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.schemas.saas.connector_template import ConnectorTemplate
-from fides.api.ops.service.connectors.saas.connector_registry_service import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.schemas.saas.connector_template import ConnectorTemplate
+from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     update_saas_configs,
 )
-from fides.api.ops.util.saas_util import (
+from fides.api.util.saas_util import (
     encode_file_contents,
     load_config_from_string,
     load_dataset_from_string,
@@ -64,13 +64,13 @@ class TestConnectionRegistry:
         assert mailchimp_template.human_readable == "Mailchimp"
 
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.replace_dataset_placeholders"
+        "fides.api.service.connectors.saas.connector_registry_service.replace_dataset_placeholders"
     )
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.replace_config_placeholders"
+        "fides.api.service.connectors.saas.connector_registry_service.replace_config_placeholders"
     )
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config_from_string"
+        "fides.api.service.connectors.saas.connector_registry_service.load_config_from_string"
     )
     def test_update_config_additions(
         self,
@@ -97,13 +97,13 @@ class TestConnectionRegistry:
         )
 
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.replace_dataset_placeholders"
+        "fides.api.service.connectors.saas.connector_registry_service.replace_dataset_placeholders"
     )
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.replace_config_placeholders"
+        "fides.api.service.connectors.saas.connector_registry_service.replace_config_placeholders"
     )
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config_from_string"
+        "fides.api.service.connectors.saas.connector_registry_service.load_config_from_string"
     )
     def test_update_config_removals(
         self,

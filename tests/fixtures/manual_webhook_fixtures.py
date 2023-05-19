@@ -3,12 +3,12 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm.exc import ObjectDeletedError
 
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.models.manual_webhook import AccessManualWebhook
 
 
 @pytest.fixture(scope="function")
