@@ -244,9 +244,9 @@ export const loadPrivacyCenterEnvironment =
         process.env.FIDES_PRIVACY_CENTER__CONFIG_CSS_URL ||
         "file:///app/config/config.css",
       DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG === "true" || false,
-      IS_OVERLAY_DISABLED:
-        process.env.FIDES_PRIVACY_CENTER__IS_OVERLAY_DISABLED === "false" ||
-        true,
+      IS_OVERLAY_DISABLED: process.env.FIDES_PRIVACY_CENTER__IS_OVERLAY_DISABLED
+        ? process.env.FIDES_PRIVACY_CENTER__IS_OVERLAY_DISABLED === "true"
+        : true,
       IS_GEOLOCATION_ENABLED:
         process.env.FIDES_PRIVACY_CENTER__IS_GEOLOCATION_ENABLED === "true" ||
         false,
