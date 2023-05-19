@@ -1,13 +1,15 @@
-import { DatabaseConnectorParameters } from "./ConnectorParameters";
+import { Box, SlideFade } from "@fidesui/react";
+import TestConnection from "datastore-connections/add-connection/TestConnection";
+import { useState } from "react";
+
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   SystemType,
 } from "~/types/api";
-import { useState } from "react";
-import TestConnection from "datastore-connections/add-connection/TestConnection";
-import { SlideFade, Box } from "@fidesui/react";
+
+import { DatabaseConnectorParameters } from "./ConnectorParameters";
 
 type Props = {
   connectionConfig?: ConnectionConfigurationResponse;

@@ -5,12 +5,12 @@ import React, { useMemo } from "react";
 import { useAppSelector } from "~/app/hooks";
 import ConnectedCircle from "~/features/common/ConnectedCircle";
 import { selectConnectionTypeState } from "~/features/connection-type";
+import { ConnectionConfigurationResponse } from "~/types/api";
 
 import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import ConnectionTypeLogo from "./ConnectionTypeLogo";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
-import { ConnectionConfigurationResponse } from "~/types/api";
 
 type TestDataProps = {
   succeeded?: boolean;

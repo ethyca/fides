@@ -1,14 +1,12 @@
 import {
-  Box,
   Center,
   Flex,
   Input,
   InputGroup,
   InputLeftElement,
   SearchLineIcon,
-  Spinner,
-  Text,
   Select,
+  Spinner,
 } from "@fidesui/react";
 import { debounce } from "common/utils";
 import {
@@ -16,67 +14,54 @@ import {
   setSearch,
   useGetAllConnectionTypesQuery,
 } from "connection-type/connection-type.slice";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useMemo } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
-import {
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
-} from "~/types/api";
 
 import ConnectionTypeFilter from "../add-connection/ConnectionTypeFilter";
-import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 
-type ItemProps = {
-  data: ConnectionSystemTypeMap;
-};
-const ConnectinListItem = ({ data }: ItemProps) => {
-  return (
-    <Box
-      boxShadow="base"
-      borderRadius="5px"
-      maxWidth="331px"
-      overflow="hidden"
-      _hover={{
-        boxShadow: "lg",
-        cursor: "pointer",
-      }}
-      data-testid={`${data.identifier}-item`}
-    >
-      <Flex alignItems="center" justifyContent="start" pl="24px" h="25px">
-        <ConnectionTypeLogo data={data} />
-        <Text
-          marginLeft="12px"
-          color="gray.700"
-          fontSize="sm"
-          fontStyle="normal"
-          fontWeight="600"
-        >
-          {data.human_readable}
-        </Text>
-      </Flex>
-    </Box>
-  );
-};
-
+// type ItemProps = {
+//   data: ConnectionSystemTypeMap;
+// };
+// const ConnectinListItem = ({ data }: ItemProps) => (
+//     <Box
+//       boxShadow="base"
+//       borderRadius="5px"
+//       maxWidth="331px"
+//       overflow="hidden"
+//       _hover={{
+//         boxShadow: "lg",
+//         cursor: "pointer",
+//       }}
+//       data-testid={`${data.identifier}-item`}
+//     >
+//       <Flex alignItems="center" justifyContent="start" pl="24px" h="25px">
+//         <ConnectionTypeLogo data={data} />
+//         <Text
+//           marginLeft="12px"
+//           color="gray.700"
+//           fontSize="sm"
+//           fontStyle="normal"
+//           fontWeight="600"
+//         >
+//           {data.human_readable}
+//         </Text>
+//       </Flex>
+//     </Box>
+//   );
+//
 type ListProps = {
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  connectionConfig?: ConnectionConfigurationResponse;
+  // connectionConfig?: ConnectionConfigurationResponse;
 };
-const ConnectionList = ({ onChange, connectionConfig }: ListProps) => {
+const ConnectionList = ({ onChange }: ListProps) => {
   const dispatch = useDispatch();
   const filters = useAppSelector(selectConnectionTypeFilters);
   const { data, isFetching, isLoading, isSuccess } =
     useGetAllConnectionTypesQuery(filters);
 
-  const [selectedOption, setSelectedOption] = useState<string>();
+  // const [selectedOption, setSelectedOption] = useState<string>();
   const handleSearchChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length === 0 || event.target.value.length > 1) {
@@ -111,23 +96,20 @@ const ConnectionList = ({ onChange, connectionConfig }: ListProps) => {
     [sortedItems]
   );
 
-  useMemo(() => {
-    console.log("inside here", connectionConfig, sortedItems);
-    if (connectionConfig && sortedItems) {
-      const c = sortedItems.find(
-        (c) => c.identifier === connectionConfig.connection_type
-      );
-      console.log("futher inside", c);
-      onChange({
-        target: {
-          value: JSON.stringify(c),
-        },
-      } as React.ChangeEvent<HTMLSelectElement>);
-      // setSelectedOption(JSON.stringify(c))
-    }
-  }, [connectionConfig, sortedItems]);
+  // useMemo(() => {
+  //   if (connectionConfig && sortedItems) {
+  //     const c = sortedItems.find(
+  //       (c) => c.identifier === connectionConfig.connection_type
+  //     );
+  //     onChange({
+  //       target: {
+  //         value: JSON.stringify(c),
+  //       },
+  //     } as React.ChangeEvent<HTMLSelectElement>);
+  //     // setSelectedOption(JSON.stringify(c))
+  //   }
+  // }, [connectionConfig, sortedItems]);
 
-  console.log("selected option", selectedOption);
   return (
     <>
       <Flex alignItems="center" gap="4" mb="24px" minWidth="fit-content">

@@ -75,8 +75,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
 
-
-
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
 
   const validateConnectionIdentifier = (value: string) => {

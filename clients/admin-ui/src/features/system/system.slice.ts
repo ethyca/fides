@@ -3,9 +3,9 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
-  System,
-  ConnectionConfigurationResponse,
   BulkPutConnectionConfiguration,
+  ConnectionConfigurationResponse,
+  System,
 } from "~/types/api";
 
 interface SystemDeleteResponse {

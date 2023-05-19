@@ -3,10 +3,11 @@ import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import { useUpdateDatastoreConnectionSecretsMutation } from "datastore-connections/datastore-connection.slice";
-import { usePatchSystemConnectionConfigsMutation } from "~/features/system/system.slice";
 import { DatastoreConnectionSecretsRequest } from "datastore-connections/types";
 import { useState } from "react";
 
+import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
+import { usePatchSystemConnectionConfigsMutation } from "~/features/system/system.slice";
 import {
   AccessLevel,
   ConnectionConfigurationResponse,
@@ -14,12 +15,11 @@ import {
   ConnectionType,
 } from "~/types/api";
 
-import ConnectorParametersForm from "../ConnectorParametersForm";
-import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
   BaseConnectorParametersFields,
   DatabaseConnectorParametersFormFields,
 } from "../../types";
+import ConnectorParametersForm from "../ConnectorParametersForm";
 
 type ConnectorParametersProps = {
   secretsSchema: ConnectionTypeSecretSchemaReponse;

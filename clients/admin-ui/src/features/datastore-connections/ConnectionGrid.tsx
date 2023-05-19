@@ -3,6 +3,8 @@ import PaginationFooter from "common/PaginationFooter";
 import React from "react";
 import { useDispatch } from "react-redux";
 
+import { ConnectionConfigurationResponse } from "~/types/api";
+
 import { useAppSelector } from "../../app/hooks";
 import classes from "./ConnectionGrid.module.css";
 import ConnectionGridItem from "./ConnectionGridItem";
@@ -10,7 +12,6 @@ import {
   selectDatastoreConnectionFilters,
   setPage,
 } from "./datastore-connection.slice";
-import { ConnectionConfigurationResponse } from "~/types/api";
 
 const useConnectionGrid = () => {
   const dispatch = useDispatch();

@@ -8,15 +8,13 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
+import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
 import { System, SystemResponse } from "~/types/api";
 
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
 import SystemInformationForm from "./SystemInformationForm";
 import UnmountWarning from "./UnmountWarning";
-import AddConnection from "~/features/datastore-connections/add-connection/AddConnection";
-import EditConnection from "~/features/datastore-connections/edit-connection/EditConnection";
-import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 
 // The toast doesn't seem to handle next links well, so use buttons with onClick
 // handlers instead
