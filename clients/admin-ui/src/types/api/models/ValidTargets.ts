@@ -10,4 +10,5 @@ export enum ValidTargets {
   DB = "db",
   OKTA = "okta",
   BIGQUERY = "bigquery",
+  DYNAMODB = "dynamodb",
 }

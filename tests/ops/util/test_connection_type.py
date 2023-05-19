@@ -1,12 +1,12 @@
 import pytest
 
-from fides.api.ops.models.connectionconfig import ConnectionType
-from fides.api.ops.models.policy import ActionType
-from fides.api.ops.schemas.connection_configuration.connection_config import SystemType
-from fides.api.ops.service.connectors.saas.connector_registry_service import (
+from fides.api.models.connectionconfig import ConnectionType
+from fides.api.models.policy import ActionType
+from fides.api.schemas.connection_configuration.connection_config import SystemType
+from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
-from fides.api.ops.util.connection_type import get_connection_types
+from fides.api.util.connection_type import get_connection_types
 
 
 def test_get_connection_types():

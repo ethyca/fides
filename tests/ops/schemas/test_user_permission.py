@@ -3,9 +3,9 @@ from fastapi import HTTPException
 from pydantic import ValidationError
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
-from fides.api.ops.api.v1.scope_registry import USER_DELETE, USER_PERMISSION_CREATE
-from fides.api.ops.oauth.roles import OWNER
-from fides.api.ops.schemas.user_permission import UserPermissionsCreate
+from fides.api.api.v1.scope_registry import USER_DELETE, USER_PERMISSION_CREATE
+from fides.api.oauth.roles import OWNER
+from fides.api.schemas.user_permission import UserPermissionsCreate
 
 
 class TestUserPermissionsCreate:

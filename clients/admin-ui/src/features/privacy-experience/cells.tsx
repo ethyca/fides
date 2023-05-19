@@ -3,30 +3,29 @@ import React from "react";
 import { CellProps } from "react-table";
 
 import { EnableCell } from "~/features/common/table/";
-import { PrivacyExperienceResponse } from "~/types/api";
+import { ExperienceConfigResponse } from "~/types/api";
 
 import { COMPONENT_MAP } from "./constants";
-import { usePatchPrivacyExperienceMutation } from "./privacy-experience.slice";
+import { usePatchExperienceConfigMutation } from "./privacy-experience.slice";
 
 export const ComponentCell = ({
   value,
-}: CellProps<PrivacyExperienceResponse, string>) => (
+}: CellProps<ExperienceConfigResponse, string>) => (
   <Text>{COMPONENT_MAP.get(value) ?? value}</Text>
 );
 
 export const EnablePrivacyExperienceCell = (
-  cellProps: CellProps<PrivacyExperienceResponse, boolean>
+  cellProps: CellProps<ExperienceConfigResponse, boolean>
 ) => {
-  const [patchExperienceMutationTrigger] = usePatchPrivacyExperienceMutation();
+  const [patchExperienceMutationTrigger] = usePatchExperienceConfigMutation();
 
   const { row } = cellProps;
   const onToggle = async (toggle: boolean) => {
-    await patchExperienceMutationTrigger([
-      {
-        id: row.original.id,
-        disabled: !toggle,
-      },
-    ]);
+    await patchExperienceMutationTrigger({
+      id: row.original.id,
+      disabled: !toggle,
+      regions: row.original.regions,
+    });
   };
 
   const { regions } = row.original;
@@ -40,7 +39,7 @@ export const EnablePrivacyExperienceCell = (
     : "Warning, you are about to disable this privacy experience. If you continue, your privacy notices will not be accessible to users in this location.";
 
   return (
-    <EnableCell<PrivacyExperienceResponse>
+    <EnableCell<ExperienceConfigResponse>
       {...cellProps}
       onToggle={onToggle}
       title={title}
