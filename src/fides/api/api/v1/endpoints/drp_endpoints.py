@@ -178,7 +178,7 @@ def get_request_status_drp(
     return PrivacyRequestDRPStatusResponse(
         request_id=request.id,
         received_at=request.requested_at,
-        status=DrpFidesopsMapper.map_status(request.status),  # type: ignore
+        status=DrpFidesopsMapper.map_status(request.status),
     )
 
 

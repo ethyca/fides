@@ -170,7 +170,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
     )
 
 
-class PrivacyRequest(Base, IdentityVerificationMixin):  # pylint: disable=R0904
+class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests.
     A privacy request is a database record representing the request's
