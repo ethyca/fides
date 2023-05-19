@@ -410,7 +410,11 @@ class TestPatchAccessManualWebhook:
                 {
                     "pii_field": "New Field",
                     "dsr_package_label": None,
-                    "data_categories": None,
+                    "data_categories": [
+                        "user.contact.address.street",
+                        "user.contact.address.city",
+                        "user.contact.address.state",
+                    ],
                 },
             ]
         }
@@ -424,7 +428,11 @@ class TestPatchAccessManualWebhook:
             {
                 "pii_field": "New Field",
                 "dsr_package_label": "new_field",
-                "data_categories": None,
+                "data_categories": [
+                    "user.contact.address.street",
+                    "user.contact.address.city",
+                    "user.contact.address.state",
+                ],
             },
         ]
         connection_config_details = resp["connection_config"]
