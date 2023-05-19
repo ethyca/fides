@@ -1,3 +1,4 @@
+# pylint: skip-file
 from typing import Any, TypeVar, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
