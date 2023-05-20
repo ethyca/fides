@@ -1,10 +1,10 @@
-import { Box } from "@fidesui/react";
+import { Box, SlideFade } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import { useUpdateDatastoreConnectionSecretsMutation } from "datastore-connections/datastore-connection.slice";
 import { DatastoreConnectionSecretsRequest } from "datastore-connections/types";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { usePatchSystemConnectionConfigsMutation } from "~/features/system/system.slice";
@@ -13,20 +13,24 @@ import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   ConnectionType,
+  SystemType,
 } from "~/types/api";
 
 import {
   BaseConnectorParametersFields,
   DatabaseConnectorParametersFormFields,
-} from "../../types";
-import ConnectorParametersForm from "../ConnectorParametersForm";
+} from "../types";
+import ConnectorParametersForm from "./ConnectorParametersForm";
+import {
+  selectConnectionTypeFilters,
+  selectConnectionTypeState,
+  useGetAllConnectionTypesQuery,
+  useGetConnectionTypeSecretSchemaQuery,
+} from "~/features/connection-type";
+import { useAppSelector } from "~/app/hooks";
+import TestConnection from "datastore-connections/add-connection/TestConnection";
 
 type ConnectorParametersProps = {
-  secretsSchema: ConnectionTypeSecretSchemaReponse;
-  /**
-   * Parent callback when Test Connection is clicked
-   */
-  onTestConnectionClick: (value: any) => void;
   systemFidesKey: string;
   connectionOption: ConnectionSystemTypeMap;
   connectionConfig?: ConnectionConfigurationResponse;
@@ -39,8 +43,10 @@ export const useDatabaseConnector = ({
   connectionConfig,
 }: Pick<
   ConnectorParametersProps,
-  "secretsSchema" | "systemFidesKey" | "connectionOption" | "connectionConfig"
->) => {
+  "systemFidesKey" | "connectionOption" | "connectionConfig"
+> & {
+  secretsSchema?: ConnectionTypeSecretSchemaReponse;
+}) => {
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();
 
@@ -72,7 +78,7 @@ export const useDatabaseConnector = ({
           connection_key: payload.succeeded[0].key,
           secrets: {},
         };
-        Object.entries(secretsSchema.properties).forEach((key) => {
+        Object.entries(secretsSchema!.properties).forEach((key) => {
           params2.secrets[key[0]] = values[key[0]];
         });
         const payload2 = await updateDatastoreConnectionSecrets(
@@ -104,11 +110,7 @@ export const useDatabaseConnector = ({
   return { isSubmitting, handleSubmit };
 };
 
-export const DatabaseConnectorParameters: React.FC<
-  ConnectorParametersProps
-> = ({
-  secretsSchema,
-  onTestConnectionClick,
+export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   systemFidesKey,
   connectionOption,
   connectionConfig,
@@ -118,11 +120,28 @@ export const DatabaseConnectorParameters: React.FC<
     instance_key: "",
     name: "",
   } as DatabaseConnectorParametersFormFields;
+
+  const [response, setResponse] = useState<any>();
+
+  const handleTestConnectionClick = (value: any) => {
+    setResponse(value);
+  };
+  const skip = connectionOption.type === SystemType.MANUAL;
+  const { data: secretsSchema } = useGetConnectionTypeSecretSchemaQuery(
+    connectionOption!.identifier,
+    {
+      skip,
+    }
+  );
+
   const { isSubmitting, handleSubmit } = useDatabaseConnector({
     secretsSchema,
     systemFidesKey,
     connectionOption,
   });
+  if (!secretsSchema) {
+    return null;
+  }
 
   return (
     <>
@@ -137,10 +156,18 @@ export const DatabaseConnectorParameters: React.FC<
         defaultValues={defaultValues}
         isSubmitting={isSubmitting}
         onSaveClick={handleSubmit}
-        onTestConnectionClick={onTestConnectionClick}
+        onTestConnectionClick={handleTestConnectionClick}
         connectionOption={connectionOption}
         connection={connectionConfig}
       />
+
+      {response && (
+        <SlideFade in>
+          <Box mt="16px" maxW="528px" w="fit-content">
+            <TestConnection response={response} />
+          </Box>
+        </SlideFade>
+      )}
     </>
   );
 };

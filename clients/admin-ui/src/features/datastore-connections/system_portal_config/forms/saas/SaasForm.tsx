@@ -9,7 +9,7 @@ import {
   SystemType,
 } from "~/types/api";
 
-import { DatabaseConnectorParameters } from "./ConnectorParameters";
+import { SaasConnectorParameters } from "./ConnectorParameters";
 
 type Props = {
   connectionConfig?: ConnectionConfigurationResponse;
@@ -17,7 +17,7 @@ type Props = {
   systemFidesKey: string;
 };
 
-export const DatabaseForm = ({
+export const SaasForm = ({
   connectionOption,
   systemFidesKey,
   connectionConfig,
@@ -41,7 +41,7 @@ export const DatabaseForm = ({
 
   return (
     <>
-      <DatabaseConnectorParameters
+      <SaasConnectorParameters
         secretsSchema={secretsSchema}
         connectionOption={connectionOption}
         connectionConfig={connectionConfig}
