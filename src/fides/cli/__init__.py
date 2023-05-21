@@ -23,6 +23,7 @@ from .commands.user import user
 from .commands.util import deploy, init, status, webserver, worker
 from .commands.view import view
 from .exceptions import LocalModeException
+from trogon import tui
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 LOCAL_COMMANDS = [deploy, evaluate, generate, init, scan, parse, view, webserver]
@@ -49,6 +50,7 @@ APP = fides.__name__
 PACKAGE = "ethyca-fides"
 
 
+@tui()
 @group(
     context_settings=CONTEXT_SETTINGS,
     invoke_without_command=True,
