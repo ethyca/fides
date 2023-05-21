@@ -10,6 +10,12 @@ export const getServerSideProps = () => {
   return { props: {} };
 };
 
+/**
+ * @swagger
+ * /openapi.json:
+ *   get:
+ *     description: Returns the OpenAPI schema for the Fides Privacy Center server
+ */
 const swaggerHandler = withSwagger({
   definition: {
     openapi: "3.0.0",
