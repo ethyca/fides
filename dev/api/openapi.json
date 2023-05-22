@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.13.1b1.post0.dev6"
+    "version": "2.13.1b1.post0.dev7"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -7593,7 +7593,7 @@
           "Privacy Experience"
         ],
         "summary": "Privacy Experience List",
-        "description": "Returns a list of PrivacyExperience records for individual regions with\nrelevant privacy notices embedded in the response.\n\n'show_disabled' query params are passed along to further filter\nnotices as well.\n\n'fides_user_device_id' query param will stash the current preferences of the given user\nalongside each notice where applicable.",
+        "description": "Public endpoint that returns a list of PrivacyExperience records for individual regions with\nrelevant privacy notices embedded in the response.\n\n'show_disabled' query params are passed along to further filter\nnotices as well.\n\n'fides_user_device_id' query param will stash the current preferences of the given user\nalongside each notice where applicable.",
         "operationId": "privacy_experience_list_api_v1_privacy_experience_get",
         "parameters": [
           {
@@ -7694,83 +7694,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "privacy-experience:read"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/privacy-experience/{privacy_experience_id}": {
-      "get": {
-        "tags": [
-          "Privacy Experience"
-        ],
-        "summary": "Privacy Experience Detail",
-        "description": "Return a privacy experience for a given region with relevant notices embedded.\n\nshow_disabled query params are passed onto optionally filter the embedded notices.\n\n'fides_user_device_id' query param will stash the current preferences of the given user\nalongside each notice where applicable.",
-        "operationId": "privacy_experience_detail_api_v1_privacy_experience__privacy_experience_id__get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Privacy Experience Id",
-              "type": "string"
-            },
-            "name": "privacy_experience_id",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Show Disabled",
-              "type": "boolean",
-              "default": true
-            },
-            "name": "show_disabled",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Fides User Device Id",
-              "type": "string"
-            },
-            "name": "fides_user_device_id",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PrivacyExperienceResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "privacy-experience:read"
-            ]
-          }
-        ]
+        }
       }
     },
     "/api/v1/experience-config": {

@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "8bd30ef991cccc6e7b2312ada5671a59" # string
+analytics_id = "3a3b9c053a8a92288d2e437d8c7adb54" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -277,6 +277,10 @@ parent_server_password = "" # string
 # When using a parent/child Fides deployment, this username will be
 # used by the child server to access the parent server.
 parent_server_username = "" # string
+
+# The number of requests from a single IP address allowed to hit a
+# public endpoint within the specified time period
+public_request_rate_limit = "2000/minute" # string
 
 # The prefix given to keys in the Redis cache used by the rate limiter.
 rate_limit_prefix = "fides-" # string
