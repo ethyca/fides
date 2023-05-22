@@ -4,8 +4,8 @@ import { ConsentContext, getConsentContext } from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
   changeConsent,
+  selectCurrentConsentPreferences,
   selectExperienceRegion,
-  selectFidesKeyToConsent,
   selectPrivacyExperience,
   setRegion,
   useGetPrivacyExperienceQuery,
@@ -51,7 +51,7 @@ const NoticeDrivenConsent = () => {
   const dispatch = useAppDispatch();
   const consentContext = useMemo(() => getConsentContext(), []);
   const experience = useAppSelector(selectPrivacyExperience);
-  const fidesKeyToConsent = useAppSelector(selectFidesKeyToConsent);
+  const userPreferences = useAppSelector(selectCurrentConsentPreferences);
 
   useEffect(() => {
     // TODO: query for location
@@ -74,7 +74,7 @@ const NoticeDrivenConsent = () => {
     return notices.map((notice) => {
       const defaultValue = resolveConsentValue(notice, consentContext);
       // TODO(fides#3281): use notice key instead of notice.id
-      const value = fidesKeyToConsent[notice.id] ?? defaultValue;
+      const value = userPreferences[notice.id] ?? defaultValue;
       const gpcStatus = getGpcStatusFromNotice({
         value,
         notice,
@@ -91,7 +91,7 @@ const NoticeDrivenConsent = () => {
         gpcStatus,
       };
     });
-  }, [consentContext, experience, fidesKeyToConsent]);
+  }, [consentContext, experience, userPreferences]);
 
   return (
     <>

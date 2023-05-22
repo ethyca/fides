@@ -24,7 +24,7 @@ import {
   updateUserConsentPreferencesFromApi,
   useLazyGetConsentRequestPreferencesQuery,
   usePostConsentRequestVerificationMutation,
-  useUpdateConsentRequestPreferencesMutation,
+  useUpdateConsentRequestPreferencesDeprecatedMutation,
 } from "~/features/consent/consent.slice";
 import { getGpcStatus, makeCookieKeyConsent } from "~/features/consent/helpers";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
@@ -61,7 +61,7 @@ const Consent: NextPage = () => {
   const [
     updateConsentRequestPreferencesMutationTrigger,
     updateConsentRequestPreferencesMutationResult,
-  ] = useUpdateConsentRequestPreferencesMutation();
+  ] = useUpdateConsentRequestPreferencesDeprecatedMutation();
 
   const consentContext = useMemo(() => getConsentContext(), []);
 

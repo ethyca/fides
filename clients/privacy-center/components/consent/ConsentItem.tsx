@@ -61,7 +61,7 @@ const ConsentItem = ({
 
         <GpcInfo status={gpcStatus} />
 
-        <HStack spacing={10}>
+        <HStack spacing={10} justifyContent="space-between">
           <Stack>
             <Text fontSize="sm" fontWeight="medium" color="gray.600" mb="2px">
               {description}

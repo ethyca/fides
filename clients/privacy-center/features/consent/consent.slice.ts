@@ -7,9 +7,11 @@ import {
   ComponentType,
   ConsentPreferences,
   ConsentPreferencesWithVerificationCode,
+  CurrentPrivacyPreferenceSchema,
   Page_PrivacyExperienceResponse_,
   PrivacyNoticeRegion,
 } from "~/types/api";
+import { transformUserPreferenceToBoolean } from "./helpers";
 
 import { FidesKeyToConsent } from "./types";
 
@@ -38,7 +40,11 @@ export const consentApi = baseApi.injectEndpoints({
     >({
       query: ({ id }) => `${VerificationType.ConsentRequest}/${id}/preferences`,
     }),
-    updateConsentRequestPreferences: build.mutation<
+    /**
+     * This endpoint is deprecated in favor of
+     * /consent-request/{id}/privacy-preferences
+     * */
+    updateConsentRequestPreferencesDeprecated: build.mutation<
       ConsentPreferences,
       { id: string; body: ConsentPreferencesWithVerificationCode }
     >({
@@ -64,13 +70,35 @@ export const consentApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Privacy Experience"],
     }),
+    updatePrivacyPreferencesVerified: build.mutation<
+      void,
+      { id: string; body: CurrentPrivacyPreferenceSchema }
+    >({
+      query: ({ id, body }) => ({
+        url: `${VerificationType.ConsentRequest}/${id}/privacy-preferences`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Privacy Preferences"],
+    }),
+    updatePrivacyPreferencesUnverified: build.mutation<
+      void,
+      CurrentPrivacyPreferenceSchema
+    >({
+      query: (payload) => ({
+        url: `privacy-preferences`,
+        method: "PATCH",
+        body: payload,
+      }),
+      invalidatesTags: ["Privacy Preferences"],
+    }),
   }),
 });
 
 export const {
   usePostConsentRequestVerificationMutation,
   useLazyGetConsentRequestPreferencesQuery,
-  useUpdateConsentRequestPreferencesMutation,
+  useUpdateConsentRequestPreferencesDeprecatedMutation,
   useGetPrivacyExperienceQuery,
 } = consentApi;
 
@@ -157,5 +185,27 @@ export const selectPrivacyExperience = createSelector(
     }
     return consentApi.endpoints.getPrivacyExperience.select(region)(RootState)
       ?.data?.items[0];
+  }
+);
+
+const emptyConsentPreferences: FidesKeyToConsent = {};
+export const selectCurrentConsentPreferences = createSelector(
+  selectPrivacyExperience,
+  (experience) => {
+    if (
+      !experience ||
+      !experience.privacy_notices ||
+      !experience.privacy_notices.length
+    ) {
+      return emptyConsentPreferences;
+    }
+    const preferences: FidesKeyToConsent = {};
+    experience.privacy_notices.forEach((notice) => {
+      // TODO: use notice.notice_key
+      preferences[notice.id] = notice.current_preference
+        ? transformUserPreferenceToBoolean(notice.current_preference)
+        : undefined;
+    });
+    return preferences;
   }
 );
