@@ -22,6 +22,7 @@ The types of changes are:
 - Remove logging within the Celery creation function [#3303](https://github.com/ethyca/fides/pull/3303)
 - Update how generic endpoint generation works [#3304](https://github.com/ethyca/fides/pull/3304)
 - Restrict strack-trace logging when not in Dev mode [#3081](https://github.com/ethyca/fides/pull/3081)
+- Refactor CSS variables for `fides-js` to match brandable color palette [#3321](https://github.com/ethyca/fides/pull/3321)
 - Moved all of the dirs from `fides.api.ops` into `fides.api` [#3318](https://github.com/ethyca/fides/pull/3318)
 
 ### Added
