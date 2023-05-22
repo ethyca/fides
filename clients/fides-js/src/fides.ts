@@ -256,8 +256,9 @@ if (typeof window !== "undefined") {
 }
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
-// TODO: pretty sure we need ./services/* and ./components/* too?
+// TODO: pretty sure we need ./services/* too?
 export * from "./lib/consent";
+export * from "./components";
 export * from "./lib/consent-config";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
