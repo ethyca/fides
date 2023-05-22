@@ -85,6 +85,10 @@ class SecuritySettings(FidesSettings):
         default=None,
         description="When using a parent/child Fides deployment, this username will be used by the child server to access the parent server.",
     )
+    public_request_rate_limit: str = Field(
+        default="2000/minute",
+        description="The number of requests from a single IP address allowed to hit a public endpoint within the specified time period",
+    )
     rate_limit_prefix: str = Field(
         default="fides-",
         description="The prefix given to keys in the Redis cache used by the rate limiter.",

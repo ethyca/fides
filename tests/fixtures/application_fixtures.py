@@ -1969,8 +1969,10 @@ def fides_user_provided_identity(db):
     provided_identity_data = {
         "privacy_request_id": None,
         "field_name": "fides_user_device_id",
-        "hashed_value": ProvidedIdentity.hash_value("FGHIJ_TEST_FIDES"),
-        "encrypted_value": {"value": "FGHIJ_TEST_FIDES"},
+        "hashed_value": ProvidedIdentity.hash_value(
+            "051b219f-20e4-45df-82f7-5eb68a00889f"
+        ),
+        "encrypted_value": {"value": "051b219f-20e4-45df-82f7-5eb68a00889f"},
     }
     provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
 
