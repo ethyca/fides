@@ -929,6 +929,8 @@ class Consent(Base):
 
     UniqueConstraint(provided_identity_id, data_use, name="uix_identity_data_use")
 
+    identity: Optional[IdentityBase] = None
+
 
 class ConsentRequest(IdentityVerificationMixin, Base):
     """Tracks consent requests."""
@@ -964,7 +966,7 @@ class ConsentRequest(IdentityVerificationMixin, Base):
     def verify_identity(
         self,
         db: Session,
-        provided_code: str = None,
+        provided_code: Optional[str] = None,
     ) -> None:
         """
         A method to call the internal identity verification method provided by the

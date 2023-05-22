@@ -1759,4 +1759,4 @@ def _process_privacy_request_restart(
         from_step=failed_step.value,
     )
 
-    return privacy_request  # type: ignore
+    return privacy_request  # type: ignore[return-value]
