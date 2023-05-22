@@ -38,11 +38,11 @@ def db_init(ctx: click.Context) -> None:
 @database.command(name="migrate")
 @click.pass_context
 @with_analytics
-def db_migrate(ctx: click.Context) -> None:
+def db_upgrade(ctx: click.Context) -> None:
     """
-    Runs the latest migrations for the Fides database
+    Runs all upgrade migrations for the Fides database
 
-    Will automatically initialize a fresh database.
+    Will also automatically initialize a fresh database.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
