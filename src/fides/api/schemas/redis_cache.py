@@ -37,7 +37,7 @@ class Identity(IdentityBase):
     @validator("fides_user_device_id")
     @classmethod
     def validate_fides_user_device_id(cls, v: Optional[str]) -> Optional[str]:
-        """Validate the uuid format of the fides user device id"""
+        """Validate the uuid format of the fides user device id while still keeping the data type a string"""
         if not v:
             return v
         uuid.UUID(v, version=4)

@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Optional
 
 from fastapi import Depends, HTTPException, Request, Response
@@ -6,7 +7,11 @@ from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
 from fides.api.api import deps
 from fides.api.api.v1 import urn_registry as urls
@@ -71,6 +76,13 @@ def privacy_experience_list(
     logger.info("Finding all Privacy Experiences with pagination params '{}'", params)
     fides_user_provided_identity: Optional[ProvidedIdentity] = None
     if fides_user_device_id:
+        try:
+            uuid.UUID(fides_user_device_id, version=4)
+        except ValueError:
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid fides user device id format",
+            )
         fides_user_provided_identity = get_fides_user_device_id_provided_identity(
             db=db, fides_user_device_id=fides_user_device_id
         )

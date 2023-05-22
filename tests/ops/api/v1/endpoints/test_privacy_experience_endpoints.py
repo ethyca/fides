@@ -449,13 +449,30 @@ class TestGetPrivacyExperiences:
         "privacy_preference_history_us_ca_provide_for_fides_user",
         "privacy_experience_overlay_banner",
     )
-    def test_get_privacy_experiences_nonexistent_fides_user_device_id_filter(
+    def test_get_privacy_experiences_bad_fides_user_device_id_filter(
         self,
         api_client: TestClient,
         url,
     ):
         resp = api_client.get(
             url + "?fides_user_device_id=does_not_exist",
+        )
+        assert resp.status_code == 422
+        assert resp.json()["detail"] == "Invalid fides user device id format"
+
+    @pytest.mark.usefixtures(
+        "privacy_notice_us_ca_provide",
+        "fides_user_provided_identity",
+        "privacy_preference_history_us_ca_provide_for_fides_user",
+        "privacy_experience_overlay_banner",
+    )
+    def test_get_privacy_experiences_nonexistent_fides_user_device_id_filter(
+        self,
+        api_client: TestClient,
+        url,
+    ):
+        resp = api_client.get(
+            url + "?cd685ccd-0960-4dc1-b9ca-7e810ebc5c1b",
         )
         assert resp.status_code == 200
         data = resp.json()

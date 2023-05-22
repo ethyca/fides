@@ -999,6 +999,22 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
     @pytest.mark.usefixtures(
         "privacy_notice",
     )
+    def test_bad_fides_user_device_id_supplied(self, api_client, url, request_body):
+        request_body["browser_identity"][
+            "fides_user_device_id"
+        ] = "bad_fides_user_device_id"
+        response = api_client.patch(
+            url, json=request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "badly formed hexadecimal UUID string"
+        )
+
+    @pytest.mark.usefixtures(
+        "privacy_notice",
+    )
     def test_save_privacy_preferences_with_bad_notice(
         self, api_client, url, request_body
     ):
