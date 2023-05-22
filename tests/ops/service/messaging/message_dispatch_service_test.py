@@ -497,6 +497,7 @@ class TestMessageDispatchService:
                                 preference=UserConsentPreference.opt_out,
                                 privacy_notice_history=PrivacyNoticeHistorySchema(
                                     name="Analytics",
+                                    notice_key="analytics",
                                     regions=["eu_fr"],
                                     id="test_3",
                                     privacy_notice_id="39391",

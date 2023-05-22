@@ -746,3 +746,7 @@ class TestPrivacyExperienceDetail:
         assert data["privacy_notices"][0]["default_preference"] == "opt_out"
         assert data["privacy_notices"][0]["current_preference"] == "opt_in"
         assert data["privacy_notices"][0]["outdated_preference"] is None
+        assert (
+            data["privacy_notices"][0]["notice_key"]
+            == "example_privacy_notice_us_ca_provide"
+        )
