@@ -12,6 +12,7 @@ ARG TARGETPLATFORM
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     g++ \
+    git \
     gnupg \
     gcc \
     && apt-get clean \

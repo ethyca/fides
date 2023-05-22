@@ -83,6 +83,8 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
                 {resource["fides_key"] for resource in resources if resource}
             )
             formatted_fides_keys = "\n  ".join(sorted_fides_keys)
-            echo_green(f"{resource_type.capitalize()} list:\n  {formatted_fides_keys}")
+            echo_green(
+                f"List of resources of type '{resource_type}':\n  {formatted_fides_keys}"
+            )
         else:
             echo_red(f"No {resource_type.capitalize()} resources found!")
