@@ -242,6 +242,48 @@ describe("Consent banner", () => {
         });
       });
 
+      it("overwrites privacy notices that no longer exist", () => {
+        const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+        const now = "2023-04-28T12:00:00.000Z";
+        const legacyNotices = {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        };
+        const originalCookie = {
+          identity: { fides_user_device_id: uuid },
+          fides_meta: { version: "0.9.0", createdAt: now },
+          consent: legacyNotices,
+        };
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
+        cy.contains("button", "Manage preferences").click();
+
+        // Save new preferences
+        cy.getByTestId("toggle-Test privacy notice").click();
+        cy.getByTestId("toggle-Essential").click();
+        cy.getByTestId("Save-btn").click();
+
+        // New privacy notice values only, no legacy ones
+        const expectedConsent = {
+          [PRIVACY_NOTICE_ID_1]: true,
+          [PRIVACY_NOTICE_ID_2]: true,
+        };
+        // check that the cookie updated
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const cookieKeyConsent: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value)
+            );
+            expect(cookieKeyConsent.consent).eql(expectedConsent);
+          });
+        });
+
+        // check that window.Fides.consent updated
+        cy.window().then((win) => {
+          expect(win.Fides.consent).to.eql(expectedConsent);
+        });
+      });
+
       it.skip("should save the consent request to the Fides API", () => {
         // TODO: add tests for saving to API (ie PATCH /api/v1/consent-request/{id}/preferences...)
         expect(false).is.eql(true);
