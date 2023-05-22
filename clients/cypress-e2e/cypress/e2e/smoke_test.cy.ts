@@ -88,24 +88,24 @@ describe("Smoke test", () => {
     //  - Data Sales or Sharing => true
     //  - Email Marketing => true
     //  - Product Analytics => true
-    cy.getByTestId(`consent-item-card-advertising`).within(() => {
+    cy.getByTestId(`consent-item-advertising`).within(() => {
       cy.contains("Data Sales or Sharing");
       cy.getRadio("true").should("be.checked");
       cy.getRadio("false").should("not.be.checked");
     });
-    cy.getByTestId(`consent-item-card-advertising.first_party`).within(() => {
+    cy.getByTestId(`consent-item-advertising.first_party`).within(() => {
       cy.contains("Email Marketing");
       cy.getRadio("true").should("be.checked");
       cy.getRadio("false").should("not.be.checked");
     });
-    cy.getByTestId(`consent-item-card-improve`).within(() => {
+    cy.getByTestId(`consent-item-improve`).within(() => {
       cy.contains("Product Analytics");
       cy.getRadio("true").should("be.checked");
       cy.getRadio("false").should("not.be.checked");
     });
 
     // Opt-out of data sales / sharing
-    cy.getByTestId(`consent-item-card-advertising`).within(() => {
+    cy.getByTestId(`consent-item-advertising`).within(() => {
       cy.getRadio("false").check({ force: true });
     });
     cy.contains("Save").click();
@@ -119,7 +119,7 @@ describe("Smoke test", () => {
       cy.get("input#email").type("jenny@example.com");
       cy.get("button").contains("Continue").click();
     });
-    cy.getByTestId(`consent-item-card-advertising`).within(() => {
+    cy.getByTestId(`consent-item-advertising`).within(() => {
       cy.getRadio("true").should("not.be.checked");
       cy.getRadio("false").should("be.checked");
     });
