@@ -15,7 +15,7 @@ import { getGpcStatusFromNotice } from "~/features/consent/helpers";
 import {
   ConsentMechanism,
   PrivacyNoticeRegion,
-  PrivacyNoticeResponse,
+  PrivacyNoticeResponseWithUserPreferences,
 } from "~/types/api";
 import ConsentItem from "./ConsentItem";
 
@@ -24,7 +24,7 @@ import ConsentItem from "./ConsentItem";
  * TODO: Should this go in fides-js?
  */
 const resolveConsentValue = (
-  notice: PrivacyNoticeResponse,
+  notice: PrivacyNoticeResponseWithUserPreferences,
   context: ConsentContext
 ) => {
   const gpcEnabled =

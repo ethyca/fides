@@ -9,7 +9,7 @@ import {
   LegacyConsentConfig,
   ConsentConfig,
 } from "~/types/config";
-import { PrivacyNoticeResponse } from "~/types/api";
+import { PrivacyNoticeResponseWithUserPreferences } from "~/types/api";
 import { FidesKeyToConsent, GpcStatus } from "./types";
 
 /**
@@ -106,7 +106,7 @@ export const getGpcStatusFromNotice = ({
   consentContext,
 }: {
   value: boolean;
-  notice: PrivacyNoticeResponse;
+  notice: PrivacyNoticeResponseWithUserPreferences;
   consentContext: ConsentContext;
 }) => {
   // If GPC is not enabled, it won't be applied at all.

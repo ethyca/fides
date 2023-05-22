@@ -6,7 +6,7 @@ import type { ComponentType } from "./ComponentType";
 import type { DeliveryMechanism } from "./DeliveryMechanism";
 import type { ExperienceConfigResponse } from "./ExperienceConfigResponse";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
-import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
+import type { PrivacyNoticeResponseWithUserPreferences } from "./PrivacyNoticeResponseWithUserPreferences";
 
 /**
  * An API representation of a PrivacyExperience used for response payloads
@@ -22,5 +22,5 @@ export type PrivacyExperienceResponse = {
   updated_at: string;
   version: number;
   privacy_experience_history_id: string;
-  privacy_notices?: Array<PrivacyNoticeResponse>;
+  privacy_notices?: Array<PrivacyNoticeResponseWithUserPreferences>;
 };
