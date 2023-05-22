@@ -1382,6 +1382,22 @@ class TestPostPrivacyNotices:
         }
 
     @pytest.fixture(scope="function")
+    def notice_request_no_key(self, load_default_data_uses) -> Dict[str, Any]:
+        return {
+            "name": "My Test Privacy Notice",
+            "description": "my test privacy notice",
+            "origin": "privacy_notice_template_1",
+            "regions": [
+                PrivacyNoticeRegion.eu_be.value,
+                PrivacyNoticeRegion.us_ca.value,
+            ],
+            "consent_mechanism": ConsentMechanism.opt_in.value,
+            "data_uses": ["advertising"],
+            "enforcement_level": EnforcementLevel.system_wide.value,
+            "displayed_in_overlay": True,
+        }
+
+    @pytest.fixture(scope="function")
     def notice_request_2(self, load_default_data_uses) -> Dict[str, Any]:
         return {
             "name": "test privacy notice 2",
@@ -1759,6 +1775,75 @@ class TestPostPrivacyNotices:
         assert response_notice["created_at"] == db_notice.created_at.isoformat()
         assert response_notice["updated_at"] == db_notice.updated_at.isoformat()
         assert response_notice["disabled"] == db_notice.disabled
+
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.eu_be
+        )
+        assert overlay_exp is not None
+        assert privacy_center_exp is None
+
+        (
+            ca_overlay_exp,
+            ca_privacy_center_exp,
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+
+        overlay_exp.histories[0].delete(db)
+        overlay_exp.delete(db)
+
+        ca_overlay_exp.histories[0].delete(db)
+        ca_overlay_exp.delete(db)
+
+    def test_post_privacy_notice_no_notice_key(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        notice_request_no_key: dict[str, Any],
+        url,
+        db,
+    ):
+        """
+        Test posting a single new privacy notice
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
+
+        before_creation = datetime.now().isoformat()
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.eu_be
+        )
+        assert overlay_exp is None
+        assert privacy_center_exp is None
+
+        (
+            ca_overlay_exp,
+            ca_privacy_center_exp,
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        assert ca_overlay_exp is None
+        assert ca_privacy_center_exp is None
+
+        resp = api_client.post(url, headers=auth_header, json=[notice_request_no_key])
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
+        response_notice = resp.json()[0]
+
+        assert response_notice["name"] == notice_request_no_key["name"]
+        assert "id" in response_notice
+        assert response_notice["version"] == 1.0
+        assert response_notice["created_at"] < datetime.now().isoformat()
+        assert response_notice["created_at"] > before_creation
+        assert response_notice["updated_at"] < datetime.now().isoformat()
+        assert response_notice["updated_at"] > before_creation
+        assert response_notice["notice_key"] == "my_test_privacy_notice"
+        assert not response_notice["disabled"]
+
+        db_notice: PrivacyNotice = PrivacyNotice.get(
+            db=db, object_id=response_notice["id"]
+        )
+        assert response_notice["name"] == db_notice.name
+        assert response_notice["version"] == db_notice.version
+        assert response_notice["created_at"] == db_notice.created_at.isoformat()
+        assert response_notice["updated_at"] == db_notice.updated_at.isoformat()
+        assert response_notice["disabled"] == db_notice.disabled
+        assert response_notice["notice_key"] == "my_test_privacy_notice"
 
         overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
             db, PrivacyNoticeRegion.eu_be
