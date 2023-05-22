@@ -21,16 +21,10 @@ export const fetchExperience = (
  * Sends user consent preference downstream to Fides
  */
 export const saveUserPreference = (
-  userDeviceId: String,
-  debug: boolean,
-  preferences: PrivacyPreferencesCreateWithCode
+  preferences: PrivacyPreferencesCreateWithCode,
+  debug: boolean
 ): PrivacyExperience | undefined => {
-  debugLog(
-    debug,
-    "Saving user consent preference for device id...",
-    userDeviceId,
-    preferences
-  );
+  debugLog(debug, "Saving user consent preference...", preferences);
   // TODO: PATCH /consent-request/{consent_request_id}/privacy-preferences
   return undefined;
 };
