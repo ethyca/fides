@@ -2,13 +2,13 @@ import copy
 
 import pytest
 
-from fides.api.ops.graph.config import FieldPath
-from fides.api.ops.task.filter_element_match import (
+from fides.api.graph.config import FieldPath
+from fides.api.task.filter_element_match import (
     _expand_array_paths_to_preserve,
     _remove_paths_from_row,
     filter_element_match,
 )
-from fides.api.ops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
+from fides.api.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
 
 
 class TestFilterElementMatch:

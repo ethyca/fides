@@ -42,6 +42,13 @@ export default async function handler(
     consent: {
       options,
     },
+    options: {
+      debug: environment.settings.DEBUG,
+      isOverlayDisabled: environment.settings.IS_OVERLAY_DISABLED,
+      isGeolocationEnabled: environment.settings.IS_GEOLOCATION_ENABLED,
+      geolocationApiUrl: environment.settings.GEOLOCATION_API_URL,
+      privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
+    },
     location,
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
@@ -51,11 +58,20 @@ export default async function handler(
   );
   const fidesJSBuffer = await fsPromises.readFile("public/lib/fides.js");
   const fidesJS: string = fidesJSBuffer.toString();
+  const fidesCSSBuffer = await fsPromises.readFile(
+    "../fides-js/dist/fides.css"
+  );
+  const fidesCSS: string = JSON.stringify(fidesCSSBuffer.toString());
   if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");
   }
   const script = `
   (function () {
+    // Include default CSS
+    const style = document.createElement('style');
+    style.innerHTML = ${fidesCSS};
+    document.head.append(style);
+
     // Include generic fides.js script
     ${fidesJS}
 

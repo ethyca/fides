@@ -74,7 +74,7 @@ def mypy(session: nox.Session) -> None:
 def pylint(session: nox.Session) -> None:
     """Run the 'pylint' code linter."""
     install_requirements(session)
-    command = ("pylint", "src", "noxfiles", "noxfile.py")
+    command = ("pylint", "src", "noxfiles", "noxfile.py", "--jobs", "0")
     session.run(*command)
 
 

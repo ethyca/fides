@@ -5,17 +5,17 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ops.db import session
-from fides.api.ops.models.connectionconfig import (
+from fides.api.db import session
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.schemas.saas.saas_config import SaaSRequest
-from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.ops.service.connectors.saas_connector import SaaSConnector
-from fides.api.ops.util.saas_util import load_config
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.schemas.saas.saas_config import SaaSRequest
+from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.service.connectors.saas_connector import SaaSConnector
+from fides.api.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
 
 

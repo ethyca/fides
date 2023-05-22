@@ -10,12 +10,12 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     STORAGE_DELETE,
 )
-from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.api.v1.urn_registry import V1_URL_PREFIX
 from tests.ops.api.v1.endpoints.test_connection_config_endpoints import (
     TestPatchConnections,
 )

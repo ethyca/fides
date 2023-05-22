@@ -4,8 +4,8 @@ from unittest import mock
 import pytest
 from bson import ObjectId
 
-from fides.api.ops.common_exceptions import SkippingConsentPropagation
-from fides.api.ops.graph.config import (
+from fides.api.common_exceptions import SkippingConsentPropagation
+from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     Collection,
@@ -13,12 +13,12 @@ from fides.api.ops.graph.config import (
     FieldPath,
     GraphDataset,
 )
-from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.graph.traversal import Traversal, TraversalNode
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fides.api.ops.models.privacy_request import ExecutionLog, ExecutionLogStatus
-from fides.api.ops.task.graph_task import (
+from fides.api.graph.graph import DatasetGraph
+from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.models.privacy_request import ExecutionLog, ExecutionLogStatus
+from fides.api.task.graph_task import (
     EMPTY_REQUEST,
     GraphTask,
     TaskResources,
@@ -28,7 +28,7 @@ from fides.api.ops.task.graph_task import (
     start_function,
     update_erasure_mapping_from_cache,
 )
-from fides.api.ops.util.consent_util import (
+from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
 )
 
@@ -689,7 +689,7 @@ class TestGraphTaskAffectedConsentSystems:
         return GraphTask(tn, task_resources)
 
     @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.SaaSConnector.run_consent_request"
+        "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
     )
     def test_skipped_consent_task_for_connector(
         self,
@@ -738,7 +738,7 @@ class TestGraphTaskAffectedConsentSystems:
         assert logs.first().status == ExecutionLogStatus.skipped
 
     @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.SaaSConnector.run_consent_request"
+        "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
     )
     def test_errored_consent_task_for_connector_no_relevant_preferences(
         self,

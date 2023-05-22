@@ -3,8 +3,8 @@ from collections.abc import Generator
 import pytest
 import requests_mock
 
-from fides.api.ops.common_exceptions import ClientUnsuccessfulException
-from fides.api.ops.service.connectors import HTTPSConnector
+from fides.api.common_exceptions import ClientUnsuccessfulException
+from fides.api.service.connectors import HTTPSConnector
 
 
 class TestHttpConnectorMethods:

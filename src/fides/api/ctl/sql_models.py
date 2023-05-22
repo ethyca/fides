@@ -31,12 +31,12 @@ from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
-from fides.api.ops.common_exceptions import KeyOrNameAlreadyExists
-from fides.api.ops.db.base_class import Base
-from fides.api.ops.db.base_class import FidesBase as FideslibBase
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.fides_user import FidesUser
-from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
+from fides.api.common_exceptions import KeyOrNameAlreadyExists
+from fides.api.db.base_class import Base
+from fides.api.db.base_class import FidesBase as FideslibBase
+from fides.api.models.client import ClientDetail
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.core.config import CONFIG
 
 
@@ -503,7 +503,7 @@ class CustomFieldDefinition(Base):
     )
     allow_list_id = Column(String, ForeignKey(CustomFieldValueList.id), nullable=True)
     resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
-    field_definition = Column(String, index=True)
+    field_definition = Column(String)
     custom_field = relationship(
         "CustomField",
         back_populates="custom_field_definition",

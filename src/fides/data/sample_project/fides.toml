@@ -38,3 +38,4 @@ password = "Testpassword1!"
 
 [logging]
 level = "DEBUG"
+log_pii = true
