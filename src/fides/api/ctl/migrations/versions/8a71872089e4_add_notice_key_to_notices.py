@@ -21,7 +21,7 @@ depends_on = None
 
 def validate_fides_key_suitability(names: ResultProxy, table_name: str) -> None:
     for row in names:
-        name: str = row["name"].strip(" ")
+        name: str = row["name"].strip(" ").replace(" ", "_")
         try:
             FidesKey.validate(name)
         except FidesValidationError as exc:
@@ -53,9 +53,11 @@ def upgrade():
     )
 
     op.execute(
-        "update privacynoticehistory set notice_key = LOWER(REPLACE(name, ' ', '_'));"
+        "update privacynoticehistory set notice_key = LOWER(REPLACE(TRIM(name), ' ', '_'));"
     )
-    op.execute("update privacynotice set notice_key = LOWER(REPLACE(name, ' ', '_'));")
+    op.execute(
+        "update privacynotice set notice_key = LOWER(REPLACE(TRIM(name), ' ', '_'));"
+    )
 
     op.alter_column("privacynotice", "notice_key", nullable=False)
     op.alter_column("privacynoticehistory", "notice_key", nullable=False)
