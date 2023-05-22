@@ -23,6 +23,7 @@ The types of changes are:
 - Update how generic endpoint generation works [#3304](https://github.com/ethyca/fides/pull/3304)
 - Restrict strack-trace logging when not in Dev mode [#3081](https://github.com/ethyca/fides/pull/3081)
 - Moved all of the dirs from `fides.api.ops` into `fides.api` [#3318](https://github.com/ethyca/fides/pull/3318)
+- Changed `fides db migrate` to `fides db upgrade` [#3342](https://github.com/ethyca/fides/pull/3342)
 
 ### Added
 
