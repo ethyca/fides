@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.13.1b1.post0.dev2"
+    "version": "2.13.1b1.post0.dev3"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -16090,6 +16090,14 @@
             "title": "Dsr Package Label",
             "maxLength": 200,
             "type": "string"
+          },
+          "data_categories": {
+            "title": "Data Categories",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            }
           }
         },
         "description": "Schema to describe the attributes on a manual webhook field"
