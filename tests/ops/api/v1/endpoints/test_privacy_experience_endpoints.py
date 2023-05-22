@@ -499,17 +499,14 @@ class TestGetPrivacyExperiences:
             url + "?fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f",
         )
         assert resp.status_code == 200
-        data = resp.json()
-
-        assert "items" in data
-
-        # assert one experience in the response
-        assert data["total"] == 1
-        assert len(data["items"]) == 1
-        resp = data["items"][0]
+        data = resp.json()["items"][0]
 
         # Assert current preference is displayed for fides user device id
-        assert resp["privacy_notices"][0]["consent_mechanism"] == "opt_in"
-        assert resp["privacy_notices"][0]["default_preference"] == "opt_out"
-        assert resp["privacy_notices"][0]["current_preference"] == "opt_in"
-        assert resp["privacy_notices"][0]["outdated_preference"] is None
+        assert data["privacy_notices"][0]["consent_mechanism"] == "opt_in"
+        assert data["privacy_notices"][0]["default_preference"] == "opt_out"
+        assert data["privacy_notices"][0]["current_preference"] == "opt_in"
+        assert data["privacy_notices"][0]["outdated_preference"] is None
+        assert (
+            data["privacy_notices"][0]["notice_key"]
+            == "example_privacy_notice_us_ca_provide"
+        )

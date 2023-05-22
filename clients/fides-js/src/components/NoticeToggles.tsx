@@ -48,7 +48,7 @@ const NoticeToggle = ({
           {notice.name}
         </span>
         <Toggle
-          name={notice.name}
+          name={notice.name || ""}
           id={notice.id}
           checked={checked}
           onChange={onToggle}
