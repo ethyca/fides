@@ -51,7 +51,7 @@
   --fides-consent-overlay-padding: 0.75em 2em 1em;
   --fides-consent-overlay-button-border-radius: 4px;
   --fides-consent-overlay-button-padding: 0.5em 1em;
-  --fides-consent-overlay-component-border-radius: 4px;
+  --fides-consent-overlay-component-border-radius: 0px;
 }
 
 div#fides-consent-banner {
