@@ -11,7 +11,7 @@ import {
   getOrMakeFidesCookie,
   saveFidesCookie,
 } from "./cookie";
-import { saveUserPreference } from "../services/fides/consent";
+import { patchUserPreferenceToFidesServer } from "../services/fides/api";
 
 /**
  * Updates the user's consent preferences, going through the following steps:
@@ -65,7 +65,7 @@ export const updateConsentPreferences = ({
     browser_identity: cookie.identity,
     preferences: fidesUserPreferences,
   };
-  saveUserPreference(privacyPreferenceCreate, debug);
+  patchUserPreferenceToFidesServer(privacyPreferenceCreate, debug);
 
   // 2. Update the window.Fides.consent object
   debugLog(debug, "Updating window.Fides");

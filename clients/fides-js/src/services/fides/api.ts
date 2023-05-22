@@ -20,7 +20,7 @@ export const fetchExperience = (
 /**
  * Sends user consent preference downstream to Fides
  */
-export const saveUserPreference = (
+export const patchUserPreferenceToFidesServer = (
   preferences: PrivacyPreferencesCreateWithCode,
   debug: boolean
 ): PrivacyExperience | undefined => {

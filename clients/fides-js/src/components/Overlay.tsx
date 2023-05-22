@@ -22,6 +22,10 @@ export interface OverlayProps {
 const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
+  if (!experience.experience_config) {
+    return null;
+  }
+
   const privacyNotices = experience.privacy_notices ?? [];
 
   const onAcceptAll = () => {
@@ -48,7 +52,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
   return (
     <div id="fides-js-root">
       <ConsentBanner
-        experience={experience.experience_config!}
+        experience={experience.experience_config}
         onAcceptAll={onAcceptAll}
         onRejectAll={onRejectAll}
         waitBeforeShow={100}
@@ -56,7 +60,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
       />
       {modalIsOpen ? (
         <ConsentModal
-          experience={experience.experience_config!}
+          experience={experience.experience_config}
           notices={privacyNotices}
           onClose={() => setModalIsOpen(false)}
           onAcceptAll={onAcceptAll}

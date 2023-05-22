@@ -66,7 +66,7 @@ import {
   debugLog,
   validateOptions,
 } from "./lib/consent-utils";
-import { fetchExperience } from "./services/fides/consent";
+import { fetchExperience } from "./services/fides/api";
 import { getGeolocation } from "./services/external/geolocation";
 
 export type Fides = {
@@ -94,27 +94,21 @@ declare global {
 let _Fides: Fides;
 
 /**
- * Determines if and when to call the API to retrieve geolocation
+ * Determines effective geolocation
  */
 const retrieveEffectiveGeolocation = async (
-  options: FidesOptions,
-  geolocation: UserGeolocation | undefined
+  options: FidesOptions
 ): Promise<UserGeolocation | undefined> => {
-  let effectiveGeolocation;
-  if (!constructFidesRegionString(geolocation)) {
-    if (options.isGeolocationEnabled) {
-      effectiveGeolocation = await getGeolocation(
-        options.geolocationApiUrl,
-        options.debug
-      );
-    } else {
-      debugLog(
-        options.debug,
-        `User location is required but could not be retrieved because geolocation is disabled.`
-      );
-    }
+  // If geolocation is not enabled, return undefined
+  if (!options.isGeolocationEnabled) {
+    debugLog(
+      options.debug,
+      `User location is required but could not be retrieved because geolocation is disabled.`
+    );
+    return undefined;
   }
-  return effectiveGeolocation;
+  // Call the geolocation API
+  return getGeolocation(options.geolocationApiUrl, options.debug);
 };
 
 /**
@@ -160,14 +154,11 @@ const init = async ({
   let effectiveGeolocation = geolocation;
   let effectiveExperience = experience;
 
-  if (!effectiveExperience) {
+  if (!effectiveExperience || !constructFidesRegionString(geolocation)) {
     // If experience is not provided, we need to retrieve it via the Fides API.
     // In order to retrieve it, we first need a valid geolocation, which is either provided
     // OR can be obtained via the Fides API
-    effectiveGeolocation = await retrieveEffectiveGeolocation(
-      options,
-      geolocation
-    );
+    effectiveGeolocation = await retrieveEffectiveGeolocation(options);
     const userLocationString = constructFidesRegionString(effectiveGeolocation);
     if (!userLocationString) {
       debugLog(
