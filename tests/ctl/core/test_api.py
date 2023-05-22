@@ -30,6 +30,7 @@ from fides.api.api.v1.scope_registry import (
     READ,
     SYSTEM_CREATE,
     SYSTEM_DELETE,
+    SYSTEM_READ,
     SYSTEM_UPDATE,
     UPDATE,
 )
@@ -557,6 +558,46 @@ class TestSystemCreate:
         assert len(systems) == 1
         assert systems[0].name == "Test System"
         assert len(systems[0].privacy_declarations) == 2
+
+    async def test_system_create_custom_metadata_saas_type(
+        self,
+        generate_auth_header,
+        db,
+        test_config,
+        system_create_request_body: SystemSchema,
+    ):
+        """Ensure system create works with custom metadata, e.g. a `saas_config_type`"""
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+        system_create_request_body.meta = {
+            "saas_config_type": "stripe"
+        }  # add `saas_config_type` metadata property
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+
+        assert result.status_code == HTTP_201_CREATED
+        assert result.json()["name"] == "Test System"
+        assert len(result.json()["privacy_declarations"]) == 2
+        assert result.json()["meta"] == {"saas_config_type": "stripe"}
+
+        systems = System.all(db)
+        assert len(systems) == 1
+        assert systems[0].name == "Test System"
+        assert len(systems[0].privacy_declarations) == 2
+        assert systems[0].meta["saas_config_type"] == "stripe"
+
+        # and assert we can retrieve the custom metadata property via API (`GET`)
+        auth_header = generate_auth_header(scopes=[SYSTEM_READ])
+        get_response = _api.get(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            resource_id=systems[0].fides_key,
+        )
+        assert get_response.json()["meta"] == {"saas_config_type": "stripe"}
 
     def test_system_create_has_role_that_can_update_all_systems(
         self,
