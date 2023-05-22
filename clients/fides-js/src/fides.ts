@@ -199,7 +199,7 @@ const init = async ({
     return;
   }
 
-  if (getConsentContext().globalPrivacyControl && effectiveExperience) {
+  if (getConsentContext().globalPrivacyControl) {
     effectiveExperience.privacy_notices.forEach((notice) => {
       if (notice.has_gpc_flag) {
         // todo- write cookie with user preference
@@ -215,10 +215,17 @@ const init = async ({
     );
     return;
   }
-  if (experience && experience.component !== ComponentType.OVERLAY) {
+  if (effectiveExperience.component !== ComponentType.OVERLAY) {
     debugLog(
       options.debug,
       "No experience found with overlay component, skipping overlay initialization!"
+    );
+    return;
+  }
+  if (!effectiveExperience.experience_config) {
+    debugLog(
+      options.debug,
+      "No experience config found with for experience, skipping overlay initialization!"
     );
     return;
   }

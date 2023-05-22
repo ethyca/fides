@@ -15,16 +15,13 @@ import { updateConsentPreferences } from "../lib/preferences";
 export interface OverlayProps {
   consentDefaults: CookieKeyConsent;
   options: FidesOptions;
-  experience?: PrivacyExperience;
+  experience: PrivacyExperience;
   geolocation?: UserGeolocation;
 }
 
 const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
-  if (!experience) {
-    return null;
-  }
   const privacyNotices = experience.privacy_notices ?? [];
 
   const onAcceptAll = () => {
@@ -51,7 +48,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
   return (
     <div id="fides-js-root">
       <ConsentBanner
-        experience={experience}
+        experience={experience.experience_config!}
         onAcceptAll={onAcceptAll}
         onRejectAll={onRejectAll}
         waitBeforeShow={100}
@@ -59,7 +56,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
       />
       {modalIsOpen ? (
         <ConsentModal
-          experience={experience}
+          experience={experience.experience_config!}
           notices={privacyNotices}
           onClose={() => setModalIsOpen(false)}
           onAcceptAll={onAcceptAll}

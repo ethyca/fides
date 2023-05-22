@@ -31,7 +31,7 @@ export const initOverlay = async ({
         "Rendering Fides overlay CSS & HTML into the DOM..."
       );
 
-      if (experience && experience.component === ComponentType.OVERLAY) {
+      if (experience.component === ComponentType.OVERLAY) {
         if (experience.delivery_mechanism === DeliveryMechanism.BANNER) {
           // Render the Overlay to the DOM!
           render(
