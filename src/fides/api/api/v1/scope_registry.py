@@ -326,7 +326,7 @@ SCOPE_DOCS = {
     SAAS_CONFIG_CREATE_OR_UPDATE: "Create or update SaaS configurations",
     SAAS_CONFIG_DELETE: "Remove SaaS configurations",
     SAAS_CONFIG_READ: "View SaaS configurations",
-    SAAS_CONNECTION_INSTANTIATE: "",
+    SAAS_CONNECTION_INSTANTIATE: "Instantiate a SaaS connection config from a connector template",
     SCOPE_READ: "View authorization scopes",
     STORAGE_CREATE_OR_UPDATE: "Create or update storage",
     STORAGE_DELETE: "Remove storage",

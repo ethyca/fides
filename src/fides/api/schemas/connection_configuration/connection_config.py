@@ -9,6 +9,7 @@ from pydantic import BaseModel, Extra
 from fides.api.models.connectionconfig import AccessLevel, ConnectionType
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfigBase
 
 

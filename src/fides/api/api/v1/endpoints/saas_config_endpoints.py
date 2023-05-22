@@ -36,6 +36,7 @@ from fides.api.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.common_exceptions import FidesopsException, KeyOrNameAlreadyExists
+from fides.api.ctl.sql_models import System
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.oauth.utils import verify_oauth_client
@@ -281,13 +282,21 @@ def instantiate_connection_from_template(
     template_values: SaasConnectionTemplateValues,
     db: Session = Depends(deps.get_db),
 ) -> SaasConnectionTemplateResponse:
+    return instantiate_connection(db, saas_connector_type, template_values)
+
+
+def instantiate_connection(
+    db: Session,
+    saas_connector_type: str,
+    template_values: SaasConnectionTemplateValues,
+    system: Optional[System] = None,
+) -> SaasConnectionTemplateResponse:
     """
     Creates a SaaS Connector and a SaaS Dataset from a template.
 
     Looks up the connector type in the SaaS connector registry and, if all required
     fields are provided, persists the associated connection config and dataset to the database.
     """
-
     connector_template: Optional[
         ConnectorTemplate
     ] = ConnectorRegistry.get_connector_template(saas_connector_type)
@@ -321,6 +330,8 @@ def instantiate_connection_from_template(
     connection_config.secrets = validate_secrets(
         db, template_values.secrets, connection_config
     ).dict()
+    if system:
+        connection_config.system_id = system.fides_key
     connection_config.save(db=db)  # Not persisted to db until secrets are validated
 
     try:
