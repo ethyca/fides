@@ -43,11 +43,11 @@ export default async function handler(
       options,
     },
     options: {
-      debug: true,
-      isOverlayDisabled: true,
-      isGeolocationEnabled: false,
-      geolocationApiUrl: "",
-      privacyCenterUrl: "http://localhost:3000",
+      debug: environment.settings.DEBUG,
+      isOverlayDisabled: environment.settings.IS_OVERLAY_DISABLED,
+      isGeolocationEnabled: environment.settings.IS_GEOLOCATION_ENABLED,
+      geolocationApiUrl: environment.settings.GEOLOCATION_API_URL,
+      privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
     },
     location,
   };
