@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.13.1b1.post0.dev5"
+    "version": "2.13.1b1.post0.dev6"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -17984,6 +17984,11 @@
             "title": "Name",
             "type": "string"
           },
+          "notice_key": {
+            "title": "Notice Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          },
           "description": {
             "title": "Description",
             "type": "string"
@@ -18062,6 +18067,11 @@
         "properties": {
           "name": {
             "title": "Name",
+            "type": "string"
+          },
+          "notice_key": {
+            "title": "Notice Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "description": {
@@ -18236,6 +18246,11 @@
             "title": "Name",
             "type": "string"
           },
+          "notice_key": {
+            "title": "Notice Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          },
           "description": {
             "title": "Description",
             "type": "string"
@@ -18334,6 +18349,11 @@
         "properties": {
           "name": {
             "title": "Name",
+            "type": "string"
+          },
+          "notice_key": {
+            "title": "Notice Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "description": {
@@ -18438,6 +18458,11 @@
         "properties": {
           "name": {
             "title": "Name",
+            "type": "string"
+          },
+          "notice_key": {
+            "title": "Notice Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "description": {
