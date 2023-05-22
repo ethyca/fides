@@ -1,12 +1,14 @@
 import { ConsentConfig } from "./consent-config";
 
+export const FIDES_MODAL_LINK = "fides-consent-modal-link";
+
 export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.
   consent?: ConsentConfig;
   // Set the "experience" to be used for this Fides.js instance -- overrides the "legacy" config.
   // If set, Fides.js will fetch neither experience config nor user geolocation.
   // If not set, Fides.js will fetch its own experience config.
-  experience?: ExperienceConfig;
+  experience?: PrivacyExperience;
   // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
   geolocation?: UserGeolocation;
   // Global options for this Fides.js instance. Fides provides defaults for all props except privacyCenterUrl
@@ -30,36 +32,63 @@ export type FidesOptions = {
   privacyCenterUrl: string;
 };
 
+export type PrivacyExperience = {
+  disabled?: boolean;
+  component?: ComponentType;
+  delivery_mechanism?: DeliveryMechanism;
+  region: string; // intentionally using plain string instead of Enum, since BE is susceptible to change
+  experience_config?: ExperienceConfig;
+  id: string;
+  created_at: string;
+  updated_at: string;
+  version: number;
+  privacy_experience_history_id: string;
+  privacy_notices?: Array<PrivacyNotice>;
+};
+
 export type ExperienceConfig = {
-  version: string;
-  component: ExperienceComponent;
-  delivery_mechanism: ExperienceDeliveryMechanism;
+  acknowledgement_button_label?: string;
+  banner_title?: string;
+  banner_description?: string;
+  component?: ComponentType;
+  component_title?: string;
+  component_description?: string;
+  confirmation_button_label?: string;
+  delivery_mechanism?: DeliveryMechanism;
+  disabled?: boolean;
+  is_default?: boolean;
+  link_label?: string;
+  reject_button_label?: string;
+  id: string;
+  experience_config_history_id: string;
+  version: number;
+  created_at: string;
+  updated_at: string;
   regions: Array<string>;
-  component_title: string;
-  component_description: string;
-  banner_title: string;
-  banner_description: string;
-  confirmation_button_label: string;
-  reject_button_label: string;
-  privacy_notices: Array<PrivacyNotice>;
 };
 
 export type PrivacyNotice = {
-  name: string;
+  name?: string;
   description?: string;
-  regions: Array<string>;
-  consent_mechanism: ConsentMechanism;
-  has_gpc_flag: boolean;
-  data_uses: Array<string>;
-  enforcement_level: EnforcementLevel;
+  internal_description?: string;
+  origin?: string;
+  regions?: Array<string>;
+  consent_mechanism?: ConsentMechanism;
+  data_uses?: Array<string>;
+  enforcement_level?: EnforcementLevel;
+  disabled?: boolean;
+  has_gpc_flag?: boolean;
+  displayed_in_privacy_center?: boolean;
   displayed_in_overlay?: boolean;
   displayed_in_api?: boolean;
-  displayed_in_privacy_center?: boolean;
   id: string;
   created_at: string;
   updated_at: string;
   version: number;
   privacy_notice_history_id: string;
+  default_preference: UserConsentPreference;
+  current_preference?: UserConsentPreference;
+  outdated_preference?: UserConsentPreference;
 };
 
 export enum EnforcementLevel {
@@ -74,15 +103,20 @@ export enum ConsentMechanism {
   NOTICE_ONLY = "notice_only",
 }
 
-export enum ExperienceComponent {
+export enum UserConsentPreference {
+  OPT_IN = "opt_in",
+  OPT_OUT = "opt_out",
+  ACKNOWLEDGE = "acknowledge",
+}
+
+export enum ComponentType {
   OVERLAY = "overlay",
   PRIVACY_CENTER = "privacy_center",
 }
 
-export enum ExperienceDeliveryMechanism {
+export enum DeliveryMechanism {
   BANNER = "banner",
   LINK = "link",
-  API = "api",
 }
 
 export type UserGeolocation = {
@@ -92,8 +126,45 @@ export type UserGeolocation = {
   region?: string; // "NY"
 };
 
+// Regex to validate a location string, which must:
+// 1) Start with a 2-3 character country code (e.g. "US")
+// 2) Optionally end with a 2-3 character region code (e.g. "CA")
+// 3) Separated by a dash (e.g. "US-CA")
+export const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
+
 export enum ButtonType {
   PRIMARY = "primary",
   SECONDARY = "secondary",
   TERTIARY = "tertiary",
+}
+
+export type PrivacyPreferencesCreateWithCode = {
+  // TODO: update this schema
+  browser_identity: Identity;
+  code?: string;
+  preferences: Array<ConsentOptionCreate>;
+  policy_key?: string; // Will use default consent policy if not supplied
+  request_origin?: RequestOrigin;
+  url_recorded?: string;
+  user_agent?: string;
+  user_geography?: string;
+};
+
+export type ConsentOptionCreate = {
+  privacy_notice_history_id: string;
+  preference: UserConsentPreference;
+};
+
+export type Identity = {
+  phone_number?: string;
+  email?: string;
+  ga_client_id?: string;
+  ljt_readerID?: string;
+  fides_user_device_id?: string;
+};
+
+export enum RequestOrigin {
+  privacy_center = "privacy_center",
+  overlay = "overlay",
+  api = "api",
 }

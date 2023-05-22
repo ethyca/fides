@@ -36,6 +36,7 @@ The types of changes are:
 - Support pseudonymous consent requests with `fides_user_device_id` for the new consent workflow [#3203](https://github.com/ethyca/fides/pull/3203)
 - Fides user device id filter to GET Privacy Experience List endpoint to stash user preferences on embedded notices [#3302](https://github.com/ethyca/fides/pull/3302)
 - Support for data categories on manual webhook fields [#3330](https://github.com/ethyca/fides/pull/3330)
+- Added config-driven rendering to consent components [#3316](https://github.com/ethyca/fides/pull/3316)
 
 ### Changed
 
