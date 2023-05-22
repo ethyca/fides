@@ -1,4 +1,4 @@
-import { Divider } from "@fidesui/react";
+import { Divider, Stack } from "@fidesui/react";
 import React, { useEffect, useMemo } from "react";
 import { ConsentContext, getConsentContext } from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -17,7 +17,9 @@ import {
   PrivacyNoticeRegion,
   PrivacyNoticeResponseWithUserPreferences,
 } from "~/types/api";
+import { useRouter } from "next/router";
 import ConsentItem from "./ConsentItem";
+import SaveCancel from "./SaveCancel";
 
 /**
  * Similar to fides-js resolveConsentValue, but uses notice logic instead of ConfigOption
@@ -52,6 +54,7 @@ const NoticeDrivenConsent = () => {
   const consentContext = useMemo(() => getConsentContext(), []);
   const experience = useAppSelector(selectPrivacyExperience);
   const userPreferences = useAppSelector(selectCurrentConsentPreferences);
+  const router = useRouter();
 
   useEffect(() => {
     // TODO: query for location
@@ -93,8 +96,13 @@ const NoticeDrivenConsent = () => {
     });
   }, [consentContext, experience, userPreferences]);
 
+  const handleCancel = () => {
+    router.push("/");
+  };
+  const handleSave = () => {};
+
   return (
-    <>
+    <Stack spacing={4}>
       {items.map((item, index) => {
         const { id, highlight, url, name, description } = item;
         const handleChange = (value: boolean) => {
@@ -116,7 +124,8 @@ const NoticeDrivenConsent = () => {
           </React.Fragment>
         );
       })}
-    </>
+      <SaveCancel onSave={handleSave} onCancel={handleCancel} />
+    </Stack>
   );
 };
 

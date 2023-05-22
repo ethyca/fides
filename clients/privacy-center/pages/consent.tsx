@@ -1,4 +1,4 @@
-import { Button, Heading, Stack, Text, useToast } from "@fidesui/react";
+import { Heading, Stack, Text, useToast } from "@fidesui/react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useMemo } from "react";
@@ -6,31 +6,27 @@ import React, { useCallback, useEffect, useMemo } from "react";
 import {
   FidesCookie,
   getConsentContext,
-  resolveConsentValue,
   saveFidesCookie,
   getOrMakeFidesCookie,
 } from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { inspectForBrowserIdentities } from "~/common/browser-identities";
+
 import { useLocalStorage } from "~/common/hooks";
-import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import { ErrorToastOptions } from "~/common/toast-options";
 import {
   updateConsentOptionsFromApi,
   useConfig,
 } from "~/features/common/config.slice";
 import {
-  selectFidesKeyToConsent,
   selectPersistedFidesKeyToConsent,
   updateUserConsentPreferencesFromApi,
   useLazyGetConsentRequestPreferencesQuery,
   usePostConsentRequestVerificationMutation,
-  useUpdateConsentRequestPreferencesDeprecatedMutation,
 } from "~/features/consent/consent.slice";
-import { getGpcStatus, makeCookieKeyConsent } from "~/features/consent/helpers";
+import { makeCookieKeyConsent } from "~/features/consent/helpers";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { ConsentPreferences } from "~/types/api";
 import { GpcBanner } from "~/features/consent/GpcMessages";
-import { GpcStatus } from "~/features/consent/types";
 import ConsentToggles from "~/components/consent/ConsentToggles";
 
 const Consent: NextPage = () => {
@@ -39,7 +35,6 @@ const Consent: NextPage = () => {
   const router = useRouter();
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const fidesKeyToConsent = useAppSelector(selectFidesKeyToConsent);
   const persistedFidesKeyToConsent = useAppSelector(
     selectPersistedFidesKeyToConsent
   );
@@ -58,10 +53,6 @@ const Consent: NextPage = () => {
     getConsentRequestPreferencesQueryTrigger,
     getConsentRequestPreferencesQueryResult,
   ] = useLazyGetConsentRequestPreferencesQuery();
-  const [
-    updateConsentRequestPreferencesMutationTrigger,
-    updateConsentRequestPreferencesMutationResult,
-  ] = useUpdateConsentRequestPreferencesDeprecatedMutation();
 
   const consentContext = useMemo(() => getConsentContext(), []);
 
@@ -208,85 +199,6 @@ const Consent: NextPage = () => {
     redirectToIndex,
   ]);
 
-  /**
-   * Update the consent choices on the backend.
-   */
-  const saveUserConsentOptions = useCallback(() => {
-    const consent = consentOptions.map((option) => {
-      const defaultValue = resolveConsentValue(option.default, consentContext);
-      const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
-      const gpcStatus = getGpcStatus({
-        value,
-        consentOption: option,
-        consentContext,
-      });
-
-      return {
-        data_use: option.fidesDataUseKey,
-        data_use_description: option.description,
-        opt_in: value,
-        has_gpc_flag: gpcStatus !== GpcStatus.NONE,
-        conflicts_with_gpc: gpcStatus === GpcStatus.OVERRIDDEN,
-      };
-    });
-
-    const executableOptions = consentOptions.map((option) => ({
-      data_use: option.fidesDataUseKey,
-      executable: option.executable ?? false,
-    }));
-
-    const browserIdentity = inspectForBrowserIdentities();
-
-    updateConsentRequestPreferencesMutationTrigger({
-      id: consentRequestId,
-      body: {
-        code: verificationCode,
-        policy_key: config.consent?.page.policy_key,
-        consent,
-        executable_options: executableOptions,
-        browser_identity: browserIdentity,
-      },
-    });
-  }, [
-    config,
-    consentContext,
-    consentOptions,
-    consentRequestId,
-    fidesKeyToConsent,
-    updateConsentRequestPreferencesMutationTrigger,
-    verificationCode,
-  ]);
-
-  /**
-   * Handle consent update result.
-   */
-  useEffect(() => {
-    if (updateConsentRequestPreferencesMutationResult.isError) {
-      toastError({
-        title: "An error occurred while saving user consent preferences",
-        error: updateConsentRequestPreferencesMutationResult.error,
-      });
-      return;
-    }
-
-    if (updateConsentRequestPreferencesMutationResult.isSuccess) {
-      storeConsentPreferences(
-        updateConsentRequestPreferencesMutationResult.data
-      );
-      toast({
-        title: "Your consent preferences have been saved",
-        ...SuccessToastOptions,
-      });
-      redirectToIndex();
-    }
-  }, [
-    updateConsentRequestPreferencesMutationResult,
-    storeConsentPreferences,
-    toastError,
-    toast,
-    redirectToIndex,
-  ]);
-
   return (
     <Stack as="main" align="center" data-testid="consent">
       <Stack align="center" py={["6", "16"]} spacing={8} maxWidth="720px">
@@ -315,41 +227,8 @@ const Consent: NextPage = () => {
             </Text>
           ))}
         </Stack>
-
         {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
-
-        <Stack direction="column" spacing={4}>
-          <ConsentToggles />
-          <Stack
-            direction="row"
-            justifyContent="flex-start"
-            paddingX={12}
-            width="full"
-          >
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                router.push("/");
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              bg="primary.800"
-              _hover={{ bg: "primary.400" }}
-              _active={{ bg: "primary.500" }}
-              colorScheme="primary"
-              size="sm"
-              onClick={() => {
-                saveUserConsentOptions();
-              }}
-              data-testid="save-btn"
-            >
-              Save
-            </Button>
-          </Stack>
-        </Stack>
+        <ConsentToggles storePreferences={storeConsentPreferences} />
       </Stack>
     </Stack>
   );
