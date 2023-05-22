@@ -8,7 +8,7 @@ import { debugLog } from "../../lib/consent-utils";
  * Fetch the relevant experience based on user location and user device id (if exists).
  * Fetches both Privacy Center and Overlay components, because GPC needs to work regardless of component
  */
-export const getExperience = (
+export const fetchExperience = (
   userLocationString: String,
   debug: boolean
 ): PrivacyExperience | undefined => {

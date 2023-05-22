@@ -1,4 +1,4 @@
-import { FidesOptions, UserGeolocation } from "./consent-types";
+import {FidesOptions, UserGeolocation, VALID_ISO_3166_LOCATION_REGEX} from "./consent-types";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner
@@ -16,10 +16,10 @@ export const debugLog = (
 };
 
 /**
- * Construct user geolocation str to be ingested by Fides API
- * Returns null if geolocation cannot be constructed by provided params
+ * Construct user location str to be ingested by Fides API
+ * Returns null if geolocation cannot be constructed by provided params, e.g. us_ca
  */
-export const constructLocation = (
+export const constructFidesRegionString = (
   geoLocation?: UserGeolocation,
   debug: boolean = false
 ): string | null => {
@@ -31,14 +31,15 @@ export const constructLocation = (
     );
     return null;
   }
-  if (geoLocation.location) {
-    return geoLocation.location;
+  if (geoLocation.location && VALID_ISO_3166_LOCATION_REGEX.test(geoLocation.location)) {
+    // Fides backend requires underscore deliminator
+    return geoLocation.location.replace("-","_").toLowerCase();
   }
   if (geoLocation.country && geoLocation.region) {
-    return `${geoLocation.country}-${geoLocation.region}`;
+    return `${geoLocation.country.toLowerCase()}_${geoLocation.region.toLowerCase()}`;
   }
   if (geoLocation.country) {
-    return geoLocation.country;
+    return geoLocation.country.toLowerCase();
   }
   debugLog(
     debug,

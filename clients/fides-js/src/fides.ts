@@ -62,11 +62,11 @@ import {
   ComponentType,
 } from "./lib/consent-types";
 import {
-  constructLocation,
+  constructFidesRegionString,
   debugLog,
   validateOptions,
 } from "./lib/consent-utils";
-import { getExperience } from "./services/fides/consent";
+import { fetchExperience } from "./services/fides/consent";
 import { getGeolocation } from "./services/external/geolocation";
 
 export type Fides = {
@@ -101,7 +101,7 @@ const retrieveEffectiveGeolocation = async (
   geolocation: UserGeolocation | undefined
 ): Promise<UserGeolocation | undefined> => {
   let effectiveGeolocation;
-  if (!constructLocation(geolocation)) {
+  if (!constructFidesRegionString(geolocation)) {
     if (options.isGeolocationEnabled) {
       effectiveGeolocation = await getGeolocation(
         options.geolocationApiUrl,
@@ -160,7 +160,7 @@ const init = async ({
   let effectiveGeolocation = geolocation;
   let effectiveExperience = experience;
 
-  if (!experience) {
+  if (!effectiveExperience) {
     // If experience is not provided, we need to retrieve it via the Fides API.
     // In order to retrieve it, we first need a valid geolocation, which is either provided
     // OR can be obtained via the Fides API
@@ -168,7 +168,7 @@ const init = async ({
       options,
       geolocation
     );
-    const userLocationString = constructLocation(effectiveGeolocation);
+    const userLocationString = constructFidesRegionString(effectiveGeolocation);
     if (!userLocationString) {
       debugLog(
         options.debug,
@@ -177,7 +177,7 @@ const init = async ({
       );
       return;
     }
-    effectiveExperience = await getExperience(
+    effectiveExperience = await fetchExperience(
       userLocationString,
       options.debug
     );
@@ -188,7 +188,7 @@ const init = async ({
   }
 
   if (
-    !effectiveExperience?.privacy_notices ||
+    !effectiveExperience.privacy_notices ||
     effectiveExperience.privacy_notices.length === 0
   ) {
     debugLog(
