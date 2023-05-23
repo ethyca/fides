@@ -1,25 +1,20 @@
-import { FunctionComponent, h } from "preact";
-import { useState } from "preact/hooks";
-import {
-  PrivacyExperience,
-  FidesOptions,
-  PrivacyNotice,
-  UserGeolocation,
-} from "../lib/consent-types";
+import {h, FunctionComponent} from "preact";
+import {useState} from "preact/hooks";
+import {ConsentMethod, FidesOptions, PrivacyExperience, PrivacyNotice,} from "../lib/consent-types";
 import ConsentBanner from "./ConsentBanner";
-import { CookieKeyConsent } from "../lib/cookie";
+import {CookieKeyConsent} from "../lib/cookie";
 import ConsentModal from "./ConsentModal";
 
-import { updateConsentPreferences } from "../lib/preferences";
+import {updateConsentPreferences} from "../lib/preferences";
 
 export interface OverlayProps {
   consentDefaults: CookieKeyConsent;
   options: FidesOptions;
   experience: PrivacyExperience;
-  geolocation?: UserGeolocation;
+  fidesRegionString: string;
 }
 
-const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
+const Overlay: FunctionComponent<OverlayProps> = ({ experience, options , fidesRegionString}) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
   if (!experience.experience_config) {
@@ -32,12 +27,23 @@ const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
     const allNoticeIds = privacyNotices.map((notice) => notice.id);
     updateConsentPreferences({
       privacyNotices,
+      experienceHistoryId: experience.privacy_experience_history_id,
       enabledPrivacyNoticeIds: allNoticeIds,
+      fidesApiUrl: options.fidesApiUrl,
+      consentMethod: ConsentMethod.button,
+      userLocationString: fidesRegionString,
     });
   };
 
   const onRejectAll = () => {
-    updateConsentPreferences({ privacyNotices, enabledPrivacyNoticeIds: [] });
+    updateConsentPreferences({
+      privacyNotices,
+      experienceHistoryId: experience.privacy_experience_history_id,
+      enabledPrivacyNoticeIds: [],
+      fidesApiUrl: options.fidesApiUrl,
+      consentMethod: ConsentMethod.button,
+      userLocationString: fidesRegionString,
+    });
   };
 
   const onSavePreferences = (
@@ -45,7 +51,11 @@ const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
   ) => {
     updateConsentPreferences({
       privacyNotices,
+      experienceHistoryId: experience.privacy_experience_history_id,
       enabledPrivacyNoticeIds,
+      fidesApiUrl: options.fidesApiUrl,
+      consentMethod: ConsentMethod.button,
+      userLocationString: fidesRegionString,
     });
   };
 

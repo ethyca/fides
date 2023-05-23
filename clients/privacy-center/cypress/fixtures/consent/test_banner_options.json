@@ -96,6 +96,7 @@
     "isOverlayDisabled": false,
     "isGeolocationEnabled": false,
     "geolocationApiUrl": "",
-    "privacyCenterUrl": "http://localhost:3000"
+    "privacyCenterUrl": "http://localhost:3000",
+    "fidesApiUrl": "http://localhost:8080"
   }
 }

@@ -152,25 +152,25 @@ const init = async ({
     return;
   }
 
-  let effectiveGeolocation = geolocation;
+  let fidesRegionString = constructFidesRegionString(geolocation);
   let effectiveExperience = experience;
 
-  if (!effectiveExperience || !constructFidesRegionString(geolocation)) {
+  if (!effectiveExperience || !fidesRegionString) {
     // If experience is not provided, we need to retrieve it via the Fides API.
     // In order to retrieve it, we first need a valid geolocation, which is either provided
     // OR can be obtained via the Fides API
-    effectiveGeolocation = await retrieveEffectiveGeolocation(options);
-    const userLocationString = constructFidesRegionString(effectiveGeolocation);
-    if (!userLocationString) {
+    fidesRegionString = constructFidesRegionString(await retrieveEffectiveGeolocation(options));
+    if (!fidesRegionString) {
       debugLog(
         options.debug,
-        `User location could not be constructed from location params`,
-        effectiveGeolocation
+        `User location could not be constructed from location params`
       );
       return;
     }
     effectiveExperience = await fetchExperience(
-      userLocationString,
+      fidesRegionString,
+      options.fidesApiUrl,
+      cookie.identity.fides_user_device_id,
       options.debug
     );
     if (!effectiveExperience) {
@@ -224,7 +224,7 @@ const init = async ({
   await initOverlay({
     consentDefaults,
     experience: effectiveExperience,
-    geolocation: effectiveGeolocation,
+    fidesRegionString,
     options,
   }).catch(() => {});
 };
@@ -241,6 +241,7 @@ _Fides = {
     geolocationApiUrl: "",
     overlayParentId: null,
     privacyCenterUrl: "",
+    fidesApiUrl: "",
   },
   fides_meta: {},
   identity: {},

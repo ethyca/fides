@@ -1,8 +1,8 @@
 import {
-  ConsentMechanism,
+  ConsentMechanism, ConsentMethod,
   ConsentOptionCreate,
   PrivacyNotice,
-  PrivacyPreferencesCreateWithCode,
+  PrivacyPreferencesRequest,
   UserConsentPreference,
 } from "./consent-types";
 import { debugLog } from "./consent-utils";
@@ -21,11 +21,19 @@ import { patchUserPreferenceToFidesServer } from "../services/fides/api";
  */
 export const updateConsentPreferences = ({
   privacyNotices,
+  experienceHistoryId,
   enabledPrivacyNoticeIds,
+  fidesApiUrl,
+  consentMethod,
+  userLocationString,
   debug = false,
 }: {
   privacyNotices: PrivacyNotice[];
+  experienceHistoryId: string;
   enabledPrivacyNoticeIds: Array<PrivacyNotice["id"]>;
+  fidesApiUrl: String;
+  consentMethod: ConsentMethod;
+  userLocationString: string;
   debug?: boolean;
 }) => {
   const cookie = getOrMakeFidesCookie();
@@ -59,13 +67,21 @@ export const updateConsentPreferences = ({
     });
   });
 
-  // 1. DEFER: Save preferences to Fides API
+  // 1. Save preferences to Fides API
   debugLog(debug, "Saving preferences to Fides API");
-  const privacyPreferenceCreate: PrivacyPreferencesCreateWithCode = {
+  const privacyPreferenceCreate: PrivacyPreferencesRequest = {
     browser_identity: cookie.identity,
     preferences: fidesUserPreferences,
+    privacy_experience_history_id: experienceHistoryId,
+    user_geography: userLocationString,
+    method: consentMethod
   };
-  patchUserPreferenceToFidesServer(privacyPreferenceCreate, debug);
+  patchUserPreferenceToFidesServer(
+      privacyPreferenceCreate,
+      fidesApiUrl,
+      cookie.identity.fides_user_device_id,
+      debug
+  );
 
   // 2. Update the window.Fides.consent object
   debugLog(debug, "Updating window.Fides");
