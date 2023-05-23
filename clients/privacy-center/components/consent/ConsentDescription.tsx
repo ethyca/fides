@@ -20,11 +20,14 @@ const ConsentDescription = () => {
   if (!isNoticeDriven) {
     return (
       <Box data-testid="consent-description">
+        <Text {...TEXT_PROPS} data-testid="description">
+          {config.consent?.page.description}
+        </Text>
         {config.consent?.page.description_subtext?.map((paragraph, index) => (
           <Text
             {...TEXT_PROPS}
             // eslint-disable-next-line react/no-array-index-key
-            key={`description-${index}`}
+            key={`description-subtext${index}`}
           >
             {paragraph}
           </Text>

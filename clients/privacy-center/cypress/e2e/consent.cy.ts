@@ -158,6 +158,9 @@ describe("Consent settings", () => {
 
     it("populates its header and description from config", () => {
       cy.getByTestId("consent-heading").contains("Manage your consent");
+      cy.getByTestId("consent-description").contains(
+        "Test your consent preferences"
+      );
       cy.getByTestId("consent-description").contains("When you use our");
     });
 
