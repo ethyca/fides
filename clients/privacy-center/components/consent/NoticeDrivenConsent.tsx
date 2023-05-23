@@ -6,14 +6,11 @@ import {
   getOrMakeFidesCookie,
   saveFidesCookie,
 } from "fides-js";
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppSelector } from "~/app/hooks";
 import {
   selectCurrentConsentPreferences,
   selectExperienceRegion,
   selectPrivacyExperience,
-  setFidesDeviceUserId,
-  setRegion,
-  useGetPrivacyExperienceQuery,
   useUpdatePrivacyPreferencesUnverifiedMutation,
 } from "~/features/consent/consent.slice";
 import {
@@ -24,7 +21,6 @@ import {
 import {
   ConsentMethod,
   ConsentOptionCreate,
-  PrivacyNoticeRegion,
   PrivacyNoticeResponseWithUserPreferences,
   PrivacyPreferencesRequest,
   UserConsentPreference,
@@ -48,7 +44,6 @@ const resolveConsentValue = (
 };
 
 const NoticeDrivenConsent = () => {
-  const dispatch = useAppDispatch();
   const consentContext = useMemo(() => getConsentContext(), []);
   const experience = useAppSelector(selectPrivacyExperience);
   const serverPreferences = useAppSelector(selectCurrentConsentPreferences);
@@ -57,22 +52,7 @@ const NoticeDrivenConsent = () => {
   const { fides_user_device_id: fidesUserDeviceId } = cookie.identity;
   const [updatePrivacyPreferencesUnverifiedMutationTrigger] =
     useUpdatePrivacyPreferencesUnverifiedMutation();
-
-  useEffect(() => {
-    // TODO: query for location
-    dispatch(setRegion(PrivacyNoticeRegion.US_CA));
-    dispatch(setFidesDeviceUserId(fidesUserDeviceId));
-  }, [dispatch, fidesUserDeviceId]);
-
   const region = useAppSelector(selectExperienceRegion);
-  const params = {
-    // Casting should be safe because we skip in the hook below if region does not exist
-    region: region as PrivacyNoticeRegion,
-    fides_device_user_id: fidesUserDeviceId,
-  };
-  useGetPrivacyExperienceQuery(params, {
-    skip: !region,
-  });
 
   const initialDraftPreferences = useMemo(() => {
     const newPreferences = { ...serverPreferences };

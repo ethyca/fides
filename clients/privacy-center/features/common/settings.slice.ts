@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { useAppSelector } from "~/app/hooks";
 import { PrivacyCenterClientSettings } from "~/app/server-environment";
@@ -50,3 +50,7 @@ export const useSettings = (): PrivacyCenterClientSettings => {
   }
   return settings;
 };
+export const selectIsNoticeDriven = createSelector(
+  selectSettings,
+  (settings) => settings.settings?.IS_OVERLAY_DISABLED === false
+);

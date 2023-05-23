@@ -1,4 +1,4 @@
-import { Heading, Stack, Text, useToast } from "@fidesui/react";
+import { Stack, useToast } from "@fidesui/react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useMemo } from "react";
@@ -28,6 +28,9 @@ import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { ConsentPreferences } from "~/types/api";
 import { GpcBanner } from "~/features/consent/GpcMessages";
 import ConsentToggles from "~/components/consent/ConsentToggles";
+import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
+import ConsentHeading from "~/components/consent/ConsentHeading";
+import ConsentDescription from "~/components/consent/ConsentDescription";
 
 const Consent: NextPage = () => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
@@ -43,6 +46,7 @@ const Consent: NextPage = () => {
     () => config.consent?.page.consentOptions ?? [],
     [config]
   );
+  useSubscribeToPrivacyExperienceQuery();
 
   const getIdVerificationConfigQueryResult = useGetIdVerificationConfigQuery();
   const [
@@ -203,29 +207,8 @@ const Consent: NextPage = () => {
     <Stack as="main" align="center" data-testid="consent">
       <Stack align="center" py={["6", "16"]} spacing={8} maxWidth="720px">
         <Stack align="center" spacing={3}>
-          <Heading
-            fontSize={["3xl", "4xl"]}
-            color="gray.600"
-            fontWeight="semibold"
-            textAlign="center"
-          >
-            {config.consent?.page.title}
-          </Heading>
-
-          {config.consent?.page.description_subtext?.map((paragraph, index) => (
-            <Text
-              fontSize={["small", "medium"]}
-              fontWeight="medium"
-              maxWidth={624}
-              textAlign="center"
-              color="gray.600"
-              data-testid={`description-${index}`}
-              // eslint-disable-next-line react/no-array-index-key
-              key={`description-${index}`}
-            >
-              {paragraph}
-            </Text>
-          ))}
+          <ConsentHeading />
+          <ConsentDescription />
         </Stack>
         {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
         <ConsentToggles storePreferences={storeConsentPreferences} />

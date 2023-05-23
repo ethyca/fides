@@ -13,7 +13,7 @@ describe("Privacy notice driven consent", () => {
   beforeEach(() => {
     cy.visit("/");
   });
-  describe("unverified", () => {
+  describe("already verified", () => {
     beforeEach(() => {
       // Seed local storage with verification data
       cy.window().then((win) => {
@@ -43,6 +43,19 @@ describe("Privacy notice driven consent", () => {
       cy.intercept("PATCH", `${API_URL}/privacy-preferences*`, {
         fixture: "consent/privacy_preference.json",
       }).as("patchPrivacyPreference");
+    });
+
+    it("populates its header from the experience config", () => {
+      cy.visit("/consent");
+      cy.getByTestId("consent");
+      cy.overrideSettings({
+        IS_OVERLAY_DISABLED: false,
+      });
+      cy.wait("@getExperience");
+      cy.getByTestId("consent-heading").contains("Privacy notice driven");
+      cy.getByTestId("consent-description").contains(
+        "Manage all of your notices here."
+      );
     });
 
     it("renders from privacy notices when there is no initial data", () => {
