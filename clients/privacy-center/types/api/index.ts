@@ -6,6 +6,7 @@ export { ComponentType } from "./models/ComponentType";
 export type { Consent } from "./models/Consent";
 export { ConsentMechanism } from "./models/ConsentMechanism";
 export { ConsentMethod } from "./models/ConsentMethod";
+export type { ConsentOptionCreate } from "./models/ConsentOptionCreate";
 export type { ConsentPreferences } from "./models/ConsentPreferences";
 export type { ConsentPreferencesWithVerificationCode } from "./models/ConsentPreferencesWithVerificationCode";
 export type { ConsentWithExecutableStatus } from "./models/ConsentWithExecutableStatus";
@@ -21,4 +22,5 @@ export type { PrivacyNoticeHistorySchema } from "./models/PrivacyNoticeHistorySc
 export { PrivacyNoticeRegion } from "./models/PrivacyNoticeRegion";
 export type { PrivacyNoticeResponse } from "./models/PrivacyNoticeResponse";
 export type { PrivacyNoticeResponseWithUserPreferences } from "./models/PrivacyNoticeResponseWithUserPreferences";
+export type { PrivacyPreferencesRequest } from "./models/PrivacyPreferencesRequest";
 export { UserConsentPreference } from "./models/UserConsentPreference";
