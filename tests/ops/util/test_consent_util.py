@@ -454,6 +454,6 @@ class TestGetFidesUserProvidedIdentity:
         self, db, fides_user_provided_identity
     ):
         provided_identity = get_fides_user_device_id_provided_identity(
-            db, "FGHIJ_TEST_FIDES"
+            db, "051b219f-20e4-45df-82f7-5eb68a00889f"
         )
         assert provided_identity == fides_user_provided_identity
