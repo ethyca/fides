@@ -257,6 +257,7 @@ class TestConsentEmailConnectorMethods:
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="Targeted Advertising",
                             regions=["us_ca"],
+                            notice_key="targeted_advertising",
                             id="test_1",
                             privacy_notice_id="12345",
                             consent_mechanism=ConsentMechanism.opt_in,
@@ -276,6 +277,7 @@ class TestConsentEmailConnectorMethods:
                         preference=UserConsentPreference.opt_out,
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="Analytics",
+                            notice_key="analytics",
                             regions=["us_ca"],
                             id="test_2",
                             privacy_notice_id="67890",

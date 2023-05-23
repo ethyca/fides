@@ -351,6 +351,7 @@ class TestPrivacyExperience:
             db=db,
             data={
                 "name": "Test privacy notice",
+                "notice_key": "test_privacy_notice",
                 "description": "a test sample privacy notice configuration",
                 "regions": [PrivacyNoticeRegion.eu_fr, PrivacyNoticeRegion.eu_it],
                 "consent_mechanism": ConsentMechanism.opt_in,
@@ -558,6 +559,7 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
             db=db,
             data={
                 "name": "example privacy notice",
+                "notice_key": "example_privacy_notice",
                 "regions": [
                     PrivacyNoticeRegion.us_ca,
                 ],
@@ -627,6 +629,7 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
             db=db,
             data={
                 "name": "example privacy notice",
+                "notice_key": "example_privacy_notice",
                 "regions": [
                     PrivacyNoticeRegion.us_ca,
                 ],
@@ -706,6 +709,7 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
             db=db,
             data={
                 "name": "example privacy notice",
+                "notice_key": "example_privacy_notice",
                 "regions": [
                     PrivacyNoticeRegion.eu_it,
                 ],
@@ -774,6 +778,7 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
             db=db,
             data={
                 "name": "example privacy notice",
+                "notice_key": "example_privacy_notice",
                 "regions": [
                     PrivacyNoticeRegion.us_ca,
                 ],
@@ -870,6 +875,7 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
             db=db,
             data={
                 "name": "example privacy notice",
+                "notice_key": "example_privacy_notice",
                 "regions": [
                     PrivacyNoticeRegion.eu_it,
                 ],
@@ -959,6 +965,7 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
             db=db,
             data={
                 "name": "example privacy notice",
+                "notice_key": "example_privacy_notice",
                 "regions": [
                     PrivacyNoticeRegion.us_ca,
                 ],
@@ -1556,6 +1563,7 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "name": "Test privacy notice",
+                "notice_key": "test_privacy_notice",
                 "description": "a test sample privacy notice configuration",
                 "regions": [PrivacyNoticeRegion.us_ak],
                 "consent_mechanism": ConsentMechanism.opt_in,
@@ -1642,6 +1650,7 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "name": "Test privacy notice",
+                "notice_key": "test_privacy_notice",
                 "description": "a test sample privacy notice configuration",
                 "regions": [PrivacyNoticeRegion.us_ak],
                 "consent_mechanism": ConsentMechanism.opt_in,
