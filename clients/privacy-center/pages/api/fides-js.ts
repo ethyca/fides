@@ -48,6 +48,7 @@ export default async function handler(
       isGeolocationEnabled: environment.settings.IS_GEOLOCATION_ENABLED,
       geolocationApiUrl: environment.settings.GEOLOCATION_API_URL,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
+      fidesApiUrl: environment.settings.FIDES_API_URL
     },
     location,
   };

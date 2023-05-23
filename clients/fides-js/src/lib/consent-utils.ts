@@ -65,24 +65,30 @@ export const validateOptions = (options: FidesOptions): boolean => {
   }
   // todo- more validation here?
 
+  if (!options.fidesApiUrl) {
+    debugLog(options.debug, "Invalid options: fidesApiUrl is required!");
+    return false;
+  }
+
   if (!options.privacyCenterUrl) {
     debugLog(options.debug, "Invalid options: privacyCenterUrl is required!");
     return false;
   }
 
-  if (options.privacyCenterUrl) {
-    try {
-      // eslint-disable-next-line no-new
-      new URL(options.privacyCenterUrl);
-    } catch (e) {
-      debugLog(
-        options.debug,
-        "Invalid options: privacyCenterUrl is an invalid URL!",
-        options.privacyCenterUrl
-      );
-      return false;
-    }
+  try {
+    // eslint-disable-next-line no-new
+    new URL(options.privacyCenterUrl);
+    // eslint-disable-next-line no-new
+    new URL(options.fidesApiUrl);
+  } catch (e) {
+    debugLog(
+      options.debug,
+      "Invalid options: privacyCenterUrl or fidesApiUrl is an invalid URL!",
+      options.privacyCenterUrl
+    );
+    return false;
   }
+
 
   return true;
 };

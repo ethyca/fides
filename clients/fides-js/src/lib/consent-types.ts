@@ -30,6 +30,9 @@ export type FidesOptions = {
 
   // URL for the Privacy Center, used to customize consent preferences. Required.
   privacyCenterUrl: string;
+
+  // URL for the Fides API, used to fetch and save consent preferences. Required.
+  fidesApiUrl: string
 };
 
 export type PrivacyExperience = {
@@ -138,16 +141,20 @@ export enum ButtonType {
   TERTIARY = "tertiary",
 }
 
-export type PrivacyPreferencesCreateWithCode = {
-  // TODO: update this schema
-  browser_identity: Identity;
+export enum ConsentMethod {
+  button = "button",
+  gpc = "gpc",
+  individual_notice = "api",
+}
+
+export type PrivacyPreferencesRequest = {
+  browser_identity: Identity
   code?: string;
-  preferences: Array<ConsentOptionCreate>;
+  preferences: Array<ConsentOptionCreate>
   policy_key?: string; // Will use default consent policy if not supplied
-  request_origin?: RequestOrigin;
-  url_recorded?: string;
-  user_agent?: string;
+  privacy_experience_history_id?: string
   user_geography?: string;
+  method?: ConsentMethod;
 };
 
 export type ConsentOptionCreate = {
