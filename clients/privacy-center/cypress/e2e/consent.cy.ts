@@ -164,11 +164,22 @@ describe("Consent settings", () => {
       cy.overrideSettings({
         IS_OVERLAY_DISABLED: false,
       });
+      // Opt in, so default to not checked
       const PRIVACY_NOTICE_ID_1 = "pri_2d1e758a-2678-4a7c-a514-fbf97a994e66";
+      // Opt out, so default to checked
       const PRIVACY_NOTICE_ID_2 = "pri_9d60c347-af22-44d0-bcbb-9a4007c3e08e";
       cy.getByTestId("consent");
-      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`);
-      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`);
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
+        cy.getRadio().should("not.be.checked");
+      });
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
+        cy.getRadio().should("be.checked");
+      });
+
+      // Opt out of the opt in notice
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
+        cy.getRadio().should("not.be.checked").check({ force: true });
+      });
     });
 
     it("lets the user update their consent", () => {

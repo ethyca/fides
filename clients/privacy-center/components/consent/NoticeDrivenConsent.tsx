@@ -1,23 +1,38 @@
 import { Divider, Stack } from "@fidesui/react";
-import React, { useEffect, useMemo } from "react";
-import { ConsentContext, getConsentContext } from "fides-js";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  ConsentContext,
+  getConsentContext,
+  getOrMakeFidesCookie,
+  saveFidesCookie,
+} from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
-  changeConsent,
   selectCurrentConsentPreferences,
   selectExperienceRegion,
   selectPrivacyExperience,
+  setFidesDeviceUserId,
   setRegion,
   useGetPrivacyExperienceQuery,
+  useUpdatePrivacyPreferencesUnverifiedMutation,
 } from "~/features/consent/consent.slice";
-import { getGpcStatusFromNotice } from "~/features/consent/helpers";
+import {
+  getGpcStatusFromNotice,
+  transformUserPreferenceToBoolean,
+} from "~/features/consent/helpers";
 
 import {
   ConsentMechanism,
+  ConsentMethod,
+  ConsentOptionCreate,
   PrivacyNoticeRegion,
   PrivacyNoticeResponseWithUserPreferences,
+  PrivacyPreferencesRequest,
+  UserConsentPreference,
 } from "~/types/api";
 import { useRouter } from "next/router";
+import { inspectForBrowserIdentities } from "~/common/browser-identities";
+import { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
 
@@ -55,16 +70,35 @@ const NoticeDrivenConsent = () => {
   const experience = useAppSelector(selectPrivacyExperience);
   const userPreferences = useAppSelector(selectCurrentConsentPreferences);
   const router = useRouter();
+  const cookie = getOrMakeFidesCookie();
+  const { fides_user_device_id: fidesUserDeviceId } = cookie.identity;
+  const [updatePrivacyPreferencesUnverifiedMutationTrigger] =
+    useUpdatePrivacyPreferencesUnverifiedMutation();
+
+  const [newPreferences, setNewPreferences] =
+    useState<NoticeHistoryIdToPreference>(userPreferences);
 
   useEffect(() => {
     // TODO: query for location
     dispatch(setRegion(PrivacyNoticeRegion.US_CA));
-  }, [dispatch]);
+    dispatch(setFidesDeviceUserId(fidesUserDeviceId));
+  }, [dispatch, fidesUserDeviceId]);
+
+  // Make sure newPreferences is initialized properly
+  useEffect(() => {
+    setNewPreferences(userPreferences);
+  }, [userPreferences]);
 
   const region = useAppSelector(selectExperienceRegion);
-  useGetPrivacyExperienceQuery(region as PrivacyNoticeRegion, {
+  const params = {
+    // Casting should be safe because we skip in the hook below if region does not exist
+    region: region as PrivacyNoticeRegion,
+    fides_device_user_id: fidesUserDeviceId,
+  };
+  useGetPrivacyExperienceQuery(params, {
     skip: !region,
   });
+
   const items = useMemo(() => {
     if (!experience) {
       return [];
@@ -76,8 +110,10 @@ const NoticeDrivenConsent = () => {
 
     return notices.map((notice) => {
       const defaultValue = resolveConsentValue(notice, consentContext);
-      // TODO(fides#3281): use notice key instead of notice.id
-      const value = userPreferences[notice.id] ?? defaultValue;
+      const preference = userPreferences[notice.privacy_notice_history_id];
+      const value = preference
+        ? transformUserPreferenceToBoolean(preference)
+        : defaultValue;
       const gpcStatus = getGpcStatusFromNotice({
         value,
         notice,
@@ -88,6 +124,7 @@ const NoticeDrivenConsent = () => {
         name: notice.name || "",
         description: notice.description || "",
         id: notice.id,
+        historyId: notice.privacy_notice_history_id,
         highlight: false,
         url: undefined,
         value,
@@ -99,14 +136,51 @@ const NoticeDrivenConsent = () => {
   const handleCancel = () => {
     router.push("/");
   };
-  const handleSave = () => {};
+
+  const handleSave = async () => {
+    const browserIdentities = inspectForBrowserIdentities();
+    const deviceIdentity = { fides_user_device_id: fidesUserDeviceId };
+    const identities = browserIdentities
+      ? { ...deviceIdentity, ...browserIdentities }
+      : deviceIdentity;
+    const preferences: ConsentOptionCreate[] = Object.entries(
+      newPreferences
+    ).map(([key, value]) => ({
+      privacy_notice_history_id: key,
+      preference: value ?? UserConsentPreference.OPT_OUT,
+    }));
+
+    const payload: PrivacyPreferencesRequest = {
+      browser_identity: identities,
+      preferences,
+      user_geography: region,
+      privacy_experience_history_id: experience?.privacy_experience_history_id,
+      method: ConsentMethod.BUTTON,
+    };
+
+    console.log({ payload });
+
+    const result = await updatePrivacyPreferencesUnverifiedMutationTrigger(
+      payload
+    );
+    if ("error" in result) {
+      // TODO: handle error
+    } else {
+      // TODO: handle success
+      // Save the cookie on success
+      saveFidesCookie(cookie);
+    }
+  };
 
   return (
     <Stack spacing={4}>
       {items.map((item, index) => {
-        const { id, highlight, url, name, description } = item;
+        const { id, highlight, url, name, description, historyId } = item;
         const handleChange = (value: boolean) => {
-          dispatch(changeConsent({ key: id, value }));
+          const pref = value
+            ? UserConsentPreference.OPT_IN
+            : UserConsentPreference.OPT_OUT;
+          setNewPreferences({ ...newPreferences, ...{ [historyId]: pref } });
         };
         return (
           <React.Fragment key={id}>

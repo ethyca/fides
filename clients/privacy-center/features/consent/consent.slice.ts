@@ -7,13 +7,12 @@ import {
   ComponentType,
   ConsentPreferences,
   ConsentPreferencesWithVerificationCode,
-  CurrentPrivacyPreferenceSchema,
   Page_PrivacyExperienceResponse_,
   PrivacyNoticeRegion,
+  PrivacyPreferencesRequest,
 } from "~/types/api";
-import { transformUserPreferenceToBoolean } from "./helpers";
 
-import { FidesKeyToConsent } from "./types";
+import { FidesKeyToConsent, NoticeHistoryIdToPreference } from "./types";
 
 export const consentApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -57,22 +56,22 @@ export const consentApi = baseApi.injectEndpoints({
     }),
     getPrivacyExperience: build.query<
       Page_PrivacyExperienceResponse_,
-      PrivacyNoticeRegion
+      { region: PrivacyNoticeRegion; fides_device_user_id?: string }
     >({
-      query: (region) => ({
+      query: (payload) => ({
         url: "privacy-experience/",
         params: {
           component: ComponentType.PRIVACY_CENTER,
-          region, // TODO: get from geolocation API?
           has_notices: true,
           show_disabled: false,
+          ...payload,
         },
       }),
       providesTags: ["Privacy Experience"],
     }),
     updatePrivacyPreferencesVerified: build.mutation<
       void,
-      { id: string; body: CurrentPrivacyPreferenceSchema }
+      { id: string; body: PrivacyPreferencesRequest }
     >({
       query: ({ id, body }) => ({
         url: `${VerificationType.ConsentRequest}/${id}/privacy-preferences`,
@@ -83,7 +82,7 @@ export const consentApi = baseApi.injectEndpoints({
     }),
     updatePrivacyPreferencesUnverified: build.mutation<
       void,
-      CurrentPrivacyPreferenceSchema
+      PrivacyPreferencesRequest
     >({
       query: (payload) => ({
         url: `privacy-preferences`,
@@ -100,6 +99,8 @@ export const {
   useLazyGetConsentRequestPreferencesQuery,
   useUpdateConsentRequestPreferencesDeprecatedMutation,
   useGetPrivacyExperienceQuery,
+  useUpdatePrivacyPreferencesUnverifiedMutation,
+  useUpdatePrivacyPreferencesVerifiedMutation,
 } = consentApi;
 
 type State = {
@@ -109,12 +110,15 @@ type State = {
   persistedFidesKeyToConsent: FidesKeyToConsent;
   /** The region the user is in */
   region: PrivacyNoticeRegion | undefined;
+  /** Device user id */
+  fidesDeviceUserId: string | undefined;
 };
 
 const initialState: State = {
   fidesKeyToConsent: {},
   persistedFidesKeyToConsent: {},
   region: undefined,
+  fidesDeviceUserId: undefined,
 };
 
 export const consentSlice = createSlice({
@@ -153,12 +157,19 @@ export const consentSlice = createSlice({
     setRegion(draftState, { payload }: PayloadAction<PrivacyNoticeRegion>) {
       draftState.region = payload;
     },
+    setFidesDeviceUserId(draftState, { payload }: PayloadAction<string>) {
+      draftState.fidesDeviceUserId = payload;
+    },
   },
 });
 
 export const { reducer } = consentSlice;
-export const { changeConsent, updateUserConsentPreferencesFromApi, setRegion } =
-  consentSlice.actions;
+export const {
+  changeConsent,
+  updateUserConsentPreferencesFromApi,
+  setRegion,
+  setFidesDeviceUserId,
+} = consentSlice.actions;
 
 export const selectConsentState = (state: RootState) => state.consent;
 
@@ -177,18 +188,24 @@ export const selectExperienceRegion = createSelector(
   selectConsentState,
   (state) => state.region
 );
+export const selectFidesDeviceUserId = createSelector(
+  selectConsentState,
+  (state) => state.fidesDeviceUserId
+);
 export const selectPrivacyExperience = createSelector(
-  [(RootState) => RootState, selectExperienceRegion],
-  (RootState, region) => {
+  [(RootState) => RootState, selectExperienceRegion, selectFidesDeviceUserId],
+  (RootState, region, deviceId) => {
     if (!region) {
       return undefined;
     }
-    return consentApi.endpoints.getPrivacyExperience.select(region)(RootState)
-      ?.data?.items[0];
+    return consentApi.endpoints.getPrivacyExperience.select({
+      region,
+      fides_device_user_id: deviceId,
+    })(RootState)?.data?.items[0];
   }
 );
 
-const emptyConsentPreferences: FidesKeyToConsent = {};
+const emptyConsentPreferences: NoticeHistoryIdToPreference = {};
 export const selectCurrentConsentPreferences = createSelector(
   selectPrivacyExperience,
   (experience) => {
@@ -199,12 +216,9 @@ export const selectCurrentConsentPreferences = createSelector(
     ) {
       return emptyConsentPreferences;
     }
-    const preferences: FidesKeyToConsent = {};
+    const preferences: NoticeHistoryIdToPreference = {};
     experience.privacy_notices.forEach((notice) => {
-      // TODO: use notice.notice_key
-      preferences[notice.id] = notice.current_preference
-        ? transformUserPreferenceToBoolean(notice.current_preference)
-        : undefined;
+      preferences[notice.privacy_notice_history_id] = notice.current_preference;
     });
     return preferences;
   }
