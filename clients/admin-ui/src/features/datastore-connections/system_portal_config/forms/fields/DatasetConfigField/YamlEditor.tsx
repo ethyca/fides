@@ -24,7 +24,7 @@ type YamlEditorFormProps = {
   disabled?: boolean;
 };
 
-const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
+const YamlEditor: React.FC<YamlEditorFormProps> = ({
   data = [],
   isSubmitting = false,
   onSubmit,
@@ -165,4 +165,4 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   );
 };
 
-export default YamlEditorForm;
+export default YamlEditor;

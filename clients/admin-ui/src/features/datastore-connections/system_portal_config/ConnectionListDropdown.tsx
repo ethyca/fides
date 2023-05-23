@@ -160,8 +160,6 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
     ([, option]) => option.value.identifier === selectedValue?.identifier
   )?.[0];
 
-  console.log("selectedText: ", selectedText);
-
   return (
     <Menu
       isLazy

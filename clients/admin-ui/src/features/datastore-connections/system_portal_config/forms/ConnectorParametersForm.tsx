@@ -37,6 +37,7 @@ import {
   SaasConnectorParametersFormFields,
 } from "../types";
 import { fillInDefaults } from "./helpers";
+import DatasetConfigField from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
@@ -354,6 +355,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                 </FormControl>
               )}
             </Field>
+            <DatasetConfigField />
             {/* Dynamic connector secret fields */}
             {Object.entries(data.properties).map(([key, item]) => {
               if (key === "advanced_settings") {

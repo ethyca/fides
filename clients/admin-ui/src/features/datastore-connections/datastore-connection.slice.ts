@@ -173,7 +173,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         body: { ...params },
       }),
       // Creating a connection config also creates a dataset behind the scenes
-      invalidatesTags: ["Datastore Connection", "Datasets"],
+      invalidatesTags: ["Datastore Connection", "Datasets", "System"],
     }),
     deleteDatastoreConnection: build.mutation({
       query: (id) => ({
