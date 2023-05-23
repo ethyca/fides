@@ -12,15 +12,21 @@ from starlette import status
 from starlette.status import HTTP_200_OK
 
 from fides.api.api import deps
+from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
 from fides.api.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
+    SAAS_CONNECTION_INSTANTIATE,
     SYSTEM_CREATE,
     SYSTEM_DELETE,
     SYSTEM_READ,
     SYSTEM_UPDATE,
 )
-from fides.api.api.v1.urn_registry import SYSTEM_CONNECTIONS, V1_URL_PREFIX
+from fides.api.api.v1.urn_registry import (
+    INSTANTIATE_SYSTEM_CONNECTION,
+    SYSTEM_CONNECTIONS,
+    V1_URL_PREFIX,
+)
 from fides.api.ctl.database.crud import (
     get_resource,
     get_resource_with_custom_fields,
@@ -43,7 +49,10 @@ from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfigurationWithSecrets,
+    SaasConnectionTemplateResponse,
+    SaasConnectionTemplateValues,
 )
+from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import patch_connection_configs
 from fides.api.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
@@ -53,6 +62,10 @@ from fides.api.util.system_manager_oauth_util import (
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
 SYSTEM_CONNECTIONS_ROUTER = APIRouter(
     tags=["System"], prefix=f"{V1_URL_PREFIX}{SYSTEM_CONNECTIONS}"
+)
+SYSTEM_CONNECTION_INSTANTIATE_ROUTER = APIRouter(
+    tags=["System"],
+    prefix=f"{V1_URL_PREFIX}{INSTANTIATE_SYSTEM_CONNECTION}",
 )
 
 
@@ -257,3 +270,25 @@ async def get(
 ) -> Dict:
     """Get a resource by its fides_key."""
     return await get_resource_with_custom_fields(System, fides_key, db)
+
+
+@SYSTEM_CONNECTION_INSTANTIATE_ROUTER.post(
+    "/",
+    dependencies=[
+        Security(verify_oauth_client_prod, scopes=[SAAS_CONNECTION_INSTANTIATE])
+    ],
+    response_model=SaasConnectionTemplateResponse,
+)
+def instantiate_connection_from_template(
+    fides_key: str,
+    saas_connector_type: str,
+    template_values: SaasConnectionTemplateValues,
+    db: Session = Depends(deps.get_db),
+) -> SaasConnectionTemplateResponse:
+    """
+    Instantiates a SaaS connection from the available template and the template values.
+    Associates the newly instantiated connection with the provided system.
+    """
+
+    system = get_system(db, fides_key)
+    return instantiate_connection(db, saas_connector_type, template_values, system)
