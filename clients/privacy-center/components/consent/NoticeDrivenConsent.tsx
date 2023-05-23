@@ -1,4 +1,4 @@
-import { Divider, Stack } from "@fidesui/react";
+import { Divider, Stack, useToast } from "@fidesui/react";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ConsentContext,
@@ -28,6 +28,7 @@ import {
 import { useRouter } from "next/router";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { NoticeHistoryIdToPreference } from "~/features/consent/types";
+import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
 
@@ -44,10 +45,11 @@ const resolveConsentValue = (
 };
 
 const NoticeDrivenConsent = () => {
+  const router = useRouter();
+  const toast = useToast();
   const consentContext = useMemo(() => getConsentContext(), []);
   const experience = useAppSelector(selectPrivacyExperience);
   const serverPreferences = useAppSelector(selectCurrentConsentPreferences);
-  const router = useRouter();
   const cookie = getOrMakeFidesCookie();
   const { fides_user_device_id: fidesUserDeviceId } = cookie.identity;
   const [updatePrivacyPreferencesUnverifiedMutationTrigger] =
@@ -139,11 +141,19 @@ const NoticeDrivenConsent = () => {
       payload
     );
     if ("error" in result) {
-      // TODO: handle error
+      toast({
+        title: "An error occurred while saving user consent preferences",
+        description: result.error,
+        ...ErrorToastOptions,
+      });
     } else {
-      // TODO: handle success
+      toast({
+        title: "Your consent preferences have been saved",
+        ...SuccessToastOptions,
+      });
       // Save the cookie on success
       saveFidesCookie(cookie);
+      router.push("/");
     }
   };
 
