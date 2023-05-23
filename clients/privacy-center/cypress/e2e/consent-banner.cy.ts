@@ -11,12 +11,17 @@ import {
 } from "fides-js/src/lib/consent-types";
 import { ConsentConfig } from "fides-js/src/lib/consent-config";
 
+enum OVERRIDE {
+  // signals that we should override entire prop with undefined
+  EMPTY = "Empty",
+}
+
 export interface FidesConfigTesting {
   // We don't need all required props to override the default config
-  consent?: Partial<ConsentConfig>;
-  experience?: Partial<PrivacyExperience>;
-  geolocation?: Partial<UserGeolocation>;
-  options: Partial<FidesOptions>;
+  consent?: Partial<ConsentConfig> | OVERRIDE;
+  experience?: Partial<PrivacyExperience> | OVERRIDE;
+  geolocation?: Partial<UserGeolocation> | OVERRIDE;
+  options: Partial<FidesOptions> | OVERRIDE;
 }
 
 /**
@@ -31,11 +36,33 @@ const stubConfig = ({
 }: Partial<FidesConfigTesting>) => {
   cy.fixture("consent/test_banner_options.json").then((config) => {
     const updatedConfig = {
-      consent: Object.assign(config.consent, consent),
-      experience: Object.assign(config.experience, experience),
-      geolocation: Object.assign(config.geolocation, geolocation),
-      options: Object.assign(config.options, options),
+      consent:
+        consent === OVERRIDE.EMPTY
+          ? undefined
+          : Object.assign(config.consent, consent),
+      experience:
+        experience === OVERRIDE.EMPTY
+          ? undefined
+          : Object.assign(config.experience, experience),
+      geolocation:
+        geolocation === OVERRIDE.EMPTY
+          ? undefined
+          : Object.assign(config.geolocation, geolocation),
+      options:
+        options === OVERRIDE.EMPTY
+          ? undefined
+          : Object.assign(config.options, options),
     };
+    if (typeof options !== "string" && options?.geolocationApiUrl) {
+      cy.intercept("GET", options.geolocationApiUrl, {
+        body: {
+          country: "US",
+          ip: "63.173.339.012:13489",
+          location: "US-CA",
+          region: "CA",
+        },
+      }).as("getGeolocation");
+    }
     cy.visitConsentDemo(updatedConfig);
   });
 };
@@ -313,7 +340,7 @@ describe("Consent banner", () => {
     describe("when experience is not provided, and valid geolocation is provided", () => {
       beforeEach(() => {
         stubConfig({
-          experience: undefined,
+          experience: OVERRIDE.EMPTY,
           geolocation: {
             country: "US",
             location: "US-CA",
@@ -323,7 +350,7 @@ describe("Consent banner", () => {
       });
 
       it.skip("renders the banner", () => {
-        // TODO: add when we are able to retrieve geolocation via API from fides.js
+        // TODO: add when we are able to retrieve experience via API from fides.js
         expect(false).is.eql(true);
       });
       it("does not render modal link", () => {
@@ -331,29 +358,24 @@ describe("Consent banner", () => {
       });
     });
 
-    describe("when experience is not provided, and geolocation is not provided", () => {
-      beforeEach(() => {
-        stubConfig({
-          experience: undefined,
-          geolocation: undefined,
-          options: {
-            isGeolocationEnabled: true,
-          },
-        });
-      });
-
-      it.skip("fetches geolocation from API", () => {
-        // TODO: add when we have geolocation API call
-        expect(false).is.eql(true);
-      });
-
+    describe("when neither experience nor geolocation is provided, but geolocationApiUrl is defined", () => {
       describe("when geolocation is successful", () => {
-        // TODO: add when we have geolocation and experience API calls
-        it.skip("retrieves experience from API", () => {
-          expect(false).is.eql(true);
+        beforeEach(() => {
+          const geoLocationUrl = "https://some-geolocation-api.com";
+          stubConfig({
+            experience: OVERRIDE.EMPTY,
+            geolocation: OVERRIDE.EMPTY,
+            options: {
+              isGeolocationEnabled: true,
+              geolocationApiUrl: geoLocationUrl,
+            },
+          });
         });
-        it.skip("renders the banner", () => {
-          expect(false).is.eql(true);
+
+        it("renders the banner", () => {
+          cy.wait("@getGeolocation");
+          // TODO: add assertion for fetching experience
+          // TODO: add assertion for rendering banner
         });
         it.skip("hides the modal link", () => {
           // TODO: add when we have link binding working
@@ -362,9 +384,25 @@ describe("Consent banner", () => {
       });
 
       describe("when geolocation is not successful", () => {
-        // TODO: add when we have geolocation API call
+        beforeEach(() => {
+          const geoLocationUrl = "https://some-geolocation-api.com";
+          // mock failed geolocation api call
+          cy.intercept("GET", geoLocationUrl, {
+            body: undefined,
+          }).as("getGeolocation");
+          stubConfig({
+            experience: OVERRIDE.EMPTY,
+            geolocation: OVERRIDE.EMPTY,
+            options: {
+              isGeolocationEnabled: true,
+              geolocationApiUrl: geoLocationUrl,
+            },
+          });
+        });
         it.skip("does not render", () => {
-          expect(false).is.eql(true);
+          cy.wait("@getGeolocation");
+          // TODO: add assertion for fetching experience
+          // TODO: add assertion for banner not rendering after we implement experience api call
         });
         it.skip("hides the modal link", () => {
           // TODO: add when we have link binding working
@@ -377,19 +415,20 @@ describe("Consent banner", () => {
     describe("when experience is not provided, and geolocation is invalid", () => {
       beforeEach(() => {
         stubConfig({
-          experience: undefined,
+          experience: OVERRIDE.EMPTY,
           geolocation: {
             country: "US",
           },
           options: {
             isGeolocationEnabled: true,
+            geolocationApiUrl: "https://some-geolocation-api.com",
           },
         });
       });
 
-      it.skip("fetches geolocation from API and renders the banner", () => {
-        // TODO: add when we have geolocation API call
-        expect(false).is.eql(true);
+      it("fetches geolocation from API and renders the banner", () => {
+        cy.wait("@getGeolocation");
+        // todo: add banner render assertion when we have experience API call
       });
 
       it("does not render modal link", () => {
@@ -400,8 +439,8 @@ describe("Consent banner", () => {
     describe("when experience is not provided, and geolocation is not provided, but geolocation is disabled", () => {
       beforeEach(() => {
         stubConfig({
-          experience: undefined,
-          geolocation: undefined,
+          experience: OVERRIDE.EMPTY,
+          geolocation: OVERRIDE.EMPTY,
           options: {
             isGeolocationEnabled: false,
           },
