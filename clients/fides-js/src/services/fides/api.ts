@@ -1,8 +1,14 @@
 import {
+  ComponentType,
   PrivacyExperience,
   PrivacyPreferencesRequest,
-} from "~/lib/consent-types";
+} from "../../lib/consent-types";
 import { debugLog } from "../../lib/consent-utils";
+
+export enum FidesEndpointPaths {
+  PRIVACY_EXPERIENCE = "/privacy-experience",
+  PRIVACY_PREFERENCES = "/privacy-preferences"
+}
 
 /**
  * Fetch the relevant experience based on user location and user device id (if exists).
@@ -13,36 +19,53 @@ export const fetchExperience = async (
     fidesApiUrl: string,
     fidesUserDeviceId: string,
     debug: boolean
-): Promise<PrivacyExperience | {}> => {
-  debugLog(debug, "Fetching experience for location...", userLocationString);
+): Promise<PrivacyExperience | null> => {
+  debugLog(debug, `Fetching experience for userId: ${fidesUserDeviceId} in location: ${userLocationString}`);
   const fetchOptions: RequestInit = {
     method: "GET",
     mode: "cors",
   };
-  const response = await fetch(`${fidesApiUrl}/privacy-experience`, fetchOptions);
+  const params = new URLSearchParams({
+    show_disabled: "false",
+    region: userLocationString,
+    component: ComponentType.OVERLAY,
+    has_notices: "true",
+    has_config: "true",
+    fides_user_device_id: fidesUserDeviceId
+  })
+  const response = await fetch(`${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`, fetchOptions);
   if (!response.ok) {
     debugLog(
         debug,
-        "Error getting experience from Fides API, returning {}. Response:",
+        "Error getting experience from Fides API, returning null. Response:",
         response
     );
-    return {};
+    return null;
   }
   try {
     const body = await response.json();
+    const experience = body.items && body.items[0];
+    if (!experience) {
+      debugLog(
+          debug,
+          "No relevant experience found from Fides API, returning null. Response:",
+          response
+      );
+      return null;
+    }
     debugLog(
         debug,
         "Got experience response from Fides API, returning:",
-        body
+        experience
     );
-    return body;
+    return experience;
   } catch (e) {
     debugLog(
         debug,
         "Error parsing experience response body from Fides API, returning {}. Response:",
         response
     );
-    return {};
+    return null;
   }
 };
 
@@ -64,7 +87,7 @@ export const patchUserPreferenceToFidesServer = async (
       "Content-Type": "application/json",
     }
   };
-  const response = await fetch(`${fidesApiUrl}/privacy-preferences`, fetchOptions);
+  const response = await fetch(`${fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`, fetchOptions);
   if (!response.ok) {
     debugLog(
         debug,

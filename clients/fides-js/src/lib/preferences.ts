@@ -31,7 +31,7 @@ export const updateConsentPreferences = ({
   privacyNotices: PrivacyNotice[];
   experienceHistoryId: string;
   enabledPrivacyNoticeIds: Array<PrivacyNotice["id"]>;
-  fidesApiUrl: String;
+  fidesApiUrl: string;
   consentMethod: ConsentMethod;
   userLocationString: string;
   debug?: boolean;

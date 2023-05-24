@@ -24,14 +24,14 @@ export const debugLog = (
  * Returns null if geolocation cannot be constructed by provided params, e.g. us_ca
  */
 export const constructFidesRegionString = (
-  geoLocation?: UserGeolocation,
+  geoLocation?: UserGeolocation | null,
   debug: boolean = false
 ): string | null => {
   debugLog(debug, "constructing geolocation...");
   if (!geoLocation) {
     debugLog(
       debug,
-      "cannot construct user location since geoLocation is undefined"
+      "cannot construct user location since geoLocation is undefined or null"
     );
     return null;
   }
@@ -45,9 +45,7 @@ export const constructFidesRegionString = (
   if (geoLocation.country && geoLocation.region) {
     return `${geoLocation.country.toLowerCase()}_${geoLocation.region.toLowerCase()}`;
   }
-  if (geoLocation.country) {
-    return geoLocation.country.toLowerCase();
-  }
+  // todo: return geoLocation.country when BE supports filtering by just country
   debugLog(
     debug,
     "cannot construct user location from provided geoLocation params..."
