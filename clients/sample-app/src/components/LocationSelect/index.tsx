@@ -36,9 +36,11 @@ const formatOptionLabel = ({ label, flag }: LocationOption) => (
   </div>
 );
 
-interface LocationSelectProps {}
+interface LocationSelectProps {
+  menuPlacement: "bottom" | "auto" | "top"
+}
 
-const LocationSelect = ({}: LocationSelectProps) => {
+const LocationSelect = ({ menuPlacement }: LocationSelectProps) => {
   // Inspect the query params of the current URL and set the default value of
   // the select input if a matching option is found.
   // e.g. http://localhost:3000/?location=US-CA -> select "California"
@@ -67,8 +69,10 @@ const LocationSelect = ({}: LocationSelectProps) => {
         instanceId="location-select"
         isClearable
         formatOptionLabel={formatOptionLabel}
+        menuPlacement={menuPlacement}
         options={locationOptions}
         onChange={onLocationSelect}
+        placeholder="Select location..."
         styles={{
           container: (baseStyles) => ({
             ...baseStyles,
