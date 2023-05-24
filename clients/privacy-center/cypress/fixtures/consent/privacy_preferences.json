@@ -1,7 +1,7 @@
 [
   {
     "id": "cur_8dd7a394-0808-4578-a10b-732ca3482299",
-    "preference": "opt_out",
+    "preference": "opt_in",
     "privacy_notice_history": {
       "name": "Data Sales",
       "notice_key": "data_sales",
@@ -21,6 +21,30 @@
       "version": 1.0,
       "privacy_notice_id": "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae821"
     },
-    "privacy_preference_history_id": "pri_0b6f31ea-6ecf-4206-8c7b-726b6963151a"
+    "privacy_preference_history_id": "pri_e1f47400-f285-438e-8cf2-fabec67787be"
+  },
+  {
+    "id": "cur_91597784-a836-4013-9288-b98294d6a3c9",
+    "preference": "opt_in",
+    "privacy_notice_history": {
+      "name": "Advertising",
+      "notice_key": "advertising",
+      "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
+      "internal_description": null,
+      "origin": null,
+      "regions": ["eu_ie", "eu_fr", "us_ca"],
+      "consent_mechanism": "opt_in",
+      "data_uses": ["advertising.first_party.contextual"],
+      "enforcement_level": "system_wide",
+      "disabled": false,
+      "has_gpc_flag": false,
+      "displayed_in_privacy_center": true,
+      "displayed_in_overlay": true,
+      "displayed_in_api": false,
+      "id": "pri_07ace6f0-211d-4822-8f02-b9573b19b8d6",
+      "version": 3.0,
+      "privacy_notice_id": "pri_b4360591-3cc7-400d-a5ff-a9f095ab3061"
+    },
+    "privacy_preference_history_id": "pri_9c496ef2-0953-48d5-975d-8ee29b7d723a"
   }
 ]

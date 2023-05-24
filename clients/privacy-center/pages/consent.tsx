@@ -31,6 +31,7 @@ import ConsentToggles from "~/components/consent/ConsentToggles";
 import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import ConsentHeading from "~/components/consent/ConsentHeading";
 import ConsentDescription from "~/components/consent/ConsentDescription";
+import { selectIsNoticeDriven } from "~/features/common/settings.slice";
 
 const Consent: NextPage = () => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
@@ -57,6 +58,7 @@ const Consent: NextPage = () => {
     getConsentRequestPreferencesQueryTrigger,
     getConsentRequestPreferencesQueryResult,
   ] = useLazyGetConsentRequestPreferencesQuery();
+  const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
 
   const consentContext = useMemo(() => getConsentContext(), []);
 
@@ -96,16 +98,27 @@ const Consent: NextPage = () => {
   /**
    * The consent cookie is updated only when the "persisted" consent preferences are updated. This
    * ensures the browser's behavior matches what the server expects.
+   *
+   * Notice driven consent does not need to set a new consent object
    */
   useEffect(() => {
     const cookie: FidesCookie = getOrMakeFidesCookie();
-    const newConsent = makeCookieKeyConsent({
-      consentOptions,
-      fidesKeyToConsent: persistedFidesKeyToConsent,
-      consentContext,
-    });
-    saveFidesCookie({ ...cookie, consent: newConsent });
-  }, [consentOptions, persistedFidesKeyToConsent, consentContext]);
+    if (isNoticeDriven) {
+      saveFidesCookie(cookie);
+    } else {
+      const newConsent = makeCookieKeyConsent({
+        consentOptions,
+        fidesKeyToConsent: persistedFidesKeyToConsent,
+        consentContext,
+      });
+      saveFidesCookie({ ...cookie, consent: newConsent });
+    }
+  }, [
+    consentOptions,
+    persistedFidesKeyToConsent,
+    consentContext,
+    isNoticeDriven,
+  ]);
 
   /**
    * When the Id verification method is known, trigger the request that will

@@ -6,8 +6,8 @@ import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
 import { API_URL } from "../support/constants";
 
 const VERIFICATION_CODE = "112358";
-const PRIVACY_NOTICE_ID_1 = "pri_2d1e758a-2678-4a7c-a514-fbf97a994e66";
-const PRIVACY_NOTICE_ID_2 = "pri_9d60c347-af22-44d0-bcbb-9a4007c3e08e";
+const PRIVACY_NOTICE_ID_1 = "pri_b4360591-3cc7-400d-a5ff-a9f095ab3061";
+const PRIVACY_NOTICE_ID_2 = "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae821";
 
 describe("Privacy notice driven consent", () => {
   beforeEach(() => {
@@ -78,7 +78,7 @@ describe("Privacy notice driven consent", () => {
       cy.getRadio().should("be.checked");
     });
 
-    // Opt out of the opt in notice
+    // Opt in to the opt in notice
     cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
       cy.getRadio().should("not.be.checked").check({ force: true });
       cy.getRadio().should("be.checked");
@@ -102,6 +102,12 @@ describe("Privacy notice driven consent", () => {
         expect(body.browser_identity.fides_user_device_id).to.eql(
           cookie.identity.fides_user_device_id
         );
+        const expectedConsent = { data_sales: true, advertising: true };
+        const { consent } = cookie;
+        expect(consent).to.eql(expectedConsent);
+        cy.window().then((win) => {
+          expect(win.Fides.consent).to.eql(expectedConsent);
+        });
       });
     });
   });

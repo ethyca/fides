@@ -125,6 +125,9 @@ declare global {
       /**
        * Custom command to load a Privacy Center settings object into the app
        *
+       * Warning: similar to loadConfigFixture, subsequent page loads will reset this setting
+       * back to the defaults.
+       *
        * @example cy.overrideSettings({IS_OVERLAY_DISABLED: false})
        */
       overrideSettings(

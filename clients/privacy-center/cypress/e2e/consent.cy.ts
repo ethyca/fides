@@ -154,6 +154,7 @@ describe("Consent settings", () => {
       cy.visit("/consent");
       cy.getByTestId("consent");
       cy.loadConfigFixture("config/config_consent.json").as("config");
+      cy.overrideSettings({ IS_OVERLAY_DISABLED: true });
     });
 
     it("populates its header and description from config", () => {
@@ -222,9 +223,6 @@ describe("Consent settings", () => {
 
       cy.setCookie("_ga", gaCookieValue);
       cy.setCookie("ljt_readerID", sovrnCookieValue);
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-
       cy.getByTestId("save-btn").click();
 
       cy.wait("@patchConsentPreferences").then((interception) => {
@@ -287,6 +285,7 @@ describe("Consent settings", () => {
         cy.visit("/consent?globalPrivacyControl=true");
         cy.getByTestId("consent");
         cy.loadConfigFixture("config/config_consent.json").as("config");
+        cy.overrideSettings({ IS_OVERLAY_DISABLED: true });
       });
 
       it("applies the GPC defaults", () => {

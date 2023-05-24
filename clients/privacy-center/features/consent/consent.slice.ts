@@ -7,6 +7,7 @@ import {
   ComponentType,
   ConsentPreferences,
   ConsentPreferencesWithVerificationCode,
+  CurrentPrivacyPreferenceSchema,
   Page_PrivacyExperienceResponse_,
   PrivacyNoticeRegion,
   PrivacyPreferencesRequest,
@@ -70,7 +71,7 @@ export const consentApi = baseApi.injectEndpoints({
       providesTags: ["Privacy Experience"],
     }),
     updatePrivacyPreferences: build.mutation<
-      void,
+      CurrentPrivacyPreferenceSchema[],
       { id: string; body: PrivacyPreferencesRequest }
     >({
       query: ({ id, body }) => ({

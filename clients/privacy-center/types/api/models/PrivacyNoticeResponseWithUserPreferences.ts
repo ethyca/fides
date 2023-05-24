@@ -13,6 +13,7 @@ import type { UserConsentPreference } from "./UserConsentPreference";
  */
 export type PrivacyNoticeResponseWithUserPreferences = {
   name?: string;
+  notice_key?: string;
   description?: string;
   internal_description?: string;
   origin?: string;

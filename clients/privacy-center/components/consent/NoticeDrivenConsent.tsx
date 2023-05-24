@@ -2,6 +2,7 @@ import { Divider, Stack, useToast } from "@fidesui/react";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ConsentContext,
+  CookieKeyConsent,
   getConsentContext,
   getOrMakeFidesCookie,
   saveFidesCookie,
@@ -151,15 +152,24 @@ const NoticeDrivenConsent = () => {
         description: result.error,
         ...ErrorToastOptions,
       });
-    } else {
-      toast({
-        title: "Your consent preferences have been saved",
-        ...SuccessToastOptions,
-      });
-      // Save the cookie on success
-      saveFidesCookie(cookie);
-      router.push("/");
+      return;
     }
+    const noticeKeyMap = new Map<string, boolean>(
+      result.data.map((preference) => [
+        preference.privacy_notice_history.notice_key || "",
+        transformUserPreferenceToBoolean(preference.preference),
+      ])
+    );
+    const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeKeyMap);
+    toast({
+      title: "Your consent preferences have been saved",
+      ...SuccessToastOptions,
+    });
+    // Save the cookie and window obj on success
+    window.Fides.consent = consentCookieKey;
+    const updatedCookie = { ...cookie, consent: consentCookieKey };
+    saveFidesCookie(updatedCookie);
+    router.push("/");
   };
 
   return (
