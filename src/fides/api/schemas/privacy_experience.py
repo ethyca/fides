@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import Extra, root_validator, validator
 
 from fides.api.custom_types import SafeStr
-from fides.api.models.privacy_experience import ComponentType, DeliveryMechanism
+from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_notice import PrivacyNoticeResponseWithUserPreferences
@@ -19,16 +19,16 @@ class ExperienceConfigSchema(FidesSchema):
     """
 
     acknowledgement_button_label: Optional[SafeStr]
-    banner_title: Optional[SafeStr]
-    banner_description: Optional[SafeStr]
+    banner_enabled: Optional[BannerEnabled]
     component: Optional[ComponentType]
     component_title: Optional[SafeStr]
     component_description: Optional[SafeStr]
     confirmation_button_label: Optional[SafeStr]
-    delivery_mechanism: Optional[DeliveryMechanism]
     disabled: Optional[bool] = False
     is_default: Optional[bool] = False
-    link_label: Optional[SafeStr]
+    open_modal_label: Optional[SafeStr]
+    privacy_policy_label: Optional[SafeStr]
+    privacy_policy_url: Optional[SafeStr]
     reject_button_label: Optional[SafeStr]
 
 
@@ -40,7 +40,7 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
     """
 
     component: ComponentType
-    delivery_mechanism: DeliveryMechanism
+    banner_enabled: BannerEnabled
     regions: List[PrivacyNoticeRegion]
     component_title: SafeStr
 
@@ -56,38 +56,28 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
 
     @root_validator
     def validate_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate minimum set of required fields exist given the type of component and/or delivery_mechanism"""
+        """Validate minimum set of required fields exist given the type of component"""
         component: Optional[ComponentType] = values.get("component")
-        delivery_mechanism: Optional[DeliveryMechanism] = values.get(
-            "delivery_mechanism"
-        )
-
-        if delivery_mechanism == DeliveryMechanism.link and not values.get(
-            "link_label"
-        ):
-            raise ValueError(
-                "Link label required when the delivery mechanism is of type link."
-            )
 
         if component == ComponentType.overlay:
-            if delivery_mechanism == DeliveryMechanism.banner:
-                required_banner_fields = [
-                    "acknowledgement_button_label",
-                    "banner_title",
-                    "confirmation_button_label",
-                    "reject_button_label",
-                ]
-                for field in required_banner_fields:
-                    if not values.get(field):
-                        raise ValueError(
-                            f"The following fields are required when defining a banner: {required_banner_fields}."
-                        )
+            required_overlay_fields = [
+                "acknowledgement_button_label",
+                "confirmation_button_label",
+                "reject_button_label",
+            ]
+            for field in required_overlay_fields:
+                if not values.get(field):
+                    raise ValueError(
+                        f"The following fields are required when defining an overlay: {required_overlay_fields}."
+                    )
 
         if component == ComponentType.privacy_center:
-            if delivery_mechanism != DeliveryMechanism.link:
-                raise ValueError(
-                    "Privacy center experiences can only be delivered via a link."
-                )
+            required_privacy_center_fields = []
+            for field in required_privacy_center_fields:
+                if not values.get(field):
+                    raise ValueError(
+                        f"The following fields are required when defining a privacy center: {required_privacy_center_fields}."
+                    )
 
         return values
 
@@ -138,7 +128,6 @@ class ExperienceConfigCreateOrUpdateResponse(FidesSchema):
     experience_config: ExperienceConfigResponse
     linked_regions: List[PrivacyNoticeRegion]
     unlinked_regions: List[PrivacyNoticeRegion]
-    skipped_regions: List[PrivacyNoticeRegion]
 
 
 class PrivacyExperience(FidesSchema):
@@ -149,7 +138,7 @@ class PrivacyExperience(FidesSchema):
 
     disabled: Optional[bool] = False
     component: Optional[ComponentType]
-    delivery_mechanism: Optional[DeliveryMechanism]
+    banner_enabled: Optional[BannerEnabled]
     region: PrivacyNoticeRegion
     experience_config: Optional[ExperienceConfigSchemaWithId]
 

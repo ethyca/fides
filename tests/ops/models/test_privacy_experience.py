@@ -3,8 +3,8 @@ from sqlalchemy.exc import IntegrityError
 
 from fides.api.api.deps import get_api_session
 from fides.api.models.privacy_experience import (
+    BannerEnabled,
     ComponentType,
-    DeliveryMechanism,
     PrivacyExperience,
     PrivacyExperienceConfig,
     upsert_privacy_experiences_after_config_update,
@@ -22,59 +22,62 @@ from fides.api.models.privacy_notice import (
 class TestExperienceConfig:
     def test_create_privacy_experience_config(self, db):
         """Assert PrivacyExperienceConfig and its historical record are created
-        Note that the PrivacyExperienceConfig doesn't have regions specifically linked to it and that's ok!
+        Note that the PrivacyExperienceConfig doesn't have regions specifically linked to it here.
         """
         config = PrivacyExperienceConfig.create(
             db=db,
             data={
+                "acknowledgement_button_label": "OK",
+                "banner_enabled": "automatic",
                 "component": "overlay",
-                "delivery_mechanism": "banner",
                 "component_title": "Control your privacy",
                 "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
-                "banner_title": "Manage your consent",
-                "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
                 "confirmation_button_label": "Accept all",
+                "open_modal_label": "Manage preferences",
+                "privacy_policy_label": "View our privacy policy",
+                "privacy_policy_url": "example.com/privacy",
                 "reject_button_label": "Reject all",
             },
         )
 
-        assert config.disabled is False
+        assert config.acknowledgement_button_label == "OK"
+        assert config.banner_enabled == BannerEnabled.automatic
         assert config.component == ComponentType.overlay
-        assert config.delivery_mechanism == DeliveryMechanism.banner
         assert config.component_title == "Control your privacy"
         assert (
             config.component_description
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
-        assert config.banner_title == "Manage your consent"
-        assert (
-            config.banner_description
-            == "By clicking accept you consent to one of these methods by us and our third parties."
-        )
-        assert config.link_label is None
         assert config.confirmation_button_label == "Accept all"
+        assert config.disabled is False
+        assert config.is_default is False
+        assert config.open_modal_label == "Manage preferences"
+        assert config.privacy_policy_label == "View our privacy policy"
+        assert config.privacy_policy_url == "example.com/privacy"
         assert config.reject_button_label == "Reject all"
-        assert config.acknowledgement_button_label is None
-        assert config.version == 1.0
 
+        assert config.version == 1.0
         assert config.histories.count() == 1
+        assert config.experiences.count() == 0
+        assert config.regions == []
+
         history = config.histories[0]
         assert config.experience_config_history_id == history.id
+        assert history.acknowledgement_button_label == "OK"
+        assert history.banner_enabled == BannerEnabled.automatic
+        assert history.component == ComponentType.overlay
         assert history.component_title == "Control your privacy"
         assert (
             history.component_description
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
-        assert history.banner_title == "Manage your consent"
-        assert (
-            history.banner_description
-            == "By clicking accept you consent to one of these methods by us and our third parties."
-        )
-        assert history.link_label is None
         assert history.confirmation_button_label == "Accept all"
+        assert history.disabled is False
+        assert history.is_default is False
+        assert history.open_modal_label == "Manage preferences"
+        assert history.privacy_policy_label == "View our privacy policy"
+        assert history.privacy_policy_url == "example.com/privacy"
         assert history.reject_button_label == "Reject all"
-        assert history.acknowledgement_button_label is None
-        assert history.version == 1.0
 
         history.delete(db)
         config.delete(db=db)
@@ -84,62 +87,43 @@ class TestExperienceConfig:
         config = PrivacyExperienceConfig.create(
             db=db,
             data={
+                "acknowledgement_button_label": "OK",
+                "banner_enabled": "automatic",
                 "component": "overlay",
-                "delivery_mechanism": "banner",
                 "component_title": "Control your privacy",
                 "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
-                "banner_title": "Manage your consent",
-                "banner_description": "By clicking accept you consent to one of these methods by us and our third parties.",
                 "confirmation_button_label": "Accept all",
+                "open_modal_label": "Manage preferences",
+                "privacy_policy_label": "View our privacy policy",
+                "privacy_policy_url": "example.com/privacy",
                 "reject_button_label": "Reject all",
             },
         )
-        lang_created_at = config.created_at
-        lang_updated_at = config.updated_at
+        config_created_at = config.created_at
+        config_updated_at = config.updated_at
 
         config.update(
             db=db,
             data={
                 "component": "privacy_center",
-                "delivery_mechanism": "link",
-                "link_label": "Manage your privacy",
             },
         )
         db.refresh(config)
 
-        assert config.disabled is False
         assert config.component == ComponentType.privacy_center
-        assert config.delivery_mechanism == DeliveryMechanism.link
-        assert config.component_title == "Control your privacy"
-        assert (
-            config.component_description
-            == "We care about your privacy. Opt in and opt out of the data use cases below."
-        )
-        assert config.link_label == "Manage your privacy"
         assert config.version == 2.0
-
         assert config.id is not None
-        assert config.created_at == lang_created_at
-        assert config.updated_at > lang_updated_at
+        assert config.created_at == config_created_at
+        assert config.updated_at > config_updated_at
 
         assert config.histories.count() == 2
         history = config.histories[1]
         assert history.component == ComponentType.privacy_center
-        assert history.delivery_mechanism == DeliveryMechanism.link
-        assert history.component_title == "Control your privacy"
-        assert (
-            history.component_description
-            == "We care about your privacy. Opt in and opt out of the data use cases below."
-        )
-        assert history.link_label == "Manage your privacy"
-        assert config.version == 2.0
-
         assert config.experience_config_history_id == history.id
 
         old_history = config.histories[0]
         assert old_history.version == 1.0
         assert old_history.component == ComponentType.overlay
-        assert old_history.delivery_mechanism == DeliveryMechanism.banner
 
         old_history.delete(db)
         history.delete(db)
@@ -147,6 +131,7 @@ class TestExperienceConfig:
 
 class TestPrivacyExperience:
     def test_get_experiences_by_region(self, db):
+        """Test PrivacyExperience.get_experiences_by_region method"""
         (
             queried_overlay_exp,
             queried_pc_exp,
@@ -158,7 +143,6 @@ class TestPrivacyExperience:
             db=db,
             data={
                 "component": "overlay",
-                "delivery_mechanism": "banner",
                 "region": "us_tx",
             },
         )
@@ -174,7 +158,6 @@ class TestPrivacyExperience:
             db=db,
             data={
                 "component": "privacy_center",
-                "delivery_mechanism": "link",
                 "region": "us_tx",
             },
         )
@@ -192,6 +175,7 @@ class TestPrivacyExperience:
         pc_exp.delete(db)
 
     def test_get_experience_by_component_and_region(self, db):
+        """Test PrivacyExperience.get_experience_by_region_and_component method"""
         assert (
             PrivacyExperience.get_experience_by_region_and_component(
                 db, PrivacyNoticeRegion.eu_at, ComponentType.overlay
@@ -203,7 +187,6 @@ class TestPrivacyExperience:
             db=db,
             data={
                 "component": "privacy_center",
-                "delivery_mechanism": "link",
                 "region": "eu_at",
             },
         )
@@ -227,11 +210,13 @@ class TestPrivacyExperience:
     def test_unlink_privacy_experience_config(
         self, db, experience_config_privacy_center
     ):
+        """
+        Test Experience.unlink_experience_config unlinks the experience and bumps the version
+        """
         pc_exp = PrivacyExperience.create(
             db=db,
             data={
                 "component": "privacy_center",
-                "delivery_mechanism": "link",
                 "region": "eu_at",
                 "experience_config_id": experience_config_privacy_center.id,
                 "experience_config_history_id": experience_config_privacy_center.experience_config_history_id,
@@ -240,8 +225,9 @@ class TestPrivacyExperience:
         created_at = pc_exp.created_at
         updated_at = pc_exp.updated_at
 
+        assert pc_exp.version == 1.0
         assert pc_exp.experience_config == experience_config_privacy_center
-        pc_exp.unlink_privacy_experience_config(db)
+        pc_exp.unlink_experience_config(db)
         db.refresh(pc_exp)
 
         assert pc_exp.experience_config_id is None
@@ -254,72 +240,102 @@ class TestPrivacyExperience:
             history.delete(db)
         pc_exp.delete(db)
 
+    def test_unlink_privacy_experience_config_nothing_to_unlink(self, db):
+        """
+        Test Experience.unlink_experience_config does nothing if no experience config is attached
+        """
+        pc_exp = PrivacyExperience.create(
+            db=db,
+            data={"component": "privacy_center", "region": "eu_at"},
+        )
+        created_at = pc_exp.created_at
+        updated_at = pc_exp.updated_at
+
+        assert pc_exp.version == 1.0
+        assert pc_exp.experience_config is None
+        pc_exp.unlink_experience_config(db)
+        db.refresh(pc_exp)
+
+        assert pc_exp.experience_config_id is None
+        assert pc_exp.experience_config_history_id is None
+        assert pc_exp.version == 1.0
+        assert pc_exp.created_at == created_at
+        assert pc_exp.updated_at == updated_at
+
+        for history in pc_exp.histories:
+            history.delete(db)
+        pc_exp.delete(db)
+
     def test_create_privacy_experience(self, db):
         """Assert PrivacyExperience and its historical record are created"""
         exp = PrivacyExperience.create(
             db=db,
             data={
                 "component": "overlay",
-                "delivery_mechanism": "banner",
                 "region": "us_tx",
             },
         )
 
         assert exp.disabled is False
         assert exp.component == ComponentType.overlay
-        assert exp.delivery_mechanism == DeliveryMechanism.banner
+        assert exp.region == PrivacyNoticeRegion.us_tx
         assert exp.version == 1.0
+        assert exp.experience_config_id is None
+        assert exp.experience_config_history_id is None
 
         assert exp.histories.count() == 1
         history = exp.histories[0]
         assert exp.privacy_experience_history_id == history.id
         assert history.component == ComponentType.overlay
-        assert history.delivery_mechanism == DeliveryMechanism.banner
         assert history.region == PrivacyNoticeRegion.us_tx
         assert history.version == 1.0
+        assert history.experience_config_id is None
+        assert history.experience_config_history_id is None
 
         history.delete(db)
         exp.delete(db=db)
 
-    def test_update_privacy_experience(self, db):
+    def test_update_privacy_experience(self, db, experience_config_overlay):
         """Assert if PrivacyExperience is updated, its version is bumped and another historical record is created"""
         exp = PrivacyExperience.create(
             db=db,
             data={
                 "component": "overlay",
-                "delivery_mechanism": "banner",
                 "region": "us_ca",
             },
         )
         exp_created_at = exp.created_at
         exp_updated_at = exp.updated_at
+        assert exp.experience_config is None
 
         exp.update(
             db=db,
             data={
-                "component": "privacy_center",
-                "delivery_mechanism": "link",
-                "region": "us_ut",
+                "experience_config_id": experience_config_overlay.id,
+                "experience_config_history_id": experience_config_overlay.histories[
+                    0
+                ].id,
             },
         )
         db.refresh(exp)
 
         assert exp.disabled is False
-        assert exp.component == ComponentType.privacy_center
-        assert exp.delivery_mechanism == DeliveryMechanism.link
-        assert exp.region == PrivacyNoticeRegion.us_ut
-
+        assert exp.component == ComponentType.overlay
+        assert exp.region == PrivacyNoticeRegion.us_ca
         assert exp.version == 2.0
-
+        assert exp.experience_config == experience_config_overlay
         assert exp.id is not None
         assert exp.created_at == exp_created_at
         assert exp.updated_at > exp_updated_at
 
         assert exp.histories.count() == 2
         history = exp.histories[1]
-        assert history.component == ComponentType.privacy_center
-        assert history.delivery_mechanism == DeliveryMechanism.link
-        assert history.region == PrivacyNoticeRegion.us_ut
+        assert history.component == ComponentType.overlay
+        assert history.experience_config_id == experience_config_overlay.id
+        assert (
+            history.experience_config_history_id
+            == experience_config_overlay.histories[0].id
+        )
         assert history.version == 2.0
 
         assert exp.privacy_experience_history_id == history.id
@@ -327,19 +343,19 @@ class TestPrivacyExperience:
         old_history = exp.histories[0]
         assert old_history.version == 1.0
         assert old_history.component == ComponentType.overlay
-        assert old_history.delivery_mechanism == DeliveryMechanism.banner
-        assert old_history.region == PrivacyNoticeRegion.us_ca
+        assert old_history.experience_config_id is None
+        assert old_history.experience_config_history_id is None
 
         old_history.delete(db)
         history.delete(db)
         exp.delete(db)
 
     def test_get_related_privacy_notices(self, db):
+        """Test PrivacyExperience.get_related_privacy_notices that are embedded in PrivacyExperience request"""
         privacy_experience = PrivacyExperience.create(
             db=db,
             data={
                 "component": ComponentType.overlay,
-                "delivery_mechanism": DeliveryMechanism.link,
                 "region": "eu_it",
             },
         )
@@ -389,18 +405,23 @@ class TestPrivacyExperience:
             == []
         )
 
+    @pytest.mark.usefixtures("privacy_preference_history_us_ca_provide")
     def test_get_related_notices_no_privacy_preference_for_fides_user_device_id(
         self,
         db,
         privacy_notice_us_ca_provide,
-        privacy_preference_history_us_ca_provide,
         fides_user_provided_identity,
     ):
+        """Test fides_user_provided_identity argument for get_related_privacy_notices when the
+        user does not have saved preferences.
+
+        By default, we still return the notices, we just don't surface current or outdated preferences for the
+        user because none exist.
+        """
         privacy_experience = PrivacyExperience.create(
             db=db,
             data={
                 "component": ComponentType.overlay,
-                "delivery_mechanism": DeliveryMechanism.banner,
                 "region": "us_ca",
             },
         )
@@ -428,11 +449,14 @@ class TestPrivacyExperience:
         privacy_preference_history_us_ca_provide_for_fides_user,
         fides_user_provided_identity,
     ):
+        """Test fides user device id argument to Experience.get_related_privacy_notices adds the user's
+        preferences if they exist.  If the user's preferences correspond to an older version, that
+        will go under "outdated" preference.
+        """
         privacy_experience = PrivacyExperience.create(
             db=db,
             data={
                 "component": ComponentType.overlay,
-                "delivery_mechanism": DeliveryMechanism.banner,
                 "region": "us_ca",
             },
         )
@@ -494,7 +518,6 @@ class TestPrivacyExperience:
             db=db,
             data={
                 "component": "overlay",
-                "delivery_mechanism": "banner",
                 "region": "us_tx",
             },
         )
@@ -504,7 +527,6 @@ class TestPrivacyExperience:
                 db=db,
                 data={
                     "component": "overlay",
-                    "delivery_mechanism": "link",
                     "region": "us_tx",
                 },
             )
@@ -519,7 +541,6 @@ class TestPrivacyExperience:
             db=db,
             data={
                 "component": "overlay",
-                "delivery_mechanism": "banner",
                 "region": "us_tx",
             },
         )
@@ -528,7 +549,6 @@ class TestPrivacyExperience:
             db=db,
             data={
                 "component": "privacy_center",
-                "delivery_mechanism": "link",
                 "region": "us_tx",
             },
         )
@@ -579,7 +599,7 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         assert overlay_experience is None
         assert privacy_center_experience is None
 
-        linked_exp, updated_exp = upsert_privacy_experiences_after_notice_update(
+        added_exp = upsert_privacy_experiences_after_notice_update(
             db, [PrivacyNoticeRegion.us_ca]
         )
 
@@ -587,15 +607,12 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
             overlay_experience,
             privacy_center_experience,
         ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
-        db.refresh(privacy_center_experience)
 
-        assert overlay_experience is None
+        assert overlay_experience is None  # Only privacy center experience was created
         assert privacy_center_experience is not None
-        assert linked_exp == [privacy_center_experience]
-        assert updated_exp == []
+        assert added_exp == [privacy_center_experience]
 
         assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.delivery_mechanism == DeliveryMechanism.link
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ca
         assert privacy_center_experience.disabled is False
         assert privacy_center_experience.version == 1.0
@@ -605,7 +622,6 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
 
         history = privacy_center_experience.histories[0]
         assert history.component == ComponentType.privacy_center
-        assert history.delivery_mechanism == DeliveryMechanism.link
         assert history.region == PrivacyNoticeRegion.us_ca
         assert history.disabled is False
         assert history.version == 1.0
@@ -647,7 +663,6 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
             data={
                 "region": PrivacyNoticeRegion.us_ca,
                 "component": ComponentType.privacy_center,
-                "delivery_mechanism": DeliveryMechanism.link,
             },
         )
         exp_created_at = exp.created_at
@@ -660,7 +675,7 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         assert overlay_experience is None
         assert privacy_center_experience is not None
 
-        linked_exp, updated_exp = upsert_privacy_experiences_after_notice_update(
+        added_exp = upsert_privacy_experiences_after_notice_update(
             db, [PrivacyNoticeRegion.us_ca]
         )
 
@@ -668,15 +683,12 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
             overlay_experience,
             privacy_center_experience,
         ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
-        db.refresh(privacy_center_experience)
 
         assert overlay_experience is None
         assert privacy_center_experience is not None
-        assert linked_exp == []
-        assert updated_exp == []
+        assert added_exp == []
 
         assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.delivery_mechanism == DeliveryMechanism.link
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ca
         assert privacy_center_experience.disabled is False
         assert privacy_center_experience.version == 1.0
@@ -688,7 +700,6 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
 
         history = privacy_center_experience.histories[0]
         assert history.component == ComponentType.privacy_center
-        assert history.delivery_mechanism == DeliveryMechanism.link
         assert history.region == PrivacyNoticeRegion.us_ca
         assert history.disabled is False
         assert history.version == 1.0
@@ -729,7 +740,7 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         assert overlay_experience is None
         assert privacy_center_experience is None
 
-        linked_exp, updated_exp = upsert_privacy_experiences_after_notice_update(
+        added_exp = upsert_privacy_experiences_after_notice_update(
             db, [PrivacyNoticeRegion.eu_it]
         )
 
@@ -737,15 +748,12 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
             overlay_experience,
             privacy_center_experience,
         ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.eu_it)
-        db.refresh(overlay_experience)
 
         assert overlay_experience is not None
         assert privacy_center_experience is None
-        assert linked_exp == [overlay_experience]
-        assert updated_exp == []
+        assert added_exp == [overlay_experience]
 
         assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.delivery_mechanism == DeliveryMechanism.banner
         assert overlay_experience.region == PrivacyNoticeRegion.eu_it
         assert overlay_experience.disabled is False
         assert overlay_experience.version == 1.0
@@ -755,7 +763,6 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
 
         history = overlay_experience.histories[0]
         assert history.component == ComponentType.overlay
-        assert history.delivery_mechanism == DeliveryMechanism.banner
         assert history.region == PrivacyNoticeRegion.eu_it
         assert history.disabled is False
         assert history.version == 1.0
@@ -772,7 +779,8 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
 
     def test_overlay_experience_exists(self, db):
         """
-        Test Notice created that needs to be displayed in an overlay and experience already exists. No action needed.
+        Test Notice created that needs to be displayed in an overlay and experience already exists.
+        No action needed.
         """
         notice = PrivacyNotice.create(
             db=db,
@@ -796,7 +804,6 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
             data={
                 "region": PrivacyNoticeRegion.us_ca,
                 "component": ComponentType.overlay,
-                "delivery_mechanism": DeliveryMechanism.link,
             },
         )
         exp_created_at = exp.created_at
@@ -806,12 +813,11 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
             overlay_experience,
             privacy_center_experience,
         ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
-        db.refresh(overlay_experience)
 
         assert overlay_experience is not None
         assert privacy_center_experience is None
 
-        linked_exp, updated_exp = upsert_privacy_experiences_after_notice_update(
+        added_exp = upsert_privacy_experiences_after_notice_update(
             db, [PrivacyNoticeRegion.us_ca]
         )
 
@@ -823,11 +829,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
 
         assert overlay_experience is not None
         assert privacy_center_experience is None
-        assert linked_exp == []
-        assert updated_exp == []
+        assert added_exp == []
 
         assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.delivery_mechanism == DeliveryMechanism.link
         assert overlay_experience.region == PrivacyNoticeRegion.us_ca
         assert overlay_experience.disabled is False
         assert overlay_experience.version == 1.0
@@ -839,7 +843,6 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
 
         history = overlay_experience.histories[0]
         assert history.component == ComponentType.overlay
-        assert history.delivery_mechanism == DeliveryMechanism.link
         assert history.region == PrivacyNoticeRegion.us_ca
         assert history.disabled is False
         assert history.version == 1.0
@@ -853,111 +856,6 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
 
         notice.histories[0].delete(db)
         notice.delete(db)
-
-    def test_link_needs_to_be_converted_to_banner(self, db):
-        """
-        Test Notice created that needs to be displayed in an overlay banner but an overlay link PrivacyExperience
-        exists.  We need to convert that existing Experience to be displayed with a banner.
-
-        The existing ExperienceConfig also needs to be unlinked as it's no longer valid
-        """
-        config = PrivacyExperienceConfig.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "delivery_mechanism": "link",
-                "component_title": "Control your privacy",
-                "link_label": "Manage your privacy",
-            },
-        )
-
-        notice = PrivacyNotice.create(
-            db=db,
-            data={
-                "name": "example privacy notice",
-                "notice_key": "example_privacy_notice",
-                "regions": [
-                    PrivacyNoticeRegion.eu_it,
-                ],
-                "consent_mechanism": ConsentMechanism.opt_in,
-                "data_uses": ["advertising"],
-                "enforcement_level": EnforcementLevel.system_wide,
-                "displayed_in_privacy_center": False,
-                "displayed_in_overlay": True,
-                "displayed_in_api": False,
-            },
-        )
-
-        exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "region": PrivacyNoticeRegion.eu_it,
-                "component": ComponentType.overlay,
-                "delivery_mechanism": DeliveryMechanism.link,
-                "experience_config_id": config.id,
-                "experience_config_history_id": config.histories[0].id,
-            },
-        )
-        exp_created_at = exp.created_at
-        exp_updated_at = exp.updated_at
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.eu_it)
-        assert overlay_experience is not None
-        assert privacy_center_experience is None
-
-        linked_exp, updated_exp = upsert_privacy_experiences_after_notice_update(
-            db, [PrivacyNoticeRegion.eu_it]
-        )
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.eu_it)
-        db.refresh(overlay_experience)
-
-        assert overlay_experience is not None
-        assert privacy_center_experience is None
-        assert linked_exp == []
-        assert updated_exp == [overlay_experience]
-
-        assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.delivery_mechanism == DeliveryMechanism.banner
-        assert overlay_experience.region == PrivacyNoticeRegion.eu_it
-        assert overlay_experience.disabled is False
-        assert overlay_experience.version == 2.0
-        assert overlay_experience.experience_config_id is None
-        assert overlay_experience.experience_config_history_id is None
-        assert overlay_experience.histories.count() == 2
-        assert overlay_experience.created_at == exp_created_at
-        assert overlay_experience.updated_at > exp_updated_at
-
-        history = overlay_experience.histories[1]
-        assert history.component == ComponentType.overlay
-        assert history.delivery_mechanism == DeliveryMechanism.banner
-        assert history.region == PrivacyNoticeRegion.eu_it
-        assert history.disabled is False
-        assert history.version == 2.0
-        assert history.experience_config_id is None
-        assert history.experience_config_history_id is None
-
-        assert overlay_experience.get_related_privacy_notices(db) == [notice]
-
-        db.refresh(config)
-        assert config.version == 1.0  # Config itself wasn't updated
-        assert config.histories.count() == 1
-
-        overlay_experience.histories[0].delete(db)
-        history.delete(db)
-        overlay_experience.delete(db)
-
-        notice.histories[0].delete(db)
-        notice.delete(db)
-
-        config.histories[0].delete(db)
-        config.delete(db)
 
     def test_both_privacy_center_and_overlay_experience_needed(self, db):
         """Assert multiple types of experiences can be created simultaneously"""
@@ -985,7 +883,7 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         assert overlay_experience is None
         assert privacy_center_experience is None
 
-        linked_exp, updated_exp = upsert_privacy_experiences_after_notice_update(
+        added_exp = upsert_privacy_experiences_after_notice_update(
             db, [PrivacyNoticeRegion.us_ca]
         )
 
@@ -993,19 +891,15 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
             overlay_experience,
             privacy_center_experience,
         ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
-        db.refresh(privacy_center_experience)
-        db.refresh(overlay_experience)
 
         assert overlay_experience is not None
         assert privacy_center_experience is not None
-        assert {exp.id for exp in linked_exp} == {
+        assert {exp.id for exp in added_exp} == {
             overlay_experience.id,
             privacy_center_experience.id,
         }
-        assert updated_exp == []
 
         assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.delivery_mechanism == DeliveryMechanism.link
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ca
         assert privacy_center_experience.disabled is False
         assert privacy_center_experience.version == 1.0
@@ -1014,7 +908,6 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         assert privacy_center_experience.histories.count() == 1
 
         assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.delivery_mechanism == DeliveryMechanism.banner
         assert overlay_experience.region == PrivacyNoticeRegion.us_ca
         assert overlay_experience.disabled is False
         assert overlay_experience.version == 1.0
@@ -1036,9 +929,7 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
 
 
 class TestUpsertPrivacyExperiencesOnConfigChange:
-    def test_privacy_center_experience_config_created_no_matching_privacy_center_experience_region(
-        self, db
-    ):
+    def test_experience_config_created_no_matching_experience_exists(self, db):
         """Test a privacy center ExperienceConfig is created and we attempt to link AK.
         No PrivacyExperience exists yet so we create one - we do this regardless of whether notices exist.
         It's okay to have an experience without notices.
@@ -1047,9 +938,8 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "component": "privacy_center",
-                "delivery_mechanism": "link",
+                "banner_enabled": "never",
                 "component_title": "Control your privacy",
-                "link_label": "Manage your privacy",
             },
         )
 
@@ -1060,24 +950,21 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         assert overlay_experience is None
         assert privacy_center_experience is None
 
-        linked, unlinked, skipped = upsert_privacy_experiences_after_config_update(
+        linked, unlinked = upsert_privacy_experiences_after_config_update(
             db, config, regions=[PrivacyNoticeRegion.us_ak]
         )
         (
             overlay_experience,
             privacy_center_experience,
         ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        db.refresh(privacy_center_experience)
 
         assert overlay_experience is None
         assert privacy_center_experience is not None
         assert linked == [PrivacyNoticeRegion.us_ak]
         assert unlinked == []
-        assert skipped == []
 
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
         assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.delivery_mechanism == DeliveryMechanism.link
         assert privacy_center_experience.version == 1.0
         assert privacy_center_experience.disabled is False
         assert privacy_center_experience.experience_config_id == config.id
@@ -1091,9 +978,7 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         config.histories[0].delete(db)
         config.delete(db)
 
-    def test_privacy_center_experience_config_created_matching_unlinked_pc_experience_exists_for_region(
-        self, db
-    ):
+    def test_experience_config_created_matching_unlinked_experience_exists(self, db):
         """Test ExperienceConfig created and we attempt to link AK to that ExperienceConfig.
         A PrivacyExperience exists for AK, but needs to be linked to this ExperienceConfig.
         """
@@ -1101,9 +986,8 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "component": "privacy_center",
-                "delivery_mechanism": "link",
+                "banner_enabled": "never",
                 "component_title": "Control your privacy",
-                "link_label": "Manage your privacy",
             },
         )
 
@@ -1111,7 +995,6 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "component": "privacy_center",
-                "delivery_mechanism": "link",
                 "region": "us_ak",
             },
         )
@@ -1125,24 +1008,21 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         assert overlay_experience is None
         assert privacy_center_experience == pc_exp
 
-        linked, unlinked, skipped = upsert_privacy_experiences_after_config_update(
+        linked, unlinked = upsert_privacy_experiences_after_config_update(
             db, config, regions=[PrivacyNoticeRegion.us_ak]
         )
         (
             overlay_experience,
             privacy_center_experience,
         ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        db.refresh(privacy_center_experience)
 
         assert overlay_experience is None
         assert privacy_center_experience is not None
         assert linked == [PrivacyNoticeRegion.us_ak]
         assert unlinked == []
-        assert skipped == []
 
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
         assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.delivery_mechanism == DeliveryMechanism.link
         assert privacy_center_experience.version == 2.0
         assert privacy_center_experience.disabled is False
         assert privacy_center_experience.experience_config_id == config.id
@@ -1157,18 +1037,16 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         config.histories[0].delete(db)
         config.delete(db)
 
-    def test_privacy_center_experience_config_created_matching_linked_pc_experience_exists_for_region(
-        self, db
-    ):
-        """Privacy Center Experience Config updated, and we attempt to add AK to this, but it is already linked, so no action needed"""
+    def test_experience_config_updated_matching_experience_already_linked(self, db):
+        """Privacy Center Experience Config updated, and we attempt to add AK to this,
+        but it is already linked, so no action needed"""
 
         config = PrivacyExperienceConfig.create(
             db=db,
             data={
                 "component": "privacy_center",
-                "delivery_mechanism": "link",
+                "banner_enabled": "never",
                 "component_title": "Control your privacy",
-                "link_label": "Manage your privacy",
             },
         )
 
@@ -1176,7 +1054,6 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "component": "privacy_center",
-                "delivery_mechanism": "link",
                 "region": "us_ak",
                 "experience_config_id": config.id,
                 "experience_config_history_id": config.histories[0].id,
@@ -1189,12 +1066,11 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             overlay_experience,
             privacy_center_experience,
         ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        db.refresh(privacy_center_experience)
 
         assert overlay_experience is None
         assert privacy_center_experience == pc_exp
 
-        linked, unlinked, skipped = upsert_privacy_experiences_after_config_update(
+        linked, unlinked = upsert_privacy_experiences_after_config_update(
             db, config, regions=[PrivacyNoticeRegion.us_ak]
         )
         (
@@ -1207,11 +1083,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         assert privacy_center_experience is not None
         assert linked == []
         assert unlinked == []
-        assert skipped == []
 
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
         assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.delivery_mechanism == DeliveryMechanism.link
         assert privacy_center_experience.version == 1.0
         assert privacy_center_experience.disabled is False
         assert privacy_center_experience.experience_config_id == config.id
@@ -1225,483 +1099,64 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         config.histories[0].delete(db)
         config.delete(db)
 
-    def test_overlay_experience_config_created_no_matching_overlay_experience_for_region(
-        self, db
-    ):
-        """Test an overlay center ExperienceConfig is created and we attempt to link AK.
-        No PrivacyExperience exists yet so we create one - we do this regardless of whether notices exist.
-        It's okay to have an experience without notices.
-        """
+    def test_experience_config_unlinks_region(self, db):
+        """Privacy Center Experience Config updated, and we attempt to add AK to this,
+        but it is already linked, so no action needed"""
+
         config = PrivacyExperienceConfig.create(
             db=db,
             data={
-                "component": "overlay",
-                "delivery_mechanism": "banner",
+                "component": "privacy_center",
+                "banner_enabled": "never",
                 "component_title": "Control your privacy",
-                "link_label": "Manage your privacy",
             },
         )
+
+        pc_exp = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": "privacy_center",
+                "region": "us_ak",
+                "experience_config_id": config.id,
+                "experience_config_history_id": config.histories[0].id,
+            },
+        )
+        assert pc_exp.experience_config_id == config.id
+        assert pc_exp.experience_config_history_id == config.histories[0].id
+        assert config.experiences.count() == 1
 
         (
             overlay_experience,
             privacy_center_experience,
         ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+
         assert overlay_experience is None
-        assert privacy_center_experience is None
+        assert privacy_center_experience == pc_exp
 
-        linked, unlinked, skipped = upsert_privacy_experiences_after_config_update(
-            db, config, regions=[PrivacyNoticeRegion.us_ak]
+        linked, unlinked = upsert_privacy_experiences_after_config_update(
+            db, config, regions=[]  # Empty region list will remove regions
         )
         (
             overlay_experience,
             privacy_center_experience,
         ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        db.refresh(overlay_experience)
 
-        assert overlay_experience is not None
-        assert privacy_center_experience is None
-        assert linked == [PrivacyNoticeRegion.us_ak]
-        assert unlinked == []
-        assert skipped == []
-
-        assert overlay_experience.region == PrivacyNoticeRegion.us_ak
-        assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.delivery_mechanism == DeliveryMechanism.banner
-        assert overlay_experience.version == 1.0
-        assert overlay_experience.disabled is False
-        assert overlay_experience.experience_config_id == config.id
-        assert overlay_experience.experience_config_history_id == config.histories[0].id
-
-        overlay_experience.histories[0].delete(db)
-        overlay_experience.delete(db)
-        config.histories[0].delete(db)
-        config.delete(db)
-
-    def test_overlay_experience_config_created_matching_unlinked_overlay_experience_exists_for_region(
-        self, db
-    ):
-        """Test overlay ExperienceConfig created and we attempt to link AK to that ExperienceConfig.
-        An overlay PrivacyExperience exists for AK, but needs to be linked to this ExperienceConfig.
-        """
-        config = PrivacyExperienceConfig.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "delivery_mechanism": "banner",
-                "component_title": "Control your privacy",
-                "link_label": "Manage your privacy",
-            },
-        )
-
-        overlay_exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "delivery_mechanism": "banner",
-                "region": "us_ak",
-            },
-        )
-        assert overlay_exp.experience_config_id is None
-        assert overlay_exp.experience_config_history_id is None
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        assert overlay_experience == overlay_exp
-        assert privacy_center_experience is None
-
-        linked, unlinked, skipped = upsert_privacy_experiences_after_config_update(
-            db, config, regions=[PrivacyNoticeRegion.us_ak]
-        )
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        db.refresh(overlay_experience)
-
-        assert overlay_experience is not None
-        assert privacy_center_experience is None
-        assert linked == [PrivacyNoticeRegion.us_ak]
-        assert unlinked == []
-        assert skipped == []
-
-        assert overlay_experience.region == PrivacyNoticeRegion.us_ak
-        assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.delivery_mechanism == DeliveryMechanism.banner
-        assert overlay_experience.version == 2.0
-        assert overlay_experience.disabled is False
-        assert overlay_experience.experience_config_id == config.id
-        assert overlay_experience.experience_config_history_id == config.histories[0].id
-
-        overlay_experience.histories[1].delete(db)
-        overlay_experience.histories[0].delete(db)
-        overlay_experience.delete(db)
-        config.histories[0].delete(db)
-        config.delete(db)
-
-    def test_overlay_experience_config_created_matching_linked_overlay_experience_exists_for_region(
-        self, db
-    ):
-        """Overlay Experience Config updated, and we attempt to add AK to this, but it is already linked, so no action needed"""
-
-        config = PrivacyExperienceConfig.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "delivery_mechanism": "banner",
-                "component_title": "Control your privacy",
-                "link_label": "Manage your privacy",
-            },
-        )
-
-        overlay_exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "delivery_mechanism": "banner",
-                "region": "us_ak",
-                "experience_config_id": config.id,
-                "experience_config_history_id": config.histories[0].id,
-            },
-        )
-        assert overlay_exp.experience_config_id == config.id
-        assert overlay_exp.experience_config_history_id == config.histories[0].id
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        assert overlay_experience == overlay_exp
-        assert privacy_center_experience is None
-
-        linked, unlinked, skipped = upsert_privacy_experiences_after_config_update(
-            db, config, regions=[PrivacyNoticeRegion.us_ak]
-        )
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        db.refresh(overlay_experience)
-
-        assert overlay_experience is not None
-        assert privacy_center_experience is None
-        assert linked == []
-        assert unlinked == []
-        assert skipped == []
-
-        assert overlay_experience.region == PrivacyNoticeRegion.us_ak
-        assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.delivery_mechanism == DeliveryMechanism.banner
-        assert overlay_experience.version == 1.0
-        assert overlay_experience.disabled is False
-        assert overlay_experience.experience_config_id == config.id
-        assert overlay_experience.experience_config_history_id == config.histories[0].id
-
-        overlay_experience.histories[0].delete(db)
-        overlay_experience.delete(db)
-        config.histories[0].delete(db)
-        config.delete(db)
-
-    def test_link_overlay_experience_config_created_matching_unlinked_banner_overlay_experience_exists_for_region(
-        self, db
-    ):
-        """ExperienceConfig created which is a link overlay and we attempt to link AK.
-        AK is already a banner overlay, but it can be connected and converted to a link without issue as there
-        are no conflicting notices.
-        """
-        config = PrivacyExperienceConfig.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "delivery_mechanism": "link",
-                "component_title": "Control your privacy",
-                "link_label": "Manage your privacy",
-            },
-        )
-
-        overlay_exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "delivery_mechanism": "banner",
-                "region": "us_ak",
-            },
-        )
-        assert overlay_exp.experience_config_id is None
-        assert overlay_exp.experience_config_history_id is None
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        assert overlay_experience == overlay_exp
-        assert privacy_center_experience is None
-
-        linked, unlinked, skipped = upsert_privacy_experiences_after_config_update(
-            db, config, regions=[PrivacyNoticeRegion.us_ak]
-        )
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        db.refresh(overlay_experience)
-
-        assert overlay_experience is not None
-        assert privacy_center_experience is None
-        assert linked == [PrivacyNoticeRegion.us_ak]
-        assert unlinked == []
-        assert skipped == []
-
-        assert overlay_experience.region == PrivacyNoticeRegion.us_ak
-        assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.delivery_mechanism == DeliveryMechanism.link
-        assert overlay_experience.version == 2.0
-        assert overlay_experience.disabled is False
-        assert overlay_experience.experience_config_id == config.id
-        assert overlay_experience.experience_config_history_id == config.histories[0].id
-
-        overlay_experience.histories[1].delete(db)
-        overlay_experience.histories[0].delete(db)
-        overlay_experience.delete(db)
-        config.histories[0].delete(db)
-        config.delete(db)
-
-    def test_link_overlay_experience_config_updated_matching_linked_banner_overlay_experience_exists_for_region(
-        self, db
-    ):
-        """ExperienceConfig updated to be a link overlay and and we attempt to link AK.
-        AK is already a connected banner overlay, but it can be onverted to a link without issue as there
-        are no conflicting notices.
-
-        Taking some shortcuts here and creating the link experience config directly
-        """
-        config = PrivacyExperienceConfig.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "delivery_mechanism": "link",
-                "component_title": "Control your privacy",
-                "link_label": "Manage your privacy",
-            },
-        )
-
-        overlay_exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "delivery_mechanism": "banner",
-                "region": "us_ak",
-                "experience_config_id": config.id,
-                "experience_config_history_id": config.histories[0].id,
-            },
-        )
-        assert overlay_exp.experience_config_id == config.id
-        assert overlay_exp.experience_config_history_id == config.histories[0].id
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        db.refresh(overlay_experience)
-        assert overlay_experience == overlay_exp
-        assert privacy_center_experience is None
-
-        linked, unlinked, skipped = upsert_privacy_experiences_after_config_update(
-            db, config, regions=[PrivacyNoticeRegion.us_ak]
-        )
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        db.refresh(overlay_experience)
-
-        assert overlay_experience is not None
-        assert privacy_center_experience is None
-        assert linked == []
-        assert unlinked == []
-        assert skipped == []
-
-        assert overlay_experience.region == PrivacyNoticeRegion.us_ak
-        assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.delivery_mechanism == DeliveryMechanism.link
-        assert overlay_experience.version == 2.0
-        assert overlay_experience.disabled is False
-        assert overlay_experience.experience_config_id == config.id
-        assert overlay_experience.experience_config_history_id == config.histories[0].id
-
-        overlay_experience.histories[1].delete(db)
-        overlay_experience.histories[0].delete(db)
-        overlay_experience.delete(db)
-        config.histories[0].delete(db)
-        config.delete(db)
-
-    def test_link_existing_experience_update_skipped(self, db):
-        """Test trying to link an PrivacyExperience that needs to be a banner to an overlay config.
-        Skip linking this region.
-        """
-        config = PrivacyExperienceConfig.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "delivery_mechanism": "link",
-                "component_title": "Control your privacy",
-                "link_label": "Manage your privacy",
-            },
-        )
-
-        overlay_exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "delivery_mechanism": "banner",
-                "region": "us_ak",
-            },
-        )
-
-        privacy_notice = PrivacyNotice.create(
-            db=db,
-            data={
-                "name": "Test privacy notice",
-                "notice_key": "test_privacy_notice",
-                "description": "a test sample privacy notice configuration",
-                "regions": [PrivacyNoticeRegion.us_ak],
-                "consent_mechanism": ConsentMechanism.opt_in,
-                "data_uses": ["advertising", "third_party_sharing"],
-                "enforcement_level": EnforcementLevel.system_wide,
-                "displayed_in_overlay": True,
-                "displayed_in_api": False,
-                "displayed_in_privacy_center": True,
-            },
-        )
-
-        assert overlay_exp.get_related_privacy_notices(db) == [privacy_notice]
-
-        assert overlay_exp.experience_config_id is None
-        assert overlay_exp.experience_config_history_id is None
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        assert overlay_experience == overlay_exp
-        assert privacy_center_experience is None
-
-        linked, unlinked, skipped = upsert_privacy_experiences_after_config_update(
-            db, config, regions=[PrivacyNoticeRegion.us_ak]
-        )
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        db.refresh(overlay_experience)
-
-        assert overlay_experience is not None
-        assert privacy_center_experience is None
-        assert linked == []
-        assert unlinked == []
-        assert skipped == [PrivacyNoticeRegion.us_ak]
-
-        assert overlay_experience.region == PrivacyNoticeRegion.us_ak
-        assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.delivery_mechanism == DeliveryMechanism.banner
-        assert overlay_experience.version == 1.0
-        assert overlay_experience.disabled is False
-        assert overlay_experience.experience_config_id is None
-        assert overlay_experience.experience_config_history_id is None
-        assert config.experiences.count() == 0
-
-        privacy_notice.histories[0].delete(db)
-        privacy_notice.delete(db)
-        overlay_experience.histories[0].delete(db)
-        overlay_experience.delete(db)
-        config.histories[0].delete(db)
-        config.delete(db)
-
-    def test_banner_experience_unlinked_from_link_config(self, db):
-        """Test existing ExperienceConfig with linked overlay experience is updated to be a link
-        instead of a banner which is not compatible with the experience due to opt-in notices.
-        The experience should be unlinked.
-
-        Taking some shortcuts with the test and creating the config in the bad state to start.
-        """
-        config = PrivacyExperienceConfig.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "delivery_mechanism": "link",
-                "component_title": "Control your privacy",
-                "link_label": "Manage your privacy",
-            },
-        )
-
-        overlay_exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "delivery_mechanism": "banner",
-                "region": "us_ak",
-                "experience_config_id": config.id,
-                "experience_config_history_id": config.histories[0].id,
-            },
-        )
-
-        privacy_notice = PrivacyNotice.create(
-            db=db,
-            data={
-                "name": "Test privacy notice",
-                "notice_key": "test_privacy_notice",
-                "description": "a test sample privacy notice configuration",
-                "regions": [PrivacyNoticeRegion.us_ak],
-                "consent_mechanism": ConsentMechanism.opt_in,
-                "data_uses": ["advertising", "third_party_sharing"],
-                "enforcement_level": EnforcementLevel.system_wide,
-                "displayed_in_overlay": True,
-                "displayed_in_api": False,
-                "displayed_in_privacy_center": True,
-            },
-        )
-
-        assert overlay_exp.get_related_privacy_notices(db) == [privacy_notice]
-
-        assert overlay_exp.experience_config_id == config.id
-        assert overlay_exp.experience_config_history_id == config.histories[0].id
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        assert overlay_experience == overlay_exp
-        assert privacy_center_experience is None
-
-        linked, unlinked, skipped = upsert_privacy_experiences_after_config_update(
-            db, config, regions=[PrivacyNoticeRegion.us_ak]
-        )
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
-        db.refresh(overlay_experience)
-
-        assert overlay_experience is not None
-        assert privacy_center_experience is None
+        assert overlay_experience is None
+        assert privacy_center_experience is not None
         assert linked == []
         assert unlinked == [PrivacyNoticeRegion.us_ak]
-        assert skipped == []
-
-        assert overlay_experience.region == PrivacyNoticeRegion.us_ak
-        assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.delivery_mechanism == DeliveryMechanism.banner
-        assert overlay_experience.version == 2.0
-        assert overlay_experience.disabled is False
-        assert overlay_experience.experience_config_id is None
-        assert overlay_experience.experience_config_history_id is None
+        db.refresh(config)
         assert config.experiences.count() == 0
 
-        privacy_notice.histories[0].delete(db)
-        privacy_notice.delete(db)
-        overlay_experience.histories[1].delete(db)
-        overlay_experience.histories[0].delete(db)
-        overlay_experience.delete(db)
+        assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
+        assert privacy_center_experience.component == ComponentType.privacy_center
+        assert privacy_center_experience.version == 2.0
+        assert privacy_center_experience.disabled is False
+        assert privacy_center_experience.experience_config_id is None
+        assert privacy_center_experience.experience_config_history_id is None
+
+        privacy_center_experience.histories[1].delete(db)
+        privacy_center_experience.histories[0].delete(db)
+        privacy_center_experience.delete(db)
         config.histories[0].delete(db)
         config.delete(db)

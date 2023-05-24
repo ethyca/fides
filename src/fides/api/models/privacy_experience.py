@@ -10,11 +10,7 @@ from sqlalchemy.orm import Query, Session, relationship
 from sqlalchemy.util import hybridproperty
 
 from fides.api.db.base_class import Base
-from fides.api.models.privacy_notice import (
-    ConsentMechanism,
-    PrivacyNotice,
-    PrivacyNoticeRegion,
-)
+from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.models.privacy_preference import CurrentPrivacyPreference
 from fides.api.models.privacy_request import ProvidedIdentity
 
@@ -28,31 +24,30 @@ class ComponentType(Enum):
     privacy_center = "privacy_center"
 
 
-class DeliveryMechanism(Enum):
+class BannerEnabled(Enum):
     """
-    The delivery mechanism - not formalized in the db
+    Whether the banner should display
     """
 
-    banner = "banner"
-    link = "link"
+    always = "always"
+    automatic = "automatic"  # If the user's region has at least one opt-in or notice-only notice
+    never = "never"
 
 
 class ExperienceConfigBase:
     """Base schema to share common experience config."""
 
     acknowledgement_button_label = Column(String)
-    banner_title = Column(String)
-    banner_description = Column(String)
+    banner_enabled = Column(EnumColumn(BannerEnabled), nullable=False, index=True)
     component = Column(EnumColumn(ComponentType), nullable=False, index=True)
     component_title = Column(String)
     component_description = Column(String)
     confirmation_button_label = Column(String)
-    delivery_mechanism = Column(
-        EnumColumn(DeliveryMechanism), nullable=False, index=True
-    )
     disabled = Column(Boolean, nullable=False, default=False)
     is_default = Column(Boolean, nullable=False, default=False)
-    link_label = Column(String)
+    open_modal_label = Column(String)  # For banner only
+    privacy_policy_label = Column(String)
+    privacy_policy_url = Column(String)
     reject_button_label = Column(String)
     version = Column(Float, nullable=False, default=1.0)
 
@@ -173,7 +168,6 @@ class PrivacyExperienceBase:
 
     disabled = Column(Boolean, nullable=False, default=False)
     component = Column(EnumColumn(ComponentType), nullable=False)
-    delivery_mechanism = Column(EnumColumn(DeliveryMechanism), nullable=False)
     region = Column(EnumColumn(PrivacyNoticeRegion), nullable=False, index=True)
     version = Column(Float, nullable=False, default=1.0)
 
@@ -238,7 +232,7 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
 
         If show_disabled=False, only return enabled notices.
         If fides user provided identity supplied, additionally lookup any saved
-        preferences for that user id
+        preferences for that user id and attach if they exist.
         """
         privacy_notice_query = get_privacy_notices_by_region_and_component(
             db, self.region, self.component  # type: ignore[arg-type]
@@ -356,7 +350,7 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
 
         return overlay_experience, privacy_center_experience
 
-    def unlink_privacy_experience_config(self, db: Session) -> PrivacyExperience:
+    def unlink_experience_config(self, db: Session) -> PrivacyExperience:
         """Remove config from experience
 
         Removes the FK, does not remove Privacy Experiences or Privacy Experience Configs
@@ -419,7 +413,7 @@ def get_privacy_notices_by_region_and_component(
 
 def upsert_privacy_experiences_after_notice_update(
     db: Session, affected_regions: List[PrivacyNoticeRegion]
-) -> Tuple[List[PrivacyExperience], List[PrivacyExperience]]:
+) -> List[PrivacyExperience]:
     """
     Keeps Privacy Experiences in sync with *PrivacyNotices* changes.
     Create or update PrivacyExperiences based on the PrivacyNotices in the "affected_regions".
@@ -428,31 +422,6 @@ def upsert_privacy_experiences_after_notice_update(
     PrivacyExperiences should not be deleted.  It's okay if no notices are associated with an Experience.
     """
     added_experiences: List[PrivacyExperience] = []
-    updated_experiences: List[PrivacyExperience] = []
-
-    def banner_delivery_update_needed(
-        overlay_component_experience: Optional[PrivacyExperience],
-        overlay_privacy_notices: Query,
-    ) -> bool:
-        """
-        Do we need to update an existing overlay link notice to be delivered by banner instead?
-
-        Any opt-in or notice-ony notices have to be delivered via banner in an overlay.
-        """
-        if (
-            not overlay_component_experience
-            or overlay_component_experience.delivery_mechanism
-            == DeliveryMechanism.banner
-        ):
-            return False
-
-        return bool(
-            overlay_privacy_notices.filter(
-                PrivacyNotice.consent_mechanism.in_(
-                    [ConsentMechanism.notice_only, ConsentMechanism.opt_in]
-                )
-            ).count()
-        )
 
     def new_experience_needed(
         existing_experience: Optional[PrivacyExperience], related_notices: Query
@@ -483,23 +452,9 @@ def upsert_privacy_experiences_after_notice_update(
                 data={
                     "region": region,
                     "component": ComponentType.privacy_center,
-                    "delivery_mechanism": DeliveryMechanism.link,
                 },
             )
             added_experiences.append(privacy_center_experience)
-
-        # See if we need to update an existing Link Overlay to be delivered by Banner instead
-        if banner_delivery_update_needed(overlay_experience, overlay_notices):
-            assert overlay_experience  # For mypy.  Overlay_experience guaranteed to exist here.
-            overlay_experience.update(
-                db=db,
-                data={
-                    "delivery_mechanism": DeliveryMechanism.banner,
-                    "experience_config_id": None,  # We have to unlink the invalid experience config here if it exists
-                    "experience_config_history_id": None,
-                },
-            )
-            updated_experiences.append(overlay_experience)
 
         # See if we need to create a new overlay Experience for the overlay Notices.
         if new_experience_needed(
@@ -510,58 +465,52 @@ def upsert_privacy_experiences_after_notice_update(
                 data={
                     "region": region,
                     "component": ComponentType.overlay,
-                    "delivery_mechanism": DeliveryMechanism.banner,  # Making this banner by default, just to be consistent.
                 },
             )
             added_experiences.append(overlay_experience)
 
-    return added_experiences, updated_experiences
+    return added_experiences
 
 
-def config_incompatible_with_region(
+def remove_config_from_matched_experiences(
     db: Session,
-    component_type: ComponentType,
-    delivery_mechanism: DeliveryMechanism,
-    region: PrivacyNoticeRegion,
-) -> bool:
-    """Returns True if an ExperienceConfig/PrivacyExperience is invalid for the given region
+    experience_config: PrivacyExperienceConfig,
+    regions_to_unlink: List[PrivacyNoticeRegion],
+) -> List[PrivacyNoticeRegion]:
+    """Remove the config from linked PrivacyExperiences"""
+    if not regions_to_unlink:
+        return []
 
-    Our current primary check is that opt-in and notice only notices have to be displayed in
-    an overlay delivered by a banner.
-    """
-    return (
-        component_type == ComponentType.overlay
-        and delivery_mechanism == DeliveryMechanism.link
-        and bool(
-            get_privacy_notices_by_region_and_component(
-                db, region, ComponentType.overlay  # type: ignore[arg-type]
-            )
-            .filter(
-                PrivacyNotice.consent_mechanism.in_(
-                    [ConsentMechanism.opt_in, ConsentMechanism.notice_only]
-                )
-            )
-            .first()
-        )
-    )
+    experiences_to_unlink: List[PrivacyExperience] = experience_config.experiences.filter(  # type: ignore[call-arg]
+        PrivacyExperience.region.in_(regions_to_unlink)
+    ).all()
+
+    for experience in experiences_to_unlink:
+        experience.unlink_experience_config(db)
+    return [experience.region for experience in experiences_to_unlink]  # type: ignore[misc]
 
 
 def upsert_privacy_experiences_after_config_update(
     db: Session,
     experience_config: PrivacyExperienceConfig,
     regions: List[PrivacyNoticeRegion],
-) -> Tuple[
-    List[PrivacyNoticeRegion], List[PrivacyNoticeRegion], List[PrivacyNoticeRegion]
-]:
+) -> Tuple[List[PrivacyNoticeRegion], List[PrivacyNoticeRegion]]:
     """
     Keeps Privacy Experiences in sync with ExperienceConfig changes.
     Create or update PrivacyExperiences for the regions we're attempting to link to the
-    ExperienceConfig.  If the region cannot be linked, or if it is currently attached
-    and shouldn't be, skip or remove that region.
+    ExperienceConfig.
     """
     linked_regions: List[PrivacyNoticeRegion] = []  # Regions that were linked
-    unlinked_regions: List[PrivacyNoticeRegion] = []  # Regions that were unlinked
-    skipped_regions: List[PrivacyNoticeRegion] = []  # Regions that were skipped
+    current_regions: List[PrivacyNoticeRegion] = experience_config.regions
+    removed_regions: List[PrivacyNoticeRegion] = [
+        PrivacyNoticeRegion(reg)
+        for reg in {reg.value for reg in current_regions}.difference(
+            {reg.value for reg in regions}
+        )
+    ]
+    unlinked_regions: List[
+        PrivacyNoticeRegion
+    ] = remove_config_from_matched_experiences(db, experience_config, removed_regions)
 
     for region in regions:
         (
@@ -575,30 +524,8 @@ def upsert_privacy_experiences_after_config_update(
             else privacy_center_experience
         )
 
-        # This should be caught ahead of time validation at the API level, but if this is called directly,
-        # prioritize keeping the Experiences in a valid state at all times.
-        if config_incompatible_with_region(
-            db,
-            experience_config.component,  # type: ignore[arg-type]
-            experience_config.delivery_mechanism,  # type: ignore[arg-type]
-            region,
-        ):
-            if (
-                existing_experience
-                and existing_experience.experience_config_id
-                and existing_experience.experience_config_id == experience_config.id
-            ):
-                # If existing experience is already linked to a config that is now invalid, unlink it.
-                existing_experience.unlink_privacy_experience_config(db)
-                unlinked_regions.append(region)
-            else:
-                # Skip linking experience altogether to config for which it would be incompatible
-                skipped_regions.append(region)
-            continue
-
         data = {
             "component": experience_config.component,
-            "delivery_mechanism": experience_config.delivery_mechanism,
             "region": region,
             "experience_config_id": experience_config.id,
             "experience_config_history_id": experience_config.experience_config_history_id,
@@ -618,4 +545,4 @@ def upsert_privacy_experiences_after_config_update(
                 data=data,
             )
             linked_regions.append(region)
-    return linked_regions, unlinked_regions, skipped_regions
+    return linked_regions, unlinked_regions

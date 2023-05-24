@@ -5,6 +5,7 @@ from starlette.status import HTTP_200_OK
 from starlette.testclient import TestClient
 
 from fides.api.api.v1.urn_registry import PRIVACY_EXPERIENCE, V1_URL_PREFIX
+from fides.api.models.privacy_experience import BannerEnabled
 
 
 class TestGetPrivacyExperiences:
@@ -40,7 +41,7 @@ class TestGetPrivacyExperiences:
         api_client: TestClient,
         url,
         privacy_notice,
-        privacy_experience_privacy_center_link,
+        privacy_experience_privacy_center,
     ):
         resp = api_client.get(
             url,
@@ -55,17 +56,14 @@ class TestGetPrivacyExperiences:
         assert len(data["items"]) == 1
         resp = data["items"][0]
 
-        assert resp["disabled"] is False
+        assert resp["disabled"] is True
         assert resp["component"] == "privacy_center"
-        assert resp["delivery_mechanism"] == "link"
         assert resp["region"] == "us_co"
         assert resp["version"] == 1.0
         # Assert experience config is nested
         experience_config = resp["experience_config"]
         assert experience_config["component_title"] == "Control your privacy"
-        assert experience_config["banner_title"] is None
-        assert experience_config["banner_description"] is None
-        assert experience_config["link_label"] == "Manage your preferences"
+        assert experience_config["banner_enabled"] == BannerEnabled.never.value
         assert experience_config["confirmation_button_label"] is None
         assert experience_config["reject_button_label"] is None
         assert experience_config["acknowledgement_button_label"] is None
@@ -73,11 +71,11 @@ class TestGetPrivacyExperiences:
         assert experience_config["version"] == 1
         assert (
             experience_config["experience_config_history_id"]
-            == privacy_experience_privacy_center_link.experience_config.experience_config_history_id
+            == privacy_experience_privacy_center.experience_config.experience_config_history_id
         )
         assert (
             resp["privacy_experience_history_id"]
-            == privacy_experience_privacy_center_link.privacy_experience_history_id
+            == privacy_experience_privacy_center.privacy_experience_history_id
         )
         assert len(resp["privacy_notices"]) == 1
         assert resp["privacy_notices"][0]["id"] == privacy_notice.id
@@ -90,53 +88,49 @@ class TestGetPrivacyExperiences:
         self,
         api_client: TestClient,
         url,
-        privacy_experience_privacy_center_link,
-        privacy_experience_overlay_link,
-        privacy_experience_overlay_banner,
+        privacy_experience_privacy_center,
+        privacy_experience_overlay,
     ):
         resp = api_client.get(
             url,
         )
         assert resp.status_code == 200
         data = resp.json()
-        assert data["total"] == 3
-        assert len(data["items"]) == 3
+        assert data["total"] == 2
+        assert len(data["items"]) == 2
 
         resp = api_client.get(
             url + "?show_disabled=False",
         )
         assert resp.status_code == 200
         data = resp.json()
-        assert data["total"] == 2
-        assert len(data["items"]) == 2
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
         assert {exp["id"] for exp in data["items"]} == {
-            privacy_experience_privacy_center_link.id,
-            privacy_experience_overlay_link.id,
+            privacy_experience_overlay.id,
         }
 
-        assert privacy_experience_overlay_banner.id not in {
+        assert privacy_experience_privacy_center.id not in {
             exp["id"] for exp in data["items"]
         }
 
-    @pytest.mark.usefixtures(
-        "privacy_experience_privacy_center_link",
-    )
     def test_get_privacy_experiences_region_filter(
         self,
         api_client: TestClient,
         url,
-        privacy_experience_overlay_link,
-        privacy_experience_overlay_banner,
+        privacy_experience_privacy_center,
+        privacy_experience_overlay,
     ):
         resp = api_client.get(
-            url + "?region=eu_fr",
+            url + "?region=us_co",
         )
         assert resp.status_code == 200
         data = resp.json()
         assert data["total"] == 1
         assert len(data["items"]) == 1
-        assert data["items"][0]["id"] == privacy_experience_overlay_link.id
-        assert data["items"][0]["region"] == "eu_fr"
+        assert data["items"][0]["id"] == privacy_experience_privacy_center.id
+        assert data["items"][0]["region"] == "us_co"
+
         resp = api_client.get(
             url + "?region=us_ca",
         )
@@ -145,8 +139,9 @@ class TestGetPrivacyExperiences:
         assert data["total"] == 1
         assert len(data["items"]) == 1
         assert {exp["id"] for exp in data["items"]} == {
-            privacy_experience_overlay_banner.id,
+            privacy_experience_overlay.id,
         }
+        assert data["items"][0]["region"] == "us_ca"
 
         resp = api_client.get(
             url + "?region=bad_region",
@@ -163,20 +158,18 @@ class TestGetPrivacyExperiences:
         self,
         api_client: TestClient,
         url,
-        privacy_experience_privacy_center_link,
-        privacy_experience_overlay_link,
-        privacy_experience_overlay_banner,
+        privacy_experience_privacy_center,
+        privacy_experience_overlay,
     ):
         resp = api_client.get(
             url + "?component=overlay",
         )
         assert resp.status_code == 200
         data = resp.json()
-        assert data["total"] == 2
-        assert len(data["items"]) == 2
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
         assert {exp["id"] for exp in data["items"]} == {
-            privacy_experience_overlay_link.id,
-            privacy_experience_overlay_banner.id,
+            privacy_experience_overlay.id,
         }
 
         resp = api_client.get(
@@ -187,7 +180,7 @@ class TestGetPrivacyExperiences:
         assert data["total"] == 1
         assert len(data["items"]) == 1
         assert {exp["id"] for exp in data["items"]} == {
-            privacy_experience_privacy_center_link.id
+            privacy_experience_privacy_center.id
         }
 
         resp = api_client.get(
@@ -196,9 +189,8 @@ class TestGetPrivacyExperiences:
         assert resp.status_code == 422
 
     @pytest.mark.usefixtures(
-        "privacy_experience_privacy_center_link",
-        "privacy_experience_overlay_link",
-        "privacy_experience_overlay_banner",
+        "privacy_experience_privacy_center",
+        "privacy_experience_overlay",
     )
     def test_get_privacy_experiences_has_notices_no_notices(
         self, api_client: TestClient, url
@@ -212,9 +204,8 @@ class TestGetPrivacyExperiences:
         assert len(data["items"]) == 0
 
     @pytest.mark.usefixtures(
-        "privacy_experience_privacy_center_link",
-        "privacy_experience_overlay_link",
-        "privacy_experience_overlay_banner",
+        "privacy_experience_privacy_center",
+        "privacy_experience_overlay",
         "privacy_notice_eu_cy_provide_service_frontend_only",
     )
     def test_get_privacy_experiences_has_notices_no_regions_overlap(
@@ -236,9 +227,8 @@ class TestGetPrivacyExperiences:
         self,
         api_client: TestClient,
         url,
-        privacy_experience_privacy_center_link,
-        privacy_experience_overlay_link,
-        privacy_experience_overlay_banner,
+        privacy_experience_privacy_center,
+        privacy_experience_overlay,
         privacy_notice,
         privacy_notice_us_co_third_party_sharing,
         privacy_notice_eu_fr_provide_service_frontend_only,
@@ -250,12 +240,12 @@ class TestGetPrivacyExperiences:
         assert resp.status_code == 200
         data = resp.json()
 
-        assert data["total"] == 3
-        assert len(data["items"]) == 3
+        assert data["total"] == 2
+        assert len(data["items"]) == 2
 
         first_experience = data["items"][0]
         assert (
-            first_experience["id"] == privacy_experience_overlay_banner.id
+            first_experience["id"] == privacy_experience_overlay.id
         )  # Most recently created
         assert first_experience["component"] == "overlay"
         assert first_experience["region"] == "us_ca"
@@ -276,33 +266,14 @@ class TestGetPrivacyExperiences:
 
         second_experience = data["items"][1]
         assert (
-            second_experience["id"] == privacy_experience_overlay_link.id
+            second_experience["id"] == privacy_experience_privacy_center.id
         )  # Most recently created
-        assert second_experience["component"] == "overlay"
-        assert second_experience["region"] == "eu_fr"
-        assert len(second_experience["privacy_notices"]) == 1
+        assert second_experience["component"] == "privacy_center"
+        assert second_experience["region"] == "us_co"
+        assert len(second_experience["privacy_notices"]) == 2
 
         # Notices match on region and "overlay"
-        privacy_experience_overlay_link_notice_1 = second_experience["privacy_notices"][
-            0
-        ]
-        assert (
-            privacy_experience_overlay_link_notice_1["id"]
-            == privacy_notice_eu_fr_provide_service_frontend_only.id
-        )
-        assert privacy_experience_overlay_link_notice_1["regions"] == ["eu_fr"]
-        assert privacy_experience_overlay_link_notice_1["displayed_in_overlay"]
-
-        third_experience = data["items"][2]
-        assert (
-            third_experience["id"] == privacy_experience_privacy_center_link.id
-        )  # Most recently created
-        assert third_experience["component"] == "privacy_center"
-        assert third_experience["region"] == "us_co"
-        assert len(third_experience["privacy_notices"]) == 2
-
-        # Notices match on region and "overlay"
-        privacy_experience_privacy_center_notice_1 = third_experience[
+        privacy_experience_privacy_center_notice_1 = second_experience[
             "privacy_notices"
         ][0]
         assert (
@@ -312,7 +283,7 @@ class TestGetPrivacyExperiences:
         assert privacy_experience_privacy_center_notice_1["regions"] == ["us_co"]
         assert privacy_experience_privacy_center_notice_1["displayed_in_privacy_center"]
 
-        privacy_experience_privacy_center_notice_2 = third_experience[
+        privacy_experience_privacy_center_notice_2 = second_experience[
             "privacy_notices"
         ][1]
         assert privacy_experience_privacy_center_notice_2["id"] == privacy_notice.id
@@ -325,8 +296,7 @@ class TestGetPrivacyExperiences:
     @pytest.mark.usefixtures(
         "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
         "privacy_notice_eu_cy_provide_service_frontend_only",  # doesn't overlap with any regions,
-        "privacy_experience_overlay_link",  # eu_fr, not co
-        "privacy_experience_overlay_banner",  # us_ca, not co
+        "privacy_experience_overlay",  # us_ca
         "privacy_notice_eu_fr_provide_service_frontend_only",  # eu_fr
         "privacy_notice_us_ca_provide",  # us_ca
     )
@@ -334,7 +304,7 @@ class TestGetPrivacyExperiences:
         self,
         api_client: TestClient,
         url,
-        privacy_experience_privacy_center_link,
+        privacy_experience_privacy_center,
         privacy_notice,
         privacy_notice_us_co_third_party_sharing,
     ):
@@ -348,7 +318,7 @@ class TestGetPrivacyExperiences:
         assert data["total"] == 1
         assert len(data["items"]) == 1
 
-        assert data["items"][0]["id"] == privacy_experience_privacy_center_link.id
+        assert data["items"][0]["id"] == privacy_experience_privacy_center.id
         assert data["items"][0]["region"] == "us_co"
 
         notices = data["items"][0]["privacy_notices"]
@@ -364,26 +334,26 @@ class TestGetPrivacyExperiences:
     @pytest.mark.usefixtures(
         "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
         "privacy_notice_eu_cy_provide_service_frontend_only",  # doesn't overlap with any regions,
-        "privacy_experience_overlay_link",  # eu_fr, not co
-        "privacy_experience_overlay_banner",  # us_ca, not co
+        "privacy_experience_privacy_center",
         "privacy_notice_eu_fr_provide_service_frontend_only",  # eu_fr
-        "privacy_notice_us_ca_provide",  # us_ca
+        "privacy_notice_us_co_third_party_sharing",  # us_co
     )
     def test_filter_on_notices_and_region_and_show_disabled_is_false(
         self,
         api_client: TestClient,
         db,
         url,
-        privacy_experience_privacy_center_link,
+        privacy_experience_overlay,
         privacy_notice,
-        privacy_notice_us_co_third_party_sharing,
+        privacy_notice_us_ca_provide,
     ):
         """Region filter propagates through to the notices too"""
-        privacy_notice_us_co_third_party_sharing.disabled = True
-        privacy_notice_us_co_third_party_sharing.save(db)
+
+        privacy_notice_us_ca_provide.disabled = True
+        privacy_notice_us_ca_provide.save(db)
 
         resp = api_client.get(
-            url + "?has_notices=True&region=us_co&show_disabled=False",
+            url + "?has_notices=True&region=us_ca&show_disabled=False",
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -391,22 +361,21 @@ class TestGetPrivacyExperiences:
         assert data["total"] == 1
         assert len(data["items"]) == 1
 
-        assert data["items"][0]["id"] == privacy_experience_privacy_center_link.id
-        assert data["items"][0]["region"] == "us_co"
+        assert data["items"][0]["id"] == privacy_experience_overlay.id
+        assert data["items"][0]["region"] == "us_ca"
 
         notices = data["items"][0]["privacy_notices"]
         assert len(notices) == 1
         assert notices[0]["regions"] == ["us_ca", "us_co"]
         assert notices[0]["id"] == privacy_notice.id
-        assert notices[0]["displayed_in_privacy_center"]
+        assert notices[0]["displayed_in_overlay"]
 
     def test_get_privacy_experiences_show_has_config_filter(
         self,
         api_client: TestClient,
         url,
-        privacy_experience_privacy_center_link,
-        privacy_experience_overlay_link,
-        privacy_experience_overlay_banner,
+        privacy_experience_privacy_center,
+        privacy_experience_overlay,
         db,
     ):
         resp = api_client.get(
@@ -422,18 +391,17 @@ class TestGetPrivacyExperiences:
         )
         assert resp.status_code == 200
         data = resp.json()
-        assert data["total"] == 3
-        assert len(data["items"]) == 3
+        assert data["total"] == 2
+        assert len(data["items"]) == 2
         assert {config["id"] for config in data["items"]} == {
-            privacy_experience_privacy_center_link.id,
-            privacy_experience_overlay_link.id,
-            privacy_experience_overlay_banner.id,
+            privacy_experience_privacy_center.id,
+            privacy_experience_overlay.id,
         }
 
-        privacy_experience_privacy_center_link.experience_config_id = None
-        privacy_experience_privacy_center_link.experience_config_history_id = None
+        privacy_experience_privacy_center.experience_config_id = None
+        privacy_experience_privacy_center.experience_config_history_id = None
 
-        privacy_experience_privacy_center_link.save(db=db)
+        privacy_experience_privacy_center.save(db=db)
         resp = api_client.get(
             url + "?has_config=False",
         )
@@ -441,14 +409,8 @@ class TestGetPrivacyExperiences:
         data = resp.json()
         assert data["total"] == 1
         assert len(data["items"]) == 1
-        assert data["items"][0]["id"] == privacy_experience_privacy_center_link.id
+        assert data["items"][0]["id"] == privacy_experience_privacy_center.id
 
-    @pytest.mark.usefixtures(
-        "privacy_notice_us_ca_provide",
-        "fides_user_provided_identity",
-        "privacy_preference_history_us_ca_provide_for_fides_user",
-        "privacy_experience_overlay_banner",
-    )
     def test_get_privacy_experiences_bad_fides_user_device_id_filter(
         self,
         api_client: TestClient,
@@ -464,7 +426,7 @@ class TestGetPrivacyExperiences:
         "privacy_notice_us_ca_provide",
         "fides_user_provided_identity",
         "privacy_preference_history_us_ca_provide_for_fides_user",
-        "privacy_experience_overlay_banner",
+        "privacy_experience_overlay",
     )
     def test_get_privacy_experiences_nonexistent_fides_user_device_id_filter(
         self,
@@ -488,7 +450,7 @@ class TestGetPrivacyExperiences:
         "privacy_notice_us_ca_provide",
         "fides_user_provided_identity",
         "privacy_preference_history_us_ca_provide_for_fides_user",
-        "privacy_experience_overlay_banner",
+        "privacy_experience_overlay",
     )
     def test_get_privacy_experiences_fides_user_device_id_filter(
         self,

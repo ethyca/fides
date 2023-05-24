@@ -22,8 +22,8 @@ from fides.api.api.v1.urn_registry import (
 )
 from fides.api.ctl.sql_models import DataUse as sql_DataUse
 from fides.api.models.privacy_experience import (
+    BannerEnabled,
     ComponentType,
-    DeliveryMechanism,
     PrivacyExperience,
 )
 from fides.api.models.privacy_notice import (
@@ -1852,7 +1852,6 @@ class TestPostPrivacyNotices:
         assert privacy_center_exp is None
 
         assert overlay_exp.component == ComponentType.overlay
-        assert overlay_exp.delivery_mechanism == DeliveryMechanism.banner
         assert overlay_exp.version == 1.0
         assert overlay_exp.disabled is False
         assert overlay_exp.experience_config_id is None
@@ -1866,7 +1865,6 @@ class TestPostPrivacyNotices:
         assert ca_privacy_center_exp is None
 
         assert ca_overlay_exp.component == ComponentType.overlay
-        assert ca_overlay_exp.delivery_mechanism == DeliveryMechanism.banner
         assert ca_overlay_exp.version == 1.0
         assert ca_overlay_exp.disabled is False
         assert ca_overlay_exp.experience_config_id is None
@@ -2604,11 +2602,9 @@ class TestPatchPrivacyNotices:
             db, PrivacyNoticeRegion.us_ca
         )
         assert overlay_exp.component == ComponentType.overlay
-        assert overlay_exp.delivery_mechanism == DeliveryMechanism.banner
         assert overlay_exp.version == 1.0
 
         assert privacy_center_exp.component == ComponentType.privacy_center
-        assert privacy_center_exp.delivery_mechanism == DeliveryMechanism.link
         assert privacy_center_exp.version == 1.0
 
     def test_patch_multiple_privacy_notices(
