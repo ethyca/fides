@@ -492,47 +492,6 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#fides-export" class="md-nav__link">
-    export
-  </a>
-  
-    <nav class="md-nav" aria-label="export">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fides-export-datamap" class="md-nav__link">
-    datamap
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fides-export-dataset" class="md-nav__link">
-    dataset
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fides-export-organization" class="md-nav__link">
-    organization
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fides-export-system" class="md-nav__link">
-    system
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#fides-generate" class="md-nav__link">
     generate
   </a>
@@ -1318,47 +1277,6 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#fides-export" class="md-nav__link">
-    export
-  </a>
-  
-    <nav class="md-nav" aria-label="export">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fides-export-datamap" class="md-nav__link">
-    datamap
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fides-export-dataset" class="md-nav__link">
-    dataset
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fides-export-organization" class="md-nav__link">
-    organization
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fides-export-system" class="md-nav__link">
-    system
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#fides-generate" class="md-nav__link">
     generate
   </a>
@@ -1837,73 +1755,6 @@ Will automatically initialize a fresh database.
   --dry                 Do not upload objects or results to the Fides
                         webserver.
   --help                Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h3 id="fides-export">fides export</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Export Fides data maps.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides export [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h4 id="fides-export-datamap">fides export datamap</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>Export a data map using the standard Fides template.
-
-The data map is comprised of an Organization, Systems, and Datasets.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides export datamap [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>  -d, --output-dir TEXT  The output directory for the data map to be exported
-                         to.  [default: .fides/]
-  -k, --org-key TEXT     The `organization_fides_key` of the `Organization`
-                         you want to specify.  [default: default_organization]
-  --dry                  Do not upload results to the Fides webserver.
-  --csv                  Export using csv format
-  --help                 Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h4 id="fides-export-dataset">fides export dataset</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Export datasets in a data map format.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides export dataset [OPTIONS] [MANIFESTS_DIR]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  --dry   Do not upload results to the Fides webserver.
-  --help  Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h4 id="fides-export-organization">fides export organization</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Export organizations in a data map format.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides export organization [OPTIONS] [MANIFESTS_DIR]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  --dry   Do not upload results to the Fides webserver.
-  --help  Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h4 id="fides-export-system">fides export system</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Export systems in a data map format.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides export system [OPTIONS] [MANIFESTS_DIR]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  --dry   Do not upload results to the Fides webserver.
-  --help  Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-generate">fides generate</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Programmatically generate Fides objects.
