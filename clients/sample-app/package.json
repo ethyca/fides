@@ -9,7 +9,7 @@
     "format:ci": "prettier --check .",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "postdev": "docker compose down --volumes",
+    "postdev": "docker compose down",
     "predev": "docker compose up -d --wait postgres-test",
     "start": "next start",
     "test": "npm run lint && tsc --noemit"
