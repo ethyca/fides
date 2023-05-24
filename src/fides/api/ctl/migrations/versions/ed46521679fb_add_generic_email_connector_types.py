@@ -21,7 +21,7 @@ def upgrade():
     op.execute(
         "create type connectiontype as enum('mongodb', 'mysql', 'https', 'snowflake', "
         "'redshift', 'mssql', 'mariadb', 'bigquery', 'saas', 'manual', 'manual_webhook', "
-        "'timescale', 'fides', 'sovrn', 'attentive', 'dynamodb', "
+        "'timescale', 'fides', 'sovrn', 'attentive', 'dynamodb', 'postgres',"
         "'generic_consent_email', 'generic_erasure_email')"
     )
     op.execute(
@@ -42,7 +42,7 @@ def downgrade():
     op.execute(
         "create type connectiontype as enum('mongodb', 'mysql', 'https', 'snowflake', "
         "'redshift', 'mssql', 'mariadb', 'bigquery', 'saas', 'manual', 'manual_webhook', "
-        "'timescale', 'fides', 'sovrn', 'attentive', 'dynamodb')"
+        "'timescale', 'fides', 'sovrn', 'attentive', 'dynamodb', 'postgres')"
     )
     op.execute(
         (
