@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { Product, UserData } from "../../types";
 import Button from "../Button";
 import Header from "../Header";
-import LocationSelect from "../LocationSelect";
+import GeolocationSelect from "../LocationSelect";
 import Popup from "../Popup";
 import PurchaseModal from "../PurchaseModal";
 import css from "./style.module.scss";
@@ -67,7 +67,7 @@ const Home = ({ products }: Props) => {
           </a>
         </div>
         <div className={css.select}>
-          <LocationSelect menuPlacement="top" />
+          <GeolocationSelect menuPlacement="top" />
         </div>
       </footer>
       <PurchaseModal

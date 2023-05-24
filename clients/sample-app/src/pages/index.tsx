@@ -21,11 +21,11 @@ const IndexPage = ({ products }: Props) => {
   // running at http://localhost:3001
   let fidesScriptTagUrl = "http://localhost:3001/fides.js";
   const router = useRouter();
-  const { location } = router.query;
+  const { geolocation } = router.query;
 
-  // If a `?location=` query param exists, pass that along to the fides.js fetch
-  if (location) {
-    fidesScriptTagUrl += `?location=${location}`;
+  // If a `?geolocation=` query param exists, pass that along to the fides.js fetch
+  if (geolocation) {
+    fidesScriptTagUrl += `?geolocation=${geolocation}`;
   }
 
   return (
