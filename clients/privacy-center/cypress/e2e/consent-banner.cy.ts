@@ -1,8 +1,8 @@
-import {
+import UserConsentPreference, {
   CONSENT_COOKIE_NAME,
   ComponentType,
   DeliveryMechanism,
-  FidesCookie,
+  FidesCookie, ConsentMethod,
 } from "fides-js";
 import {
   FidesOptions,
@@ -10,6 +10,7 @@ import {
   UserGeolocation,
 } from "fides-js/src/lib/consent-types";
 import { ConsentConfig } from "fides-js/src/lib/consent-config";
+import {FidesEndpointPaths} from "fides-js/src/services/fides/api";
 
 enum OVERRIDE {
   // signals that we should override entire prop with undefined
@@ -33,7 +34,7 @@ const stubConfig = ({
   experience,
   geolocation,
   options,
-}: Partial<FidesConfigTesting>) => {
+}: Partial<FidesConfigTesting>, mockGeolocationApiResp?: any) => {
   cy.fixture("consent/test_banner_options.json").then((config) => {
     const updatedConfig = {
       consent:
@@ -53,15 +54,24 @@ const stubConfig = ({
           ? undefined
           : Object.assign(config.options, options),
     };
-    if (typeof options !== "string" && options?.geolocationApiUrl) {
-      cy.intercept("GET", options.geolocationApiUrl, {
+    if (typeof updatedConfig.options !== "string" && updatedConfig.options?.geolocationApiUrl) {
+      const geoLocationResp = mockGeolocationApiResp || {
         body: {
           country: "US",
           ip: "63.173.339.012:13489",
           location: "US-CA",
           region: "CA",
         },
-      }).as("getGeolocation");
+      }
+      cy.intercept("GET", updatedConfig.options.geolocationApiUrl, geoLocationResp).as("getGeolocation");
+    }
+    if (typeof updatedConfig.options !== "string" && updatedConfig.options?.fidesApiUrl) {
+      cy.intercept("GET", `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}*`, {
+        fixture: "consent/privacy-experience.json",
+      }).as("getPrivacyExperience");
+      cy.intercept("PATCH", `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`, {
+        body: {}
+      }).as("patchPrivacyPreference");
     }
     cy.visitConsentDemo(updatedConfig);
   });
@@ -188,10 +198,37 @@ describe("Consent banner", () => {
           });
           cy.getByTestId("toggle-Essential").click();
 
-          // DEFER: intercept and check the API call once it is hooked up
           cy.getByTestId("Save-btn").click();
           // Modal should close after saving
           cy.getByTestId("consent-modal").should("not.exist");
+
+          // check that consent was sent to Fides API
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            const { body } = interception.request;
+            const expected = {
+              // browser_identity.fides_user_device_id is intentionally left out here
+              // so we can later assert to be any string
+              preferences: [
+                {
+                  privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
+                  preference: "opt_in",
+                },
+                {
+                  privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
+                  preference: "acknowledge",
+                }
+              ],
+              privacy_experience_history_id: "2342345",
+              user_geography: "us_ca",
+              method: ConsentMethod.button
+            };
+            // uuid is generated automatically if the user has no saved consent cookie
+            expect(body.browser_identity.fides_user_device_id).to.be.a('string');
+            expect(body.preferences).to.eql(expected.preferences);
+            expect(body.privacy_experience_history_id).to.eql(expected.privacy_experience_history_id);
+            expect(body.user_geography).to.eql(expected.user_geography);
+            expect(body.method).to.eql(expected.method);
+          });
 
           // check that the cookie updated
           cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
@@ -254,6 +291,29 @@ describe("Consent banner", () => {
           [PRIVACY_NOTICE_ID_1]: true,
           [PRIVACY_NOTICE_ID_2]: true,
         };
+
+        // check that consent was sent to Fides API
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          const { body } = interception.request;
+          const expected = {
+            browser_identity: { fides_user_device_id: uuid },
+            preferences: [
+              {
+                privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
+                preference: "opt_in",
+              },
+              {
+                privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
+                preference: "acknowledge",
+              }
+            ],
+            privacy_experience_history_id: "2342345",
+            user_geography: "us_ca",
+            method: ConsentMethod.button
+          };
+          expect(body).to.eql(expected);
+        });
+
         // check that the cookie updated
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
@@ -268,11 +328,6 @@ describe("Consent banner", () => {
         cy.window().then((win) => {
           expect(win.Fides.consent).to.eql(expectedConsent);
         });
-      });
-
-      it.skip("should save the consent request to the Fides API", () => {
-        // TODO: add tests for saving to API (ie PATCH /api/v1/consent-request/{id}/preferences...)
-        expect(false).is.eql(true);
       });
 
       it.skip("should support option to display at top or bottom of page", () => {
@@ -349,9 +404,48 @@ describe("Consent banner", () => {
         });
       });
 
-      it.skip("renders the banner", () => {
-        // TODO: add when we are able to retrieve experience via API from fides.js
-        expect(false).is.eql(true);
+      it("fetches experience and renders the banner", () => {
+        cy.wait("@getPrivacyExperience").then((interception) => {
+          expect(interception.request.query["region"]).to.eq("us_ca");
+        });
+        cy.get("div#fides-consent-banner").should("exist");
+        cy.contains("button", "Accept Test").should("exist");
+        cy.get("div#fides-consent-banner.fides-consent-banner").within(() => {
+          cy.get(
+              "div#fides-consent-banner-description.fides-consent-banner-description"
+          ).contains(
+              "Config from mocked Fides API is overriding this banner description."
+          );
+        });
+      });
+      it("does not render modal link", () => {
+        cy.get("#fides-consent-modal-link").should("not.be.visible");
+      });
+    });
+
+    describe("when experience is provided, and geolocation is not provided", () => {
+      beforeEach(() => {
+        stubConfig({
+          geolocation: OVERRIDE.EMPTY,
+          options: {
+            isGeolocationEnabled: true,
+            geolocationApiUrl: "https://some-geolocation-url.com",
+          }
+        });
+      });
+
+      it("fetches geolocation and renders the banner", () => {
+        // we still need geolocation because it is needed to save consent preference
+        cy.wait("@getGeolocation");
+        cy.get("div#fides-consent-banner").should("exist");
+        cy.contains("button", "Accept Test").should("exist");
+        cy.get("div#fides-consent-banner.fides-consent-banner").within(() => {
+          cy.get(
+              "div#fides-consent-banner-description.fides-consent-banner-description"
+          ).contains(
+              "This test website is overriding the banner description label."
+          );
+        });
       });
       it("does not render modal link", () => {
         cy.get("#fides-consent-modal-link").should("not.be.visible");
@@ -372,10 +466,20 @@ describe("Consent banner", () => {
           });
         });
 
-        it("renders the banner", () => {
+        it("fetches geolocation and experience renders the banner", () => {
           cy.wait("@getGeolocation");
-          // TODO: add assertion for fetching experience
-          // TODO: add assertion for rendering banner
+          cy.wait("@getPrivacyExperience").then((interception) => {
+            expect(interception.request.query["region"]).to.eq("us_ca");
+          });
+          cy.get("div#fides-consent-banner").should("exist");
+          cy.contains("button", "Accept Test").should("exist");
+          cy.get("div#fides-consent-banner.fides-consent-banner").within(() => {
+            cy.get(
+                "div#fides-consent-banner-description.fides-consent-banner-description"
+            ).contains(
+                "Config from mocked Fides API is overriding this banner description."
+            );
+          });
         });
         it.skip("hides the modal link", () => {
           // TODO: add when we have link binding working
@@ -385,24 +489,23 @@ describe("Consent banner", () => {
 
       describe("when geolocation is not successful", () => {
         beforeEach(() => {
-          const geoLocationUrl = "https://some-geolocation-api.com";
           // mock failed geolocation api call
-          cy.intercept("GET", geoLocationUrl, {
-            body: undefined,
-          }).as("getGeolocation");
+          const mockFailedGeolocationCall = {
+            body: {},
+          }
           stubConfig({
             experience: OVERRIDE.EMPTY,
             geolocation: OVERRIDE.EMPTY,
             options: {
               isGeolocationEnabled: true,
-              geolocationApiUrl: geoLocationUrl,
+              geolocationApiUrl: "https://some-geolocation-api.com",
             },
-          });
+          }, mockFailedGeolocationCall);
         });
-        it.skip("does not render", () => {
+        it("does not render banner", () => {
           cy.wait("@getGeolocation");
-          // TODO: add assertion for fetching experience
-          // TODO: add assertion for banner not rendering after we implement experience api call
+          cy.get("div#fides-consent-banner").should("not.exist");
+          cy.contains("button", "Accept Test").should("not.exist");
         });
         it.skip("hides the modal link", () => {
           // TODO: add when we have link binding working
@@ -418,6 +521,8 @@ describe("Consent banner", () => {
           experience: OVERRIDE.EMPTY,
           geolocation: {
             country: "US",
+            "location": "",
+            "region": ""
           },
           options: {
             isGeolocationEnabled: true,
@@ -426,9 +531,20 @@ describe("Consent banner", () => {
         });
       });
 
-      it("fetches geolocation from API and renders the banner", () => {
+      it("fetches geolocation and experience and renders the banner", () => {
         cy.wait("@getGeolocation");
-        // todo: add banner render assertion when we have experience API call
+        cy.wait("@getPrivacyExperience").then((interception) => {
+          expect(interception.request.query["region"]).to.eq("us_ca");
+        });
+        cy.get("div#fides-consent-banner").should("exist");
+        cy.contains("button", "Accept Test").should("exist");
+        cy.get("div#fides-consent-banner.fides-consent-banner").within(() => {
+          cy.get(
+              "div#fides-consent-banner-description.fides-consent-banner-description"
+          ).contains(
+              "Config from mocked Fides API is overriding this banner description."
+          );
+        });
       });
 
       it("does not render modal link", () => {

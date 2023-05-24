@@ -98,14 +98,14 @@ let _Fides: Fides;
  */
 const retrieveEffectiveGeolocation = async (
   options: FidesOptions
-): Promise<UserGeolocation | undefined> => {
-  // If geolocation is not enabled, return undefined
+): Promise<UserGeolocation | null> => {
+  // If geolocation is not enabled, return null
   if (!options.isGeolocationEnabled) {
     debugLog(
       options.debug,
       `User location is required but could not be retrieved because geolocation is disabled.`
     );
-    return undefined;
+    return null;
   }
   // Call the geolocation API
   return getGeolocation(options.geolocationApiUrl, options.debug);
@@ -152,20 +152,21 @@ const init = async ({
   }
 
   let fidesRegionString = constructFidesRegionString(geolocation);
-  let effectiveExperience = experience;
+  let effectiveExperience: PrivacyExperience | undefined | null = experience;
 
-  if (!effectiveExperience || !fidesRegionString) {
-    // If experience is not provided, we need to retrieve it via the Fides API.
-    // In order to retrieve it, we first need a valid geolocation, which is either provided
-    // OR can be obtained via the Fides API
+  if (!fidesRegionString) {
+    // we always need a region str so that we can PATCH privacy preferences to Fides Api
     fidesRegionString = constructFidesRegionString(await retrieveEffectiveGeolocation(options));
     if (!fidesRegionString) {
       debugLog(
-        options.debug,
-        `User location could not be constructed from location params`
+          options.debug,
+          `User location could not be obtained.`
       );
       return;
     }
+  }
+
+  if (!effectiveExperience) {
     effectiveExperience = await fetchExperience(
       fidesRegionString,
       options.fidesApiUrl,

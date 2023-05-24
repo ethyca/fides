@@ -7,7 +7,7 @@ import { debugLog } from "../../lib/consent-utils";
 export const getGeolocation = async (
   geolocationApiUrl?: string,
   debug: boolean = false
-): Promise<UserGeolocation> => {
+): Promise<UserGeolocation | null> => {
   debugLog(debug, "Running getLocation...");
 
   if (!geolocationApiUrl) {
@@ -15,7 +15,7 @@ export const getGeolocation = async (
       debug,
       "Location cannot be found due to no configured geoLocationApiUrl."
     );
-    return {};
+    return null;
   }
 
   debugLog(debug, `Calling geolocation API: GET ${geolocationApiUrl}...`);
@@ -30,7 +30,7 @@ export const getGeolocation = async (
       "Error getting location from geolocation API, returning {}. Response:",
       response
     );
-    return {};
+    return null;
   }
 
   try {
@@ -47,6 +47,6 @@ export const getGeolocation = async (
       "Error parsing response body from geolocation API, returning {}. Response:",
       response
     );
-    return {};
+    return null;
   }
 };
