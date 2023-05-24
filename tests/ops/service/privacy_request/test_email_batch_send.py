@@ -3,28 +3,26 @@ from unittest import mock
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.models.messaging import MessagingConfig
-from fides.api.ops.models.policy import ActionType, Policy
-from fides.api.ops.models.privacy_preference import UserConsentPreference
-from fides.api.ops.models.privacy_request import (
+from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.messaging import MessagingConfig
+from fides.api.models.policy import ActionType, Policy
+from fides.api.models.privacy_preference import UserConsentPreference
+from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.ops.schemas.messaging.messaging import ConsentPreferencesByUser
-from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.api.ops.schemas.privacy_preference import (
-    MinimalPrivacyPreferenceHistorySchema,
-)
-from fides.api.ops.schemas.privacy_request import Consent
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.privacy_request.email_batch_service import (
+from fides.api.schemas.messaging.messaging import ConsentPreferencesByUser
+from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
+from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
+from fides.api.schemas.privacy_request import Consent
+from fides.api.schemas.redis_cache import Identity
+from fides.api.service.privacy_request.email_batch_service import (
     EmailExitState,
     send_email_batch,
 )
-from fides.api.ops.util.cache import get_all_cache_keys_for_privacy_request, get_cache
+from fides.api.util.cache import get_all_cache_keys_for_privacy_request, get_cache
 from fides.core.config import get_config
 from tests.fixtures.application_fixtures import (
     _create_privacy_request_for_policy,
@@ -98,10 +96,10 @@ def third_privacy_request_awaiting_erasure_email_send(
 
 class TestConsentEmailBatchSend:
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_email_batch_no_applicable_privacy_requests(
         self,
@@ -115,10 +113,10 @@ class TestConsentEmailBatchSend:
         assert not requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("privacy_request_awaiting_consent_email_send")
     def test_send_email_batch_no_applicable_connectors(
@@ -133,10 +131,10 @@ class TestConsentEmailBatchSend:
         assert requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("privacy_request_awaiting_consent_email_send")
     @pytest.mark.usefixtures("sovrn_email_connection_config")
@@ -152,10 +150,10 @@ class TestConsentEmailBatchSend:
         assert requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     def test_send_consent_email_no_consent_or_privacy_preferences_saved(
@@ -174,7 +172,7 @@ class TestConsentEmailBatchSend:
         assert requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("sovrn_email_connection_config", "test_fides_org")
     def test_send_consent_email_failure_old_workflow(
@@ -212,7 +210,7 @@ class TestConsentEmailBatchSend:
         assert not email_execution_log
 
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("test_fides_org")
     def test_send_consent_email_failure_new_workflow(
@@ -286,10 +284,10 @@ class TestConsentEmailBatchSend:
         assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_consent_email_old_workflow(
         self,
@@ -356,10 +354,10 @@ class TestConsentEmailBatchSend:
         assert logs_for_privacy_request_without_identity is None
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_consent_email_skipped_logs_due_to_data_use_mismatch(
         self,
@@ -410,10 +408,10 @@ class TestConsentEmailBatchSend:
         assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_consent_email_new_workflow(
         self,
@@ -467,6 +465,7 @@ class TestConsentEmailBatchSend:
                         preference=UserConsentPreference.opt_out,
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="example privacy notice",
+                            notice_key="example_privacy_notice",
                             description="a sample privacy notice configuration",
                             origin="privacy_notice_template_1",
                             regions=["us_ca", "us_co"],
@@ -540,10 +539,10 @@ class TestConsentEmailBatchSend:
         assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_consent_email_multiple_users_old_workflow(
         self,
@@ -606,10 +605,10 @@ class TestConsentEmailBatchSend:
         )
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_consent_email_multiple_users_new_workflow(
         self,
@@ -682,10 +681,10 @@ class TestConsentEmailBatchSend:
 
 class TestErasureEmailBatchSend:
     @mock.patch(
-        "fides.api.ops.service.connectors.erasure_email_connector.send_single_erasure_email",
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_email_batch_no_applicable_privacy_requests(
         self,
@@ -699,10 +698,10 @@ class TestErasureEmailBatchSend:
         assert not requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.connectors.erasure_email_connector.send_single_erasure_email",
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("privacy_request_awaiting_consent_email_send")
     def test_send_email_batch_no_applicable_connectors(
@@ -717,10 +716,10 @@ class TestErasureEmailBatchSend:
         assert requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.connectors.erasure_email_connector.send_single_erasure_email",
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("privacy_request_awaiting_consent_email_send")
     @pytest.mark.usefixtures("attentive_email_connection_config")
@@ -736,7 +735,7 @@ class TestErasureEmailBatchSend:
         assert requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("attentive_email_connection_config", "test_fides_org")
     def test_send_erasure_email_failure(
@@ -771,10 +770,10 @@ class TestErasureEmailBatchSend:
         assert not email_execution_log
 
     @mock.patch(
-        "fides.api.ops.service.connectors.erasure_email_connector.send_single_erasure_email",
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_erasure_email(
         self,
@@ -862,10 +861,10 @@ class TestErasureEmailBatchSend:
         )
 
     @mock.patch(
-        "fides.api.ops.service.connectors.erasure_email_connector.send_single_erasure_email",
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_erasure_email_multiple_users(
         self,

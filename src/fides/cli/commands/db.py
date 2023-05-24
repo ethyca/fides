@@ -2,7 +2,8 @@
 import rich_click as click
 
 from fides.cli.options import yes_flag
-from fides.cli.utils import handle_cli_response, with_analytics
+from fides.cli.utils import with_analytics
+from fides.common.utils import handle_cli_response
 from fides.core import api as _api
 from fides.core.utils import echo_red
 

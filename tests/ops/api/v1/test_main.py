@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from starlette.testclient import TestClient
 
 from fides.api.main import create_fides_app
-from fides.api.ops.oauth.utils import (
+from fides.api.oauth.utils import (
     get_root_client,
     verify_oauth_client,
     verify_oauth_client_prod,
