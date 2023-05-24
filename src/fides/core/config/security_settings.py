@@ -123,6 +123,18 @@ class SecuritySettings(FidesSettings):
         description="Enables or disables the ability to import connector templates with custom functions. When enabled, custom functions which will be loaded in a restricted environment to minimize security risks.",
     )
 
+    bastion_server_host: Optional[str] = Field(
+        default=None, description="An optional field to store the bastion server host"
+    )
+    bastion_server_ssh_username: Optional[str] = Field(
+        default=None,
+        description="An optional field to store the username used to access the bastion server",
+    )
+    bastion_server_ssh_pkey: Optional[str] = Field(
+        default=None,
+        description="An optional field to store the key used to SSH into the bastion server.",
+    )
+
     @validator("app_encryption_key")
     @classmethod
     def validate_encryption_key_length(
