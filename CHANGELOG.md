@@ -35,6 +35,7 @@ The types of changes are:
 - Track Privacy Experience with Privacy Preferences [#3311](https://github.com/ethyca/fides/pull/3311)
 - Add ability for `fides-js` to fetch its own geolocation [#3356](https://github.com/ethyca/fides/pull/3356)
 - Allow Material Design and FontAwesome icons to be passed in to Privacy Center `icon_path` configuration [#2907](https://github.com/ethyca/fides/pull/2907)
+- Add ability to select different locations in the "Cookie House" sample app [#3362](https://github.com/ethyca/fides/pull/3362)
 
 ### Fixed
 
@@ -53,6 +54,7 @@ The types of changes are:
 ### Developer Experience
 
 - Add dispatch event when publishing a non-prod tag [#3317](https://github.com/ethyca/fides/pull/3317)
+- Add OpenAPI (Swagger) documentation for Fides Privacy Center API endpoints (/fides.js) [#3341](https://github.com/ethyca/fides/pull/3341)
 
 ### Removed
 
