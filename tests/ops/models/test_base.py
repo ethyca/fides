@@ -83,7 +83,7 @@ class TestSaveKey:
             storage_config.save(db)
 
         error_output = str(exc.value)
-        expected_output = "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: bad key"
+        expected_output = "Key 'bad key' on StorageConfig is invalid."
         print(error_output)
         assert error_output == expected_output
 
@@ -94,8 +94,9 @@ class TestSaveKey:
             storage_config.save(db)
 
         error_output = str(exc.value)
+        expected_output = "Key 'None' on StorageConfig is invalid."
         print(error_output)
-        assert error_output == "Key on class 'StorageConfig' cannot be empty!"
+        assert error_output == expected_output
 
     def test_save_key_valid(self, db: Session, storage_config):
         "Test save with valid key"

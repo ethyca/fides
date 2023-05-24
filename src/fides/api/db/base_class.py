@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any, Type, TypeVar
 from uuid import uuid4
 
@@ -19,6 +20,7 @@ from fides.api.common_exceptions import KeyOrNameAlreadyExists, KeyValidationErr
 from fides.api.util.text import to_snake_case
 
 T = TypeVar("T", bound="OrmWrappedFidesBase")
+ALLOWED_CHARS = re.compile(r"[A-z0-9\-_]")
 
 
 class JSONTypeOverride(JSONType):  # pylint: disable=W0223
@@ -294,8 +296,13 @@ class OrmWrappedFidesBase(FidesBase):
         """Save the current object over an existing row in the database."""
         if hasattr(self, "key"):
             key = getattr(self, "key")
-            assert key, f"Key on class '{self.__class__.__name__}' cannot be empty!"
-            FidesKey.validate(key)
+
+            is_valid = key is not None and (len(ALLOWED_CHARS.sub("", key)) == 0)
+
+            if not is_valid:
+                raise KeyValidationError(
+                    f"Key '{key}' on {self.__class__.__name__} is invalid."
+                )
 
         return OrmWrappedFidesBase.persist_obj(db, self)
 
