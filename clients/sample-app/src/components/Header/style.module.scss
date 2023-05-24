@@ -1,9 +1,42 @@
 .header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  position: relative;
   height: 92px;
-  text-align: center;
   background-color: #faf7f6;
 
   img {
     margin: 12px;
+  }
+}
+
+.location {
+  color: tomato;
+  position: absolute;
+  display: flex;
+  right: 0;
+  margin: 2em;
+
+  img {
+    display: inline-block;
+    margin: 0;
+  }
+
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: none;
+    display: inline-block;
+
+    padding: 0 10px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e0;
+    color: #cbd5e0;
+    font-size: 14px;
+    font-family: "Inter";
+    outline: none;
   }
 }

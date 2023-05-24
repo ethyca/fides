@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-sync-scripts */
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { Product } from "../types";
 
 import Home from "../components/Home";
@@ -15,7 +16,14 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
   return { props: { products: results.rows } };
 };
 
-const IndexPage = ({ products }: Props) => (
+const IndexPage = ({ products }: Props) => {
+  let fidesScriptTagUrl = "http://localhost:3001/fides.js";
+  const router = useRouter();
+  const { location } = router.query;
+  if (location) {
+    fidesScriptTagUrl += `?location=${location}`;
+  }
+  return (
   <>
     <Head>
       <title>Cookie House</title>
@@ -25,11 +33,12 @@ const IndexPage = ({ products }: Props) => (
       />
       <link rel="icon" href="/favicon.ico" />
       <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-      <script src="http://localhost:3001/fides.js" />
+      <script src={fidesScriptTagUrl} />
     </Head>
 
     <Home products={products} />
   </>
-);
+  );
+}
 
 export default IndexPage;
