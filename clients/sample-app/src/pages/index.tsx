@@ -17,12 +17,17 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 };
 
 const IndexPage = ({ products }: Props) => {
+  // Load the fides.js script from the Fides Privacy Center, assumed to be
+  // running at http://localhost:3001
   let fidesScriptTagUrl = "http://localhost:3001/fides.js";
   const router = useRouter();
   const { location } = router.query;
+
+  // If a `?location=` query param exists, pass that along to the fides.js fetch
   if (location) {
     fidesScriptTagUrl += `?location=${location}`;
   }
+
   return (
     <>
       <Head>
