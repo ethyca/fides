@@ -16,9 +16,9 @@ const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
  *     description: Generates a customized "fides.js" script bundle using the current configuration values
  *     parameters:
  *       - in: query
- *         name: location
+ *         name: geolocation
  *         required: false
- *         description: Location string to inject into the bundle (e.g. "US-CA"), containing ISO 3166 country code (e.g. "US") and optional region code (e.g. "CA"), separated by a "-"
+ *         description: Geolocation string to inject into the bundle (e.g. "US-CA"), containing ISO 3166 country code (e.g. "US") and optional region code (e.g. "CA"), separated by a "-"
  *         schema:
  *           type: string
  *         example: US-CA
