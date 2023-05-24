@@ -1,5 +1,6 @@
-import { Flex, Image, Text } from "@fidesui/react";
+import { Flex, Text } from "@fidesui/react";
 import React from "react";
+import ResolvedIcon from "./ResolvedIcon";
 
 type CardProps = {
   title: string;
@@ -48,7 +49,11 @@ const Card: React.FC<CardProps> = ({
       outline: "none",
     }}
   >
-    <Image alt={description} boxSize="32px" src={iconPath} />
+    <ResolvedIcon
+      iconPath={iconPath}
+      iconBoxSize="32px"
+      description={description}
+    />
     <Text
       color="gray.600"
       fontSize="md"
