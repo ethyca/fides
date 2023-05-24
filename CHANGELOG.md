@@ -26,6 +26,7 @@ The types of changes are:
 - Moved all of the dirs from `fides.api.ops` into `fides.api` [#3318](https://github.com/ethyca/fides/pull/3318)
 - Add required notice key to privacy notices [#3337](https://github.com/ethyca/fides/pull/3337)
 - Make Privacy Experience List public, and separate public endpoint rate limiting [#3339](https://github.com/ethyca/fides/pull/3339)
+- Enabled Privacy Experience beta flag [#3364](https://github.com/ethyca/fides/pull/3364)
 
 ### Added
 
