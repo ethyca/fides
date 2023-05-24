@@ -94,19 +94,20 @@ describe("Privacy notice driven consent", () => {
         "opt_in",
         "opt_in",
       ]);
-      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
-      cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
-        const cookie = JSON.parse(
-          decodeURIComponent(cookieJson!.value)
-        ) as FidesCookie;
-        expect(body.browser_identity.fides_user_device_id).to.eql(
-          cookie.identity.fides_user_device_id
-        );
-        const expectedConsent = { data_sales: true, advertising: true };
-        const { consent } = cookie;
-        expect(consent).to.eql(expectedConsent);
-        cy.window().then((win) => {
-          expect(win.Fides.consent).to.eql(expectedConsent);
+      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
+          const cookie = JSON.parse(
+            decodeURIComponent(cookieJson!.value)
+          ) as FidesCookie;
+          expect(body.browser_identity.fides_user_device_id).to.eql(
+            cookie.identity.fides_user_device_id
+          );
+          const expectedConsent = { data_sales: true, advertising: true };
+          const { consent } = cookie;
+          expect(consent).to.eql(expectedConsent);
+          cy.window().then((win) => {
+            expect(win.Fides.consent).to.eql(expectedConsent);
+          });
         });
       });
     });
