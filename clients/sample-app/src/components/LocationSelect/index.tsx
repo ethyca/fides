@@ -37,7 +37,7 @@ const formatOptionLabel = ({ label, flag }: LocationOption) => (
 );
 
 interface LocationSelectProps {
-  menuPlacement: "bottom" | "auto" | "top"
+  menuPlacement: "bottom" | "auto" | "top";
 }
 
 const LocationSelect = ({ menuPlacement }: LocationSelectProps) => {

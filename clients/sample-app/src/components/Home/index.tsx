@@ -67,7 +67,7 @@ const Home = ({ products }: Props) => {
           </a>
         </div>
         <div className={css.select}>
-          <LocationSelect menuPlacement="top"/>
+          <LocationSelect menuPlacement="top" />
         </div>
       </footer>
       <PurchaseModal
