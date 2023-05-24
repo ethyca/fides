@@ -16,7 +16,6 @@ from .commands.annotate import annotate
 from .commands.core import evaluate, parse, pull, push
 from .commands.crud import delete, get_resource, list_resources
 from .commands.db import database
-from .commands.export import export
 from .commands.generate import generate
 from .commands.scan import scan
 from .commands.user import user
@@ -31,7 +30,6 @@ API_COMMANDS = [
     annotate,
     database,
     delete,
-    export,
     get_resource,
     list_resources,
     status,

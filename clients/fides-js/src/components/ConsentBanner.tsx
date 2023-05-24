@@ -2,7 +2,7 @@ import { h, FunctionComponent } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { ButtonType, ExperienceConfig } from "../lib/consent-types";
 import Button from "./Button";
-import "../lib/banner.module.css";
+import "../lib/overlay.module.css";
 import { useHasMounted } from "../lib/hooks";
 
 interface BannerProps {
@@ -74,12 +74,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         className="fides-consent-banner-buttons"
       >
         <Button
-          buttonType={ButtonType.TERTIARY}
+          buttonType={ButtonType.SECONDARY}
           label={managePreferencesLabel}
           onClick={handleManagePreferencesClick}
         />
         <Button
-          buttonType={ButtonType.SECONDARY}
+          buttonType={ButtonType.PRIMARY}
           label={rejectButtonLabel}
           onClick={() => {
             onRejectAll();
