@@ -35,6 +35,7 @@ The types of changes are:
 - Track Privacy Experience with Privacy Preferences [#3311](https://github.com/ethyca/fides/pull/3311)
 - Add ability for `fides-js` to fetch its own geolocation [#3356](https://github.com/ethyca/fides/pull/3356)
 - Privacy center can now render its consent values based on Privacy Notices and Privacy Experiences [#3340](https://github.com/ethyca/fides/pull/3340)
+- Add ability to select different locations in the "Cookie House" sample app [#3362](https://github.com/ethyca/fides/pull/3362)
 
 ### Fixed
 
@@ -49,6 +50,16 @@ The types of changes are:
 
 - Data model around PrivacyExperiences to better keep Privacy Notices and Experiences in sync [#3292](https://github.com/ethyca/fides/pull/3292)
 - UI calls to support new PrivacyExperiences data model [#3313](https://github.com/ethyca/fides/pull/3313)
+
+### Developer Experience
+
+- Add dispatch event when publishing a non-prod tag [#3317](https://github.com/ethyca/fides/pull/3317)
+- Add OpenAPI (Swagger) documentation for Fides Privacy Center API endpoints (/fides.js) [#3341](https://github.com/ethyca/fides/pull/3341)
+
+### Removed
+
+- Remove `fides export` command and backing code [#3256](https://github.com/ethyca/fides/pull/3256)
+
 
 ## [2.13.0](https://github.com/ethyca/fides/compare/2.12.1...2.13.0)
 
