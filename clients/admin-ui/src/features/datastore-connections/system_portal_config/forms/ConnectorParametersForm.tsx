@@ -30,22 +30,19 @@ import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   ConnectionType,
+  SystemType,
 } from "~/types/api";
 
-import {
-  DatabaseConnectorParametersFormFields,
-  SaasConnectorParametersFormFields,
-} from "../types";
+import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
-import DatasetConfigField from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField";
+import DatasetConfigField from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
+import connectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
 type ConnectorParametersFormProps = {
   data: ConnectionTypeSecretSchemaReponse;
-  defaultValues:
-    | DatabaseConnectorParametersFormFields
-    | SaasConnectorParametersFormFields;
+  defaultValues: ConnectionConfigFormValues;
   isSubmitting: boolean;
   /**
    * Parent callback when Save is clicked
@@ -355,7 +352,16 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                 </FormControl>
               )}
             </Field>
-            <DatasetConfigField />
+            {[SystemType.SAAS, SystemType.DATABASE].indexOf(
+              connectionOption.type
+            ) > -1 && connection ? (
+              <DatasetConfigField connectionConfig={connection} />
+            ) : (
+              <div>
+                Not rendering the dataset dropdown {connectionOption.type}{" "}
+                {JSON.stringify(connection)}
+              </div>
+            )}
             {/* Dynamic connector secret fields */}
             {Object.entries(data.properties).map(([key, item]) => {
               if (key === "advanced_settings") {

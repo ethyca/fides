@@ -218,7 +218,10 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       ],
       keepUnusedDataFor: 1,
     }),
-    getDatasetConfigs: build.query<Page_DatasetConfigSchema_, string>({
+    getConnectionConfigDatasetConfigs: build.query<
+      Page_DatasetConfigSchema_,
+      string
+    >({
       query: (key) => ({
         url: `${CONNECTION_ROUTE}/${key}/datasetconfig`,
       }),
@@ -329,7 +332,7 @@ export const {
   useGetAccessManualHookQuery,
   useGetAllEnabledAccessManualHooksQuery,
   useGetAllDatastoreConnectionsQuery,
-  useGetDatasetConfigsQuery,
+  useGetConnectionConfigDatasetConfigsQuery,
   useGetDatastoreConnectionByKeyQuery,
   useDeleteDatastoreConnectionMutation,
   useLazyGetDatastoreConnectionStatusQuery,

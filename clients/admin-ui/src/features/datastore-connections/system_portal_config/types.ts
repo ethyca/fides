@@ -8,7 +8,7 @@ export type AddConnectionStep = {
   parentStepId?: number;
 };
 
-export type BaseConnectorParametersFields = {
+export type ConnectionConfigFormValues = {
   description: string;
   name: string;
   instance_key?: string;
@@ -19,9 +19,3 @@ export type ConnectorParameterOption = {
   type: SystemType;
   options: string[];
 };
-
-export type DatabaseConnectorParametersFormFields =
-  BaseConnectorParametersFields;
-
-export type SaasConnectorParametersFormFields = BaseConnectorParametersFields;
-export type EmailConnectorParametersFormFields = BaseConnectorParametersFields;

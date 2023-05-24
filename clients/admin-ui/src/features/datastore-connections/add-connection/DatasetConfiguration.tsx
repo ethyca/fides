@@ -12,7 +12,7 @@ import {
 import { useAlert, useAPIHelper } from "common/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
-  useGetDatasetConfigsQuery,
+  useGetConnectionConfigDatasetConfigsQuery,
   usePatchDatasetConfigsMutation,
 } from "datastore-connections/datastore-connection.slice";
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
@@ -42,9 +42,8 @@ const DatasetConfiguration: React.FC = () => {
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { connection } = useAppSelector(selectConnectionTypeState);
-  const { data, isFetching, isLoading, isSuccess } = useGetDatasetConfigsQuery(
-    connection!.key
-  );
+  const { data, isFetching, isLoading, isSuccess } =
+    useGetConnectionConfigDatasetConfigsQuery(connection!.key);
   const [patchDatasetConfig] = usePatchDatasetConfigsMutation();
   const [upsertDatasets] = useUpsertDatasetsMutation();
   const {

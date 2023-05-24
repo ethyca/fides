@@ -42,12 +42,16 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   3.6 Test that saas connectors can be edited after creation and are linked to a system
   4. Profit
   5. Add dataset configuration to both. If each type requires different behavior account for it.
+  5.1 Add dataset(config) patching to the form submission
+  5.2 make sure the dropdown automatically fills in based on the form value
+  5.3 Make sure the dropdown works as expected
+  5.4 Handles creating and editing well
+  5.4 add in yaml modal.
   6. Get it working for manual connectors
   7. Get it working for email connectors
   8. Add in flow for orphaned connectors
   */
 
-  console.log("rendering form: ", connectionConfig);
   return (
     <>
       <ConnectionListDropdown

@@ -12,7 +12,7 @@ import {
   SimpleGrid,
 } from "@fidesui/react";
 import { ReactNode } from "react";
-import YamlEditor from "./YamlEditor"
+import YamlEditor from "./YamlEditor";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -43,10 +43,7 @@ const YamlEditorModal = ({
       <ModalHeader fontWeight="medium" pb={0}>
         {title}
       </ModalHeader>
-       <ModalBody>
-
-
-       </ModalBody>
+      <ModalBody></ModalBody>
       <ModalFooter>
         <SimpleGrid columns={2} width="100%">
           <Button
@@ -64,7 +61,7 @@ const YamlEditorModal = ({
             data-testid="continue-btn"
             isLoading={isLoading}
           >
-           Continue
+            Continue
           </Button>
         </SimpleGrid>
       </ModalFooter>
@@ -72,4 +69,4 @@ const YamlEditorModal = ({
   </Modal>
 );
 
-export default ConfirmationModal;
+export default YamlEditorModal;

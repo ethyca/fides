@@ -8,14 +8,15 @@ import {
   Text,
   TextProps,
   VStack,
+  Flex,
 } from "@fidesui/react";
 import { useAlert, useAPIHelper } from "common/hooks";
 import {
-  useGetDatasetConfigsQuery,
+  useGetConnectionConfigDatasetConfigsQuery,
   usePatchDatasetConfigsMutation,
 } from "datastore-connections/datastore-connection.slice";
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState, useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -30,45 +31,52 @@ import {
 } from "~/types/api";
 
 import YamlEditor from "./YamlEditor";
+import YamlEditorModal from "./YamlEditorModal";
+import { CustomSelect, Option } from "common/form/inputs";
+import { useField, useFormikContext } from "formik";
 
-type Props = {
+const fieldName = "dataset";
+
+type UseDatasetConfigField = {
   connectionConfig: ConnectionConfigurationResponse;
 };
-
-const DatasetConfigField: React.FC<Props> = ({ connectionConfig }) => {
-  const { errorAlert, successAlert } = useAlert();
-  const { handleError } = useAPIHelper();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const {
-    data: connectionConfigDatasets,
-    isFetching,
-    isLoading,
-    isSuccess,
-  } = useGetDatasetConfigsQuery(connectionConfig!.key);
+const useDatasetConfigField = ({ connectionConfig }: UseDatasetConfigField) => {
+  const [field] = useField<string>(fieldName);
+  const { setFieldValue } = useFormikContext();
 
   const [patchDatasetConfig] = usePatchDatasetConfigsMutation();
   const [upsertDatasets] = useUpsertDatasetsMutation();
+
+  const {
+    data: allDatasetConfigs,
+    isFetching,
+    isLoading,
+    isSuccess,
+  } = useGetConnectionConfigDatasetConfigsQuery(connectionConfig!.key);
+
   const {
     data: allDatasets,
     isLoading: isLoadingAllDatasets,
     error: loadAllDatasetsError,
   } = useGetAllDatasetsQuery();
 
-  const [selectedDatasetKey, setSelectedDatasetKey] = useState<
+  useEffect(() => {
+    console.log("allDatasetConfigs", allDatasetConfigs);
+    if (allDatasetConfigs && allDatasetConfigs.items.length) {
+      console.log(allDatasetConfigs.items[0].fides_key);
+      setFieldValue(fieldName, allDatasetConfigs.items[0].fides_key);
+      setDatasetConfigFidesKey(allDatasetConfigs.items[0].fides_key);
+    }
+  }, [allDatasetConfigs]);
+
+  const [datasetConfigFidesKey, setDatasetConfigFidesKey] = useState<
     string | undefined
   >(undefined);
-  const [connectionConfigDatasetFidesKey, setConnectionConfigDatasetFidesKey] = useState<string | undefined>(undefined);
 
-  useEffect(() => {
-    if (connectionConfigDatasets && connectionConfigDatasets.items.length) {
-      setSelectedDatasetKey(
-        connectionConfigDatasets.items[0].ctl_dataset.fides_key
-      );
-      setConnectionConfigDatasetFidesKey(
-        connectionConfigDatasets.items[0].ctl_dataset.fides_key
-      )
-    }
-  }, [connectionConfigDatasets]);
+  const { handleError } = useAPIHelper();
+
+  const { errorAlert, successAlert } = useAlert();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePatchDatasetConfig = async (
     datasetPairs: DatasetConfigCtlDataset[]
@@ -86,14 +94,25 @@ const DatasetConfigField: React.FC<Props> = ({ connectionConfig }) => {
   };
 
   const handleLinkDataset = async () => {
-    if (selectedDatasetKey) {
+    if (field.value) {
       try {
-        let fidesKey = selectedDatasetKey;
-        if (connectionConfigDatasetFidesKey) {
-          fidesKey = connectionConfigDatasetFidesKey
+        /*
+        If no `datasetConfigFidesKey` exists then use the `selectedDatasetKey`.
+        This means that no `DatasetConfig` has been linked to the current
+        `ConnectionConfig` yet. Otherwise, reuse the pre-existing `datasetConfigFidesKey`
+        and update the current `DatasetConfig`  use the `Dataset` that's tied
+        to `selectedDatasetKey`
+         */
+
+        let fidesKey = field.value;
+        if (datasetConfigFidesKey) {
+          fidesKey = datasetConfigFidesKey;
         }
         const datasetPairs: DatasetConfigCtlDataset[] = [
-          { fides_key: fidesKey, ctl_dataset_fides_key: selectedDatasetKey },
+          {
+            fides_key: fidesKey,
+            ctl_dataset_fides_key: field.value,
+          },
         ];
         handlePatchDatasetConfig(datasetPairs);
       } catch (error) {
@@ -123,8 +142,8 @@ const DatasetConfigField: React.FC<Props> = ({ connectionConfig }) => {
         ctl_dataset_fides_key: d.fides_key,
       }));
       // But existing entries might have their dataset keys changed from under them
-      if (connectionConfigDatasets && connectionConfigDatasets.items.length) {
-        const { items: datasetConfigs } = connectionConfigDatasets;
+      if (allDatasetConfigs && allDatasetConfigs.items.length) {
+        const { items: datasetConfigs } = allDatasetConfigs;
         pairs = datasetConfigs.map((d, i) => ({
           fides_key: d.fides_key,
           // This will not handle deletions, additions, or even changing order. If we want to support
@@ -141,76 +160,64 @@ const DatasetConfigField: React.FC<Props> = ({ connectionConfig }) => {
     }
   };
 
-  const handleSelectDataset = (event: ChangeEvent<HTMLSelectElement>) => {
-    setSelectedDatasetKey(event.target.value);
+  const isDatasetSelected = field.value !== "" && field.value !== undefined;
+
+  const dropdownOptions: Option[] = useMemo(() => {
+    return allDatasets
+      ? allDatasets.map((d) => ({
+          value: d.fides_key,
+          label: d.name || d.fides_key,
+        }))
+      : [];
+  }, [allDatasets]);
+  return {
+    dropdownOptions,
+    isDatasetSelected,
   };
+};
 
-  const datasetSelected =
-    selectedDatasetKey !== "" && selectedDatasetKey !== undefined;
+type Props = {
+  connectionConfig: ConnectionConfigurationResponse;
+};
 
-  if (
-    isFetching ||
-    isLoading ||
-    (isLoadingAllDatasets && !loadAllDatasetsError)
-  ) {
-    return (
-      <Center>
-        <Spinner />
-      </Center>
-    );
-  }
+const DatasetConfigField: React.FC<Props> = ({ connectionConfig }) => {
+  const { dropdownOptions } = useDatasetConfigField({
+    connectionConfig,
+  });
 
-  const datasetsExist = allDatasets && allDatasets.length;
+  // if (allDatasets === undefined) {
+  //   return (
+  //     <Center>
+  //       <Spinner />
+  //     </Center>
+  //   );
+  // }
+
+  // TODO: Automatically set the dropdown value on form load
 
   return (
-    <HStack spacing={8} mb={4}>
-      {datasetsExist ? (
-        <>
-          <VStack alignSelf="start" mr={4}>
-            <Box data-testid="dataset-selector-section" mb={4}>
-              <Select
-                size="sm"
-                width="fit-content"
-                placeholder="Select"
-                onChange={handleSelectDataset}
-                value={selectedDatasetKey}
-                data-testid="dataset-selector"
-              >
-                {allDatasets.map((ds) => (
-                  <option key={ds.fides_key} value={ds.fides_key}>
-                    {ds.fides_key}
-                  </option>
-                ))}
-              </Select>
-            </Box>
-            <Button
-              size="sm"
-              colorScheme="primary"
-              alignSelf="start"
-              disabled={!datasetSelected}
-              onClick={handleLinkDataset}
-              data-testid="save-dataset-link-btn"
-            >
-              Save
-            </Button>
-          </VStack>
-        </>
-      ) : null}
-      <Box data-testid="yaml-editor-section">
-        {isSuccess && connectionConfigDatasets!?.items ? (
-          <YamlEditor
-            data={connectionConfigDatasets.items.map(
-              (item) => item.ctl_dataset
-            )}
-            isSubmitting={isSubmitting}
-            onSubmit={handleSubmitYaml}
-            disabled={datasetSelected}
-            // Only render the cancel button if the dataset dropdown view is unavailable
-            // onCancel={undefined}
-          />
-        ) : null}
-      </Box>
-    </HStack>
+    <Flex flexDirection="row">
+      <CustomSelect
+        label="Dataset"
+        name={fieldName}
+        options={dropdownOptions}
+        isRequired
+      />
+      <Button>YAML</Button>
+
+      {/* <Box data-testid="yaml-editor-section"> */}
+      {/*   {isSuccess && allDatasetConfigs!?.items ? ( */}
+      {/*     <YamlEditor */}
+      {/*       data={allDatasetConfigs.items.map((item) => item.ctl_dataset)} */}
+      {/*       isSubmitting={isSubmitting} */}
+      {/*       onSubmit={handleSubmitYaml} */}
+      {/*       disabled={isDatasetSelected} */}
+      {/*       // Only render the cancel button if the dataset dropdown view is unavailable */}
+      {/*       // onCancel={undefined} */}
+      {/*     /> */}
+      {/*   ) : null} */}
+      {/* </Box> */}
+    </Flex>
   );
 };
 

@@ -8,7 +8,9 @@ import {
 } from "datastore-connections/datastore-connection.slice";
 import {
   CreateSaasConnectionConfigRequest,
+  CreateSaasConnectionConfigResponse,
   DatastoreConnectionSecretsRequest,
+  DatastoreConnectionSecretsResponse,
 } from "datastore-connections/types";
 import { useState } from "react";
 
@@ -16,19 +18,93 @@ import { formatKey } from "~/features/datastore-connections/system_portal_config
 import { usePatchSystemConnectionConfigsMutation } from "~/features/system/system.slice";
 import {
   AccessLevel,
+  BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   ConnectionType,
   SystemType,
 } from "~/types/api";
 
-import {
-  BaseConnectorParametersFields,
-  DatabaseConnectorParametersFormFields,
-} from "../types";
+import { ConnectionConfigFormValues } from "../types";
 import ConnectorParametersForm from "./ConnectorParametersForm";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import TestConnection from "datastore-connections/add-connection/TestConnection";
+
+/**
+ * Only handles creating saas connectors. The BE handler automatically
+ * configures the connector using the saas config and creates the
+ * `DatasetConfig` and `Dataset`.
+ */
+const createSaasConnector = async (
+  values: ConnectionConfigFormValues,
+  secretsSchema: ConnectionTypeSecretSchemaReponse,
+  connectionOption: ConnectionSystemTypeMap,
+  createSaasConnectorFunc: any
+) => {
+  const params: CreateSaasConnectionConfigRequest = {
+    description: values.description,
+    name: values.name,
+    instance_key: formatKey(values.instance_key as string),
+    saas_connector_type: connectionOption.identifier,
+    secrets: {},
+  };
+  Object.entries(secretsSchema!.properties).forEach((key) => {
+    params.secrets[key[0]] = values[key[0]];
+  });
+  return (await createSaasConnectorFunc(
+    params
+  ).unwrap()) as CreateSaasConnectionConfigResponse;
+};
+
+/**
+ * Database connectors: creating and patching
+ *
+ * Saas connectors: patching
+ */
+const patchConnectionConfig = async (
+  values: ConnectionConfigFormValues,
+  secretsSchema: ConnectionTypeSecretSchemaReponse,
+  connectionOption: ConnectionSystemTypeMap,
+  systemFidesKey: string,
+  patchFunc: any
+) => {
+  const params1: Omit<ConnectionConfigurationResponse, "created_at"> = {
+    access: AccessLevel.WRITE,
+    connection_type: connectionOption?.identifier as ConnectionType,
+    description: values.description,
+    disabled: false,
+    key: formatKey(values.instance_key as string),
+    name: values.name,
+  };
+  const payload = await patchFunc({
+    systemFidesKey,
+    connectionConfigs: [params1],
+  }).unwrap();
+
+  if (payload.failed?.length > 0) {
+    throw Error(payload.failed[0].message);
+  }
+  return payload as BulkPutConnectionConfiguration;
+};
+
+const upsertConnectionConfigSecrets = async (
+  values: ConnectionConfigFormValues,
+  secretsSchema: ConnectionTypeSecretSchemaReponse,
+  connectionConfigFidesKey: string,
+  upsertFunc: any
+) => {
+  const params2: DatastoreConnectionSecretsRequest = {
+    connection_key: connectionConfigFidesKey,
+    secrets: {},
+  };
+  Object.entries(secretsSchema!.properties).forEach((key) => {
+    params2.secrets[key[0]] = values[key[0]];
+  });
+
+  return (await upsertFunc(
+    params2
+  ).unwrap()) as DatastoreConnectionSecretsResponse;
+};
 
 type ConnectorParametersProps = {
   systemFidesKey: string;
@@ -36,7 +112,7 @@ type ConnectorParametersProps = {
   connectionConfig?: ConnectionConfigurationResponse;
 };
 
-export const useDatabaseConnector = ({
+export const useConnectorForm = ({
   secretsSchema,
   systemFidesKey,
   connectionOption,
@@ -53,79 +129,64 @@ export const useDatabaseConnector = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [createSassConnectionConfig] = useCreateSassConnectionConfigMutation();
-  const [patchDatastoreConnection] = usePatchSystemConnectionConfigsMutation();
   const [updateDatastoreConnectionSecrets] =
     useUpdateDatastoreConnectionSecretsMutation();
+  const [patchDatastoreConnection] = usePatchSystemConnectionConfigsMutation();
 
-  const handleSubmit = async (values: BaseConnectorParametersFields) => {
+  const handleSubmit = async (values: ConnectionConfigFormValues) => {
     try {
       setIsSubmitting(true);
-      console.log(
-        connectionOption.type,
-        !!connectionConfig,
-        connectionConfig === undefined,
-        connectionConfig
-      );
       if (
         connectionOption.type === SystemType.SAAS &&
         connectionConfig === undefined
       ) {
-        console.log("CREATING A NEW SAAS CONFIG");
-        const params: CreateSaasConnectionConfigRequest = {
-          description: values.description,
-          name: values.name,
-          instance_key: formatKey(values.instance_key as string),
-          saas_connector_type: connectionOption.identifier,
-          secrets: {},
-        };
-        Object.entries(secretsSchema!.properties).forEach((key) => {
-          params.secrets[key[0]] = values[key[0]];
-        });
-        await createSassConnectionConfig(params).unwrap();
+        const response = await createSaasConnector(
+          values,
+          secretsSchema!,
+          connectionOption,
+          createSassConnectionConfig
+        );
+        connectionConfig = response.connection;
         successAlert(`Connector successfully added!`);
       } else {
-        const params1: Omit<ConnectionConfigurationResponse, "created_at"> = {
-          access: AccessLevel.WRITE,
-          connection_type: connectionOption?.identifier as ConnectionType,
-          description: values.description,
-          disabled: false,
-          key: formatKey(values.instance_key as string),
-          name: values.name,
-        };
-        const payload = await patchDatastoreConnection({
+        const payload = await patchConnectionConfig(
+          values,
+          secretsSchema!,
+          connectionOption,
           systemFidesKey,
-          connectionConfigs: [params1],
-        }).unwrap();
-        if (payload.failed?.length > 0) {
-          errorAlert(payload.failed[0].message);
-        } else {
-          const params2: DatastoreConnectionSecretsRequest = {
-            connection_key: payload.succeeded[0].key,
-            secrets: {},
-          };
-          Object.entries(secretsSchema!.properties).forEach((key) => {
-            params2.secrets[key[0]] = values[key[0]];
-          });
-          const payload2 = await updateDatastoreConnectionSecrets(
-            params2
-          ).unwrap();
-          if (payload2.test_status === "failed") {
-            errorAlert(
-              <>
-                <b>Message:</b> {payload2.msg}
-                <br />
-                <b>Failure Reason:</b> {payload2.failure_reason}
-              </>
-            );
-          } else {
-            successAlert(
-              `Connector successfully ${
-                connectionConfig?.key ? "updated" : "added"
-              }!`
-            );
-          }
-        }
+          patchDatastoreConnection
+        );
+        const payload2 = await upsertConnectionConfigSecrets(
+          values,
+          secretsSchema!,
+          payload.succeeded[0].key,
+          updateDatastoreConnectionSecrets
+        );
       }
+      console.log(values);
+      //TODO: Add patching of DatasetConfig here.
+      // it requires a connectionConfig so it must come after the submission
+      // if creating a brand new connection there would be no connectionConfig
+      // to link it to
+
+      // I think it's worth moving the testing phase to the very end
+      // I need to make sure the semantics around that are good
+
+      // if (payload2.test_status === "failed") {
+      //   errorAlert(
+      //     <>
+      //       <b>Message:</b> {payload2.msg}
+      //       <br />
+      //       <b>Failure Reason:</b> {payload2.failure_reason}
+      //     </>
+      //   );
+      // } else {
+      //   successAlert(
+      //     `Connector successfully ${
+      //       connectionConfig?.key ? "updated" : "added"
+      //     }!`
+      //   );
+      // }
     } catch (error) {
       handleError(error);
     } finally {
@@ -141,11 +202,11 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   connectionOption,
   connectionConfig,
 }) => {
-  const defaultValues = {
+  const defaultValues: ConnectionConfigFormValues = {
     description: "",
     instance_key: "",
     name: "",
-  } as DatabaseConnectorParametersFormFields;
+  };
 
   const [response, setResponse] = useState<any>();
 
@@ -160,7 +221,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     }
   );
 
-  const { isSubmitting, handleSubmit } = useDatabaseConnector({
+  const { isSubmitting, handleSubmit } = useConnectorForm({
     secretsSchema,
     systemFidesKey,
     connectionOption,

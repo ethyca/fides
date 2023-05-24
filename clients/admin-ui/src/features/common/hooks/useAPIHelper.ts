@@ -14,6 +14,7 @@ export const useAPIHelper = () => {
    * @param error
    */
   const handleError = (error: any) => {
+    console.log(error);
     let errorMsg = "An unexpected error occurred. Please try again.";
     if (isErrorWithDetail(error)) {
       errorMsg = error.data.detail;
