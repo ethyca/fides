@@ -1,6 +1,9 @@
+import io
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional, Type
 
+import paramiko
+import sshtunnel
 from loguru import logger
 from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import Column, text
@@ -46,6 +49,9 @@ from fides.api.service.connectors.query_config import (
     SQLQueryConfig,
 )
 from fides.api.util.collection_util import Row
+from fides.core.config import get_config
+
+CONFIG = get_config()
 
 
 class SQLConnector(BaseConnector[Engine]):
@@ -196,6 +202,51 @@ class PostgreSQLConnector(SQLConnector):
         port = f":{config.port}" if config.port else ""
         dbname = f"/{config.dbname}" if config.dbname else ""
         return f"postgresql://{user_password}{netloc}{port}{dbname}"
+
+    def build_ssh_uri(self, local_port: int) -> str:
+        """Build URI of format postgresql://[user[:password]@][netloc][:port][/dbname]"""
+        config = self.secrets_schema(**self.configuration.secrets or {})
+
+        user_password = ""
+        if config.username:
+            user = config.username
+            password = f":{config.password}" if config.password else ""
+            user_password = f"{user}{password}@"
+
+        netloc = config.host
+        port = f":{local_port}" if local_port else ""
+        dbname = f"/{config.dbname}" if config.dbname else ""
+        return f"postgresql://{user_password}{netloc}{port}{dbname}"
+
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with a database"""
+
+        config = self.secrets_schema(**self.configuration.secrets or {})
+        if config.ssh_required:
+            with io.BytesIO(
+                CONFIG.security.bastion_server_ssh_pkey.encode("utf8")
+            ) as binary_file:
+                with io.TextIOWrapper(binary_file, encoding="utf8") as file_obj:
+                    pkey = paramiko.RSAKey.from_private_key(file_obj=file_obj)
+            server = sshtunnel.SSHTunnelForwarder(
+                (CONFIG.security.bastion_server_host),
+                ssh_username=CONFIG.security.bastion_server_ssh_username,
+                ssh_pkey=pkey,
+                remote_bind_address=(
+                    config.host,
+                    config.port,
+                ),
+            )
+            server.start()
+
+            uri = self.build_ssh_uri(local_port=server.local_bind_port)
+        else:
+            uri = config.url or self.build_uri()
+        return create_engine(
+            uri,
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
+        )
 
     def set_schema(self, connection: Connection) -> None:
         """Sets the schema for a postgres database if applicable"""
