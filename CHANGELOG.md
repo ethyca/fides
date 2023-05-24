@@ -33,6 +33,7 @@ The types of changes are:
 - Add infrastructure for "overlay" consent components (Preact, CSS bundling, etc.) and initial version of consent banner [#3191](https://github.com/ethyca/fides/pull/3191)
 - Add the modal component of the "overlay" consent components [#3291](https://github.com/ethyca/fides/pull/3291)
 - Track Privacy Experience with Privacy Preferences [#3311](https://github.com/ethyca/fides/pull/3311)
+- Add ability for `fides-js` to fetch its own geolocation [#3356](https://github.com/ethyca/fides/pull/3356)
 
 ### Fixed
 
@@ -41,6 +42,7 @@ The types of changes are:
 - Fides user device id filter to GET Privacy Experience List endpoint to stash user preferences on embedded notices [#3302](https://github.com/ethyca/fides/pull/3302)
 - Support for data categories on manual webhook fields [#3330](https://github.com/ethyca/fides/pull/3330)
 - Added config-driven rendering to consent components [#3316](https://github.com/ethyca/fides/pull/3316)
+- Pin `typing_extensions` dependency to `4.5.0` to work around a pydantic bug [#3357](https://github.com/ethyca/fides/pull/3357)
 
 ### Changed
 
