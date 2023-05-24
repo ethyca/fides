@@ -1,6 +1,6 @@
 import { createRequest } from "node-mocks-http";
 
-import { getLocation } from "~/common/location";
+import { getLocation } from "~/common/geolocation";
 
 describe("getLocation", () => {
   describe("when using location headers", () => {
