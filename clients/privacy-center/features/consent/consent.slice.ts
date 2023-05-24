@@ -69,7 +69,7 @@ export const consentApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Privacy Experience"],
     }),
-    updatePrivacyPreferencesVerified: build.mutation<
+    updatePrivacyPreferences: build.mutation<
       void,
       { id: string; body: PrivacyPreferencesRequest }
     >({
@@ -77,17 +77,6 @@ export const consentApi = baseApi.injectEndpoints({
         url: `${VerificationType.ConsentRequest}/${id}/privacy-preferences`,
         method: "PATCH",
         body,
-      }),
-      invalidatesTags: ["Privacy Experience"],
-    }),
-    updatePrivacyPreferencesUnverified: build.mutation<
-      void,
-      PrivacyPreferencesRequest
-    >({
-      query: (payload) => ({
-        url: `privacy-preferences`,
-        method: "PATCH",
-        body: payload,
       }),
       invalidatesTags: ["Privacy Experience"],
     }),
@@ -99,8 +88,7 @@ export const {
   useLazyGetConsentRequestPreferencesQuery,
   useUpdateConsentRequestPreferencesDeprecatedMutation,
   useGetPrivacyExperienceQuery,
-  useUpdatePrivacyPreferencesUnverifiedMutation,
-  useUpdatePrivacyPreferencesVerifiedMutation,
+  useUpdatePrivacyPreferencesMutation,
 } = consentApi;
 
 type State = {

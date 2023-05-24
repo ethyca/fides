@@ -11,7 +11,7 @@ import {
   selectCurrentConsentPreferences,
   selectExperienceRegion,
   selectPrivacyExperience,
-  useUpdatePrivacyPreferencesUnverifiedMutation,
+  useUpdatePrivacyPreferencesMutation,
 } from "~/features/consent/consent.slice";
 import {
   getGpcStatusFromNotice,
@@ -29,6 +29,7 @@ import { useRouter } from "next/router";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import { useLocalStorage } from "~/common/hooks";
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
 
@@ -47,13 +48,15 @@ const resolveConsentValue = (
 const NoticeDrivenConsent = () => {
   const router = useRouter();
   const toast = useToast();
+  const [consentRequestId] = useLocalStorage("consentRequestId", "");
+  const [verificationCode] = useLocalStorage("verificationCode", "");
   const consentContext = useMemo(() => getConsentContext(), []);
   const experience = useAppSelector(selectPrivacyExperience);
   const serverPreferences = useAppSelector(selectCurrentConsentPreferences);
   const cookie = getOrMakeFidesCookie();
   const { fides_user_device_id: fidesUserDeviceId } = cookie.identity;
-  const [updatePrivacyPreferencesUnverifiedMutationTrigger] =
-    useUpdatePrivacyPreferencesUnverifiedMutation();
+  const [updatePrivacyPreferencesMutationTrigger] =
+    useUpdatePrivacyPreferencesMutation();
   const region = useAppSelector(selectExperienceRegion);
 
   const initialDraftPreferences = useMemo(() => {
@@ -135,11 +138,13 @@ const NoticeDrivenConsent = () => {
       user_geography: region,
       privacy_experience_history_id: experience?.privacy_experience_history_id,
       method: ConsentMethod.BUTTON,
+      code: verificationCode,
     };
 
-    const result = await updatePrivacyPreferencesUnverifiedMutationTrigger(
-      payload
-    );
+    const result = await updatePrivacyPreferencesMutationTrigger({
+      id: consentRequestId,
+      body: payload,
+    });
     if ("error" in result) {
       toast({
         title: "An error occurred while saving user consent preferences",
