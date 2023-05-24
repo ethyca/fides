@@ -7,7 +7,7 @@ import { debugLog } from "../../lib/consent-utils";
 
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",
-  PRIVACY_PREFERENCES = "/privacy-preferences"
+  PRIVACY_PREFERENCES = "/privacy-preferences",
 }
 
 /**
@@ -15,12 +15,15 @@ export enum FidesEndpointPaths {
  * Fetches both Privacy Center and Overlay components, because GPC needs to work regardless of component
  */
 export const fetchExperience = async (
-    userLocationString: string,
-    fidesApiUrl: string,
-    fidesUserDeviceId: string,
-    debug: boolean
+  userLocationString: string,
+  fidesApiUrl: string,
+  fidesUserDeviceId: string,
+  debug: boolean
 ): Promise<PrivacyExperience | null> => {
-  debugLog(debug, `Fetching experience for userId: ${fidesUserDeviceId} in location: ${userLocationString}`);
+  debugLog(
+    debug,
+    `Fetching experience for userId: ${fidesUserDeviceId} in location: ${userLocationString}`
+  );
   const fetchOptions: RequestInit = {
     method: "GET",
     mode: "cors",
@@ -31,14 +34,17 @@ export const fetchExperience = async (
     component: ComponentType.OVERLAY,
     has_notices: "true",
     has_config: "true",
-    fides_user_device_id: fidesUserDeviceId
-  })
-  const response = await fetch(`${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`, fetchOptions);
+    fides_user_device_id: fidesUserDeviceId,
+  });
+  const response = await fetch(
+    `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
+    fetchOptions
+  );
   if (!response.ok) {
     debugLog(
-        debug,
-        "Error getting experience from Fides API, returning null. Response:",
-        response
+      debug,
+      "Error getting experience from Fides API, returning null. Response:",
+      response
     );
     return null;
   }
@@ -47,23 +53,23 @@ export const fetchExperience = async (
     const experience = body.items && body.items[0];
     if (!experience) {
       debugLog(
-          debug,
-          "No relevant experience found from Fides API, returning null. Response:",
-          response
+        debug,
+        "No relevant experience found from Fides API, returning null. Response:",
+        response
       );
       return null;
     }
     debugLog(
-        debug,
-        "Got experience response from Fides API, returning:",
-        experience
+      debug,
+      "Got experience response from Fides API, returning:",
+      experience
     );
     return experience;
   } catch (e) {
     debugLog(
-        debug,
-        "Error parsing experience response body from Fides API, returning {}. Response:",
-        response
+      debug,
+      "Error parsing experience response body from Fides API, returning {}. Response:",
+      response
     );
     return null;
   }
@@ -73,10 +79,10 @@ export const fetchExperience = async (
  * Sends user consent preference downstream to Fides
  */
 export const patchUserPreferenceToFidesServer = async (
-    preferences: PrivacyPreferencesRequest,
-    fidesApiUrl: string,
-    fidesUserDeviceId: string,
-    debug: boolean
+  preferences: PrivacyPreferencesRequest,
+  fidesApiUrl: string,
+  fidesUserDeviceId: string,
+  debug: boolean
 ): Promise<void> => {
   debugLog(debug, "Saving user consent preference...", preferences);
   const fetchOptions: RequestInit = {
@@ -85,15 +91,18 @@ export const patchUserPreferenceToFidesServer = async (
     body: JSON.stringify(preferences),
     headers: {
       "Content-Type": "application/json",
-    }
+    },
   };
-  const response = await fetch(`${fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`, fetchOptions);
+  const response = await fetch(
+    `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`,
+    fetchOptions
+  );
   if (!response.ok) {
     debugLog(
-        debug,
-        "Error patching user preference Fides API. Response:",
-        response
+      debug,
+      "Error patching user preference Fides API. Response:",
+      response
     );
   }
-  return Promise.resolve()
+  return Promise.resolve();
 };

@@ -1,5 +1,6 @@
 import {
-  ConsentMechanism, ConsentMethod,
+  ConsentMechanism,
+  ConsentMethod,
   ConsentOptionCreate,
   PrivacyNotice,
   PrivacyPreferencesRequest,
@@ -74,13 +75,13 @@ export const updateConsentPreferences = ({
     preferences: fidesUserPreferences,
     privacy_experience_history_id: experienceHistoryId,
     user_geography: userLocationString,
-    method: consentMethod
+    method: consentMethod,
   };
   patchUserPreferenceToFidesServer(
-      privacyPreferenceCreate,
-      fidesApiUrl,
-      cookie.identity.fides_user_device_id,
-      debug
+    privacyPreferenceCreate,
+    fidesApiUrl,
+    cookie.identity.fides_user_device_id,
+    debug
   );
 
   // 2. Update the window.Fides.consent object

@@ -1,11 +1,16 @@
-import {h, FunctionComponent} from "preact";
-import {useState} from "preact/hooks";
-import {ConsentMethod, FidesOptions, PrivacyExperience, PrivacyNotice,} from "../lib/consent-types";
+import { h, FunctionComponent } from "preact";
+import { useState } from "preact/hooks";
+import {
+  ConsentMethod,
+  FidesOptions,
+  PrivacyExperience,
+  PrivacyNotice,
+} from "../lib/consent-types";
 import ConsentBanner from "./ConsentBanner";
-import {CookieKeyConsent} from "../lib/cookie";
+import { CookieKeyConsent } from "../lib/cookie";
 import ConsentModal from "./ConsentModal";
 
-import {updateConsentPreferences} from "../lib/preferences";
+import { updateConsentPreferences } from "../lib/preferences";
 
 export interface OverlayProps {
   consentDefaults: CookieKeyConsent;
@@ -14,7 +19,11 @@ export interface OverlayProps {
   fidesRegionString: string;
 }
 
-const Overlay: FunctionComponent<OverlayProps> = ({ experience, options , fidesRegionString}) => {
+const Overlay: FunctionComponent<OverlayProps> = ({
+  experience,
+  options,
+  fidesRegionString,
+}) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
   if (!experience.experience_config) {
