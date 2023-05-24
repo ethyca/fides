@@ -24,21 +24,6 @@ const DEFAULT_VALUES: EmailConnectorParametersFormFields = {
   name: "",
 };
 
-/**
- * We do not support advanced settings in the UI yet, but the backend requires at least
- * a payload that looks like it. We stuff one into handleSubmit for now
- * See fides#2458
- */
-const STUBBED_ADVANCED_SETTINGS = {
-  advanced_settings: {
-    identity_types: {
-      email: false,
-      phone_number: false,
-      cookie_ids: [],
-    },
-  },
-};
-
 export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   data,
   onConnectionCreated,
@@ -51,7 +36,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   } = useDatabaseConnector({ onConnectionCreated, data });
 
   const handleSubmit = (values: EmailConnectorParametersFormFields) => {
-    onSubmit({ ...values, ...STUBBED_ADVANCED_SETTINGS });
+    onSubmit(values);
   };
 
   return (
