@@ -36,6 +36,8 @@ from fides.api.ctl.ui import (
     match_route,
     path_is_in_ui_directory,
 )
+from fides.api.models.client import ClientDetail
+from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.analytics import Event, ExtraData
 
 # pylint: disable=wildcard-import, unused-wildcard-import
@@ -248,18 +250,30 @@ def start_webserver(port: int = 8080) -> None:
 async def action_to_audit_log(
     request: Request,
     call_next: Callable,
+    # db: Session = Depends(deps.get_db),
+    # config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
+    # client: ClientDetail = Security(
+    #     verify_oauth_client,
+    #     # scopes=None,
+    #     scopes=["system:create"],
+    # ),
 ) -> Response:
     """Log basic information about every non-GET request handled by the server."""
     response = await call_next(request)
     if request.method == "GET":
         return response
     else:
+        logger.info("SLARTIBARTFAST")
         db: Session = deps.get_api_session()
+        client: ClientDetail = Security(verify_oauth_client, scopes=["system:create"])
+        client_user_id = client.user_id or "root"
+        # the above still doesn't work, and I don't know why just yet.
+        # I also think I should be able to sort out the fides_keys as a minimum starting point
         try:
             AuditLogResource.create(
                 db=db,
                 data={
-                    "user_id": "root",
+                    "user_id": client_user_id,
                     "request_path": request.scope["path"],
                     "request_type": request.method,
                     "fides_keys": ["key1", "key2"],
