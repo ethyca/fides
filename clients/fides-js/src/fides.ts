@@ -156,12 +156,11 @@ const init = async ({
 
   if (!fidesRegionString) {
     // we always need a region str so that we can PATCH privacy preferences to Fides Api
-    fidesRegionString = constructFidesRegionString(await retrieveEffectiveGeolocation(options));
+    fidesRegionString = constructFidesRegionString(
+      await retrieveEffectiveGeolocation(options)
+    );
     if (!fidesRegionString) {
-      debugLog(
-          options.debug,
-          `User location could not be obtained.`
-      );
+      debugLog(options.debug, `User location could not be obtained.`);
       return;
     }
   }

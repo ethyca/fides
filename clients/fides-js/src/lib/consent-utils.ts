@@ -87,6 +87,5 @@ export const validateOptions = (options: FidesOptions): boolean => {
     return false;
   }
 
-
   return true;
 };

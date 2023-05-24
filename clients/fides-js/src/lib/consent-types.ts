@@ -32,7 +32,7 @@ export type FidesOptions = {
   privacyCenterUrl: string;
 
   // URL for the Fides API, used to fetch and save consent preferences. Required.
-  fidesApiUrl: string
+  fidesApiUrl: string;
 };
 
 export type PrivacyExperience = {
@@ -148,11 +148,11 @@ export enum ConsentMethod {
 }
 
 export type PrivacyPreferencesRequest = {
-  browser_identity: Identity
+  browser_identity: Identity;
   code?: string;
-  preferences: Array<ConsentOptionCreate>
+  preferences: Array<ConsentOptionCreate>;
   policy_key?: string; // Will use default consent policy if not supplied
-  privacy_experience_history_id?: string
+  privacy_experience_history_id?: string;
   user_geography?: string;
   method?: ConsentMethod;
 };
