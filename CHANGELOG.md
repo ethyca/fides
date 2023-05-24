@@ -53,6 +53,7 @@ The types of changes are:
 ### Developer Experience
 
 - Add dispatch event when publishing a non-prod tag [#3317](https://github.com/ethyca/fides/pull/3317)
+- Add OpenAPI (Swagger) documentation for Fides Privacy Center API endpoints (/fides.js) [#3341](https://github.com/ethyca/fides/pull/3341)
 
 ### Removed
 
