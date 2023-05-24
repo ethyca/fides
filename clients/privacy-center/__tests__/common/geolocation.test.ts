@@ -1,10 +1,10 @@
 import { createRequest } from "node-mocks-http";
 
-import { getLocation } from "~/common/geolocation";
+import { getGeolocation } from "~/common/geolocation";
 
-describe("getLocation", () => {
-  describe("when using location headers", () => {
-    it("returns location data from country & region headers", () => {
+describe("getGeolocation", () => {
+  describe("when using geolocation headers", () => {
+    it("returns geolocation data from country & region headers", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js",
         headers: {
@@ -12,23 +12,23 @@ describe("getLocation", () => {
           "CloudFront-Viewer-Country-Region": "NY",
         },
       });
-      const location = getLocation(req);
-      expect(location).toEqual({
+      const geolocation = getGeolocation(req);
+      expect(geolocation).toEqual({
         country: "US",
         location: "US-NY",
         region: "NY",
       });
     });
 
-    it("returns location data from country header", () => {
+    it("returns geolocation data from country header", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js",
         headers: {
           "CloudFront-Viewer-Country": "FR",
         },
       });
-      const location = getLocation(req);
-      expect(location).toEqual({
+      const geolocation = getGeolocation(req);
+      expect(geolocation).toEqual({
         country: "FR",
         location: "FR",
       });
@@ -41,54 +41,54 @@ describe("getLocation", () => {
           "CloudFront-Viewer-Country-Region": "NY",
         },
       });
-      const location = getLocation(req);
-      expect(location).toBeUndefined();
+      const geolocation = getGeolocation(req);
+      expect(geolocation).toBeUndefined();
     });
 
-    it("handles invalid location headers", () => {
+    it("handles invalid geolocation headers", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js",
         headers: {
           "CloudFront-Viewer-Country": "Magicland",
         },
       });
-      const location = getLocation(req);
-      expect(location).toBeUndefined();
+      const geolocation = getGeolocation(req);
+      expect(geolocation).toBeUndefined();
     });
   });
 
-  describe("when using ?location query param", () => {
-    it("returns location data from query param", () => {
+  describe("when using ?geolocation query param", () => {
+    it("returns geolocation data from query param", () => {
       const req = createRequest({
-        url: "https://privacy.example.com/fides.js?location=FR-IDF",
+        url: "https://privacy.example.com/fides.js?geolocation=FR-IDF",
       });
-      const location = getLocation(req);
-      expect(location).toEqual({
+      const geolocation = getGeolocation(req);
+      expect(geolocation).toEqual({
         country: "FR",
         location: "FR-IDF",
         region: "IDF",
       });
     });
 
-    it("handles invalid location query param", () => {
+    it("handles invalid geolocation query param", () => {
       const req = createRequest({
-        url: "https://privacy.example.com/fides.js?location=America",
+        url: "https://privacy.example.com/fides.js?geolocation=America",
       });
-      const location = getLocation(req);
-      expect(location).toBeUndefined();
+      const geolocation = getGeolocation(req);
+      expect(geolocation).toBeUndefined();
     });
   });
 
   describe("when using both headers and query param", () => {
-    it("overrides headers with explicit location query param", () => {
+    it("overrides headers with explicit geolocation query param", () => {
       const req = createRequest({
-        url: "https://privacy.example.com/fides.js?location=US-CA",
+        url: "https://privacy.example.com/fides.js?geolocation=US-CA",
         headers: {
           "CloudFront-Viewer-Country": "FR",
         },
       });
-      const location = getLocation(req);
-      expect(location).toEqual({
+      const geolocation = getGeolocation(req);
+      expect(geolocation).toEqual({
         country: "US",
         location: "US-CA",
         region: "CA",
@@ -97,12 +97,12 @@ describe("getLocation", () => {
   });
 
   describe("when using neither headers nor query param", () => {
-    it("returns undefined location", () => {
+    it("returns undefined geolocation", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js",
       });
-      const location = getLocation(req);
-      expect(location).toBeUndefined();
+      const geolocation = getGeolocation(req);
+      expect(geolocation).toBeUndefined();
     });
   });
 });
