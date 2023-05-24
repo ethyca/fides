@@ -56,7 +56,7 @@ export const consentApi = baseApi.injectEndpoints({
     }),
     getPrivacyExperience: build.query<
       Page_PrivacyExperienceResponse_,
-      { region: PrivacyNoticeRegion; fides_device_user_id?: string }
+      { region: PrivacyNoticeRegion; fides_user_device_id?: string }
     >({
       query: (payload) => ({
         url: "privacy-experience/",
@@ -78,7 +78,7 @@ export const consentApi = baseApi.injectEndpoints({
         method: "PATCH",
         body,
       }),
-      invalidatesTags: ["Privacy Preferences"],
+      invalidatesTags: ["Privacy Experience"],
     }),
     updatePrivacyPreferencesUnverified: build.mutation<
       void,
@@ -89,7 +89,7 @@ export const consentApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: payload,
       }),
-      invalidatesTags: ["Privacy Preferences"],
+      invalidatesTags: ["Privacy Experience"],
     }),
   }),
 });
@@ -110,15 +110,15 @@ type State = {
   persistedFidesKeyToConsent: FidesKeyToConsent;
   /** The region the user is in */
   region: PrivacyNoticeRegion | undefined;
-  /** Device user id */
-  fidesDeviceUserId: string | undefined;
+  /** User id based on the device */
+  fidesUserDeviceId: string | undefined;
 };
 
 const initialState: State = {
   fidesKeyToConsent: {},
   persistedFidesKeyToConsent: {},
   region: undefined,
-  fidesDeviceUserId: undefined,
+  fidesUserDeviceId: undefined,
 };
 
 export const consentSlice = createSlice({
@@ -157,8 +157,8 @@ export const consentSlice = createSlice({
     setRegion(draftState, { payload }: PayloadAction<PrivacyNoticeRegion>) {
       draftState.region = payload;
     },
-    setFidesDeviceUserId(draftState, { payload }: PayloadAction<string>) {
-      draftState.fidesDeviceUserId = payload;
+    setFidesUserDeviceId(draftState, { payload }: PayloadAction<string>) {
+      draftState.fidesUserDeviceId = payload;
     },
   },
 });
@@ -168,7 +168,7 @@ export const {
   changeConsent,
   updateUserConsentPreferencesFromApi,
   setRegion,
-  setFidesDeviceUserId,
+  setFidesUserDeviceId,
 } = consentSlice.actions;
 
 export const selectConsentState = (state: RootState) => state.consent;
@@ -188,19 +188,19 @@ export const selectExperienceRegion = createSelector(
   selectConsentState,
   (state) => state.region
 );
-export const selectFidesDeviceUserId = createSelector(
+export const selectfidesUserDeviceId = createSelector(
   selectConsentState,
-  (state) => state.fidesDeviceUserId
+  (state) => state.fidesUserDeviceId
 );
 export const selectPrivacyExperience = createSelector(
-  [(RootState) => RootState, selectExperienceRegion, selectFidesDeviceUserId],
+  [(RootState) => RootState, selectExperienceRegion, selectfidesUserDeviceId],
   (RootState, region, deviceId) => {
     if (!region) {
       return undefined;
     }
     return consentApi.endpoints.getPrivacyExperience.select({
       region,
-      fides_device_user_id: deviceId,
+      fides_user_device_id: deviceId,
     })(RootState)?.data?.items[0];
   }
 );

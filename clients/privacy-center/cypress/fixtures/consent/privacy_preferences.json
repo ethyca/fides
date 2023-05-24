@@ -1,0 +1,26 @@
+[
+  {
+    "id": "cur_8dd7a394-0808-4578-a10b-732ca3482299",
+    "preference": "opt_out",
+    "privacy_notice_history": {
+      "name": "Data Sales",
+      "notice_key": "data_sales",
+      "description": "Provide opt-out consent for the use of data in ways that may be considered “data sales” under US state privacy regulations.",
+      "internal_description": null,
+      "origin": null,
+      "regions": ["us_ca", "us_co"],
+      "consent_mechanism": "opt_out",
+      "data_uses": ["advertising.third_party.personalized"],
+      "enforcement_level": "frontend",
+      "disabled": false,
+      "has_gpc_flag": false,
+      "displayed_in_privacy_center": true,
+      "displayed_in_overlay": false,
+      "displayed_in_api": false,
+      "id": "pri_371e6355-9327-4294-8b42-c0db5bf53cb0",
+      "version": 1.0,
+      "privacy_notice_id": "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae821"
+    },
+    "privacy_preference_history_id": "pri_0b6f31ea-6ecf-4206-8c7b-726b6963151a"
+  }
+]

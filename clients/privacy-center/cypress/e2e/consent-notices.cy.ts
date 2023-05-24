@@ -41,7 +41,7 @@ describe("Privacy notice driven consent", () => {
 
       // Patch privacy preference intercept
       cy.intercept("PATCH", `${API_URL}/privacy-preferences*`, {
-        fixture: "consent/privacy_preference.json",
+        fixture: "consent/privacy_preferences.json",
       }).as("patchPrivacyPreference");
     });
 
@@ -67,7 +67,7 @@ describe("Privacy notice driven consent", () => {
       });
       cy.wait("@getExperience").then((interception) => {
         const { url } = interception.request;
-        expect(url).contains("fides_device_user_id");
+        expect(url).contains("fides_user_device_id");
       });
       // Opt in, so should default to not checked
       cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
@@ -159,7 +159,7 @@ describe("Privacy notice driven consent", () => {
       });
       cy.wait("@getExperience").then((interception) => {
         const { url } = interception.request;
-        expect(url).contains(`fides_device_user_id=${uuid}`);
+        expect(url).contains(`fides_user_device_id=${uuid}`);
       });
       // Make sure the same uuid propagates to the backend and to the updated cookie
       cy.getByTestId("save-btn").click();

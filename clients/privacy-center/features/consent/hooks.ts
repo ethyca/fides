@@ -6,7 +6,7 @@ import { selectIsNoticeDriven } from "~/features/common/settings.slice";
 import {
   useGetPrivacyExperienceQuery,
   setRegion,
-  setFidesDeviceUserId,
+  setFidesUserDeviceId,
   selectExperienceRegion,
 } from "./consent.slice";
 
@@ -28,14 +28,14 @@ export const useSubscribeToPrivacyExperienceQuery = () => {
   useEffect(() => {
     // TODO: query for location
     dispatch(setRegion(PrivacyNoticeRegion.US_CA));
-    dispatch(setFidesDeviceUserId(fidesUserDeviceId));
+    dispatch(setFidesUserDeviceId(fidesUserDeviceId));
   }, [dispatch, fidesUserDeviceId]);
 
   const region = useAppSelector(selectExperienceRegion);
   const params = {
     // Casting should be safe because we skip in the hook below if region does not exist
     region: region as PrivacyNoticeRegion,
-    fides_device_user_id: fidesUserDeviceId,
+    fides_user_device_id: fidesUserDeviceId,
   };
   useGetPrivacyExperienceQuery(params, {
     skip: !region || skip,
