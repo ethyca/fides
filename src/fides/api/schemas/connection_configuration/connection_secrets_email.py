@@ -20,7 +20,11 @@ class EmailSchema(BaseModel):
     third_party_vendor_name: str
     recipient_email_address: EmailStr
     test_email_address: Optional[EmailStr]  # Email to send a connection test email
-    advanced_settings: AdvancedSettings
+
+    # the default value is temporary until we allow users to customize the identity types from the front-end
+    advanced_settings: AdvancedSettings = AdvancedSettings(
+        identity_types=IdentityTypes(email=True, phone_number=False)
+    )
 
     class Config:
         """Only permit selected secret fields to be stored."""
@@ -60,7 +64,14 @@ class AdvancedSettingsWithExtendedIdentityTypes(AdvancedSettings):
 class ExtendedEmailSchema(EmailSchema):
     """Email schema used to unpack secrets for all email connector types (both generic, Sovrn, etc.)"""
 
-    advanced_settings: AdvancedSettingsWithExtendedIdentityTypes
+    # the default value is temporary until we allow users to customize the identity types from the front-end
+    advanced_settings: AdvancedSettingsWithExtendedIdentityTypes = (
+        AdvancedSettingsWithExtendedIdentityTypes(
+            identity_types=ExtendedIdentityTypes(
+                email=True, phone_number=False, cookie_ids=[]
+            )
+        )
+    )
 
     @root_validator
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:

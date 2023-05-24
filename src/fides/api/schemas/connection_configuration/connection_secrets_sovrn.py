@@ -23,19 +23,11 @@ class SovrnSchema(ExtendedEmailSchema):
 
     third_party_vendor_name: str = "Sovrn"
     recipient_email_address: EmailStr = EmailStr("privacy@sovrn.com")
-
-    @root_validator
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        For now, UI is disabled, so user cannot update advanced settings.
-        Hardcode the Sovrn advanced settings, regardless of what is passed into the API.
-        """
-        values["advanced_settings"] = AdvancedSettingsWithExtendedIdentityTypes(
-            identity_types=ExtendedIdentityTypes(
-                email=False, phone_number=False, cookie_ids=[SOVRN_REQUIRED_IDENTITY]
-            )
+    advanced_settings = AdvancedSettingsWithExtendedIdentityTypes(
+        identity_types=ExtendedIdentityTypes(
+            email=False, phone_number=False, cookie_ids=[SOVRN_REQUIRED_IDENTITY]
         )
-        return values
+    )
 
 
 class SovrnDocsSchema(SovrnSchema, NoValidationSchema):
