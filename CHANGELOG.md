@@ -34,6 +34,7 @@ The types of changes are:
 - Add the modal component of the "overlay" consent components [#3291](https://github.com/ethyca/fides/pull/3291)
 - Track Privacy Experience with Privacy Preferences [#3311](https://github.com/ethyca/fides/pull/3311)
 - Add ability for `fides-js` to fetch its own geolocation [#3356](https://github.com/ethyca/fides/pull/3356)
+- Add ability to select different locations in the "Cookie House" sample app [#3362](https://github.com/ethyca/fides/pull/3362)
 
 ### Fixed
 
