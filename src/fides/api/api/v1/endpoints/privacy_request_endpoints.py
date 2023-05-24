@@ -698,9 +698,14 @@ def create_or_update_privacy_request_notifications(
     # front end. This allows the first end to control the default notifiy_after_failures
     # number.
     if not request_body.email_addresses:
-        info = PrivacyRequestNotifications.all(db)
-        if info:
-            info[0].delete(db)
+        all_notes = PrivacyRequestNotifications.all(db)
+        try:
+            note: PrivacyRequestNotifications = all_notes[0]
+        except IndexError:
+            pass
+        else:
+            note.delete(db=db)
+
         return PrivacyRequestNotificationInfo(
             email_addresses=[],
             notify_after_failures=request_body.notify_after_failures,
@@ -710,15 +715,23 @@ def create_or_update_privacy_request_notifications(
         "email": EMAIL_JOIN_STRING.join(request_body.email_addresses),
         "notify_after_failures": request_body.notify_after_failures,
     }
-    info_check = PrivacyRequestNotifications.all(db)
-    if info_check:
-        info = info_check[0].update(db=db, data=notification_info)
-        return PrivacyRequestNotificationInfo(
-            email_addresses=info.email.split(", "),
-            notify_after_failures=info.notify_after_failures,
+    info_check: List[PrivacyRequestNotifications] = PrivacyRequestNotifications.all(
+        db=db
+    )
+    info: PrivacyRequestNotifications
+    try:
+        info = info_check[0]
+    except IndexError:
+        info = PrivacyRequestNotifications.create(
+            db=db,
+            data=notification_info,
+        )
+    else:
+        info.update(
+            db=db,
+            data=notification_info,
         )
 
-    info = PrivacyRequestNotifications.create(db=db, data=notification_info)
     return PrivacyRequestNotificationInfo(
         email_addresses=info.email.split(", "),
         notify_after_failures=info.notify_after_failures,
@@ -840,7 +853,7 @@ def resume_privacy_request(
         privacy_request_id=privacy_request.id,
         from_webhook_id=webhook.id,
     )
-    return privacy_request
+    return privacy_request  # type: ignore[return-value]
 
 
 def validate_manual_input(
@@ -978,7 +991,7 @@ def resume_with_manual_input(
         db=db,
         expected_paused_step=CurrentStep.access,
         manual_rows=manual_rows,
-    )
+    )  # type: ignore[return-value]
 
 
 @router.post(
@@ -1005,7 +1018,7 @@ def resume_with_erasure_confirmation(
         db=db,
         expected_paused_step=CurrentStep.erasure,
         manual_count=manual_count.row_count,
-    )
+    )  # type: ignore[return-value]
 
 
 @router.post(
@@ -1025,9 +1038,6 @@ def bulk_restart_privacy_request_from_failure(
 
     succeeded: List[PrivacyRequestResponse] = []
     failed: List[Dict[str, Any]] = []
-
-    #    privacy_request = PrivacyRequest.get(db, object_id=request_id)
-
     for privacy_request_id in privacy_request_ids:
         privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
 
@@ -1240,7 +1250,7 @@ def verify_identification_code(
         )
         queue_privacy_request(privacy_request.id)
 
-    return privacy_request
+    return privacy_request  # type: ignore[return-value]
 
 
 @router.patch(
@@ -1569,7 +1579,7 @@ def resume_privacy_request_from_requires_input(
         privacy_request_id=privacy_request.id,
     )
 
-    return privacy_request
+    return privacy_request  # type: ignore[return-value]
 
 
 def create_privacy_request_func(
@@ -1749,4 +1759,4 @@ def _process_privacy_request_restart(
         from_step=failed_step.value,
     )
 
-    return privacy_request
+    return privacy_request  # type: ignore[return-value]
