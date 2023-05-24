@@ -1,7 +1,7 @@
 """add generic email connector types
 
 Revision ID: ed46521679fb
-Revises: 2661f31daffb
+Revises: 8a71872089e4
 Create Date: 2023-05-19 23:25:48.711050
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "ed46521679fb"
-down_revision = "2661f31daffb"
+down_revision = "8a71872089e4"
 branch_labels = None
 depends_on = None
 
