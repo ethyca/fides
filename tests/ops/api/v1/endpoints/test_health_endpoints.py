@@ -1,7 +1,7 @@
 from starlette.testclient import TestClient
 
 import fides
-from fides.api.ops.api.v1.urn_registry import HEALTH
+from fides.api.api.v1.urn_registry import HEALTH
 
 
 def test_health(api_client: TestClient) -> None:

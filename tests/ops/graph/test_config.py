@@ -1,9 +1,9 @@
 import pydantic
 import pytest
 
-from fides.api.ops.common_exceptions import ValidationError
-from fides.api.ops.graph.config import *
-from fides.api.ops.graph.data_type import (
+from fides.api.common_exceptions import ValidationError
+from fides.api.graph.config import *
+from fides.api.graph.data_type import (
     BooleanTypeConverter,
     IntTypeConverter,
     NoOpTypeConverter,

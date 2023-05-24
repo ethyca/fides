@@ -10,25 +10,30 @@ from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.testclient import TestClient
 
-from fides.api.ctl.sql_models import DataUse as sql_DataUse
-from fides.api.ops.api.v1 import scope_registry as scopes
-from fides.api.ops.api.v1.endpoints.privacy_notice_endpoints import (
+from fides.api.api.v1 import scope_registry as scopes
+from fides.api.api.v1.endpoints.privacy_notice_endpoints import (
     validate_notice_data_uses,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     PRIVACY_NOTICE,
     PRIVACY_NOTICE_BY_DATA_USE,
     PRIVACY_NOTICE_DETAIL,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.privacy_notice import (
+from fides.api.ctl.sql_models import DataUse as sql_DataUse
+from fides.api.models.privacy_experience import (
+    ComponentType,
+    DeliveryMechanism,
+    PrivacyExperience,
+)
+from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNotice,
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
 )
-from fides.api.ops.schemas.privacy_notice import (
+from fides.api.schemas.privacy_notice import (
     PrivacyNoticeCreation,
     PrivacyNoticeResponse,
 )
@@ -39,6 +44,7 @@ class TestValidateDataUses:
     def privacy_notice_request(self):
         return PrivacyNoticeCreation(
             name="sample privacy notice",
+            notice_key="sample_privacy_notice",
             regions=[PrivacyNoticeRegion.us_ca],
             consent_mechanism=ConsentMechanism.opt_in,
             data_uses=["placeholder"],
@@ -490,6 +496,7 @@ class TestGetPrivacyNotices:
                     db=db,
                     data={
                         "name": name,
+                        "notice_key": PrivacyNotice.generate_notice_key(name),
                         "description": "a sample privacy notice configuration",
                         "regions": [PrivacyNoticeRegion.us_ca],
                         "consent_mechanism": ConsentMechanism.opt_in,
@@ -536,6 +543,7 @@ class TestGetPrivacyNotices:
                     db=db,
                     data={
                         "name": name,
+                        "notice_key": PrivacyNotice.generate_notice_key(name),
                         "description": "a sample privacy notice configuration",
                         "regions": [PrivacyNoticeRegion.us_ca],
                         "consent_mechanism": ConsentMechanism.opt_in,
@@ -578,6 +586,57 @@ class TestGetPrivacyNotices:
             # The most recent privacy_notice will be last added to `privacy_notices` that still remains
             most_recent = privacy_notices.pop()
             assert privacy_notice["name"] == most_recent.name
+
+    @pytest.mark.usefixtures(
+        "system",
+    )
+    def test_can_unescape(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_NOTICE_READ, scopes.PRIVACY_NOTICE_CREATE]
+        )
+
+        escaped_name = "Data Sales &#x27;n&#x27; stuff"
+        unescaped_name = "Data Sales 'n' stuff"
+        PrivacyNotice.create(
+            db=db,
+            data={
+                "name": escaped_name,
+                "notice_key": "test_data_sales_n_stuff",
+                "description": "a sample privacy notice configuration",
+                "regions": [PrivacyNoticeRegion.us_ca],
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["advertising"],
+                "enforcement_level": EnforcementLevel.system_wide,
+                "displayed_in_overlay": True,
+            },
+        )
+
+        # without the unescaped header, should return the escaped version
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        print(data["items"])
+        assert data["items"][0]["name"] == escaped_name
+
+        # now request with the unescape header
+        unescape_header = {"Unescape-Safestr": "yes"}
+        auth_and_unescape_header = {**auth_header, **unescape_header}
+        resp = api_client.get(
+            url,
+            headers=auth_and_unescape_header,
+        )
+        data = resp.json()
+        print(data["items"])
+        assert data["items"][0]["name"] == unescaped_name
 
 
 class TestGetPrivacyNoticeDetail:
@@ -649,6 +708,68 @@ class TestGetPrivacyNoticeDetail:
         assert data["disabled"] == privacy_notice.disabled
         assert data["displayed_in_overlay"] == privacy_notice.displayed_in_overlay
 
+    def test_get_privacy_notice_unescaped(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_NOTICE_READ, scopes.PRIVACY_NOTICE_CREATE]
+        )
+
+        # post a new privacy notice that has some sneaky characters
+        maybe_dangerous_description = "user's description <script />"
+        resp = api_client.post(
+            V1_URL_PREFIX + PRIVACY_NOTICE,
+            headers=auth_header,
+            json=[
+                {
+                    "name": "test privacy notice 1",
+                    "notice_key": "test_privacy_notice_1",
+                    "description": maybe_dangerous_description,
+                    "origin": "privacy_notice_template_1",
+                    "regions": [
+                        PrivacyNoticeRegion.eu_be.value,
+                        PrivacyNoticeRegion.us_ca.value,
+                    ],
+                    "consent_mechanism": ConsentMechanism.opt_in.value,
+                    "data_uses": ["advertising"],
+                    "enforcement_level": EnforcementLevel.system_wide.value,
+                    "displayed_in_overlay": True,
+                }
+            ],
+        )
+        print(f"Created Notice: {resp.text}")
+        assert resp.status_code == 200
+        created_notice = resp.json()[0]
+
+        url = V1_URL_PREFIX + PRIVACY_NOTICE_DETAIL.format(
+            privacy_notice_id=created_notice["id"]
+        )
+
+        # without the unescaped header, should return the escaped version
+        resp = api_client.get(
+            url,
+            # headers={**auth_header, **unescape_header},
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        print(f"Unescaped Response: {data}")
+        assert data["description"] == "user&#x27;s description &lt;script /&gt;"
+
+        # now request with the unescape header
+        unescape_header = {"Unescape-Safestr": "yes"}
+        auth_and_unescape_header = {**auth_header, **unescape_header}
+        print(f"Auth & Unescape Headers: {auth_and_unescape_header}")
+        resp = api_client.get(
+            url,
+            headers=auth_and_unescape_header,
+        )
+        data = resp.json()
+        print(f"Escaped Data: {data}")
+        assert data["description"] == maybe_dangerous_description
+
 
 class TestGetPrivacyNoticesByDataUse:
     @pytest.fixture(scope="function")
@@ -683,6 +804,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-1",
                         name=f"{PRIVACY_NOTICE_NAME}-1",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-1"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                             PrivacyNoticeRegion.us_co,
@@ -703,6 +827,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
                             name=f"{PRIVACY_NOTICE_NAME}-1",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-1"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_ca,
                                 PrivacyNoticeRegion.us_co,
@@ -727,6 +854,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-1",
                         name=f"{PRIVACY_NOTICE_NAME}-1",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-1"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                             PrivacyNoticeRegion.us_co,
@@ -744,6 +874,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-2",
                         name=f"{PRIVACY_NOTICE_NAME}-2",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-2"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.eu_be,
                         ],
@@ -763,6 +896,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
                             name=f"{PRIVACY_NOTICE_NAME}-1",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-1"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_ca,
                                 PrivacyNoticeRegion.us_co,
@@ -781,6 +917,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
                             name=f"{PRIVACY_NOTICE_NAME}-2",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-2"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.eu_be,
                             ],
@@ -804,6 +943,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-1",
                         name=f"{PRIVACY_NOTICE_NAME}-1",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-1"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                             PrivacyNoticeRegion.us_co,
@@ -821,6 +963,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-2",
                         name=f"{PRIVACY_NOTICE_NAME}-2",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-2"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.eu_be,
                         ],
@@ -839,6 +984,9 @@ class TestGetPrivacyNoticesByDataUse:
                     "advertising": [
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-1"
+                            ),
                             name=f"{PRIVACY_NOTICE_NAME}-1",
                             regions=[
                                 PrivacyNoticeRegion.us_ca,
@@ -856,6 +1004,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
                             name=f"{PRIVACY_NOTICE_NAME}-2",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-2"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.eu_be,
                             ],
@@ -873,6 +1024,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
                             name=f"{PRIVACY_NOTICE_NAME}-1",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-1"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_ca,
                                 PrivacyNoticeRegion.us_co,
@@ -895,6 +1049,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-1",
                         name=f"{PRIVACY_NOTICE_NAME}-1",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-1"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                             PrivacyNoticeRegion.us_co,
@@ -913,6 +1070,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-2",
                         name=f"{PRIVACY_NOTICE_NAME}-2",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-2"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.eu_be,
                         ],
@@ -932,6 +1092,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
                             name=f"{PRIVACY_NOTICE_NAME}-2",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-2"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.eu_be,
                             ],
@@ -956,6 +1119,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-1",
                         name=f"{PRIVACY_NOTICE_NAME}-1",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-1"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                             PrivacyNoticeRegion.us_co,
@@ -979,6 +1145,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-1",
                         name=f"{PRIVACY_NOTICE_NAME}-1",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-1"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                             PrivacyNoticeRegion.us_co,
@@ -996,6 +1165,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-2",
                         name=f"{PRIVACY_NOTICE_NAME}-2",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-2"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_ca,
                         ],
@@ -1012,6 +1184,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-3",
                         name=f"{PRIVACY_NOTICE_NAME}-3",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-3"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_co,
                         ],
@@ -1028,6 +1203,9 @@ class TestGetPrivacyNoticesByDataUse:
                     PrivacyNotice(
                         id=f"{PRIVACY_NOTICE_NAME}-4",
                         name=f"{PRIVACY_NOTICE_NAME}-4",
+                        notice_key=PrivacyNotice.generate_notice_key(
+                            f"{PRIVACY_NOTICE_NAME}-4"
+                        ),
                         regions=[
                             PrivacyNoticeRegion.us_va,
                         ],
@@ -1047,6 +1225,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
                             name=f"{PRIVACY_NOTICE_NAME}-1",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-1"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_ca,
                                 PrivacyNoticeRegion.us_co,
@@ -1067,6 +1248,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-4",
                             name=f"{PRIVACY_NOTICE_NAME}-4",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-4"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_va,
                             ],
@@ -1086,6 +1270,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-3",
                             name=f"{PRIVACY_NOTICE_NAME}-3",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-3"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_co,
                             ],
@@ -1103,6 +1290,9 @@ class TestGetPrivacyNoticesByDataUse:
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
                             name=f"{PRIVACY_NOTICE_NAME}-2",
+                            notice_key=PrivacyNotice.generate_notice_key(
+                                f"{PRIVACY_NOTICE_NAME}-2"
+                            ),
                             regions=[
                                 PrivacyNoticeRegion.us_ca,
                             ],
@@ -1178,6 +1368,23 @@ class TestPostPrivacyNotices:
     def notice_request(self, load_default_data_uses) -> Dict[str, Any]:
         return {
             "name": "test privacy notice 1",
+            "notice_key": "test_privacy_notice_1",
+            "description": "my test privacy notice",
+            "origin": "privacy_notice_template_1",
+            "regions": [
+                PrivacyNoticeRegion.eu_be.value,
+                PrivacyNoticeRegion.us_ca.value,
+            ],
+            "consent_mechanism": ConsentMechanism.opt_in.value,
+            "data_uses": ["advertising"],
+            "enforcement_level": EnforcementLevel.system_wide.value,
+            "displayed_in_overlay": True,
+        }
+
+    @pytest.fixture(scope="function")
+    def notice_request_no_key(self, load_default_data_uses) -> Dict[str, Any]:
+        return {
+            "name": "My Test Privacy Notice",
             "description": "my test privacy notice",
             "origin": "privacy_notice_template_1",
             "regions": [
@@ -1194,6 +1401,7 @@ class TestPostPrivacyNotices:
     def notice_request_2(self, load_default_data_uses) -> Dict[str, Any]:
         return {
             "name": "test privacy notice 2",
+            "notice_key": "test_privacy_notice_2",
             # no description or origin on this request just to verify their optionality
             "regions": [PrivacyNoticeRegion.us_ca.value],
             "consent_mechanism": ConsentMechanism.opt_in.value,
@@ -1501,6 +1709,23 @@ class TestPostPrivacyNotices:
             == "Notice-only notices must be served in an overlay."
         )
 
+    def test_post_privacy_notice_bad_notice_key(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        notice_request: dict[str, Any],
+        url,
+    ):
+        notice_request["notice_key"] = "My Notice's Key"
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
+
+        resp = api_client.post(url, headers=auth_header, json=[notice_request])
+        assert resp.status_code == 422
+        assert (
+            "FidesKeys must only contain alphanumeric characters"
+            in resp.json()["detail"][0]["msg"]
+        )
+
     def test_post_privacy_notice(
         self,
         api_client: TestClient,
@@ -1515,6 +1740,18 @@ class TestPostPrivacyNotices:
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
 
         before_creation = datetime.now().isoformat()
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.eu_be
+        )
+        assert overlay_exp is None
+        assert privacy_center_exp is None
+
+        (
+            ca_overlay_exp,
+            ca_privacy_center_exp,
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        assert ca_overlay_exp is None
+        assert ca_privacy_center_exp is None
 
         resp = api_client.post(url, headers=auth_header, json=[notice_request])
         assert resp.status_code == 200
@@ -1538,6 +1775,105 @@ class TestPostPrivacyNotices:
         assert response_notice["created_at"] == db_notice.created_at.isoformat()
         assert response_notice["updated_at"] == db_notice.updated_at.isoformat()
         assert response_notice["disabled"] == db_notice.disabled
+
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.eu_be
+        )
+        assert overlay_exp is not None
+        assert privacy_center_exp is None
+
+        (
+            ca_overlay_exp,
+            ca_privacy_center_exp,
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+
+        overlay_exp.histories[0].delete(db)
+        overlay_exp.delete(db)
+
+        ca_overlay_exp.histories[0].delete(db)
+        ca_overlay_exp.delete(db)
+
+    def test_post_privacy_notice_no_notice_key(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        notice_request_no_key: dict[str, Any],
+        url,
+        db,
+    ):
+        """
+        Test posting a single new privacy notice
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
+
+        before_creation = datetime.now().isoformat()
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.eu_be
+        )
+        assert overlay_exp is None
+        assert privacy_center_exp is None
+
+        (
+            ca_overlay_exp,
+            ca_privacy_center_exp,
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        assert ca_overlay_exp is None
+        assert ca_privacy_center_exp is None
+
+        resp = api_client.post(url, headers=auth_header, json=[notice_request_no_key])
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
+        response_notice = resp.json()[0]
+
+        assert response_notice["name"] == notice_request_no_key["name"]
+        assert "id" in response_notice
+        assert response_notice["version"] == 1.0
+        assert response_notice["created_at"] < datetime.now().isoformat()
+        assert response_notice["created_at"] > before_creation
+        assert response_notice["updated_at"] < datetime.now().isoformat()
+        assert response_notice["updated_at"] > before_creation
+        assert response_notice["notice_key"] == "my_test_privacy_notice"
+        assert not response_notice["disabled"]
+
+        db_notice: PrivacyNotice = PrivacyNotice.get(
+            db=db, object_id=response_notice["id"]
+        )
+        assert response_notice["name"] == db_notice.name
+        assert response_notice["version"] == db_notice.version
+        assert response_notice["created_at"] == db_notice.created_at.isoformat()
+        assert response_notice["updated_at"] == db_notice.updated_at.isoformat()
+        assert response_notice["disabled"] == db_notice.disabled
+        assert response_notice["notice_key"] == "my_test_privacy_notice"
+
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.eu_be
+        )
+        assert overlay_exp is not None
+        assert privacy_center_exp is None
+
+        assert overlay_exp.component == ComponentType.overlay
+        assert overlay_exp.delivery_mechanism == DeliveryMechanism.banner
+        assert overlay_exp.version == 1.0
+        assert overlay_exp.disabled is False
+        assert overlay_exp.experience_config_id is None
+        assert overlay_exp.experience_config_history_id is None
+
+        (
+            ca_overlay_exp,
+            ca_privacy_center_exp,
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        assert ca_overlay_exp is not None
+        assert ca_privacy_center_exp is None
+
+        assert ca_overlay_exp.component == ComponentType.overlay
+        assert ca_overlay_exp.delivery_mechanism == DeliveryMechanism.banner
+        assert ca_overlay_exp.version == 1.0
+        assert ca_overlay_exp.disabled is False
+        assert ca_overlay_exp.experience_config_id is None
+        assert ca_overlay_exp.experience_config_history_id is None
+
+        overlay_exp.histories[0].delete(db)
+        overlay_exp.delete(db)
 
     def test_post_privacy_notice_duplicate_regions(
         self,
@@ -1706,6 +2042,7 @@ class TestPatchPrivacyNotices:
         return {
             "id": privacy_notice.id,
             "name": "updated privacy notice name",
+            "notice_key": "updated_privacy_notice_key",
             "disabled": True,
             "regions": [
                 PrivacyNoticeRegion.us_ca.value,
@@ -2162,6 +2499,12 @@ class TestPatchPrivacyNotices:
         """
         Test patching a single privacy notice
         """
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
+        assert overlay_exp is None
+        assert privacy_center_exp is None
+
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_UPDATE])
 
         before_update = datetime.now().isoformat()
@@ -2187,6 +2530,7 @@ class TestPatchPrivacyNotices:
         assert response_notice["updated_at"] < datetime.now().isoformat()
         assert response_notice["updated_at"] > before_update
         assert response_notice["disabled"]
+        assert response_notice["notice_key"] == "updated_privacy_notice_key"
 
         # assert our old history record has the old privacy notice data
         history_record: PrivacyNoticeHistory = (
@@ -2255,6 +2599,17 @@ class TestPatchPrivacyNotices:
         ]
         assert response_notice["consent_mechanism"] == db_notice.consent_mechanism.value
         assert response_notice["data_uses"] == db_notice.data_uses
+
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
+        assert overlay_exp.component == ComponentType.overlay
+        assert overlay_exp.delivery_mechanism == DeliveryMechanism.banner
+        assert overlay_exp.version == 1.0
+
+        assert privacy_center_exp.component == ComponentType.privacy_center
+        assert privacy_center_exp.delivery_mechanism == DeliveryMechanism.link
+        assert privacy_center_exp.version == 1.0
 
     def test_patch_multiple_privacy_notices(
         self,

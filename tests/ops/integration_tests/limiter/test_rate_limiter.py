@@ -9,24 +9,24 @@ import pytest
 from requests import Session
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ops.db import session
-from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.models.connectionconfig import (
+from fides.api.db import session
+from fides.api.graph.graph import DatasetGraph
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.connectors.limiter.rate_limiter import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.redis_cache import Identity
+from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiter,
     RateLimiterPeriod,
     RateLimiterRequest,
     RateLimiterTimeoutException,
 )
-from fides.api.ops.task import graph_task
-from fides.api.ops.util.saas_util import (
+from fides.api.task import graph_task
+from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )

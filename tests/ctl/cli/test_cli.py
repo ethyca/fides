@@ -9,8 +9,8 @@ from click.testing import CliRunner
 from git.repo import Repo
 from py._path.local import LocalPath
 
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.api.ops.oauth.roles import OWNER, VIEWER
+from fides.api.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.oauth.roles import OWNER, VIEWER
 from fides.cli import cli
 from fides.core.config import CONFIG
 from fides.core.user import get_systems_managed_by_user, get_user_permissions
@@ -55,7 +55,7 @@ def test_init_opt_in(test_cli_runner: CliRunner) -> None:
 def test_local_flag_invalid_command(test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli,
-        ["--local", "export"],
+        ["--local", "push"],
     )
     print(result.output)
     assert result.exit_code == 1
@@ -96,7 +96,7 @@ def test_worker() -> None:
     This is specifically meant to catch when the worker command breaks,
     without spinning up an additional instance.
     """
-    from fides.api.ops.worker import start_worker  # pylint: disable=unused-import
+    from fides.api.worker import start_worker  # pylint: disable=unused-import
 
     assert True
 
@@ -421,32 +421,6 @@ class TestEvaluate:
         )
         print(result.output)
         assert result.exit_code == 1
-
-
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    "export_resource", ["system", "dataset", "organization", "datamap"]
-)
-def test_export_resources(
-    test_config_path: str,
-    test_cli_runner: CliRunner,
-    export_resource: str,
-) -> None:
-    """
-    Tests that each resource is successfully exported
-    """
-
-    result = test_cli_runner.invoke(
-        cli,
-        [
-            "-f",
-            test_config_path,
-            "export",
-            export_resource,
-            "--dry",
-        ],
-    )
-    assert result.exit_code == 0
 
 
 class TestScan:

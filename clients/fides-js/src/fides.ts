@@ -19,7 +19,16 @@
  *         default: true,
  *         fidesDataUseKey: "advertising"
  *       }]
- *     }
+ *     },
+ *     experience: {},
+ *     geolocation: {},
+ *     options: {
+ *           debug: true,
+ *           isDisabled: false,
+ *           isGeolocationEnabled: false,
+ *           geolocationApiUrl: "",
+ *           privacyCenterUrl: "http://localhost:3000"
+ *         }
  *   });
  * </script>
  * ```
@@ -36,8 +45,8 @@
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-import { ConsentConfig } from "./lib/consent-config";
 import { getConsentContext } from "./lib/consent-context";
+import { initOverlay } from "./lib/consent";
 import {
   CookieKeyConsent,
   CookieIdentity,
@@ -45,13 +54,26 @@ import {
   getOrMakeFidesCookie,
   makeConsentDefaults,
 } from "./lib/cookie";
+import {
+  PrivacyExperience,
+  FidesConfig,
+  FidesOptions,
+  UserGeolocation,
+  ComponentType,
+} from "./lib/consent-types";
+import {
+  constructFidesRegionString,
+  debugLog,
+  validateOptions,
+} from "./lib/consent-utils";
+import { fetchExperience } from "./services/fides/api";
+import { getGeolocation } from "./services/external/geolocation";
 
-export interface FidesConfig {
-  consent: ConsentConfig;
-}
-
-type Fides = {
+export type Fides = {
   consent: CookieKeyConsent;
+  experience?: PrivacyExperience;
+  geolocation?: UserGeolocation;
+  options: FidesOptions;
   fides_meta: CookieMeta;
   gtm: typeof gtm;
   identity: CookieIdentity;
@@ -71,28 +93,153 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-// Initialize the global Fides object with the given configuration values
-const init = (config: FidesConfig) => {
-  // Configure the default values
+/**
+ * Determines effective geolocation
+ */
+const retrieveEffectiveGeolocation = async (
+  options: FidesOptions
+): Promise<UserGeolocation | undefined> => {
+  // If geolocation is not enabled, return undefined
+  if (!options.isGeolocationEnabled) {
+    debugLog(
+      options.debug,
+      `User location is required but could not be retrieved because geolocation is disabled.`
+    );
+    return undefined;
+  }
+  // Call the geolocation API
+  return getGeolocation(options.geolocationApiUrl, options.debug);
+};
+
+/**
+ * Initialize the global Fides object with the given configuration values
+ */
+const init = async ({
+  consent,
+  experience,
+  geolocation,
+  options,
+}: FidesConfig) => {
+  // Configure the default consent values
   const context = getConsentContext();
-  const defaults = makeConsentDefaults({
-    config: config.consent,
+  const consentDefaults = makeConsentDefaults({
+    config: consent,
     context,
   });
 
   // Load any existing user preferences from the browser cookie
-  const cookie = getOrMakeFidesCookie(defaults);
+  const cookie = getOrMakeFidesCookie(consentDefaults);
 
   // Initialize the window.Fides object
   _Fides.consent = cookie.consent;
   _Fides.fides_meta = cookie.fides_meta;
   _Fides.identity = cookie.identity;
+  _Fides.experience = experience;
+  _Fides.geolocation = geolocation;
+  _Fides.options = options;
   _Fides.initialized = true;
+
+  // TODO: generate device id if it doesn't exist
+
+  debugLog(
+    options.debug,
+    "Validating Fides consent overlay options...",
+    options
+  );
+  if (!validateOptions(options)) {
+    debugLog(options.debug, "Invalid overlay options", options);
+    return;
+  }
+
+  let effectiveGeolocation = geolocation;
+  let effectiveExperience = experience;
+
+  if (!effectiveExperience || !constructFidesRegionString(geolocation)) {
+    // If experience is not provided, we need to retrieve it via the Fides API.
+    // In order to retrieve it, we first need a valid geolocation, which is either provided
+    // OR can be obtained via the Fides API
+    effectiveGeolocation = await retrieveEffectiveGeolocation(options);
+    const userLocationString = constructFidesRegionString(effectiveGeolocation);
+    if (!userLocationString) {
+      debugLog(
+        options.debug,
+        `User location could not be constructed from location params`,
+        effectiveGeolocation
+      );
+      return;
+    }
+    effectiveExperience = await fetchExperience(
+      userLocationString,
+      options.debug
+    );
+    if (!effectiveExperience) {
+      debugLog(options.debug, `No relevant experience found.`);
+      return;
+    }
+  }
+
+  if (
+    !effectiveExperience.privacy_notices ||
+    effectiveExperience.privacy_notices.length === 0
+  ) {
+    debugLog(
+      options.debug,
+      `No relevant notices in the privacy experience.`,
+      effectiveExperience
+    );
+    return;
+  }
+
+  if (getConsentContext().globalPrivacyControl) {
+    effectiveExperience.privacy_notices.forEach((notice) => {
+      if (notice.has_gpc_flag) {
+        // todo- write cookie with user preference
+        // todo- send consent request downstream automatically with saveUserPreference()
+      }
+    });
+  }
+
+  if (options.isOverlayDisabled) {
+    debugLog(
+      options.debug,
+      "Fides consent overlay is disabled, skipping overlay initialization!"
+    );
+    return;
+  }
+  if (effectiveExperience.component !== ComponentType.OVERLAY) {
+    debugLog(
+      options.debug,
+      "No experience found with overlay component, skipping overlay initialization!"
+    );
+    return;
+  }
+  if (!effectiveExperience.experience_config) {
+    debugLog(
+      options.debug,
+      "No experience config found with for experience, skipping overlay initialization!"
+    );
+    return;
+  }
+  await initOverlay({
+    consentDefaults,
+    experience: effectiveExperience,
+    geolocation: effectiveGeolocation,
+    options,
+  }).catch(() => {});
 };
 
 // The global Fides object; this is bound to window.Fides if available
 _Fides = {
   consent: {},
+  experience: undefined,
+  geolocation: {},
+  options: {
+    debug: true,
+    isOverlayDisabled: true,
+    isGeolocationEnabled: false,
+    geolocationApiUrl: "",
+    privacyCenterUrl: "",
+  },
   fides_meta: {},
   identity: {},
   gtm,
@@ -107,8 +254,15 @@ if (typeof window !== "undefined") {
 }
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
+// TODO: pretty sure we need ./services/* too?
+export * from "./lib/consent";
+export * from "./components";
 export * from "./lib/consent-config";
 export * from "./lib/consent-context";
+export * from "./lib/consent-types";
+export * from "./lib/consent-links";
+export * from "./lib/consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
+
 export default Fides;

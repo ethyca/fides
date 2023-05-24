@@ -1,4 +1,6 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import time
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Set
 from unittest import mock
 from unittest.mock import ANY, Mock, call
@@ -6,19 +8,20 @@ from uuid import uuid4
 
 import pydash
 import pytest
+from boto3.dynamodb.types import TypeDeserializer
 from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import (
+from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.models.application_config import ApplicationConfig
-from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
-from fides.api.ops.models.policy import CurrentStep, PolicyPostWebhook
-from fides.api.ops.models.privacy_request import (
+from fides.api.graph.graph import DatasetGraph
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.audit_log import AuditLog, AuditLogAction
+from fides.api.models.policy import CurrentStep, PolicyPostWebhook
+from fides.api.models.privacy_request import (
     ActionType,
     CheckpointActionRequired,
     ExecutionLog,
@@ -27,37 +30,36 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.ops.schemas.external_https import SecondPartyResponseFormat
-from fides.api.ops.schemas.masking.masking_configuration import (
+from fides.api.schemas.external_https import SecondPartyResponseFormat
+from fides.api.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
     MaskingConfiguration,
 )
-from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.ops.schemas.messaging.messaging import (
+from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
+from fides.api.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     MessagingActionType,
     MessagingServiceType,
 )
-from fides.api.ops.schemas.policy import Rule
-from fides.api.ops.schemas.privacy_request import Consent
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.schemas.saas.saas_config import SaaSRequest
-from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.ops.service.connectors.saas_connector import SaaSConnector
-from fides.api.ops.service.connectors.sql_connector import (
+from fides.api.schemas.policy import Rule
+from fides.api.schemas.privacy_request import Consent
+from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.saas.saas_config import SaaSRequest
+from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.service.connectors.dynamodb_connector import DynamoDBConnector
+from fides.api.service.connectors.saas_connector import SaaSConnector
+from fides.api.service.connectors.sql_connector import (
     RedshiftConnector,
     SnowflakeConnector,
 )
-from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
-    HmacMaskingStrategy,
-)
-from fides.api.ops.service.privacy_request.request_runner_service import (
+from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
+from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
     needs_batch_email_send,
     run_webhooks_and_report_status,
 )
-from fides.api.ops.util.data_category import DataCategory
+from fides.api.util.data_category import DataCategory
 from fides.core.config import CONFIG
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
@@ -76,10 +78,8 @@ def privacy_request_complete_email_notification_enabled(db):
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
-@mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
-)
-@mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
 def test_policy_upload_dispatch_message_called(
     upload_mock: Mock,
     mock_email_dispatch: Mock,
@@ -95,10 +95,8 @@ def test_policy_upload_dispatch_message_called(
     assert mock_email_dispatch.call_count == 1
 
 
-@mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
-)
-@mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
 def test_start_processing_sets_started_processing_at(
     upload_mock: Mock,
     mock_email_dispatch: Mock,
@@ -121,10 +119,8 @@ def test_start_processing_sets_started_processing_at(
     assert mock_email_dispatch.call_count == 1
 
 
-@mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
-)
-@mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
 def test_start_processing_doesnt_overwrite_started_processing_at(
     upload_mock: Mock,
     mock_email_dispatch: Mock,
@@ -150,7 +146,7 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
 
 
 @mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.upload_access_results"
+    "fides.api.service.privacy_request.request_runner_service.upload_access_results"
 )
 def test_halts_proceeding_if_cancelled(
     upload_access_results_mock,
@@ -172,19 +168,17 @@ def test_halts_proceeding_if_cancelled(
     assert not upload_access_results_mock.called
 
 
+@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
 @mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
+    "fides.api.service.privacy_request.request_runner_service.upload_access_results"
 )
 @mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.upload_access_results"
+    "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
 @mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+    "fides.api.service.privacy_request.request_runner_service.run_access_request"
 )
-@mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.run_access_request"
-)
-@mock.patch("fides.api.ops.service.privacy_request.request_runner_service.run_erasure")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.run_erasure")
 def test_from_graph_resume_does_not_run_pre_webhooks(
     run_erasure,
     run_access,
@@ -222,16 +216,14 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     assert mock_email_dispatch.call_count == 1
 
 
+@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
 @mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
+    "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
 @mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+    "fides.api.service.privacy_request.request_runner_service.run_access_request"
 )
-@mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.run_access_request"
-)
-@mock.patch("fides.api.ops.service.privacy_request.request_runner_service.run_erasure")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.run_erasure")
 def test_resume_privacy_request_from_erasure(
     run_erasure,
     run_access,
@@ -321,9 +313,7 @@ def get_privacy_request_results(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@mock.patch(
-    "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
-)
+@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_postgres(
     trigger_webhook_mock,
     postgres_example_test_dataset_config_read_access,
@@ -391,9 +381,7 @@ def test_create_and_process_access_request_postgres(
 
 
 @pytest.mark.integration
-@mock.patch(
-    "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
-)
+@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_mssql(
     trigger_webhook_mock,
     mssql_example_test_dataset_config,
@@ -438,9 +426,7 @@ def test_create_and_process_access_request_mssql(
 
 
 @pytest.mark.integration
-@mock.patch(
-    "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
-)
+@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_mysql(
     trigger_webhook_mock,
     mysql_example_test_dataset_config,
@@ -486,9 +472,7 @@ def test_create_and_process_access_request_mysql(
 
 @pytest.mark.integration_mariadb
 @pytest.mark.integration
-@mock.patch(
-    "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
-)
+@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_mariadb(
     trigger_webhook_mock,
     mariadb_example_test_dataset_config,
@@ -534,9 +518,7 @@ def test_create_and_process_access_request_mariadb(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
-@mock.patch(
-    "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
-)
+@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_saas_mailchimp(
     trigger_webhook_mock,
     mailchimp_connection_config,
@@ -582,9 +564,7 @@ def test_create_and_process_access_request_saas_mailchimp(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
-@mock.patch(
-    "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
-)
+@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_erasure_request_saas(
     _,
     mailchimp_connection_config,
@@ -646,9 +626,7 @@ def test_create_and_process_erasure_request_saas(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
-@mock.patch(
-    "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
-)
+@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_saas_hubspot(
     trigger_webhook_mock,
     connection_config_hubspot,
@@ -1463,7 +1441,7 @@ def test_create_and_process_erasure_request_bigquery(
 
 class TestRunPrivacyRequestRunsWebhooks:
     @mock.patch(
-        "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+        "fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
     )
     def test_run_webhooks_halt_received(
         self,
@@ -1483,7 +1461,7 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert privacy_request.paused_at is not None
 
     @mock.patch(
-        "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+        "fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
     )
     def test_run_webhooks_ap_scheduler_cleanup(
         self,
@@ -1508,7 +1486,7 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert privacy_request.paused_at is not None
 
     @mock.patch(
-        "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+        "fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
     )
     def test_run_webhooks_client_error(
         self,
@@ -1532,7 +1510,7 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert privacy_request.paused_at is None
 
     @mock.patch(
-        "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+        "fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
     )
     def test_run_webhooks_validation_error(
         self,
@@ -1552,7 +1530,7 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert privacy_request.paused_at is None
 
     @mock.patch(
-        "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+        "fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
     )
     def test_run_webhooks(
         self,
@@ -1568,7 +1546,7 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert mock_trigger_policy_webhook.call_count == 2
 
     @mock.patch(
-        "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+        "fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
     )
     def test_run_webhooks_after_webhook(
         self,
@@ -1597,11 +1575,9 @@ class TestRunPrivacyRequestRunsWebhooks:
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.run_access_request"
+    "fides.api.service.privacy_request.request_runner_service.run_access_request"
 )
-@mock.patch(
-    "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
-)
+@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_privacy_request_log_failure(
     _,
     run_access_request_mock,
@@ -1623,7 +1599,7 @@ def test_privacy_request_log_failure(
     }
 
     with mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.fideslog_graph_failure"
+        "fides.api.service.privacy_request.request_runner_service.fideslog_graph_failure"
     ) as mock_log_event:
         pr = get_privacy_request_results(
             db,
@@ -1657,7 +1633,7 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
     )
     def test_email_complete_send_erasure(
         self,
@@ -1693,9 +1669,9 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
     )
-    @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access(
         self,
         upload_mock,
@@ -1732,9 +1708,9 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
     )
-    @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_and_erasure(
         self,
         upload_mock,
@@ -1794,9 +1770,9 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
-    @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_messaging_config(
         self,
         upload_mock,
@@ -1834,9 +1810,9 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
-    @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_email_identity(
         self,
         upload_mock,
@@ -1872,7 +1848,7 @@ class TestPrivacyRequestsEmailNotifications:
 
 
 class TestPrivacyRequestsManualWebhooks:
-    @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_privacy_request_needs_manual_input_key_in_cache(
         self,
         mock_upload,
@@ -1899,10 +1875,8 @@ class TestPrivacyRequestsManualWebhooks:
         assert pr.status == PrivacyRequestStatus.requires_input
         assert not mock_upload.called
 
-    @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
-    @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_erasure"
-    )
+    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.api.service.privacy_request.request_runner_service.run_erasure")
     def test_manual_input_not_required_for_erasure_only_policies(
         self,
         mock_erasure,
@@ -1934,7 +1908,7 @@ class TestPrivacyRequestsManualWebhooks:
         assert not mock_upload.called  # erasure only request, no data uploaded
         assert mock_erasure.called
 
-    @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_pass_on_manually_added_input(
         self,
         mock_upload,
@@ -1958,7 +1932,7 @@ class TestPrivacyRequestsManualWebhooks:
             ]
         }
 
-    @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_pass_on_partial_manually_added_input(
         self,
         mock_upload,
@@ -1987,7 +1961,7 @@ class TestPrivacyRequestsManualWebhooks:
             ]
         }
 
-    @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_pass_on_empty_confirmed_input(
         self,
         mock_upload,
@@ -2254,3 +2228,220 @@ class TestConsentEmailStep:
             {"email": "customer-1@example.com", "ljt_readerID": "12345"},
             privacy_request_with_consent_policy,
         )
+
+
+@pytest.fixture(scope="function")
+def dynamodb_resources(
+    dynamodb_example_test_dataset_config,
+):
+    dynamodb_connection_config = dynamodb_example_test_dataset_config.connection_config
+    dynamodb_client = DynamoDBConnector(dynamodb_connection_config).client()
+    uuid = str(uuid4())
+    customer_email = f"customer-{uuid}@example.com"
+    customer_name = f"{uuid}"
+
+    ## document and remove remaining comments if we can't get the bigger test running
+    items = {
+        "customer_identifier": [
+            {
+                "customer_id": {"S": customer_name},
+                "email": {"S": customer_email},
+                "name": {"S": customer_name},
+                "created": {"S": datetime.now(timezone.utc).isoformat()},
+            }
+        ],
+        "customer": [
+            {
+                "id": {"S": customer_name},
+                "name": {"S": customer_name},
+                "email": {"S": customer_email},
+                "address_id": {"L": [{"S": customer_name}, {"S": customer_name}]},
+                "personal_info": {"M": {"gender": {"S": "male"}, "age": {"S": "99"}}},
+                "created": {"S": datetime.now(timezone.utc).isoformat()},
+            }
+        ],
+        "address": [
+            {
+                "id": {"S": customer_name},
+                "city": {"S": "city"},
+                "house": {"S": "house"},
+                "state": {"S": "state"},
+                "street": {"S": "street"},
+                "zip": {"S": "zip"},
+            }
+        ],
+        "login": [
+            {
+                "customer_id": {"S": customer_name},
+                "login_date": {"S": "2023-01-01"},
+                "name": {"S": customer_name},
+                "email": {"S": customer_email},
+            },
+            {
+                "customer_id": {"S": customer_name},
+                "login_date": {"S": "2023-01-02"},
+                "name": {"S": customer_name},
+                "email": {"S": customer_email},
+            },
+        ],
+    }
+
+    for table_name, rows in items.items():
+        for item in rows:
+            res = dynamodb_client.put_item(
+                TableName=table_name,
+                Item=item,
+            )
+            assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
+
+    yield {
+        "email": customer_email,
+        "formatted_email": customer_email,
+        "name": customer_name,
+        "customer_id": uuid,
+        "client": dynamodb_client,
+    }
+    # Remove test data and close Dynamodb connection in teardown
+    delete_items = {
+        "customer_identifier": [{"email": {"S": customer_email}}],
+        "customer": [{"id": {"S": customer_name}}],
+        "address": [{"id": {"S": customer_name}}],
+        "login": [
+            {
+                "customer_id": {"S": customer_name},
+                "login_date": {"S": "2023-01-01"},
+            },
+            {
+                "customer_id": {"S": customer_name},
+                "login_date": {"S": "2023-01-02"},
+            },
+        ],
+    }
+    for table_name, rows in delete_items.items():
+        for item in rows:
+            res = dynamodb_client.delete_item(
+                TableName=table_name,
+                Key=item,
+            )
+            assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_dynamodb
+def test_create_and_process_empty_access_request_dynamodb(
+    db,
+    cache,
+    policy,
+    run_privacy_request_task,
+):
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": "thiscustomerdoesnot@exist.com"},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
+    )
+    # Here the results should be empty as no data will be located for that identity
+    results = pr.get_results()
+    pr.delete(db=db)
+    assert results == {}
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_dynamodb
+def test_create_and_process_access_request_dynamodb(
+    dynamodb_resources,
+    db,
+    cache,
+    policy,
+    run_privacy_request_task,
+):
+    customer_email = dynamodb_resources["email"]
+    customer_name = dynamodb_resources["name"]
+    customer_id = dynamodb_resources["customer_id"]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
+    )
+    results = pr.get_results()
+    customer_table_key = (
+        f"EN_{pr.id}__access_request__dynamodb_example_test_dataset:customer"
+    )
+    address_table_key = (
+        f"EN_{pr.id}__access_request__dynamodb_example_test_dataset:address"
+    )
+    login_table_key = f"EN_{pr.id}__access_request__dynamodb_example_test_dataset:login"
+    assert len(results[customer_table_key]) == 1
+    assert len(results[address_table_key]) == 2
+    assert len(results[login_table_key]) == 2
+    assert results[customer_table_key][0]["email"] == customer_email
+    assert results[customer_table_key][0]["name"] == customer_name
+    assert results[customer_table_key][0]["id"] == customer_id
+    assert results[address_table_key][0]["id"] == customer_id
+    assert results[login_table_key][0]["name"] == customer_name
+
+    pr.delete(db=db)
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_dynamodb
+def test_create_and_process_erasure_request_dynamodb(
+    dynamodb_example_test_dataset_config,
+    dynamodb_resources,
+    integration_config: Dict[str, str],
+    db,
+    cache,
+    erasure_policy,
+    run_privacy_request_task,
+):
+    customer_email = dynamodb_resources["email"]
+    dynamodb_client = dynamodb_resources["client"]
+    customer_id = dynamodb_resources["customer_id"]
+    customer_name = dynamodb_resources["name"]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identity": {"email": customer_email},
+    }
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
+    )
+    pr.delete(db=db)
+    deserializer = TypeDeserializer()
+    customer = dynamodb_client.get_item(
+        TableName="customer",
+        Key={"id": {"S": customer_id}},
+    )
+    customer_identifier = dynamodb_client.get_item(
+        TableName="customer_identifier",
+        Key={"email": {"S": customer_email}},
+    )
+    login = dynamodb_client.get_item(
+        TableName="login",
+        Key={
+            "customer_id": {"S": customer_name},
+            "login_date": {"S": "2023-01-01"},
+        },
+    )
+    assert deserializer.deserialize(customer["Item"]["name"]) == None
+    assert deserializer.deserialize(customer_identifier["Item"]["name"]) == None
+    assert deserializer.deserialize(login["Item"]["name"]) == None

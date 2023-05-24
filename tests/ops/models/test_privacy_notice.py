@@ -1,11 +1,14 @@
 import pytest
+from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import ValidationError
-from fides.api.ops.models.privacy_notice import (
+from fides.api.common_exceptions import ValidationError
+from fides.api.models.privacy_notice import (
+    ConsentMechanism,
     PrivacyNotice,
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
+    UserConsentPreference,
     check_conflicting_data_uses,
     new_data_use_conflicts_with_existing_use,
 )
@@ -25,11 +28,25 @@ class TestPrivacyNoticeModel:
         assert history_object.data_uses == privacy_notice.data_uses
         assert history_object.version == privacy_notice.version
         assert history_object.privacy_notice_id == privacy_notice.id
+        assert history_object.notice_key == privacy_notice.notice_key
 
         # make sure our create method still auto-populates as needed
         assert privacy_notice.created_at is not None
         assert privacy_notice.updated_at is not None
         assert privacy_notice.id is not None
+        assert privacy_notice.consent_mechanism == ConsentMechanism.opt_in
+        assert privacy_notice.default_preference == UserConsentPreference.opt_out
+        assert privacy_notice.notice_key == "example_privacy_notice"
+
+    def test_default_preference_property(self, privacy_notice):
+        assert privacy_notice.consent_mechanism == ConsentMechanism.opt_in
+        assert privacy_notice.default_preference == UserConsentPreference.opt_out
+
+        privacy_notice.consent_mechanism = ConsentMechanism.opt_out
+        assert privacy_notice.default_preference == UserConsentPreference.opt_in
+
+        privacy_notice.consent_mechanism = ConsentMechanism.notice_only
+        assert privacy_notice.default_preference == UserConsentPreference.acknowledge
 
     def test_update_no_updates_no_history(
         self, db: Session, privacy_notice: PrivacyNotice
@@ -249,6 +266,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["advertising"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     )
@@ -256,6 +274,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     )
@@ -266,6 +285,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["advertising", "personalize"],
                         regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
                     )
@@ -273,6 +293,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising", "third_party_sharing"],
                         regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us_co],
                     )
@@ -283,6 +304,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["advertising", "third_party_sharing"],
                         regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
                     )
@@ -290,6 +312,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising.first_party", "personalize"],
                         regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
                     )
@@ -300,6 +323,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=[
                             "advertising.first_party.contextual",
                             "third_party_sharing",
@@ -310,6 +334,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising.first_party", "personalize"],
                         regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
                     )
@@ -320,6 +345,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["advertising", "third_party_sharing"],
                         regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
                     )
@@ -327,6 +353,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising.first_party.contextual", "personalize"],
                         regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
                     )
@@ -337,6 +364,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["advertising", "third_party_sharing"],
                         regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
                     )
@@ -344,6 +372,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising.first_party", "personalize"],
                         regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
                     )
@@ -354,6 +383,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["advertising.third_party", "third_party_sharing"],
                         regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
                     )
@@ -361,6 +391,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising.first_party", "personalize"],
                         regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
                     )
@@ -371,6 +402,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["advertising", "third_party_sharing"],
                         regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us_va],
                     )
@@ -378,6 +410,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising.first_party", "personalize"],
                         regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
                     )
@@ -388,11 +421,13 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["advertising", "third_party_sharing"],
                         regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
                     ),
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising.first_party", "personalize"],
                         regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
                     ),
@@ -404,11 +439,13 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["advertising"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     ),
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising.first_party", "personalize"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     ),
@@ -420,6 +457,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["third_party_sharing", "personalize"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     ),
@@ -427,6 +465,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising.first_party", "personalize"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     ),
@@ -437,6 +476,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["third_party_sharing", "personalize"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     ),
@@ -444,6 +484,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=[
                             "advertising.first_party",
                             "advertising.third_party",
@@ -452,6 +493,7 @@ class TestPrivacyNoticeModel:
                     ),
                     PrivacyNotice(
                         name="pn_3",
+                        notice_key="pn_3",
                         data_uses=[
                             "advertising.first_party",
                             "advertising.third_party",
@@ -460,6 +502,7 @@ class TestPrivacyNoticeModel:
                     ),
                     PrivacyNotice(
                         name="pn_4",
+                        notice_key="pn_4",
                         data_uses=["personalize"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     ),
@@ -470,11 +513,13 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["third_party_sharing", "personalize"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     ),
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=[
                             "advertising.first_party",
                             "advertising.third_party",
@@ -483,6 +528,7 @@ class TestPrivacyNoticeModel:
                     ),
                     PrivacyNotice(
                         name="pn_3",
+                        notice_key="pn_3",
                         data_uses=[
                             "advertising.first_party",
                             "advertising.third_party",
@@ -491,6 +537,7 @@ class TestPrivacyNoticeModel:
                     ),
                     PrivacyNotice(
                         name="pn_4",
+                        notice_key="pn_4",
                         data_uses=["personalize"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     ),
@@ -502,6 +549,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=[
                             "advertising.first_party.contextual",
                             "third_party_sharing",
@@ -512,6 +560,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         disabled=True,
                         data_uses=["advertising.first_party", "personalize"],
                         regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
@@ -523,6 +572,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         disabled=True,
                         data_uses=[
                             "advertising.first_party.contextual",
@@ -534,6 +584,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising.first_party", "personalize"],
                         regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
                     )
@@ -544,6 +595,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         disabled=True,
                         data_uses=[
                             "advertising.first_party.contextual",
@@ -555,6 +607,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         disabled=True,
                         data_uses=["advertising.first_party", "personalize"],
                         regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
@@ -566,6 +619,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         disabled=True,
                         data_uses=[
                             "advertising.first_party.contextual",
@@ -575,6 +629,7 @@ class TestPrivacyNoticeModel:
                     ),
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising.first_party", "personalize"],
                         regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
                     ),
@@ -586,6 +641,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["advertising.first_party.personalized"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     )
@@ -593,6 +649,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising.third_party.personalized"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     )
@@ -603,6 +660,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_1",
+                        notice_key="pn_1",
                         data_uses=["advertising.first_party"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     )
@@ -610,6 +668,7 @@ class TestPrivacyNoticeModel:
                 [
                     PrivacyNotice(
                         name="pn_2",
+                        notice_key="pn_2",
                         data_uses=["advertising.third_party.personalized"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     )
@@ -688,6 +747,26 @@ class TestPrivacyNoticeModel:
             ].calculate_relevant_systems(db)
             == []
         ), "This is an exact match but this privacy notice is frontend only"
+
+    def test_generate_privacy_notice_key(self, privacy_notice):
+        assert (
+            PrivacyNotice.generate_notice_key("Example Privacy Notice")
+            == "example_privacy_notice"
+        )
+
+        assert (
+            privacy_notice.generate_notice_key(" Name of My Privacy   Notice  ")
+            == "name_of_my_privacy_notice"
+        )
+
+        with pytest.raises(FidesValidationError):
+            privacy_notice.generate_notice_key("Dawn's Bookstore")
+
+        with pytest.raises(FidesValidationError):
+            privacy_notice.generate_notice_key("")
+
+        with pytest.raises(Exception):
+            privacy_notice.generate_notice_key(1)
 
 
 class TestDataUseConflictFound:

@@ -18,32 +18,33 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from toml import load as load_toml
 
-from fides.api.ctl.database.session import sync_engine
-from fides.api.ctl.sql_models import DataUse, PrivacyDeclaration
-from fides.api.main import app
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.api.ops.cryptography.schemas.jwt import (
+from fides.api.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
-from fides.api.ops.models.privacy_request import generate_request_callback_jwe
-from fides.api.ops.oauth.jwt import generate_jwe
-from fides.api.ops.oauth.roles import (
+from fides.api.ctl.database.session import sync_engine
+from fides.api.ctl.sql_models import DataUse, PrivacyDeclaration
+from fides.api.main import app
+from fides.api.models.privacy_request import generate_request_callback_jwe
+from fides.api.oauth.jwt import generate_jwe
+from fides.api.oauth.roles import (
     APPROVER,
     CONTRIBUTOR,
     OWNER,
     VIEWER,
     VIEWER_AND_APPROVER,
 )
-from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
-from fides.api.ops.util.cache import get_cache
+from fides.api.schemas.messaging.messaging import MessagingServiceType
+from fides.api.util.cache import get_cache
 from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
+from tests.fixtures.dynamodb_fixtures import *
 from tests.fixtures.email_fixtures import *
 from tests.fixtures.fides_connector_example_fixtures import *
 from tests.fixtures.integration_fixtures import *
@@ -101,6 +102,7 @@ async def async_session(test_client):
 @pytest.fixture(scope="session")
 def api_client():
     """Return a client used to make API requests"""
+
     with TestClient(app) as c:
         yield c
 
@@ -555,7 +557,7 @@ def run_privacy_request_task(celery_session_app):
     registered to the `celery_app` fixture which uses the virtualised `celery_worker`
     """
     yield celery_session_app.tasks[
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request"
     ]
 
 

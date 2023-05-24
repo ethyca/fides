@@ -6,13 +6,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy_utils import create_database, database_exists, drop_database
 from toml import load as load_toml
 
-from fides.api.ops.db.session import get_db_engine, get_db_session
-from fides.api.ops.models.connectionconfig import (
+from fides.api.db.session import get_db_engine, get_db_session
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.service.connectors.sql_connector import PostgreSQLConnector
+from fides.api.service.connectors.sql_connector import PostgreSQLConnector
 from fides.core.config import CONFIG
 
 integration_config = load_toml("tests/ops/integration_test_config.toml")

@@ -19,6 +19,7 @@ export enum ConnectionType {
   MANUAL = "manual",
   SOVRN = "sovrn",
   ATTENTIVE = "attentive",
+  DYNAMODB = "dynamodb",
   MANUAL_WEBHOOK = "manual_webhook",
   TIMESCALE = "timescale",
   FIDES = "fides",

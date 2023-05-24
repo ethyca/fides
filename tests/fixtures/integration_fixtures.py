@@ -8,12 +8,12 @@ from pymongo import MongoClient
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.service.connectors import MongoDBConnector
+from fides.api.service.connectors import MongoDBConnector
 
 from .application_fixtures import faker, integration_secrets
 
@@ -474,3 +474,20 @@ def mongo_inserts(integration_mongodb_connector):
         mongo_delete(
             integration_mongodb_connector, "mongo_test", table_name, record_list
         )
+
+
+# ======================= dynamodb  ==========================
+
+
+@pytest.fixture(scope="function")
+def integration_dynamodb_config(db) -> ConnectionConfig:
+    connection_config = ConnectionConfig(
+        key="dynamodb_example",
+        connection_type=ConnectionType.dynamodb,
+        access=AccessLevel.write,
+        secrets=integration_secrets["dynamodb_example"],
+        name="dynamodb_example",
+    )
+    connection_config.save(db)
+    yield connection_config
+    connection_config.delete(db)

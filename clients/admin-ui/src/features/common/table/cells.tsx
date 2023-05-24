@@ -55,6 +55,9 @@ export const MultiTagCell = <T extends object>({
       ? [...value.slice(0, maxNum), "..."]
       : value
     : [];
+  if (tags.length === 0) {
+    return <Text>None</Text>;
+  }
   return (
     <Box whiteSpace="normal">
       {tags.map((v, idx) => (

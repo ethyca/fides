@@ -3,20 +3,20 @@ from uuid import uuid4
 
 import pytest
 
-from fides.api.ops.models.policy import ActionType
-from fides.api.ops.models.privacy_request import (
+from fides.api.models.policy import ActionType
+from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
-from fides.api.ops.service.connectors import get_connector
-from fides.api.ops.service.privacy_request.request_runner_service import (
+from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.service.connectors import get_connector
+from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
-from fides.api.ops.task import graph_task
+from fides.api.task import graph_task
 
 
 @pytest.mark.integration_saas
@@ -90,7 +90,7 @@ async def test_google_analytics_consent_request_task_old_workflow(
 @pytest.mark.integration_google_analytics
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
-@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+@mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 async def test_google_analytics_consent_prepared_requests_old_workflow(
     mocked_client_send,
     db,
@@ -134,7 +134,7 @@ async def test_google_analytics_consent_prepared_requests_old_workflow(
 @pytest.mark.integration_google_analytics
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
-@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+@mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 async def test_google_analytics_no_ga_client_id_old_workflow(
     mocked_client_send,
     db,
@@ -172,7 +172,7 @@ async def test_google_analytics_no_ga_client_id_old_workflow(
 @pytest.mark.integration_saas
 @pytest.mark.integration_google_analytics
 @pytest.mark.asyncio
-@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+@mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 async def test_google_analytics_no_ga_client_id_new_workflow(
     mocked_client_send,
     db,
@@ -323,7 +323,7 @@ async def test_google_analytics_consent_request_task_new_workflow(
 @pytest.mark.integration_google_analytics
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
-@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+@mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 async def test_google_analytics_consent_request_task_new_errored_workflow(
     mocked_client_send,
     db,
@@ -404,7 +404,7 @@ async def test_google_analytics_consent_request_task_new_errored_workflow(
 @pytest.mark.integration_google_analytics
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
-@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+@mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 async def test_google_analytics_consent_prepared_requests_new_workflow(
     mocked_client_send,
     db,
