@@ -8,7 +8,6 @@ import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import {
   getLocation,
   LOCATION_HEADERS,
-  UserGeolocation,
 } from "~/common/location";
 
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
@@ -22,7 +21,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   // Check if a location was provided via headers or query param; if so, inject into the bundle
-  const location = getLocation(req);
+  const geolocation = getLocation(req);
 
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await loadPrivacyCenterEnvironment();
@@ -38,7 +37,7 @@ export default async function handler(
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
   // DEFER: update this to match what FidesConfig expects in the future for location
-  const fidesConfig: FidesConfig & { location?: UserGeolocation } = {
+  const fidesConfig: FidesConfig = {
     consent: {
       options,
     },
@@ -49,7 +48,7 @@ export default async function handler(
       geolocationApiUrl: environment.settings.GEOLOCATION_API_URL,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
     },
-    location,
+    geolocation,
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
