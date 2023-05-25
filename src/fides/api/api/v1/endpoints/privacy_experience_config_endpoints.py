@@ -197,14 +197,17 @@ def experience_config_update(
     Update Experience Config and then attempt to upsert Experiences and link back to ExperienceConfig.
 
     All regions that should be linked to this ExperienceConfig (or remain linked) need to be
-    included in this request.
+    included in this request.  If you want to ignore regions being updated, pass in None for regions.
+    If you want to remove regions, pass in an empty list.
     """
     experience_config: PrivacyExperienceConfig = get_experience_config_or_error(
         db, experience_config_id
     )
     experience_config_data_dict: Dict = experience_config_data.dict(exclude_unset=True)
     # Pop the regions off the request
-    regions: List[PrivacyNoticeRegion] = experience_config_data_dict.pop("regions")
+    regions: Optional[List[PrivacyNoticeRegion]] = experience_config_data_dict.pop(
+        "regions", None
+    )
 
     # Because we're allowing patch updates here, first do a dry update and make sure the experience
     # config wouldn't be put in a bad state.
@@ -224,24 +227,30 @@ def experience_config_update(
     experience_config.update(db=db, data=experience_config_data_dict)
     db.refresh(experience_config)
 
-    if regions:
+    linked: List[PrivacyNoticeRegion] = []
+    unlinked_regions: List[PrivacyNoticeRegion] = []
+    if (
+        regions is not None
+    ):  # If regions list is not in the request, we skip linking/unlinking regions
         logger.info(
             "Verifying or linking regions {} to experience config '{}'.",
             human_friendly_list([reg.value for reg in regions]),
             experience_config.id,
         )
-    # Upserting PrivacyExperiences based on regions specified in the request.
-    # Valid Privacy Experiences will be linked via FK to the given Experience Config.
-    (
-        linked,
-        unlinked_regions,
-    ) = upsert_privacy_experiences_after_config_update(db, experience_config, regions)
+        # Upserting PrivacyExperiences based on regions specified in the request.
+        # Valid Privacy Experiences will be linked via FK to the given Experience Config.
+        (
+            linked,
+            unlinked_regions,
+        ) = upsert_privacy_experiences_after_config_update(
+            db, experience_config, regions
+        )
 
-    logger.info(
-        "Unlinking regions {} from Privacy Experience Config '{}'.",
-        human_friendly_list([reg.value for reg in unlinked_regions]),
-        experience_config.id,
-    )
+        logger.info(
+            "Unlinking regions {} from Privacy Experience Config '{}'.",
+            human_friendly_list([reg.value for reg in unlinked_regions]),
+            experience_config.id,
+        )
 
     return ExperienceConfigCreateOrUpdateResponse(
         experience_config=experience_config,

@@ -300,6 +300,7 @@ class TestCreateExperienceConfig:
                 "description": "We care about your privacy",
                 "component": "overlay",
                 "regions": ["eu_it"],
+                "reject_button_label": "Reject",
                 "save_button_label": "Save",
                 "title": "Manage your privacy",
             },
@@ -901,7 +902,7 @@ class TestUpdateExperienceConfig:
             headers=auth_header,
         )
         assert response.status_code == 422
-        assert response.json()["detail"][0]["msg"] == "field required"
+        assert response.json()["detail"][0]["msg"] == "none is not an allowed value"
 
     def test_update_overlay_experience_config_missing_banner_enabled(
         self,
@@ -927,6 +928,63 @@ class TestUpdateExperienceConfig:
             response.json()["detail"][0]["msg"]
             == "The following additional fields are required when defining an overlay: banner_enabled and privacy_preferences_link_label."
         )
+
+    def test_update_experience_config_while_ignoring_regions(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+        experience_config_overlay,
+        privacy_experience_overlay,
+    ) -> None:
+        """We need to currently support editing experience configs without the regions.  If "regions" is None,
+        I don't edit regions at all. If "regions" are an empty list, they are all removed.
+        """
+        assert experience_config_overlay.disabled is False
+        assert experience_config_overlay.regions == [PrivacyNoticeRegion.us_ca]
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_overlay.id}",
+            json={
+                "disabled": True,
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()["experience_config"]
+        assert resp["disabled"] is True
+        assert resp["regions"] == ["us_ca"]  # Main thing, regions weren't touched!
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert resp["disabled"] is True
+        assert resp["version"] == 2.0
+
+        experience_config = get_experience_config_or_error(db, resp["id"])
+        assert experience_config.experiences.all() == [privacy_experience_overlay]
+        assert experience_config.histories.count() == 2
+        history = experience_config.histories[0]
+        assert history.version == 1.0
+        assert history.component == ComponentType.overlay
+        assert history.banner_enabled == BannerEnabled.enabled_where_required
+        assert history.experience_config_id == experience_config.id
+        assert history.disabled is False
+
+        history = experience_config.histories[1]
+        assert history.version == 2.0
+        assert history.disabled is True
+
+        assert response.json()["linked_regions"] == []
+        assert response.json()["unlinked_regions"] == []
+
+        for history in privacy_experience_overlay.histories:
+            history.delete(db)
+        privacy_experience_overlay.delete(db)
+
+        for history in experience_config.histories:
+            history.delete(db)
+        experience_config.delete(db)
 
     def test_update_experience_config_with_no_regions(
         self, api_client: TestClient, url, generate_auth_header, db
@@ -1327,6 +1385,9 @@ class TestUpdateExperienceConfig:
         assert (
             resp["version"] == 1.0
         ), "Version not bumped because config didn't change, only region removed"
+        assert resp["regions"] == []  # Main thing, regions were removed
+        assert response.json()["linked_regions"] == []
+        assert response.json()["unlinked_regions"] == ["us_tx"]
 
         db.refresh(overlay_experience_config)
         # ExperienceConfig was disabled - this is a change, so another historical record is created
@@ -1357,9 +1418,6 @@ class TestUpdateExperienceConfig:
         assert experience_history.experience_config_id is None
         assert experience_history.experience_config_history_id is None
         assert experience_history.privacy_experience_id == privacy_experience.id
-
-        assert response.json()["linked_regions"] == []
-        assert response.json()["unlinked_regions"] == ["us_tx"]
 
         for history in privacy_experience.histories:
             history.delete(db)

@@ -106,15 +106,18 @@ class ExperienceConfigUpdate(ExperienceConfigSchema):
     Updating ExperienceConfig - requires regions to be patched specifically
     """
 
-    regions: List[PrivacyNoticeRegion]
+    regions: Optional[List[PrivacyNoticeRegion]] = Field(
+        default=None,
+        description="If None, no edits will be made to regions.  If an empty list, all regions will be removed.",
+    )
 
     @validator("regions")
     @classmethod
     def validate_regions(
-        cls, regions: List[PrivacyNoticeRegion]
-    ) -> List[PrivacyNoticeRegion]:
+        cls, regions: Optional[List[PrivacyNoticeRegion]]
+    ) -> Optional[List[PrivacyNoticeRegion]]:
         """Assert regions aren't duplicated."""
-        if len(regions) != len(set(regions)):
+        if regions and len(regions) != len(set(regions)):
             raise ValueError("Duplicate regions found.")
         return regions
 
