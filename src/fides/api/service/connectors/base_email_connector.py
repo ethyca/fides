@@ -8,9 +8,13 @@ from fides.api.ctl.sql_models import Organization  # type: ignore[attr-defined]
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.messaging.messaging import MessagingServiceType
+from fides.api.schemas.messaging.messaging import (
+    EMAIL_MESSAGING_SERVICES,
+    MessagingServiceType,
+)
 from fides.api.service.connectors.base_connector import DB_CONNECTOR_TYPE
 from fides.core.config import CONFIG
+from fides.core.config.config_proxy import ConfigProxy
 
 
 class BaseEmailConnector(Generic[DB_CONNECTOR_TYPE], ABC):
@@ -68,6 +72,16 @@ def get_email_messaging_config_service_type(db: Session) -> Optional[str]:
     Email connectors require that an email messaging service has been configured.
     Prefers Twilio if both Twilio email AND Mailgun has been configured.
     """
+
+    # if there's a specified messaging service type, and it's an email service, we use that
+    if (
+        configured_service_type := ConfigProxy(
+            db
+        ).notifications.notification_service_type
+    ) is not None and configured_service_type in EMAIL_MESSAGING_SERVICES:
+        return configured_service_type
+
+    # if no specified messaging service type, fall back to hardcoded preference hierarchy
     messaging_configs: Optional[List[MessagingConfig]] = MessagingConfig.query(
         db=db
     ).all()
