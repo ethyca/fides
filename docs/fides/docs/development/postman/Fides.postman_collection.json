@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "5d1a5ee9-f432-4da2-a9c9-d68c17e776ac",
+		"_postman_id": "90f366bb-e733-4cca-93b7-75eb599871c2",
 		"name": "Fides",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -5216,7 +5216,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n   {\n      \"name\":\"Profiling\",\n      \"regions\":[\n         \"us_ca\",\n         \"us_ut\"\n      ],\n      \"description\":\"Making a decision solely by automated means.\",\n      \"consent_mechanism\":\"opt_in\",\n      \"data_uses\":[\n         \"personalize\"\n      ],\n      \"enforcement_level\":\"system_wide\",\n      \"has_gpc_flag\":false,\n      \"displayed_in_overlay\":true\n   },\n   {\n      \"name\":\"Essential\",\n      \"regions\":[\n         \"eu_de\"\n      ],\n      \"description\":\"Notify the user about data processing activities that are essential to your services' functionality. Typically consent is not required for this.\",\n      \"consent_mechanism\":\"notice_only\",\n      \"data_uses\":[\n         \"provide.service\"\n      ],\n      \"enforcement_level\":\"system_wide\",\n      \"displayed_in_overlay\":true\n   },\n   {\n      \"name\":\"Advertising\",\n      \"regions\":[\n         \"us_ca\"\n      ],\n      \"description\":\"Sample advertising notice\",\n      \"consent_mechanism\":\"opt_out\",\n      \"data_uses\":[\n         \"advertising\"\n      ],\n      \"enforcement_level\":\"system_wide\",\n      \"displayed_in_privacy_center\":true\n   }\n]",
+							"raw": "[\n   {\n      \"name\":\"Profiling\",\n      \"notice_key\": \"profiling\",\n      \"regions\":[\n         \"us_ca\",\n         \"us_ut\"\n      ],\n      \"description\":\"Making a decision solely by automated means.\",\n      \"consent_mechanism\":\"opt_in\",\n      \"data_uses\":[\n         \"personalize\"\n      ],\n      \"enforcement_level\":\"system_wide\",\n      \"has_gpc_flag\":false,\n      \"displayed_in_overlay\":true\n   },\n   {\n      \"name\":\"Essential\",\n      \"notice_key\": \"essential\",\n      \"regions\":[\n         \"eu_de\"\n      ],\n      \"description\":\"Notify the user about data processing activities that are essential to your services' functionality. Typically consent is not required for this.\",\n      \"consent_mechanism\":\"notice_only\",\n      \"data_uses\":[\n         \"provide.service\"\n      ],\n      \"enforcement_level\":\"system_wide\",\n      \"displayed_in_overlay\":true\n   },\n   {\n      \"name\":\"Advertising\",\n      \"notice_key\": \"advertising\",\n      \"regions\":[\n         \"us_ca\"\n      ],\n      \"description\":\"Sample advertising notice\",\n      \"consent_mechanism\":\"opt_out\",\n      \"data_uses\":[\n         \"advertising\"\n      ],\n      \"enforcement_level\":\"system_wide\",\n      \"displayed_in_privacy_center\":true\n   }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5402,10 +5402,44 @@
 			]
 		},
 		{
-			"name": "Privacy Experiences",
+			"name": "Privacy Experiences and Configs",
 			"item": [
 				{
-					"name": "Create Privacy Experience",
+					"name": "Privacy Experience List",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-experience/?region=eu_de",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-experience",
+								""
+							],
+							"query": [
+								{
+									"key": "region",
+									"value": "eu_de"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Experience Config",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -5421,7 +5455,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[{\n    \"component\": \"privacy_center\",\n    \"delivery_mechanism\": \"link\",\n    \"regions\": [\"us_ca\"],\n    \"component_title\": \"Manage your privacy\",\n    \"link_label\": \"Go to the privacy center\"\n}]",
+							"raw": "{\n    \"component\": \"overlay\",\n    \"delivery_mechanism\": \"banner\",\n    \"regions\": [\"us_ca\"],\n    \"component_title\": \"Manage your privacy\",\n    \"banner_title\": \"Manage your data privacy\",\n    \"acknowledgement_button_label\": \"Confirm\",\n    \"confirmation_button_label\": \"Accept\",\n    \"reject_button_label\": \"Reject\"\n\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5429,46 +5463,19 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/privacy-experience",
+							"raw": "{{host}}/experience-config",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
-								"privacy-experience"
+								"experience-config"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Privacy Experience Bulk Create",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/privacy-experience",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"privacy-experience"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Privacy Experience Bulk Update",
+					"name": "Experience Config Update",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -5484,7 +5491,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[{\n    \"component\": \"privacy_center\",\n    \"delivery_mechanism\": \"link\",\n    \"regions\": [\"us_ca\", \"us_co\"],\n    \"component_title\": \"Manage your privacy with Fides\",\n    \"link_label\": \"Go to the privacy center\",\n    \"id\": \"{{privacy_experience_id}}\"\n}]",
+							"raw": "{\n    \"component\": \"overlay\",\n    \"delivery_mechanism\": \"link\",\n    \"regions\": [ \"eu_it\"],\n    \"component_title\": \"Manage your privacy\",\n    \"banner_title\": \"Manage your data privacy\",\n    \"acknowledgement_button_label\": \"Confirm\",\n    \"confirmation_button_label\": \"Accept\",\n    \"reject_button_label\": \"Reject\",\n    \"link_label\": \"OK\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5492,19 +5499,20 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/privacy-experience",
+							"raw": "{{host}}/experience-config/{{experience-config-id}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
-								"privacy-experience"
+								"experience-config",
+								"{{experience-config-id}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Privacy Experience Detail",
+					"name": "Get Experience Configs",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -5519,13 +5527,50 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/privacy-experience/{{privacy_experience_id}}",
+							"raw": "{{host}}/experience-config?component=overlay&show_disabled=False",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
-								"privacy-experience",
-								"{{privacy_experience_id}}"
+								"experience-config"
+							],
+							"query": [
+								{
+									"key": "component",
+									"value": "overlay"
+								},
+								{
+									"key": "show_disabled",
+									"value": "False"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Experience Config Detail",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/experience-config/{{experience-config-id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"experience-config",
+								"{{experience-config-id}}"
 							]
 						}
 					},
@@ -5625,7 +5670,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n   \"browser_identity\": {\n       \"ga_client_id\": \"UA-XXXXXXXXX\",\n       \"ljt_readerID\": \"test_sovrn_id\",\n       \"fides_user_device_id\": \"{{fides_user_device_id}}\"\n   },\n   \"preferences\": [{\n       \"privacy_notice_history_id\": \"{{privacy_notice_history_id}}\",\n       \"preference\": \"opt_out\"\n   }],\n   \"request_origin\": \"privacy_center\",\n   \"url_recorded\": \"example.com/privacy_center\",\n   \"user_agent\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24\",\n   \"user_geography\": \"us_ca\"\n}",
+							"raw": "{\n   \"browser_identity\": {\n       \"ga_client_id\": \"UA-XXXXXXXXX\",\n       \"ljt_readerID\": \"test_sovrn_id\",\n       \"fides_user_device_id\": \"{{fides_user_device_id}}\"\n   },\n   \"preferences\": [{\n       \"privacy_notice_history_id\": \"{{privacy_notice_history_id}}\",\n       \"preference\": \"opt_out\"\n   }],\n   \"user_geography\": \"us_ca\",\n   \"privacy_experience_history_id\": \"{{privacy_experience_history_id}}\",\n   \"method\": \"button\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5639,41 +5684,6 @@
 							],
 							"path": [
 								"privacy-preferences"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Privacy Preferences by Fides User Device Id",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/privacy-preferences?fides_user_device_id={{fides_user_device_id}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"privacy-preferences"
-							],
-							"query": [
-								{
-									"key": "fides_user_device_id",
-									"value": "{{fides_user_device_id}}"
-								}
 							]
 						}
 					},
@@ -6073,6 +6083,16 @@
 		},
 		{
 			"key": "privacy_experience_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "experience-config-id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "privacy_experience_history_id",
 			"value": "",
 			"type": "string"
 		}

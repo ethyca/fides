@@ -14,6 +14,11 @@ from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 
 import fides
+from fides.api.analytics import (
+    accessed_through_local_host,
+    in_docker_container,
+    send_analytics_event,
+)
 from fides.api.app_setup import (
     check_redis,
     create_fides_app,
@@ -28,19 +33,14 @@ from fides.api.ctl.ui import (
     match_route,
     path_is_in_ui_directory,
 )
-from fides.api.ops.analytics import (
-    accessed_through_local_host,
-    in_docker_container,
-    send_analytics_event,
-)
-from fides.api.ops.schemas.analytics import Event, ExtraData
+from fides.api.schemas.analytics import Event, ExtraData
 
 # pylint: disable=wildcard-import, unused-wildcard-import
-from fides.api.ops.service.privacy_request.email_batch_service import (
+from fides.api.service.privacy_request.email_batch_service import (
     initiate_scheduled_batch_email_send,
 )
-from fides.api.ops.tasks.scheduled.scheduler import scheduler
-from fides.api.ops.util.logger import _log_exception
+from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.api.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.core.config import CONFIG, check_required_webserver_config_values
 

@@ -20,13 +20,45 @@ The types of changes are:
 ### Changed
 
 - Remove logging within the Celery creation function [#3303](https://github.com/ethyca/fides/pull/3303)
+- Update how generic endpoint generation works [#3304](https://github.com/ethyca/fides/pull/3304)
 - Restrict strack-trace logging when not in Dev mode [#3081](https://github.com/ethyca/fides/pull/3081)
+- Refactor CSS variables for `fides-js` to match brandable color palette [#3321](https://github.com/ethyca/fides/pull/3321)
+- Moved all of the dirs from `fides.api.ops` into `fides.api` [#3318](https://github.com/ethyca/fides/pull/3318)
+- Add required notice key to privacy notices [#3337](https://github.com/ethyca/fides/pull/3337)
+- Make Privacy Experience List public, and separate public endpoint rate limiting [#3339](https://github.com/ethyca/fides/pull/3339)
 
 ### Added
 
 - Add an automated test to check for `/fides-consent.js` backwards compatibility [#3289](https://github.com/ethyca/fides/pull/3289)
 - Add infrastructure for "overlay" consent components (Preact, CSS bundling, etc.) and initial version of consent banner [#3191](https://github.com/ethyca/fides/pull/3191)
+- Add the modal component of the "overlay" consent components [#3291](https://github.com/ethyca/fides/pull/3291)
+- Track Privacy Experience with Privacy Preferences [#3311](https://github.com/ethyca/fides/pull/3311)
+- Add ability for `fides-js` to fetch its own geolocation [#3356](https://github.com/ethyca/fides/pull/3356)
+- Add ability to select different locations in the "Cookie House" sample app [#3362](https://github.com/ethyca/fides/pull/3362)
+
+### Fixed
+
+- Maintain casing differences within Snowflake datasets for proper DSR execution [#3245](https://github.com/ethyca/fides/pull/3245)
 - Support pseudonymous consent requests with `fides_user_device_id` for the new consent workflow [#3203](https://github.com/ethyca/fides/pull/3203)
+- Fides user device id filter to GET Privacy Experience List endpoint to stash user preferences on embedded notices [#3302](https://github.com/ethyca/fides/pull/3302)
+- Support for data categories on manual webhook fields [#3330](https://github.com/ethyca/fides/pull/3330)
+- Added config-driven rendering to consent components [#3316](https://github.com/ethyca/fides/pull/3316)
+- Pin `typing_extensions` dependency to `4.5.0` to work around a pydantic bug [#3357](https://github.com/ethyca/fides/pull/3357)
+
+### Changed
+
+- Data model around PrivacyExperiences to better keep Privacy Notices and Experiences in sync [#3292](https://github.com/ethyca/fides/pull/3292)
+- UI calls to support new PrivacyExperiences data model [#3313](https://github.com/ethyca/fides/pull/3313)
+
+### Developer Experience
+
+- Add dispatch event when publishing a non-prod tag [#3317](https://github.com/ethyca/fides/pull/3317)
+- Add OpenAPI (Swagger) documentation for Fides Privacy Center API endpoints (/fides.js) [#3341](https://github.com/ethyca/fides/pull/3341)
+
+### Removed
+
+- Remove `fides export` command and backing code [#3256](https://github.com/ethyca/fides/pull/3256)
+
 
 ## [2.13.0](https://github.com/ethyca/fides/compare/2.12.1...2.13.0)
 

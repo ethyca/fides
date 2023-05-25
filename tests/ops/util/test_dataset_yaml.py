@@ -5,14 +5,14 @@ import yaml
 from fideslang.models import Dataset
 from pydantic import ValidationError
 
-from fides.api.ops.graph.config import (
+from fides.api.graph.config import (
     CollectionAddress,
     FieldAddress,
     ObjectField,
     ScalarField,
 )
-from fides.api.ops.graph.graph import DatasetGraph, Edge
-from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
+from fides.api.graph.graph import DatasetGraph, Edge
+from fides.api.models.datasetconfig import convert_dataset_to_graph
 
 from ..graph.graph_test_util import field
 

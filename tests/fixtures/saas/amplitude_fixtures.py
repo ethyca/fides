@@ -8,15 +8,15 @@ from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from requests import Response
 from sqlalchemy.orm import Session
 
+from fides.api.cryptography import cryptographic_util
 from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ops.cryptography import cryptographic_util
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.util.saas_util import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )

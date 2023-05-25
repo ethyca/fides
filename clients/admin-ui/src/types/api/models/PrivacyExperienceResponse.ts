@@ -4,6 +4,7 @@
 
 import type { ComponentType } from "./ComponentType";
 import type { DeliveryMechanism } from "./DeliveryMechanism";
+import type { ExperienceConfigResponse } from "./ExperienceConfigResponse";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
 
@@ -14,20 +15,12 @@ export type PrivacyExperienceResponse = {
   disabled?: boolean;
   component?: ComponentType;
   delivery_mechanism?: DeliveryMechanism;
-  regions?: Array<PrivacyNoticeRegion>;
-  component_title?: string;
-  component_description?: string;
-  banner_title?: string;
-  banner_description?: string;
-  link_label?: string;
-  confirmation_button_label?: string;
-  reject_button_label?: string;
-  acknowledgement_button_label?: string;
+  region: PrivacyNoticeRegion;
+  experience_config?: ExperienceConfigResponse;
   id: string;
   created_at: string;
   updated_at: string;
   version: number;
   privacy_experience_history_id: string;
-  privacy_experience_template_id?: string;
   privacy_notices?: Array<PrivacyNoticeResponse>;
 };

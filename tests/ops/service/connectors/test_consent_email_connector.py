@@ -2,31 +2,29 @@ from unittest import mock
 
 import pytest
 
-from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionTestStatus
-from fides.api.ops.models.privacy_notice import ConsentMechanism, EnforcementLevel
-from fides.api.ops.models.privacy_preference import UserConsentPreference
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
+from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.connectionconfig import AccessLevel, ConnectionTestStatus
+from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
+from fides.api.models.privacy_preference import UserConsentPreference
+from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
     ExtendedEmailSchema,
     ExtendedIdentityTypes,
 )
-from fides.api.ops.schemas.messaging.messaging import (
+from fides.api.schemas.messaging.messaging import (
     ConsentPreferencesByUser,
     MessagingActionType,
 )
-from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.api.ops.schemas.privacy_preference import (
-    MinimalPrivacyPreferenceHistorySchema,
-)
-from fides.api.ops.schemas.privacy_request import Consent
-from fides.api.ops.service.connectors.consent_email_connector import (
+from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
+from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
+from fides.api.schemas.privacy_request import Consent
+from fides.api.service.connectors.consent_email_connector import (
     GenericConsentEmailConnector,
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
     send_single_consent_email,
 )
-from fides.api.ops.service.privacy_request.request_runner_service import (
+from fides.api.service.privacy_request.request_runner_service import (
     get_consent_email_connection_configs,
 )
 
@@ -145,9 +143,7 @@ class TestConsentEmailConnectorMethods:
             == filtered_identities
         )
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.dispatch_message"
-    )
+    @mock.patch("fides.api.service.connectors.consent_email_connector.dispatch_message")
     def test_send_single_consent_email_no_org_defined(self, mock_dispatch, db):
         with pytest.raises(MessageDispatchException) as exc:
             send_single_consent_email(
@@ -182,9 +178,7 @@ class TestConsentEmailConnectorMethods:
             == "Cannot send an email to third-party vendor. No organization name found."
         )
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.dispatch_message"
-    )
+    @mock.patch("fides.api.service.connectors.consent_email_connector.dispatch_message")
     def test_send_single_consent_email_old_workflow(
         self, mock_dispatch, test_fides_org, db, messaging_config
     ):
@@ -249,9 +243,7 @@ class TestConsentEmailConnectorMethods:
             == "Test notification of users' consent preference changes from Test Org"
         )
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.dispatch_message"
-    )
+    @mock.patch("fides.api.service.connectors.consent_email_connector.dispatch_message")
     def test_send_single_consent_email_preferences_by_privacy_notice(
         self, mock_dispatch, test_fides_org, db, messaging_config
     ):
@@ -265,6 +257,7 @@ class TestConsentEmailConnectorMethods:
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="Targeted Advertising",
                             regions=["us_ca"],
+                            notice_key="targeted_advertising",
                             id="test_1",
                             privacy_notice_id="12345",
                             consent_mechanism=ConsentMechanism.opt_in,
@@ -284,6 +277,7 @@ class TestConsentEmailConnectorMethods:
                         preference=UserConsentPreference.opt_out,
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="Analytics",
+                            notice_key="analytics",
                             regions=["us_ca"],
                             id="test_2",
                             privacy_notice_id="67890",
@@ -496,7 +490,7 @@ class TestSovrnConnector:
         assert status == ConnectionTestStatus.failed
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email"
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email"
     )
     def test_test_connection_call(
         self, mock_send_email, db, test_sovrn_consent_email_connector

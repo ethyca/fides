@@ -7,9 +7,9 @@ import validators
 from pydantic import Field, validator
 from slowapi.wrappers import parse_many  # type: ignore
 
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.api.ops.cryptography.cryptographic_util import generate_salt, hash_with_salt
-from fides.api.ops.oauth.roles import OWNER
+from fides.api.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.api.oauth.roles import OWNER
 
 from .fides_settings import FidesSettings
 
@@ -84,6 +84,10 @@ class SecuritySettings(FidesSettings):
     parent_server_username: Optional[str] = Field(
         default=None,
         description="When using a parent/child Fides deployment, this username will be used by the child server to access the parent server.",
+    )
+    public_request_rate_limit: str = Field(
+        default="2000/minute",
+        description="The number of requests from a single IP address allowed to hit a public endpoint within the specified time period",
     )
     rate_limit_prefix: str = Field(
         default="fides-",

@@ -12,10 +12,10 @@ import pytest
 from bson import ObjectId
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import StorageUploadError
-from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.models.storage import StorageConfig
-from fides.api.ops.schemas.storage.storage import (
+from fides.api.common_exceptions import StorageUploadError
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.storage import StorageConfig
+from fides.api.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
     S3AuthMethod,
@@ -23,20 +23,20 @@ from fides.api.ops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.api.ops.service.storage.storage_uploader_service import get_extension, upload
-from fides.api.ops.tasks.storage import (
+from fides.api.service.storage.storage_uploader_service import get_extension, upload
+from fides.api.tasks.storage import (
     LOCAL_FIDES_UPLOAD_DIRECTORY,
     encrypt_access_request_results,
     write_to_in_memory_buffer,
 )
-from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
+from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     decrypt_combined_nonce_and_message,
 )
 from fides.core.config import CONFIG
 
 
-@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_success_secrets_auth(
     mock_upload_to_s3: Mock, db: Session, privacy_request
 ) -> None:
@@ -145,7 +145,7 @@ def test_write_to_in_memory_buffer_handles_bson():
     }
 
 
-@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_success_automatic_auth(
     mock_upload_to_s3: Mock, db: Session, privacy_request
 ) -> None:
@@ -189,7 +189,7 @@ def test_uploader_s3_success_automatic_auth(
     storage_config.delete(db)
 
 
-@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_invalid_file_naming(mock_upload_to_s3: Mock, db: Session) -> None:
     request_id = "214513r"
 
@@ -223,7 +223,7 @@ def test_uploader_s3_invalid_file_naming(mock_upload_to_s3: Mock, db: Session) -
     sc.delete(db)
 
 
-@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_no_config(mock_upload_to_s3: Mock, db: Session) -> None:
     request_id = "214513r"
     storage_key = "s3_key"
