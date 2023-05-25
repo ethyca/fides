@@ -10,8 +10,15 @@ from typing import Any, Dict, List, Optional, Union
 from celery.result import AsyncResult
 from loguru import logger
 from pydantic import BaseModel
-from sqlalchemy import Boolean, Column, DateTime
-from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Session, backref, relationship
@@ -28,10 +35,8 @@ from fides.api.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.cryptography.cryptographic_util import hash_with_salt
-from fides.api.db.base_class import (
-    Base,  # type: ignore[attr-defined]
-    JSONTypeOverride,
-)
+from fides.api.db.base_class import Base  # type: ignore[attr-defined]
+from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph_differences import GraphRepr

@@ -1,5 +1,6 @@
 """Contains the nox sessions for developing docs."""
 import nox
+
 from constants_nox import CI_ARGS
 
 

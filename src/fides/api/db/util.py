@@ -1,5 +1,5 @@
 # pylint: skip-file
-from typing import Any, TypeVar, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Type, TypeVar
 
 if TYPE_CHECKING:
     # Override the Enum constructor not to accept a list of strings and confuse mypy:
