@@ -121,7 +121,10 @@ export const useConnectionListDropDown = ({
 
   useMemo(() => {
     const initialSelectedValue = connectionOptions.find(
-      (c) => c.identifier === connectionConfig?.connection_type
+      (ct) =>
+        (connectionConfig?.saas_config &&
+          ct.identifier === connectionConfig?.saas_config.type) ||
+        ct.identifier === connectionConfig?.connection_type
     );
     if (initialSelectedValue) {
       setSelectedValue(initialSelectedValue);

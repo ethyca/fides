@@ -6,21 +6,21 @@
  * Supported types to which we can connect fidesops.
  */
 export enum ConnectionType {
-  POSTGRES = "postgres",
-  MONGODB = "mongodb",
-  MYSQL = "mysql",
+  POSTGRES = "postgres", //DB
+  MONGODB = "mongodb", //DB
+  MYSQL = "mysql", // DB
   HTTPS = "https",
   SAAS = "saas",
-  REDSHIFT = "redshift",
-  SNOWFLAKE = "snowflake",
-  MSSQL = "mssql",
-  MARIADB = "mariadb",
-  BIGQUERY = "bigquery",
-  MANUAL = "manual",
-  SOVRN = "sovrn",
-  ATTENTIVE = "attentive",
-  DYNAMODB = "dynamodb",
-  MANUAL_WEBHOOK = "manual_webhook",
-  TIMESCALE = "timescale",
+  REDSHIFT = "redshift", //DB
+  SNOWFLAKE = "snowflake", //DB
+  MSSQL = "mssql", //DB
+  MARIADB = "mariadb", //DB
+  BIGQUERY = "bigquery", //DB
+  MANUAL = "manual", // manual
+  SOVRN = "sovrn", // email
+  ATTENTIVE = "attentive", // email
+  DYNAMODB = "dynamodb", //DB
+  MANUAL_WEBHOOK = "manual_webhook", //manual
+  TIMESCALE = "timescale", //DB
   FIDES = "fides",
 }

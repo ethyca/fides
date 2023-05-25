@@ -75,14 +75,30 @@ const patchConnectionConfig = async (
   secretsSchema: ConnectionTypeSecretSchemaReponse,
   connectionOption: ConnectionSystemTypeMap,
   systemFidesKey: string,
+  connectionConfig: ConnectionConfigurationResponse,
   patchFunc: any
 ) => {
+  console.log(
+    "connection_type: ",
+    values,
+    " connectionOptionId: ",
+    connectionOption?.identifier
+  );
+
+
+  const key =
+    [SystemType.DATABASE, SystemType.EMAIL].indexOf(connectionOption.type) > -1
+      ? formatKey(values.instance_key as string)
+      : connectionConfig?.key;
+
   const params1: Omit<ConnectionConfigurationResponse, "created_at"> = {
     access: AccessLevel.WRITE,
-    connection_type: connectionOption?.identifier as ConnectionType,
+    connection_type: (connectionOption.type === SystemType.SAAS
+      ? connectionOption.type
+      : connectionOption.identifier) as ConnectionType,
     description: values.description,
     disabled: false,
-    key: formatKey(values.instance_key as string),
+    key,
     name: values.name,
   };
   const payload = await patchFunc({
@@ -91,7 +107,12 @@ const patchConnectionConfig = async (
   }).unwrap();
 
   if (payload.failed?.length > 0) {
-    throw Error(payload.failed[0].message);
+    const error = payload.failed[0].message as string;
+    throw Object.assign(Error(error), {
+      data: {
+        detail: error,
+      },
+    });
   }
   return payload as BulkPutConnectionConfiguration;
 };
@@ -145,6 +166,7 @@ export const useConnectorForm = ({
   const handleSubmit = async (values: ConnectionConfigFormValues) => {
     try {
       setIsSubmitting(true);
+      console.log("submitting: ", connectionOption.type, connectionConfig);
       if (
         connectionOption.type === SystemType.SAAS &&
         connectionConfig === undefined
@@ -164,6 +186,7 @@ export const useConnectorForm = ({
           secretsSchema!,
           connectionOption,
           systemFidesKey,
+          connectionConfig!,
           patchDatastoreConnection
         );
         const payload2 = await upsertConnectionConfigSecrets(
@@ -235,6 +258,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     secretsSchema,
     systemFidesKey,
     connectionOption,
+    connectionConfig,
   });
   if (!secretsSchema) {
     return null;

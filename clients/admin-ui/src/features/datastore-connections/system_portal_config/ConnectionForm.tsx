@@ -27,20 +27,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
     setSelectedValue,
   } = useConnectionListDropDown({ connectionConfig });
 
-  // If there is a connection load the correct form based on the type
-  // If not connection show dropdown that isn't linked to a form.
-  // when an option is selected load the correct form
-  // if a new option is selected reload the form even if same type
-
-  // eventually give option to select a connection from orphaned connection list
-  // if there are any orphaned connections
-
-  // TODO: look into creating new system_connections endpoints for other calls like the secrets one
-
   /* STEPS TO UNIFY the database and saas forms
-  3.5 Update saas creation endpoint to fill in system id
-  3.6 Test that saas connectors can be edited after creation and are linked to a system
-  4. Profit
   5. Add dataset configuration to both. If each type requires different behavior account for it.
   5.1 Add dataset(config) patching to the form submission
   5.2 make sure the dropdown automatically fills in based on the form value
