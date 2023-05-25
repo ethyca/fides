@@ -1,9 +1,12 @@
-import {v4 as uuidv4} from "uuid";
-import {getCookie, setCookie, Types} from "typescript-cookie";
+import { v4 as uuidv4 } from "uuid";
+import { getCookie, setCookie, Types } from "typescript-cookie";
 
-import {ConsentContext} from "./consent-context";
-import {resolveConsentValue, resolveLegacyConsentValue} from "./consent-value";
-import {LegacyConsentConfig, PrivacyExperience} from "./consent-types";
+import { ConsentContext } from "./consent-context";
+import {
+  resolveConsentValue,
+  resolveLegacyConsentValue,
+} from "./consent-value";
+import { LegacyConsentConfig, PrivacyExperience } from "./consent-types";
 
 /**
  * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
@@ -74,7 +77,10 @@ export const generateFidesUserDeviceId = (): string => uuidv4();
 /**
  * Generate a new Fides cookie with default values for the current user.
  */
-export const makeFidesCookie = (consent?: CookieKeyConsent, device_id?: string): FidesCookie => {
+export const makeFidesCookie = (
+  consent?: CookieKeyConsent,
+  device_id?: string
+): FidesCookie => {
   const now = new Date();
   const userDeviceId = device_id || generateFidesUserDeviceId();
   return {
@@ -180,18 +186,30 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
   );
 };
 
-const makeConsentDefaultsForExperiences = (experience: PrivacyExperience, context: ConsentContext) => {
+const makeConsentDefaultsForExperiences = (
+  experience: PrivacyExperience,
+  context: ConsentContext
+) => {
   const defaults: CookieKeyConsent = {};
   if (!experience.privacy_notices) {
     return defaults;
   }
-  experience.privacy_notices.forEach(({notice_key, default_preference, has_gpc_flag}) => {
-    defaults[notice_key] = resolveConsentValue(default_preference, context, has_gpc_flag);
-  })
+  experience.privacy_notices.forEach(
+    ({ notice_key, default_preference, has_gpc_flag }) => {
+      defaults[notice_key] = resolveConsentValue(
+        default_preference,
+        context,
+        has_gpc_flag
+      );
+    }
+  );
   return defaults;
-}
+};
 
-const makeConsentDefaultsLegacy = (config: LegacyConsentConfig | undefined, context: ConsentContext) => {
+const makeConsentDefaultsLegacy = (
+  config: LegacyConsentConfig | undefined,
+  context: ConsentContext
+) => {
   const defaults: CookieKeyConsent = {};
   config?.options.forEach(({ cookieKeys, default: current }) => {
     if (current === undefined) {
@@ -210,8 +228,8 @@ const makeConsentDefaultsLegacy = (config: LegacyConsentConfig | undefined, cont
       defaults[cookieKey] = previous && value;
     });
   });
-  return defaults
-}
+  return defaults;
+};
 
 /**
  * Generate the *default* consent preferences for this session, based on:
@@ -234,7 +252,7 @@ export const makeConsentDefaults = ({
   context: ConsentContext;
 }): CookieKeyConsent => {
   if (experience) {
-    return makeConsentDefaultsForExperiences(experience, context)
+    return makeConsentDefaultsForExperiences(experience, context);
   }
-  return makeConsentDefaultsLegacy(config, context)
+  return makeConsentDefaultsLegacy(config, context);
 };

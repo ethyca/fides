@@ -1,5 +1,6 @@
 import {
-  FidesOptions, UserConsentPreference,
+  FidesOptions,
+  UserConsentPreference,
   UserGeolocation,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "./consent-types";
@@ -57,7 +58,7 @@ export const constructFidesRegionString = (
  * Convert a user consent preference into true/false
  */
 export const transformUserPreferenceToBoolean = (
-    preference: UserConsentPreference | undefined
+  preference: UserConsentPreference | undefined
 ) => {
   if (!preference) {
     return false;
@@ -69,7 +70,6 @@ export const transformUserPreferenceToBoolean = (
     return true;
   }
   return preference === UserConsentPreference.ACKNOWLEDGE;
-
 };
 
 /**
@@ -78,9 +78,9 @@ export const transformUserPreferenceToBoolean = (
 export const validateOptions = (options: FidesOptions): boolean => {
   // Check if options is an invalid type
   debugLog(
-      options.debug,
-      "Validating Fides consent overlay options...",
-      options
+    options.debug,
+    "Validating Fides consent overlay options...",
+    options
   );
   if (typeof options !== "object") {
     return false;
