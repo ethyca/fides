@@ -55,7 +55,7 @@ def test_init_opt_in(test_cli_runner: CliRunner) -> None:
 def test_local_flag_invalid_command(test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli,
-        ["--local", "export"],
+        ["--local", "push"],
     )
     print(result.output)
     assert result.exit_code == 1
@@ -122,6 +122,14 @@ class TestDB:
     @pytest.mark.integration
     def test_init_db(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
         result = test_cli_runner.invoke(cli, ["-f", test_config_path, "db", "init"])
+        print(result.output)
+        assert result.exit_code == 0
+
+    @pytest.mark.integration
+    def test_upgrade_db(
+        self, test_config_path: str, test_cli_runner: CliRunner
+    ) -> None:
+        result = test_cli_runner.invoke(cli, ["-f", test_config_path, "db", "upgrade"])
         print(result.output)
         assert result.exit_code == 0
 
@@ -421,32 +429,6 @@ class TestEvaluate:
         )
         print(result.output)
         assert result.exit_code == 1
-
-
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    "export_resource", ["system", "dataset", "organization", "datamap"]
-)
-def test_export_resources(
-    test_config_path: str,
-    test_cli_runner: CliRunner,
-    export_resource: str,
-) -> None:
-    """
-    Tests that each resource is successfully exported
-    """
-
-    result = test_cli_runner.invoke(
-        cli,
-        [
-            "-f",
-            test_config_path,
-            "export",
-            export_resource,
-            "--dry",
-        ],
-    )
-    assert result.exit_code == 0
 
 
 class TestScan:

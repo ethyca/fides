@@ -11,7 +11,6 @@ from celery.result import AsyncResult
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy import Boolean, Column, DateTime
-from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict, MutableList
@@ -29,8 +28,11 @@ from fides.api.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.cryptography.cryptographic_util import hash_with_salt
-from fides.api.db.base_class import Base  # type: ignore[attr-defined]
-from fides.api.db.base_class import JSONTypeOverride
+from fides.api.db.base_class import (
+    Base,  # type: ignore[attr-defined]
+    JSONTypeOverride,
+)
+from fides.api.db.util import EnumColumn
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph_differences import GraphRepr
 from fides.api.models.audit_log import AuditLog
@@ -252,6 +254,11 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     due_date = Column(DateTime(timezone=True), nullable=True)
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
+    # Non-DB fields that are optionally added throughout the codebase
+    action_required_details: Optional[CheckpointActionRequired] = None
+    execution_and_audit_logs_by_dataset: Optional[property] = None
+    resume_endpoint: Optional[str] = None
+
     @property
     def days_left(self: PrivacyRequest) -> Union[int, None]:
         if self.due_date is None:
@@ -298,7 +305,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         for key in all_keys:
             cache.delete(key)
 
-        for provided_identity in self.provided_identities:
+        for provided_identity in self.provided_identities:  # type: ignore[attr-defined]
             provided_identity.delete(db=db)
         super().delete(db=db)
 
@@ -338,7 +345,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         Retrieves persisted identity fields from the DB.
         """
         schema = Identity()
-        for field in self.provided_identities:
+        for field in self.provided_identities:  # type: ignore[attr-defined]
             setattr(
                 schema,
                 field.field_name.value,
@@ -922,6 +929,8 @@ class Consent(Base):
 
     UniqueConstraint(provided_identity_id, data_use, name="uix_identity_data_use")
 
+    identity: Optional[IdentityBase] = None
+
 
 class ConsentRequest(IdentityVerificationMixin, Base):
     """Tracks consent requests."""
@@ -957,7 +966,7 @@ class ConsentRequest(IdentityVerificationMixin, Base):
     def verify_identity(
         self,
         db: Session,
-        provided_code: str,
+        provided_code: Optional[str] = None,
     ) -> None:
         """
         A method to call the internal identity verification method provided by the
