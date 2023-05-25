@@ -62,11 +62,11 @@ class TestGetPrivacyExperiences:
         assert resp["version"] == 1.0
         # Assert experience config is nested
         experience_config = resp["experience_config"]
-        assert experience_config["component_title"] == "Control your privacy"
-        assert experience_config["banner_enabled"] == BannerEnabled.never.value
-        assert experience_config["confirmation_button_label"] is None
-        assert experience_config["reject_button_label"] is None
-        assert experience_config["acknowledgement_button_label"] is None
+        assert experience_config["title"] == "Control your privacy"
+        assert experience_config["banner_enabled"] is None
+        assert experience_config["accept_button_label"] == "Accept all"
+        assert experience_config["reject_button_label"] == "Reject all"
+        assert experience_config["acknowledge_button_label"] is None
         assert experience_config["id"] is not None
         assert experience_config["version"] == 1
         assert (

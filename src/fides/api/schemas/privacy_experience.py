@@ -3,8 +3,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import Extra, root_validator, validator
+from pydantic import Extra, Field, root_validator, validator
 
+from fides.api.api.v1.endpoints.utils import human_friendly_list
 from fides.api.custom_types import SafeStr
 from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
@@ -18,18 +19,42 @@ class ExperienceConfigSchema(FidesSchema):
     Pydantic allows subclasses to be more strict but not less strict
     """
 
-    acknowledgement_button_label: Optional[SafeStr]
-    banner_enabled: Optional[BannerEnabled]
-    component: Optional[ComponentType]
-    component_title: Optional[SafeStr]
-    component_description: Optional[SafeStr]
-    confirmation_button_label: Optional[SafeStr]
-    disabled: Optional[bool] = False
-    is_default: Optional[bool] = False
-    open_modal_label: Optional[SafeStr]
-    privacy_policy_label: Optional[SafeStr]
-    privacy_policy_url: Optional[SafeStr]
-    reject_button_label: Optional[SafeStr]
+    accept_button_label: Optional[SafeStr] = Field(
+        description="Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'"
+    )
+    acknowledge_button_label: Optional[SafeStr] = Field(
+        description="Overlay 'Acknowledge button label for notice only banner'"
+    )
+    banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
+    component: Optional[ComponentType] = Field(description="Type of ExperienceConfig")
+    description: Optional[SafeStr] = Field(
+        description="Overlay 'Banner Description' or Privacy Center 'Description'"
+    )
+    disabled: Optional[bool] = Field(
+        default=False, description="Whether the given ExperienceConfig is disabled"
+    )
+    is_default: Optional[bool] = Field(
+        default=False,
+        description="Whether the given ExperienceConfig is a global default",
+    )
+    privacy_preferences_link_label: Optional[SafeStr] = Field(
+        description="Overlay 'Privacy preferences link label'"
+    )
+    privacy_policy_link_label: Optional[SafeStr] = Field(
+        description="Overlay and Privacy Center 'Privacy policy link label'"
+    )
+    privacy_policy_url: Optional[SafeStr] = Field(
+        description="Overlay and Privacy Center 'Privacy policy URl'"
+    )
+    reject_button_label: Optional[SafeStr] = Field(
+        description="Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'"
+    )
+    save_button_label: Optional[SafeStr] = Field(
+        description="Overlay 'Privacy preferences 'Save' button label"
+    )
+    title: Optional[SafeStr] = Field(
+        description="Overlay 'Banner title' or Privacy Center 'title'"
+    )
 
 
 class ExperienceConfigCreate(ExperienceConfigSchema):
@@ -39,10 +64,13 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
     It also establishes some fields _required_ for creation
     """
 
+    accept_button_label: SafeStr
     component: ComponentType
-    banner_enabled: BannerEnabled
+    description: SafeStr
     regions: List[PrivacyNoticeRegion]
-    component_title: SafeStr
+    reject_button_label = SafeStr
+    save_button_label: SafeStr
+    title: SafeStr
 
     @validator("regions")
     @classmethod
@@ -61,22 +89,13 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
 
         if component == ComponentType.overlay:
             required_overlay_fields = [
-                "acknowledgement_button_label",
-                "confirmation_button_label",
-                "reject_button_label",
+                "banner_enabled",
+                "privacy_preferences_link_label",
             ]
             for field in required_overlay_fields:
                 if not values.get(field):
                     raise ValueError(
-                        f"The following fields are required when defining an overlay: {required_overlay_fields}."
-                    )
-
-        if component == ComponentType.privacy_center:
-            required_privacy_center_fields = []
-            for field in required_privacy_center_fields:
-                if not values.get(field):
-                    raise ValueError(
-                        f"The following fields are required when defining a privacy center: {required_privacy_center_fields}."
+                        f"The following additional fields are required when defining an overlay: {human_friendly_list(required_overlay_fields)}."
                     )
 
         return values

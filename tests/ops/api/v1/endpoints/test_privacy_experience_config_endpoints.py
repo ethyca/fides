@@ -15,12 +15,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
 )
-from fides.api.models.privacy_notice import (
-    ConsentMechanism,
-    EnforcementLevel,
-    PrivacyNotice,
-    PrivacyNoticeRegion,
-)
+from fides.api.models.privacy_notice import PrivacyNoticeRegion
 
 
 class TestGetExperienceConfigList:
@@ -91,7 +86,7 @@ class TestGetExperienceConfigList:
         first_config = data[0]
         assert first_config["id"] == experience_config_overlay.id
         assert first_config["component"] == "overlay"
-        assert first_config["banner_enabled"] == "automatic"
+        assert first_config["banner_enabled"] == "enabled_where_required"
         assert first_config["disabled"] is False
         assert first_config["regions"] == ["us_ca"]
         assert first_config["version"] == 1.0
@@ -105,7 +100,7 @@ class TestGetExperienceConfigList:
         second_config = data[1]
         assert second_config["id"] == experience_config_privacy_center.id
         assert second_config["component"] == "privacy_center"
-        assert second_config["banner_enabled"] == "never"
+        assert second_config["banner_enabled"] is None
         assert second_config["disabled"] is True
         assert second_config["regions"] == ["us_co"]
         assert second_config["created_at"] is not None
@@ -235,18 +230,19 @@ class TestCreateExperienceConfig:
     @pytest.fixture(scope="function")
     def overlay_experience_request_body(self) -> dict:
         return {
-            "acknowledgement_button_label": "Confirm",
-            "banner_enabled": "automatic",
+            "acknowledge_button_label": "Confirm",
+            "banner_enabled": "enabled_where_required",
             "component": "overlay",
-            "component_title": "Control your privacy",
-            "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
-            "confirmation_button_label": "Accept all",
+            "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+            "accept_button_label": "Accept all",
             "disabled": False,
-            "open_modal_label": "Manage preferences",
-            "privacy_policy_label": "View our privacy policy",
+            "privacy_preferences_link_label": "Manage preferences",
+            "privacy_policy_link_label": "View our privacy policy",
             "privacy_policy_url": "example.com/privacy",
-            "regions": [],
             "reject_button_label": "Reject all",
+            "regions": [],
+            "save_button_label": "Save",
+            "title": "Control your privacy",
         }
 
     def test_create_experience_config_unauthenticated(self, url, api_client):
@@ -294,8 +290,26 @@ class TestCreateExperienceConfig:
         url,
         generate_auth_header,
     ) -> None:
-        # TODO add test on required overlay fields when those are finalized
-        pass
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "accept_button_label": "Accept",
+                "description": "We care about your privacy",
+                "component": "overlay",
+                "regions": ["eu_it"],
+                "save_button_label": "Save",
+                "title": "Manage your privacy",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "The following additional fields are required when defining an overlay: banner_enabled and privacy_preferences_link_label."
+        )
 
     def test_create_privacy_center_config_missing_details(
         self,
@@ -303,8 +317,22 @@ class TestCreateExperienceConfig:
         url,
         generate_auth_header,
     ) -> None:
-        # TODO add test on required privacy center fields when those are finalized
-        pass
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "accept_button_label": "Accept",
+                "description": "We care about your privacy",
+                "component": "privacy_center",
+                "regions": ["eu_it"],
+                "save_button_label": "Save",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert response.json()["detail"][0]["msg"] == "field required"
 
     def test_create_experience_duplicate_regions(
         self,
@@ -318,10 +346,13 @@ class TestCreateExperienceConfig:
         response = api_client.post(
             url,
             json={
+                "accept_button_label": "Accept all",
+                "description": "We care about your privacy",
                 "component": "privacy_center",
-                "banner_enabled": "never",
+                "reject_button_label": "Reject all",
+                "save_button_label": "Save",
+                "title": "Control your privacy",
                 "regions": ["eu_it", "eu_it"],
-                "component_title": "Manage your privacy",
             },
             headers=auth_header,
         )
@@ -341,44 +372,44 @@ class TestCreateExperienceConfig:
         response = api_client.post(
             url,
             json={
+                "accept_button_label": "Yes",
+                "banner_enabled": "always_disabled",
                 "component": "privacy_center",
-                "banner_enabled": "never",
-                "component_title": "Manage your privacy",
-                "component_description": "We take your privacy seriously",
-                "acknowledgement_button_label": "Got it",
-                "confirmation_button_label": "Yes",
-                "reject_button_label": "No",
-                "regions": [],
-                "privacy_policy_label": "Manage your privacy",
+                "description": "We take your privacy seriously",
+                "privacy_policy_link_label": "Manage your privacy",
                 "privacy_policy_url": "example.com/privacy",
+                "regions": [],
+                "reject_button_label": "No",
+                "save_button_label": "Save",
+                "title": "Manage your privacy",
             },
             headers=auth_header,
         )
         assert response.status_code == 201
         resp = response.json()["experience_config"]
-        assert resp["acknowledgement_button_label"] == "Got it"
+        assert resp["accept_button_label"] == "Yes"
+        assert resp["banner_enabled"] == "always_disabled"
         assert resp["component"] == "privacy_center"
-        assert resp["component_title"] == "Manage your privacy"
-        assert resp["component_description"] == "We take your privacy seriously"
-        assert resp["confirmation_button_label"] == "Yes"
-        assert resp["banner_enabled"] == "never"
-        assert resp["reject_button_label"] == "No"
-        assert resp["privacy_policy_label"] == "Manage your privacy"
+        assert resp["description"] == "We take your privacy seriously"
+        assert resp["privacy_policy_link_label"] == "Manage your privacy"
         assert resp["privacy_policy_url"] == "example.com/privacy"
         assert resp["regions"] == []
+        assert resp["reject_button_label"] == "No"
+        assert resp["save_button_label"] == "Save"
+        assert resp["title"] == "Manage your privacy"
         assert resp["created_at"] is not None
         assert resp["updated_at"] is not None
         assert resp["version"] == 1.0
 
         experience_config = get_experience_config_or_error(db, resp["id"])
         assert experience_config.component == ComponentType.privacy_center
-        assert experience_config.privacy_policy_label == "Manage your privacy"
+        assert experience_config.privacy_policy_link_label == "Manage your privacy"
         assert experience_config.experiences.all() == []
         assert experience_config.histories.count() == 1
         history = experience_config.histories[0]
         assert history.version == 1.0
         assert history.component == ComponentType.privacy_center
-        assert history.privacy_policy_label == "Manage your privacy"
+        assert history.privacy_policy_link_label == "Manage your privacy"
         assert history.experience_config_id == experience_config.id
 
         assert response.json()["linked_regions"] == []
@@ -412,76 +443,94 @@ class TestCreateExperienceConfig:
         response = api_client.post(
             url,
             json={
+                "accept_button_label": "Accept all",
+                "acknowledge_button_label": "Confirm",
+                "banner_enabled": "enabled_where_required",
                 "component": "overlay",
-                "banner_enabled": "automatic",
-                "regions": ["us_ny"],
-                "component_title": "Control your privacy",
-                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
-                "confirmation_button_label": "Accept all",
-                "reject_button_label": "Reject all",
-                "acknowledgement_button_label": "Confirm",
-                "open_modal_label": "Control your privacy",
-                "privacy_policy_label": "Control your privacy",
+                "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                "privacy_preferences_link_label": "Control your privacy",
+                "privacy_policy_link_label": "Control your privacy",
                 "privacy_policy_url": "example.com/privacy",
+                "regions": ["us_ny"],
+                "reject_button_label": "Reject all",
+                "save_button_label": "Save",
+                "title": "Control your privacy",
             },
             headers=auth_header,
         )
         assert response.status_code == 201
         resp = response.json()["experience_config"]
-        assert resp["acknowledgement_button_label"] == "Confirm"
-        assert resp["banner_enabled"] == "automatic"
+        assert resp["accept_button_label"] == "Accept all"
+        assert resp["acknowledge_button_label"] == "Confirm"
+        assert resp["banner_enabled"] == "enabled_where_required"
         assert resp["component"] == "overlay"
-        assert resp["component_title"] == "Control your privacy"
+        assert resp["created_at"] is not None
         assert (
-            resp["component_description"]
+            resp["description"]
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
-        assert resp["confirmation_button_label"] == "Accept all"
-        assert resp["open_modal_label"] == "Control your privacy"
-        assert resp["privacy_policy_label"] == "Control your privacy"
+        assert resp["privacy_preferences_link_label"] == "Control your privacy"
+        assert resp["privacy_policy_link_label"] == "Control your privacy"
         assert resp["privacy_policy_url"] == "example.com/privacy"
-        assert resp["reject_button_label"] == "Reject all"
         assert resp["regions"] == ["us_ny"]
-        assert resp["created_at"] is not None
-        assert resp["updated_at"] is not None
+        assert resp["reject_button_label"] == "Reject all"
+        assert resp["save_button_label"] == "Save"
+        assert resp["title"] == "Control your privacy"
         assert resp["version"] == 1.0
+        assert resp["updated_at"] is not None
 
         # Created Experience Config
         experience_config = get_experience_config_or_error(db, resp["id"])
-        assert experience_config.acknowledgement_button_label == "Confirm"
-        assert experience_config.banner_enabled == BannerEnabled.automatic
+        assert experience_config.accept_button_label == "Accept all"
+        assert experience_config.acknowledge_button_label == "Confirm"
+        assert experience_config.banner_enabled == BannerEnabled.enabled_where_required
         assert experience_config.component == ComponentType.overlay
-        assert experience_config.component_title == "Control your privacy"
         assert (
-            experience_config.component_description
+            experience_config.description
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
-        assert experience_config.open_modal_label == "Control your privacy"
-        assert experience_config.privacy_policy_label == "Control your privacy"
+        assert (
+            experience_config.privacy_preferences_link_label == "Control your privacy"
+        )
+        assert experience_config.privacy_policy_link_label == "Control your privacy"
         assert experience_config.privacy_policy_url == "example.com/privacy"
+        assert experience_config.regions == [PrivacyNoticeRegion.us_ny]
         assert experience_config.reject_button_label == "Reject all"
-        assert experience_config.confirmation_button_label == "Accept all"
+        assert experience_config.save_button_label == "Save"
+        assert experience_config.title == "Control your privacy"
+
         assert experience_config.created_at is not None
         assert experience_config.updated_at is not None
         assert experience_config.histories.count() == 1
-        assert experience_config.regions == [PrivacyNoticeRegion.us_ny]
 
         # Created Experience Config History
         experience_config_history = experience_config.histories[0]
         assert experience_config_history.version == 1.0
-        assert experience_config_history.acknowledgement_button_label == "Confirm"
-        assert experience_config_history.banner_enabled == BannerEnabled.automatic
-        assert experience_config_history.component == ComponentType.overlay
-        assert experience_config_history.component_title == "Control your privacy"
+
+        assert experience_config_history.accept_button_label == "Accept all"
+        assert experience_config_history.acknowledge_button_label == "Confirm"
         assert (
-            experience_config_history.component_description
+            experience_config_history.banner_enabled
+            == BannerEnabled.enabled_where_required
+        )
+        assert experience_config_history.component == ComponentType.overlay
+        assert (
+            experience_config_history.description
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
-        assert experience_config_history.open_modal_label == "Control your privacy"
-        assert experience_config_history.privacy_policy_label == "Control your privacy"
+        assert (
+            experience_config_history.privacy_preferences_link_label
+            == "Control your privacy"
+        )
+        assert (
+            experience_config_history.privacy_policy_link_label
+            == "Control your privacy"
+        )
         assert experience_config_history.privacy_policy_url == "example.com/privacy"
         assert experience_config_history.reject_button_label == "Reject all"
-        assert experience_config_history.confirmation_button_label == "Accept all"
+        assert experience_config_history.save_button_label == "Save"
+        assert experience_config_history.title == "Control your privacy"
+
         assert experience_config_history.created_at is not None
         assert experience_config_history.updated_at is not None
         assert experience_config_history.experience_config_id == experience_config.id
@@ -550,33 +599,39 @@ class TestCreateExperienceConfig:
         response = api_client.post(
             url,
             json={
+                "accept_button_label": "Accept all",
+                "acknowledge_button_label": "Confirm",
+                "banner_enabled": "enabled_where_required",
                 "component": "overlay",
-                "banner_enabled": "automatic",
-                "regions": ["us_tx"],
-                "component_title": "Control your privacy",
-                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
-                "confirmation_button_label": "Accept all",
-                "reject_button_label": "Reject all",
-                "acknowledgement_button_label": "Confirm",
-                "open_modal_label": "Control your privacy",
-                "privacy_policy_label": "Control your privacy",
+                "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                "privacy_preferences_link_label": "Control your privacy",
+                "privacy_policy_link_label": "Control your privacy",
                 "privacy_policy_url": "example.com/privacy",
+                "regions": ["us_tx"],
+                "reject_button_label": "Reject all",
+                "save_button_label": "Save",
+                "title": "Control your privacy",
             },
             headers=auth_header,
         )
         assert response.status_code == 201
         resp = response.json()["experience_config"]
-        assert resp["acknowledgement_button_label"] == "Confirm"
+        assert resp["accept_button_label"] == "Accept all"
+        assert resp["acknowledge_button_label"] == "Confirm"
+        assert resp["banner_enabled"] == "enabled_where_required"
         assert resp["component"] == "overlay"
-        assert resp["component_title"] == "Control your privacy"
+        assert resp["created_at"] is not None
         assert (
-            resp["component_description"]
+            resp["description"]
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
-        assert resp["confirmation_button_label"] == "Accept all"
-        assert resp["banner_enabled"] == "automatic"
-        assert resp["reject_button_label"] == "Reject all"
+        assert resp["privacy_preferences_link_label"] == "Control your privacy"
+        assert resp["privacy_policy_link_label"] == "Control your privacy"
+        assert resp["privacy_policy_url"] == "example.com/privacy"
         assert resp["regions"] == ["us_tx"]
+        assert resp["reject_button_label"] == "Reject all"
+        assert resp["save_button_label"] == "Save"
+        assert resp["title"] == "Control your privacy"
         assert resp["created_at"] is not None
         assert resp["updated_at"] is not None
         assert resp["version"] == 1.0
@@ -589,7 +644,10 @@ class TestCreateExperienceConfig:
         experience_config_history = experience_config.histories[0]
         assert experience_config_history.version == 1.0
         assert experience_config_history.component == ComponentType.overlay
-        assert experience_config_history.banner_enabled == BannerEnabled.automatic
+        assert (
+            experience_config_history.banner_enabled
+            == BannerEnabled.enabled_where_required
+        )
         assert experience_config_history.experience_config_id == experience_config.id
 
         # Updated Privacy Experience - TX Privacy Experience automatically linked, and bumped to 2.0
@@ -709,7 +767,7 @@ class TestGetExperienceConfigDetail:
 
         assert resp["id"] == experience_config_overlay.id
         assert resp["component"] == "overlay"
-        assert resp["banner_enabled"] == "automatic"
+        assert resp["banner_enabled"] == "enabled_where_required"
         assert resp["disabled"] is False
         assert resp["regions"] == ["us_ca"]
         assert resp["version"] == 1.0
@@ -719,7 +777,7 @@ class TestGetExperienceConfigDetail:
             resp["experience_config_history_id"]
             == experience_config_overlay.experience_config_history_id
         )
-        assert resp["component_title"] == "Manage your consent"
+        assert resp["title"] == "Manage your consent"
 
 
 class TestUpdateExperienceConfig:
@@ -732,17 +790,18 @@ class TestUpdateExperienceConfig:
         exp = PrivacyExperienceConfig.create(
             db=db,
             data={
-                "acknowledgement_button_label": "Confirm",
-                "banner_enabled": "automatic",
+                "accept_button_label": "Accept all",
+                "acknowledge_button_label": "Confirm",
+                "banner_enabled": "enabled_where_required",
                 "component": "overlay",
-                "component_title": "Control your privacy",
-                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
-                "confirmation_button_label": "Accept all",
+                "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                 "disabled": False,
-                "open_modal_label": "Manage preferences",
-                "privacy_policy_label": "View our privacy policy",
+                "privacy_preferences_link_label": "Manage preferences",
+                "privacy_policy_link_label": "View our privacy policy",
                 "privacy_policy_url": "example.com/privacy",
                 "reject_button_label": "Reject all",
+                "save_button_label": "Save",
+                "title": "Control your privacy",
             },
         )
         yield exp
@@ -799,7 +858,7 @@ class TestUpdateExperienceConfig:
         response = api_client.patch(
             url,
             json={
-                "component_title": "We care about your privacy",
+                "title": "We care about your privacy",
                 "regions": ["us_ca", "us_ca"],
             },
             headers=auth_header,
@@ -818,7 +877,7 @@ class TestUpdateExperienceConfig:
         response = api_client.patch(
             V1_URL_PREFIX + EXPERIENCE_CONFIG + "/bad_experience_id",
             json={
-                "component_title": "We care about your privacy",
+                "title": "We care about your privacy",
                 "regions": ["us_ca"],
             },
             headers=auth_header,
@@ -835,19 +894,39 @@ class TestUpdateExperienceConfig:
         url,
         generate_auth_header,
     ) -> None:
-        # TODO test trying to update an experience config that will be missing required overlay fields
-        # once these fields are finalized
-        pass
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={"title": None},
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert response.json()["detail"][0]["msg"] == "field required"
 
-    def test_update_privacy_center_config_missing_details(
+    def test_update_overlay_experience_config_missing_banner_enabled(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
+        experience_config_privacy_center,
     ) -> None:
-        # TODO test trying to update an experience config that will be missing required privacy center fields
-        # once these fields are finalized
-        pass
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+
+        response = api_client.patch(
+            V1_URL_PREFIX
+            + EXPERIENCE_CONFIG
+            + f"/{experience_config_privacy_center.id}",
+            json={
+                "component": "overlay",
+                "regions": [],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "The following additional fields are required when defining an overlay: banner_enabled and privacy_preferences_link_label."
+        )
 
     def test_update_experience_config_with_no_regions(
         self, api_client: TestClient, url, generate_auth_header, db
@@ -866,16 +945,16 @@ class TestUpdateExperienceConfig:
         )
         assert response.status_code == 200
         resp = response.json()["experience_config"]
-        assert resp["acknowledgement_button_label"] == "Confirm"
+        assert resp["acknowledge_button_label"] == "Confirm"
         assert resp["component"] == "overlay"
-        assert resp["component_title"] == "Control your privacy"
+        assert resp["title"] == "Control your privacy"
         assert (
-            resp["component_description"]
+            resp["description"]
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
-        assert resp["confirmation_button_label"] == "Accept all"
-        assert resp["acknowledgement_button_label"] == "Confirm"
-        assert resp["banner_enabled"] == "automatic"
+        assert resp["accept_button_label"] == "Accept all"
+        assert resp["acknowledge_button_label"] == "Confirm"
+        assert resp["banner_enabled"] == "enabled_where_required"
         assert resp["reject_button_label"] == "Reject all"
         assert resp["regions"] == []
         assert resp["created_at"] is not None
@@ -889,7 +968,7 @@ class TestUpdateExperienceConfig:
         history = experience_config.histories[0]
         assert history.version == 1.0
         assert history.component == ComponentType.overlay
-        assert history.banner_enabled == BannerEnabled.automatic
+        assert history.banner_enabled == BannerEnabled.enabled_where_required
         assert history.experience_config_id == experience_config.id
         assert history.disabled is False
 
@@ -932,15 +1011,15 @@ class TestUpdateExperienceConfig:
         )
         assert response.status_code == 200
         resp = response.json()["experience_config"]
-        assert resp["acknowledgement_button_label"] == "Confirm"
+        assert resp["acknowledge_button_label"] == "Confirm"
         assert resp["component"] == "overlay"
-        assert resp["component_title"] == "Control your privacy"
+        assert resp["title"] == "Control your privacy"
         assert (
-            resp["component_description"]
+            resp["description"]
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
-        assert resp["confirmation_button_label"] == "Accept all"
-        assert resp["banner_enabled"] == "automatic"
+        assert resp["accept_button_label"] == "Accept all"
+        assert resp["banner_enabled"] == "enabled_where_required"
         assert resp["reject_button_label"] == "Reject all"
         assert resp["regions"] == ["us_ny"]
         assert resp["created_at"] is not None
@@ -1029,15 +1108,15 @@ class TestUpdateExperienceConfig:
         )
         assert response.status_code == 200
         resp = response.json()["experience_config"]
-        assert resp["acknowledgement_button_label"] == "Confirm"
+        assert resp["acknowledge_button_label"] == "Confirm"
         assert resp["component"] == "overlay"
-        assert resp["component_title"] == "Control your privacy"
+        assert resp["title"] == "Control your privacy"
         assert (
-            resp["component_description"]
+            resp["description"]
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
-        assert resp["confirmation_button_label"] == "Accept all"
-        assert resp["banner_enabled"] == "automatic"
+        assert resp["accept_button_label"] == "Accept all"
+        assert resp["banner_enabled"] == "enabled_where_required"
         assert resp["reject_button_label"] == "Reject all"
         assert resp["regions"] == ["us_tx"]
         assert resp["created_at"] is not None
@@ -1052,7 +1131,10 @@ class TestUpdateExperienceConfig:
         experience_config_history = overlay_experience_config.histories[0]
         assert experience_config_history.version == 1.0
         assert experience_config_history.component == ComponentType.overlay
-        assert experience_config_history.banner_enabled == BannerEnabled.automatic
+        assert (
+            experience_config_history.banner_enabled
+            == BannerEnabled.enabled_where_required
+        )
         assert (
             experience_config_history.experience_config_id
             == overlay_experience_config.id
@@ -1130,15 +1212,15 @@ class TestUpdateExperienceConfig:
         )
         assert response.status_code == 200
         resp = response.json()["experience_config"]
-        assert resp["acknowledgement_button_label"] == "Confirm"
+        assert resp["acknowledge_button_label"] == "Confirm"
         assert resp["component"] == "overlay"
-        assert resp["component_title"] == "Control your privacy"
+        assert resp["title"] == "Control your privacy"
         assert (
-            resp["component_description"]
+            resp["description"]
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
-        assert resp["confirmation_button_label"] == "Accept all"
-        assert resp["banner_enabled"] == "automatic"
+        assert resp["accept_button_label"] == "Accept all"
+        assert resp["banner_enabled"] == "enabled_where_required"
         assert resp["reject_button_label"] == "Reject all"
         assert resp["regions"] == ["us_tx"]
         assert resp["created_at"] is not None
@@ -1155,7 +1237,10 @@ class TestUpdateExperienceConfig:
         assert experience_config_history.version == 2.0
         assert experience_config_history.disabled
         assert experience_config_history.component == ComponentType.overlay
-        assert experience_config_history.banner_enabled == BannerEnabled.automatic
+        assert (
+            experience_config_history.banner_enabled
+            == BannerEnabled.enabled_where_required
+        )
         assert (
             experience_config_history.experience_config_id
             == overlay_experience_config.id

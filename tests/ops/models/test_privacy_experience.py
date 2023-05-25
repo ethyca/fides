@@ -27,34 +27,36 @@ class TestExperienceConfig:
         config = PrivacyExperienceConfig.create(
             db=db,
             data={
-                "acknowledgement_button_label": "OK",
-                "banner_enabled": "automatic",
+                "accept_button_label": "Accept all",
+                "acknowledge_button_label": "OK",
+                "banner_enabled": "enabled_where_required",
                 "component": "overlay",
-                "component_title": "Control your privacy",
-                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
-                "confirmation_button_label": "Accept all",
-                "open_modal_label": "Manage preferences",
-                "privacy_policy_label": "View our privacy policy",
+                "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                "privacy_preferences_link_label": "Manage preferences",
+                "privacy_policy_link_label": "View our privacy policy",
                 "privacy_policy_url": "example.com/privacy",
                 "reject_button_label": "Reject all",
+                "save_button_label": "Save",
+                "title": "Control your privacy",
             },
         )
 
-        assert config.acknowledgement_button_label == "OK"
-        assert config.banner_enabled == BannerEnabled.automatic
+        assert config.accept_button_label == "Accept all"
+        assert config.acknowledge_button_label == "OK"
+        assert config.banner_enabled == BannerEnabled.enabled_where_required
         assert config.component == ComponentType.overlay
-        assert config.component_title == "Control your privacy"
         assert (
-            config.component_description
+            config.description
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
-        assert config.confirmation_button_label == "Accept all"
         assert config.disabled is False
         assert config.is_default is False
-        assert config.open_modal_label == "Manage preferences"
-        assert config.privacy_policy_label == "View our privacy policy"
+        assert config.privacy_preferences_link_label == "Manage preferences"
+        assert config.privacy_policy_link_label == "View our privacy policy"
         assert config.privacy_policy_url == "example.com/privacy"
         assert config.reject_button_label == "Reject all"
+        assert config.save_button_label == "Save"
+        assert config.title == "Control your privacy"
 
         assert config.version == 1.0
         assert config.histories.count() == 1
@@ -63,21 +65,24 @@ class TestExperienceConfig:
 
         history = config.histories[0]
         assert config.experience_config_history_id == history.id
-        assert history.acknowledgement_button_label == "OK"
-        assert history.banner_enabled == BannerEnabled.automatic
+
+        assert history.accept_button_label == "Accept all"
+        assert history.acknowledge_button_label == "OK"
+        assert history.banner_enabled == BannerEnabled.enabled_where_required
         assert history.component == ComponentType.overlay
-        assert history.component_title == "Control your privacy"
         assert (
-            history.component_description
+            history.description
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
-        assert history.confirmation_button_label == "Accept all"
         assert history.disabled is False
         assert history.is_default is False
-        assert history.open_modal_label == "Manage preferences"
-        assert history.privacy_policy_label == "View our privacy policy"
+        assert history.privacy_preferences_link_label == "Manage preferences"
+        assert history.privacy_policy_link_label == "View our privacy policy"
         assert history.privacy_policy_url == "example.com/privacy"
         assert history.reject_button_label == "Reject all"
+        assert history.save_button_label == "Save"
+        assert history.title == "Control your privacy"
+        assert history.version == 1.0
 
         history.delete(db)
         config.delete(db=db)
@@ -87,16 +92,17 @@ class TestExperienceConfig:
         config = PrivacyExperienceConfig.create(
             db=db,
             data={
-                "acknowledgement_button_label": "OK",
-                "banner_enabled": "automatic",
+                "accept_button_label": "Accept all",
+                "acknowledge_button_label": "OK",
+                "banner_enabled": "enabled_where_required",
                 "component": "overlay",
-                "component_title": "Control your privacy",
-                "component_description": "We care about your privacy. Opt in and opt out of the data use cases below.",
-                "confirmation_button_label": "Accept all",
-                "open_modal_label": "Manage preferences",
-                "privacy_policy_label": "View our privacy policy",
+                "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                "privacy_preferences_link_label": "Manage preferences",
+                "privacy_policy_link_label": "View our privacy policy",
                 "privacy_policy_url": "example.com/privacy",
                 "reject_button_label": "Reject all",
+                "save_button_label": "Save",
+                "title": "Control your privacy",
             },
         )
         config_created_at = config.created_at
@@ -558,7 +564,6 @@ class TestPrivacyExperience:
                 db=db,
                 data={
                     "component": "overlay",
-                    "delivery_mechanism": "link",
                     "region": "us_tx",
                 },
             )
@@ -938,8 +943,8 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "component": "privacy_center",
-                "banner_enabled": "never",
-                "component_title": "Control your privacy",
+                "banner_enabled": "always_disabled",
+                "title": "Control your privacy",
             },
         )
 
@@ -986,8 +991,8 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "component": "privacy_center",
-                "banner_enabled": "never",
-                "component_title": "Control your privacy",
+                "banner_enabled": "always_disabled",
+                "title": "Control your privacy",
             },
         )
 
@@ -1045,8 +1050,8 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "component": "privacy_center",
-                "banner_enabled": "never",
-                "component_title": "Control your privacy",
+                "banner_enabled": "always_disabled",
+                "title": "Control your privacy",
             },
         )
 
@@ -1107,8 +1112,8 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "component": "privacy_center",
-                "banner_enabled": "never",
-                "component_title": "Control your privacy",
+                "banner_enabled": "always_disabled",
+                "title": "Control your privacy",
             },
         )
 

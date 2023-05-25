@@ -29,26 +29,27 @@ class BannerEnabled(Enum):
     Whether the banner should display
     """
 
-    always = "always"
-    automatic = "automatic"  # If the user's region has at least one opt-in or notice-only notice
-    never = "never"
+    always_enabled = "always_enabled"
+    enabled_where_required = "enabled_where_required"  # If the user's region has at least one opt-in or notice-only notice
+    always_disabled = "always_disabled"
 
 
 class ExperienceConfigBase:
     """Base schema to share common experience config."""
 
-    acknowledgement_button_label = Column(String)
-    banner_enabled = Column(EnumColumn(BannerEnabled), nullable=False, index=True)
+    accept_button_label = Column(String)
+    acknowledge_button_label = Column(String)
+    banner_enabled = Column(EnumColumn(BannerEnabled), index=True)
     component = Column(EnumColumn(ComponentType), nullable=False, index=True)
-    component_title = Column(String)
-    component_description = Column(String)
-    confirmation_button_label = Column(String)
+    description = Column(String)
     disabled = Column(Boolean, nullable=False, default=False)
     is_default = Column(Boolean, nullable=False, default=False)
-    open_modal_label = Column(String)  # For banner only
-    privacy_policy_label = Column(String)
+    privacy_preferences_link_label = Column(String)
+    privacy_policy_link_label = Column(String)
     privacy_policy_url = Column(String)
     reject_button_label = Column(String)
+    save_button_label = Column(String)
+    title = Column(String)
     version = Column(Float, nullable=False, default=1.0)
 
 

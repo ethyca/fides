@@ -2085,9 +2085,12 @@ def experience_config_privacy_center(db: Session) -> Generator:
     exp = PrivacyExperienceConfig.create(
         db=db,
         data={
+            "accept_button_label": "Accept all",
+            "description": "We care about your privacy",
             "component": "privacy_center",
-            "banner_enabled": "never",
-            "component_title": "Control your privacy",
+            "reject_button_label": "Reject all",
+            "save_button_label": "Save",
+            "title": "Control your privacy",
             "disabled": True,
         },
     )
@@ -2125,17 +2128,18 @@ def experience_config_overlay(db: Session) -> Generator:
     config = PrivacyExperienceConfig.create(
         db=db,
         data={
-            "acknowledgement_button_label": "Confirm",
-            "banner_enabled": "automatic",
+            "accept_button_label": "Accept all",
+            "acknowledge_button_label": "Confirm",
+            "banner_enabled": "enabled_where_required",
             "component": "overlay",
-            "component_title": "Manage your consent",
-            "component_description": "On this page you can opt in and out of these data uses cases",
-            "confirmation_button_label": "Accept all",
+            "description": "On this page you can opt in and out of these data uses cases",
             "disabled": False,
-            "open_modal_label": "Manage preferences",
-            "privacy_policy_label": "View our privacy policy",
+            "privacy_preferences_link_label": "Manage preferences",
+            "privacy_policy_link_label": "View our privacy policy",
             "privacy_policy_url": "example.com/privacy",
             "reject_button_label": "Reject all",
+            "save_button_label": "Save",
+            "title": "Manage your consent",
         },
     )
 
