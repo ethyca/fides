@@ -49,6 +49,7 @@ The types of changes are:
 
 - Data model around PrivacyExperiences to better keep Privacy Notices and Experiences in sync [#3292](https://github.com/ethyca/fides/pull/3292)
 - UI calls to support new PrivacyExperiences data model [#3313](https://github.com/ethyca/fides/pull/3313)
+- Rework Delighted connector so the `survey_response` endpoint depends on the `person` endpoint [3385](https://github.com/ethyca/fides/pull/3385)
 
 ### Developer Experience
 
