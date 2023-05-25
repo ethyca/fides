@@ -34,15 +34,21 @@ async def handle_audit_log_resource(request: Request) -> None:
         "extra_data": None,
     }
     db: Session = deps.get_api_session()
+
+    # get the user id associated with the request
     token = request.headers.get("authorization")
-    # possibly separate the token bits our for testability
     if token:
         client = await extract_client_id(token.replace("Bearer ", ""), db)
         audit_log_resource_data["user_id"] = client.user_id or "root"
-    #
-    fides_keys = await extract_data_from_body(request)
+
+    # Access request body to check for fides_keys
+    await set_body(request, await request.body())
+
+    body = await get_body(request)
+    fides_keys = await extract_data_from_body(body)
     audit_log_resource_data["fides_keys"] = fides_keys
 
+    # write record to server
     await write_audit_log_resource_record(db, audit_log_resource_data)
 
 
@@ -67,13 +73,11 @@ async def get_client_user_id(db: Session, auth_token: str) -> str:
     return client.user_id or "root"
 
 
-async def extract_data_from_body(request: Request) -> List:
+async def extract_data_from_body(body: bytes) -> List:
     """
-    Attempts to retrieve a client user_id
+    Attempts to retrieve any fides_keys associated with
+    the request found in the request body.
     """
-    await set_body(request, await request.body())
-
-    body = await get_body(request)
 
     fides_keys = []
     if body:

@@ -1,6 +1,7 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import json
 from datetime import datetime
+from typing import List
 
 import pytest
 from fastapi_pagination import Params
@@ -16,6 +17,8 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.oauth.jwt import generate_jwe
 from fides.core.config import CONFIG
+
+# from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size
 
@@ -35,6 +38,7 @@ from fides.api.cryptography.schemas.jwt import (
 from fides.api.oauth.jwt import generate_jwe
 from fides.core.config import CONFIG
 
+# from sqlalchemy.exc import SQLAlchemyError
 
 
 @pytest.fixture
@@ -64,6 +68,20 @@ def test_bad_audit_log_resource_data() -> Generator:
         "fides_keys": ["new_fides_key"],
     }
     yield audit_log_resource_data
+
+
+# @pytest.fixture
+# def test_dictionary_fides_key() -> Generator:
+#     """
+#     Simulates a request body that has a single resource with fides_key
+#     """
+#     audit_log_resource_data = {
+#         "user_id": None,
+#         "request_path": "some/path",
+#         "request_type": "POST",
+#         "fides_keys": ["new_fides_key"],
+#     }
+#     yield audit_log_resource_data
 
 
 def test_record_written_to_db(db, test_audit_log_resource_data: Dict[str, Any]) -> None:
@@ -98,3 +116,27 @@ async def test_extracted_token(db) -> None:
     assert client.user_id == await _middleware.get_client_user_id(
         db, auth_header["Authorization"]
     )
+
+
+@pytest.mark.parametrize(
+    "request_body, expected_fides_keys",
+    [
+        (
+            b'{"fides_key": "test_key"}',
+            ["test_key"],
+        ),
+        (
+            b'{"name": "test_name"}',
+            [],
+        ),
+        (
+            b'[{"fides_key": "test_key"}, {"fides_key": "test_key_2"}]',
+            ["test_key", "test_key_2"],
+        ),
+    ],
+)
+async def test_extract_data_from_body(
+    request_body: bytes, expected_fides_keys: List
+) -> None:
+    fides_keys = await _middleware.extract_data_from_body(request_body)
+    assert fides_keys == expected_fides_keys
