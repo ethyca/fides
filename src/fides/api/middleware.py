@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 
 from fastapi import Request
 from loguru import logger
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette.types import Message
 
@@ -13,8 +14,18 @@ from fides.api.oauth.utils import extract_client_id
 
 async def handle_audit_log_resource(request: Request) -> None:
     """
-    TODO: docs
+    Handles the lifecycle of recording audit log resource data.
+
+    Attempts to track the WHO, WHEN, and beginning of WHAT for
+    traceability purposes.
+
+    WHO: User ID from the API request
+    WHEN: Timestamps related to the request
+    WHAT: The endpoint, request type, and (if applicable)
+    fides_key(s) associated with the request
     """
+
+    # details to be stored as a row on the server
     audit_log_resource_data = {
         "user_id": None,
         "request_path": request.scope["path"],
@@ -43,8 +54,8 @@ async def write_audit_log_resource_record(
     """
     try:
         AuditLogResource.create(db=db, data=audit_log_resource_data)
-    except Exception as err:
-        logger.info(err)
+    except SQLAlchemyError as err:
+        logger.debug(err)
 
 
 async def get_client_user_id(db: Session, auth_token: str) -> str:
@@ -63,12 +74,7 @@ async def extract_data_from_body(request: Request) -> List:
     await set_body(request, await request.body())
 
     body = await get_body(request)
-    # b'{"description":"glop","fides_key":"glop","name":"glop","organization_fides_key":"default_organization","privacy_declarations":[],"system_dependencies":[],"system_type":"","tags":[],"third_country_transfers":[]}'
 
-    # json.loads(body)
-    # {'description': 'glop', 'fides_key': 'glop', 'name': 'glop', 'organization_fides_key': 'default_organization', 'privacy_declarations': [], 'system_dependencies': [], 'system_type': '', 'tags': [], 'third_country_transfers': []}
-    # body_dict = json.loads(body)
-    # if is a dict, check for fides_key. if list, iterate and check for fides key
     fides_keys = []
     if body:
         body = json.loads(body)

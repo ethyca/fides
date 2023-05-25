@@ -250,10 +250,14 @@ async def action_to_audit_log(
     call_next: Callable,
 ) -> Response:
     """Log basic information about every non-GET request handled by the server."""
-    response = await call_next(request)
+
     if (
         request.method != "GET"
         and request.scope["path"] not in IGNORED_AUDIT_LOG_RESOURCE_PATHS
+        and CONFIG.security.enable_audit_log_resource_middleware
     ):
-        await handle_audit_log_resource(request)
-    return response
+        try:
+            await handle_audit_log_resource(request)
+        except Exception as exc:
+            logger.debug(exc)
+    return await call_next(request)
