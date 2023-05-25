@@ -1,7 +1,14 @@
-.main {
+.home {
   font-family: "Inter", sans-serif;
   color: #171923;
   font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.main {
+  flex-grow: 1;
 }
 
 .products {
@@ -52,9 +59,28 @@
 }
 
 .footer {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   color: #5b301d;
   font-weight: 500;
   font-size: 16px;
-  margin: 70px 0;
-  text-align: center;
+  margin-top: 70px;
+  background-color: #faf7f6;
+  padding-top: 2em;
+  padding-bottom: 2em;
+
+  a:visited,
+  a:hover {
+    color: #5b301d;
+  }
+}
+
+.select {
+  position: absolute;
+  right: 0;
+  margin: 1em;
+  color: #171923;
 }

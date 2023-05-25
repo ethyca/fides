@@ -5,24 +5,55 @@ import { CacheControl, stringify } from "cache-control-parser";
 
 import { ConsentOption, FidesConfig } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
-import {
-  getLocation,
-  LOCATION_HEADERS,
-  UserGeolocation,
-} from "~/common/location";
+import { getGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
 
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
 
 /**
- * Server-side API route to generate the customized "fides.js" script
- * based on the current configuration values.
+ * @swagger
+ * /fides.js:
+ *   get:
+ *     description: Generates a customized "fides.js" script bundle using the current configuration values
+ *     parameters:
+ *       - in: query
+ *         name: geolocation
+ *         required: false
+ *         description: Geolocation string to inject into the bundle (e.g. "US-CA"), containing ISO 3166 country code (e.g. "US") and optional region code (e.g. "CA"), separated by a "-"
+ *         schema:
+ *           type: string
+ *         example: US-CA
+ *       - in: header
+ *         name: CloudFront-Viewer-Country
+ *         required: false
+ *         description: ISO 3166 country code to inject into the bundle
+ *         schema:
+ *           type: string
+ *         example: US
+ *       - in: header
+ *         name: CloudFront-Viewer-Country-Region
+ *         required: false
+ *         description: ISO 3166 region code to inject into the bundle; requires CloudFront-Viewer-Country to also be present
+ *         schema:
+ *           type: string
+ *         example: CA
+ *     responses:
+ *       200:
+ *         description: Customized "fides.js" script bundle that is ready to insert into a website
+ *         content:
+ *           application/javascript:
+ *             schema:
+ *               type: string
+ *             example: |
+ *               (function(){
+ *                 // fides.js bundle...
+ *               )();
  */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Check if a location was provided via headers or query param; if so, inject into the bundle
-  const location = getLocation(req);
+  // Check if a geolocation was provided via headers or query param; if so, inject into the bundle
+  const geolocation = getGeolocation(req);
 
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await loadPrivacyCenterEnvironment();
@@ -37,8 +68,7 @@ export default async function handler(
   }
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
-  // DEFER: update this to match what FidesConfig expects in the future for location
-  const fidesConfig: FidesConfig & { location?: UserGeolocation } = {
+  const fidesConfig: FidesConfig = {
     consent: {
       options,
     },
@@ -49,7 +79,7 @@ export default async function handler(
       geolocationApiUrl: environment.settings.GEOLOCATION_API_URL,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
     },
-    location,
+    geolocation,
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
