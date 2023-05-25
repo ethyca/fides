@@ -79,7 +79,7 @@ class TestSaveKey:
     def test_save_key_invalid(self, db: Session, storage_config):
         "Test prevent saving bad keys."
         storage_config.key = "bad key"
-        with pytest.raises(FidesValidationError) as exc:
+        with pytest.raises(KeyValidationError) as exc:
             storage_config.save(db)
 
         error_output = str(exc.value)
@@ -90,7 +90,7 @@ class TestSaveKey:
     def test_save_key_none(self, db: Session, storage_config):
         "Test key required on applicable models."
         storage_config.key = None
-        with pytest.raises(AssertionError) as exc:
+        with pytest.raises(KeyValidationError) as exc:
             storage_config.save(db)
 
         error_output = str(exc.value)
