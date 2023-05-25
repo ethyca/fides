@@ -3,8 +3,9 @@ import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import {
+  CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
-  useUpdateDatastoreConnectionSecretsMutation,
+  useUpdateDatastoreConnectionSecretsMutation
 } from "datastore-connections/datastore-connection.slice";
 import {
   CreateSaasConnectionConfigRequest,
@@ -39,18 +40,26 @@ const createSaasConnector = async (
   values: ConnectionConfigFormValues,
   secretsSchema: ConnectionTypeSecretSchemaReponse,
   connectionOption: ConnectionSystemTypeMap,
+  systemFidesKey: string,
   createSaasConnectorFunc: any
 ) => {
-  const params: CreateSaasConnectionConfigRequest = {
+  const connectionConfig: CreateSaasConnectionConfigRequest = {
     description: values.description,
     name: values.name,
     instance_key: formatKey(values.instance_key as string),
     saas_connector_type: connectionOption.identifier,
     secrets: {},
   };
+
+  const params: CreateSaasConnectionConfig = {
+    systemFidesKey,
+    connectionConfig
+  }
+
   Object.entries(secretsSchema!.properties).forEach((key) => {
-    params.secrets[key[0]] = values[key[0]];
+    params.connectionConfig.secrets[key[0]] = values[key[0]];
   });
+  console.log("about to create a new saas connector",params)
   return (await createSaasConnectorFunc(
     params
   ).unwrap()) as CreateSaasConnectionConfigResponse;
@@ -144,6 +153,7 @@ export const useConnectorForm = ({
           values,
           secretsSchema!,
           connectionOption,
+          systemFidesKey,
           createSassConnectionConfig
         );
         connectionConfig = response.connection;
