@@ -42,8 +42,7 @@ export const updateConsentPreferences = ({
   // Derive the CookieKeyConsent object from privacy notices
   const noticeMap = new Map<string, boolean>(
     privacyNotices.map((notice) => [
-      // DEFER(fides#3281): use notice key
-      notice.id,
+      notice.notice_key,
       enabledPrivacyNoticeIds.includes(notice.id),
     ])
   );
