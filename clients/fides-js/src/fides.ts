@@ -68,7 +68,7 @@ import {
 } from "./lib/consent-utils";
 import { fetchExperience } from "./services/fides/api";
 import { getGeolocation } from "./services/external/geolocation";
-import {OverlayProps} from "~/components/Overlay";
+import { OverlayProps } from "~/components/Overlay";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -112,52 +112,61 @@ const retrieveEffectiveGeolocation = async (
   return getGeolocation(options.geolocationApiUrl, options.debug);
 };
 
-const retrieveEffectiveRegionString = async (geolocation: UserGeolocation | undefined, options: FidesOptions) => {
+const retrieveEffectiveRegionString = async (
+  geolocation: UserGeolocation | undefined,
+  options: FidesOptions
+) => {
   const fidesRegionString = constructFidesRegionString(geolocation);
   if (!fidesRegionString) {
     // we always need a region str so that we can PATCH privacy preferences to Fides Api
     return constructFidesRegionString(
-        await retrieveEffectiveGeolocation(options)
+      await retrieveEffectiveGeolocation(options)
     );
   }
-  return fidesRegionString
-}
+  return fidesRegionString;
+};
 
 /**
  * Determines whether experience is valid
  */
-const experienceIsValid = (effectiveExperience: PrivacyExperience | undefined | null, options: FidesOptions): boolean => {
+const experienceIsValid = (
+  effectiveExperience: PrivacyExperience | undefined | null,
+  options: FidesOptions
+): boolean => {
   if (!effectiveExperience) {
-    debugLog(options.debug, `No relevant experience found. Skipping overlay initialization.`);
+    debugLog(
+      options.debug,
+      `No relevant experience found. Skipping overlay initialization.`
+    );
     return false;
   }
   if (
-      !effectiveExperience.privacy_notices ||
-      effectiveExperience.privacy_notices.length === 0
+    !effectiveExperience.privacy_notices ||
+    effectiveExperience.privacy_notices.length === 0
   ) {
     debugLog(
-        options.debug,
-        `No relevant notices in the privacy experience. Skipping overlay initialization.`,
-        effectiveExperience
+      options.debug,
+      `No relevant notices in the privacy experience. Skipping overlay initialization.`,
+      effectiveExperience
     );
     return false;
   }
   if (effectiveExperience.component !== ComponentType.OVERLAY) {
     debugLog(
-        options.debug,
-        "No experience found with overlay component. Skipping overlay initialization."
+      options.debug,
+      "No experience found with overlay component. Skipping overlay initialization."
     );
     return false;
   }
   if (!effectiveExperience.experience_config) {
     debugLog(
-        options.debug,
-        "No experience config found with for experience. Skipping overlay initialization."
+      options.debug,
+      "No experience config found with for experience. Skipping overlay initialization."
     );
     return false;
   }
   return true;
-}
+};
 
 /**
  * Initialize the global Fides object with the given configuration values
@@ -168,27 +177,33 @@ const init = async ({
   geolocation,
   options,
 }: FidesConfig) => {
-
-  const {fides_user_device_id: fidesUserDeviceId} = getOrMakeFidesCookie().identity;
+  const { fides_user_device_id: fidesUserDeviceId } =
+    getOrMakeFidesCookie().identity;
 
   if (!validateOptions(options)) {
     debugLog(options.debug, "Invalid overlay options", options);
     return;
   }
 
-  const fidesRegionString = await retrieveEffectiveRegionString(geolocation, options);
+  const fidesRegionString = await retrieveEffectiveRegionString(
+    geolocation,
+    options
+  );
   let effectiveExperience: PrivacyExperience | undefined | null = experience;
   let shouldInitOverlay: boolean = !options.isOverlayDisabled;
 
   if (!fidesRegionString) {
-    debugLog(options.debug, `User location could not be obtained. Skipping overlay initialization.`);
+    debugLog(
+      options.debug,
+      `User location could not be obtained. Skipping overlay initialization.`
+    );
     shouldInitOverlay = false;
   } else if (!effectiveExperience) {
     effectiveExperience = await fetchExperience(
-        fidesRegionString,
-        options.fidesApiUrl,
-        fidesUserDeviceId,
-        options.debug
+      fidesRegionString,
+      options.fidesApiUrl,
+      fidesUserDeviceId,
+      options.debug
     );
   }
 
