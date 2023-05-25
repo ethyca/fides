@@ -500,6 +500,8 @@ def upsert_privacy_experiences_after_config_update(
     Keeps Privacy Experiences in sync with ExperienceConfig changes.
     Create or update PrivacyExperiences for the regions we're attempting to link to the
     ExperienceConfig.
+
+    Assumes that components on the ExperienceConfig do not change after they're updated.
     """
     linked_regions: List[PrivacyNoticeRegion] = []  # Regions that were linked
     current_regions: List[PrivacyNoticeRegion] = experience_config.regions

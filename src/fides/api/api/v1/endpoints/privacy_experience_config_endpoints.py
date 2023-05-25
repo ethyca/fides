@@ -197,8 +197,8 @@ def experience_config_update(
     Update Experience Config and then attempt to upsert Experiences and link back to ExperienceConfig.
 
     All regions that should be linked to this ExperienceConfig (or remain linked) need to be
-    included in this request.  If you want to ignore regions being updated, pass in None for regions.
-    If you want to remove regions, pass in an empty list.
+    included in this request.  Don't pass in a regions key if you want to leave regions untouched.
+    Passing in an empty list will remove all regions.
     """
     experience_config: PrivacyExperienceConfig = get_experience_config_or_error(
         db, experience_config_id

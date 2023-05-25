@@ -17,6 +17,9 @@ class ExperienceConfigSchema(FidesSchema):
     """
     Base for ExperienceConfig API objects.  Here all fields are optional since
     Pydantic allows subclasses to be more strict but not less strict
+
+    Note component is intentionally not included here.  When creating component, you can add it, but when updating,
+    the component cannot be updated.
     """
 
     accept_button_label: Optional[SafeStr] = Field(
@@ -26,7 +29,6 @@ class ExperienceConfigSchema(FidesSchema):
         description="Overlay 'Acknowledge button label for notice only banner'"
     )
     banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
-    component: Optional[ComponentType] = Field(description="Type of ExperienceConfig")
     description: Optional[SafeStr] = Field(
         description="Overlay 'Banner Description' or Privacy Center 'Description'"
     )
@@ -103,13 +105,18 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
 
 class ExperienceConfigUpdate(ExperienceConfigSchema):
     """
-    Updating ExperienceConfig - requires regions to be patched specifically
+    Updating ExperienceConfig. Note that component cannot be updated once its created
     """
 
     regions: Optional[List[PrivacyNoticeRegion]] = Field(
         default=None,
         description="If None, no edits will be made to regions.  If an empty list, all regions will be removed.",
     )
+
+    class Config:
+        """Forbid extra values - specifically we don't want component to be updated here."""
+
+        extra = Extra.forbid
 
     @validator("regions")
     @classmethod
@@ -130,6 +137,7 @@ class ExperienceConfigSchemaWithId(ExperienceConfigSchema):
     """
 
     id: str
+    component: ComponentType
     experience_config_history_id: str
     version: float
 
@@ -158,10 +166,9 @@ class PrivacyExperience(FidesSchema):
     Pydantic allows subclasses to be more strict but not less strict
     """
 
-    disabled: Optional[bool] = False
-    component: Optional[ComponentType]
-    banner_enabled: Optional[BannerEnabled]
     region: PrivacyNoticeRegion
+    component: Optional[ComponentType]
+    disabled: Optional[bool] = False
     experience_config: Optional[ExperienceConfigSchemaWithId]
 
     class Config:

@@ -5420,7 +5420,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/privacy-experience/?region=eu_de",
+							"raw": "{{host}}/privacy-experience/?region=us_ca",
 							"host": [
 								"{{host}}"
 							],
@@ -5431,7 +5431,7 @@
 							"query": [
 								{
 									"key": "region",
-									"value": "eu_de"
+									"value": "us_ca"
 								}
 							]
 						}
@@ -5455,7 +5455,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"component\": \"overlay\",\n    \"delivery_mechanism\": \"banner\",\n    \"regions\": [\"us_ca\"],\n    \"component_title\": \"Manage your privacy\",\n    \"banner_title\": \"Manage your data privacy\",\n    \"acknowledgement_button_label\": \"Confirm\",\n    \"confirmation_button_label\": \"Accept\",\n    \"reject_button_label\": \"Reject\"\n\n}",
+							"raw": "{\n    \"accept_button_label\": \"Accept all\",\n    \"acknowledge_button_label\": \"Confirm\",\n    \"banner_enabled\": \"enabled_where_required\",\n    \"component\": \"overlay\",\n    \"description\": \"On this page you can opt in and out of these data uses cases\",\n    \"disabled\": false,\n    \"privacy_preferences_link_label\": \"Manage preferences\",\n    \"privacy_policy_link_label\": \"View our privacy policy\",\n    \"privacy_policy_url\": \"example.com/privacy\",\n    \"regions\": [\"us_ca\"],\n    \"reject_button_label\": \"Reject all\",\n    \"save_button_label\": \"Save\",\n    \"title\": \"Manage your consent\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5491,7 +5491,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"component\": \"overlay\",\n    \"delivery_mechanism\": \"link\",\n    \"regions\": [ \"eu_it\"],\n    \"component_title\": \"Manage your privacy\",\n    \"banner_title\": \"Manage your data privacy\",\n    \"acknowledgement_button_label\": \"Confirm\",\n    \"confirmation_button_label\": \"Accept\",\n    \"reject_button_label\": \"Reject\",\n    \"link_label\": \"OK\"\n}",
+							"raw": "{\n    \"accept_button_label\": \"Accept\",\n    \"reject_button_label\": \"Reject\",\n    \"save_button_label\": \"Save all\",\n    \"title\": \"Here is where you manage your consent!\",\n    \"regions\": [\"us_ca\", \"eu_de\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"

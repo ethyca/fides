@@ -904,22 +904,18 @@ class TestUpdateExperienceConfig:
         assert response.status_code == 422
         assert response.json()["detail"][0]["msg"] == "none is not an allowed value"
 
-    def test_update_overlay_experience_config_missing_banner_enabled(
+    def test_update_overlay_experience_config_missing_overlay_specific_fields(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
-        experience_config_privacy_center,
     ) -> None:
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
 
         response = api_client.patch(
-            V1_URL_PREFIX
-            + EXPERIENCE_CONFIG
-            + f"/{experience_config_privacy_center.id}",
+            url,
             json={
-                "component": "overlay",
-                "regions": [],
+                "privacy_preferences_link_label": "",
             },
             headers=auth_header,
         )
@@ -928,6 +924,25 @@ class TestUpdateExperienceConfig:
             response.json()["detail"][0]["msg"]
             == "The following additional fields are required when defining an overlay: banner_enabled and privacy_preferences_link_label."
         )
+
+    def test_attempt_to_update_component_type(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        """Component type can't be edited once created"""
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+
+        response = api_client.patch(
+            url,
+            json={
+                "component": "privacy_center",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert response.json()["detail"][0]["msg"] == "extra fields not permitted"
 
     def test_update_experience_config_while_ignoring_regions(
         self,
