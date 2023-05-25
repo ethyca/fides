@@ -12,7 +12,6 @@ import { showModalLinkAndSetOnClick } from "./consent-links";
  * (see the type definition of ConsentBannerOptions for what options are available)
  */
 export const initOverlay = async ({
-  consentDefaults,
   experience,
   fidesRegionString,
   options,
@@ -36,7 +35,6 @@ export const initOverlay = async ({
           // Render the Overlay to the DOM!
           render(
             <Overlay
-              consentDefaults={consentDefaults}
               options={options}
               experience={experience}
               fidesRegionString={fidesRegionString}

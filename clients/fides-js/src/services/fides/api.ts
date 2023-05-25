@@ -55,7 +55,7 @@ export const fetchExperience = async (
       debugLog(
         debug,
         "No relevant experience found from Fides API, returning null. Response:",
-        response
+        body
       );
       return null;
     }

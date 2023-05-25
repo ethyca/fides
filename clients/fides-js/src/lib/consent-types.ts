@@ -1,10 +1,8 @@
-import { ConsentConfig } from "./consent-config";
-
 export const FIDES_MODAL_LINK = "fides-consent-modal-link";
 
 export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.
-  consent?: ConsentConfig;
+  consent?: LegacyConsentConfig;
   // Set the "experience" to be used for this Fides.js instance -- overrides the "legacy" config.
   // If set, Fides.js will fetch neither experience config nor user geolocation.
   // If not set, Fides.js will fetch its own experience config.
@@ -92,6 +90,7 @@ export type PrivacyNotice = {
   default_preference: UserConsentPreference;
   current_preference?: UserConsentPreference;
   outdated_preference?: UserConsentPreference;
+  notice_key: string;
 };
 
 export enum EnforcementLevel {
@@ -175,3 +174,34 @@ export enum RequestOrigin {
   overlay = "overlay",
   api = "api",
 }
+
+// ------------------LEGACY TYPES BELOW -------------------
+
+export type ConditionalValue = {
+  value: boolean;
+  globalPrivacyControl: boolean;
+};
+
+/**
+ * A consent value can be a boolean:
+ *  - `true`: consent/opt-in
+ *  - `false`: revoke/opt-out
+ *
+ * A consent value can also be context-dependent, which means it will be decided based on
+ * information about the user's environment (browser). The `ConditionalValue` object maps the
+ * context conditions to the value that should be used:
+ *  - `value`: The default value if no context applies.
+ *  - `globalPrivacyControl`: The value to use if the user's browser has Global Privacy Control
+ *    enabled.
+ */
+export type ConsentValue = boolean | ConditionalValue;
+
+export type ConsentOption = {
+  cookieKeys: string[];
+  default?: ConsentValue;
+  fidesDataUseKey: string;
+};
+
+export type LegacyConsentConfig = {
+  options: ConsentOption[];
+};

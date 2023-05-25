@@ -7,13 +7,11 @@ import {
   PrivacyNotice,
 } from "../lib/consent-types";
 import ConsentBanner from "./ConsentBanner";
-import { CookieKeyConsent } from "../lib/cookie";
 import ConsentModal from "./ConsentModal";
 
 import { updateConsentPreferences } from "../lib/preferences";
 
 export interface OverlayProps {
-  consentDefaults: CookieKeyConsent;
   options: FidesOptions;
   experience: PrivacyExperience;
   fidesRegionString: string;
