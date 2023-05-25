@@ -6,11 +6,10 @@ from datetime import datetime, timezone
 from logging import WARNING
 from typing import Callable, Optional
 
-from fastapi import Depends, HTTPException, Request, Response, Security, status
+from fastapi import HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
-from sqlalchemy.orm import Session
 from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 
@@ -20,7 +19,6 @@ from fides.api.analytics import (
     in_docker_container,
     send_analytics_event,
 )
-from fides.api.api import deps
 from fides.api.app_setup import (
     check_redis,
     create_fides_app,
@@ -28,7 +26,6 @@ from fides.api.app_setup import (
     run_database_startup,
 )
 from fides.api.ctl.routes.util import API_PREFIX
-from fides.api.ctl.sql_models import AuditLogResource
 from fides.api.ctl.ui import (
     get_admin_index_as_response,
     get_path_to_admin_ui_file,
@@ -36,8 +33,7 @@ from fides.api.ctl.ui import (
     match_route,
     path_is_in_ui_directory,
 )
-from fides.api.models.client import ClientDetail
-from fides.api.oauth.utils import verify_oauth_client
+from fides.api.middleware import handle_audit_log_resource
 from fides.api.schemas.analytics import Event, ExtraData
 
 # pylint: disable=wildcard-import, unused-wildcard-import
@@ -250,36 +246,9 @@ def start_webserver(port: int = 8080) -> None:
 async def action_to_audit_log(
     request: Request,
     call_next: Callable,
-    # db: Session = Depends(deps.get_db),
-    # config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
-    # client: ClientDetail = Security(
-    #     verify_oauth_client,
-    #     # scopes=None,
-    #     scopes=["system:create"],
-    # ),
 ) -> Response:
     """Log basic information about every non-GET request handled by the server."""
+    if request.method != "GET" and request.scope["path"] != "/api/v1/login":
+        await handle_audit_log_resource(request)
     response = await call_next(request)
-    if request.method == "GET":
-        return response
-    else:
-        logger.info("SLARTIBARTFAST")
-        db: Session = deps.get_api_session()
-        client: ClientDetail = Security(verify_oauth_client, scopes=["system:create"])
-        client_user_id = client.user_id or "root"
-        # the above still doesn't work, and I don't know why just yet.
-        # I also think I should be able to sort out the fides_keys as a minimum starting point
-        try:
-            AuditLogResource.create(
-                db=db,
-                data={
-                    "user_id": client_user_id,
-                    "request_path": request.scope["path"],
-                    "request_type": request.method,
-                    "fides_keys": ["key1", "key2"],
-                    "extra_data": {"key": "value"},
-                },
-            )
-        except Exception as err:
-            logger.info(err)
-        return response
+    return response

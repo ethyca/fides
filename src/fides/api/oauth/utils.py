@@ -187,6 +187,23 @@ async def verify_oauth_client(
     return client
 
 
+async def extract_client_id(
+    authorization: str = oauth2_scheme,
+    db: Session = Depends(get_db),
+) -> ClientDetail:
+    """
+    Verifies that the access token provided in the authorization header contains
+    the necessary scopes or roles specified by the caller. Yields a 403 forbidden error
+    if not.
+
+    NOTE: This function may be overwritten in `main.py` when changing
+    the security environment.
+    """
+    token_data, client = extract_token_and_load_client(authorization, db)
+
+    return client
+
+
 def extract_token_and_load_client(
     authorization: str = Security(oauth2_scheme), db: Session = Depends(get_db)
 ) -> Tuple[Dict, ClientDetail]:
