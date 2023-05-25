@@ -99,6 +99,9 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Install Pytest
+        run: pip install pytest==7.2.2
+
       - name: Run Static Check
         run: nox -s ${{ matrix.session_name }}
 
