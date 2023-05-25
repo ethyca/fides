@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from fastapi import Request
 from loguru import logger
@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from starlette.types import Message
 
 from fides.api.api import deps
-from fides.api.ctl.sql_models import AuditLogResource
+from fides.api.ctl.sql_models import AuditLogResource  # type: ignore[attr-defined]
 from fides.api.oauth.utils import extract_client_id
 
 
@@ -36,7 +36,7 @@ async def handle_audit_log_resource(request: Request) -> None:
 
 
 async def write_audit_log_resource_record(
-    db: Session, audit_log_resource_data=Dict[str, Any]
+    db: Session, audit_log_resource_data: Dict[str, Any]
 ) -> None:
     """
     Writes a record to the audit log resource table
@@ -56,7 +56,7 @@ async def get_client_user_id(db: Session, auth_token: str) -> str:
     return client.user_id or "root"
 
 
-async def extract_data_from_body(request: Request) -> Dict:
+async def extract_data_from_body(request: Request) -> List:
     """
     Attempts to retrieve a client user_id
     """
@@ -85,14 +85,19 @@ async def extract_data_from_body(request: Request) -> Dict:
     return fides_keys
 
 
-async def set_body(request: Request, body: bytes):
+async def set_body(request: Request, body: bytes) -> None:
+    """
+    Sets the body return type for use in middleware
+    """
+
     async def receive() -> Message:
         return {"type": "http.request", "body": body}
 
-    request._receive = receive
+    request._receive = receive  # pylint: disable=W0212
 
 
 async def get_body(request: Request) -> bytes:
+    """awaits and sets the request body for use in middleware"""
     body = await request.body()
     await set_body(request, body)
     return body

@@ -188,7 +188,7 @@ async def verify_oauth_client(
 
 
 async def extract_client_id(
-    authorization: str = oauth2_scheme,
+    authorization: str,
     db: Session = Depends(get_db),
 ) -> ClientDetail:
     """
@@ -199,7 +199,7 @@ async def extract_client_id(
     NOTE: This function may be overwritten in `main.py` when changing
     the security environment.
     """
-    token_data, client = extract_token_and_load_client(authorization, db)
+    _, client = extract_token_and_load_client(authorization, db)
 
     return client
 
