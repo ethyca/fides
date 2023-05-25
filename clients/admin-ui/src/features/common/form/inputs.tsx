@@ -130,7 +130,7 @@ export interface Option {
   label: string;
 }
 interface SelectProps {
-  label: string;
+  label?: string;
   labelProps?: FormLabelProps;
   tooltip?: string;
   options: Option[];
@@ -430,10 +430,12 @@ export const CustomSelect = ({
   if (variant === "inline") {
     return (
       <FormControl isInvalid={isInvalid} isRequired={isRequired}>
-        <Grid templateColumns="1fr 3fr">
-          <Label htmlFor={props.id || props.name} {...labelProps}>
-            {label}
-          </Label>
+        <Grid templateColumns={label ? "1fr 3fr" : "1fr"}>
+          {label ? (
+            <Label htmlFor={props.id || props.name} {...labelProps}>
+              {label}
+            </Label>
+          ) : null}
           <Flex alignItems="center" data-testid={`input-${field.name}`}>
             <Flex flexDir="column" flexGrow={1} mr={2}>
               <SelectInput
@@ -466,15 +468,17 @@ export const CustomSelect = ({
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label
-            htmlFor={props.id || props.name}
-            fontSize="sm"
-            my={0}
-            mr={1}
-            {...labelProps}
-          >
-            {label}
-          </Label>
+          {label ? (
+            <Label
+              htmlFor={props.id || props.name}
+              fontSize="sm"
+              my={0}
+              mr={1}
+              {...labelProps}
+            >
+              {label}
+            </Label>
+          ) : null}
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
         <Box width="100%" data-testid={`input-${field.name}`}>

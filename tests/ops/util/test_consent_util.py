@@ -1,8 +1,8 @@
 import pytest
 from sqlalchemy.orm.attributes import flag_modified
 
-from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
-from fides.api.ops.util.consent_util import (
+from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.util.consent_util import (
     add_complete_system_status_for_consent_reporting,
     add_errored_system_status_for_consent_reporting,
     cache_initial_status_and_identities_for_consent_reporting,

@@ -1,20 +1,21 @@
 import pytest
 from sqlalchemy.exc import InvalidRequestError
 
-from fides.api.ops.api.v1.endpoints.privacy_preference_endpoints import (
+from fides.api.api.v1.endpoints.privacy_preference_endpoints import (
+    anonymize_ip_address,
     extract_identity_from_provided_identity,
 )
-from fides.api.ops.common_exceptions import (
+from fides.api.common_exceptions import (
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
 )
-from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
-from fides.api.ops.models.privacy_preference import (
+from fides.api.models.privacy_notice import PrivacyNoticeRegion
+from fides.api.models.privacy_preference import (
     PrivacyPreferenceHistory,
     RequestOrigin,
     UserConsentPreference,
 )
-from fides.api.ops.models.privacy_request import (
+from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     ProvidedIdentity,
     ProvidedIdentityType,
@@ -469,3 +470,109 @@ class TestPrivacyPreferenceHistory:
         with pytest.raises(InvalidRequestError):
             # Can't refresh because this preference has been deleted, and consolidated with the other
             db.refresh(fides_user_device_current_preference)
+
+    def test_update_current_privacy_preferences_fides_id_only(
+        self, db, privacy_notice, fides_user_provided_identity
+    ):
+        """Assert that if we save privacy preferences for a fides user device id and current preferences
+        already exists, the current preference is updated correctly."
+        """
+
+        privacy_notice_history = privacy_notice.histories[0]
+        (
+            fides_user_device_id,
+            hashed_device_id,
+        ) = extract_identity_from_provided_identity(
+            fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
+        )
+
+        preference_history_record_for_device = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "email": None,
+                "fides_user_device": fides_user_device_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "hashed_email": None,
+                "hashed_fides_user_device": hashed_device_id,
+                "hashed_phone_number": None,
+                "phone_number": None,
+                "preference": "opt_out",
+                "privacy_notice_history_id": privacy_notice_history.id,
+                "provided_identity_id": None,
+                "request_origin": "privacy_center",
+                "secondary_user_ids": {"ga_client_id": "test"},
+                "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+                "user_geography": "us_ca",
+                "url_recorded": "example.com/privacy_center",
+            },
+            check_name=False,
+        )
+
+        # Assert a CurrentPrivacyPreference record was created when the PrivacyPreferenceHistory was created
+        fides_user_device_current_preference = (
+            preference_history_record_for_device.current_privacy_preference
+        )
+        assert (
+            fides_user_device_current_preference.preference
+            == UserConsentPreference.opt_out
+        )
+        created_at = fides_user_device_current_preference.created_at
+        updated_at = fides_user_device_current_preference.updated_at
+
+        # Save a preference but change the preference from opt out to opt in
+        new_preference_history_record_for_device = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "email": None,
+                "fides_user_device": fides_user_device_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "hashed_email": None,
+                "hashed_fides_user_device": hashed_device_id,
+                "hashed_phone_number": None,
+                "phone_number": None,
+                "preference": "opt_in",
+                "privacy_notice_history_id": privacy_notice_history.id,
+                "provided_identity_id": None,
+                "request_origin": "privacy_center",
+                "secondary_user_ids": {"ga_client_id": "test"},
+                "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+                "user_geography": "us_ca",
+                "url_recorded": "example.com/privacy_center",
+            },
+            check_name=False,
+        )
+
+        # Assert a new CurrentPrivacyPreference record was created when the PrivacyPreferenceHistory was created with email
+        db.refresh(fides_user_device_current_preference)
+        assert (
+            fides_user_device_current_preference.preference
+            == UserConsentPreference.opt_in
+        )
+        assert fides_user_device_current_preference.created_at == created_at
+        assert fides_user_device_current_preference.updated_at > updated_at
+
+        new_preference_history_record_for_device.delete(db)
+        preference_history_record_for_device.delete(db)
+
+
+class TestAnonymizeIpAddress:
+    def test_anonymize_ip_address_empty_string(self):
+        assert anonymize_ip_address("") is None
+
+    def test_anonymize_ip_address_none(self):
+        assert anonymize_ip_address(None) is None
+
+    def test_anonymize_bad_ip_address(self):
+        assert anonymize_ip_address("bad_address") is None
+
+    def test_anonymize_ip_address_list(self):
+        assert anonymize_ip_address("[]") is None
+
+    def test_anonymize_ipv4(self):
+        assert anonymize_ip_address("12.214.31.144") == "12.214.31.0"
+
+    def test_anonymize_ipv6(self):
+        assert (
+            anonymize_ip_address("2001:0db8:85a3:0000:0000:8a2e:0370:7334")
+            == "2001:0db8:85a3:0000:0000:0000:0000:0000"
+        )

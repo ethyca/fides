@@ -1,7 +1,7 @@
 """add enabled_actions to connectionconfig
 
 Revision ID: e798f37f0c26
-Revises: fc04e3e637c0
+Revises: 2661f31daffb
 Create Date: 2023-05-11 17:54:05.476225
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "e798f37f0c26"
-down_revision = "fc04e3e637c0"
+down_revision = "2661f31daffb"
 branch_labels = None
 depends_on = None
 

@@ -10,22 +10,22 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
     STORAGE_DELETE,
 )
-from fides.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.connectionconfig import (
+from fides.api.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.manual_webhook import AccessManualWebhook
-from fides.api.ops.models.privacy_request import PrivacyRequestStatus
-from fides.api.ops.oauth.roles import APPROVER, OWNER, VIEWER
+from fides.api.models.manual_webhook import AccessManualWebhook
+from fides.api.models.privacy_request import PrivacyRequestStatus
+from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
 from tests.fixtures.application_fixtures import integration_secrets
 
 page_size = Params().size
@@ -375,7 +375,7 @@ class TestPatchConnections:
             == "ensure this value has at most 50 items"
         )
 
-    @mock.patch("fides.api.ops.util.connection_util.queue_privacy_request")
+    @mock.patch("fides.api.util.connection_util.queue_privacy_request")
     def test_disable_manual_webhook(
         self,
         mock_queue,
@@ -597,7 +597,7 @@ class TestPatchConnections:
         bigquery_resource.delete(db)
         manual_webhook_resource.delete(db)
 
-    @mock.patch("fides.api.ops.db.base_class.OrmWrappedFidesBase.create_or_update")
+    @mock.patch("fides.api.db.base_class.OrmWrappedFidesBase.create_or_update")
     def test_patch_connections_failed_response(
         self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
     ) -> None:
@@ -1209,7 +1209,7 @@ class TestDeleteConnection:
             is None
         )
 
-    @mock.patch("fides.api.ops.util.connection_util.queue_privacy_request")
+    @mock.patch("fides.api.util.connection_util.queue_privacy_request")
     def test_delete_manual_webhook_connection_config(
         self,
         mock_queue,

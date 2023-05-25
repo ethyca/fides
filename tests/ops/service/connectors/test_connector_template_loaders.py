@@ -6,23 +6,23 @@ from zipfile import ZipFile
 
 import pytest
 
-from fides.api.ops.common_exceptions import NoSuchSaaSRequestOverrideException
-from fides.api.ops.models.custom_connector_template import CustomConnectorTemplate
-from fides.api.ops.schemas.saas.connector_template import ConnectorTemplate
-from fides.api.ops.service.authentication.authentication_strategy import (
+from fides.api.common_exceptions import NoSuchSaaSRequestOverrideException
+from fides.api.models.custom_connector_template import CustomConnectorTemplate
+from fides.api.schemas.saas.connector_template import ConnectorTemplate
+from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fides.api.ops.service.connectors.saas.connector_registry_service import (
+from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     CustomConnectorTemplateLoader,
     FileConnectorTemplateLoader,
     register_custom_functions,
 )
-from fides.api.ops.service.saas_request.saas_request_override_factory import (
+from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
-from fides.api.ops.util.saas_util import (
+from fides.api.util.saas_util import (
     encode_file_contents,
     load_config_from_string,
     load_yaml_as_string,
@@ -141,7 +141,7 @@ class TestCustomConnectorTemplateLoader:
         assert connector_templates == {}
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_template_loader_invalid_template(
         self,
@@ -179,7 +179,7 @@ class TestCustomConnectorTemplateLoader:
         ]
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_template_loader_invalid_functions(
         self,
@@ -207,7 +207,7 @@ class TestCustomConnectorTemplateLoader:
         assert connector_templates == {}
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_template_loader_custom_connector_functions_disabled(
         self,
@@ -246,7 +246,7 @@ class TestCustomConnectorTemplateLoader:
         ]
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_template_loader_custom_connector_functions_disabled_custom_functions(
         self,
@@ -286,7 +286,7 @@ class TestCustomConnectorTemplateLoader:
         }
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_template_loader(
         self,
@@ -335,7 +335,7 @@ class TestCustomConnectorTemplateLoader:
         ]
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_loaders_have_separate_instances(
         self,
@@ -367,7 +367,7 @@ class TestCustomConnectorTemplateLoader:
         assert file_connector_templates != custom_connector_templates
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
     )
     def test_custom_connector_save_template(
         self,
@@ -434,10 +434,10 @@ class TestCustomConnectorTemplateLoader:
         assert "Import of 'os' module is not allowed." == str(exc.value)
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.delete"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
     )
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_replacement_replaceable_with_update_available(
         self,
@@ -472,10 +472,10 @@ class TestCustomConnectorTemplateLoader:
         mock_delete.assert_called_once()
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.delete"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
     )
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_replacement_replaceable_with_update_not_available(
         self,
@@ -515,10 +515,10 @@ class TestCustomConnectorTemplateLoader:
         mock_delete.assert_not_called()
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.delete"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
     )
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_custom_connector_replacement_not_replaceable(
         self,
@@ -558,7 +558,7 @@ class TestCustomConnectorTemplateLoader:
         mock_delete.assert_not_called()
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
     )
     def test_replaceable_template_for_existing_template(
         self, mock_create_or_update: MagicMock, zendesk_config, replaceable_zendesk_zip
@@ -578,7 +578,7 @@ class TestCustomConnectorTemplateLoader:
         assert custom_config["version"] == existing_config["version"]
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
     )
     def test_replaceable_template_for_new_template(
         self, mock_create_or_update: MagicMock, replaceable_planet_express_zip
@@ -597,7 +597,7 @@ class TestCustomConnectorTemplateLoader:
         assert custom_config["version"] == "0.0.1"
 
     @mock.patch(
-        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
     )
     def test_non_replaceable_template(
         self,
@@ -620,9 +620,7 @@ class TestRegisterCustomFunctions:
     def test_function_loader(self):
         """Verify that all override implementations can be loaded by RestrictedPython"""
 
-        overrides_path = (
-            "src/fides/api/ops/service/saas_request/override_implementations"
-        )
+        overrides_path = "src/fides/api/service/saas_request/override_implementations"
 
         for filename in os.listdir(overrides_path):
             if filename.endswith(".py") and filename != "__init__.py":
