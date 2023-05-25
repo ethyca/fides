@@ -88,8 +88,8 @@ export type PrivacyNotice = {
   version: number;
   privacy_notice_history_id: string;
   default_preference: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
+  current_preference?: UserConsentPreference | null;
+  outdated_preference?: UserConsentPreference | null;
   notice_key: string;
 };
 

@@ -166,7 +166,9 @@ const experienceIsValid = (
     return false;
   }
   // Check if there are any notices within the experience that do not have a user preference
-  return effectiveExperience.privacy_notices.some(notice => notice.current_preference == null);
+  return effectiveExperience.privacy_notices.some(
+    (notice) => notice.current_preference == null
+  );
 };
 
 /**
@@ -222,9 +224,14 @@ const init = async ({
     experience,
     config: consent,
     context,
+    debug: options.debug,
   });
   // Load any existing user preferences from the browser cookie
-  const cookie = getOrMakeFidesCookie(consentDefaults, fidesUserDeviceId);
+  const cookie = getOrMakeFidesCookie(
+    consentDefaults,
+    fidesUserDeviceId,
+    options.debug
+  );
 
   // Initialize the window.Fides object
   _Fides.consent = cookie.consent;

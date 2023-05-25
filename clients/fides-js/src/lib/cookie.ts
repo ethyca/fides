@@ -7,6 +7,7 @@ import {
   resolveLegacyConsentValue,
 } from "./consent-value";
 import { LegacyConsentConfig, PrivacyExperience } from "./consent-types";
+import { debugLog } from "./consent-utils";
 
 /**
  * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
@@ -105,7 +106,8 @@ export const makeFidesCookie = (
  */
 export const getOrMakeFidesCookie = (
   defaults?: CookieKeyConsent,
-  device_id?: string
+  device_id?: string,
+  debug: boolean = false
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults, device_id);
@@ -121,7 +123,7 @@ export const getOrMakeFidesCookie = (
   }
 
   try {
-    // Parse the cookie and check it's format; if it's structured like we
+    // Parse the cookie and check its format; if it's structured like we
     // expect, cast it directly. Otherwise, assume it's a previous version of
     // the cookie, which was strictly the consent key/value preferences
     let parsedCookie: FidesCookie;
@@ -146,10 +148,11 @@ export const getOrMakeFidesCookie = (
       ...parsedCookie.consent,
     };
     parsedCookie.consent = updatedConsent;
+    debugLog(debug, `Constructed Fides consent cookie`, parsedCookie);
     return parsedCookie;
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.error("Unable to read consent cookie: invalid JSON.", err);
+    debugLog(debug, `Unable to read consent cookie: invalid JSON.`, err);
     return defaultCookie;
   }
 };
@@ -188,7 +191,8 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
 
 const makeConsentDefaultsForExperiences = (
   experience: PrivacyExperience,
-  context: ConsentContext
+  context: ConsentContext,
+  debug: boolean
 ) => {
   const defaults: CookieKeyConsent = {};
   if (!experience.privacy_notices) {
@@ -203,12 +207,14 @@ const makeConsentDefaultsForExperiences = (
       );
     }
   );
+  debugLog(debug, `Returning defaults for experiences.`, defaults);
   return defaults;
 };
 
 const makeConsentDefaultsLegacy = (
   config: LegacyConsentConfig | undefined,
-  context: ConsentContext
+  context: ConsentContext,
+  debug: boolean
 ) => {
   const defaults: CookieKeyConsent = {};
   config?.options.forEach(({ cookieKeys, default: current }) => {
@@ -228,6 +234,7 @@ const makeConsentDefaultsLegacy = (
       defaults[cookieKey] = previous && value;
     });
   });
+  debugLog(debug, `Returning defaults for legacy config.`, defaults);
   return defaults;
 };
 
@@ -246,13 +253,17 @@ export const makeConsentDefaults = ({
   experience,
   config,
   context,
+  debug,
 }: {
   experience?: PrivacyExperience;
   config?: LegacyConsentConfig;
   context: ConsentContext;
+  debug: boolean;
 }): CookieKeyConsent => {
   if (experience) {
-    return makeConsentDefaultsForExperiences(experience, context);
+    debugLog(debug, `Making consent defaults for experiences.`);
+    return makeConsentDefaultsForExperiences(experience, context, debug);
   }
-  return makeConsentDefaultsLegacy(config, context);
+  debugLog(debug, `Making consent defaults for legacy config.`);
+  return makeConsentDefaultsLegacy(config, context, debug);
 };
