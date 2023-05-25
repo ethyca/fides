@@ -80,14 +80,10 @@ const initialState: DatastoreConnectionParams = {
   size: 25,
 };
 
-
 export type CreateSaasConnectionConfig = {
-    connectionConfig: CreateSaasConnectionConfigRequest
-    systemFidesKey: string,
-}
-
-
-
+  connectionConfig: CreateSaasConnectionConfigRequest;
+  systemFidesKey: string;
+};
 
 export const datastoreConnectionSlice = createSlice({
   name: "datastoreConnections",
@@ -177,14 +173,15 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       CreateSaasConnectionConfig
     >({
       query: (params) => {
-        const url = `/system/${params.systemFidesKey}/${CONNECTION_ROUTE}/instantiate/${params.connectionConfig.saas_connector_type}`
-        console.log(url)
+        const url = `/system/${params.systemFidesKey}/${CONNECTION_ROUTE}/instantiate/${params.connectionConfig.saas_connector_type}`;
+        console.log(url);
 
         return {
-        url: url,
-        method: "POST",
-        body: { ...params.connectionConfig },
-      }},
+          url: url,
+          method: "POST",
+          body: { ...params.connectionConfig },
+        };
+      },
       // Creating a connection config also creates a dataset behind the scenes
       invalidatesTags: ["Datastore Connection", "Datasets", "System"],
     }),

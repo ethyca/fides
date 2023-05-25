@@ -5,7 +5,7 @@ import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import {
   CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
-  useUpdateDatastoreConnectionSecretsMutation
+  useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
 import {
   CreateSaasConnectionConfigRequest,
@@ -53,13 +53,13 @@ const createSaasConnector = async (
 
   const params: CreateSaasConnectionConfig = {
     systemFidesKey,
-    connectionConfig
-  }
+    connectionConfig,
+  };
 
   Object.entries(secretsSchema!.properties).forEach((key) => {
     params.connectionConfig.secrets[key[0]] = values[key[0]];
   });
-  console.log("about to create a new saas connector",params)
+  console.log("about to create a new saas connector", params);
   return (await createSaasConnectorFunc(
     params
   ).unwrap()) as CreateSaasConnectionConfigResponse;
