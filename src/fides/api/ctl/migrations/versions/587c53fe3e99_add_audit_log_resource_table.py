@@ -1,7 +1,7 @@
 """add audit_log_resource table
 
 Revision ID: 587c53fe3e99
-Revises: 2661f31daffb
+Revises: 8a71872089e4
 Create Date: 2023-05-18 19:21:33.496435
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "587c53fe3e99"
-down_revision = "2661f31daffb"
+down_revision = "8a71872089e4"
 branch_labels = None
 depends_on = None
 
