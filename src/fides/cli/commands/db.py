@@ -25,7 +25,7 @@ def db_init(ctx: click.Context) -> None:
 
     Will also automatically initialize a fresh database.
 
-    **WARNING**: Deprecated, use `migrate` instead.
+    **WARNING**: Deprecated, use `upgrade` instead.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
