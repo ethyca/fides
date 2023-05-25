@@ -48,6 +48,7 @@ sqlalchemy-bigquery==1.4.4
 sqlalchemy-redshift==0.8.11
 sqlalchemy-stubs==0.4
 SQLAlchemy-Utils==0.38.3
+sshtunnel==0.4.0
 toml>=0.10.1
 twilio==7.15.0
 typing_extensions==4.5.0 # pinned to work around https://github.com/pydantic/pydantic/issues/5821
