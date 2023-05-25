@@ -136,13 +136,10 @@ describe("Consent banner", () => {
         });
       });
       it("sets Fides.consent object with default consent based on legacy consent", () => {
-        cy.window()
-          .its("Fides")
-          .its("consent")
-          .should("eql", {
-            "data_sales": true,
-            "tracking": false,
-          });
+        cy.window().its("Fides").its("consent").should("eql", {
+          data_sales: true,
+          tracking: false,
+        });
       });
       it("does not render banner", () => {
         cy.get("div#fides-consent-banner").should("not.exist");
