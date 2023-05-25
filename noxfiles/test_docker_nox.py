@@ -6,7 +6,9 @@ class TestBuildxPrivacyCenter:
         actual_result = generate_multiplatform_buildx_command(["foo"], "prod")
         expected_result = (
             "docker",
+            "buildx",
             "build",
+            "--push",
             "--target=prod",
             "--platform",
             "linux/amd64,linux/arm64",
@@ -20,7 +22,9 @@ class TestBuildxPrivacyCenter:
         actual_result = generate_multiplatform_buildx_command(["foo", "bar"], "prod")
         expected_result = (
             "docker",
+            "buildx",
             "build",
+            "--push",
             "--target=prod",
             "--platform",
             "linux/amd64,linux/arm64",
@@ -38,7 +42,9 @@ class TestBuildxPrivacyCenter:
         )
         expected_result = (
             "docker",
+            "buildx",
             "build",
+            "--push",
             "--target=prod",
             "--platform",
             "linux/amd64,linux/arm64",

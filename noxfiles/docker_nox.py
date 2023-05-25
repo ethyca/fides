@@ -31,7 +31,9 @@ def generate_multiplatform_buildx_command(
     """
     buildx_command: Tuple[str, ...] = (
         "docker",
+        "buildx",
         "build",
+        "--push",
         f"--target={docker_build_target}",
         "--platform",
         DOCKER_PLATFORMS,
@@ -157,12 +159,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     session.run(*build_command, external=True)
 
 
-def push_prod(
-    session: nox.Session,
-    fides_image_name: str,
-    privacy_center_image_name: str,
-    sample_app_image_name: str,
-) -> None:
+def push_prod(session: nox.Session) -> None:
     """
     Contains the logic for pushing the suite of 'prod' images.
 
@@ -176,30 +173,33 @@ def push_prod(
       - ethyca/fides-sample-app:2.0.0
       - ethyca/fides-sample-app:latest
     """
+    fides_image_name = get_current_image()
+    privacy_center_image_name = f"{PRIVACY_CENTER_IMAGE}:{get_current_tag()}"
+    sample_app_image_name = f"{SAMPLE_APP_IMAGE}:{get_current_tag()}"
+
     privacy_center_latest = f"{PRIVACY_CENTER_IMAGE}:latest"
     sample_app_latest = f"{SAMPLE_APP_IMAGE}:latest"
 
-    session.run("docker", "tag", fides_image_name, IMAGE_LATEST, external=True)
-    session.run("docker", "push", IMAGE_LATEST, external=True)
-    session.run("docker", "push", fides_image_name, external=True)
-    session.run(
-        "docker", "tag", privacy_center_image_name, privacy_center_latest, external=True
+    fides_buildx_command = generate_multiplatform_buildx_command(
+        [fides_image_name, IMAGE_LATEST], docker_build_target="prod"
     )
-    session.run("docker", "push", privacy_center_latest, external=True)
-    session.run("docker", "push", privacy_center_image_name, external=True)
-    session.run(
-        "docker", "tag", sample_app_image_name, sample_app_latest, external=True
+    session.run(*fides_buildx_command, external=True)
+
+    privacy_center_buildx_command = generate_multiplatform_buildx_command(
+        [privacy_center_image_name, privacy_center_latest],
+        docker_build_target="prod_pc",
     )
-    session.run("docker", "push", sample_app_latest, external=True)
-    session.run("docker", "push", sample_app_image_name, external=True)
+    session.run(*privacy_center_buildx_command, external=True)
+
+    sample_app_buildx_command = generate_multiplatform_buildx_command(
+        [sample_app_image_name, sample_app_latest],
+        docker_build_target="prod",
+        dockerfile_path="clients/sample-app",
+    )
+    session.run(*sample_app_buildx_command, external=True)
 
 
-def push_dev(
-    session: nox.Session,
-    fides_image_name: str,
-    privacy_center_image_name: str,
-    sample_app_image_name: str,
-) -> None:
+def push_dev(session: nox.Session) -> None:
     """
     Push the bleeding-edge `dev` images.
 
@@ -211,24 +211,26 @@ def push_dev(
     privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:dev"
     sample_app_dev = f"{SAMPLE_APP_IMAGE}:dev"
 
-    session.run("docker", "tag", fides_image_name, IMAGE_DEV, external=True)
-    session.run("docker", "push", IMAGE_DEV, external=True)
-
-    session.run(
-        "docker", "tag", privacy_center_image_name, privacy_center_dev, external=True
+    fides_buildx_command = generate_multiplatform_buildx_command(
+        [IMAGE_DEV], docker_build_target="prod"
     )
-    session.run("docker", "push", privacy_center_dev, external=True)
+    session.run(*fides_buildx_command, external=True)
 
-    session.run("docker", "tag", sample_app_image_name, sample_app_dev, external=True)
-    session.run("docker", "push", sample_app_dev, external=True)
+    privacy_center_buildx_command = generate_multiplatform_buildx_command(
+        [privacy_center_dev],
+        docker_build_target="prod_pc",
+    )
+    session.run(*privacy_center_buildx_command, external=True)
+
+    sample_app_buildx_command = generate_multiplatform_buildx_command(
+        [sample_app_dev],
+        docker_build_target="prod",
+        dockerfile_path="clients/sample-app",
+    )
+    session.run(*sample_app_buildx_command, external=True)
 
 
-def push_git_tag(
-    session: nox.Session,
-    fides_image_name: str,
-    privacy_center_image_name: str,
-    sample_app_image_name: str,
-) -> None:
+def push_git_tag(session: nox.Session) -> None:
     """
     Push the an image for whatever tag our commit currently has.
 
@@ -270,16 +272,24 @@ def push_git_tag(
     privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:{existing_commit_tag}"
     sample_app_dev = f"{SAMPLE_APP_IMAGE}:{existing_commit_tag}"
 
-    session.run("docker", "tag", fides_image_name, custom_image_tag, external=True)
-    session.run("docker", "push", custom_image_tag, external=True)
-
-    session.run(
-        "docker", "tag", privacy_center_image_name, privacy_center_dev, external=True
+    # Publish
+    fides_buildx_command = generate_multiplatform_buildx_command(
+        [custom_image_tag], docker_build_target="prod"
     )
-    session.run("docker", "push", privacy_center_dev, external=True)
+    session.run(*fides_buildx_command, external=True)
 
-    session.run("docker", "tag", sample_app_image_name, sample_app_dev, external=True)
-    session.run("docker", "push", sample_app_dev, external=True)
+    privacy_center_buildx_command = generate_multiplatform_buildx_command(
+        [privacy_center_dev],
+        docker_build_target="prod_pc",
+    )
+    session.run(*privacy_center_buildx_command, external=True)
+
+    sample_app_buildx_command = generate_multiplatform_buildx_command(
+        [sample_app_dev],
+        docker_build_target="prod",
+        dockerfile_path="clients/sample-app",
+    )
+    session.run(*sample_app_buildx_command, external=True)
 
 
 @nox.session()
@@ -306,30 +316,12 @@ def push(session: nox.Session, tag: str) -> None:
 
     NOTE: This command also handles building images, including for multiple supported architectures.
     """
-    fides_image_prod = get_current_image()
-    privacy_center_prod = f"{PRIVACY_CENTER_IMAGE}:{get_current_tag()}"
-    sample_app_prod = f"{SAMPLE_APP_IMAGE}:{get_current_tag()}"
 
     if tag == "dev":
-        push_dev(
-            session=session,
-            fides_image_name=fides_image_prod,
-            privacy_center_image_name=privacy_center_prod,
-            sample_app_image_name=sample_app_prod,
-        )
+        push_dev(session=session)
 
     if tag == "git-tag":
-        push_git_tag(
-            session=session,
-            fides_image_name=fides_image_prod,
-            privacy_center_image_name=privacy_center_prod,
-            sample_app_image_name=sample_app_prod,
-        )
+        push_git_tag(session=session)
 
     if tag == "prod":
-        push_prod(
-            session=session,
-            fides_image_name=fides_image_prod,
-            privacy_center_image_name=privacy_center_prod,
-            sample_app_image_name=sample_app_prod,
-        )
+        push_prod(session=session)
