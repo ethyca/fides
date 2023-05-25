@@ -20,23 +20,26 @@ DOCKER_PLATFORM_MAP = {
     "arm64": "linux/arm64",
     "x86_64": "linux/amd64",
 }
-DOCKER_PLATFORMS = set(DOCKER_PLATFORM_MAP.values())
+DOCKER_PLATFORMS = "linux/amd64,linux/arm64"
 
 
-def publish_multiplatform_privacy_center(image_tags: List[str]) -> Tuple[str, ...]:
+def generate_multiplatform_buildx_command(
+    image_tags: List[str], docker_build_target: str, dockerfile_path: str = "."
+) -> Tuple[str, ...]:
     """
     Generate the command for building and publishing a multiplatform privacy center image.
     """
-    tags_tuple = (("--tag", tag) for tag in image_tags)
-    buildx_command = (
+    buildx_command: Tuple[str, ...] = (
         "docker",
         "build",
-        "--target=prod_pc",
+        f"--target={docker_build_target}",
         "--platform",
         DOCKER_PLATFORMS,
-        *tags_tuple,
-        ".",
+        dockerfile_path,
     )
+    for tag in image_tags:
+        buildx_command += ("--tag", tag)
+
     return buildx_command
 
 
