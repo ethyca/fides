@@ -41,15 +41,15 @@ describe("fides.js API route", () => {
     });
   });
 
-  describe("when pre-fetching location", () => {
-    it("returns location if provided as a '?location' query param", () => {
-      cy.request("/fides.js?location=US-CA").then((response) => {
+  describe("when pre-fetching geolocation", () => {
+    it("returns geolocation if provided as a '?geolocation' query param", () => {
+      cy.request("/fides.js?geolocation=US-CA").then((response) => {
         expect(response.body).to.match(/var fidesConfig = \{/);
         const matches = response.body.match(
           /var fidesConfig = (?<json>\{.*?\});/
         );
         expect(JSON.parse(matches.groups.json))
-          .to.have.nested.property("location")
+          .to.have.nested.property("geolocation")
           .to.deep.equal({
             location: "US-CA",
             country: "US",
@@ -58,7 +58,7 @@ describe("fides.js API route", () => {
       });
     });
 
-    it("returns location if provided as CloudFront location headers", () => {
+    it("returns geolocation if provided as CloudFront geolocation headers", () => {
       cy.request({
         url: "/fides.js",
         headers: {
@@ -71,7 +71,7 @@ describe("fides.js API route", () => {
           /var fidesConfig = (?<json>\{.*?\});/
         );
         expect(JSON.parse(matches.groups.json))
-          .to.have.nested.property("location")
+          .to.have.nested.property("geolocation")
           .to.deep.equal({
             location: "FR-IDF",
             country: "FR",
@@ -122,16 +122,16 @@ describe("fides.js API route", () => {
         });
     });
 
-    it("generates 'etag' that varies based on location query params", () => {
-      cy.request("/fides.js?location=US-CA")
+    it("generates 'etag' that varies based on geolocation query params", () => {
+      cy.request("/fides.js?geolocation=US-CA")
         .should("have.nested.property", "headers.etag")
         .as("USCATag")
         .then((etag) => {
           cy.get("@etag").should("not.eq", etag);
         });
 
-      // Fetch a second time with a different location param
-      cy.request("/fides.js?location=FR")
+      // Fetch a second time with a different geolocation param
+      cy.request("/fides.js?geolocation=FR")
         .should("have.nested.property", "headers.etag")
         .then((etag) => {
           cy.get("@etag").should("not.eq", etag);
@@ -139,7 +139,7 @@ describe("fides.js API route", () => {
         });
     });
 
-    it("generates 'etag' that varies based on Cloudfront location headers", () => {
+    it("generates 'etag' that varies based on Cloudfront geolocation headers", () => {
       cy.request({
         url: "/fides.js",
         headers: {
@@ -153,7 +153,7 @@ describe("fides.js API route", () => {
           cy.get("@etag").should("not.eq", etag);
         });
 
-      // Fetch a second time with different location headers
+      // Fetch a second time with different geolocation headers
       cy.request({
         url: "/fides.js",
         headers: {
@@ -168,7 +168,7 @@ describe("fides.js API route", () => {
         });
     });
 
-    it("returns 'vary' header for supported Cloudfront location headers", () => {
+    it("returns 'vary' header for supported Cloudfront geolocation headers", () => {
       const expected = [
         "cloudfront-viewer-country",
         "cloudfront-viewer-country-region",

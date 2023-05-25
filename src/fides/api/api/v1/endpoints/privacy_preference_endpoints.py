@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 import ipaddress
 from datetime import datetime
 from typing import List, Optional, Tuple
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException, Request, Response
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -21,7 +19,10 @@ from fides.api.api.v1.endpoints.consent_request_endpoints import (
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
-from fides.api.api.v1.endpoints.utils import validate_start_and_end_filters
+from fides.api.api.v1.endpoints.utils import (
+    fides_limiter,
+    validate_start_and_end_filters,
+)
 from fides.api.api.v1.scope_registry import (
     CURRENT_PRIVACY_PREFERENCE_READ,
     PRIVACY_PREFERENCE_HISTORY_READ,
@@ -66,6 +67,7 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
+from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Privacy Preference"], prefix=V1_URL_PREFIX)
@@ -418,11 +420,13 @@ def _save_privacy_preferences_for_identities(
     status_code=HTTP_200_OK,
     response_model=List[CurrentPrivacyPreferenceSchema],
 )
+@fides_limiter.limit(CONFIG.security.public_request_rate_limit)
 def save_privacy_preferences(
     *,
-    request: Request,
     db: Session = Depends(get_db),
     data: PrivacyPreferencesRequest,
+    request: Request,
+    response: Response,  # required for rate limiting
 ) -> List[CurrentPrivacyPreference]:
     """Saves privacy preferences with respect to a fides user device id.
 

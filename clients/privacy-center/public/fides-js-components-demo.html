@@ -26,23 +26,49 @@
         },
         experience: {
           version: "1.0",
-          component: "overlay",
+          id: "132345243",
+          disabled: false,
+          region: "us_ca",
           delivery_mechanism: "banner",
-          regions: ["us_ca", "us_co"],
-          component_title: "Manage your consent",
-          component_description:
-            "On this page you can opt in and out of these data uses cases",
-          banner_title: "Manage your consent",
-          banner_description:
-            "This test website is overriding the banner description label.",
-          confirmation_button_label: "Accept Test",
-          reject_button_label: "Reject Test",
+          component: "overlay",
+          created_at: "2023-04-24T21:29:08.870351+00:00",
+          updated_at: "2023-04-24T21:29:08.870351+00:00",
+          privacy_experience_history_id: "2342345",
+          experience_config: {
+            component: "overlay",
+            delivery_mechanism: "banner",
+            disabled: false,
+            component_title: "Manage your consent",
+            component_description:
+              "On this page you can opt in and out of these data uses cases",
+            banner_title: "Manage your consent",
+            banner_description:
+              "This test website is overriding the banner description label.",
+            confirmation_button_label: "Accept Test",
+            acknowledgement_button_label: "OK",
+            reject_button_label: "Reject Test",
+            version: 1.0,
+            created_at: "2023-04-24T21:29:08.870351+00:00",
+            updated_at: "2023-04-24T21:29:08.870351+00:00",
+            experience_config_history_id: "2345324",
+            regions: ["us_ca"],
+            id: "2348571y34",
+            is_default: false,
+            link_label: "Manage Consent",
+          },
           privacy_notices: [
             {
               name: "Test privacy notice",
+              disabled: false,
+              origin: "12435134",
               description: "a test sample privacy notice configuration",
+              internal_description:
+                "a test sample privacy notice configuration for internal use",
               regions: ["us_ca"],
               consent_mechanism: "opt_in",
+              default_preference: "opt_out",
+              current_preference: null,
+              outdated_preference: null,
               has_gpc_flag: true,
               data_uses: ["advertising", "third_party_sharing"],
               enforcement_level: "system_wide",
@@ -56,9 +82,32 @@
               privacy_notice_history_id:
                 "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
             },
+            {
+              name: "Essential",
+              description:
+                "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
+              regions: ["us_ca"],
+              consent_mechanism: "notice_only",
+              has_gpc_flag: true,
+              data_uses: ["provide.service"],
+              enforcement_level: "system_wide",
+              displayed_in_overlay: true,
+              displayed_in_api: true,
+              displayed_in_privacy_center: false,
+              id: "pri_4bed96d0-b9e3-4596-a807-26b783836375",
+              created_at: "2023-04-24T21:29:08.870351+00:00",
+              updated_at: "2023-04-24T21:29:08.870351+00:00",
+              version: 1.0,
+              privacy_notice_history_id:
+                "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
+            },
           ],
         },
-        geolocation: {},
+        geolocation: {
+          country: "US",
+          location: "US-CA",
+          region: "CA",
+        },
         options: {
           debug: true,
           isOverlayDisabled: false,
@@ -98,8 +147,8 @@
       <h2>Consent JSON</h2>
       <pre id="consent-json"></pre>
 
-      <h2>Consent Banner Link</h2>
-      <a href="#" id="fides-consent-link">Manage Consent</a>
+      <h2>Consent Modal Link</h2>
+      <a id="fides-consent-modal-link">Manage Consent</a>
 
       <h2>Consent Experience</h2>
       <pre id="consent-experience"></pre>

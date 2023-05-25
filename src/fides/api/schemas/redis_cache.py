@@ -1,6 +1,7 @@
+import uuid
 from typing import Optional
 
-from pydantic import EmailStr, Extra
+from pydantic import EmailStr, Extra, validator
 
 from fides.api.custom_types import PhoneNumber
 from fides.api.schemas.base_class import FidesSchema
@@ -32,3 +33,12 @@ class Identity(IdentityBase):
         """Only allow phone_number, and email."""
 
         extra = Extra.forbid
+
+    @validator("fides_user_device_id")
+    @classmethod
+    def validate_fides_user_device_id(cls, v: Optional[str]) -> Optional[str]:
+        """Validate the uuid format of the fides user device id while still keeping the data type a string"""
+        if not v:
+            return v
+        uuid.UUID(v, version=4)
+        return v
