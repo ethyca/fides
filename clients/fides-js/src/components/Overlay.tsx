@@ -31,11 +31,11 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   const privacyNotices = experience.privacy_notices ?? [];
 
   const onAcceptAll = () => {
-    const allNoticeIds = privacyNotices.map((notice) => notice.id);
+    const allNoticeKeys = privacyNotices.map((notice) => notice.notice_key);
     updateConsentPreferences({
       privacyNotices,
       experienceHistoryId: experience.privacy_experience_history_id,
-      enabledPrivacyNoticeIds: allNoticeIds,
+      enabledPrivacyNoticeKeys: allNoticeKeys,
       fidesApiUrl: options.fidesApiUrl,
       consentMethod: ConsentMethod.button,
       userLocationString: fidesRegionString,
@@ -46,7 +46,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     updateConsentPreferences({
       privacyNotices,
       experienceHistoryId: experience.privacy_experience_history_id,
-      enabledPrivacyNoticeIds: [],
+      enabledPrivacyNoticeKeys: [],
       fidesApiUrl: options.fidesApiUrl,
       consentMethod: ConsentMethod.button,
       userLocationString: fidesRegionString,
@@ -54,12 +54,12 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   };
 
   const onSavePreferences = (
-    enabledPrivacyNoticeIds: Array<PrivacyNotice["id"]>
+    enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>
   ) => {
     updateConsentPreferences({
       privacyNotices,
       experienceHistoryId: experience.privacy_experience_history_id,
-      enabledPrivacyNoticeIds,
+      enabledPrivacyNoticeKeys,
       fidesApiUrl: options.fidesApiUrl,
       consentMethod: ConsentMethod.button,
       userLocationString: fidesRegionString,
