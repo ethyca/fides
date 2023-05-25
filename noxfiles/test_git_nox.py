@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 from git import Repo
 
-from noxfiles.git_nox import generate_tag
+from git_nox import generate_tag
 
 
 class TestGitNox:

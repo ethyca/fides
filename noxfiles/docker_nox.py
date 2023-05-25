@@ -1,6 +1,6 @@
 """Contains the nox sessions for docker-related tasks."""
 import platform
-from typing import List
+from typing import List, Tuple
 
 import nox
 from constants_nox import (
@@ -21,6 +21,23 @@ DOCKER_PLATFORM_MAP = {
     "x86_64": "linux/amd64",
 }
 DOCKER_PLATFORMS = set(DOCKER_PLATFORM_MAP.values())
+
+
+def publish_multiplatform_privacy_center(image_tags: List[str]) -> Tuple[str, ...]:
+    """
+    Generate the command for building and publishing a multiplatform privacy center image.
+    """
+    tags_tuple = (("--tag", tag) for tag in image_tags)
+    buildx_command = (
+        "docker",
+        "build",
+        "--target=prod_pc",
+        "--platform",
+        DOCKER_PLATFORMS,
+        *tags_tuple,
+        ".",
+    )
+    return buildx_command
 
 
 def get_current_image() -> str:
