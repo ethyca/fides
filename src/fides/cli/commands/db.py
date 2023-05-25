@@ -21,35 +21,37 @@ def database(ctx: click.Context) -> None:
 @with_analytics
 def db_init(ctx: click.Context) -> None:
     """
-    Initialize the Fides database.
+    Runs all upgrade migrations for the Fides database.
 
-    **WARNING**: Deprecated, use `migrate` instead.
+    Will also automatically initialize a fresh database.
+
+    **WARNING**: Deprecated, use `upgrade` instead.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
         _api.db_action(
             server_url=config.cli.server_url,
             headers=config.user.auth_header,
-            action="migrate",
+            action="upgrade",
         )
     )
 
 
-@database.command(name="migrate")
+@database.command(name="upgrade")
 @click.pass_context
 @with_analytics
-def db_migrate(ctx: click.Context) -> None:
+def db_upgrade(ctx: click.Context) -> None:
     """
-    Runs the latest migrations for the Fides database
+    Runs all upgrade migrations for the Fides database.
 
-    Will automatically initialize a fresh database.
+    Will also automatically initialize a fresh database.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
         _api.db_action(
             server_url=config.cli.server_url,
             headers=config.user.auth_header,
-            action="migrate",
+            action="upgrade",
         )
     )
 

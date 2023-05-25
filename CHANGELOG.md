@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.13.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.14.0...main)
+
+## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
 ### Changed
 
@@ -24,6 +26,7 @@ The types of changes are:
 - Restrict strack-trace logging when not in Dev mode [#3081](https://github.com/ethyca/fides/pull/3081)
 - Refactor CSS variables for `fides-js` to match brandable color palette [#3321](https://github.com/ethyca/fides/pull/3321)
 - Moved all of the dirs from `fides.api.ops` into `fides.api` [#3318](https://github.com/ethyca/fides/pull/3318)
+- Changed `fides db migrate` to `fides db upgrade` [#3342](https://github.com/ethyca/fides/pull/3342)
 - Add required notice key to privacy notices [#3337](https://github.com/ethyca/fides/pull/3337)
 - Make Privacy Experience List public, and separate public endpoint rate limiting [#3339](https://github.com/ethyca/fides/pull/3339)
 
@@ -49,6 +52,7 @@ The types of changes are:
 
 - Data model around PrivacyExperiences to better keep Privacy Notices and Experiences in sync [#3292](https://github.com/ethyca/fides/pull/3292)
 - UI calls to support new PrivacyExperiences data model [#3313](https://github.com/ethyca/fides/pull/3313)
+- Ensure email connectors respect the `notifications.notification_service_type` app config property if set [#3355](https://github.com/ethyca/fides/pull/3355)
 - Rework Delighted connector so the `survey_response` endpoint depends on the `person` endpoint [3385](https://github.com/ethyca/fides/pull/3385)
 
 ### Developer Experience
