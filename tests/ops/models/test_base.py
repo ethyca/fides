@@ -75,15 +75,17 @@ def test_update_key(db: Session, storage_config, privacy_request):
     assert "complete" == privacy_request.status.value
 
 
+@pytest.mark.integration
 class TestSaveKey:
-    def test_save_key_invalid(self, db: Session, storage_config):
+    @pytest.mark.parametrize("key", ["bad key", "bad^key", "bad\\key"])
+    def test_save_key_invalid_space(self, db: Session, storage_config, key):
         "Test prevent saving bad keys."
-        storage_config.key = "bad key"
+        storage_config.key = key
         with pytest.raises(KeyValidationError) as exc:
             storage_config.save(db)
 
         error_output = str(exc.value)
-        expected_output = "Key 'bad key' on StorageConfig is invalid."
+        expected_output = f"Key '{key}' on StorageConfig is invalid."
         print(error_output)
         assert error_output == expected_output
 
