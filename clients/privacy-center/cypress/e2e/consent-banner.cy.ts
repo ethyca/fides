@@ -1,4 +1,4 @@
-import {
+import LegacyConsentConfig, {
   CONSENT_COOKIE_NAME,
   ComponentType,
   DeliveryMechanism,
@@ -10,7 +10,6 @@ import {
   PrivacyExperience,
   UserGeolocation,
 } from "fides-js/src/lib/consent-types";
-import { ConsentConfig } from "fides-js/src/lib/consent-config";
 import { FidesEndpointPaths } from "fides-js/src/services/fides/api";
 
 enum OVERRIDE {
@@ -20,7 +19,7 @@ enum OVERRIDE {
 
 export interface FidesConfigTesting {
   // We don't need all required props to override the default config
-  consent?: Partial<ConsentConfig> | OVERRIDE;
+  consent?: Partial<LegacyConsentConfig> | OVERRIDE;
   experience?: Partial<PrivacyExperience> | OVERRIDE;
   geolocation?: Partial<UserGeolocation> | OVERRIDE;
   options: Partial<FidesOptions> | OVERRIDE;
@@ -94,8 +93,8 @@ const stubConfig = (
   });
 };
 
-const PRIVACY_NOTICE_ID_1 = "pri_4bed96d0-b9e3-4596-a807-26b783836374";
-const PRIVACY_NOTICE_ID_2 = "pri_4bed96d0-b9e3-4596-a807-26b783836375";
+const PRIVACY_NOTICE_KEY_1 = "advertising";
+const PRIVACY_NOTICE_KEY_2 = "essential";
 
 describe("Consent banner", () => {
   describe("when overlay is disabled", () => {
@@ -170,10 +169,10 @@ describe("Consent banner", () => {
               decodeURIComponent(cookie!.value)
             );
             expect(cookieKeyConsent.consent)
-              .property(PRIVACY_NOTICE_ID_1)
+              .property(PRIVACY_NOTICE_KEY_1)
               .is.eql(true);
             expect(cookieKeyConsent.consent)
-              .property(PRIVACY_NOTICE_ID_2)
+              .property(PRIVACY_NOTICE_KEY_2)
               .is.eql(true);
           });
           cy.contains("button", "Accept Test").should("not.be.visible");
@@ -188,10 +187,10 @@ describe("Consent banner", () => {
               decodeURIComponent(cookie!.value)
             );
             expect(cookieKeyConsent.consent)
-              .property(PRIVACY_NOTICE_ID_1)
+              .property(PRIVACY_NOTICE_KEY_1)
               .is.eql(false);
             expect(cookieKeyConsent.consent)
-              .property(PRIVACY_NOTICE_ID_2)
+              .property(PRIVACY_NOTICE_KEY_2)
               .is.eql(false);
           });
         });
@@ -260,10 +259,10 @@ describe("Consent banner", () => {
                 decodeURIComponent(cookie!.value)
               );
               expect(cookieKeyConsent.consent)
-                .property(PRIVACY_NOTICE_ID_1)
+                .property(PRIVACY_NOTICE_KEY_1)
                 .is.eql(true);
               expect(cookieKeyConsent.consent)
-                .property(PRIVACY_NOTICE_ID_2)
+                .property(PRIVACY_NOTICE_KEY_2)
                 .is.eql(true);
             });
           });
@@ -271,12 +270,15 @@ describe("Consent banner", () => {
           // check that window.Fides.consent updated
           cy.window().then((win) => {
             expect(win.Fides.consent).to.eql({
-              [PRIVACY_NOTICE_ID_1]: true,
-              [PRIVACY_NOTICE_ID_2]: true,
+              [PRIVACY_NOTICE_KEY_1]: true,
+              [PRIVACY_NOTICE_KEY_2]: true,
             });
           });
 
           // Upon reload, window.Fides should make the notices enabled
+          // Note that this doesn't replicate real world, in which a true reload would re-fetch
+          // experience from the API, and those experience would likely not have net new notices
+          // that require consent. In that case the banner would not be shown at all.
           cy.reload();
           cy.contains("button", "Manage preferences").click();
           cy.getByTestId("toggle-Test privacy notice").within(() => {
@@ -311,8 +313,8 @@ describe("Consent banner", () => {
 
         // New privacy notice values only, no legacy ones
         const expectedConsent = {
-          [PRIVACY_NOTICE_ID_1]: true,
-          [PRIVACY_NOTICE_ID_2]: true,
+          [PRIVACY_NOTICE_KEY_1]: true,
+          [PRIVACY_NOTICE_KEY_2]: true,
         };
 
         // check that consent was sent to Fides API

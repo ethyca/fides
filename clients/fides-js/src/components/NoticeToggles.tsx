@@ -13,7 +13,7 @@ const NoticeToggle = ({
 }: {
   notice: PrivacyNotice;
   checked: boolean;
-  onToggle: (noticeId: PrivacyNotice["id"]) => void;
+  onToggle: (noticeKey: PrivacyNotice["notice_key"]) => void;
 }) => {
   const {
     isOpen,
@@ -21,7 +21,7 @@ const NoticeToggle = ({
     getDisclosureProps,
     onToggle: toggleDescription,
   } = useDisclosure({
-    id: notice.id,
+    id: notice.notice_key,
   });
 
   const handleKeyDown = (event: KeyboardEvent) => {
@@ -36,7 +36,7 @@ const NoticeToggle = ({
         isOpen ? "notice-toggle notice-toggle-expanded" : "notice-toggle"
       }
     >
-      <div key={notice.id} className="notice-toggle-title">
+      <div key={notice.notice_key} className="notice-toggle-title">
         <span
           role="button"
           tabIndex={0}
@@ -49,7 +49,7 @@ const NoticeToggle = ({
         </span>
         <Toggle
           name={notice.name || ""}
-          id={notice.id}
+          id={notice.notice_key}
           checked={checked}
           onChange={onToggle}
         />
@@ -68,28 +68,28 @@ const NoticeToggle = ({
  */
 const NoticeToggles = ({
   notices,
-  enabledNoticeIds,
+  enabledNoticeKeys,
   onChange,
 }: {
   notices: PrivacyNotice[];
-  enabledNoticeIds: Array<PrivacyNotice["id"]>;
-  onChange: (ids: Array<PrivacyNotice["id"]>) => void;
+  enabledNoticeKeys: Array<PrivacyNotice["notice_key"]>;
+  onChange: (keys: Array<PrivacyNotice["notice_key"]>) => void;
 }) => {
-  const handleToggle = (noticeId: PrivacyNotice["id"]) => {
+  const handleToggle = (noticeKey: PrivacyNotice["notice_key"]) => {
     // Add the notice to list of enabled notices
-    if (enabledNoticeIds.indexOf(noticeId) === -1) {
-      onChange([...enabledNoticeIds, noticeId]);
+    if (enabledNoticeKeys.indexOf(noticeKey) === -1) {
+      onChange([...enabledNoticeKeys, noticeKey]);
     }
     // Remove the notice from the list of enabled notices
     else {
-      onChange(enabledNoticeIds.filter((n) => n !== noticeId));
+      onChange(enabledNoticeKeys.filter((n) => n !== noticeKey));
     }
   };
 
   return (
     <div>
       {notices.map((notice, idx) => {
-        const checked = enabledNoticeIds.indexOf(notice.id) !== -1;
+        const checked = enabledNoticeKeys.indexOf(notice.notice_key) !== -1;
         const isLast = idx === notices.length - 1;
         return (
           <div>

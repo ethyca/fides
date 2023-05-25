@@ -127,7 +127,7 @@ const retrieveEffectiveRegionString = async (
 };
 
 /**
- * Determines whether experience is valid
+ * Determines whether experience is valid and relevant notices exist within the experience
  */
 const experienceIsValid = (
   effectiveExperience: PrivacyExperience | undefined | null,
@@ -165,7 +165,8 @@ const experienceIsValid = (
     );
     return false;
   }
-  return true;
+  // Check if there are any notices within the experience that do not have a user preference
+  return effectiveExperience.privacy_notices.some(notice => notice.current_preference == null);
 };
 
 /**

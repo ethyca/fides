@@ -23,7 +23,7 @@ import { patchUserPreferenceToFidesServer } from "../services/fides/api";
 export const updateConsentPreferences = ({
   privacyNotices,
   experienceHistoryId,
-  enabledPrivacyNoticeIds,
+  enabledPrivacyNoticeKeys,
   fidesApiUrl,
   consentMethod,
   userLocationString,
@@ -31,7 +31,7 @@ export const updateConsentPreferences = ({
 }: {
   privacyNotices: PrivacyNotice[];
   experienceHistoryId: string;
-  enabledPrivacyNoticeIds: Array<PrivacyNotice["id"]>;
+  enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>;
   fidesApiUrl: string;
   consentMethod: ConsentMethod;
   userLocationString: string;
@@ -43,7 +43,7 @@ export const updateConsentPreferences = ({
   const noticeMap = new Map<string, boolean>(
     privacyNotices.map((notice) => [
       notice.notice_key,
-      enabledPrivacyNoticeIds.includes(notice.id),
+      enabledPrivacyNoticeKeys.includes(notice.notice_key),
     ])
   );
   const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeMap);
@@ -52,7 +52,7 @@ export const updateConsentPreferences = ({
   const fidesUserPreferences: Array<ConsentOptionCreate> = [];
   privacyNotices.forEach((notice) => {
     let consentPreference;
-    if (enabledPrivacyNoticeIds.includes(notice.id)) {
+    if (enabledPrivacyNoticeKeys.includes(notice.notice_key)) {
       if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
         consentPreference = UserConsentPreference.ACKNOWLEDGE;
       } else {
