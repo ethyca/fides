@@ -13,7 +13,7 @@ import React, { useCallback, useEffect, useMemo } from "react";
 import {
   FidesCookie,
   getConsentContext,
-  resolveConsentValue,
+  resolveLegacyConsentValue,
   saveFidesCookie,
   getOrMakeFidesCookie,
 } from "fides-js";
@@ -220,7 +220,7 @@ const Consent: NextPage = () => {
    */
   const saveUserConsentOptions = useCallback(() => {
     const consent = consentOptions.map((option) => {
-      const defaultValue = resolveConsentValue(option.default, consentContext);
+      const defaultValue = resolveLegacyConsentValue(option.default, consentContext);
       const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
       const gpcStatus = getGpcStatus({
         value,
@@ -297,7 +297,7 @@ const Consent: NextPage = () => {
   const items = useMemo(
     () =>
       consentOptions.map((option) => {
-        const defaultValue = resolveConsentValue(
+        const defaultValue = resolveLegacyConsentValue(
           option.default,
           consentContext
         );

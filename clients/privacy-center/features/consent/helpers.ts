@@ -1,7 +1,7 @@
 import {
   ConsentContext,
   CookieKeyConsent,
-  resolveConsentValue,
+  resolveLegacyConsentValue,
 } from "fides-js";
 
 import {
@@ -60,7 +60,7 @@ export const makeCookieKeyConsent = ({
 }): CookieKeyConsent => {
   const cookieKeyConsent: CookieKeyConsent = {};
   consentOptions.forEach((option) => {
-    const defaultValue = resolveConsentValue(option.default, consentContext);
+    const defaultValue = resolveLegacyConsentValue(option.default, consentContext);
     const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
 
     option.cookieKeys?.forEach((cookieKey) => {
