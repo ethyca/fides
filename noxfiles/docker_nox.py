@@ -318,6 +318,19 @@ def push(session: nox.Session, tag: str) -> None:
     NOTE: This command also handles building images, including for multiple supported architectures.
     """
 
+    # Create the buildx builder
+    session.run(
+        "docker",
+        "buildx",
+        "create",
+        "--name",
+        "fides_builder",
+        "--bootstrap",
+        "--use",
+        external=True,
+        success_codes=[0, 1],
+    )
+
     if tag == "dev":
         push_dev(session=session)
 
