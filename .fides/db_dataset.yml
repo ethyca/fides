@@ -1464,27 +1464,21 @@ dataset:
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: privacyexperienceconfig
-    description: 'ExperienceConfig holds experience language to be shared between multiple regions'
+    description: 'ExperienceConfig holds experience copy to be shared between multiple regions'
     data_categories: []
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
-    - name: acknowledgement_button_label
+    - name: accept_button_label
+      data_categories: [ system.operations ]
+    - name: acknowledge_button_label
       data_categories: [system.operations]
-    - name: banner_description
-      data_categories: [system.operations]
-    - name: banner_title
+    - name: banner_enabled
       data_categories: [system.operations]
     - name: component
       data_categories: [system.operations]
-    - name: component_description
-      data_categories: [system.operations]
-    - name: component_title
-      data_categories: [system.operations]
-    - name: confirmation_button_label
-      data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
-    - name: delivery_mechanism
+    - name: description
       data_categories: [system.operations]
     - name: disabled
       data_categories: [system.operations]
@@ -1492,9 +1486,17 @@ dataset:
       data_categories: [system.operations]
     - name: is_default
       data_categories: [system.operations]
-    - name: link_label
+    - name: privacy_policy_link_label
+      data_categories: [system.operations]
+    - name: privacy_policy_url
+      data_categories: [system.operations]
+    - name: privacy_preferences_link_label
       data_categories: [system.operations]
     - name: reject_button_label
+      data_categories: [system.operations]
+    - name: save_button_label
+      data_categories: [ system.operations ]
+    - name: title
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
@@ -1505,23 +1507,17 @@ dataset:
     data_categories: []
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
-    - name: acknowledgement_button_label
+    - name: accept_button_label
+      data_categories: [ system.operations ]
+    - name: acknowledge_button_label
       data_categories: [system.operations]
-    - name: banner_description
-      data_categories: [system.operations]
-    - name: banner_title
+    - name: banner_enabled
       data_categories: [system.operations]
     - name: component
       data_categories: [system.operations]
-    - name: component_description
-      data_categories: [system.operations]
-    - name: component_title
-      data_categories: [system.operations]
-    - name: confirmation_button_label
-      data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
-    - name: delivery_mechanism
+    - name: description
       data_categories: [system.operations]
     - name: disabled
       data_categories: [system.operations]
@@ -1531,9 +1527,17 @@ dataset:
       data_categories: [system.operations]
     - name: is_default
       data_categories: [system.operations]
-    - name: link_label
+    - name: privacy_policy_link_label
+      data_categories: [system.operations]
+    - name: privacy_policy_url
+      data_categories: [system.operations]
+    - name: privacy_preferences_link_label
       data_categories: [system.operations]
     - name: reject_button_label
+      data_categories: [system.operations]
+    - name: save_button_label
+      data_categories: [ system.operations ]
+    - name: title
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]

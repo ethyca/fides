@@ -37,14 +37,14 @@ class ExperienceConfigSchema(FidesSchema):
         default=False,
         description="Whether the given ExperienceConfig is a global default",
     )
-    privacy_preferences_link_label: Optional[SafeStr] = Field(
-        description="Overlay 'Privacy preferences link label'"
-    )
     privacy_policy_link_label: Optional[SafeStr] = Field(
         description="Overlay and Privacy Center 'Privacy policy link label'"
     )
     privacy_policy_url: Optional[SafeStr] = Field(
         description="Overlay and Privacy Center 'Privacy policy URl'"
+    )
+    privacy_preferences_link_label: Optional[SafeStr] = Field(
+        description="Overlay 'Privacy preferences link label'"
     )
     reject_button_label: Optional[SafeStr] = Field(
         description="Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'"
@@ -68,7 +68,7 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
     component: ComponentType
     description: SafeStr
     regions: List[PrivacyNoticeRegion]
-    reject_button_label = SafeStr
+    reject_button_label: SafeStr
     save_button_label: SafeStr
     title: SafeStr
 

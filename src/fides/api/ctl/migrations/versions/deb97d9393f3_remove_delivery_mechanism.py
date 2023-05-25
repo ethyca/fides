@@ -282,4 +282,3 @@ def downgrade():
             "delivery_mechanism", sa.VARCHAR(), autoincrement=False, nullable=True
         ),
     )
-    # ### end Alembic commands ###
