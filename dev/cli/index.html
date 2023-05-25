@@ -432,15 +432,15 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#fides-db-migrate" class="md-nav__link">
-    migrate
+  <a href="#fides-db-reset" class="md-nav__link">
+    reset
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#fides-db-reset" class="md-nav__link">
-    reset
+  <a href="#fides-db-upgrade" class="md-nav__link">
+    upgrade
   </a>
   
 </li>
@@ -1217,15 +1217,15 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#fides-db-migrate" class="md-nav__link">
-    migrate
+  <a href="#fides-db-reset" class="md-nav__link">
+    reset
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#fides-db-reset" class="md-nav__link">
-    reset
+  <a href="#fides-db-upgrade" class="md-nav__link">
+    upgrade
   </a>
   
 </li>
@@ -1649,25 +1649,16 @@ _Note: The common MANIFESTS_DIR argument _always_ defaults to &quot;.fides/&quot
 <h4 id="fides-db-init">fides db init</h4>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>Initialize the Fides database.
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>Runs all upgrade migrations for the Fides database.
 
-**WARNING**: Deprecated, use `migrate` instead.
+Will also automatically initialize a fresh database.
+
+**WARNING**: Deprecated, use `upgrade` instead.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides db init [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h4 id="fides-db-migrate">fides db migrate</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>Runs the latest migrations for the Fides database
-
-Will automatically initialize a fresh database.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides db migrate [OPTIONS]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
@@ -1682,6 +1673,19 @@ Will automatically initialize a fresh database.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  -y, --yes  Automatically responds `yes` to any prompts.
   --help     Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-db-upgrade">fides db upgrade</h4>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>Runs all upgrade migrations for the Fides database.
+
+Will also automatically initialize a fresh database.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides db upgrade [OPTIONS]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-delete">fides delete</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Delete an object from the server.
