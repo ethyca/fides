@@ -16,7 +16,7 @@ ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])
 
 class DBActions(str, Enum):
     "The available path parameters for the `/admin/db/{action}` endpoint."
-    migrate = "migrate"
+    upgrade = "upgrade"
     reset = "reset"
 
 
@@ -31,7 +31,7 @@ async def db_action(action: DBActions) -> Dict:
     """
     Initiate one of the enumerated DBActions.
     """
-    action_text = "migrated"
+    action_text = "upgrade"
 
     if action == DBActions.reset:
         if not CONFIG.dev_mode:
@@ -44,4 +44,8 @@ async def db_action(action: DBActions) -> Dict:
 
     await database.configure_db(CONFIG.database.sync_database_uri)
 
-    return {"data": {"message": f"fides database {action_text}"}}
+    return {
+        "data": {
+            "message": f"Fides database action performed successfully: {action_text}"
+        }
+    }
