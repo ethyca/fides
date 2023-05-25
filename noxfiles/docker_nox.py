@@ -57,7 +57,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
 
     Params:
         admin-ui = Build the Next.js Admin UI application.
-        dev = Build the fides webserver/CLI, tagged as `local`.
+        dev = Build the fides webserver/CLI, tagged as `local` and with an editable pip install of Fides.
         privacy-center = Build the Next.js Privacy Center application.
         prod = Build the fides webserver/CLI and tag it as the current application version.
         test = Build the fides webserver/CLI the same as `prod`, but tag it as `local`.
@@ -98,6 +98,8 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
             "docker",
             "build",
             "--target=prod_pc",
+            "--platform",
+            build_platform,
             "--tag",
             privacy_center_image_tag,
             ".",
@@ -109,6 +111,8 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
             "docker",
             "build",
             "clients/sample-app",
+            "--platform",
+            build_platform,
             "--tag",
             sample_app_image_tag,
             external=True,
