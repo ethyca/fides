@@ -245,39 +245,42 @@ describe("Consent settings", () => {
 
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
-      cy.window().its("Fides").its("initialized").then((win) => {
-        // Now all of the cookie keys should be populated.
-        expect(win).to.have.nested.property("Fides.consent").that.eql({
-          data_sales: false,
-          tracking: false,
-          analytics: true,
-          gpc_test: true,
-        });
+      cy.window()
+        .its("Fides")
+        .its("initialized")
+        .then((win) => {
+          // Now all of the cookie keys should be populated.
+          expect(win).to.have.nested.property("Fides.consent").that.eql({
+            data_sales: false,
+            tracking: false,
+            analytics: true,
+            gpc_test: true,
+          });
 
-        // GTM configuration
-        expect(win)
-          .to.have.nested.property("dataLayer")
-          .that.eql([
-            {
-              Fides: {
-                consent: {
-                  data_sales: false,
-                  tracking: false,
-                  analytics: true,
-                  gpc_test: true,
+          // GTM configuration
+          expect(win)
+            .to.have.nested.property("dataLayer")
+            .that.eql([
+              {
+                Fides: {
+                  consent: {
+                    data_sales: false,
+                    tracking: false,
+                    analytics: true,
+                    gpc_test: true,
+                  },
                 },
               },
-            },
-          ]);
+            ]);
 
-        // Meta Pixel configuration
-        expect(win)
-          .to.have.nested.property("fbq.queue")
-          .that.eql([
-            ["consent", "revoke"],
-            ["dataProcessingOptions", ["LDU"], 1, 1000],
-          ]);
-      });
+          // Meta Pixel configuration
+          expect(win)
+            .to.have.nested.property("fbq.queue")
+            .that.eql([
+              ["consent", "revoke"],
+              ["dataProcessingOptions", ["LDU"], 1, 1000],
+            ]);
+        });
     });
 
     describe("when globalPrivacyControl is enabled", () => {
@@ -339,37 +342,40 @@ describe("Consent settings", () => {
     it("reflects the defaults from config.json", () => {
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
-      cy.window().its("Fides").its("initialized").then((win) => {
-        // Before visiting the privacy center the consent object only has the default choices.
-        expect(win).to.have.nested.property("Fides.consent").that.eql({
-          data_sales: true,
-          tracking: true,
-          analytics: true,
-        });
+      cy.window()
+        .its("Fides")
+        .its("initialized")
+        .then((win) => {
+          // Before visiting the privacy center the consent object only has the default choices.
+          expect(win).to.have.nested.property("Fides.consent").that.eql({
+            data_sales: true,
+            tracking: true,
+            analytics: true,
+          });
 
-        // GTM configuration
-        expect(win)
-          .to.have.nested.property("dataLayer")
-          .that.eql([
-            {
-              Fides: {
-                consent: {
-                  data_sales: true,
-                  tracking: true,
-                  analytics: true,
+          // GTM configuration
+          expect(win)
+            .to.have.nested.property("dataLayer")
+            .that.eql([
+              {
+                Fides: {
+                  consent: {
+                    data_sales: true,
+                    tracking: true,
+                    analytics: true,
+                  },
                 },
               },
-            },
-          ]);
+            ]);
 
-        // Meta Pixel configuration
-        expect(win)
-          .to.have.nested.property("fbq.queue")
-          .that.eql([
-            ["consent", "grant"],
-            ["dataProcessingOptions", []],
-          ]);
-      });
+          // Meta Pixel configuration
+          expect(win)
+            .to.have.nested.property("fbq.queue")
+            .that.eql([
+              ["consent", "grant"],
+              ["dataProcessingOptions", []],
+            ]);
+        });
     });
 
     describe("when globalPrivacyControl is enabled", () => {
