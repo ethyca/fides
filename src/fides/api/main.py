@@ -45,7 +45,7 @@ from fides.api.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.core.config import CONFIG, check_required_webserver_config_values
 
-IGNORED_AUDIT_LOG_RESOURCE_PATHS = ["/api/v1/login"]
+IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 
 VERSION = fides.__version__
 
