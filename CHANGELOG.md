@@ -51,6 +51,7 @@ The types of changes are:
 - Add ability for `fides-js` to fetch its own geolocation [#3356](https://github.com/ethyca/fides/pull/3356)
 - Add ability to select different locations in the "Cookie House" sample app [#3362](https://github.com/ethyca/fides/pull/3362)
 - Added optional logging of resource changes on the server [#3331](https://github.com/ethyca/fides/pull/3331)
+- Add ability for `fides-js` to make API calls to Fides [#3361](https://github.com/ethyca/fides/pull/3361)
 
 ### Fixed
 
