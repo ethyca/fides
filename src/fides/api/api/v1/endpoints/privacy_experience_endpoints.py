@@ -119,7 +119,7 @@ def privacy_experience_list(
         )
         # Temporarily save privacy notices on the privacy experience object
         privacy_experience.privacy_notices = privacy_notices
-        # Temporarily save banner_delivery_required on the privacy experience object
+        # Temporarily save "show_banner" on the privacy experience object
         privacy_experience.show_banner = privacy_experience.get_should_show_banner(
             db, show_disabled
         )
