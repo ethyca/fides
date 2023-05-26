@@ -30,7 +30,7 @@ class ComponentType(Enum):
 
 class BannerEnabled(Enum):
     """
-    Whether the banner should display
+    Whether the banner should display - not formalized in the db
     """
 
     always_enabled = "always_enabled"
@@ -39,7 +39,7 @@ class BannerEnabled(Enum):
 
 
 class ExperienceConfigBase:
-    """Base schema to share common experience config."""
+    """Base schema for PrivacyExperienceConfig."""
 
     accept_button_label = Column(String)
     acknowledge_button_label = Column(String)
@@ -58,9 +58,10 @@ class ExperienceConfigBase:
 
 
 class PrivacyExperienceConfig(ExperienceConfigBase, Base):
-    """Stores common experience config to be shared across multiple regions
-    This largely contains all the "language" used in a given experience, e.g.
-    component titles, descriptions, button labels, etc.
+    """Stores common copy to be shared across multiple regions, e.g.
+    banner titles, descriptions, button labels, etc.
+
+    Can be linked to multiple PrivacyExperiences.
     """
 
     experiences = relationship(
@@ -136,7 +137,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
 
     def dry_update(self, *, data: dict[str, Any]) -> PrivacyExperienceConfig:
         """
-        A utility method to get an updated object without saving it to the db.
+        A utility method to get an updated ExperienceConfig without saving it to the db.
 
         This is used to see what an object update would look like, in memory,
         without actually persisting the update to the db
@@ -161,7 +162,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
 
 
 class PrivacyExperienceConfigHistory(ExperienceConfigBase, Base):
-    """Experience Config History - stores the history of how the config changed"""
+    """Experience Config History - stores the history of how the config has changed over time"""
 
     experience_config_id = Column(
         String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=False
@@ -178,7 +179,9 @@ class PrivacyExperienceBase:
 
 
 class PrivacyExperience(PrivacyExperienceBase, Base):
-    """Stores Privacy Experiences for a given just a single region.
+    """Stores Privacy Experiences for a given just a single region.  The Experience describes how to surface
+    multiple Privacy Notices to the end user in a given region.
+
     There can only be one component per region.
     """
 
@@ -394,7 +397,7 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
     def unlink_experience_config(self, db: Session) -> PrivacyExperience:
         """Remove config from experience
 
-        Removes the FK, does not remove Privacy Experiences or Privacy Experience Configs
+        Removes the FK only; does not delete Privacy Experiences or Privacy Experience Configs
         """
         return self.update(
             db,
@@ -544,8 +547,11 @@ def upsert_privacy_experiences_after_config_update(
     Assumes that components on the ExperienceConfig do not change after they're updated.
     """
     linked_regions: List[PrivacyNoticeRegion] = []  # Regions that were linked
+
     current_regions: List[PrivacyNoticeRegion] = experience_config.regions
-    removed_regions: List[PrivacyNoticeRegion] = [
+    removed_regions: List[
+        PrivacyNoticeRegion
+    ] = [  # Regions that were not in the request, but currently attached to the Config
         PrivacyNoticeRegion(reg)
         for reg in {reg.value for reg in current_regions}.difference(
             {reg.value for reg in regions}

@@ -18,8 +18,8 @@ class ExperienceConfigSchema(FidesSchema):
     Base for ExperienceConfig API objects.  Here all fields are optional since
     Pydantic allows subclasses to be more strict but not less strict
 
-    Note component is intentionally not included here.  When creating component, you can add it, but when updating,
-    the component cannot be updated.
+    Note component is intentionally not included in the base class. This can be specified when creating an ExperienceConfig
+    but cannot be updated later.
     """
 
     accept_button_label: Optional[SafeStr] = Field(
@@ -90,6 +90,7 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
         component: Optional[ComponentType] = values.get("component")
 
         if component == ComponentType.overlay:
+            # Overlays have a few additional required fields beyond the privacy center
             required_overlay_fields = [
                 "banner_enabled",
                 "privacy_preferences_link_label",
