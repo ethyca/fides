@@ -70,20 +70,6 @@ def test_bad_audit_log_resource_data() -> Generator:
     yield audit_log_resource_data
 
 
-# @pytest.fixture
-# def test_dictionary_fides_key() -> Generator:
-#     """
-#     Simulates a request body that has a single resource with fides_key
-#     """
-#     audit_log_resource_data = {
-#         "user_id": None,
-#         "request_path": "some/path",
-#         "request_type": "POST",
-#         "fides_keys": ["new_fides_key"],
-#     }
-#     yield audit_log_resource_data
-
-
 def test_record_written_to_db(db, test_audit_log_resource_data: Dict[str, Any]) -> None:
     assert _middleware.write_audit_log_resource_record(db, test_audit_log_resource_data)
 

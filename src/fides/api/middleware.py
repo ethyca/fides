@@ -9,7 +9,7 @@ from starlette.types import Message
 
 from fides.api.api import deps
 from fides.api.ctl.sql_models import AuditLogResource  # type: ignore[attr-defined]
-from fides.api.oauth.utils import extract_client_id
+from fides.api.oauth.utils import extract_token_and_load_client
 
 
 async def handle_audit_log_resource(request: Request) -> None:
@@ -69,7 +69,7 @@ async def get_client_user_id(db: Session, auth_token: str) -> str:
     Attempts to retrieve a client user_id
     """
     stripped_token = auth_token.replace("Bearer ", "")
-    client = await extract_client_id(stripped_token, db)
+    _, client = extract_token_and_load_client(stripped_token, db)
     return client.user_id or "root"
 
 
@@ -98,6 +98,11 @@ async def extract_data_from_body(body: bytes) -> List:
 async def set_body(request: Request, body: bytes) -> None:
     """
     Sets the body return type for use in middleware
+
+    Required due to shortcomings in Starlette with awaiting request
+    body in middleware
+
+    Reference: https://github.com/tiangolo/fastapi/issues/394#issuecomment-883524819
     """
 
     async def receive() -> Message:
@@ -107,7 +112,15 @@ async def set_body(request: Request, body: bytes) -> None:
 
 
 async def get_body(request: Request) -> bytes:
-    """awaits and sets the request body for use in middleware"""
+    """
+    Awaits and sets the request body for use in middleware
+
+
+    Required due to shortcomings in Starlette with awaiting request
+    body in middleware
+
+    Reference: https://github.com/tiangolo/fastapi/issues/394#issuecomment-883524819
+    """
     body = await request.body()
     await set_body(request, body)
     return body
