@@ -239,7 +239,7 @@ describe("Consent settings", () => {
 
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
-      cy.window().then((win) => {
+      cy.window().its("Fides").its("initialized").then((win) => {
         // Now all of the cookie keys should be populated.
         expect(win).to.have.nested.property("Fides.consent").that.eql({
           data_sales: false,
@@ -332,7 +332,7 @@ describe("Consent settings", () => {
     it("reflects the defaults from config.json", () => {
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
-      cy.window().then((win) => {
+      cy.window().its("Fides").its("initialized").then((win) => {
         // Before visiting the privacy center the consent object only has the default choices.
         expect(win).to.have.nested.property("Fides.consent").that.eql({
           data_sales: true,
