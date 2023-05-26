@@ -1395,7 +1395,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">341</span>
 <span class="normal">342</span>
 <span class="normal">343</span>
-<span class="normal">344</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1413,7 +1417,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;7ebec6b0123959fa96179a1d8e399812&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ae4e7061cd114e3b6fc7f455e40d3d54&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1708,6 +1712,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># custom functions. When enabled, custom functions which will be loaded</span>
 <span class="c1"># in a restricted environment to minimize security risks.</span>
 <span class="n">allow_custom_connector_functions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># Either enables the collection of audit log resource data or bypasses</span>
+<span class="c1"># the middleware</span>
+<span class="n">enable_audit_log_resource_middleware</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1">#----------#</span>
 <span class="c1">#-- USER --#</span>
