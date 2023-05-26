@@ -192,6 +192,30 @@ class TestErasureEmailConnectorMethods:
             == "Test notification of user erasure requests from Test Org"
         )
 
+    @mock.patch("fides.api.service.connectors.erasure_email_connector.dispatch_message")
+    @pytest.mark.usefixtures(
+        "test_fides_org",
+        "messaging_config",
+        "set_notification_service_type_to_twilio_email",
+    )
+    def test_send_single_erasure_email_respects_messaging_service_type(
+        self,
+        mock_dispatch,
+        db,
+    ):
+        """Ensure `notifications.notification_service_type` property is respected in dispatching erasure emails"""
+        send_single_erasure_email(
+            db=db,
+            subject_email="test@example.com",
+            subject_name="To whom it may concern",
+            batch_identities=["customer-1@example.com"],
+            test_mode=True,
+        )
+
+        assert mock_dispatch.called
+        call_kwargs = mock_dispatch.call_args.kwargs
+        assert call_kwargs["service_type"] == "twilio_email"
+
     def test_needs_email(
         self,
         test_attentive_erasure_email_connector,
