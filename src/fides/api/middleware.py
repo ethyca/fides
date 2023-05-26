@@ -38,8 +38,8 @@ async def handle_audit_log_resource(request: Request) -> None:
     # get the user id associated with the request
     token = request.headers.get("authorization")
     if token:
-        client = await extract_client_id(token.replace("Bearer ", ""), db)
-        audit_log_resource_data["user_id"] = client.user_id or "root"
+        client = await get_client_user_id(db, token)
+        audit_log_resource_data["user_id"] = client
 
     # Access request body to check for fides_keys
     await set_body(request, await request.body())
