@@ -10,7 +10,11 @@ from sqlalchemy.orm import Query, Session, relationship
 from sqlalchemy.util import hybridproperty
 
 from fides.api.db.base_class import Base
-from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
+from fides.api.models.privacy_notice import (
+    ConsentMechanism,
+    PrivacyNotice,
+    PrivacyNoticeRegion,
+)
 from fides.api.models.privacy_preference import CurrentPrivacyPreference
 from fides.api.models.privacy_request import ProvidedIdentity
 
@@ -210,6 +214,9 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
     # related to experiences.
     privacy_notices: List[PrivacyNotice] = []
 
+    # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
+    show_banner: bool
+
     @hybridproperty
     def privacy_experience_history_id(self) -> Optional[str]:
         """Convenience property that returns the historical privacy experience id for the current version.
@@ -221,6 +228,39 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
             version=self.version
         ).first()
         return history.id if history else None
+
+    def get_should_show_banner(
+        self, db: Session, show_disabled: Optional[bool] = True
+    ) -> bool:
+        """Returns True if this Experience should be delivered by a banner
+
+        Relevant privacy notices are queried at runtime.
+        """
+        if self.component != ComponentType.overlay:
+            return False
+
+        if self.experience_config:
+            if self.experience_config.banner_enabled == BannerEnabled.always_disabled:
+                return False
+
+            if self.experience_config.banner_enabled == BannerEnabled.always_enabled:
+                return True
+
+        privacy_notice_query = get_privacy_notices_by_region_and_component(
+            db, self.region, self.component  # type: ignore[arg-type]
+        )
+        if show_disabled is False:
+            privacy_notice_query = privacy_notice_query.filter(
+                PrivacyNotice.disabled.is_(False)
+            )
+
+        return bool(
+            privacy_notice_query.filter(
+                PrivacyNotice.consent_mechanism.in_(
+                    [ConsentMechanism.notice_only, ConsentMechanism.opt_in]
+                )
+            ).count()
+        )
 
     def get_related_privacy_notices(
         self,

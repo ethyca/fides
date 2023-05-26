@@ -411,6 +411,91 @@ class TestPrivacyExperience:
             == []
         )
 
+    def test_get_should_show_banner(self, db):
+        """Test PrivacyExperience.get_should_show_banner that is calculated at runtime"""
+        privacy_experience = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": ComponentType.privacy_center,
+                "region": "eu_it",
+            },
+        )
+
+        # This is a privacy center component so whether we should show the banner is not relevant here
+        assert privacy_experience.get_should_show_banner(db) is False
+
+        privacy_experience.component = ComponentType.overlay
+        privacy_experience.save(db)
+
+        # This is an overlay component but there are no relevant notices here either
+        assert privacy_experience.get_should_show_banner(db) is False
+
+        privacy_notice = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Test privacy notice",
+                "notice_key": "test_privacy_notice",
+                "description": "a test sample privacy notice configuration",
+                "regions": [PrivacyNoticeRegion.eu_fr, PrivacyNoticeRegion.eu_it],
+                "consent_mechanism": ConsentMechanism.opt_out,
+                "data_uses": ["advertising", "third_party_sharing"],
+                "enforcement_level": EnforcementLevel.system_wide,
+                "displayed_in_overlay": False,
+                "displayed_in_api": True,
+                "displayed_in_privacy_center": True,
+            },
+        )
+
+        # Privacy Notice has a matching region, but is not displayed in overlay, so it's
+        # not relevant here
+        assert privacy_experience.get_should_show_banner(db) is False
+
+        privacy_notice.displayed_in_overlay = True
+        privacy_notice.save(db)
+
+        # Privacy Notice both has a matching region and is displayed in overlay and is opt_out, so not required
+        assert privacy_experience.get_should_show_banner(db) is False
+
+        privacy_notice.consent_mechanism = ConsentMechanism.opt_in
+        privacy_notice.save(db)
+
+        # Relevant privacy notice is opt in, so it should be delivered in a banner
+        assert privacy_experience.get_should_show_banner(db) is True
+
+        config = PrivacyExperienceConfig.create(
+            db=db,
+            data={
+                "accept_button_label": "Accept all",
+                "acknowledge_button_label": "OK",
+                "banner_enabled": "always_enabled",
+                "component": "overlay",
+                "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                "privacy_preferences_link_label": "Manage preferences",
+                "privacy_policy_link_label": "View our privacy policy",
+                "privacy_policy_url": "example.com/privacy",
+                "reject_button_label": "Reject all",
+                "save_button_label": "Save",
+                "title": "Control your privacy",
+            },
+        )
+
+        # Link experience config
+        privacy_experience.experience_config_id = config.id
+        privacy_experience.save(db)
+
+        # Remove notices
+        privacy_notice.histories[0].delete(db)
+        privacy_notice.delete(db)
+
+        # Banner delivery required because experience config says that banner is always enabled
+        assert privacy_experience.get_should_show_banner(db) is True
+
+        config.banner_enabled = BannerEnabled.always_disabled
+        config.save(db)
+
+        # Banner delivery not required because config says that banner should be always disabled
+        assert privacy_experience.get_should_show_banner(db) is False
+
     @pytest.mark.usefixtures("privacy_preference_history_us_ca_provide")
     def test_get_related_notices_no_privacy_preference_for_fides_user_device_id(
         self,

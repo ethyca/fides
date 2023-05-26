@@ -117,7 +117,12 @@ def privacy_experience_list(
         ] = privacy_experience.get_related_privacy_notices(
             db, show_disabled, fides_user_provided_identity
         )
+        # Temporarily save privacy notices on the privacy experience object
         privacy_experience.privacy_notices = privacy_notices
+        # Temporarily save banner_delivery_required on the privacy experience object
+        privacy_experience.show_banner = privacy_experience.get_should_show_banner(
+            db, show_disabled
+        )
         if not (has_notices and not privacy_notices):
             results.append(privacy_experience)
 

@@ -6,6 +6,7 @@ from starlette.testclient import TestClient
 
 from fides.api.api.v1.urn_registry import PRIVACY_EXPERIENCE, V1_URL_PREFIX
 from fides.api.models.privacy_experience import BannerEnabled
+from fides.api.models.privacy_notice import ConsentMechanism
 
 
 class TestGetPrivacyExperiences:
@@ -60,6 +61,7 @@ class TestGetPrivacyExperiences:
         assert resp["component"] == "privacy_center"
         assert resp["region"] == "us_co"
         assert resp["version"] == 1.0
+        assert resp["show_banner"] is False
         # Assert experience config is nested
         experience_config = resp["experience_config"]
         assert experience_config["title"] == "Control your privacy"
@@ -222,6 +224,7 @@ class TestGetPrivacyExperiences:
     @pytest.mark.usefixtures(
         "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
         "privacy_notice_eu_cy_provide_service_frontend_only",  # doesn't overlap with any regions
+        "privacy_notice_eu_fr_provide_service_frontend_only",
     )
     def test_get_privacy_experiences_has_notices(
         self,
@@ -231,7 +234,6 @@ class TestGetPrivacyExperiences:
         privacy_experience_overlay,
         privacy_notice,
         privacy_notice_us_co_third_party_sharing,
-        privacy_notice_eu_fr_provide_service_frontend_only,
         privacy_notice_us_ca_provide,
     ):
         resp = api_client.get(
@@ -249,6 +251,7 @@ class TestGetPrivacyExperiences:
         )  # Most recently created
         assert first_experience["component"] == "overlay"
         assert first_experience["region"] == "us_ca"
+        assert first_experience["show_banner"] is True
         assert len(first_experience["privacy_notices"]) == 2
 
         # Notices match on region and "overlay"
@@ -258,6 +261,10 @@ class TestGetPrivacyExperiences:
         )
         assert privacy_experience_overlay_notice_1["regions"] == ["us_ca"]
         assert privacy_experience_overlay_notice_1["displayed_in_overlay"]
+        assert (
+            privacy_experience_overlay_notice_1["consent_mechanism"]
+            == ConsentMechanism.opt_in.value
+        )
 
         privacy_experience_overlay_notice_2 = first_experience["privacy_notices"][1]
         assert privacy_experience_overlay_notice_2["id"] == privacy_notice.id
@@ -270,6 +277,7 @@ class TestGetPrivacyExperiences:
         )  # Most recently created
         assert second_experience["component"] == "privacy_center"
         assert second_experience["region"] == "us_co"
+        assert second_experience["show_banner"] is False
         assert len(second_experience["privacy_notices"]) == 2
 
         # Notices match on region and "overlay"
@@ -462,6 +470,7 @@ class TestGetPrivacyExperiences:
         )
         assert resp.status_code == 200
         data = resp.json()["items"][0]
+        assert data["show_banner"] is True
 
         # Assert current preference is displayed for fides user device id
         assert data["privacy_notices"][0]["consent_mechanism"] == "opt_in"

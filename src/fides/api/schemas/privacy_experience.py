@@ -197,5 +197,6 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
     updated_at: datetime
     version: float
     privacy_experience_history_id: str
+    show_banner: Optional[bool]
     privacy_notices: Optional[List[PrivacyNoticeResponseWithUserPreferences]]
     experience_config: Optional[ExperienceConfigResponse]
