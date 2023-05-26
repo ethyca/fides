@@ -17,10 +17,6 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.14.0...main)
 
-### Added
-
-- Added optional logging of resource changes on the server [#3331](https://github.com/ethyca/fides/pull/3331)
-
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
 ### Added
@@ -31,6 +27,7 @@ The types of changes are:
 - Track Privacy Experience with Privacy Preferences [#3311](https://github.com/ethyca/fides/pull/3311)
 - Add ability for `fides-js` to fetch its own geolocation [#3356](https://github.com/ethyca/fides/pull/3356)
 - Add ability to select different locations in the "Cookie House" sample app [#3362](https://github.com/ethyca/fides/pull/3362)
+- Added optional logging of resource changes on the server [#3331](https://github.com/ethyca/fides/pull/3331)
 
 ### Fixed
 
