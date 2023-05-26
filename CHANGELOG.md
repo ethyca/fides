@@ -19,17 +19,6 @@ The types of changes are:
 
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
-### Changed
-
-- Remove logging within the Celery creation function [#3303](https://github.com/ethyca/fides/pull/3303)
-- Update how generic endpoint generation works [#3304](https://github.com/ethyca/fides/pull/3304)
-- Restrict strack-trace logging when not in Dev mode [#3081](https://github.com/ethyca/fides/pull/3081)
-- Refactor CSS variables for `fides-js` to match brandable color palette [#3321](https://github.com/ethyca/fides/pull/3321)
-- Moved all of the dirs from `fides.api.ops` into `fides.api` [#3318](https://github.com/ethyca/fides/pull/3318)
-- Changed `fides db migrate` to `fides db upgrade` [#3342](https://github.com/ethyca/fides/pull/3342)
-- Add required notice key to privacy notices [#3337](https://github.com/ethyca/fides/pull/3337)
-- Make Privacy Experience List public, and separate public endpoint rate limiting [#3339](https://github.com/ethyca/fides/pull/3339)
-
 ### Added
 
 - Add an automated test to check for `/fides-consent.js` backwards compatibility [#3289](https://github.com/ethyca/fides/pull/3289)
@@ -54,6 +43,14 @@ The types of changes are:
 - UI calls to support new PrivacyExperiences data model [#3313](https://github.com/ethyca/fides/pull/3313)
 - Ensure email connectors respect the `notifications.notification_service_type` app config property if set [#3355](https://github.com/ethyca/fides/pull/3355)
 - Rework Delighted connector so the `survey_response` endpoint depends on the `person` endpoint [3385](https://github.com/ethyca/fides/pull/3385)
+- Remove logging within the Celery creation function [#3303](https://github.com/ethyca/fides/pull/3303)
+- Update how generic endpoint generation works [#3304](https://github.com/ethyca/fides/pull/3304)
+- Restrict strack-trace logging when not in Dev mode [#3081](https://github.com/ethyca/fides/pull/3081)
+- Refactor CSS variables for `fides-js` to match brandable color palette [#3321](https://github.com/ethyca/fides/pull/3321)
+- Moved all of the dirs from `fides.api.ops` into `fides.api` [#3318](https://github.com/ethyca/fides/pull/3318)
+- Changed `fides db migrate` to `fides db upgrade` [#3342](https://github.com/ethyca/fides/pull/3342)
+- Add required notice key to privacy notices [#3337](https://github.com/ethyca/fides/pull/3337)
+- Make Privacy Experience List public, and separate public endpoint rate limiting [#3339](https://github.com/ethyca/fides/pull/3339)
 
 ### Developer Experience
 
