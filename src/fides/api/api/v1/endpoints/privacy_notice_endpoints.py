@@ -31,6 +31,7 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas import privacy_notice as schemas
+from fides.api.schemas.privacy_notice import PrivacyNoticeCreation
 from fides.api.util.api_router import APIRouter
 
 router = APIRouter(tags=["Privacy Notice"], prefix=urls.V1_URL_PREFIX)
@@ -266,6 +267,24 @@ def create_privacy_notices(
     return created_privacy_notices
 
 
+def validate_privacy_notice_dry_update(dry_update: PrivacyNotice) -> None:
+    """
+    Verify that a dry update of a PrivacyNotice satisfies the constraints
+    for creating a privacy notice.
+
+    This is done here instead of upfront because we need access to the current values
+    of the privacy notice in the database combined with the patch updates from the request
+    """
+    try:
+        PrivacyNoticeCreation.from_orm(dry_update)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            # pylint: disable=no-member
+            detail=exc.errors(),  # type: ignore
+        )
+
+
 def prepare_privacy_notice_patches(
     privacy_notice_updates: List[schemas.PrivacyNoticeWithId],
     db: Session,
@@ -304,9 +323,13 @@ def prepare_privacy_notice_patches(
     validation_updates = []
     for update_data, existing_notice in updates_and_existing:
         # add the patched update to our temporary updates for validation
-        validation_updates.append(
-            existing_notice.dry_update(data=update_data.dict(exclude_unset=True))
+        dry_update = existing_notice.dry_update(
+            data=update_data.dict(exclude_unset=True)
         )
+        validate_privacy_notice_dry_update(
+            dry_update
+        )  # Checks consent mechanism + delivery location
+        validation_updates.append(dry_update)
         # and don't include it anymore in the existing notices used for validation
         existing_notices.pop(existing_notice.id, None)
 

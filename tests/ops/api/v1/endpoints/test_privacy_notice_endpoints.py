@@ -2432,6 +2432,90 @@ class TestPatchPrivacyNotices:
             == "Opt-in notices must be served in an overlay."
         )
 
+    def test_patch_update_privacy_notice_from_opt_out_to_opt_in(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_notice,
+        url,
+        db,
+    ):
+        """
+        Test patching a single privacy notice is invalid if opt in notice is not displayed in overlay
+
+        Difference here is that the display is not in the request, and we validate the dry update before saving
+        """
+        privacy_notice.update(
+            db,
+            data={
+                "displayed_in_overlay": False,
+                "displayed_in_api": False,
+                "consent_mechanism": ConsentMechanism.opt_out.value,
+            },
+        )
+
+        assert not privacy_notice.displayed_in_overlay
+        assert privacy_notice.consent_mechanism == ConsentMechanism.opt_out
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_UPDATE])
+
+        resp = api_client.patch(
+            url,
+            headers=auth_header,
+            json=[
+                {
+                    "id": privacy_notice.id,
+                    "consent_mechanism": ConsentMechanism.opt_in.value,
+                }
+            ],
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Opt-in notices must be served in an overlay."
+        )
+
+    def test_patch_update_validated_in_method_not_upfront(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_notice,
+        url,
+        db,
+    ):
+        """
+        Test validation on privacy notice consent mechanism and display is run in the update request method,
+        not upfront - we validate a dry update of the privacy notice. Specifically, this request should
+        pass because we wait to check whether the display and consent mechanism match after a dry update.
+        """
+        privacy_notice.update(
+            db,
+            data={
+                "displayed_in_overlay": True,
+                "displayed_in_privacy_center": True,
+                "consent_mechanism": ConsentMechanism.opt_out.value,
+            },
+        )
+
+        assert privacy_notice.displayed_in_overlay
+        assert privacy_notice.consent_mechanism == ConsentMechanism.opt_out
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_UPDATE])
+
+        resp = api_client.patch(
+            url,
+            headers=auth_header,
+            json=[
+                {
+                    "id": privacy_notice.id,
+                    "consent_mechanism": ConsentMechanism.opt_in.value,
+                }
+            ],
+        )
+        assert resp.status_code == 200
+        assert resp.json()[0]["consent_mechanism"] == ConsentMechanism.opt_in.value
+        assert resp.json()[0]["displayed_in_overlay"] is True
+
     def test_patch_privacy_notice_opt_out_must_be_displayed_in_overlay_or_pc(
         self,
         api_client: TestClient,
