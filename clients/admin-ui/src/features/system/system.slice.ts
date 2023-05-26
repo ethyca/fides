@@ -37,7 +37,7 @@ const systemApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: () => ["Datamap", "System"],
+      invalidatesTags: () => ["Datamap", "System", "Datastore Connection"],
     }),
     deleteSystem: build.mutation<SystemDeleteResponse, string>({
       query: (key) => ({
@@ -45,7 +45,7 @@ const systemApi = baseApi.injectEndpoints({
         params: { resource_type: "system" },
         method: "DELETE",
       }),
-      invalidatesTags: ["System"],
+      invalidatesTags: ["System", "Datastore Connection"],
     }),
     upsertSystems: build.mutation<UpsertResponse, System[]>({
       query: (systems) => ({
@@ -53,7 +53,7 @@ const systemApi = baseApi.injectEndpoints({
         method: "POST",
         body: systems,
       }),
-      invalidatesTags: ["Datamap", "System"],
+      invalidatesTags: ["Datamap", "System", "Datastore Connection"],
     }),
     updateSystem: build.mutation<
       System,
@@ -65,7 +65,7 @@ const systemApi = baseApi.injectEndpoints({
         method: "PUT",
         body: patch,
       }),
-      invalidatesTags: ["Datamap", "System", "Privacy Notices"],
+      invalidatesTags: ["Datamap", "System", "Privacy Notices", "Datastore Connection"],
     }),
     patchSystemConnectionConfigs: build.mutation<
       BulkPutConnectionConfiguration,

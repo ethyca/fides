@@ -30,6 +30,7 @@ import { ConnectionConfigFormValues } from "../types";
 import ConnectorParametersForm from "./ConnectorParametersForm";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import TestConnection from "datastore-connections/add-connection/TestConnection";
+import { useDatasetConfigField } from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 
 /**
  * Only handles creating saas connectors. The BE handler automatically
@@ -59,7 +60,6 @@ const createSaasConnector = async (
   Object.entries(secretsSchema!.properties).forEach((key) => {
     params.connectionConfig.secrets[key[0]] = values[key[0]];
   });
-  console.log("about to create a new saas connector", params);
   return (await createSaasConnectorFunc(
     params
   ).unwrap()) as CreateSaasConnectionConfigResponse;
@@ -78,14 +78,6 @@ const patchConnectionConfig = async (
   connectionConfig: ConnectionConfigurationResponse,
   patchFunc: any
 ) => {
-  console.log(
-    "connection_type: ",
-    values,
-    " connectionOptionId: ",
-    connectionOption?.identifier
-  );
-
-
   const key =
     [SystemType.DATABASE, SystemType.EMAIL].indexOf(connectionOption.type) > -1
       ? formatKey(values.instance_key as string)
@@ -158,6 +150,10 @@ export const useConnectorForm = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { dropdownOptions: datasetDropdownOptions, patchConnectionDatasetConfig, datasetConfigFidesKey: selectedDatasetConfigOption } = useDatasetConfigField({
+    connectionConfig,
+  });
+
   const [createSassConnectionConfig] = useCreateSassConnectionConfigMutation();
   const [updateDatastoreConnectionSecrets] =
     useUpdateDatastoreConnectionSecretsMutation();
@@ -166,7 +162,6 @@ export const useConnectorForm = ({
   const handleSubmit = async (values: ConnectionConfigFormValues) => {
     try {
       setIsSubmitting(true);
-      console.log("submitting: ", connectionOption.type, connectionConfig);
       if (
         connectionOption.type === SystemType.SAAS &&
         connectionConfig === undefined
@@ -196,7 +191,10 @@ export const useConnectorForm = ({
           updateDatastoreConnectionSecrets
         );
       }
-      console.log(values);
+
+      if(connectionConfig){
+        patchConnectionDatasetConfig(values, connectionConfig.key)
+      }
       //TODO: Add patching of DatasetConfig here.
       // it requires a connectionConfig so it must come after the submission
       // if creating a brand new connection there would be no connectionConfig
@@ -227,7 +225,7 @@ export const useConnectorForm = ({
     }
   };
 
-  return { isSubmitting, handleSubmit };
+  return { isSubmitting, handleSubmit, datasetDropdownOptions, selectedDatasetConfigOption };
 };
 
 export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
@@ -235,11 +233,6 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   connectionOption,
   connectionConfig,
 }) => {
-  const defaultValues: ConnectionConfigFormValues = {
-    description: "",
-    instance_key: "",
-    name: "",
-  };
 
   const [response, setResponse] = useState<any>();
 
@@ -254,12 +247,21 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     }
   );
 
-  const { isSubmitting, handleSubmit } = useConnectorForm({
-    secretsSchema,
-    systemFidesKey,
-    connectionOption,
-    connectionConfig,
-  });
+  const { isSubmitting, handleSubmit, datasetDropdownOptions, selectedDatasetConfigOption } =
+    useConnectorForm({
+      secretsSchema,
+      systemFidesKey,
+      connectionOption,
+      connectionConfig,
+    });
+
+  const defaultValues: ConnectionConfigFormValues = {
+    description: "",
+    instance_key: "",
+    name: "",
+    dataset: selectedDatasetConfigOption
+  };
+
   if (!secretsSchema) {
     return null;
   }
@@ -280,6 +282,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         onTestConnectionClick={handleTestConnectionClick}
         connectionOption={connectionOption}
         connection={connectionConfig}
+        datasetDropdownOptions={datasetDropdownOptions}
       />
 
       {response && (

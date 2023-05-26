@@ -34,15 +34,18 @@ import YamlEditor from "./YamlEditor";
 import YamlEditorModal from "./YamlEditorModal";
 import { CustomSelect, Option } from "common/form/inputs";
 import { useField, useFormikContext } from "formik";
+import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 
 const fieldName = "dataset";
 
 type UseDatasetConfigField = {
-  connectionConfig: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse;
 };
-const useDatasetConfigField = ({ connectionConfig }: UseDatasetConfigField) => {
-  const [field] = useField<string>(fieldName);
-  const { setFieldValue } = useFormikContext();
+export const useDatasetConfigField = ({
+  connectionConfig,
+}: UseDatasetConfigField) => {
+  // const [field] = useField<string>(fieldName);
+  // const { setFieldValue } = useFormikContext();
 
   const [patchDatasetConfig] = usePatchDatasetConfigsMutation();
   const [upsertDatasets] = useUpsertDatasetsMutation();
@@ -52,7 +55,7 @@ const useDatasetConfigField = ({ connectionConfig }: UseDatasetConfigField) => {
     isFetching,
     isLoading,
     isSuccess,
-  } = useGetConnectionConfigDatasetConfigsQuery(connectionConfig!.key);
+  } = useGetConnectionConfigDatasetConfigsQuery(connectionConfig?.key || "");
 
   const {
     data: allDatasets,
@@ -60,64 +63,69 @@ const useDatasetConfigField = ({ connectionConfig }: UseDatasetConfigField) => {
     error: loadAllDatasetsError,
   } = useGetAllDatasetsQuery();
 
-  useEffect(() => {
-    console.log("allDatasetConfigs", allDatasetConfigs);
-    if (allDatasetConfigs && allDatasetConfigs.items.length) {
-      console.log(allDatasetConfigs.items[0].fides_key);
-      setFieldValue(fieldName, allDatasetConfigs.items[0].fides_key);
-      setDatasetConfigFidesKey(allDatasetConfigs.items[0].fides_key);
-    }
-  }, [allDatasetConfigs]);
+
 
   const [datasetConfigFidesKey, setDatasetConfigFidesKey] = useState<
     string | undefined
   >(undefined);
+
+  useEffect(() => {
+
+    if (allDatasetConfigs && allDatasetConfigs.items.length) {
+      console.log(allDatasetConfigs.items[0].fides_key);
+      // setFieldValue(fieldName, allDatasetConfigs.items[0].fides_key);
+      setDatasetConfigFidesKey(allDatasetConfigs.items[0].fides_key);
+    }
+  }, [allDatasetConfigs]);
+
+
 
   const { handleError } = useAPIHelper();
 
   const { errorAlert, successAlert } = useAlert();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handlePatchDatasetConfig = async (
-    datasetPairs: DatasetConfigCtlDataset[]
+  const patchConnectionDatasetConfig = async (
+    values: ConnectionConfigFormValues,
+    connectionConfigKey: string
   ) => {
+    /*
+      If no `datasetConfigFidesKey` exists then use the `values[fieldName]`.
+      This means that no `DatasetConfig` has been linked to the current
+      `ConnectionConfig` yet. Otherwise, reuse the pre-existing `datasetConfigFidesKey`
+      and update the current `DatasetConfig`  use the `Dataset` that's tied
+      to `values[fieldName]`
+     */
+
+    let fidesKey = values[fieldName];
+    if (datasetConfigFidesKey) {
+      fidesKey = datasetConfigFidesKey;
+    }
+    const datasetPairs: DatasetConfigCtlDataset[] = [
+      {
+        fides_key: fidesKey,//DatasetConfig.fides_key
+        ctl_dataset_fides_key: values[fieldName],
+      },
+    ];
+
+
+    /*
+      The BE has a unique constraint on `DatasetConfig.fides_key`. Only one
+      config can be linked to a given
+     */
+
+
     const params: PatchDatasetsConfigRequest = {
-      connection_key: connectionConfig?.key as string,
+      connection_key: connectionConfigKey,
       dataset_pairs: datasetPairs,
     };
+    console.log(values[fieldName], datasetConfigFidesKey, fidesKey, allDatasetConfigs, params)
+
     const payload = await patchDatasetConfig(params).unwrap();
     if (payload.failed?.length > 0) {
       errorAlert(payload.failed[0].message);
     } else {
       successAlert("Dataset successfully updated!");
-    }
-  };
-
-  const handleLinkDataset = async () => {
-    if (field.value) {
-      try {
-        /*
-        If no `datasetConfigFidesKey` exists then use the `selectedDatasetKey`.
-        This means that no `DatasetConfig` has been linked to the current
-        `ConnectionConfig` yet. Otherwise, reuse the pre-existing `datasetConfigFidesKey`
-        and update the current `DatasetConfig`  use the `Dataset` that's tied
-        to `selectedDatasetKey`
-         */
-
-        let fidesKey = field.value;
-        if (datasetConfigFidesKey) {
-          fidesKey = datasetConfigFidesKey;
-        }
-        const datasetPairs: DatasetConfigCtlDataset[] = [
-          {
-            fides_key: fidesKey,
-            ctl_dataset_fides_key: field.value,
-          },
-        ];
-        handlePatchDatasetConfig(datasetPairs);
-      } catch (error) {
-        handleError(error);
-      }
     }
   };
 
@@ -152,7 +160,9 @@ const useDatasetConfigField = ({ connectionConfig }: UseDatasetConfigField) => {
         }));
       }
 
-      handlePatchDatasetConfig(pairs);
+      // TODO: Update this work with new form paradigm
+      // handlePatchDatasetConfig(pairs);
+
     } catch (error) {
       handleError(error);
     } finally {
@@ -160,7 +170,7 @@ const useDatasetConfigField = ({ connectionConfig }: UseDatasetConfigField) => {
     }
   };
 
-  const isDatasetSelected = field.value !== "" && field.value !== undefined;
+  // const isDatasetSelected = field.value !== "" && field.value !== undefined;
 
   const dropdownOptions: Option[] = useMemo(() => {
     return allDatasets
@@ -171,20 +181,17 @@ const useDatasetConfigField = ({ connectionConfig }: UseDatasetConfigField) => {
       : [];
   }, [allDatasets]);
   return {
+    datasetConfigFidesKey,
     dropdownOptions,
-    isDatasetSelected,
+    patchConnectionDatasetConfig
   };
 };
 
 type Props = {
-  connectionConfig: ConnectionConfigurationResponse;
+  dropdownOptions: Option[];
 };
 
-const DatasetConfigField: React.FC<Props> = ({ connectionConfig }) => {
-  const { dropdownOptions } = useDatasetConfigField({
-    connectionConfig,
-  });
-
+const DatasetConfigField: React.FC<Props> = ({ dropdownOptions }) => {
   // if (allDatasets === undefined) {
   //   return (
   //     <Center>

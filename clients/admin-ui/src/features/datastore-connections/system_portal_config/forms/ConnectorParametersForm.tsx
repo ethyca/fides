@@ -37,6 +37,7 @@ import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
 import DatasetConfigField from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import connectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
+import { Option } from "common/form/inputs";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
@@ -58,6 +59,7 @@ type ConnectorParametersFormProps = {
   testButtonLabel?: string;
   connection?: ConnectionConfigurationResponse;
   connectionOption: ConnectionSystemTypeMap;
+  datasetDropdownOptions: Option[];
 };
 
 const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
@@ -69,6 +71,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   testButtonLabel = "Test connection",
   connectionOption,
   connection,
+  datasetDropdownOptions,
 }) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
@@ -354,8 +357,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             </Field>
             {[SystemType.SAAS, SystemType.DATABASE].indexOf(
               connectionOption.type
-            ) > -1 && connection ? (
-              <DatasetConfigField connectionConfig={connection} />
+            ) > -1 ? (
+              <DatasetConfigField dropdownOptions={datasetDropdownOptions} />
             ) : (
               <div>
                 Not rendering the dataset dropdown {connectionOption.type}{" "}
