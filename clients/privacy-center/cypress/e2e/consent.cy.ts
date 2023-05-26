@@ -239,10 +239,9 @@ describe("Consent settings", () => {
 
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
-      cy.window()
-        .its("Fides")
-        .its("initialized")
-        .then((win) => {
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
+        cy.window().then((win) => {
           // Now all of the cookie keys should be populated.
           expect(win).to.have.nested.property("Fides.consent").that.eql({
             data_sales: false,
@@ -275,6 +274,7 @@ describe("Consent settings", () => {
               ["dataProcessingOptions", ["LDU"], 1, 1000],
             ]);
         });
+      });
     });
 
     describe("when globalPrivacyControl is enabled", () => {
@@ -335,10 +335,9 @@ describe("Consent settings", () => {
     it("reflects the defaults from config.json", () => {
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
-      cy.window()
-        .its("Fides")
-        .its("initialized")
-        .then((win) => {
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
+        cy.window().then((win) => {
           // Before visiting the privacy center the consent object only has the default choices.
           expect(win).to.have.nested.property("Fides.consent").that.eql({
             data_sales: true,
@@ -369,17 +368,21 @@ describe("Consent settings", () => {
               ["dataProcessingOptions", []],
             ]);
         });
+      });
     });
 
     describe("when globalPrivacyControl is enabled", () => {
       it("uses the globalPrivacyControl default", () => {
         cy.visit("/fides-js-demo.html?globalPrivacyControl=true");
         cy.get("#consent-json");
-        cy.window().then((win) => {
-          expect(win).to.have.nested.property("Fides.consent").that.eql({
-            data_sales: false,
-            tracking: false,
-            analytics: true,
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
+          cy.window().then((win) => {
+            expect(win).to.have.nested.property("Fides.consent").that.eql({
+              data_sales: false,
+              tracking: false,
+              analytics: true,
+            });
           });
         });
       });
