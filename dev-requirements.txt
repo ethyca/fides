@@ -14,6 +14,7 @@ pytest==7.2.2
 requests-mock==1.10.0
 setuptools>=64.0.2
 sqlalchemy-stubs
+types-paramiko==3.0.0.10
 types-PyYAML==6.0.11
 types-redis==4.3.4
 types-requests

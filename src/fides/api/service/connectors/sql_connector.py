@@ -3,7 +3,7 @@ from abc import abstractmethod
 from typing import Any, Dict, List, Optional, Type
 
 import paramiko
-import sshtunnel
+import sshtunnel  # type: ignore
 from loguru import logger
 from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import Column, text
@@ -222,7 +222,7 @@ class PostgreSQLConnector(SQLConnector):
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
 
         config = self.secrets_schema(**self.configuration.secrets or {})
-        if config.ssh_required:
+        if config.ssh_required and CONFIG.security.bastion_server_ssh_pkey:
             with io.BytesIO(
                 CONFIG.security.bastion_server_ssh_pkey.encode("utf8")
             ) as binary_file:
