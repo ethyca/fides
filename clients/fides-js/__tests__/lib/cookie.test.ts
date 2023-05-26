@@ -8,7 +8,7 @@ import {
   saveFidesCookie,
 } from "../../src/lib/cookie";
 import type { ConsentContext } from "../../src/lib/consent-context";
-import {LegacyConsentConfig} from "~/lib/consent-types";
+import { LegacyConsentConfig } from "~/lib/consent-types";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
@@ -205,7 +205,7 @@ describe("makeConsentDefaults", () => {
     const context: ConsentContext = {};
 
     it("returns the default consent values by key", () => {
-      expect(makeConsentDefaults({ config, context, debug:false })).toEqual({
+      expect(makeConsentDefaults({ config, context, debug: false })).toEqual({
         default_true: true,
         default_false: false,
         default_true_with_gpc_false: true,
@@ -220,7 +220,7 @@ describe("makeConsentDefaults", () => {
     };
 
     it("returns the default consent values by key", () => {
-      expect(makeConsentDefaults({ config, context, debug:false })).toEqual({
+      expect(makeConsentDefaults({ config, context, debug: false })).toEqual({
         default_true: true,
         default_false: false,
         default_true_with_gpc_false: false,
