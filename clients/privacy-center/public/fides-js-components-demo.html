@@ -176,34 +176,40 @@
         return;
       }
 
-      // Pretty-print the fides consent object and add it to the page.
-      document.getElementById("consent-json").textContent = JSON.stringify(
-        Fides.consent,
-        null,
-        2
-      );
+      // Ensure we only render the consent config to the DOM once Fides is fully initialized
+      let timerId = setInterval(() => {
+        if (window.Fides?.initialized) {
+          console.log("Fides has been initialized!");
+          // Pretty-print the fides consent object and add it to the page.
+          document.getElementById("consent-json").textContent = JSON.stringify(
+            Fides.consent,
+            null,
+            2
+          );
 
-      // Pretty-print the fides experience config object and add it to the page.
-      document.getElementById("consent-experience").textContent =
-        JSON.stringify(Fides.experience, null, 2);
+          // Pretty-print the fides experience config object and add it to the page.
+          document.getElementById("consent-experience").textContent =
+            JSON.stringify(Fides.experience, null, 2);
 
-      // Pretty-print the fides geolocation object and add it to the page.
-      document.getElementById("consent-geolocation").textContent =
-        JSON.stringify(Fides.geolocation, null, 2);
+          // Pretty-print the fides geolocation object and add it to the page.
+          document.getElementById("consent-geolocation").textContent =
+            JSON.stringify(Fides.geolocation, null, 2);
 
-      // Pretty-print the fides options object and add it to the page.
-      document.getElementById("consent-options").textContent = JSON.stringify(
-        Fides.options,
-        null,
-        2
-      );
+          // Pretty-print the fides options object and add it to the page.
+          document.getElementById("consent-options").textContent =
+            JSON.stringify(Fides.options, null, 2);
 
-      // Test behavior of integrations that can be configured without/before their platform scripts.
-      Fides.gtm();
-      Fides.meta({
-        consent: Fides.consent.tracking,
-        dataUse: Fides.consent.data_sales,
-      });
+          // Test behavior of integrations that can be configured without/before their platform scripts.
+          Fides.gtm();
+          Fides.meta({
+            consent: Fides.consent.tracking,
+            dataUse: Fides.consent.data_sales,
+          });
+          clearInterval(timerId);
+        } else {
+          console.log("Fides not yet initialized, waiting. . .");
+        }
+      }, 100);
     })();
   </script>
 </html>
