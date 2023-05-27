@@ -209,6 +209,7 @@ markers = [
     "integration_twilio_conversations",
     "integration_adobe_campaign",
     "integration_firebase_auth",
+    "integration_dynamodb",
     "unit_saas"
 ]
 asyncio_mode = "auto"

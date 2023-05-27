@@ -122,7 +122,7 @@ describe("Privacy notices", () => {
 
     it("can click a row to go to the notice page", () => {
       cy.intercept("GET", "/api/v1/privacy-notice/pri*", {
-        fixture: "privacy-notices/notice.json",
+        fixture: "privacy-notices/notice_only.json",
       }).as("getNoticeDetail");
       cy.getByTestId("row-Essential").click();
       cy.wait("@getNoticeDetail");
@@ -187,7 +187,7 @@ describe("Privacy notices", () => {
     it("should render an existing privacy notice", () => {
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/${ESSENTIAL_NOTICE_ID}`);
       cy.wait("@getNoticeDetail");
-      cy.fixture("privacy-notices/notice.json").then((notice) => {
+      cy.fixture("privacy-notices/notice_only.json").then((notice) => {
         // details section
         cy.getByTestId("input-name").should("have.value", notice.name);
         cy.getByTestId("input-description").should(

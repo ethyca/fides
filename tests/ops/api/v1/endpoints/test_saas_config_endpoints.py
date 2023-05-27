@@ -7,7 +7,7 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     CLIENT_READ,
     CONNECTION_AUTHORIZE,
     CONNECTOR_TEMPLATE_REGISTER,
@@ -15,14 +15,14 @@ from fides.api.ops.api.v1.scope_registry import (
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     AUTHORIZE,
     REGISTER_CONNECTOR_TEMPLATE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
@@ -441,7 +441,7 @@ class TestAuthorizeConnection:
         assert 403 == response.status_code
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_authorization_url"
+        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_authorization_url"
     )
     def test_get_authorize_url(
         self,
@@ -783,7 +783,7 @@ class TestRegisterConnectorTemplate:
         ],
     )
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.register_custom_functions"
+        "fides.api.service.connectors.saas.connector_registry_service.register_custom_functions"
     )  # prevent functions from being registered to avoid test conflicts
     def test_register_connector_template_allow_custom_connector_functions(
         self,

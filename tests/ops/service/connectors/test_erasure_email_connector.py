@@ -2,21 +2,21 @@ from unittest import mock
 
 import pytest
 
-from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionTestStatus
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
+from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.connectionconfig import AccessLevel, ConnectionTestStatus
+from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettings,
     EmailSchema,
     IdentityTypes,
 )
-from fides.api.ops.schemas.messaging.messaging import MessagingActionType
-from fides.api.ops.service.connectors.erasure_email_connector import (
+from fides.api.schemas.messaging.messaging import MessagingActionType
+from fides.api.service.connectors.erasure_email_connector import (
     GenericErasureEmailConnector,
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
     send_single_erasure_email,
 )
-from fides.api.ops.service.privacy_request.request_runner_service import (
+from fides.api.service.privacy_request.request_runner_service import (
     get_erasure_email_connection_configs,
 )
 
@@ -140,9 +140,7 @@ class TestErasureEmailConnectorMethods:
             == filtered_identities
         )
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.erasure_email_connector.dispatch_message"
-    )
+    @mock.patch("fides.api.service.connectors.erasure_email_connector.dispatch_message")
     def test_send_single_erasure_email_no_org_defined(self, mock_dispatch, db):
         with pytest.raises(MessageDispatchException) as exc:
             send_single_erasure_email(
@@ -159,9 +157,7 @@ class TestErasureEmailConnectorMethods:
             == "Cannot send an email to third-party vendor. No organization name found."
         )
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.erasure_email_connector.dispatch_message"
-    )
+    @mock.patch("fides.api.service.connectors.erasure_email_connector.dispatch_message")
     def test_send_single_erasure_email(
         self, mock_dispatch, test_fides_org, db, messaging_config
     ):
@@ -195,6 +191,30 @@ class TestErasureEmailConnectorMethods:
             call_kwargs["subject_override"]
             == "Test notification of user erasure requests from Test Org"
         )
+
+    @mock.patch("fides.api.service.connectors.erasure_email_connector.dispatch_message")
+    @pytest.mark.usefixtures(
+        "test_fides_org",
+        "messaging_config",
+        "set_notification_service_type_to_twilio_email",
+    )
+    def test_send_single_erasure_email_respects_messaging_service_type(
+        self,
+        mock_dispatch,
+        db,
+    ):
+        """Ensure `notifications.notification_service_type` property is respected in dispatching erasure emails"""
+        send_single_erasure_email(
+            db=db,
+            subject_email="test@example.com",
+            subject_name="To whom it may concern",
+            batch_identities=["customer-1@example.com"],
+            test_mode=True,
+        )
+
+        assert mock_dispatch.called
+        call_kwargs = mock_dispatch.call_args.kwargs
+        assert call_kwargs["service_type"] == "twilio_email"
 
     def test_needs_email(
         self,
@@ -267,7 +287,7 @@ class TestAttentiveConnector:
         assert status == ConnectionTestStatus.failed
 
     @mock.patch(
-        "fides.api.ops.service.connectors.erasure_email_connector.send_single_erasure_email"
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email"
     )
     def test_test_connection_call(
         self, mock_send_email, db, test_attentive_erasure_email_connector

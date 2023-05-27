@@ -14,12 +14,12 @@ from sqlalchemy.orm import Session, make_transient
 from sqlalchemy.orm.attributes import flag_modified
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_CONFIGS,
     DATASET_VALIDATE,
@@ -28,8 +28,8 @@ from fides.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
 
 
 def _reject_key(dict: Dict, key: str) -> Dict:
@@ -60,6 +60,8 @@ def test_example_datasets(example_datasets):
     assert len(example_datasets[7]["collections"]) == 11
     assert example_datasets[9]["fides_key"] == "email_dataset"
     assert len(example_datasets[9]["collections"]) == 3
+    assert example_datasets[11]["fides_key"] == "dynamodb_example_test_dataset"
+    assert len(example_datasets[11]["collections"]) == 4
 
 
 class TestValidateDataset:
@@ -830,7 +832,7 @@ class TestPutDatasetConfigs:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch("fides.api.ops.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch("fides.api.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_dataset_configs_failed_response(
         self,
         mock_create: Mock,
@@ -949,7 +951,7 @@ class TestPutDatasets:
         )
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 11
+        assert len(response_body["succeeded"]) == 12
         assert len(response_body["failed"]) == 0
 
         # Confirm that postgres dataset matches the values we provided
@@ -1092,7 +1094,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 11
+        assert len(response_body["succeeded"]) == 12
         assert len(response_body["failed"]) == 0
 
         # test postgres
@@ -1324,9 +1326,7 @@ class TestPutDatasets:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch(
-        "fides.api.ops.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset"
-    )
+    @mock.patch("fides.api.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset")
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
@@ -1343,7 +1343,7 @@ class TestPutDatasets:
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 11
+        assert len(response_body["failed"]) == 12
 
         for failed_response in response_body["failed"]:
             assert "Dataset create/update failed" in failed_response["message"]
@@ -1420,9 +1420,7 @@ class TestPutYamlDatasets:
         )
         assert response.status_code == 400
 
-    @mock.patch(
-        "fides.api.ops.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset"
-    )
+    @mock.patch("fides.api.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset")
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,

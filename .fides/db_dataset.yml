@@ -96,6 +96,41 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: audit_log_resource
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: extra_data
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: fides_keys
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: request_path
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: request_type
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: user_id
+      data_categories:
+      - user.unique_id
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: client
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
@@ -145,6 +180,10 @@ dataset:
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
       - name: created_at
+        data_categories:
+        - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: fides_user_device_provided_identity_id
         data_categories:
         - system.operations
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -1384,12 +1423,193 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: privacydeclaration
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: name
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: data_categories
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: data_qualifier
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: data_subjects
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: dataset_references
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: egress
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: ingress
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: system_id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: data_use
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: privacyexperience
+    description: 'PrivacyExperiences hold the experience for a given region'
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: component
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: delivery_mechanism
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: disabled
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: experience_config_history_id
+      data_categories: [ system.operations ]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: experience_config_id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: region
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: version
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: privacyexperienceconfig
+    description: 'ExperienceConfig holds experience language to be shared between multiple regions'
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: acknowledgement_button_label
+      data_categories: [system.operations]
+    - name: banner_description
+      data_categories: [system.operations]
+    - name: banner_title
+      data_categories: [system.operations]
+    - name: component
+      data_categories: [system.operations]
+    - name: component_description
+      data_categories: [system.operations]
+    - name: component_title
+      data_categories: [system.operations]
+    - name: confirmation_button_label
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: delivery_mechanism
+      data_categories: [system.operations]
+    - name: disabled
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: is_default
+      data_categories: [system.operations]
+    - name: link_label
+      data_categories: [system.operations]
+    - name: reject_button_label
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: version
+      data_categories: [system.operations]
+  - name: privacyexperienceconfighistory
+    description: 'Historical table to store config history for record keeping'
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: acknowledgement_button_label
+      data_categories: [system.operations]
+    - name: banner_description
+      data_categories: [system.operations]
+    - name: banner_title
+      data_categories: [system.operations]
+    - name: component
+      data_categories: [system.operations]
+    - name: component_description
+      data_categories: [system.operations]
+    - name: component_title
+      data_categories: [system.operations]
+    - name: confirmation_button_label
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: delivery_mechanism
+      data_categories: [system.operations]
+    - name: disabled
+      data_categories: [system.operations]
+    - name: experience_config_id
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: is_default
+      data_categories: [system.operations]
+    - name: link_label
+      data_categories: [system.operations]
+    - name: reject_button_label
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: version
+      data_categories: [system.operations]
+  - name: privacyexperiencehistory
+    description: 'Stores the history of an experience for a region for consent reporting'
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: component
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: delivery_mechanism
+      data_categories: [system.operations]
+    - name: disabled
+      data_categories: [system.operations]
+    - name: experience_config_history_id
+      data_categories: [system.operations]
+    - name: experience_config_id
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: privacy_experience_id
+      data_categories: [system.operations]
+    - name: region
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: version
+      data_categories: [system.operations]
   - name: privacynotice
     data_categories: []
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
     - name: name
       data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: notice_key
+      data_categories: [ system.operations ]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: description
       data_categories: [system.operations]
@@ -1445,6 +1665,9 @@ dataset:
     fields:
     - name: name
       data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: notice_key
+      data_categories: [ system.operations ]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: description
       data_categories: [system.operations]
@@ -1871,6 +2094,9 @@ dataset:
         data_categories:
         - system.operations
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: anonymized_ip_address
+        data_categories:
+        - system.operations
       - name: created_at
         data_categories:
         - system.operations
@@ -1878,6 +2104,18 @@ dataset:
       - name: email
         data_categories:
         - user
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: fides_user_device
+        data_categories:
+        - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: fides_user_device_provided_identity_id
+        data_categories:
+        - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: hashed_fides_user_device
+        data_categories:
+        - system.operations
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       - name: id
         data_categories:
@@ -1889,11 +2127,23 @@ dataset:
         data_categories:
         - system.operations
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: method
+        data_categories:
+        - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       - name: phone_number
         data_categories:
         - user
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       - name: preference
+        data_categories:
+        - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: privacy_experience_config_history_id
+        data_categories:
+        - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: privacy_experience_history_id
         data_categories:
         - system.operations
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

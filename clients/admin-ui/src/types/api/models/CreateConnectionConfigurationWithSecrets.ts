@@ -5,6 +5,7 @@
 import type { AccessLevel } from "./AccessLevel";
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { ConnectionType } from "./ConnectionType";
+import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
 import type { FidesDocsSchema } from "./FidesDocsSchema";
 import type { ManualWebhookSchemaforDocs } from "./ManualWebhookSchemaforDocs";
@@ -43,6 +44,7 @@ export type CreateConnectionConfigurationWithSecrets = {
     | ManualWebhookSchemaforDocs
     | TimescaleDocsSchema
     | FidesDocsSchema
-    | SovrnDocsSchema;
+    | SovrnDocsSchema
+    | DynamoDBDocsSchema;
   saas_connector_type?: string;
 };

@@ -11,9 +11,14 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import { useRouter } from "next/router";
-import React, { ReactNode } from "react";
-import { Column, useGlobalFilter, useSortBy, useTable } from "react-table";
+import React, { ReactNode, useMemo } from "react";
+import {
+  Column,
+  Hooks,
+  useGlobalFilter,
+  useSortBy,
+  useTable,
+} from "react-table";
 
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 
@@ -25,23 +30,30 @@ interface FidesObject {
 type Props<T extends FidesObject> = {
   columns: Column<T>[];
   data: T[];
-  userCanUpdate: boolean;
-  redirectRoute: string;
   showSearchBar?: boolean;
+  searchBarPlaceHolder?: string;
   footer?: ReactNode;
+  onRowClick?: (row: T) => void;
+  customHooks?: Array<(hooks: Hooks<T>) => void>;
 };
 
 export const FidesTable = <T extends FidesObject>({
   columns,
   data,
-  userCanUpdate,
-  redirectRoute,
   showSearchBar,
+  searchBarPlaceHolder,
   footer,
+  onRowClick,
+  customHooks,
 }: Props<T>) => {
-  const router = useRouter();
+  const plugins = useMemo(() => {
+    if (customHooks) {
+      return [useGlobalFilter, useSortBy, ...customHooks];
+    }
+    return [useGlobalFilter, useSortBy];
+  }, [customHooks]);
 
-  const tableInstance = useTable({ columns, data }, useGlobalFilter, useSortBy);
+  const tableInstance = useTable({ columns, data }, ...plugins);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
@@ -53,6 +65,7 @@ export const FidesTable = <T extends FidesObject>({
           <GlobalFilter
             globalFilter={tableInstance.state.globalFilter}
             setGlobalFilter={tableInstance.setGlobalFilter}
+            placeholder={searchBarPlaceHolder}
           />
         </Flex>
       ) : null}
@@ -110,34 +123,34 @@ export const FidesTable = <T extends FidesObject>({
           {rows.map((row) => {
             prepareRow(row);
             const { key: rowKey, ...rowProps } = row.getRowProps();
-            const onClick = () => {
-              if (userCanUpdate) {
-                router.push(`${redirectRoute}/${row.original.id}`);
-              }
-            };
             const rowName = row.original.name;
+            const rowId = row.original.id;
             return (
               <Tr
                 key={rowKey}
                 {...rowProps}
                 _hover={
-                  userCanUpdate
+                  onRowClick
                     ? { backgroundColor: "gray.50", cursor: "pointer" }
                     : undefined
                 }
-                data-testid={`row-${rowName}`}
+                data-testid={`row-${rowName ?? rowId}`}
               >
                 {row.cells.map((cell) => {
                   const { key: cellKey, ...cellProps } = cell.getCellProps();
-
                   return (
                     <Td
                       key={cellKey}
                       {...cellProps}
                       p={5}
                       verticalAlign="baseline"
+                      width={cell.column.width}
                       onClick={
-                        cell.column.Header !== "Enable" ? onClick : undefined
+                        cell.column.Header !== "Enable" && onRowClick
+                          ? () => {
+                              onRowClick(row.original);
+                            }
+                          : undefined
                       }
                     >
                       {cell.render("Cell")}

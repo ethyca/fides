@@ -54,7 +54,7 @@ const Header: React.FC = () => {
         </Link>
       </NextLink>
       <Flex alignItems="center">
-        <Link href="https://ethyca.github.io/fides/" isExternal>
+        <Link href="https://docs.ethyca.com" isExternal>
           <Button size="sm" variant="ghost">
             <QuestionIcon color="gray.700" boxSize={4} />
           </Button>

@@ -116,7 +116,7 @@ export const stubPrivacyNoticesCrud = () => {
     fixture: "privacy-notices/list.json",
   }).as("getNotices");
   cy.intercept("GET", "/api/v1/privacy-notice/pri*", {
-    fixture: "privacy-notices/notice.json",
+    fixture: "privacy-notices/notice_only.json",
   }).as("getNoticeDetail");
   cy.intercept("POST", "/api/v1/privacy-notice", {
     fixture: "privacy-notices/list.json",

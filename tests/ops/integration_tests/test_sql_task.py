@@ -8,24 +8,24 @@ import pytest
 from fideslang import Dataset
 from sqlalchemy import text
 
-from fides.api.ops.graph.config import (
+from fides.api.graph.config import (
     Collection,
     CollectionAddress,
     FieldAddress,
     GraphDataset,
     ScalarField,
 )
-from fides.api.ops.graph.data_type import DataType, StringTypeConverter
-from fides.api.ops.graph.graph import DatasetGraph, Edge, Node
-from fides.api.ops.graph.traversal import TraversalNode
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
-from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fides.api.ops.models.privacy_request import ExecutionLog, PrivacyRequest
-from fides.api.ops.service.connectors import get_connector
-from fides.api.ops.task import graph_task
-from fides.api.ops.task.filter_results import filter_data_categories
-from fides.api.ops.task.graph_task import get_cached_data_for_erasures
+from fides.api.graph.data_type import DataType, StringTypeConverter
+from fides.api.graph.graph import DatasetGraph, Edge, Node
+from fides.api.graph.traversal import TraversalNode
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import convert_dataset_to_graph
+from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
+from fides.api.service.connectors import get_connector
+from fides.api.task import graph_task
+from fides.api.task.filter_results import filter_data_categories
+from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.core.config import CONFIG
 
 from ..graph.graph_test_util import (
@@ -939,7 +939,7 @@ class TestRetrievingData:
         traversal_node = TraversalNode(node)
         return traversal_node
 
-    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data(
         self,
         mock_incoming_edges: Mock,
@@ -973,7 +973,7 @@ class TestRetrievingData:
             }
         ]
 
-    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_no_input(
         self,
         mock_incoming_edges: Mock,
@@ -1009,7 +1009,7 @@ class TestRetrievingData:
             traversal_node, Policy(), privacy_request, {"email": None}
         )
 
-    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
         self,
         mock_incoming_edges: Mock,
@@ -1039,9 +1039,7 @@ class TestRetrievingData:
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 class TestRetryIntegration:
-    @mock.patch(
-        "fides.api.ops.service.connectors.sql_connector.SQLConnector.retrieve_data"
-    )
+    @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.retrieve_data")
     @pytest.mark.asyncio
     async def test_retry_access_request(
         self,
@@ -1094,7 +1092,7 @@ class TestRetryIntegration:
             ("postgres_example_test_dataset:employee", "error"),
         ]
 
-    @mock.patch("fides.api.ops.service.connectors.sql_connector.SQLConnector.mask_data")
+    @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.mask_data")
     @pytest.mark.asyncio
     async def test_retry_erasure(
         self,

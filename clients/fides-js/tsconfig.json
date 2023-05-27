@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2015",
+    "plugins": [{ "name": "typescript-plugin-css-modules" }],
+    "baseUrl": "./",
+    "paths": {
+      "~/*": ["src/*"],
+      "react": ["../node_modules/preact/compat/"],
+      "react-dom": ["../node_modules/preact/compat/"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.d.ts", "**/*.tsx", "rollup.config.mjs"],
+  "exclude": ["node_modules", "dist"]
+}

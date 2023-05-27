@@ -1,4 +1,3 @@
-import { capitalize } from "~/features/common/utils";
 import { AllowedTypes, ResourceTypes } from "~/types/api";
 
 export enum TabTypes {
@@ -13,22 +12,37 @@ export const FIELD_TYPE_OPTIONS = [
   { label: "Multiple select", value: AllowedTypes.STRING_ },
 ];
 
+export enum FieldTypes {
+  SINGLE_SELECT = "singleSelect",
+  MULTIPLE_SELECT = "multipleSelect",
+  OPEN_TEXT = "openText",
+}
+
+export const FIELD_TYPE_OPTIONS_NEW = [
+  { label: "Single select", value: FieldTypes.SINGLE_SELECT },
+  { label: "Multiple select", value: FieldTypes.MULTIPLE_SELECT },
+  { label: "Open Text", value: FieldTypes.OPEN_TEXT },
+];
+
 export const RESOURCE_TYPE_OPTIONS = [
   {
-    label: capitalize(ResourceTypes.DATA_CATEGORY),
+    label: `taxonomy:${ResourceTypes.DATA_CATEGORY}`,
     value: ResourceTypes.DATA_CATEGORY,
   },
   {
-    label: capitalize(ResourceTypes.DATA_SUBJECT),
+    label: `taxonomy:${ResourceTypes.DATA_SUBJECT}`,
     value: ResourceTypes.DATA_SUBJECT,
   },
   {
-    label: capitalize(ResourceTypes.DATA_USE),
+    label: `taxonomy:${ResourceTypes.DATA_USE}`,
     value: ResourceTypes.DATA_USE,
   },
-
   {
-    label: capitalize(ResourceTypes.SYSTEM),
+    label: `${ResourceTypes.SYSTEM}:information`,
     value: ResourceTypes.SYSTEM,
+  },
+  {
+    label: "system:data use",
+    value: ResourceTypes.PRIVACY_DECLARATION,
   },
 ];

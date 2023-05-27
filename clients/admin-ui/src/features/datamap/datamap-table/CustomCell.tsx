@@ -5,13 +5,13 @@ import { ColumnInstance, Row } from "react-table";
 import { useAppSelector } from "~/app/hooks";
 import { selectDataSubjectsMap } from "~/features/data-subjects/data-subject.slice";
 import { selectDataUsesMap } from "~/features/data-use/data-use.slice";
-
 import {
   DATA_CATEGORY_COLUMN_ID,
   SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
-} from "../constants";
-import { DatamapRow, selectDataCategoriesMap } from "../datamap.slice";
+} from "~/features/datamap/constants";
+import { DatamapRow } from "~/features/datamap/datamap.slice";
+import { selectDataCategoriesMap } from "~/features/taxonomy";
 
 interface CustomCellProps {
   // eslint-disable-next-line react/no-unused-prop-types

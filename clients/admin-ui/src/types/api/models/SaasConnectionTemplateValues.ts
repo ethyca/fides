@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
+import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
 import type { FidesDocsSchema } from "./FidesDocsSchema";
 import type { ManualWebhookSchemaforDocs } from "./ManualWebhookSchemaforDocs";
@@ -38,6 +39,7 @@ export type SaasConnectionTemplateValues = {
     | ManualWebhookSchemaforDocs
     | TimescaleDocsSchema
     | FidesDocsSchema
-    | SovrnDocsSchema;
+    | SovrnDocsSchema
+    | DynamoDBDocsSchema;
   instance_key: string;
 };

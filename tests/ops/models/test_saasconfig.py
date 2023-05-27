@@ -4,10 +4,10 @@ import pytest
 from fideslang import FidesDatasetReference
 from pydantic import ValidationError
 
-from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
-from fides.api.ops.graph.config import CollectionAddress, FieldAddress
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.schemas.saas.saas_config import (
+from fides.api.common_exceptions import ValidationError as FidesopsValidationError
+from fides.api.graph.config import CollectionAddress, FieldAddress
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.schemas.saas.saas_config import (
     ConnectorParam,
     Endpoint,
     ParamValue,

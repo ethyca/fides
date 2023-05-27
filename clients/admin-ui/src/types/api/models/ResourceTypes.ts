@@ -10,4 +10,5 @@ export enum ResourceTypes {
   DATA_USE = "data use",
   DATA_CATEGORY = "data category",
   DATA_SUBJECT = "data subject",
+  PRIVACY_DECLARATION = "privacy declaration",
 }

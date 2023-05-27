@@ -6,10 +6,10 @@ import pytest
 from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.ops.models.storage import StorageConfig
-from fides.api.ops.schemas.storage.storage import StorageType
-from fides.lib.db.base_class import get_key_from_data
-from fides.lib.exceptions import KeyValidationError
+from fides.api.common_exceptions import KeyValidationError
+from fides.api.db.base_class import get_key_from_data
+from fides.api.models.storage import StorageConfig
+from fides.api.schemas.storage.storage import StorageType
 
 
 def test_get_key_from_data_method_invalid_key() -> None:
@@ -75,28 +75,40 @@ def test_update_key(db: Session, storage_config, privacy_request):
     assert "complete" == privacy_request.status.value
 
 
-def test_save_key(db: Session, storage_config, privacy_request):
-    # Test prevent saving bad keys.
-    storage_config.key = "bad key"
-    with pytest.raises(KeyValidationError) as exc:
+@pytest.mark.integration
+class TestSaveKey:
+    @pytest.mark.parametrize("key", ["bad key", "bad^key", "bad\\key"])
+    def test_save_key_invalid_space(self, db: Session, storage_config, key):
+        "Test prevent saving bad keys."
+        storage_config.key = key
+        with pytest.raises(KeyValidationError) as exc:
+            storage_config.save(db)
+
+        error_output = str(exc.value)
+        expected_output = f"Key '{key}' on StorageConfig is invalid."
+        print(error_output)
+        assert error_output == expected_output
+
+    def test_save_key_none(self, db: Session, storage_config):
+        "Test key required on applicable models."
+        storage_config.key = None
+        with pytest.raises(KeyValidationError) as exc:
+            storage_config.save(db)
+
+        error_output = str(exc.value)
+        expected_output = "Key 'None' on StorageConfig is invalid."
+        print(error_output)
+        assert error_output == expected_output
+
+    def test_save_key_valid(self, db: Session, storage_config):
+        "Test save with valid key"
+        storage_config.key = "valid_key"
         storage_config.save(db)
+        assert storage_config.key == "valid_key"
 
-    assert str(exc.value) == "Key 'bad key' on StorageConfig is invalid."
-
-    # Test key required on applicable models
-    storage_config.key = None
-    with pytest.raises(KeyValidationError) as exc:
-        storage_config.save(db)
-
-    assert str(exc.value) == "Key 'None' on StorageConfig is invalid."
-
-    # Test save with valid key
-    storage_config.key = "valid_key"
-    storage_config.save(db)
-    assert storage_config.key == "valid_key"
-
-    # Test save on model with no key required
-    assert hasattr(privacy_request, "key") is False
-    privacy_request.status = "complete"
-    privacy_request.save(db)
-    assert "complete" == privacy_request.status.value  # type: ignore
+    def test_save_key_privacy_request(self, db: Session, privacy_request):
+        # Test save on model with no key required
+        assert hasattr(privacy_request, "key") is False
+        privacy_request.status = "complete"
+        privacy_request.save(db)
+        assert "complete" == privacy_request.status.value  # type: ignore

@@ -1,14 +1,13 @@
-import { Box, Heading, Stack } from "@fidesui/react";
-import { ReactNode } from "react";
+import { Box, BoxProps, Heading, Stack } from "@fidesui/react";
 
 const FormSection = ({
   title,
   children,
+  ...props
 }: {
   title: string;
-  children: ReactNode;
-}) => (
-  <Box borderRadius="md" border="1px solid" borderColor="gray.200">
+} & BoxProps) => (
+  <Box borderRadius="md" border="1px solid" borderColor="gray.200" {...props}>
     <Heading
       as="h3"
       fontSize="sm"
@@ -18,6 +17,7 @@ const FormSection = ({
       px={6}
       backgroundColor="gray.50"
       borderRadius="md"
+      textAlign="left"
     >
       {title}
     </Heading>

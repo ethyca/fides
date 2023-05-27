@@ -61,7 +61,7 @@ const systemApi = baseApi.injectEndpoints({
         method: "PUT",
         body: patch,
       }),
-      invalidatesTags: ["Datamap", "System", "PrivacyNotices"],
+      invalidatesTags: ["Datamap", "System", "Privacy Notices"],
     }),
   }),
 });
@@ -129,8 +129,8 @@ export const selectActiveClassifySystemFidesKey = createSelector(
 
 const emptySelectAllSystems: System[] = [];
 export const selectAllSystems = createSelector(
-  systemApi.endpoints.getAllSystems.select(),
-  ({ data }) => data || emptySelectAllSystems
+  [(RootState) => RootState, systemApi.endpoints.getAllSystems.select()],
+  (RootState, { data }) => data || emptySelectAllSystems
 );
 
 export const selectActiveClassifySystem = createSelector(

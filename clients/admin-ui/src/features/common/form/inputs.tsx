@@ -130,7 +130,7 @@ export interface Option {
   label: string;
 }
 interface SelectProps {
-  label: string;
+  label?: string;
   labelProps?: FormLabelProps;
   tooltip?: string;
   options: Option[];
@@ -147,6 +147,7 @@ interface SelectProps {
    * similar to how the multi values are rendered
    */
   singleValueBlock?: boolean;
+  isFormikOnChange?: boolean;
 }
 const SelectInput = ({
   options,
@@ -158,7 +159,11 @@ const SelectInput = ({
   singleValueBlock,
   isDisabled = false,
   menuPosition = "absolute",
-}: { fieldName: string; isMulti?: boolean } & Omit<SelectProps, "label">) => {
+  onChange,
+}: { fieldName: string; isMulti?: boolean; onChange?: any } & Omit<
+  SelectProps,
+  "label"
+>) => {
   const [initialField] = useField(fieldName);
   const field = { ...initialField, value: initialField.value ?? "" };
   const selected = isMulti
@@ -184,10 +189,16 @@ const SelectInput = ({
     }
   };
 
-  const handleChange = (newValue: MultiValue<Option> | SingleValue<Option>) =>
-    isMulti
-      ? handleChangeMulti(newValue as MultiValue<Option>)
-      : handleChangeSingle(newValue as SingleValue<Option>);
+  const handleChange = (newValue: MultiValue<Option> | SingleValue<Option>) => {
+    if (onChange) {
+      onChange(newValue);
+    }
+    if (isMulti) {
+      handleChangeMulti(newValue as MultiValue<Option>);
+    } else {
+      handleChangeSingle(newValue as SingleValue<Option>);
+    }
+  };
 
   const components = isClearable ? undefined : { ClearIndicator: () => null };
 
@@ -409,6 +420,8 @@ export const CustomSelect = ({
   isMulti,
   variant = "inline",
   singleValueBlock,
+  onChange,
+  isFormikOnChange,
   ...props
 }: SelectProps & StringField) => {
   const [field, meta] = useField(props);
@@ -416,10 +429,12 @@ export const CustomSelect = ({
   if (variant === "inline") {
     return (
       <FormControl isInvalid={isInvalid} isRequired={isRequired}>
-        <Grid templateColumns="1fr 3fr">
-          <Label htmlFor={props.id || props.name} {...labelProps}>
-            {label}
-          </Label>
+        <Grid templateColumns={label ? "1fr 3fr" : "1fr"}>
+          {label ? (
+            <Label htmlFor={props.id || props.name} {...labelProps}>
+              {label}
+            </Label>
+          ) : null}
           <Flex alignItems="center" data-testid={`input-${field.name}`}>
             <Flex flexDir="column" flexGrow={1} mr={2}>
               <SelectInput
@@ -434,6 +449,7 @@ export const CustomSelect = ({
                 isDisabled={isDisabled}
                 singleValueBlock={singleValueBlock}
                 menuPosition={props.menuPosition}
+                onChange={!isFormikOnChange ? onChange : undefined}
               />
               <ErrorMessage
                 isInvalid={isInvalid}
@@ -451,15 +467,17 @@ export const CustomSelect = ({
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label
-            htmlFor={props.id || props.name}
-            fontSize="sm"
-            my={0}
-            mr={1}
-            {...labelProps}
-          >
-            {label}
-          </Label>
+          {label ? (
+            <Label
+              htmlFor={props.id || props.name}
+              fontSize="sm"
+              my={0}
+              mr={1}
+              {...labelProps}
+            >
+              {label}
+            </Label>
+          ) : null}
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
         <Box width="100%" data-testid={`input-${field.name}`}>
