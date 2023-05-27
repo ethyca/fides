@@ -28,7 +28,7 @@ class RedisSettings(FidesSettings):
         description="The number of seconds for which data will live in Redis before automatically expiring.",
     )
     enabled: bool = Field(
-        default=False,
+        default=True,
         description="Whether the application's Redis cache should be enabled. Only set to false for certain narrow uses of the application.",
     )
     host: str = Field(

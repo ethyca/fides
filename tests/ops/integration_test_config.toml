@@ -58,3 +58,8 @@ uri="http://fides:8080"
 username="root_user"
 password="Testpassword1!"
 polling_timeout=1800
+
+[dynamodb_example]
+aws_access_key_id = ""
+aws_secret_access_key = ""
+region = ""

@@ -69,6 +69,10 @@ body {
     background-color: var(--md-header-bg-color);
 }
 
+.md-grid {
+    max-width: 85%;
+}
+
 .md-header .md-logo img {
     width: 100px;
     height: auto;

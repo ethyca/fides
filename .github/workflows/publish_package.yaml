@@ -27,13 +27,13 @@ jobs:
 
       - name: Install node modules
         run: |
-          cd clients/admin-ui
+          cd clients
           npm install
 
       - name: Build and export frontend files
         run: |
-          cd clients/admin-ui
-          npm run prod-export
+          cd clients
+          npm run prod-export-admin-ui
 
       - name: Install Twine and wheel
         run: pip install twine wheel
@@ -48,14 +48,19 @@ jobs:
       - name: Build the wheel
         run: python setup.py bdist_wheel
 
+      # If the tag matches either a release tag or a beta tag, allow publishing to PyPi, e.g.:
+      #   2.10.0 --> match (production release tag)
+      #   2.10.0b1 --> match (beta release tag, used on main)
+      #   2.10.0.a0 --> no match (alpha tag, used on feature branches)
+      #   2.10.0.dev0 --> no match (arbitrary development tag)
       - name: Check Prod Tag
         id: check-tag
         run: |
-          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+(b[0-9]*)?$ ]]; then
               echo ::set-output name=match::true
           fi
 
-      # We don't upload to Test PyPI if it is a real release
+      # We only upload to Test PyPI if it is a non-"prod" tag (not release or beta)
       - name: Upload to test pypi
         if: steps.check-tag.outputs.match != 'true'
         run: twine upload --repository testpypi dist/*
@@ -63,10 +68,21 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
 
-
+      # Upload to PyPI if it is a "prod" tag (release or beta)
       - name: Upload to pypi
         if: steps.check-tag.outputs.match == 'true'
         run: twine upload dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+
+      # Notify Fidesplus about a feature (non-prod) tag to trigger an integrated build
+      - name: Send Repository Dispatch Event
+        # ensure this is a non-prod tag, but NOT an untagged commit to 'main'
+        if: steps.check-tag.outputs.match != 'true' && github.ref_name != 'main'
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          client-payload: '{"tag": "${{ github.ref_name }}"}'
+          event-type: new-fides-feature-tag
+          repository: ethyca/fidesplus
+          token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}

@@ -111,6 +111,21 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
   }).as("createMessagingConfiguration");
 };
 
+export const stubPrivacyNoticesCrud = () => {
+  cy.intercept("GET", "/api/v1/privacy-notice/*", {
+    fixture: "privacy-notices/list.json",
+  }).as("getNotices");
+  cy.intercept("GET", "/api/v1/privacy-notice/pri*", {
+    fixture: "privacy-notices/notice_only.json",
+  }).as("getNoticeDetail");
+  cy.intercept("POST", "/api/v1/privacy-notice", {
+    fixture: "privacy-notices/list.json",
+  }).as("postNotices");
+  cy.intercept("PATCH", "/api/v1/privacy-notice", {
+    fixture: "privacy-notices/list.json",
+  }).as("patchNotices");
+};
+
 export const CONNECTION_STRING =
   "postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl_test";
 
@@ -201,4 +216,16 @@ export const stubPrivacyRequests = () => {
       fixture: "privacy-requests/deny.json",
     }
   ).as("denyPrivacyRequest");
+};
+
+export const stubDatamap = () => {
+  cy.intercept("GET", "/api/v1/plus/datamap/*", {
+    fixture: "datamap/datamap.json",
+  }).as("getDatamap");
+  cy.intercept("GET", "/api/v1/data_category", {
+    fixture: "taxonomy/data_categories.json",
+  }).as("getDataCategory");
+  cy.intercept("GET", "/api/v1/system", { fixture: "systems/systems.json" }).as(
+    "getSystems"
+  );
 };

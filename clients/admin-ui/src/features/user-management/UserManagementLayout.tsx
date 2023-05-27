@@ -9,8 +9,7 @@ import Link from "next/link";
 import React from "react";
 
 import Layout from "~/features/common/Layout";
-
-import { USER_MANAGEMENT_ROUTE } from "../../constants";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 
 interface Props {
   title: string;

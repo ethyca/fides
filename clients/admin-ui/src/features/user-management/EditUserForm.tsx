@@ -45,8 +45,7 @@ interface Props {
   user: User;
 }
 const EditUserForm = ({ user }: Props) => {
-  const { isOwnProfile, handleSubmit, canUpdateUser, initialValues } =
-    useUserForm(user);
+  const { handleSubmit, canUpdateUser, initialValues } = useUserForm(user);
 
   return (
     <div>
@@ -55,7 +54,6 @@ const EditUserForm = ({ user }: Props) => {
           onSubmit={handleSubmit}
           initialValues={initialValues}
           canEditNames={canUpdateUser}
-          canChangePassword={isOwnProfile}
         />
       </main>
     </div>

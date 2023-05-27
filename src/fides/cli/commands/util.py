@@ -1,6 +1,8 @@
 """Contains all of the Utility-type CLI commands for fides."""
 from datetime import datetime, timezone
+from os import environ
 from subprocess import CalledProcessError
+from typing import Optional
 
 import rich_click as click
 
@@ -8,10 +10,10 @@ import fides
 from fides.cli.utils import (
     FIDES_ASCII_ART,
     check_server,
-    print_divider,
     send_init_analytics,
     with_analytics,
 )
+from fides.common.utils import print_divider
 from fides.core.config.create import create_and_update_config_file
 from fides.core.deploy import (
     check_docker_version,
@@ -19,7 +21,6 @@ from fides.core.deploy import (
     check_virtualenv,
     print_deploy_success,
     pull_specific_docker_image,
-    seed_example_data,
     start_application,
     teardown_application,
 )
@@ -94,7 +95,7 @@ def worker(ctx: click.Context) -> None:
     Start a Celery worker for the Fides webserver.
     """
     # This has to be here to avoid a circular dependency
-    from fides.api.ops.worker import start_worker
+    from fides.api.worker import start_worker
 
     start_worker()
 
@@ -123,27 +124,56 @@ def deploy(ctx: click.Context) -> None:
     is_flag=True,
     help="Disable the initialization of the Fides CLI, to run in headless mode.",
 )
+@click.option(
+    "--env-file",
+    type=click.Path(exists=True),
+    help="Use a custom ENV file for the Fides container to override settings.",
+)
+@click.option(
+    "--image",
+    type=str,
+    help="Use a custom image for the Fides container instead of the default ('ethyca/fides').",
+)
 def up(
-    ctx: click.Context, no_pull: bool = False, no_init: bool = False
+    ctx: click.Context,
+    no_pull: bool = False,
+    no_init: bool = False,
+    env_file: Optional[click.Path] = None,
+    image: Optional[str] = None,
 ) -> None:  # pragma: no cover
     """
     Starts a sample project via docker compose.
     """
 
     check_virtualenv()
-    check_docker_version()
+    try:
+        check_docker_version()
+    except:  # pylint: disable=bare-except
+        response = click.confirm(
+            "WARNING: Encountered an error while checking Docker versions. Would you like to attempt a deploy anyway?"
+        )
+        if not response:
+            raise SystemExit("Deploy aborted!")
+    else:
+        echo_green("Docker version is compatible, starting deploy...")
+
     config = ctx.obj["CONFIG"]
-    echo_green("Docker version is compatible, starting deploy...")
 
     if not no_pull:
         pull_specific_docker_image()
+
+    if env_file:
+        print(f"> Using custom ENV file from: {env_file}")
+        environ["FIDES_DEPLOY_ENV_FILE"] = str(env_file)
+
+    if image:
+        print(f"> Using custom image: {image}")
+        environ["FIDES_DEPLOY_IMAGE"] = image
 
     try:
         check_fides_uploads_dir()
         print("> Starting application...")
         start_application()
-        print("> Seeding data...")
-        seed_example_data()
         click.clear()
 
         # Deployment is ready! Perform the same steps as `fides init` to setup CLI

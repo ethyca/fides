@@ -7,9 +7,9 @@ import validators
 from pydantic import Field, validator
 from slowapi.wrappers import parse_many  # type: ignore
 
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.lib.cryptography.cryptographic_util import generate_salt, hash_with_salt
-from fides.lib.oauth.roles import OWNER
+from fides.api.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.api.oauth.roles import OWNER
 
 from .fides_settings import FidesSettings
 
@@ -85,6 +85,10 @@ class SecuritySettings(FidesSettings):
         default=None,
         description="When using a parent/child Fides deployment, this username will be used by the child server to access the parent server.",
     )
+    public_request_rate_limit: str = Field(
+        default="2000/minute",
+        description="The number of requests from a single IP address allowed to hit a public endpoint within the specified time period",
+    )
     rate_limit_prefix: str = Field(
         default="fides-",
         description="The prefix given to keys in the Redis cache used by the rate limiter.",
@@ -113,6 +117,14 @@ class SecuritySettings(FidesSettings):
     subject_request_download_link_ttl_seconds: int = Field(
         default=432000,
         description="The number of seconds that a pre-signed download URL when using S3 storage will be valid. The default is equal to 5 days.",
+    )
+    allow_custom_connector_functions: Optional[bool] = Field(
+        default=False,
+        description="Enables or disables the ability to import connector templates with custom functions. When enabled, custom functions which will be loaded in a restricted environment to minimize security risks.",
+    )
+    enable_audit_log_resource_middleware: Optional[bool] = Field(
+        default=False,
+        description="Either enables the collection of audit log resource data or bypasses the middleware",
     )
 
     @validator("app_encryption_key")

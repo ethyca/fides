@@ -2,12 +2,12 @@ import { Box, Heading, SimpleGrid, Stack, Text } from "@fidesui/react";
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
-import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/constants";
 import {
   AWSLogoIcon,
   ManualSetupIcon,
   OktaLogoIcon,
 } from "~/features/common/Icon";
+import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/v2/routes";
 import { ValidTargets } from "~/types/api";
 
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";

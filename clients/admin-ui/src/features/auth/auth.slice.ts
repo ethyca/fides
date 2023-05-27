@@ -1,9 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
-import { BASE_URL } from "~/constants";
-import { addCommonHeaders } from "~/features/common/CommonHeaders";
+import { baseApi } from "~/features/common/api.slice";
 import { utf8ToB64 } from "~/features/common/utils";
 import { User } from "~/features/user-management/types";
 import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
@@ -30,20 +28,13 @@ export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    login(
-      state,
-      { payload: { user_data, token_data } }: PayloadAction<LoginResponse>
-    ) {
-      return Object.assign(state, {
-        user: user_data,
-        token: token_data.access_token,
-      });
+    login(draftState, action: PayloadAction<LoginResponse>) {
+      draftState.user = action.payload.user_data;
+      draftState.token = action.payload.token_data.access_token;
     },
-    logout(state) {
-      return Object.assign(state, {
-        user: null,
-        token: null,
-      });
+    logout(draftState) {
+      draftState.user = null;
+      draftState.token = null;
     },
   },
 });
@@ -57,17 +48,7 @@ export const { login, logout } = authSlice.actions;
 type RoleToScopes = Record<RoleRegistryEnum, ScopeRegistryEnum[]>;
 
 // Auth API
-export const authApi = createApi({
-  reducerPath: "authApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
-      addCommonHeaders(headers, token);
-      return headers;
-    },
-  }),
-  tagTypes: ["Auth", "Roles"],
+const authApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     login: build.mutation<LoginResponse, LoginRequest>({
       query: (credentials) => ({

@@ -1,4 +1,5 @@
 import {
+  ConnectionSystemTypeMap,
   ConnectionType,
   DatasetConfigCtlDataset,
   SystemType,
@@ -8,7 +9,6 @@ import {
   AccessLevel,
   ConnectionTestStatus,
   DisabledStatus,
-  SaasType,
   TestingStatus,
 } from "./constants";
 
@@ -158,6 +158,11 @@ export type DatastoreConnection = {
 export const isDatastoreConnection = (obj: any): obj is DatastoreConnection =>
   (obj as DatastoreConnection).connection_type !== undefined;
 
+export const isConnectionSystemTypeMap = (
+  obj: any
+): obj is ConnectionSystemTypeMap =>
+  (obj as ConnectionSystemTypeMap).encoded_icon !== undefined;
+
 export type DatastoreConnectionParams = {
   search: string;
   connection_type?: string[];
@@ -205,20 +210,20 @@ export type DatastoreConnectionUpdate = {
 export type SaasConfig = {
   fides_key: string;
   name: string;
-  type: SaasType;
+  type: string;
 };
 
-export type CreateSassConnectionConfigRequest = {
+export type CreateSaasConnectionConfigRequest = {
   name: string;
   description: string;
   instance_key: string;
-  saas_connector_type: SaasType;
+  saas_connector_type: string;
   secrets: {
     [key: string]: any;
   };
 };
 
-export type CreateSassConnectionConfigResponse = {
+export type CreateSaasConnectionConfigResponse = {
   connection: DatastoreConnection;
   dataset: {
     fides_key: string;

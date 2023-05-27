@@ -46,7 +46,7 @@ describe("Datasets with Fides Classify", () => {
         "have.text",
         "Status"
       );
-      cy.getByTestId("classification-status-badge").should("exist");
+      cy.getByTestId("classification-status-badge").should("not.exist");
     });
 
     it("Classifies the dataset after generating it", () => {
@@ -100,7 +100,6 @@ describe("Datasets with Fides Classify", () => {
       cy.wait("@getDatasets");
       cy.wait("@getClassifyList");
       cy.getByTestId("dataset-table");
-      cy.getByTestId("dataset-status-demo_users_dataset").contains("Unknown");
       cy.getByTestId("dataset-status-demo_users_dataset_2").contains(
         "Processing"
       );
@@ -110,6 +109,7 @@ describe("Datasets with Fides Classify", () => {
       cy.getByTestId("dataset-status-demo_users_dataset_4").contains(
         "Classified"
       );
+      cy.getByTestId("classification-status-badge").should("exist");
     });
   });
 

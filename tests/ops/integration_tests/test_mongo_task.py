@@ -8,27 +8,22 @@ import pytest
 from bson import ObjectId
 from fideslang.models import Dataset
 
-from fides.api.ops.graph.config import (
-    Collection,
-    FieldAddress,
-    GraphDataset,
-    ScalarField,
-)
-from fides.api.ops.graph.data_type import (
+from fides.api.graph.config import Collection, FieldAddress, GraphDataset, ScalarField
+from fides.api.graph.data_type import (
     IntTypeConverter,
     ObjectIdTypeConverter,
     StringTypeConverter,
 )
-from fides.api.ops.graph.graph import DatasetGraph, Edge, Node
-from fides.api.ops.graph.traversal import TraversalNode
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
-from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.service.connectors import get_connector
-from fides.api.ops.task import graph_task
-from fides.api.ops.task.filter_results import filter_data_categories
-from fides.api.ops.task.graph_task import get_cached_data_for_erasures
+from fides.api.graph.graph import DatasetGraph, Edge, Node
+from fides.api.graph.traversal import TraversalNode
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import convert_dataset_to_graph
+from fides.api.models.policy import Policy
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.service.connectors import get_connector
+from fides.api.task import graph_task
+from fides.api.task.filter_results import filter_data_categories
+from fides.api.task.graph_task import get_cached_data_for_erasures
 
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (
@@ -590,9 +585,6 @@ async def test_object_querying_mongo(
         "position": "Chief Strategist",
         "direct_reports": ["Robbie Margo", "Sully Hunter"],
     }
-    assert isinstance(
-        filtered_results["mongo_test:customer_details"][0]["_id"], ObjectId
-    )
 
     # Includes data retrieved from a nested field that was joined with a nested field from another table
     target_categories = {"user"}
@@ -845,26 +837,14 @@ async def test_array_querying_mongo(
     assert filtered_identifiable["mongo_test:customer_details"][0]["children"] == [
         "Erica Example"
     ]
-    assert isinstance(
-        filtered_identifiable["mongo_test:customer_details"][0]["_id"], ObjectId
-    )
     customer_detail_logs = privacy_request.execution_logs.filter_by(
         dataset_name="mongo_test", collection_name="customer_details", status="complete"
     )
     # Returns fields_affected for all possible targeted fields, even though this identity only had some
     # of them actually populated
-    # Note that order matters here!
-    assert customer_detail_logs[0].fields_affected == [
-        {
-            "path": "mongo_test:customer_details:_id",
-            "field_name": "_id",
-            "data_categories": ["user.unique_id"],
-        },
-        {
-            "path": "mongo_test:customer_details:customer_id",
-            "field_name": "customer_id",
-            "data_categories": ["user.unique_id"],
-        },
+    assert sorted(
+        customer_detail_logs[0].fields_affected, key=lambda e: e["field_name"]
+    ) == [
         {
             "path": "mongo_test:customer_details:birthday",
             "field_name": "birthday",
@@ -876,13 +856,13 @@ async def test_array_querying_mongo(
             "data_categories": ["user.childrens"],
         },
         {
-            "path": "mongo_test:customer_details:emergency_contacts.name",
-            "field_name": "emergency_contacts.name",
-            "data_categories": ["user.name"],
+            "path": "mongo_test:customer_details:customer_id",
+            "field_name": "customer_id",
+            "data_categories": ["user.unique_id"],
         },
         {
-            "path": "mongo_test:customer_details:workplace_info.direct_reports",
-            "field_name": "workplace_info.direct_reports",
+            "path": "mongo_test:customer_details:emergency_contacts.name",
+            "field_name": "emergency_contacts.name",
             "data_categories": ["user.name"],
         },
         {
@@ -894,6 +874,11 @@ async def test_array_querying_mongo(
             "path": "mongo_test:customer_details:gender",
             "field_name": "gender",
             "data_categories": ["user.gender"],
+        },
+        {
+            "path": "mongo_test:customer_details:workplace_info.direct_reports",
+            "field_name": "workplace_info.direct_reports",
+            "data_categories": ["user.name"],
         },
         {
             "path": "mongo_test:customer_details:workplace_info.position",
@@ -1108,7 +1093,7 @@ class TestRetrievingDataMongo:
         traversal_node = TraversalNode(node)
         return traversal_node
 
-    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data(
         self,
         mock_incoming_edges: Mock,
@@ -1130,7 +1115,7 @@ class TestRetrievingDataMongo:
 
         assert results[0]["customer_id"] == 1
 
-    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_no_input(
         self,
         mock_incoming_edges: Mock,
@@ -1168,7 +1153,7 @@ class TestRetrievingDataMongo:
         )
         assert results == []
 
-    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
         self,
         mock_incoming_edges: Mock,

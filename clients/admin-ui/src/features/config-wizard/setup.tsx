@@ -2,7 +2,7 @@ import { Button, Container, Heading, Image, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
-import { SYSTEM_ROUTE } from "~/constants";
+import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 
 import { changeStep } from "./config-wizard.slice";
 

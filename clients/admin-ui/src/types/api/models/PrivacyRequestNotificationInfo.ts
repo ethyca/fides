@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * A base template for all other Fidesops Schemas to inherit from.
+ * A base template for all other Fides Schemas to inherit from.
  */
 export type PrivacyRequestNotificationInfo = {
   email_addresses: Array<string>;

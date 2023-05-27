@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * Used to store base info for a saas config
+ * Used to store base info for a SaaS config
  */
 export type SaaSConfigBase = {
   fides_key: string;

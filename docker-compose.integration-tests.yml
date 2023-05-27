@@ -1,5 +1,6 @@
 services:
   fides:
+    image: ethyca/fides:local
     depends_on:
       - postgres-test
       - mysql-test

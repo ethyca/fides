@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
 import { usePollForClassifications } from "~/features/common/classifications";
-import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
+import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import Layout from "~/features/common/Layout";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
@@ -32,7 +32,7 @@ const ClassifySystemsLayout = ({ children }: { children: ReactNode }) => (
 const ClassifySystems: NextPage = () => {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { systemOrDatamapRoute } = useInterzoneNav();
+  const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
   const { isSuccess: hasPlus, isLoading: isLoadingPlus } = useGetHealthQuery();
   /**
    * TODO: fides#1744

@@ -2,8 +2,6 @@ import { Flex } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React from "react";
 
-import { resolveZoneLink } from "~/features/common/nav/zone-config";
-
 import { useNav } from "./hooks";
 import { NavTopBarLink } from "./NavLink";
 
@@ -26,13 +24,10 @@ export const NavTopBar = () => {
         // The group links to its first child's path.
         const { path } = group.children[0]!;
 
-        // We still need to handle cross-zone links.
-        const { href } = resolveZoneLink({ href: path, router });
-
         const isActive = group.title === nav.active?.title;
 
         return (
-          <NavTopBarLink key={group.title} href={href} isActive={isActive}>
+          <NavTopBarLink key={group.title} href={path} isActive={isActive}>
             {group.title}
           </NavTopBarLink>
         );

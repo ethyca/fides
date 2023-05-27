@@ -5,24 +5,30 @@ import {
   Spinner,
   Stack,
   Text,
+  useDisclosure,
   useToast,
 } from "@fidesui/react";
-import { useHasRole } from "common/Restrict";
+import ConfirmationModal from "common/ConfirmationModal";
+import { useHasPermission } from "common/Restrict";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
+import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { USER_MANAGEMENT_ROUTE } from "~/constants";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
-import { RoleRegistryEnum } from "~/types/api";
+import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
 
 import RoleOption from "./RoleOption";
 import {
   selectActiveUserId,
+  selectActiveUsersManagedSystems,
+  useGetUserManagedSystemsQuery,
   useGetUserPermissionsQuery,
+  useUpdateUserManagedSystemsMutation,
   useUpdateUserPermissionsMutation,
 } from "./user-management.slice";
 
@@ -35,6 +41,24 @@ export type FormValues = typeof defaultInitialValues;
 const PermissionsForm = () => {
   const toast = useToast();
   const activeUserId = useAppSelector(selectActiveUserId);
+  useGetUserManagedSystemsQuery(activeUserId as string, {
+    skip: !activeUserId,
+  });
+  const {
+    isOpen: chooseApproverIsOpen,
+    onOpen: chooseApproverOpen,
+    onClose: chooseApproverClose,
+  } = useDisclosure();
+  const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
+  const [assignedSystems, setAssignedSystems] = useState<System[]>(
+    initialManagedSystems
+  );
+  const [updateUserManagedSystemsTrigger] =
+    useUpdateUserManagedSystemsMutation();
+
+  useEffect(() => {
+    setAssignedSystems(initialManagedSystems);
+  }, [initialManagedSystems]);
 
   const { data: userPermissions, isLoading } = useGetUserPermissionsQuery(
     activeUserId ?? "",
@@ -46,26 +70,63 @@ const PermissionsForm = () => {
   const [updateUserPermissionMutationTrigger] =
     useUpdateUserPermissionsMutation();
 
-  const handleSubmit = async (values: FormValues) => {
+  const updatePermissions = async (values: FormValues) => {
+    if (chooseApproverIsOpen) {
+      chooseApproverClose();
+    }
     if (!activeUserId) {
       return;
     }
-    const result = await updateUserPermissionMutationTrigger({
+
+    // Unassigning systems from an approver happens automatically on BE when the role is saved.
+    // If we attempt to assign systems to the approver role, the BE will throw an error,
+    // so we skip calling the endpoint.
+    const skipAssigningSystems = values.roles.includes(
+      RoleRegistryEnum.APPROVER
+    );
+
+    const userPermissionsResult = await updateUserPermissionMutationTrigger({
       user_id: activeUserId,
-      // Scopes are not editable in the UI, but make sure we retain whatever scopes
-      // the user might've already had
-      payload: { scopes: userPermissions?.scopes, roles: values.roles },
+      payload: { roles: values.roles },
     });
 
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+    if (isErrorResult(userPermissionsResult)) {
+      toast(errorToastParams(getErrorMessage(userPermissionsResult.error)));
       return;
+    }
+    if (!skipAssigningSystems) {
+      const fidesKeys = assignedSystems.map((s) => s.fides_key);
+      const userSystemsResult = await updateUserManagedSystemsTrigger({
+        userId: activeUserId,
+        fidesKeys,
+      });
+      if (isErrorResult(userSystemsResult)) {
+        toast(errorToastParams(getErrorMessage(userSystemsResult.error)));
+        return;
+      }
     }
     toast(successToastParams("Permissions updated"));
   };
 
-  // This prevents users with contributor role from being able to assign owner roles
-  const isOwner = useHasRole([RoleRegistryEnum.OWNER]);
+  const handleSubmit = async (values: FormValues) => {
+    if (!activeUserId) {
+      return;
+    }
+    if (
+      assignedSystems.length > 0 &&
+      values.roles.includes(RoleRegistryEnum.APPROVER)
+    ) {
+      // approvers cannot be system managers on back-end
+      chooseApproverOpen();
+    } else {
+      await updatePermissions(values);
+    }
+  };
+
+  // This prevents logged-in users with contributor role from being able to assign owner roles
+  const canAssignOwner = useHasPermission([
+    ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
+  ]);
 
   if (!activeUserId) {
     return null;
@@ -75,9 +136,12 @@ const PermissionsForm = () => {
     return <Spinner />;
   }
 
-  if (!isOwner && userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)) {
+  if (
+    !canAssignOwner &&
+    userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)
+  ) {
     return (
-      <Text>
+      <Text data-testid="insufficient-access">
         You do not have sufficient access to change this user&apos;s
         permissions.
       </Text>
@@ -97,7 +161,7 @@ const PermissionsForm = () => {
       {({ values, isSubmitting, dirty }) => (
         <Form>
           <Stack spacing={7}>
-            <Stack spacing={3}>
+            <Stack spacing={3} data-testid="role-options">
               <Flex alignItems="center">
                 <Text fontSize="sm" fontWeight="semibold" mr={1}>
                   User role
@@ -111,8 +175,12 @@ const PermissionsForm = () => {
                     key={role.roleKey}
                     isSelected={isSelected}
                     isDisabled={
-                      role.roleKey === RoleRegistryEnum.OWNER ? !isOwner : false
+                      role.roleKey === RoleRegistryEnum.OWNER
+                        ? !canAssignOwner
+                        : false
                     }
+                    assignedSystems={assignedSystems}
+                    onAssignedSystemChange={setAssignedSystems}
                     {...role}
                   />
                 );
@@ -126,13 +194,27 @@ const PermissionsForm = () => {
                 colorScheme="primary"
                 type="submit"
                 isLoading={isSubmitting}
-                disabled={!dirty}
+                disabled={!dirty && assignedSystems === initialManagedSystems}
                 data-testid="save-btn"
               >
                 Save
               </Button>
             </ButtonGroup>
           </Stack>
+          <ConfirmationModal
+            isOpen={chooseApproverIsOpen}
+            onClose={chooseApproverClose}
+            onConfirm={() => updatePermissions(values)}
+            title="Change role to Approver"
+            testId="downgrade-to-approver-confirmation-modal"
+            continueButtonText="Yes"
+            message={
+              <Text>
+                Switching to an approver role will remove all assigned systems.
+                Do you wish to proceed?
+              </Text>
+            }
+          />
         </Form>
       )}
     </Formik>

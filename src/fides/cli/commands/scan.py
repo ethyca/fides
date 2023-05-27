@@ -73,6 +73,7 @@ def scan_dataset_db(
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,
         headers=config.user.auth_header,
+        local=config.cli.local_mode,
     )
 
 

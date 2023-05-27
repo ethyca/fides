@@ -11,7 +11,7 @@ on:
 
 env:
   IMAGE: ethyca/fides:local
-  DEFAULT_PYTHON_VERSION: "3.10.7"
+  DEFAULT_PYTHON_VERSION: "3.10.11"
 
 jobs:
   ###############
@@ -40,7 +40,7 @@ jobs:
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.8.16", "3.9.16", "3.10.11"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -142,15 +142,16 @@ jobs:
     needs: Build
     strategy:
       matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.8.16", "3.9.16", "3.10.11"]
         test_selection:
           - "ctl-not-external"
           - "ops-unit"
           - "ops-integration"
           - "lib"
+          - "nox"
 
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     continue-on-error: true
     steps:
       - name: Download container
@@ -193,7 +194,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.8.16", "3.9.16", "3.10.11"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -224,13 +225,16 @@ jobs:
           OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_FIDESCTL_CLIENT_TOKEN }}
           AWS_DEFAULT_REGION: us-east-1
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
+          DYNAMODB_REGION: ${{ secrets.DYNAMODB_REGION }}
+          DYNAMODB_ACCESS_KEY_ID: ${{ secrets.DYNAMODB_ACCESS_KEY_ID }}
+          DYNAMODB_ACCESS_KEY: ${{ secrets.DYNAMODB_ACCESS_KEY }}
 
   External-Datastores:
     needs: Build
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.8.16", "3.9.16", "3.10.11"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -258,6 +262,10 @@ jobs:
           BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
           BIGQUERY_DATASET: fidesopstest
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
+          DYNAMODB_REGION: ${{ secrets.DYNAMODB_REGION }}
+          DYNAMODB_ACCESS_KEY_ID: ${{ secrets.DYNAMODB_ACCESS_KEY_ID }}
+          DYNAMODB_ACCESS_KEY: ${{ secrets.DYNAMODB_ACCESS_KEY }}
+
         run: nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:
@@ -272,7 +280,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.8.16", "3.9.16", "3.10.11"]
     steps:
       - name: Download container
         uses: actions/download-artifact@v3

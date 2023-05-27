@@ -18,10 +18,10 @@ import {
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
 import { useRouter } from "next/router";
 import React, { ChangeEvent, useEffect, useState } from "react";
-import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   useGetAllDatasetsQuery,
   useUpsertDatasetsMutation,

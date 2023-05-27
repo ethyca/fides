@@ -2,10 +2,52 @@ import {
   ConsentContext,
   CookieKeyConsent,
   resolveConsentValue,
-} from "fides-consent";
+} from "fides-js";
 
-import { ConfigConsentOption } from "~/types/config";
+import {
+  ConfigConsentOption,
+  LegacyConsentConfig,
+  ConsentConfig,
+} from "~/types/config";
 import { FidesKeyToConsent, GpcStatus } from "./types";
+
+/**
+ * Ascertain whether a consentConfig is V1 or V2 based upon the presence of a `button` key
+ */
+export function isV1ConsentConfig(
+  consentConfig: LegacyConsentConfig | ConsentConfig | undefined
+): consentConfig is LegacyConsentConfig {
+  return (
+    typeof consentConfig === "object" &&
+    consentConfig != null &&
+    !("button" in consentConfig)
+  );
+}
+
+/**
+ * A method to translate the original version (v1) of the Fides Privacy Center config
+ * into the semantically improved version (v2) which separates the page and button
+ * data.
+ */
+export const translateV1ConfigToV2 = ({
+  v1ConsentConfig,
+}: {
+  v1ConsentConfig: LegacyConsentConfig;
+}): ConsentConfig => ({
+  button: {
+    icon_path: v1ConsentConfig.icon_path,
+    description: v1ConsentConfig.description,
+    identity_inputs: v1ConsentConfig.identity_inputs,
+    title: v1ConsentConfig.title,
+  },
+  page: {
+    consentOptions: v1ConsentConfig.consentOptions,
+    description: v1ConsentConfig.description,
+    description_subtext: [],
+    policy_key: v1ConsentConfig.policy_key,
+    title: v1ConsentConfig.title,
+  },
+});
 
 export const makeCookieKeyConsent = ({
   consentOptions,

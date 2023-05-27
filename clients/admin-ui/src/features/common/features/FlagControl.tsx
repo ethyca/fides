@@ -11,10 +11,13 @@ export const FlagControl = ({
   defaultValue,
   override,
 }: {
-  flag: typeof FLAG_NAMES[number];
+  flag: (typeof FLAG_NAMES)[number];
   value: FlagValue;
   defaultValue: FlagValue;
-  override: (args: { flag: typeof FLAG_NAMES[number]; value: boolean }) => void;
+  override: (args: {
+    flag: (typeof FLAG_NAMES)[number];
+    value: boolean;
+  }) => void;
 }) => {
   if (typeof value !== "boolean") {
     // Only supporting modifying boolean flags for now.
@@ -24,6 +27,11 @@ export const FlagControl = ({
         <Text fontSize="sm">{value}</Text>
       </>
     );
+  }
+
+  // Do not render a toggle if the flag is marked as not able to be modified by the user
+  if (FLAG_CONFIG[flag].userCannotModify) {
+    return null;
   }
 
   return (

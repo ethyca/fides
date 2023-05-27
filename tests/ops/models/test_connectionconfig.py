@@ -1,14 +1,14 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ops.models.connectionconfig import (
+from fides.api.db.base_class import KeyOrNameAlreadyExists, KeyValidationError
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.schemas.saas.saas_config import SaaSConfig
-from fides.api.ops.util.text import to_snake_case
-from fides.lib.db.base_class import KeyOrNameAlreadyExists, KeyValidationError
+from fides.api.schemas.saas.saas_config import SaaSConfig
+from fides.api.util.text import to_snake_case
 
 
 class TestConnectionConfigModel:
@@ -147,3 +147,11 @@ class TestConnectionConfigModel:
     def test_connection_type_human_readable_invalid(self):
         with pytest.raises(ValueError):
             ConnectionType("nonmapped_type").human_readable()
+
+    def test_system_key(self, db, connection_config, system):
+        assert connection_config.system_key == connection_config.name
+
+        connection_config.system_id = system.id
+        connection_config.save(db)
+
+        assert connection_config.system_key == system.fides_key

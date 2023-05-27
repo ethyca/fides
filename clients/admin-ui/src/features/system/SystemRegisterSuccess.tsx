@@ -18,7 +18,7 @@ import {
 import { useRouter } from "next/router";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { SYSTEM_ROUTE } from "~/constants";
+import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   selectAllSystems,
   setActiveSystem,

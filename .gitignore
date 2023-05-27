@@ -256,5 +256,5 @@ fides_uploads
 saas_config.toml
 
 # Frontend files
-clients/privacy-center/node_modules
-clients/privacy-center/.next
+**/node_modules
+**/.next

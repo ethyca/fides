@@ -13,12 +13,12 @@ from sqlalchemy.orm import Session
 
 from fides.api.ctl.database.crud import get_resource
 from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.core import api
 from fides.core import dataset as _dataset
 from fides.core.config import FidesConfig
@@ -424,9 +424,9 @@ TEST_DATABASE_PARAMETERS = {
         "init_script_path": "tests/ctl/data/example_sql/snowflake_example.sql",
         "is_external": True,
         "expected_collection": {
-            "public": {
-                "visit": ["email", "last_visit"],
-                "login": ["id", "customer_id", "time"],
+            "PUBLIC": {
+                "VISIT": ["EMAIL", "LAST_VISIT"],
+                "LOGIN": ["ID", "CUSTOMER_ID", "TIME"],
             }
         },
     },

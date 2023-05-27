@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: friendbuy_nextgen_instance
+  - fides_key: <instance_fides_key>
     name: Friendbuy Dataset
     description: A sample dataset representing the Friendbuy connector for Fides
     collections:

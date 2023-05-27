@@ -55,7 +55,7 @@ const SystemCatalog = () => {
             onChange={setSearchFilter}
             placeholder="Search for a system"
             data-testid="system-catalog-search"
-            withClear
+            onClear={() => setSearchFilter("")}
           />
         </Box>
         <Flex alignItems="center">

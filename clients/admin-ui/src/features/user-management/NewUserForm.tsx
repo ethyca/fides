@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import UserManagementTabs from "user-management/UserManagementTabs";
 
 import { useAppDispatch } from "~/app/hooks";
-import { USER_MANAGEMENT_ROUTE } from "~/constants";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 
 import {
   setActiveUserId,

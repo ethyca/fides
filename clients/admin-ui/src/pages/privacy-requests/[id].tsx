@@ -13,8 +13,8 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { ReactNode } from "react";
 
-import { PRIVACY_REQUESTS_ROUTE } from "~/constants";
 import Layout from "~/features/common/Layout";
+import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/v2/routes";
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import PrivacyRequest from "~/features/privacy-requests/PrivacyRequest";
 

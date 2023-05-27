@@ -4,11 +4,9 @@ from typing import Optional
 import pytest
 from requests import Response
 
-from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.ops.schemas.saas.strategy_configuration import (
-    CursorPaginationConfiguration,
-)
-from fides.api.ops.service.pagination.pagination_strategy_cursor import (
+from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.schemas.saas.strategy_configuration import CursorPaginationConfiguration
+from fides.api.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
 
@@ -17,7 +15,12 @@ from fides.api.ops.service.pagination.pagination_strategy_cursor import (
 def response_with_body():
     response = Response()
     response._content = bytes(
-        json.dumps({"conversations": [{"id": 1}, {"id": 2}, {"id": 3}]}),
+        json.dumps(
+            {
+                "conversations": [{"id": 1}, {"id": 2}, {"id": 3}],
+                "meta": {"next_cursor": 123},
+            }
+        ),
         "utf-8",
     )
     return response
@@ -89,3 +92,35 @@ def test_headers_present_in_paginated_request(response_with_body):
         request_params, {}, response_with_body, "conversations"
     )
     assert next_request.headers == request_params.headers
+
+
+def test_cursor_outside_of_data_path(response_with_body):
+    config = CursorPaginationConfiguration(
+        cursor_param="after", field="meta.next_cursor"
+    )
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/conversations",
+    )
+    paginator = CursorPaginationStrategy(config)
+    next_request: SaaSRequestParams = paginator.get_next_request(
+        request_params, {}, response_with_body, "conversations"
+    )
+    assert next_request == SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/conversations",
+        query_params={"after": 123},
+    )
+
+
+def test_cursor_outside_of_data_path_not_found(response_with_body):
+    config = CursorPaginationConfiguration(cursor_param="after", field="meta.next")
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/conversations",
+    )
+    paginator = CursorPaginationStrategy(config)
+    next_request: SaaSRequestParams = paginator.get_next_request(
+        request_params, {}, response_with_body, "conversations"
+    )
+    assert next_request is None

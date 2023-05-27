@@ -5,6 +5,8 @@ import "@fontsource/inter/700.css";
 import { FidesProvider } from "@fidesui/react";
 import type { AppProps } from "next/app";
 import React from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
@@ -31,18 +33,20 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <FidesProvider theme={theme}>
-          {Component === Login ? (
-            // Only the login page is accessible while logged out. If there is
-            // a use case for more unprotected routes, Next has a guide for
-            // per-page layouts:
-            // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
-            <Component {...pageProps} />
-          ) : (
-            <ProtectedRoute>
-              <CommonSubscriptions />
+          <DndProvider backend={HTML5Backend}>
+            {Component === Login ? (
+              // Only the login page is accessible while logged out. If there is
+              // a use case for more unprotected routes, Next has a guide for
+              // per-page layouts:
+              // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
               <Component {...pageProps} />
-            </ProtectedRoute>
-          )}
+            ) : (
+              <ProtectedRoute>
+                <CommonSubscriptions />
+                <Component {...pageProps} />
+              </ProtectedRoute>
+            )}
+          </DndProvider>
         </FidesProvider>
       </PersistGate>
     </Provider>

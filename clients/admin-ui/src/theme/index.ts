@@ -12,6 +12,17 @@ const theme = extendTheme({
     },
   },
   components: {
+    Accordion: {
+      baseStyle: {
+        button: {
+          // Remove annoying focus outline, unless for a11y visibility
+          // NOTE: Upgrading to Chakra 2.2.0+ will fix this globally:
+          // (see https://chakra-ui.com/changelog/2.2.0#all-components)
+          _focus: { boxShadow: "none" },
+          _focusVisible: { boxShadow: "outline" },
+        },
+      },
+    },
     Button,
     Divider: {
       baseStyle: {

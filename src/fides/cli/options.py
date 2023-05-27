@@ -198,7 +198,7 @@ def prompt_username(ctx: click.Context, param: str, value: str) -> str:
         return value
 
     if config_value:
-        click.echo("> Username found in configuration file.")
+        click.echo("> Username found in configuration.")
         return config_value
 
     value = click.prompt(text="Username")  # pragma: no cover
@@ -213,7 +213,7 @@ def prompt_password(ctx: click.Context, param: str, value: str) -> str:
         return value
 
     if config_value:
-        click.echo("> Password found in configuration file.")
+        click.echo("> Password found in configuration.")
         return config_value
 
     value = click.prompt(text="Password", hide_input=True)  # pragma: no cover
