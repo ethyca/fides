@@ -12,13 +12,14 @@ from loguru import logger as log
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from fides.api.ctl.sql_models import PrivacyDeclaration, PolicyCtl
+import asyncio
 
 from fides.api.api.v1.endpoints.dataset_endpoints import patch_dataset_configs
 from fides.api.api.v1.endpoints.saas_config_endpoints import (
     instantiate_connection_from_template,
 )
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
-from fides.api.ctl.database.session import get_async_db
+from fides.api.ctl.database.session import async_session
 from fides.api.ctl.database.system import upsert_system
 from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     Dataset,
@@ -77,29 +78,55 @@ data_use_updates: Dict[str, str] = {
 }
 
 
-def upgrade():
-    # Update every place where a data use could be
+async def update_privacy_declarations() -> None:
+    async with async_session() as session:
+        resources = await list_resource(PrivacyDeclaration, session)
 
-    # I made this list by ctrl+f in fideslang as well as the other models defined here in Fides
-
-    async_session = get_async_db()
-    with async_session() as session:
-        # Update Privacy Declarations
-        existing_resources = list_resource(PrivacyDeclaration, session)
-        for resource in existing_resources:
+        for resource in resources:
             current_data_use = resource.data_use
+
             if current_data_use in data_use_updates.keys():
                 resource.data_use = data_use_updates[resource.data_use]
-        upsert_resources(PrivacyDeclaration, resources, session)
 
-        # Update PolicyRules
-        existing_resources = list_resource(PolicyCtl, session)
-        for resource in existing_resources:
-            for rule in resoures.rules:
+        await upsert_resources(PrivacyDeclaration, resources, session)
+
+        # Since we can't write tests for data migrations, we do it live
+        existing_resources = await list_resource(PrivacyDeclaration, session)
+        assert not all(
+            [
+                False if resource.data_use in data_use_updates.keys() else True
+                for resource in existing_resources
+            ]
+        ), "ERROR: Data Use Migration for Fideslang v1.4 failed for Privacy Declarations!"
+
+
+async def update_policy_rules() -> None:
+    async with async_session() as session:
+        resources = await list_resource(PolicyCtl, session)
+        for resource in resources:
+            for rule in resource.rules:
                 current_data_use = rule.data_use
                 if current_data_use in data_use_updates.keys():
                     rule.data_use = data_use_updates[resource.data_use]
-        upsert_resources(PolicyCtl, resources, session)
+        await upsert_resources(PolicyCtl, resources, session)
+
+        # Since we can't write tests for data migrations, we do it live
+        existing_resources = await list_resource(PolicyCtl, session)
+        assert not all(
+            [
+                False if rule.data_use in data_use_updates.keys() else True
+                for resource in existing_resources
+                for rule in resource
+            ]
+        ), "ERROR: Data Use Migration for Fideslang v1.4 failed for Policy Rules!"
+
+
+def upgrade():
+    # Update every place where an old data use could be
+
+    loop = asyncio.get_running_loop()
+    asyncio.ensure_future(update_privacy_declarations(), loop=loop)
+    asyncio.ensure_future(update_policy_rules(), loop=loop)
 
 
 def downgrade():
