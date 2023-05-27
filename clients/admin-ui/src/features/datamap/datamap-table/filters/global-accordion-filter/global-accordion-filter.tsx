@@ -7,9 +7,14 @@ import SearchBar from "~/features/common/SearchBar";
 type GlobalFilterProps = {
   globalFilter: any;
   setGlobalFilter: (filterValue: any) => void;
+  placeholder?: string;
 };
 
-const GlobalFilter = ({ globalFilter, setGlobalFilter }: GlobalFilterProps) => {
+const GlobalFilter = ({
+  globalFilter,
+  setGlobalFilter,
+  placeholder,
+}: GlobalFilterProps) => {
   const [value, setValue] = useState(globalFilter);
 
   const onChange = useAsyncDebounce((searchValue) => {
@@ -30,6 +35,7 @@ const GlobalFilter = ({ globalFilter, setGlobalFilter }: GlobalFilterProps) => {
         }}
         onClear={onClear}
         search={value || ""}
+        placeholder={placeholder}
       />
     </Box>
   );

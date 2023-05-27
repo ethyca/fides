@@ -1,16 +1,13 @@
-"""Utils to help with API calls."""
 import glob
 import re
 from functools import partial
 from hashlib import sha1
-from json.decoder import JSONDecodeError
 from os import getenv
 from os.path import isfile
 from pathlib import Path
 from typing import Dict, Iterator, List
 
 import click
-import requests
 import sqlalchemy
 import toml
 from fideslang.models import DatasetField, FidesModel
@@ -38,44 +35,6 @@ class Credentials(BaseModel):
     access_token: str
 
 
-def check_response_auth(response: requests.Response) -> requests.Response:
-    """
-    Verify that a response object is 'ok', otherwise print the error and raise
-    an exception.
-    """
-    if response.status_code in [401, 403]:
-        echo_red("Authorization Error: please try 'fides user login' and try again.")
-        raise SystemExit(1)
-    return response
-
-
-def check_response(response: requests.Response) -> requests.Response:
-    """
-    Check that a response has valid JSON.
-    """
-
-    try:
-        response.json()
-    except JSONDecodeError as json_error:
-        logger.error(response.status_code)
-        logger.error(response.text)
-        raise json_error
-    else:
-        return response
-
-
-def validate_db_engine(connection_string: str) -> None:
-    """
-    Use SQLAlchemy to create a DB engine.
-    """
-    try:
-        engine = sqlalchemy.create_engine(connection_string)
-        with engine.begin() as connection:
-            connection.execute("SELECT 1")
-    except SQLAlchemyError as error:
-        raise ConnectorAuthFailureException(error)
-
-
 def get_db_engine(connection_string: str) -> Engine:
     """
     Use SQLAlchemy to create a DB engine.
@@ -93,6 +52,18 @@ def get_db_engine(connection_string: str) -> Engine:
     except Exception as err:
         raise Exception(f"Database connection failed with engine:\n{engine}!") from err
     return engine
+
+
+def validate_db_engine(connection_string: str) -> None:
+    """
+    Use SQLAlchemy to create a DB engine.
+    """
+    try:
+        engine = sqlalchemy.create_engine(connection_string)
+        with engine.begin() as connection:
+            connection.execute("SELECT 1")
+    except SQLAlchemyError as error:
+        raise ConnectorAuthFailureException(error)
 
 
 def get_all_level_fields(fields: list) -> Iterator[DatasetField]:

@@ -89,7 +89,7 @@ export const consentSlice = createSlice({
      * directly because there are 3 different endpoints that may return this info. If we simplify
      * how that fetching works with/without verification, this would also become simpler.
      */
-    updateConsentFromApi(
+    updateUserConsentPreferencesFromApi(
       draftState,
       { payload }: PayloadAction<ConsentPreferences>
     ) {
@@ -104,7 +104,8 @@ export const consentSlice = createSlice({
 });
 
 export const { reducer } = consentSlice;
-export const { changeConsent, updateConsentFromApi } = consentSlice.actions;
+export const { changeConsent, updateUserConsentPreferencesFromApi } =
+  consentSlice.actions;
 
 export const selectConsentState = (state: RootState) => state.consent;
 

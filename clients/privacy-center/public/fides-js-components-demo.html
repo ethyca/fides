@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>fides-js script demo page</title>
+
+    <link rel="stylesheet" href="./lib/fides.css" />
+
+    <script src="./lib/fides.js"></script>
+    <script>
+      // Our cypress test suite requires injecting consent options through an obj on window
+      // we default to the below for dev purposes
+      var fidesConfig = window.fidesConfig || {
+        consent: {
+          options: [
+            {
+              cookieKeys: ["data_sales"],
+              default: true,
+              fidesDataUseKey: "data_use.sales",
+            },
+            {
+              cookieKeys: ["tracking"],
+              default: false,
+              fidesDataUseKey: "advertising",
+            },
+          ],
+        },
+        experience: {
+          version: "1.0",
+          id: "132345243",
+          disabled: false,
+          region: "us_ca",
+          delivery_mechanism: "banner",
+          component: "overlay",
+          created_at: "2023-04-24T21:29:08.870351+00:00",
+          updated_at: "2023-04-24T21:29:08.870351+00:00",
+          privacy_experience_history_id: "2342345",
+          experience_config: {
+            component: "overlay",
+            delivery_mechanism: "banner",
+            disabled: false,
+            component_title: "Manage your consent",
+            component_description:
+              "On this page you can opt in and out of these data uses cases",
+            banner_title: "Manage your consent",
+            banner_description:
+              "This test website is overriding the banner description label.",
+            confirmation_button_label: "Accept Test",
+            acknowledgement_button_label: "OK",
+            reject_button_label: "Reject Test",
+            version: 1.0,
+            created_at: "2023-04-24T21:29:08.870351+00:00",
+            updated_at: "2023-04-24T21:29:08.870351+00:00",
+            experience_config_history_id: "2345324",
+            regions: ["us_ca"],
+            id: "2348571y34",
+            is_default: false,
+            link_label: "Manage Consent",
+          },
+          privacy_notices: [
+            {
+              name: "Test privacy notice",
+              disabled: false,
+              origin: "12435134",
+              description: "a test sample privacy notice configuration",
+              internal_description:
+                "a test sample privacy notice configuration for internal use",
+              regions: ["us_ca"],
+              consent_mechanism: "opt_in",
+              default_preference: "opt_out",
+              current_preference: null,
+              outdated_preference: null,
+              has_gpc_flag: true,
+              data_uses: ["advertising", "third_party_sharing"],
+              enforcement_level: "system_wide",
+              displayed_in_overlay: true,
+              displayed_in_api: true,
+              displayed_in_privacy_center: false,
+              id: "pri_4bed96d0-b9e3-4596-a807-26b783836374",
+              created_at: "2023-04-24T21:29:08.870351+00:00",
+              updated_at: "2023-04-24T21:29:08.870351+00:00",
+              version: 1.0,
+              privacy_notice_history_id:
+                "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
+            },
+            {
+              name: "Essential",
+              description:
+                "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
+              regions: ["us_ca"],
+              consent_mechanism: "notice_only",
+              has_gpc_flag: true,
+              data_uses: ["provide.service"],
+              enforcement_level: "system_wide",
+              displayed_in_overlay: true,
+              displayed_in_api: true,
+              displayed_in_privacy_center: false,
+              id: "pri_4bed96d0-b9e3-4596-a807-26b783836375",
+              created_at: "2023-04-24T21:29:08.870351+00:00",
+              updated_at: "2023-04-24T21:29:08.870351+00:00",
+              version: 1.0,
+              privacy_notice_history_id:
+                "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
+            },
+          ],
+        },
+        geolocation: {
+          country: "US",
+          location: "US-CA",
+          region: "CA",
+        },
+        options: {
+          debug: true,
+          isOverlayDisabled: false,
+          isGeolocationEnabled: false,
+          geolocationApiUrl: "",
+          privacyCenterUrl: "http://localhost:3000",
+        },
+      };
+      window.Fides.init(fidesConfig);
+    </script>
+
+    <style>
+      body {
+        max-width: 800px;
+        margin: 16px;
+      }
+      pre {
+        background-color: #eee;
+        padding: 16px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <h1>fides.js demo page</h1>
+      <p>
+        This page exists to demonstrate and debug the fides.js script. It is
+        used by the Privacy Center's test suite to ensure that users' consent
+        choices can be accessed by pages that live outside of the Privacy
+        Center.
+      </p>
+
+      <h2>Was the fides global defined?</h2>
+      <pre id="has-fides"></pre>
+
+      <h2>Consent JSON</h2>
+      <pre id="consent-json"></pre>
+
+      <h2>Consent Modal Link</h2>
+      <a id="fides-consent-modal-link">Manage Consent</a>
+
+      <h2>Consent Experience</h2>
+      <pre id="consent-experience"></pre>
+
+      <h2>Geolocation</h2>
+      <pre id="consent-geolocation"></pre>
+
+      <h2>Consent Options</h2>
+      <pre id="consent-options"></pre>
+    </main>
+  </body>
+
+  <script>
+    (() => {
+      const hasFides = typeof Fides === "object";
+      document.getElementById("has-fides").textContent = String(hasFides);
+
+      if (!hasFides) {
+        return;
+      }
+
+      // Pretty-print the fides consent object and add it to the page.
+      document.getElementById("consent-json").textContent = JSON.stringify(
+        Fides.consent,
+        null,
+        2
+      );
+
+      // Pretty-print the fides experience config object and add it to the page.
+      document.getElementById("consent-experience").textContent =
+        JSON.stringify(Fides.experience, null, 2);
+
+      // Pretty-print the fides geolocation object and add it to the page.
+      document.getElementById("consent-geolocation").textContent =
+        JSON.stringify(Fides.geolocation, null, 2);
+
+      // Pretty-print the fides options object and add it to the page.
+      document.getElementById("consent-options").textContent = JSON.stringify(
+        Fides.options,
+        null,
+        2
+      );
+
+      // Test behavior of integrations that can be configured without/before their platform scripts.
+      Fides.gtm();
+      Fides.meta({
+        consent: Fides.consent.tracking,
+        dataUse: Fides.consent.data_sales,
+      });
+    })();
+  </script>
+</html>

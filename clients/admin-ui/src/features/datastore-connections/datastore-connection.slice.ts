@@ -161,7 +161,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         method: "POST",
         body: params.body,
       }),
-      invalidatesTags: () => ["DatastoreConnection"],
+      invalidatesTags: () => ["Datastore Connection"],
     }),
     createSassConnectionConfig: build.mutation<
       CreateSaasConnectionConfigResponse,
@@ -173,20 +173,20 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         body: { ...params },
       }),
       // Creating a connection config also creates a dataset behind the scenes
-      invalidatesTags: ["DatastoreConnection", "Datasets"],
+      invalidatesTags: ["Datastore Connection", "Datasets"],
     }),
     deleteDatastoreConnection: build.mutation({
       query: (id) => ({
         url: `${CONNECTION_ROUTE}/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: () => ["DatastoreConnection"],
+      invalidatesTags: () => ["Datastore Connection"],
     }),
     getAccessManualHook: build.query<GetAccessManualWebhookResponse, string>({
       query: (key) => ({
         url: `${CONNECTION_ROUTE}/${key}/access_manual_webhook`,
       }),
-      providesTags: () => ["DatastoreConnection"],
+      providesTags: () => ["Datastore Connection"],
     }),
     getAllDatastoreConnections: build.query<
       DatastoreConnectionsResponse,
@@ -195,7 +195,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       query: (filters) => ({
         url: CONNECTION_ROUTE + mapFiltersToSearchParams(filters),
       }),
-      providesTags: () => ["DatastoreConnection"],
+      providesTags: () => ["Datastore Connection"],
     }),
     getAllEnabledAccessManualHooks: build.query<
       GetAllEnabledAccessManualWebhooksResponse,
@@ -204,14 +204,14 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       query: () => ({
         url: `access_manual_webhook`,
       }),
-      providesTags: () => ["DatastoreConnection"],
+      providesTags: () => ["Datastore Connection"],
     }),
     getDatastoreConnectionByKey: build.query<DatastoreConnection, string>({
       query: (key) => ({
         url: `${CONNECTION_ROUTE}/${key}`,
       }),
       providesTags: (result) => [
-        { type: "DatastoreConnection", id: result?.key },
+        { type: "Datastore Connection", id: result?.key },
       ],
       keepUnusedDataFor: 1,
     }),
@@ -219,7 +219,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       query: (key) => ({
         url: `${CONNECTION_ROUTE}/${key}/datasetconfig`,
       }),
-      providesTags: () => ["DatastoreConnection"],
+      providesTags: () => ["Datastore Connection"],
     }),
     getDatastoreConnectionStatus: build.query<
       DatastoreConnectionStatus,
@@ -228,7 +228,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       query: (id) => ({
         url: `${CONNECTION_ROUTE}/${id}/test`,
       }),
-      providesTags: () => ["DatastoreConnection"],
+      providesTags: () => ["Datastore Connection"],
       async onQueryStarted(key, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled;
@@ -274,7 +274,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: params.body,
       }),
-      invalidatesTags: () => ["DatastoreConnection"],
+      invalidatesTags: () => ["Datastore Connection"],
     }),
     patchDatasetConfigs: build.mutation<
       BulkPutDataset,
@@ -285,7 +285,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: params.dataset_pairs,
       }),
-      invalidatesTags: () => ["DatastoreConnection"],
+      invalidatesTags: () => ["Datastore Connection"],
     }),
     patchDatastoreConnection: build.mutation<
       DatastoreConnectionResponse,
@@ -296,7 +296,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: [params],
       }),
-      invalidatesTags: () => ["DatastoreConnection"],
+      invalidatesTags: () => ["Datastore Connection"],
     }),
     patchDatastoreConnections: build.mutation({
       query: ({ key, name, disabled, connection_type, access }) => ({
@@ -304,7 +304,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: [{ key, name, disabled, connection_type, access }],
       }),
-      invalidatesTags: () => ["DatastoreConnection"],
+      invalidatesTags: () => ["Datastore Connection"],
     }),
     updateDatastoreConnectionSecrets: build.mutation<
       DatastoreConnectionSecretsResponse,
@@ -315,7 +315,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         method: "PUT",
         body: params.secrets,
       }),
-      invalidatesTags: () => ["DatastoreConnection"],
+      invalidatesTags: () => ["Datastore Connection"],
     }),
   }),
 });
@@ -351,8 +351,11 @@ export const INITIAL_CONNECTIONS_FILTERS: DatastoreConnectionParams = {
  * Returns the globally cached datastore connections response.
  */
 export const selectInitialConnections = createSelector(
-  datastoreConnectionApi.endpoints.getAllDatastoreConnections.select(
-    INITIAL_CONNECTIONS_FILTERS
-  ),
-  ({ data }) => data
+  [
+    (RootState) => RootState,
+    datastoreConnectionApi.endpoints.getAllDatastoreConnections.select(
+      INITIAL_CONNECTIONS_FILTERS
+    ),
+  ],
+  (RootState, { data }) => data
 );

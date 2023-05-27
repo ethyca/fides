@@ -32,7 +32,9 @@ describe("Taxonomy management with Plus features", () => {
       });
   };
 
-  describe("Defining custom lists", () => {
+  // TODO: Inputs are no longer created on this screen.
+  // This should eventually be migrated to the custom fields tests
+  describe.skip("Defining custom lists", () => {
     beforeEach(() => {
       navigateToEditor();
       cy.getByTestId("add-custom-field-btn").click();
@@ -74,7 +76,9 @@ describe("Taxonomy management with Plus features", () => {
     });
   });
 
-  describe("Defining custom fields", () => {
+  // TODO: Inputs are no longer created on this screen.
+  // This should eventually be migrated to the custom fields tests
+  describe.skip("Defining custom fields", () => {
     beforeEach(() => {
       cy.intercept(
         {

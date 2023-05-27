@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 
-import { config } from "~/constants";
+import { useConfig } from "~/features/common/config.slice";
 
 import RequestModal from "../RequestModal";
 import PrivacyRequestForm from "./PrivacyRequestForm";
@@ -9,7 +9,7 @@ import RequestSubmitted from "./RequestSubmitted";
 
 import { ModalViews, VerificationType } from "../types";
 
-export const usePrivactRequestModal = () => {
+export const usePrivacyRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [openAction, setOpenAction] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<ModalViews>(
@@ -69,6 +69,7 @@ export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
   isVerificationRequired,
   successHandler,
 }) => {
+  const config = useConfig();
   const action = openAction
     ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
     : null;

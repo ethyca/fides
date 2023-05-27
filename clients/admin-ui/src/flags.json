@@ -18,15 +18,14 @@
     "test": true,
     "production": false
   },
-  "customFieldManagement": {
-    "description": "Management page to configure custom fields",
-    "development": true,
-    "test": true,
-    "production": false,
-    "userCannotModify": true
-  },
   "privacyNotices": {
     "description": "Page to configure consent privacy notices",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "privacyExperience": {
+    "description": "Page to configure privacy experience",
     "development": true,
     "test": true,
     "production": false,

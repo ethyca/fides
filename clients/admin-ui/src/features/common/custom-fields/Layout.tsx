@@ -7,13 +7,7 @@ type LayoutProps = {
 };
 
 const Layout: React.FC<LayoutProps> = ({ children }) => (
-  <VStack
-    alignItems="stretch"
-    flexShrink={0}
-    gap="18px"
-    h="434px"
-    overflow="auto"
-  >
+  <VStack alignItems="stretch" flexShrink={0} gap="18px" overflow="auto">
     {children}
   </VStack>
 );

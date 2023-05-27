@@ -1,4 +1,4 @@
-import { ConsentContext } from "fides-consent";
+import { ConsentContext } from "fides-js";
 
 import { makeCookieKeyConsent } from "~/features/consent/helpers";
 import { ConfigConsentOption } from "~/types/config";

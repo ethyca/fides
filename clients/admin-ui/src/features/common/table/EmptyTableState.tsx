@@ -1,21 +1,13 @@
-import { Box, Button, HStack, Text, WarningTwoIcon } from "@fidesui/react";
-import NextLink from "next/link";
+import { Box, HStack, Text, WarningTwoIcon } from "@fidesui/react";
 import { ReactNode } from "react";
-import { UrlObject } from "url";
 
 type Props = {
   title: string;
   description: string | ReactNode;
-  buttonHref: string | UrlObject;
-  buttonText: string;
+  button?: ReactNode;
 };
 
-const EmptyTableState = ({
-  title,
-  description,
-  buttonHref,
-  buttonText,
-}: Props) => (
+const EmptyTableState = ({ title, description, button }: Props) => (
   <HStack
     backgroundColor="gray.50"
     border="1px solid"
@@ -36,9 +28,7 @@ const EmptyTableState = ({
         {description}
       </Text>
     </Box>
-    <Button size="sm" variant="outline" fontWeight="semibold" minWidth="auto">
-      <NextLink href={buttonHref}>{buttonText}</NextLink>
-    </Button>
+    {button}
   </HStack>
 );
 

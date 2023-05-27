@@ -2,7 +2,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { ColumnInstance, Row } from "react-table";
 
-import { selectDataCategoriesMap } from "../../../datamap.slice";
+import { selectDataCategoriesMap } from "~/features/taxonomy";
 
 /**
  * This filter uses the hierarchy of fides keys to determine which rows are selected.

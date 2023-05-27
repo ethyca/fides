@@ -6,23 +6,13 @@ import {
   Slide,
   Spacer,
   Text,
-  useToast,
 } from "@fidesui/react";
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
 import React, { useMemo } from "react";
 
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { useTaxonomyData } from "~/features/datamap/privacy-declarations/PrivacyDeclarationForm";
-import PrivacyDeclarationManager from "~/features/datamap/privacy-declarations/PrivacyDeclarationManager";
-import {
-  useGetSystemByFidesKeyQuery,
-  useUpdateSystemMutation,
-} from "~/features/system/system.slice";
-import { PrivacyDeclaration } from "~/types/api/models/PrivacyDeclaration";
-import { System } from "~/types/api/models/System";
+import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
+import PrivacyDeclarationManager from "~/features/system/privacy-declarations/PrivacyDeclarationManager";
+import { useGetSystemByFidesKeyQuery } from "~/features/system/system.slice";
 
 import SystemInfo from "./SystemInfo";
 
@@ -36,57 +26,13 @@ const DatamapDrawer = ({
   resetSelectedSystemId,
 }: DatamapDrawerProps) => {
   const isOpen = useMemo(() => Boolean(selectedSystemId), [selectedSystemId]);
-  const { isLoading, ...dataProps } = useTaxonomyData();
-  const toast = useToast();
+  const { isLoading, ...dataProps } = usePrivacyDeclarationData({
+    includeDatasets: false,
+  });
 
-  const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const { data: system } = useGetSystemByFidesKeyQuery(selectedSystemId!, {
     skip: !selectedSystemId,
   });
-
-  const handleSave = async (
-    updatedDeclarations: PrivacyDeclaration[],
-    isDelete?: boolean
-  ) => {
-    const systemBodyWithDeclaration = {
-      ...system!,
-      privacy_declarations: updatedDeclarations,
-    };
-
-    const handleResult = (
-      result:
-        | { data: System }
-        | { error: FetchBaseQueryError | SerializedError }
-    ) => {
-      if (isErrorResult(result)) {
-        const errorMsg = getErrorMessage(
-          result.error,
-          "An unexpected error occurred while updating the system. Please try again."
-        );
-
-        toast(errorToastParams(errorMsg));
-        return false;
-      }
-      toast.closeAll();
-      toast(
-        successToastParams(isDelete ? "Data use deleted" : "Data use saved")
-      );
-      return true;
-    };
-
-    const updateSystemResult = await updateSystemMutationTrigger(
-      systemBodyWithDeclaration
-    );
-
-    return handleResult(updateSystemResult);
-  };
-  const collisionWarning = () => {
-    toast(
-      errorToastParams(
-        "A declaration already exists with that data use in this system. Please supply a different data use."
-      )
-    );
-  };
 
   return (
     <Box
@@ -183,12 +129,13 @@ const DatamapDrawer = ({
                   Data uses
                 </Text>
                 <Box borderTop="1px solid" borderColor="gray.200">
-                  <PrivacyDeclarationManager
-                    system={system!}
-                    onCollision={collisionWarning}
-                    onSave={handleSave}
-                    {...dataProps}
-                  />
+                  <Box pb={3}>
+                    <PrivacyDeclarationManager
+                      system={system}
+                      addButtonProps={{ ml: 4 }}
+                      {...dataProps}
+                    />
+                  </Box>
                 </Box>
                 <Text
                   size="md"

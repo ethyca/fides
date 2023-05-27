@@ -7,14 +7,16 @@ Contains all of the SqlAlchemy models for the Fides resources.
 from __future__ import annotations
 
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Set, Type
+from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 
+from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
 from pydantic import BaseModel
 from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -24,18 +26,18 @@ from sqlalchemy import (
     type_coerce,
 )
 from sqlalchemy.dialects.postgresql import BYTEA
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
+from fides.api.common_exceptions import KeyOrNameAlreadyExists
+from fides.api.db.base_class import Base
+from fides.api.db.base_class import FidesBase as FideslibBase
+from fides.api.models.client import ClientDetail
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.core.config import CONFIG
-from fides.lib.db.base import (  # type: ignore[attr-defined]
-    Base,
-    ClientDetail,
-    FidesUser,
-    FidesUserPermissions,
-)
-from fides.lib.db.base_class import FidesBase as FideslibBase
 
 
 class FidesBase(FideslibBase):
@@ -137,6 +139,9 @@ class ClassificationInstance(Base):
     )
 
 
+DataCategoryType = TypeVar("DataCategoryType", bound="DataCategory")
+
+
 # Privacy Types
 class DataCategory(Base, FidesBase):
     """
@@ -147,6 +152,20 @@ class DataCategory(Base, FidesBase):
 
     parent_key = Column(Text)
     is_default = Column(BOOLEAN, default=False)
+
+    @classmethod
+    def from_fideslang_obj(
+        cls, data_category: FideslangDataCategory
+    ) -> DataCategoryType:
+        return cls(
+            fides_key=data_category.fides_key,
+            organization_fides_key=data_category.organization_fides_key,
+            tags=data_category.tags,
+            name=data_category.name,
+            description=data_category.description,
+            parent_key=data_category.parent_key,
+            is_default=data_category.is_default,
+        )
 
 
 class DataQualifier(Base, FidesBase):
@@ -187,7 +206,7 @@ class DataUse(Base, FidesBase):
     is_default = Column(BOOLEAN, default=False)
 
     @staticmethod
-    def get_parent_uses(data_use_key: str) -> Set[str]:
+    def get_parent_uses_from_key(data_use_key: str) -> Set[str]:
         """
         Utility method to traverse "up" the taxonomy hierarchy and unpack
         a given data use fides key into a set of fides keys that include its
@@ -302,11 +321,17 @@ class System(Base, FidesBase):
     system_dependencies = Column(ARRAY(String))
     joint_controller = Column(PGEncryptedString, nullable=True)
     third_country_transfers = Column(ARRAY(String))
-    privacy_declarations = Column(JSON)
     administrating_department = Column(String)
     data_protection_impact_assessment = Column(JSON)
     egress = Column(JSON)
     ingress = Column(JSON)
+
+    privacy_declarations = relationship(
+        "PrivacyDeclaration",
+        cascade="all, delete",
+        back_populates="system",
+        lazy="selectin",
+    )
 
     users = relationship(
         "FidesUser",
@@ -315,42 +340,63 @@ class System(Base, FidesBase):
         lazy="selectin",
     )
 
-    @staticmethod
-    def collapse_data_uses(
-        privacy_declarations: List[dict[str, Any]], include_parents: bool
-    ) -> Set:
-        """Helper method to collapse the data uses off of multiple privacy declarations into a Set
-
-        The `include_parents` arg determines whether the method traverses "up" the data use hierarchy
-        to also return all _parent_ data uses of the specific data uses associated with a given system.
-        This can be useful if/when we consider these parent data uses as applicable to a system.
-        """
-        data_uses = set()
-        for declaration in privacy_declarations:
-            if data_use := declaration.get("data_use", None):
-                if include_parents:
-                    data_uses.update(DataUse.get_parent_uses(data_use))
-                else:
-                    data_uses.add(data_use)
-        return data_uses
-
     @classmethod
-    def get_system_data_uses(
-        cls: Type[System], db: Session, include_parents: bool = True
+    def get_data_uses(
+        cls: Type[System], systems: List[System], include_parents: bool = True
     ) -> set[str]:
         """
-        Utility method to get any data use that is associated with at least one System
+        Get all data uses that are associated with the provided `systems`
         """
         data_uses = set()
-        for row in db.query(System.privacy_declarations).all():
-            data_uses.update(
-                cls.collapse_data_uses(row.privacy_declarations, include_parents)
-            )
+        for system in systems:
+            for declaration in system.privacy_declarations:
+                if data_use := declaration.data_use:
+                    if include_parents:
+                        data_uses.update(DataUse.get_parent_uses_from_key(data_use))
+                    else:
+                        data_uses.add(data_use)
         return data_uses
 
-    def get_data_uses(self, include_parents: bool = True) -> set[str]:
-        """Utility method to get all the data uses off the current System"""
-        return self.collapse_data_uses(self.privacy_declarations or [], include_parents)
+
+class PrivacyDeclaration(Base):
+    """
+    The SQL model for a Privacy Declaration associated with a given System.
+    """
+
+    name = Column(
+        String, index=True, nullable=True
+    )  # labeled as Processing Activity in the UI
+    ### keep egress/ingress as JSON blobs as they have always been
+    egress = Column(ARRAY(String))
+    ingress = Column(ARRAY(String))
+
+    ### references to other tables, but kept as 'soft reference' strings for now
+    data_use = Column(String, index=True, nullable=False)
+    data_categories = Column(ARRAY(String))
+    data_qualifier = Column(String)
+    data_subjects = Column(ARRAY(String))
+    dataset_references = Column(ARRAY(String))
+
+    ### proper FK references to other tables
+    # System
+    system_id = Column(
+        String,
+        ForeignKey(System.id),
+        nullable=False,
+        index=True,
+    )
+    system = relationship(System, back_populates="privacy_declarations")
+
+    @classmethod
+    def create(
+        cls: Type[PrivacyDeclaration],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = False,  # this is the reason for the override
+    ) -> PrivacyDeclaration:
+        """Overrides base create to avoid unique check on `name` column"""
+        return super().create(db=db, data=data, check_name=check_name)
 
 
 class SystemModel(BaseModel):
@@ -425,6 +471,7 @@ class ResourceTypes(str, EnumType):
     data_use = "data use"
     data_category = "data category"
     data_subject = "data subject"
+    privacy_declaration = "privacy declaration"
 
 
 class CustomFieldValueList(Base):
@@ -456,7 +503,7 @@ class CustomFieldDefinition(Base):
     )
     allow_list_id = Column(String, ForeignKey(CustomFieldValueList.id), nullable=True)
     resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
-    field_definition = Column(String, index=True)
+    field_definition = Column(String)
     custom_field = relationship(
         "CustomField",
         back_populates="custom_field_definition",
@@ -468,7 +515,50 @@ class CustomFieldDefinition(Base):
     )
     active = Column(BOOLEAN, nullable=False, default=True)
 
-    UniqueConstraint("name", "resource_type")
+    @classmethod
+    def create(
+        cls: Type[PrivacyDeclaration],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = False,  # this is the reason for the override
+    ) -> PrivacyDeclaration:
+        """
+        Overrides base create to avoid unique check on `name` column
+        and to cleanly handle uniqueness constraint on name/resource_type
+        """
+        try:
+            return super().create(db=db, data=data, check_name=check_name)
+        except IntegrityError as e:
+            if cls.name_resource_index in str(e):
+                raise KeyOrNameAlreadyExists(
+                    "Custom field definitions must have unique names for a given resource type"
+                )
+            raise e
+
+    def update(self, db: Session, *, data: Dict[str, Any]) -> FidesBase:
+        """Overrides base update to cleanly handle uniqueness constraint on name/resource type"""
+        try:
+            return super().update(db=db, data=data)
+        except IntegrityError as e:
+            if CustomFieldDefinition.name_resource_index in str(e):
+                raise KeyOrNameAlreadyExists(
+                    "Custom field definitions must have unique names for a given resource type"
+                )
+            raise e
+
+    # unique index on the lowername/resource type for case-insensitive name checking per resource type
+    name_resource_index = (
+        "ix_plus_custom_field_definition_unique_lowername_resourcetype"
+    )
+    __table_args__ = (
+        Index(
+            name_resource_index,
+            resource_type,
+            func.lower(name),
+            unique=True,
+        ),
+    )
 
 
 class CustomField(Base):
@@ -489,3 +579,15 @@ class CustomField(Base):
     )
 
     UniqueConstraint("resource_type", "resource_id", "custom_field_definition_id")
+
+
+class AuditLogResource(Base):
+    """The log of user actions against fides resources."""
+
+    __tablename__ = "audit_log_resource"
+
+    user_id = Column(String, nullable=True, index=True)
+    request_path = Column(String, nullable=True)
+    request_type = Column(String, nullable=True)
+    fides_keys = Column(ARRAY(String), nullable=True)
+    extra_data = Column(JSON, nullable=True)

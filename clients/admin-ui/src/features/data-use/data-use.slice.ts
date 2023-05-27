@@ -1,22 +1,10 @@
 import { createSelector, createSlice } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
-import { selectToken } from "~/features/auth";
-import { addCommonHeaders } from "~/features/common/CommonHeaders";
+import { baseApi } from "~/features/common/api.slice";
 import { DataUse } from "~/types/api";
 
-export const dataUseApi = createApi({
-  reducerPath: "dataUseApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
-    prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
-      addCommonHeaders(headers, token);
-      return headers;
-    },
-  }),
-  tagTypes: ["Data Uses"],
+const dataUseApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllDataUses: build.query<DataUse[], void>({
       query: () => ({ url: `data_use/` }),
@@ -79,8 +67,8 @@ export const { reducer } = dataUseSlice;
 
 const emptyDataUses: DataUse[] = [];
 export const selectDataUses: (state: RootState) => DataUse[] = createSelector(
-  dataUseApi.endpoints.getAllDataUses.select(),
-  ({ data }) => data ?? emptyDataUses
+  [(RootState) => RootState, dataUseApi.endpoints.getAllDataUses.select()],
+  (RootState, { data }) => data ?? emptyDataUses
 );
 
 export const selectDataUsesMap = createSelector(

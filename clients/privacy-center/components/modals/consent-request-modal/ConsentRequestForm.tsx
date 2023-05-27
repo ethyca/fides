@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   Button,
   chakra,
@@ -12,13 +12,14 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
+import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import * as Yup from "yup";
 
 import { ErrorToastOptions } from "~/common/toast-options";
 import { addCommonHeaders } from "~/common/CommonHeaders";
-import { config, defaultIdentityInput, hostUrl } from "~/constants";
+import { defaultIdentityInput } from "~/constants";
 import { PhoneInput } from "~/components/phone-input";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
 import {
@@ -26,6 +27,8 @@ import {
   phoneValidation,
 } from "~/components/modals/validation";
 import { ModalViews, VerificationType } from "~/components/modals/types";
+import { useConfig } from "~/features/common/config.slice";
+import { useSettings } from "~/features/common/settings.slice";
 
 const useConsentRequestForm = ({
   onClose,
@@ -40,9 +43,12 @@ const useConsentRequestForm = ({
   isVerificationRequired: boolean;
   successHandler: () => void;
 }) => {
+  const config = useConfig();
   const identityInputs =
     config.consent?.button.identity_inputs ?? defaultIdentityInput;
+  const settings = useSettings();
   const toast = useToast();
+  const cookie = useMemo(() => getOrMakeFidesCookie(), []);
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -50,8 +56,10 @@ const useConsentRequestForm = ({
     },
     onSubmit: async (values) => {
       const body = {
-        email: values.email,
-        phone_number: values.phone,
+        // Marshall empty strings back to `undefined` so the backend will not try to validate
+        email: values.email === "" ? undefined : values.email,
+        phone_number: values.phone === "" ? undefined : values.phone,
+        fides_user_device_id: cookie.identity.fides_user_device_id,
       };
       const handleError = ({
         title,
@@ -73,7 +81,7 @@ const useConsentRequestForm = ({
         addCommonHeaders(headers, null);
 
         const response = await fetch(
-          `${hostUrl}/${VerificationType.ConsentRequest}`,
+          `${settings.FIDES_API_URL}/${VerificationType.ConsentRequest}`,
           {
             method: "POST",
             headers,
@@ -91,6 +99,15 @@ const useConsentRequestForm = ({
 
         if (!data.consent_request_id) {
           handleError({ title: "No consent request id found" });
+          return;
+        }
+
+        // After successfully initializing a consent request, save the current
+        // cookie with our unique fides_user_device_id, etc.
+        try {
+          saveFidesCookie(cookie);
+        } catch (error) {
+          handleError({ title: "Could not save consent cookie" });
           return;
         }
 
@@ -178,17 +195,36 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
     successHandler,
   });
 
+  const config = useConfig();
+
+  const requiredInputs = Object.entries(identityInputs).filter(
+    ([, required]) => required === "required"
+  );
+  // it's ok to bypass the dirty check if there are no required inputs
+  const dirtyCheck = requiredInputs.length === 0 ? true : dirty;
+
   useEffect(() => resetForm(), [isOpen, resetForm]);
 
   return (
     <>
       <ModalHeader pt={6} pb={0}>
-        Manage your consent
+        {config.consent?.button.title}
       </ModalHeader>
       <chakra.form onSubmit={handleSubmit} data-testid="consent-request-form">
         <ModalBody>
+          <Text fontSize="sm" color="gray.600" mb={4}>
+            {config.consent?.button.description}
+          </Text>
+          {config.consent?.button.description_subtext?.map(
+            (paragraph, index) => (
+              // eslint-disable-next-line react/no-array-index-key
+              <Text fontSize="sm" color="gray.600" mb={4} key={index}>
+                {paragraph}
+              </Text>
+            )
+          )}
           {isVerificationRequired ? (
-            <Text fontSize="sm" color="gray.500" mb={4}>
+            <Text fontSize="sm" color="gray.600" mb={4}>
               We will send you a verification code.
             </Text>
           ) : null}
@@ -199,7 +235,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                 isInvalid={touched.email && Boolean(errors.email)}
                 isRequired={identityInputs.email === "required"}
               >
-                <FormLabel>Email</FormLabel>
+                <FormLabel fontSize="sm">Email</FormLabel>
                 <Input
                   id="email"
                   name="email"
@@ -226,7 +262,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                   typeof values.email !== "undefined" && values.email
                 )}
               >
-                <FormLabel>Phone</FormLabel>
+                <FormLabel fontSize="sm">Phone</FormLabel>
                 <PhoneInput
                   id="phone"
                   name="phone"
@@ -254,7 +290,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
             _active={{ bg: "primary.500" }}
             colorScheme="primary"
             isLoading={isSubmitting}
-            isDisabled={isSubmitting || !(isValid && dirty)}
+            isDisabled={isSubmitting || !(isValid && dirtyCheck)}
             size="sm"
           >
             Continue

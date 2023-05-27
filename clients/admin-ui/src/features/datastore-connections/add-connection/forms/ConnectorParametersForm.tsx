@@ -36,7 +36,7 @@ import {
 } from "../types";
 import { fillInDefaults } from "./helpers";
 
-const FIDESOPS_DATASET_REFERENCE = "#/definitions/FidesopsDatasetReference";
+const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
 type ConnectorParametersFormProps = {
   data: ConnectionTypeSecretSchemaReponse;
@@ -91,7 +91,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     if (typeof value === "undefined" || value === "") {
       error = `${label} is required`;
     }
-    if (type === FIDESOPS_DATASET_REFERENCE) {
+    if (type === FIDES_DATASET_REFERENCE) {
       if (!value.includes(".")) {
         error = "Dataset reference must be dot delimited";
       } else {
@@ -117,7 +117,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   );
 
   const getPlaceholder = (item: ConnectionTypeSecretSchemaProperty) => {
-    if (item.allOf?.[0].$ref === FIDESOPS_DATASET_REFERENCE) {
+    if (item.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
       return "Enter dataset.collection.field";
     }
     return undefined;
@@ -210,7 +210,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     // from a dot delimited string to a FidesopsDatasetReference
     const updatedValues = { ...values };
     Object.keys(data.properties).forEach((key) => {
-      if (data.properties[key].allOf?.[0].$ref === FIDESOPS_DATASET_REFERENCE) {
+      if (data.properties[key].allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
         const referencePath = values[key].split(".");
         updatedValues[key] = {
           dataset: referencePath.shift(),
