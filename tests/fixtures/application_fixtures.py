@@ -1444,6 +1444,7 @@ def privacy_notice(db: Session) -> Generator:
         db=db,
         data={
             "name": "example privacy notice",
+            "notice_key": "example_privacy_notice",
             "description": "a sample privacy notice configuration",
             "origin": "privacy_notice_template_1",
             "regions": [
@@ -1468,6 +1469,7 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
         db=db,
         data={
             "name": "example privacy notice us_ca provide",
+            "notice_key": "example_privacy_notice_us_ca_provide",
             # no description or origin on this privacy notice to help
             # cover edge cases due to column nullability
             "regions": [PrivacyNoticeRegion.us_ca],
@@ -1532,6 +1534,7 @@ def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
         db=db,
         data={
             "name": "example privacy notice us_co third_party_sharing",
+            "notice_key": "example_privacy_notice_us_co_third_party_sharing",
             "description": "a sample privacy notice configuration",
             "origin": "privacy_notice_template_2",
             "regions": [PrivacyNoticeRegion.us_co],
@@ -1553,6 +1556,7 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
         db=db,
         data={
             "name": "example privacy notice us_co provide.service.operations",
+            "notice_key": "example_privacy_notice_us_co_provide.service.operations",
             "description": "a sample privacy notice configuration",
             "origin": "privacy_notice_template_2",
             "regions": [PrivacyNoticeRegion.us_co],
@@ -1574,6 +1578,7 @@ def privacy_notice_eu_fr_provide_service_frontend_only(db: Session) -> Generator
         db=db,
         data={
             "name": "example privacy notice us_co provide.service.operations",
+            "notice_key": "example_privacy_notice_us_co_provide.service.operations",
             "description": "a sample privacy notice configuration",
             "origin": "privacy_notice_template_2",
             "regions": [PrivacyNoticeRegion.eu_fr],
@@ -1594,7 +1599,8 @@ def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator
     privacy_notice = PrivacyNotice.create(
         db=db,
         data={
-            "name": "example privacy notice us_co provide.service.operations",
+            "name": "example privacy notice eu_cy provide.service.operations",
+            "notice_key": "example_privacy_notice_eu_cy_provide.service.operations",
             "description": "a sample privacy notice configuration",
             "regions": [PrivacyNoticeRegion.eu_cy],
             "consent_mechanism": ConsentMechanism.opt_out,
@@ -1963,8 +1969,10 @@ def fides_user_provided_identity(db):
     provided_identity_data = {
         "privacy_request_id": None,
         "field_name": "fides_user_device_id",
-        "hashed_value": ProvidedIdentity.hash_value("FGHIJ_TEST_FIDES"),
-        "encrypted_value": {"value": "FGHIJ_TEST_FIDES"},
+        "hashed_value": ProvidedIdentity.hash_value(
+            "051b219f-20e4-45df-82f7-5eb68a00889f"
+        ),
+        "encrypted_value": {"value": "051b219f-20e4-45df-82f7-5eb68a00889f"},
     }
     provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
 

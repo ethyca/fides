@@ -8,14 +8,14 @@ from fastapi import FastAPI
 from loguru import logger
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
-from slowapi.extension import Limiter, _rate_limit_exceeded_handler  # type: ignore
+from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
 from slowapi.middleware import SlowAPIMiddleware  # type: ignore
-from slowapi.util import get_remote_address  # type: ignore
 from starlette.middleware.cors import CORSMiddleware
 
 import fides
 from fides.api.api.deps import get_api_session
 from fides.api.api.v1.api import api_router
+from fides.api.api.v1.endpoints.utils import fides_limiter
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
 from fides.api.ctl.database.database import configure_db
@@ -50,8 +50,6 @@ def create_fides_app(
     cors_origin_regex: Optional[Pattern] = CONFIG.security.cors_origin_regex,
     routers: List = ROUTERS,
     app_version: str = VERSION,
-    request_rate_limit: str = CONFIG.security.request_rate_limit,
-    rate_limit_prefix: str = CONFIG.security.rate_limit_prefix,
     security_env: str = CONFIG.security.env,
 ) -> FastAPI:
     """Return a properly configured application."""
@@ -65,13 +63,7 @@ def create_fides_app(
     )
 
     fastapi_app = FastAPI(title="fides", version=app_version)
-    fastapi_app.state.limiter = Limiter(
-        default_limits=[request_rate_limit],
-        headers_enabled=True,
-        key_prefix=rate_limit_prefix,
-        key_func=get_remote_address,
-        retry_after="http-date",
-    )
+    fastapi_app.state.limiter = fides_limiter
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     for handler in ExceptionHandlers.get_handlers():
         fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)

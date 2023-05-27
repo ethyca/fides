@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, List, Optional, Set
 
+from fideslang.validation import FidesKey
 from pydantic import ConstrainedStr, conlist, validator
 
 from fides.api.schemas.base_class import FidesSchema
@@ -29,6 +30,7 @@ class ManualWebhookField(FidesSchema):
 
     pii_field: PIIFieldType
     dsr_package_label: Optional[DSRLabelFieldType] = None
+    data_categories: Optional[List[FidesKey]] = None
 
     @validator("dsr_package_label")
     def convert_empty_string_dsr_package_label(

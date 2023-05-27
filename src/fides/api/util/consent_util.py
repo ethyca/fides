@@ -73,7 +73,8 @@ def should_opt_in_to_service(
 
     # NEW WORKFLOW
     relevant_preferences = filter_privacy_preferences_for_propagation(
-        system, privacy_request.privacy_preferences
+        system,
+        privacy_request.privacy_preferences,  # type: ignore[attr-defined]
     )
     if not relevant_preferences:
         return None, []  # We should do nothing here
@@ -114,7 +115,7 @@ def cache_initial_status_and_identities_for_consent_reporting(
     Typically used when *some* but not all privacy preferences are relevant.  Otherwise,
     other methods just mark all the preferences as skipped.
     """
-    for pref in privacy_request.privacy_preferences:
+    for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
         if pref in relevant_preferences:
             pref.update_secondary_user_ids(db, relevant_user_identities)
             pref.cache_system_status(
@@ -136,7 +137,7 @@ def add_complete_system_status_for_consent_reporting(
 
     Deeming them relevant if they already had a "pending" log added to them.
     """
-    for pref in privacy_request.privacy_preferences:
+    for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
         if (
             pref.affected_system_status
             and pref.affected_system_status.get(connection_config.system_key)
@@ -159,7 +160,7 @@ def add_errored_system_status_for_consent_reporting(
 
     Deeming them relevant if they already had a "pending" log added to them.
     """
-    for pref in privacy_request.privacy_preferences:
+    for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
         if (
             pref.affected_system_status
             and pref.affected_system_status.get(connection_config.system_key)

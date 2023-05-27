@@ -3,14 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from fideslang.validation import FidesKey
 from pydantic import Extra, conlist, root_validator, validator
 
-from fides.api.models.privacy_notice import (
-    ConsentMechanism,
-    EnforcementLevel,
-    PrivacyNoticeRegion,
-    UserConsentPreference,
-)
+from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
+from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel
+from fides.api.models.privacy_notice import PrivacyNoticeRegion, UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
 
 
@@ -23,6 +21,7 @@ class PrivacyNotice(FidesSchema):
     """
 
     name: Optional[str]
+    notice_key: Optional[FidesKey]
     description: Optional[str]
     internal_description: Optional[str]
     origin: Optional[str]
@@ -109,6 +108,18 @@ class PrivacyNoticeCreation(PrivacyNotice):
     consent_mechanism: ConsentMechanism
     data_uses: conlist(str, min_items=1)  # type: ignore
     enforcement_level: EnforcementLevel
+
+    @root_validator(pre=True)
+    def validate_notice_key(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate the notice_key from the name if not supplied
+        """
+        if not values.get("notice_key"):
+            values["notice_key"] = PrivacyNoticeModel.generate_notice_key(
+                values.get("name")
+            )
+
+        return values
 
 
 class PrivacyNoticeWithId(PrivacyNotice):

@@ -257,6 +257,7 @@ class TestConsentEmailConnectorMethods:
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="Targeted Advertising",
                             regions=["us_ca"],
+                            notice_key="targeted_advertising",
                             id="test_1",
                             privacy_notice_id="12345",
                             consent_mechanism=ConsentMechanism.opt_in,
@@ -276,6 +277,7 @@ class TestConsentEmailConnectorMethods:
                         preference=UserConsentPreference.opt_out,
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="Analytics",
+                            notice_key="analytics",
                             regions=["us_ca"],
                             id="test_2",
                             privacy_notice_id="67890",
@@ -331,6 +333,31 @@ class TestConsentEmailConnectorMethods:
             call_kwargs["subject_override"]
             == "Test notification of users' consent preference changes from Test Org"
         )
+
+    @mock.patch("fides.api.service.connectors.consent_email_connector.dispatch_message")
+    @pytest.mark.usefixtures(
+        "test_fides_org",
+        "messaging_config",
+        "set_notification_service_type_to_twilio_email",
+    )
+    def test_send_single_consent_email_respects_messaging_service_type(
+        self,
+        mock_dispatch,
+        db,
+    ):
+        """Ensure `notifications.notification_service_type` property is respected in dispatching consent emails"""
+        send_single_consent_email(
+            db=db,
+            subject_email="test@example.com",
+            subject_name="To whom it may concern",
+            required_identities=["email"],
+            user_consent_preferences=[],
+            test_mode=True,
+        )
+
+        assert mock_dispatch.called
+        call_kwargs = mock_dispatch.call_args.kwargs
+        assert call_kwargs["service_type"] == "twilio_email"
 
     def test_needs_email_old_workflow(
         self,

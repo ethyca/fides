@@ -1,23 +1,28 @@
+import uuid
 from typing import List, Optional
 
-from fastapi import Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Request, Response
 from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
 from fides.api.api import deps
-from fides.api.api.v1 import scope_registry
 from fides.api.api.v1 import urn_registry as urls
+from fides.api.api.v1.endpoints.utils import fides_limiter
 from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.models.privacy_request import ProvidedIdentity
-from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import get_fides_user_device_id_provided_identity
+from fides.core.config import CONFIG
 
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
 
@@ -43,10 +48,8 @@ def get_privacy_experience_or_error(
     urls.PRIVACY_EXPERIENCE,
     status_code=HTTP_200_OK,
     response_model=Page[PrivacyExperienceResponse],
-    dependencies=[
-        Security(verify_oauth_client, scopes=[scope_registry.PRIVACY_EXPERIENCE_READ])
-    ],
 )
+@fides_limiter.limit(CONFIG.security.public_request_rate_limit)
 def privacy_experience_list(
     *,
     db: Session = Depends(deps.get_db),
@@ -57,9 +60,11 @@ def privacy_experience_list(
     has_notices: Optional[bool] = None,
     has_config: Optional[bool] = None,
     fides_user_device_id: Optional[str] = None,
+    request: Request,  # required for rate limiting
+    response: Response,  # required for rate limiting
 ) -> AbstractPage[PrivacyExperience]:
     """
-    Returns a list of PrivacyExperience records for individual regions with
+    Public endpoint that returns a list of PrivacyExperience records for individual regions with
     relevant privacy notices embedded in the response.
 
     'show_disabled' query params are passed along to further filter
@@ -71,6 +76,13 @@ def privacy_experience_list(
     logger.info("Finding all Privacy Experiences with pagination params '{}'", params)
     fides_user_provided_identity: Optional[ProvidedIdentity] = None
     if fides_user_device_id:
+        try:
+            uuid.UUID(fides_user_device_id, version=4)
+        except ValueError:
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid fides user device id format",
+            )
         fides_user_provided_identity = get_fides_user_device_id_provided_identity(
             db=db, fides_user_device_id=fides_user_device_id
         )
@@ -110,50 +122,3 @@ def privacy_experience_list(
             results.append(privacy_experience)
 
     return fastapi_paginate(results, params=params)
-
-
-@router.get(
-    urls.PRIVACY_EXPERIENCE_DETAIL,
-    status_code=HTTP_200_OK,
-    response_model=PrivacyExperienceResponse,
-    dependencies=[
-        Security(verify_oauth_client, scopes=[scope_registry.PRIVACY_EXPERIENCE_READ])
-    ],
-)
-def privacy_experience_detail(
-    *,
-    db: Session = Depends(deps.get_db),
-    privacy_experience_id: str,
-    show_disabled: Optional[bool] = True,
-    fides_user_device_id: Optional[str] = None,
-) -> PrivacyExperience:
-    """
-    Return a privacy experience for a given region with relevant notices embedded.
-
-    show_disabled query params are passed onto optionally filter the embedded notices.
-
-    'fides_user_device_id' query param will stash the current preferences of the given user
-    alongside each notice where applicable.
-    """
-    logger.info("Fetching privacy experience with id '{}'.", privacy_experience_id)
-    experience: PrivacyExperience = get_privacy_experience_or_error(
-        db, privacy_experience_id
-    )
-
-    if show_disabled is False and experience.disabled:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Query param show_disabled=False not applicable for disabled privacy experience {privacy_experience_id}.",
-        )
-
-    fides_user_provided_identity: Optional[ProvidedIdentity] = None
-    if fides_user_device_id:
-        fides_user_provided_identity = get_fides_user_device_id_provided_identity(
-            db=db, fides_user_device_id=fides_user_device_id
-        )
-
-    # Temporarily stash the privacy notices on the experience for display
-    experience.privacy_notices = experience.get_related_privacy_notices(
-        db, show_disabled, fides_user_provided_identity
-    )
-    return experience

@@ -683,6 +683,7 @@ class TestCreateExperienceConfig:
             db=db,
             data={
                 "name": "Test Notice",
+                "notice_key": "test_notice",
                 "regions": [PrivacyNoticeRegion.us_tx],
                 "consent_mechanism": ConsentMechanism.opt_in,
                 "data_uses": ["provide"],
@@ -1474,6 +1475,7 @@ class TestUpdateExperienceConfig:
             db=db,
             data={
                 "name": "Test Notice",
+                "notice_key": "test_notice",
                 "regions": [PrivacyNoticeRegion.us_tx],
                 "consent_mechanism": ConsentMechanism.opt_in,
                 "data_uses": ["provide"],
@@ -1531,6 +1533,7 @@ class TestUpdateExperienceConfig:
             db=db,
             data={
                 "name": "Test Notice",
+                "notice_key": "test_notice",
                 "regions": [PrivacyNoticeRegion.us_tx],
                 "consent_mechanism": ConsentMechanism.opt_in,
                 "data_uses": ["provide"],
