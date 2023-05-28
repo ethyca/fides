@@ -24,11 +24,34 @@ DOCKER_PLATFORM_MAP = {
 DOCKER_PLATFORMS = "linux/amd64,linux/arm64"
 
 
+def verify_git_tag(session: nox.Session) -> str:
+    """
+    Get the git tag for HEAD and validate it before using it.
+    """
+    existing_commit_tag = get_current_tag(existing=True)
+    if existing_commit_tag is None:
+        session.error(
+            "Did not find an existing git tag on the current commit, not pushing git-tag images"
+        )
+
+    if not recognized_tag(existing_commit_tag):
+        session.error(
+            f"Existing git tag {existing_commit_tag} is not a recognized tag, not pushing git-tag images"
+        )
+
+    session.log(
+        f"Found git tag {existing_commit_tag} on the current commit, pushing corresponding git-tag images!"
+    )
+    return existing_commit_tag
+
+
 def generate_multiplatform_buildx_command(
     image_tags: List[str], docker_build_target: str, dockerfile_path: str = "."
 ) -> Tuple[str, ...]:
     """
-    Generate the command for building and publishing a multiplatform privacy center image.
+    Generate the command for building and publishing a multiplatform image.
+
+    See tests for example usage.
     """
     buildx_command: Tuple[str, ...] = (
         "docker",
@@ -40,8 +63,6 @@ def generate_multiplatform_buildx_command(
         DOCKER_PLATFORMS,
         dockerfile_path,
     )
-    for tag in image_tags:
-        buildx_command += ("--tag", tag)
 
     return buildx_command
 
@@ -233,7 +254,7 @@ def push_dev(session: nox.Session) -> None:
 
 def push_git_tag(session: nox.Session) -> None:
     """
-    Push the an image for whatever tag our commit currently has.
+    Push an image with the tag of our current commit.
 
     If we have an existing git tag on the current commit, we push up
     a set of images that's tagged specifically with this git tag.
@@ -242,33 +263,12 @@ def push_git_tag(session: nox.Session) -> None:
     e.g. RC builds, `beta` tags on `main`, `alpha` tags for feature branch builds.
 
     Pushed Image Examples:
-      - ethyca/fides:dev
-      - ethyca/fides-privacy-center:dev
-      - ethyca/fides-sample-app:dev
-
-    # Push the ethyca/fides image, tagging with :{current_head_git_tag}
-    # Push the extra images, tagging with :{current_head_git_tag}
-    #   - ethyca/fides-privacy-center:{current_head_git_tag}
-    #   - ethyca/fides-sample-app:{current_head_git_tag}
+    - ethyca/fides:{current_head_git_tag}
+    - ethyca/fides-privacy-center:{current_head_git_tag}
+    - ethyca/fides-sample-app:{current_head_git_tag}
     """
 
-    # Verify the current commit/tag
-    existing_commit_tag = get_current_tag(existing=True)
-    if existing_commit_tag is None:
-        session.log(
-            "Did not find an existing git tag on the current commit, not pushing git-tag images"
-        )
-        return
-
-    if not recognized_tag(existing_commit_tag):
-        session.log(
-            f"Existing git tag {existing_commit_tag} is not a recognized tag, not pushing git-tag images"
-        )
-        return
-
-    session.log(
-        f"Found git tag {existing_commit_tag} on the current commit, pushing corresponding git-tag images!"
-    )
+    existing_commit_tag = verify_git_tag(session)
     custom_image_tag = f"{IMAGE}:{existing_commit_tag}"
     privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:{existing_commit_tag}"
     sample_app_dev = f"{SAMPLE_APP_IMAGE}:{existing_commit_tag}"
