@@ -28,8 +28,22 @@ export const initOverlay = async ({
     try {
       debugLog(
         options.debug,
-        "Rendering Fides overlay CSS & HTML into the DOM..."
+        "Rendering Fides overlay CSS & HTML into the DOM... (updated!)"
       );
+
+      // TODO: clean this up
+      const rootElementId = "fides-overlay";
+      let root = document.getElementById(rootElementId);
+      if (!root) {
+        debugLog(
+          options.debug,
+          "Root #fides-overlay not found, inserting before rendering..."
+        );
+        // Create our own root element and append to body first
+        root = document.createElement("div");
+        root.id = rootElementId;
+        document.body.appendChild(root);
+      }
 
       if (experience.component === ComponentType.OVERLAY) {
         if (experience.delivery_mechanism === DeliveryMechanism.BANNER) {
@@ -41,7 +55,7 @@ export const initOverlay = async ({
               experience={experience}
               geolocation={geolocation}
             />,
-            document.body
+            root
           );
           debugLog(options.debug, "Fides overlay is now showing!");
         } else if (experience.delivery_mechanism === DeliveryMechanism.LINK) {
@@ -58,9 +72,11 @@ export const initOverlay = async ({
   // Ensure we only render the overlay to the DOM once it's loaded
   if (document?.readyState !== "complete") {
     debugLog(options.debug, "DOM not loaded, adding event listener");
-    document.addEventListener("DOMContentLoaded", async () => {
-      debugLog(options.debug, "DOM fully loaded and parsed");
-      await renderFidesOverlay();
+    document.addEventListener("readystatechange", async () => {
+      if (document.readyState === "complete") {
+        debugLog(options.debug, "DOM fully loaded and parsed");
+        await renderFidesOverlay();
+      }
     });
   } else {
     await renderFidesOverlay();
