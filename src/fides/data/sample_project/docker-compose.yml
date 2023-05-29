@@ -52,6 +52,8 @@ services:
   sample-app:
     container_name: sample-app
     image: ethyca/fides-sample-app:local
+    env_file:
+      - ${FIDES_DEPLOY_ENV_FILE:-sample.env}
     environment:
       - PORT=3000
       - FIDES_SAMPLE_APP__DATABASE_HOST=postgres-test
@@ -68,6 +70,11 @@ services:
   fides-pc:
     container_name: fides-privacy-center
     image: ethyca/fides-privacy-center:local
+    env_file:
+      - ${FIDES_DEPLOY_ENV_FILE:-sample.env}
+    environment:
+      - FIDES_PRIVACY_CENTER__FIDES_API_URL=http://localhost:8080/api/v1
+      - FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL=http://localhost:3001
     ports:
       - "3001:3000"
     volumes:
