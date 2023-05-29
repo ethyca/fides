@@ -10,6 +10,7 @@ import pool from "../lib/db";
 
 interface Props {
   gtmContainerId: string | null;
+  privacyCenterUrl: string;
   products: Product[];
 }
 
@@ -20,6 +21,7 @@ const VALID_GTM_REGEX = /^[0-9a-zA-Z-]+$/;
 /**
  * Pass the following server-side ENV variables to the page:
  * - FIDES_SAMPLE_APP__GOOGLE_TAG_MANAGER_CONTAINER_ID: configure a GTM container, e.g. "GTM-ABCD123"
+ * - FIDES_SAMPLE_APP__PRIVACY_CENTER_URL: configure Privacy Center URL, e.g. "http://localhost:3001"
  */
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
   // Check for a valid FIDES_SAMPLE_APP__GOOGLE_TAG_MANAGER_CONTAINER_ID
@@ -33,18 +35,22 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
       process.env.FIDES_SAMPLE_APP__GOOGLE_TAG_MANAGER_CONTAINER_ID;
   }
 
+  // Check for a valid FIDES_SAMPLE_APP__PRIVACY_CENTER_URL
+  const privacyCenterUrl =
+    process.env.FIDES_SAMPLE_APP__PRIVACY_CENTER_URL || "http://localhost:3001";
+
   // Query the database for the active products
   const results = await pool.query<Product>("SELECT * FROM public.product;");
   const products = results.rows;
 
   // Pass the server-side props to the page
-  return { props: { gtmContainerId, products } };
+  return { props: { gtmContainerId, privacyCenterUrl, products } };
 };
 
-const IndexPage = ({ gtmContainerId, products }: Props) => {
+const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
   // Load the fides.js script from the Fides Privacy Center, assumed to be
   // running at http://localhost:3001
-  let fidesScriptTagUrl = "http://localhost:3001/fides.js";
+  let fidesScriptTagUrl = privacyCenterUrl + "/fides.js";
   const router = useRouter();
   const { geolocation } = router.query;
 
