@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-sync-scripts */
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import Script from "next/script";
 import { useRouter } from "next/router";
 import { Product } from "../types";
 
@@ -70,22 +71,17 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
         {/* Insert the fides.js script */}
         <script src={fidesScriptTagUrl} />
-        {/* Insert the GTM script, if a container ID was provided */}
-        {gtmContainerId ? (
-          <script id="google-tag-manager">
-            {`
-              (function (w, d, s, l, i) {
-                w[l] = w[l] || []; w[l].push({
-                  'gtm.start':
-                    new Date().getTime(), event: 'gtm.js'
-                }); var f = d.getElementsByTagName(s)[0],
-                  j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-              })(window, document, 'script', 'dataLayer', '${gtmContainerId}');
-            `}
-          </script>
-        ) : null}
       </Head>
+      {/* Insert the GTM script, if a container ID was provided */}
+      <Script id="google-tag-manager" strategy="afterInteractive">
+        {`
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','${gtmContainerId}');
+        `}
+      </Script>
       <Home products={products} />
     </>
   );
