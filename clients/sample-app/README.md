@@ -6,15 +6,15 @@
 
 This app requires zero configuration, but does support the following ENV vars to override defaults:
 
-| ENV var | Description | Default |
-|---|---|---|
-| FIDES_SAMPLE_APP__DATABASE_HOST | Sample database host name | localhost |
-| FIDES_SAMPLE_APP__DATABASE_PORT | Sample database port | 5432 |
-| FIDES_SAMPLE_APP__DATABASE_USER | Sample database username | postgres |
-| FIDES_SAMPLE_APP__DATABASE_PASSWORD | Sample database password | postgres |
-| FIDES_SAMPLE_APP__DATABASE_DB | Sample database name | postgres_example |
-| FIDES_SAMPLE_APP__GOOGLE_TAG_MANAGER_CONTAINER_ID | (optional) Google Tag Manager Container ID to inject, e.g. "GTM-ABCD123" | null |
-| FIDES_SAMPLE_APP__PRIVACY_CENTER_URL | Fides Privacy Center URL | http://localhost:3001 |
+| ENV var                                             | Description                                                              | Default               |
+| --------------------------------------------------- | ------------------------------------------------------------------------ | --------------------- |
+| FIDES_SAMPLE_APP\_\_DATABASE_HOST                   | Sample database host name                                                | localhost             |
+| FIDES_SAMPLE_APP\_\_DATABASE_PORT                   | Sample database port                                                     | 5432                  |
+| FIDES_SAMPLE_APP\_\_DATABASE_USER                   | Sample database username                                                 | postgres              |
+| FIDES_SAMPLE_APP\_\_DATABASE_PASSWORD               | Sample database password                                                 | postgres              |
+| FIDES_SAMPLE_APP\_\_DATABASE_DB                     | Sample database name                                                     | postgres_example      |
+| FIDES_SAMPLE_APP\_\_GOOGLE_TAG_MANAGER_CONTAINER_ID | (optional) Google Tag Manager Container ID to inject, e.g. "GTM-ABCD123" | null                  |
+| FIDES_SAMPLE_APP\_\_PRIVACY_CENTER_URL              | Fides Privacy Center URL                                                 | http://localhost:3001 |
 
 ## Development
 
@@ -44,6 +44,7 @@ npm run test
 ## Testing
 
 This app (currently!) does not have any automated tests. However, it is used in the following automated E2E suites:
+
 - `clients/cypress-e2e/cypress/e2e`
 - `clients/privacy-center/cypress/e2e`
 

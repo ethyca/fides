@@ -50,7 +50,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
   // Load the fides.js script from the Fides Privacy Center, assumed to be
   // running at http://localhost:3001
-  let fidesScriptTagUrl = privacyCenterUrl + "/fides.js";
+  let fidesScriptTagUrl = `${privacyCenterUrl}/fides.js`;
   const router = useRouter();
   const { geolocation } = router.query;
 
