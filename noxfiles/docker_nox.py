@@ -64,6 +64,9 @@ def generate_multiplatform_buildx_command(
         dockerfile_path,
     )
 
+    for tag in image_tags:
+        buildx_command += ("--tag", tag)
+
     return buildx_command
 
 
