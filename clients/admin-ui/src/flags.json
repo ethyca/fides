@@ -28,7 +28,6 @@
     "description": "Page to configure privacy experience",
     "development": true,
     "test": true,
-    "production": false,
-    "userCannotModify": true
+    "production": false
   }
 }
