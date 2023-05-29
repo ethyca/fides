@@ -21,6 +21,10 @@ The types of changes are:
 
 - Add Google Tag Manager and Privacy Center ENV vars to sample app [#2949](https://github.com/ethyca/fides/pull/2949)
 
+## Developer Experience
+
+- Add ability to pass ENV vars to privacy center and sample app during `fides deploy` via `.env` [#2949](https://github.com/ethyca/fides/pull/2949)
+
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
 ### Added
