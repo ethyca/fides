@@ -1,0 +1,104 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Adobe Sign
+  type: adobe_sign
+  description: A sample schema representing the Adobe Sign connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: api.na3.adobesign.com
+    - name: client_id
+    - name: client_secret
+    - name: redirect_uri
+    - name: scope
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: oauth2_authorization_code
+      configuration:
+        expires_in: 7200
+        authorization_request:
+          method: GET
+          client_config:
+            protocol: https
+            host: secure.na1.adobesign.com
+          path: /public/oauth/v2
+          query_params:
+            - name: client_id
+              value: <client_id>
+            - name: redirect_uri
+              value: <redirect_uri>
+            - name: response_type
+              value: code
+            - name: scope
+              value: <scope>
+        token_request:
+          method: POST
+          path: /oauth/v2/token
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          body: |
+            {
+              "client_id": "<client_id>",
+              "client_secret": "<client_secret>",
+              "grant_type": "authorization_code",
+              "code": "<code>",
+              "redirect_uri": "<redirect_uri>"
+            }
+        refresh_request:
+          method: POST
+          client_config:
+            protocol: https
+            host: api.na1.adobesign.com
+          path: /oauth/v2/refresh
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          body: |
+            {
+              "client_id": "<client_id>",
+              "client_secret": "<client_secret>",
+              "grant_type": "refresh_token",
+              "refresh_token": "<refresh_token>",
+              "redirect_uri": "<redirect_uri>"
+            }
+
+  test_request:
+    method: GET
+    path: /api/rest/v6/users
+
+  endpoints:
+    - name: users
+      requests:
+        read:
+          method: GET
+          path: /api/rest/v6/users
+          param_values:
+            - name: placeholder
+              identity: email
+          data_path: userInfoList
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: email
+                value:
+                  identity: email
+    - name: agreements
+      requests:
+        read:
+          method: GET
+          path: /api/rest/v6/agreements
+          param_values:
+            - name: placeholder
+              identity: email
+          data_path: userAgreementList
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: displayParticipantSetInfos.0.displayUserSetMemberInfos.0.email
+                value: 
+                  identity: email
