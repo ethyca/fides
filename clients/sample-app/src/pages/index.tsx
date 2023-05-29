@@ -2,7 +2,6 @@
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import Script from "next/script";
 import { Product } from "../types";
 
 import Home from "../components/Home";
@@ -73,7 +72,7 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
         <script src={fidesScriptTagUrl} />
         {/* Insert the GTM script, if a container ID was provided */}
         {gtmContainerId ? (
-          <Script id="google-tag-manager" strategy="afterInteractive">
+          <script id="google-tag-manager">
             {`
               (function (w, d, s, l, i) {
                 w[l] = w[l] || []; w[l].push({
@@ -84,7 +83,7 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
                     'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
               })(window, document, 'script', 'dataLayer', '${gtmContainerId}');
             `}
-          </Script>
+          </script>
         ) : null}
       </Head>
       <Home products={products} />
