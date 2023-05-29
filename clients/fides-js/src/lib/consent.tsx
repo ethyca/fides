@@ -9,7 +9,7 @@ import { showModalLinkAndSetOnClick } from "./consent-links";
 /**
  * Initialize the Fides Consent overlay components.
  *
- * (see the type definition of ConsentBannerOptions for what options are available)
+ * (see the type definition of FidesOptions for what options are available)
  */
 export const initOverlay = async ({
   consentDefaults,
@@ -31,18 +31,18 @@ export const initOverlay = async ({
         "Rendering Fides overlay CSS & HTML into the DOM... (updated!)"
       );
 
-      // TODO: clean this up
-      const rootElementId = "fides-overlay";
-      let root = document.getElementById(rootElementId);
-      if (!root) {
+      // Find or create the parent element where we should insert the overlay
+      const overlayParentId = options.overlayParentId || "fides-overlay";
+      let parentElem = document.getElementById(overlayParentId);
+      if (!parentElem) {
         debugLog(
           options.debug,
-          "Root #fides-overlay not found, inserting before rendering..."
+          `Parent element not found (#${overlayParentId}), creating and appending to body...`
         );
-        // Create our own root element and append to body first
-        root = document.createElement("div");
-        root.id = rootElementId;
-        document.body.appendChild(root);
+        // Create our own parent element and append to body
+        parentElem = document.createElement("div");
+        parentElem.id = overlayParentId;
+        document.body.appendChild(parentElem);
       }
 
       if (experience.component === ComponentType.OVERLAY) {
@@ -55,7 +55,7 @@ export const initOverlay = async ({
               experience={experience}
               geolocation={geolocation}
             />,
-            root
+            parentElem
           );
           debugLog(options.debug, "Fides overlay is now showing!");
         } else if (experience.delivery_mechanism === DeliveryMechanism.LINK) {

@@ -19,14 +19,17 @@ export type FidesOptions = {
   // Whether or not debug log statements should be enabled
   debug: boolean;
 
+  // API URL for getting user geolocation
+  geolocationApiUrl: string;
+
   // Whether or not the banner should be globally disabled
   isOverlayDisabled: boolean;
 
   // Whether user geolocation should be enabled. Requires geolocationApiUrl
   isGeolocationEnabled: boolean;
 
-  // API URL for getting user geolocation
-  geolocationApiUrl: string;
+  // ID of the parent DOM element where the overlay should be inserted (default: "fides-overlay")
+  overlayParentId?: string;
 
   // URL for the Privacy Center, used to customize consent preferences. Required.
   privacyCenterUrl: string;
