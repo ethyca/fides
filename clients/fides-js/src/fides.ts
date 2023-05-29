@@ -265,4 +265,4 @@ export * from "./lib/consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 
-export default Fides;
+export default _Fides;
