@@ -5,56 +5,16 @@ Revises: 2661f31daffb
 Create Date: 2023-05-26 07:51:25.947974
 
 """
-from typing import Dict, List, Optional
+import asyncio
+from typing import Dict
 
 from fideslang import DEFAULT_TAXONOMY
-from loguru import logger as log
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
-from fides.api.ctl.sql_models import PrivacyDeclaration, PolicyCtl
-import asyncio
 
-from fides.api.api.v1.endpoints.dataset_endpoints import patch_dataset_configs
-from fides.api.api.v1.endpoints.saas_config_endpoints import (
-    instantiate_connection_from_template,
-)
-from fides.api.common_exceptions import KeyOrNameAlreadyExists
+from fides.api.ctl.database.crud import list_resource, upsert_resources
 from fides.api.ctl.database.session import async_session
-from fides.api.ctl.database.system import upsert_system
-from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
-    Dataset,
-    sql_model_map,
-)
-from fides.api.ctl.utils.errors import AlreadyExistsError, QueryError
-from fides.api.db.base_class import FidesBase
-from fides.api.models.client import ClientDetail
-from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.fides_user import FidesUser
-from fides.api.models.fides_user_permissions import FidesUserPermissions
-from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.ctl.sql_models import PolicyCtl, PrivacyDeclaration
 from fides.api.oauth.roles import OWNER
-from fides.api.schemas.connection_configuration.connection_config import (
-    CreateConnectionConfigurationWithSecrets,
-    SaasConnectionTemplateValues,
-)
-from fides.api.schemas.dataset import DatasetConfigCtlDataset
-from fides.api.util.connection_util import patch_connection_configs
-from fides.api.util.text import to_snake_case
 from fides.core.config import CONFIG
-
-from fides.api.ctl.database.crud import (
-    create_resource,
-    get_resource,
-    list_resource,
-    upsert_resources,
-)
-
-from alembic import op
-import sqlalchemy as sa
-from collections import namedtuple
-from typing import List
-
 
 # revision identifiers, used by Alembic.
 revision = "63b482f5b49b"
