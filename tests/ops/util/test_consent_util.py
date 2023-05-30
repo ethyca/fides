@@ -1,9 +1,10 @@
-from typing import List
+from html import unescape
 
 import pytest
 from fastapi import HTTPException
 from sqlalchemy.orm.attributes import flag_modified
 
+from fides.api.models.privacy_experience import PrivacyExperience
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
@@ -528,6 +529,12 @@ class TestLoadDefaultNotices:
     def test_load_default_notices(self, db, load_default_data_uses):
         # Load notice from a file that only has one template (A) defined.
         # This should create one template (A), one notice (A), and one notice history (A)
+        overlay_exp, privacy_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
+        assert overlay_exp is None
+        assert privacy_exp is None
+
         new_templates, new_privacy_notices = load_default_notices_on_startup(
             db, "tests/fixtures/test_privacy_notice.yml"
         )
@@ -536,7 +543,10 @@ class TestLoadDefaultNotices:
         assert notice.name == "Test Privacy Notice"
         assert notice.notice_key == "test_privacy_notice"
         assert notice.description == "This website uses cookies."
-        assert notice.internal_description == "This is a contrived template for testing"
+        assert (
+            unescape(notice.internal_description)
+            == "This is a contrived template for testing.  This field's for internal testing!"
+        )
         assert notice.regions == [PrivacyNoticeRegion.us_ak]
         assert notice.consent_mechanism == ConsentMechanism.opt_in
         assert notice.enforcement_level == EnforcementLevel.system_wide
@@ -546,6 +556,11 @@ class TestLoadDefaultNotices:
         assert notice.displayed_in_overlay is True
         assert notice.displayed_in_api is False
         assert notice.version == 1.0
+        overlay_exp, privacy_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
+        assert overlay_exp is not None
+        assert privacy_exp is None
 
         assert notice.privacy_notice_history_id is not None
         history = notice.histories[0]
@@ -553,7 +568,8 @@ class TestLoadDefaultNotices:
         assert history.notice_key == "test_privacy_notice"
         assert history.description == "This website uses cookies."
         assert (
-            history.internal_description == "This is a contrived template for testing"
+            unescape(history.internal_description)
+            == "This is a contrived template for testing.  This field's for internal testing!"
         )
         assert history.regions == [PrivacyNoticeRegion.us_ak]
         assert history.consent_mechanism == ConsentMechanism.opt_in
@@ -572,7 +588,8 @@ class TestLoadDefaultNotices:
         assert template.name == "Test Privacy Notice"
         assert template.description == "This website uses cookies."
         assert (
-            template.internal_description == "This is a contrived template for testing"
+            unescape(template.internal_description)
+            == "This is a contrived template for testing.  This field's for internal testing!"
         )
         assert template.regions == [PrivacyNoticeRegion.us_ak]
         assert template.consent_mechanism == ConsentMechanism.opt_in
@@ -591,6 +608,12 @@ class TestLoadDefaultNotices:
         # This should update the existing template (A), create a separate new template (B),
         # and then create a new notice (B) and notice history (B) from just the new template (B).
         # Leave the existing notice (A) and notice history (A) untouched.
+        overlay_exp, privacy_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.us_al
+        )
+        assert overlay_exp is None
+        assert privacy_exp is None
+
         new_templates, new_privacy_notices = load_default_notices_on_startup(
             db, "tests/fixtures/test_privacy_notice_update.yml"
         )
@@ -656,6 +679,12 @@ class TestLoadDefaultNotices:
         assert new_privacy_notice.version == 1.0
         assert new_privacy_notice.id != notice.id
 
+        overlay_exp, privacy_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.us_al
+        )
+        assert overlay_exp is None
+        assert privacy_exp is not None
+
         # Newly created privacy notice history (B)
         assert new_privacy_notice.privacy_notice_history_id is not None
         new_history = new_privacy_notice.histories[0]
@@ -681,7 +710,10 @@ class TestLoadDefaultNotices:
         db.refresh(notice)
         assert notice.name == "Test Privacy Notice"
         assert notice.description == "This website uses cookies."
-        assert notice.internal_description == "This is a contrived template for testing"
+        assert (
+            unescape(notice.internal_description)
+            == "This is a contrived template for testing.  This field's for internal testing!"
+        )
         assert notice.regions == [PrivacyNoticeRegion.us_ak]
         assert notice.consent_mechanism == ConsentMechanism.opt_in
         assert notice.enforcement_level == EnforcementLevel.system_wide
@@ -698,7 +730,8 @@ class TestLoadDefaultNotices:
         assert history.name == "Test Privacy Notice"
         assert history.description == "This website uses cookies."
         assert (
-            history.internal_description == "This is a contrived template for testing"
+            unescape(history.internal_description)
+            == "This is a contrived template for testing.  This field's for internal testing!"
         )
         assert history.regions == [PrivacyNoticeRegion.us_ak]
         assert history.consent_mechanism == ConsentMechanism.opt_in

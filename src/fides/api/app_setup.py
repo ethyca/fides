@@ -167,7 +167,8 @@ async def run_database_startup() -> None:
     finally:
         db.close()
 
-    load_default_privacy_notices()
+    if not CONFIG.test_mode:
+        load_default_privacy_notices()
     db.close()
 
 

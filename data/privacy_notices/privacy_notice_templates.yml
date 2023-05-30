@@ -34,7 +34,7 @@ privacy_notices:
     - eu_se
     - gb_eng
     - gb_sct
-    - gb_swl
+    - gb_wls
     - gb_nir
     - is_1
     - is_2
@@ -102,7 +102,7 @@ privacy_notices:
     - eu_se
     - gb_eng
     - gb_sct
-    - gb_swl
+    - gb_wls
     - gb_nir
     - is_1
     - is_2
@@ -137,7 +137,7 @@ privacy_notices:
   displayed_in_api: False
 - name: Analytics
   notice_key: analytics
-  id: 13b57800-2581-4da9-8aec-7b31e80b3ana
+  id: pri_13b57800-2581-4da9-8aec-7b31e80b3ana
   description: This website uses analytics cookies and services for collecting aggregated data and statistical information. This data helps us analyze and optimize site performance, identify popular content, detect navigation issues, and make informed decisions to enhance the user experience.
   internal_description: Analytics cookies and services, also known as performance, are technologies that gather anonymous information about how visitors interact with a website. These technologies provide insights into website usage, visitor behavior, and performance metrics, allowing website owners to understand and improve their site's effectiveness. Analytics technologies typically require user consent under privacy regulations.
   regions:
@@ -170,7 +170,7 @@ privacy_notices:
     - eu_se
     - gb_eng
     - gb_sct
-    - gb_swl
+    - gb_wls
     - gb_nir
     - is_1
     - is_2
@@ -238,7 +238,7 @@ privacy_notices:
     - eu_se
     - gb_eng
     - gb_sct
-    - gb_swl
+    - gb_wls
     - gb_nir
     - is_1
     - is_2
@@ -276,7 +276,7 @@ privacy_notices:
   notice_key: data_sales_and_sharing
   id: pri_309d287c-b208-4fd1-93b2-7b2ff13eddat
   description: We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
-  internal_description: Sale of personal data means the exchange of personal data for monetary or other valuable consideration. Data sharing refers to sharing of data with third parties for the purpose of cross contextual behavioral advertising. This is also closely analogous to “Targeted Advertising” as defined in other U.S. state laws and they have been combined here under one notice.
+  internal_description: “Sale of personal“ data means the exchange of personal data for monetary or other valuable consideration. Data sharing refers to sharing of data with third parties for the purpose of cross contextual behavioral advertising. This is also closely analogous to “Targeted Advertising” as defined in other U.S. state laws and they have been combined here under one notice.
   regions:
     - us_ca
     - us_co

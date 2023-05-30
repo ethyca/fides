@@ -33,7 +33,7 @@ from fides.api.models.privacy_request import (
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.schemas.redis_cache import Identity
 
-PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "description", "internal_description", "origin"]
+PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "description", "internal_description"]
 
 
 def filter_privacy_preferences_for_propagation(
@@ -284,7 +284,9 @@ def ensure_unique_ids(
 
 
 def create_privacy_notices_util(
-    db: Session, privacy_notice_schemas: List[PrivacyNoticeCreation]
+    db: Session,
+    privacy_notice_schemas: List[PrivacyNoticeCreation],
+    should_escape: bool = True,
 ) -> Tuple[List[PrivacyNotice], Set[PrivacyNoticeRegion]]:
     """Performs validation before creating Privacy Notices and Privacy Notice History records
     and then ensures that Privacy Experiences exist for all Privacy Notices.
@@ -303,11 +305,12 @@ def create_privacy_notices_util(
     affected_regions: Set = set()
 
     for privacy_notice in privacy_notice_schemas:
-        privacy_notice = transform_fields(  # type: ignore
-            transformation=escape,
-            model=privacy_notice,
-            fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
-        )
+        if should_escape:
+            privacy_notice = transform_fields(  # type: ignore
+                transformation=escape,
+                model=privacy_notice,
+                fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
+            )
         created_privacy_notice = PrivacyNotice.create(
             db=db,
             data=privacy_notice.dict(exclude_unset=True),
@@ -489,6 +492,9 @@ def load_default_notices_on_startup(
             notice_schemas.append(privacy_notice_schema)
 
         # Create PrivacyNotice and PrivacyNoticeHistory records only for new templates
-        new_privacy_notices, _ = create_privacy_notices_util(db, notice_schemas)
+        # Not escaping here, because it was already escaped when the templates were created.
+        new_privacy_notices, _ = create_privacy_notices_util(
+            db, notice_schemas, should_escape=False
+        )
 
         return new_templates, new_privacy_notices

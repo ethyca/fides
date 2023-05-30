@@ -110,7 +110,7 @@ class PrivacyNoticeRegion(Enum):
 
     gb_eng = "gb_eng"  # england
     gb_sct = "gb_sct"  # scotland
-    gb_wls = "gb_swl"  # wales
+    gb_wls = "gb_wls"  # wales
     gb_nir = "gb_nir"  # northern ireland
 
     is_1 = "is_1"  # iceland, capital region
