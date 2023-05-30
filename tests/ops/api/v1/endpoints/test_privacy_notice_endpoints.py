@@ -689,7 +689,7 @@ class TestGetPrivacyNoticeDetail:
         assert data["id"] == privacy_notice.id
         assert data["name"] == privacy_notice.name
         assert data["description"] == privacy_notice.description
-        assert data["origin"] == privacy_notice.origin
+        assert data["origin"] is None
         assert data["created_at"] == privacy_notice.created_at.isoformat()
         assert data["updated_at"] == privacy_notice.updated_at.isoformat()
         for region in data["regions"]:
@@ -727,7 +727,6 @@ class TestGetPrivacyNoticeDetail:
                     "name": "test privacy notice 1",
                     "notice_key": "test_privacy_notice_1",
                     "description": maybe_dangerous_description,
-                    "origin": "privacy_notice_template_1",
                     "regions": [
                         PrivacyNoticeRegion.eu_be.value,
                         PrivacyNoticeRegion.us_ca.value,
@@ -1370,7 +1369,6 @@ class TestPostPrivacyNotices:
             "name": "test privacy notice 1",
             "notice_key": "test_privacy_notice_1",
             "description": "my test privacy notice",
-            "origin": "privacy_notice_template_1",
             "regions": [
                 PrivacyNoticeRegion.eu_be.value,
                 PrivacyNoticeRegion.us_ca.value,
@@ -1386,7 +1384,6 @@ class TestPostPrivacyNotices:
         return {
             "name": "My Test Privacy Notice",
             "description": "my test privacy notice",
-            "origin": "privacy_notice_template_1",
             "regions": [
                 PrivacyNoticeRegion.eu_be.value,
                 PrivacyNoticeRegion.us_ca.value,
@@ -2758,7 +2755,7 @@ class TestPatchPrivacyNotices:
         assert response_notice_2["name"] == db_notice_2.name
         assert response_notice_2["version"] == db_notice_2.version
         assert response_notice_2["description"] == db_notice_2.description
-        assert response_notice_2["origin"] == db_notice_2.origin
+        assert response_notice_2["origin"] is None
         assert response_notice_2["created_at"] == db_notice_2.created_at.isoformat()
         assert response_notice_2["updated_at"] == db_notice_2.updated_at.isoformat()
         assert response_notice_2["disabled"] == db_notice_2.disabled
@@ -2846,7 +2843,7 @@ class TestPatchPrivacyNotices:
         assert response_notice["name"] == db_notice.name
         assert response_notice["version"] == db_notice.version
         assert response_notice["description"] == db_notice.description
-        assert response_notice["origin"] == db_notice.origin
+        assert response_notice["origin"] is None
         assert response_notice["created_at"] == db_notice.created_at.isoformat()
         assert response_notice["updated_at"] == db_notice.updated_at.isoformat()
         assert response_notice["disabled"] == db_notice.disabled
@@ -2961,7 +2958,7 @@ class TestPatchPrivacyNotices:
         assert response_notice_2["name"] == db_notice.name
         assert response_notice_2["version"] == db_notice.version
         assert response_notice_2["description"] == db_notice.description
-        assert response_notice_2["origin"] == db_notice.origin
+        assert response_notice_2["origin"] is None
         assert response_notice_2["created_at"] == db_notice.created_at.isoformat()
         assert response_notice_2["updated_at"] == db_notice.updated_at.isoformat()
         assert response_notice_2["disabled"] == db_notice.disabled
