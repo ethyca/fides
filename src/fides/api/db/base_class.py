@@ -20,7 +20,7 @@ from fides.api.common_exceptions import KeyOrNameAlreadyExists, KeyValidationErr
 from fides.api.util.text import to_snake_case
 
 T = TypeVar("T", bound="OrmWrappedFidesBase")
-ALLOWED_CHARS = re.compile(r"[A-z0-9\-_]")
+ALLOWED_CHARS = re.compile(r"[A-Za-z0-9\-_]")
 
 
 class JSONTypeOverride(JSONType):  # pylint: disable=W0223
@@ -297,9 +297,7 @@ class OrmWrappedFidesBase(FidesBase):
         if hasattr(self, "key"):
             key = getattr(self, "key")
 
-            is_valid = False
-            if key is not None:
-                is_valid = len(ALLOWED_CHARS.sub("", key)) == 0
+            is_valid = key is not None and (len(ALLOWED_CHARS.sub("", key)) == 0)
 
             if not is_valid:
                 raise KeyValidationError(

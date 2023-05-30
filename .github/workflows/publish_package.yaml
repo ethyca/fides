@@ -78,7 +78,8 @@ jobs:
 
       # Notify Fidesplus about a feature (non-prod) tag to trigger an integrated build
       - name: Send Repository Dispatch Event
-        if: steps.check-tag.outputs.match != 'true'
+        # ensure this is a non-prod tag, but NOT an untagged commit to 'main'
+        if: steps.check-tag.outputs.match != 'true' && github.ref_name != 'main'
         uses: peter-evans/repository-dispatch@v2
         with:
           client-payload: '{"tag": "${{ github.ref_name }}"}'

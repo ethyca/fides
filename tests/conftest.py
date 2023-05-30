@@ -668,6 +668,43 @@ def set_notification_service_type_mailgun(db):
     db.commit()
 
 
+@pytest.fixture(scope="function")
+def set_notification_service_type_to_none(db):
+    """Overrides autouse fixture to remove default notification service type"""
+    original_value = CONFIG.notifications.notification_service_type
+    CONFIG.notifications.notification_service_type = None
+    ApplicationConfig.update_config_set(db, CONFIG)
+    yield
+    CONFIG.notifications.notification_service_type = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
+
+
+@pytest.fixture(scope="function")
+def set_notification_service_type_to_twilio_email(db):
+    """Overrides autouse fixture to set notification service type to twilio email"""
+    original_value = CONFIG.notifications.notification_service_type
+    CONFIG.notifications.notification_service_type = (
+        MessagingServiceType.twilio_email.value
+    )
+    ApplicationConfig.update_config_set(db, CONFIG)
+    yield
+    CONFIG.notifications.notification_service_type = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
+
+
+@pytest.fixture(scope="function")
+def set_notification_service_type_to_twilio_text(db):
+    """Overrides autouse fixture to set notification service type to twilio text"""
+    original_value = CONFIG.notifications.notification_service_type
+    CONFIG.notifications.notification_service_type = (
+        MessagingServiceType.twilio_text.value
+    )
+    ApplicationConfig.update_config_set(db, CONFIG)
+    yield
+    CONFIG.notifications.notification_service_type = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
+
+
 @pytest.fixture(scope="session")
 def config_proxy(db):
     return ConfigProxy(db)

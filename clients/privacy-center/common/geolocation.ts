@@ -1,14 +1,5 @@
 import type { NextApiRequest } from "next";
-
-// DEFER: Import this type from fides-js when it exists!
-// (see https://github.com/ethyca/fides/pull/3191)
-// import type { UserGeolocation } from "fides-js";
-export type UserGeolocation = {
-  country?: string; // "US"
-  ip?: string; // "192.168.0.1:12345"
-  location?: string; // "US-NY"
-  region?: string; // "NY"
-};
+import type { UserGeolocation } from "fides-js";
 
 // Regex to validate a location string, which must:
 // 1) Start with a 2-3 character country code (e.g. "US")
@@ -26,28 +17,28 @@ export const LOCATION_HEADERS = [
 ];
 
 /**
- * Lookup the "location" (ie country and region) for the given request by looking for either:
- * 1) An explicit "location" query param (e.g. https://privacy.example.com/some/path?location=US-CA)
+ * Lookup the "geolocation" (ie country and region) for the given request by looking for either:
+ * 1) An explicit "geolocation" query param (e.g. https://privacy.example.com/some/path?geolocation=US-CA)
  * 2) Supported geolocation headers (e.g. "Cloudfront-Viewer-Country: US")
  *
- * If neither of these are found, return an undefined location.
+ * If neither of these are found, return an undefined geolocation.
  *
  * NOTE: This specifically *does not* include performing a geo-IP lookup... yet!
  */
-export const getLocation = (
+export const getGeolocation = (
   req: NextApiRequest
 ): UserGeolocation | undefined => {
   // DEFER: read headers to determine & return the request's IP address
 
-  // Check for a provided "location" query param
-  const { location: locationQuery } = req.query;
+  // Check for a provided "geolocation" query param
+  const { geolocation: geolocationQuery } = req.query;
   if (
-    typeof locationQuery === "string" &&
-    VALID_ISO_3166_LOCATION_REGEX.test(locationQuery)
+    typeof geolocationQuery === "string" &&
+    VALID_ISO_3166_LOCATION_REGEX.test(geolocationQuery)
   ) {
-    const [country, region] = locationQuery.split("-");
+    const [country, region] = geolocationQuery.split("-");
     return {
-      location: locationQuery,
+      location: geolocationQuery,
       country,
       region,
     };
@@ -55,17 +46,17 @@ export const getLocation = (
 
   // Check for CloudFront viewer location headers
   if (typeof req.headers[CLOUDFRONT_HEADER_COUNTRY] === "string") {
-    let location;
+    let geolocation;
     let region;
     const country = req.headers[CLOUDFRONT_HEADER_COUNTRY].split(",")[0];
-    location = country;
+    geolocation = country;
     if (typeof req.headers[CLOUDFRONT_HEADER_REGION] === "string") {
       [region] = req.headers[CLOUDFRONT_HEADER_REGION].split(",");
-      location = `${country}-${region}`;
+      geolocation = `${country}-${region}`;
     }
-    if (VALID_ISO_3166_LOCATION_REGEX.test(location)) {
+    if (VALID_ISO_3166_LOCATION_REGEX.test(geolocation)) {
       return {
-        location,
+        location: geolocation,
         country,
         region,
       };
