@@ -3,7 +3,7 @@ import {
   CookieKeyConsent,
   FidesCookie,
   getOrMakeFidesCookie,
-  makeConsentDefaults,
+  makeConsentDefaultsLegacy,
   makeFidesCookie,
   saveFidesCookie,
 } from "../../src/lib/cookie";
@@ -171,7 +171,7 @@ describe("saveFidesCookie", () => {
   });
 });
 
-describe("makeConsentDefaults", () => {
+describe("makeConsentDefaultsLegacy", () => {
   const config: LegacyConsentConfig = {
     options: [
       {
@@ -205,7 +205,9 @@ describe("makeConsentDefaults", () => {
     const context: ConsentContext = {};
 
     it("returns the default consent values by key", () => {
-      expect(makeConsentDefaults({ config, context, debug: false })).toEqual({
+      expect(
+        makeConsentDefaultsLegacy({ config, context, debug: false })
+      ).toEqual({
         default_true: true,
         default_false: false,
         default_true_with_gpc_false: true,
@@ -220,7 +222,9 @@ describe("makeConsentDefaults", () => {
     };
 
     it("returns the default consent values by key", () => {
-      expect(makeConsentDefaults({ config, context, debug: false })).toEqual({
+      expect(
+        makeConsentDefaultsLegacy({ config, context, debug: false })
+      ).toEqual({
         default_true: true,
         default_false: false,
         default_true_with_gpc_false: false,
