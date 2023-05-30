@@ -26,6 +26,7 @@ okta==2.7.0
 openpyxl==3.0.9
 packaging==23.0
 pandas==1.4.3
+paramiko==3.1.0
 passlib[bcrypt]==1.7.4
 plotly==5.13.1
 psycopg2-binary==2.9.5
