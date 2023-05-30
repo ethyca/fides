@@ -53,7 +53,8 @@ import {
   CookieIdentity,
   CookieMeta,
   getOrMakeFidesCookie,
-  makeConsentDefaults,
+  makeConsentDefaultsLegacy,
+  makeConsentDefaultsForExperiences,
 } from "./lib/cookie";
 import {
   PrivacyExperience,
@@ -183,13 +184,21 @@ const init = async ({
   geolocation,
   options,
 }: FidesConfig) => {
-  const { fides_user_device_id: fidesUserDeviceId } =
-    getOrMakeFidesCookie().identity;
-
   if (!validateOptions(options)) {
     debugLog(options.debug, "Invalid overlay options", options);
     return;
   }
+
+  // Configure the default legacy consent values
+  const context = getConsentContext();
+  let consentDefaults = makeConsentDefaultsLegacy(
+    consent,
+    context,
+    options.debug
+  );
+
+  // Load any existing user preferences from the browser cookie
+  let cookie = getOrMakeFidesCookie(consentDefaults, options.debug);
 
   const fidesRegionString = await retrieveEffectiveRegionString(
     geolocation,
@@ -208,33 +217,28 @@ const init = async ({
     effectiveExperience = await fetchExperience(
       fidesRegionString,
       options.fidesApiUrl,
-      fidesUserDeviceId,
+      cookie.identity.fides_user_device_id,
       options.debug
     );
+  }
+  if (effectiveExperience) {
+    // Configure the defaults with experience-based consent values
+    consentDefaults = makeConsentDefaultsForExperiences(
+      effectiveExperience,
+      context,
+      options.debug
+    );
+    cookie = getOrMakeFidesCookie(consentDefaults, options.debug);
   }
 
   if (shouldInitOverlay && experienceIsValid(effectiveExperience, options)) {
     await initOverlay(<OverlayProps>{
       experience: effectiveExperience,
       fidesRegionString,
+      cookie,
       options,
     }).catch(() => {});
   }
-
-  // Configure the default consent values
-  const context = getConsentContext();
-  const consentDefaults = makeConsentDefaults({
-    experience,
-    config: consent,
-    context,
-    debug: options.debug,
-  });
-  // Load any existing user preferences from the browser cookie
-  const cookie = getOrMakeFidesCookie(
-    consentDefaults,
-    fidesUserDeviceId,
-    options.debug
-  );
 
   // Initialize the window.Fides object
   _Fides.consent = cookie.consent;

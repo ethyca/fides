@@ -12,10 +12,12 @@ import ConsentModal from "./ConsentModal";
 
 import { updateConsentPreferences } from "../lib/preferences";
 import { transformConsentToFidesUserPreference } from "../lib/consent-utils";
+import { FidesCookie } from "../lib/cookie";
 
 export interface OverlayProps {
   options: FidesOptions;
   experience: PrivacyExperience;
+  cookie: FidesCookie;
   fidesRegionString: string;
 }
 
@@ -23,6 +25,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   experience,
   options,
   fidesRegionString,
+  cookie,
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
@@ -49,6 +52,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       fidesApiUrl: options.fidesApiUrl,
       consentMethod: ConsentMethod.button,
       userLocationString: fidesRegionString,
+      cookie,
     });
   };
 
@@ -69,6 +73,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       fidesApiUrl: options.fidesApiUrl,
       consentMethod: ConsentMethod.button,
       userLocationString: fidesRegionString,
+      cookie,
     });
   };
 
@@ -94,6 +99,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       fidesApiUrl: options.fidesApiUrl,
       consentMethod: ConsentMethod.button,
       userLocationString: fidesRegionString,
+      cookie,
     });
   };
 

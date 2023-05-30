@@ -78,12 +78,9 @@ export const generateFidesUserDeviceId = (): string => uuidv4();
 /**
  * Generate a new Fides cookie with default values for the current user.
  */
-export const makeFidesCookie = (
-  consent?: CookieKeyConsent,
-  device_id?: string
-): FidesCookie => {
+export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
   const now = new Date();
-  const userDeviceId = device_id || generateFidesUserDeviceId();
+  const userDeviceId = generateFidesUserDeviceId();
   return {
     consent: consent || {},
     identity: {
@@ -106,11 +103,10 @@ export const makeFidesCookie = (
  */
 export const getOrMakeFidesCookie = (
   defaults?: CookieKeyConsent,
-  device_id?: string,
   debug: boolean = false
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
-  const defaultCookie = makeFidesCookie(defaults, device_id);
+  const defaultCookie = makeFidesCookie(defaults);
 
   if (typeof document === "undefined") {
     return defaultCookie;
@@ -189,7 +185,16 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
   );
 };
 
-const makeConsentDefaultsForExperiences = (
+/**
+ * Generate the *default* consent preferences for this session, based on:
+ * 1) context: browser context, which can automatically override those defaults
+ *    in some cases (e.g. global privacy control => false)
+ * 2) experience: current experience-based consent configuration.
+ *
+ * Returns the final set of "defaults" that can then be changed according to the
+ * user's preferences.
+ */
+export const makeConsentDefaultsForExperiences = (
   experience: PrivacyExperience,
   context: ConsentContext,
   debug: boolean
@@ -211,7 +216,17 @@ const makeConsentDefaultsForExperiences = (
   return defaults;
 };
 
-const makeConsentDefaultsLegacy = (
+/**
+ * Generate the *default* consent preferences for this session, based on:
+ * 1) config: current legacy consent configuration, which defines the options and their
+ *    default values (e.g. "data_sales" => true)
+ * 2) context: browser context, which can automatically override those defaults
+ *    in some cases (e.g. global privacy control => false)
+ *
+ * Returns the final set of "defaults" that can then be changed according to the
+ * user's preferences.
+ */
+export const makeConsentDefaultsLegacy = (
   config: LegacyConsentConfig | undefined,
   context: ConsentContext,
   debug: boolean

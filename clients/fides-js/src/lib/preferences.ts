@@ -5,11 +5,7 @@ import {
   SaveConsentPreference,
 } from "./consent-types";
 import { debugLog, transformUserPreferenceToBoolean } from "./consent-utils";
-import {
-  CookieKeyConsent,
-  getOrMakeFidesCookie,
-  saveFidesCookie,
-} from "./cookie";
+import { CookieKeyConsent, FidesCookie, saveFidesCookie } from "./cookie";
 import { patchUserPreferenceToFidesServer } from "../services/fides/api";
 
 /**
@@ -24,6 +20,7 @@ export const updateConsentPreferences = ({
   fidesApiUrl,
   consentMethod,
   userLocationString,
+  cookie,
   debug = false,
 }: {
   consentPreferencesToSave: Array<SaveConsentPreference>;
@@ -31,10 +28,9 @@ export const updateConsentPreferences = ({
   fidesApiUrl: string;
   consentMethod: ConsentMethod;
   userLocationString: string;
+  cookie: FidesCookie;
   debug?: boolean;
 }) => {
-  const cookie = getOrMakeFidesCookie();
-
   // Derive the CookieKeyConsent object from privacy notices
   const noticeMap = new Map<string, boolean>(
     consentPreferencesToSave.map(({ noticeKey, consentPreference }) => [
