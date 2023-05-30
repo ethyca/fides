@@ -188,6 +188,15 @@ class PostgreSQLConnector(SQLConnector):
 
     secrets_schema = PostgreSQLSchema
 
+    def __init__(self, configuration: ConnectionConfig):
+        """Instantiate a SQL-based connector"""
+        super().__init__(configuration)
+        if not self.secrets_schema:
+            raise NotImplementedError(
+                "SQL Connectors must define their secrets schema class"
+            )
+        self.ssh_server: sshtunnel._ForwardServer = None
+
     def build_uri(self) -> str:
         """Build URI of format postgresql://[user[:password]@][netloc][:port][/dbname]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
@@ -203,7 +212,7 @@ class PostgreSQLConnector(SQLConnector):
         dbname = f"/{config.dbname}" if config.dbname else ""
         return f"postgresql://{user_password}{netloc}{port}{dbname}"
 
-    def build_ssh_uri(self, local_port: int) -> str:
+    def build_ssh_uri(self, local_address: tuple) -> str:
         """Build URI of format postgresql://[user[:password]@][netloc][:port][/dbname]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
 
@@ -213,10 +222,19 @@ class PostgreSQLConnector(SQLConnector):
             password = f":{config.password}" if config.password else ""
             user_password = f"{user}{password}@"
 
-        netloc = config.host
+        local_host, local_port = local_address
+        netloc = local_host
         port = f":{local_port}" if local_port else ""
         dbname = f"/{config.dbname}" if config.dbname else ""
         return f"postgresql://{user_password}{netloc}{port}{dbname}"
+
+    def close(self) -> None:
+        """Close any held resources"""
+        if self.db_client:
+            logger.debug(" disposing of {}", self.__class__)
+            self.db_client.dispose()
+        if self.ssh_server:
+            self.ssh_server.stop()
 
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
@@ -228,7 +246,7 @@ class PostgreSQLConnector(SQLConnector):
             ) as binary_file:
                 with io.TextIOWrapper(binary_file, encoding="utf8") as file_obj:
                     pkey = paramiko.RSAKey.from_private_key(file_obj=file_obj)
-            server = sshtunnel.SSHTunnelForwarder(
+            self.ssh_server = sshtunnel.SSHTunnelForwarder(
                 (CONFIG.security.bastion_server_host),
                 ssh_username=CONFIG.security.bastion_server_ssh_username,
                 ssh_pkey=pkey,
@@ -237,9 +255,9 @@ class PostgreSQLConnector(SQLConnector):
                     config.port,
                 ),
             )
-            server.start()
+            self.ssh_server.start()
 
-            uri = self.build_ssh_uri(local_port=server.local_bind_port)
+            uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
         else:
             uri = config.url or self.build_uri()
         return create_engine(
