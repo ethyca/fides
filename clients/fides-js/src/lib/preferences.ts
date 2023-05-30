@@ -1,12 +1,10 @@
 import {
-  ConsentMechanism,
   ConsentMethod,
   ConsentOptionCreate,
-  PrivacyNotice,
   PrivacyPreferencesRequest,
-  UserConsentPreference,
+  SaveConsentPreference,
 } from "./consent-types";
-import { debugLog } from "./consent-utils";
+import { debugLog, transformUserPreferenceToBoolean } from "./consent-utils";
 import {
   CookieKeyConsent,
   getOrMakeFidesCookie,
@@ -21,17 +19,15 @@ import { patchUserPreferenceToFidesServer } from "../services/fides/api";
  * 3. Save preferences to the `fides_consent` cookie in the browser
  */
 export const updateConsentPreferences = ({
-  privacyNotices,
+  consentPreferencesToSave,
   experienceHistoryId,
-  enabledPrivacyNoticeKeys,
   fidesApiUrl,
   consentMethod,
   userLocationString,
   debug = false,
 }: {
-  privacyNotices: PrivacyNotice[];
+  consentPreferencesToSave: Array<SaveConsentPreference>;
   experienceHistoryId: string;
-  enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>;
   fidesApiUrl: string;
   consentMethod: ConsentMethod;
   userLocationString: string;
@@ -41,28 +37,18 @@ export const updateConsentPreferences = ({
 
   // Derive the CookieKeyConsent object from privacy notices
   const noticeMap = new Map<string, boolean>(
-    privacyNotices.map((notice) => [
-      notice.notice_key,
-      enabledPrivacyNoticeKeys.includes(notice.notice_key),
+    consentPreferencesToSave.map(({ noticeKey, consentPreference }) => [
+      noticeKey,
+      transformUserPreferenceToBoolean(consentPreference),
     ])
   );
   const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeMap);
 
   // Derive the Fides user preferences array from privacy notices
   const fidesUserPreferences: Array<ConsentOptionCreate> = [];
-  privacyNotices.forEach((notice) => {
-    let consentPreference;
-    if (enabledPrivacyNoticeKeys.includes(notice.notice_key)) {
-      if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
-        consentPreference = UserConsentPreference.ACKNOWLEDGE;
-      } else {
-        consentPreference = UserConsentPreference.OPT_IN;
-      }
-    } else {
-      consentPreference = UserConsentPreference.OPT_OUT;
-    }
+  consentPreferencesToSave.forEach(({ noticeHistoryId, consentPreference }) => {
     fidesUserPreferences.push({
-      privacy_notice_history_id: notice.privacy_notice_history_id,
+      privacy_notice_history_id: noticeHistoryId,
       preference: consentPreference,
     });
   });

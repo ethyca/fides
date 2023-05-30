@@ -1,4 +1,5 @@
 import {
+  ConsentMechanism,
   FidesOptions,
   UserConsentPreference,
   UserGeolocation,
@@ -70,6 +71,22 @@ export const transformUserPreferenceToBoolean = (
     return true;
   }
   return preference === UserConsentPreference.ACKNOWLEDGE;
+};
+
+/**
+ * Convert a true/false consent to Fides user consent preference
+ */
+export const transformConsentToFidesUserPreference = (
+  consented: boolean,
+  consentMechanism?: ConsentMechanism
+): UserConsentPreference => {
+  if (consented) {
+    if (consentMechanism === ConsentMechanism.NOTICE_ONLY) {
+      return UserConsentPreference.ACKNOWLEDGE;
+    }
+    return UserConsentPreference.OPT_IN;
+  }
+  return UserConsentPreference.OPT_OUT;
 };
 
 /**
