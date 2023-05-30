@@ -5,7 +5,7 @@
 /**
  * Schema that holds BigQuery keyfile key/vals
  */
-export type fides__api__ops__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds =
+export type fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds =
   {
     type?: string;
     project_id: string;
