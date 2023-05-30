@@ -1,14 +1,17 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {
+  Box,
   Modal,
   ModalBody,
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Box,
 } from "@fidesui/react";
-import YamlEditor from "./YamlEditor";
+
 import { Dataset } from "~/types/api";
+
+import YamlEditor from "./YamlEditor";
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -28,8 +31,7 @@ const YamlEditorModal = ({
   isDatasetSelected,
   dataset,
   onChange,
-}: Props) => {
-  return (
+}: Props) => (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
@@ -58,6 +60,5 @@ const YamlEditorModal = ({
       </ModalContent>
     </Modal>
   );
-};
 
 export default YamlEditorModal;

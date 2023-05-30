@@ -17,15 +17,18 @@ import {
   Tooltip,
   VStack,
 } from "@fidesui/react";
+import { Option } from "common/form/inputs";
 import { useAPIHelper } from "common/hooks";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaReponse,
 } from "connection-type/types";
+import connectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import React, { useEffect, useRef } from "react";
 
+import DatasetConfigField from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -35,9 +38,6 @@ import {
 
 import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
-import DatasetConfigField from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
-import connectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
-import { Option } from "common/form/inputs";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 

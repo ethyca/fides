@@ -1,10 +1,10 @@
 import {
   Button,
   Flex,
-  Text,
-  VStack,
   ModalFooter,
   SimpleGrid,
+  Text,
+  VStack,
 } from "@fidesui/react";
 import { useAlert } from "common/hooks/useAlert";
 import yaml, { YAMLException } from "js-yaml";

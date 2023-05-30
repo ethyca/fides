@@ -1,5 +1,6 @@
 import {
   ArrowDownLineIcon,
+  Box,
   Button,
   ButtonProps,
   Flex,
@@ -9,9 +10,9 @@ import {
   MenuList,
   Text,
   Tooltip,
-  Box,
 } from "@fidesui/react";
-import { useState, useMemo } from "react";
+import { useMemo,useState } from "react";
+
 import { useAppSelector } from "~/app/hooks";
 import {
   selectConnectionTypeFilters,
@@ -19,11 +20,11 @@ import {
   setSearch,
   useGetAllConnectionTypesQuery,
 } from "~/features/connection-type";
+import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
 } from "~/types/api";
-import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 
 type ItemOption = {
   /**
@@ -107,17 +108,17 @@ export const useConnectionListDropDown = ({
     return options;
   }, [sortedItems]);
 
-  const systemType = useMemo(() => {
-    //this needs to factor in the selected value as well
-    return (
+  const systemType = useMemo(() => 
+    // this needs to factor in the selected value as well
+     (
       connectionOptions.find(
         (ct) =>
           ct.identifier === connectionConfig?.connection_type ||
           (connectionConfig?.saas_config &&
             ct.identifier === connectionConfig?.saas_config.type)
       )?.type || "ethyca"
-    );
-  }, [connectionConfig, connectionOptions]);
+    )
+  , [connectionConfig, connectionOptions]);
 
   useMemo(() => {
     const initialSelectedValue = connectionOptions.find(

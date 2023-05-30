@@ -2,12 +2,14 @@ import { Box, SlideFade } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
+import TestConnection from "datastore-connections/add-connection/TestConnection";
 import {
   CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
   useGetConnectionConfigDatasetConfigsQuery,
   useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
+import { useDatasetConfigField } from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
   CreateSaasConnectionConfigRequest,
   CreateSaasConnectionConfigResponse,
@@ -16,6 +18,7 @@ import {
 } from "datastore-connections/types";
 import { useState } from "react";
 
+import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { usePatchSystemConnectionConfigsMutation } from "~/features/system/system.slice";
 import {
@@ -30,9 +33,6 @@ import {
 
 import { ConnectionConfigFormValues } from "../types";
 import ConnectorParametersForm from "./ConnectorParametersForm";
-import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
-import TestConnection from "datastore-connections/add-connection/TestConnection";
-import { useDatasetConfigField } from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 
 /**
  * Only handles creating saas connectors. The BE handler automatically

@@ -1,20 +1,23 @@
+import { EditIcon } from "@chakra-ui/icons";
 import {
-  IconButton,
   Flex,
+  IconButton,
   useDisclosure,
 } from "@fidesui/react";
-import { EditIcon } from "@chakra-ui/icons";
+import { CustomSelect, Option } from "common/form/inputs";
 import { useAlert, useAPIHelper } from "common/hooks";
 import {
   useGetConnectionConfigDatasetConfigsQuery,
   usePatchDatasetConfigsMutation,
 } from "datastore-connections/datastore-connection.slice";
+import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
+import { useField, useFormikContext } from "formik";
 import React, {
-  useEffect,
-  useState,
-  useMemo,
   useCallback,
+  useEffect,
+  useMemo,
+  useState,
 } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -29,9 +32,6 @@ import {
 } from "~/types/api";
 
 import YamlEditorModal from "./YamlEditorModal";
-import { CustomSelect, Option } from "common/form/inputs";
-import { useField, useFormikContext } from "formik";
-import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 
 const fieldName = "dataset";
 
@@ -95,8 +95,8 @@ export const useDatasetConfigField = ({
     }
     const datasetPairs: DatasetConfigCtlDataset[] = [
       {
-        fides_key: fidesKey, //DatasetConfig.fides_key
-        ctl_dataset_fides_key: values[fieldName], //Dataset.fides_key
+        fides_key: fidesKey, // DatasetConfig.fides_key
+        ctl_dataset_fides_key: values[fieldName], // Dataset.fides_key
       },
     ];
 
@@ -137,14 +137,12 @@ export const useDatasetConfigField = ({
     }
   };
 
-  const dropdownOptions: Option[] = useMemo(() => {
-    return allDatasets
+  const dropdownOptions: Option[] = useMemo(() => allDatasets
       ? allDatasets.map((d) => ({
           value: d.fides_key,
           label: d.name || d.fides_key,
         }))
-      : [];
-  }, [allDatasets]);
+      : [], [allDatasets]);
   return {
     datasetConfigFidesKey,
     dropdownOptions,

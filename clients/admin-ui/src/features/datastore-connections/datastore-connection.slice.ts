@@ -177,7 +177,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         console.log(url);
 
         return {
-          url: url,
+          url,
           method: "POST",
           body: { ...params.connectionConfig },
         };
