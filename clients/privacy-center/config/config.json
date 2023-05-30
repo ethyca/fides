@@ -19,7 +19,7 @@
 			"policy_key": "default_erasure_policy",
 			"icon_path": "/delete.svg",
 			"title": "Erase your data",
-			"description": "We will delete your account and all of its associated data within 45 days. This action cannot be undone: your account, rewards, punchcard points, etc. can never be recovered once deleted.",
+			"description": "We will delete your account and all of its associated data within 45 days. THIS ACTION CANNOT BE UNDONE: your account, rewards, punchcard points, etc. can never be recovered once deleted. You will have to make a new account if you wish to use Snackpass again.",
 			"identity_inputs": {
 				"name": "required",
 				"phone": "required"
