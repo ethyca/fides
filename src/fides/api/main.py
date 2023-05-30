@@ -33,6 +33,7 @@ from fides.api.ctl.ui import (
     match_route,
     path_is_in_ui_directory,
 )
+from fides.api.middleware import handle_audit_log_resource
 from fides.api.schemas.analytics import Event, ExtraData
 
 # pylint: disable=wildcard-import, unused-wildcard-import
@@ -43,6 +44,8 @@ from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.core.config import CONFIG, check_required_webserver_config_values
+
+IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 
 VERSION = fides.__version__
 
@@ -239,3 +242,22 @@ def start_webserver(port: int = 8080) -> None:
         server.config.log_level,
     )
     server.run()
+
+
+@app.middleware("http")
+async def action_to_audit_log(
+    request: Request,
+    call_next: Callable,
+) -> Response:
+    """Log basic information about every non-GET request handled by the server."""
+
+    if (
+        request.method != "GET"
+        and request.scope["path"] not in IGNORED_AUDIT_LOG_RESOURCE_PATHS
+        and CONFIG.security.enable_audit_log_resource_middleware
+    ):
+        try:
+            await handle_audit_log_resource(request)
+        except Exception as exc:
+            logger.debug(exc)
+    return await call_next(request)

@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:16-alpine as prod
 
 ENV DATABASE_HOST localhost
 ENV DATABASE_PORT 5432
