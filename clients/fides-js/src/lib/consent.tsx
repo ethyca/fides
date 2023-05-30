@@ -14,6 +14,7 @@ import { showModalLinkAndSetOnClick } from "./consent-links";
 export const initOverlay = async ({
   experience,
   fidesRegionString,
+  cookie,
   options,
 }: OverlayProps): Promise<void> => {
   debugLog(options.debug, "Initializing Fides consent overlays...");
@@ -37,6 +38,7 @@ export const initOverlay = async ({
             <Overlay
               options={options}
               experience={experience}
+              cookie={cookie}
               fidesRegionString={fidesRegionString}
             />,
             document.body
