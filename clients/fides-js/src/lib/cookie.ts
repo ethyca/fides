@@ -252,33 +252,3 @@ export const makeConsentDefaultsLegacy = (
   debugLog(debug, `Returning defaults for legacy config.`, defaults);
   return defaults;
 };
-
-/**
- * Generate the *default* consent preferences for this session, based on:
- * 1) config: current legacy consent configuration, which defines the options and their
- *    default values (e.g. "data_sales" => true)
- * 2) context: browser context, which can automatically override those defaults
- *    in some cases (e.g. global privacy control => false)
- * 3) experience: current experience-based consent configuration. If exists, we use this.
- *
- * Returns the final set of "defaults" that can then be changed according to the
- * user's preferences.
- */
-export const makeConsentDefaults = ({
-  experience,
-  config,
-  context,
-  debug,
-}: {
-  experience?: PrivacyExperience;
-  config?: LegacyConsentConfig;
-  context: ConsentContext;
-  debug: boolean;
-}): CookieKeyConsent => {
-  if (experience) {
-    debugLog(debug, `Making consent defaults for experiences.`);
-    return makeConsentDefaultsForExperiences(experience, context, debug);
-  }
-  debugLog(debug, `Making consent defaults for legacy config.`);
-  return makeConsentDefaultsLegacy(config, context, debug);
-};
