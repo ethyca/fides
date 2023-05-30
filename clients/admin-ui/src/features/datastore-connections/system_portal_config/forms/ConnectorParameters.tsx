@@ -297,7 +297,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     instance_key: "",
     name: "",
     dataset: selectedDatasetConfigOption,
-    datasetYaml: Dataset,
+    datasetYaml: undefined,
   };
 
   if (!secretsSchema) {
