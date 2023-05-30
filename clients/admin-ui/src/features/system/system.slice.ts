@@ -65,7 +65,12 @@ const systemApi = baseApi.injectEndpoints({
         method: "PUT",
         body: patch,
       }),
-      invalidatesTags: ["Datamap", "System", "Privacy Notices", "Datastore Connection"],
+      invalidatesTags: [
+        "Datamap",
+        "System",
+        "Privacy Notices",
+        "Datastore Connection",
+      ],
     }),
     patchSystemConnectionConfigs: build.mutation<
       BulkPutConnectionConfiguration,

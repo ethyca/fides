@@ -5,6 +5,7 @@ import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import {
   CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
+  useGetConnectionConfigDatasetConfigsQuery,
   useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
 import {
@@ -23,6 +24,7 @@ import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   ConnectionType,
+  Dataset,
   SystemType,
 } from "~/types/api";
 
@@ -150,7 +152,12 @@ export const useConnectorForm = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { dropdownOptions: datasetDropdownOptions, patchConnectionDatasetConfig, datasetConfigFidesKey: selectedDatasetConfigOption } = useDatasetConfigField({
+  const {
+    dropdownOptions: datasetDropdownOptions,
+    upsertDataset,
+    patchConnectionDatasetConfig,
+    datasetConfigFidesKey: selectedDatasetConfigOption,
+  } = useDatasetConfigField({
     connectionConfig,
   });
 
@@ -159,12 +166,20 @@ export const useConnectorForm = ({
     useUpdateDatastoreConnectionSecretsMutation();
   const [patchDatastoreConnection] = usePatchSystemConnectionConfigsMutation();
 
+  const { data: allDatasetConfigs } = useGetConnectionConfigDatasetConfigsQuery(
+    connectionConfig?.key || ""
+  );
+
   const handleSubmit = async (values: ConnectionConfigFormValues) => {
+    const isCreatingConnectionConfig = connectionConfig === undefined;
+    const hasLinkedDatasetConfig = allDatasetConfigs
+      ? allDatasetConfigs.items.length > 0
+      : false;
     try {
       setIsSubmitting(true);
       if (
         connectionOption.type === SystemType.SAAS &&
-        connectionConfig === undefined
+        isCreatingConnectionConfig
       ) {
         const response = await createSaasConnector(
           values,
@@ -184,6 +199,14 @@ export const useConnectorForm = ({
           connectionConfig!,
           patchDatastoreConnection
         );
+        if (
+          !connectionConfig &&
+          connectionOption.type === SystemType.DATABASE
+        ) {
+          // The connectionConfig is required for patching the
+          // datasetConfig
+          connectionConfig = payload.succeeded[0];
+        }
         const payload2 = await upsertConnectionConfigSecrets(
           values,
           secretsSchema!,
@@ -192,15 +215,21 @@ export const useConnectorForm = ({
         );
       }
 
-      if(connectionConfig){
-        patchConnectionDatasetConfig(values, connectionConfig.key)
+      if (
+        values.datasetYaml &&
+        !values.dataset &&
+        connectionOption.type === SystemType.DATABASE &&
+        !hasLinkedDatasetConfig
+      ) {
+        const res = await upsertDataset(values.datasetYaml);
+        values.dataset = res;
       }
-      //TODO: Add patching of DatasetConfig here.
-      // it requires a connectionConfig so it must come after the submission
-      // if creating a brand new connection there would be no connectionConfig
-      // to link it to
 
-      // I think it's worth moving the testing phase to the very end
+      if (connectionConfig && values.dataset) {
+        await patchConnectionDatasetConfig(values, connectionConfig.key);
+      }
+
+      // TODO: I think it's worth moving the testing phase to the very end
       // I need to make sure the semantics around that are good
 
       // if (payload2.test_status === "failed") {
@@ -225,7 +254,12 @@ export const useConnectorForm = ({
     }
   };
 
-  return { isSubmitting, handleSubmit, datasetDropdownOptions, selectedDatasetConfigOption };
+  return {
+    isSubmitting,
+    handleSubmit,
+    datasetDropdownOptions,
+    selectedDatasetConfigOption,
+  };
 };
 
 export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
@@ -233,7 +267,6 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   connectionOption,
   connectionConfig,
 }) => {
-
   const [response, setResponse] = useState<any>();
 
   const handleTestConnectionClick = (value: any) => {
@@ -247,19 +280,24 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     }
   );
 
-  const { isSubmitting, handleSubmit, datasetDropdownOptions, selectedDatasetConfigOption } =
-    useConnectorForm({
-      secretsSchema,
-      systemFidesKey,
-      connectionOption,
-      connectionConfig,
-    });
+  const {
+    isSubmitting,
+    handleSubmit,
+    datasetDropdownOptions,
+    selectedDatasetConfigOption,
+  } = useConnectorForm({
+    secretsSchema,
+    systemFidesKey,
+    connectionOption,
+    connectionConfig,
+  });
 
   const defaultValues: ConnectionConfigFormValues = {
     description: "",
     instance_key: "",
     name: "",
-    dataset: selectedDatasetConfigOption
+    dataset: selectedDatasetConfigOption,
+    datasetYaml: Dataset,
   };
 
   if (!secretsSchema) {
