@@ -191,14 +191,14 @@ const init = async ({
 
   // Configure the default legacy consent values
   const context = getConsentContext();
-  let consentDefaults = makeConsentDefaultsLegacy(
+  const consentDefaults = makeConsentDefaultsLegacy(
     consent,
     context,
     options.debug
   );
 
   // Load any existing user preferences from the browser cookie
-  let cookie = getOrMakeFidesCookie(consentDefaults, options.debug);
+  const cookie = getOrMakeFidesCookie(consentDefaults, options.debug);
 
   const fidesRegionString = await retrieveEffectiveRegionString(
     geolocation,
@@ -222,13 +222,12 @@ const init = async ({
     );
   }
   if (effectiveExperience) {
-    // Configure the defaults with experience-based consent values
-    consentDefaults = makeConsentDefaultsForExperiences(
+    // Overwrite defaults with experience-based consent values
+    cookie.consent = makeConsentDefaultsForExperiences(
       effectiveExperience,
       context,
       options.debug
     );
-    cookie = getOrMakeFidesCookie(consentDefaults, options.debug);
   }
 
   if (shouldInitOverlay && experienceIsValid(effectiveExperience, options)) {
