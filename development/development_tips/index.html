@@ -985,7 +985,7 @@ You're not viewing the latest version.
 <h2 id="api-endpoints">API Endpoints</h2>
 <hr />
 <h3 id="api-urls">API URLs</h3>
-<p>We define API URLs for specific API versions as constants within <code>fides.api.ops.api.v1.urn_registry</code> (where <code>v1</code> can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the <code>APIRouter</code> class instantiation with a different base path (ie. <code>/api/v2</code> instead of <code>/api/v1</code>). For example:</p>
+<p>We define API URLs for specific API versions as constants within <code>fides.api.api.v1.urn_registry</code> (where <code>v1</code> can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the <code>APIRouter</code> class instantiation with a different base path (ie. <code>/api/v2</code> instead of <code>/api/v1</code>). For example:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nv">PRIVACY_REQUEST</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/privacy-request&quot;</span>
 <span class="nv">PRIVACY_REQUEST_DETAIL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/privacy-request/{privacy_request_id}&quot;</span>
@@ -996,8 +996,8 @@ You're not viewing the latest version.
 <h3 id="the-orm-sqlalchemy">The ORM -- SQLAlchemy</h3>
 <p>SQLAlchemy is an Object Relational Mapper, allowing us to avoid writing direct database queries within our codebase, and access the database via Python code instead. The ORM provides an additional configuration layer allowing user-defined Python classes to be mapped to database tables and other constructs, as well as an object persistence mechanism known as the <code>Session</code>. Some common uses cases are listed below, for a more comprehensive guide see: <a href="https://docs.sqlalchemy.org/en/14/tutorial/index.html">https://docs.sqlalchemy.org/en/14/tutorial/index.html</a></p>
 <h3 id="adding-models">Adding models</h3>
-<p>Database tables are defined with model classes. Model files should live in <code>src/fides/api/ops/models/</code>. Individual model classes must inherit from our custom base class at <code>fides.api.ops.db.base_class.Base</code> to ensure uniformity within the database. Multiple models per file are encouraged so long as they fit the same logical delineation within the project. An example model declaration is added below. For a comprehensive guide see: <a href="https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping">https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping</a>
-You should also import your model in <code>src/fides/api/ops/db/base.py</code> so it is visible for alembic.</p>
+<p>Database tables are defined with model classes. Model files should live in <code>src/fides/api/models/</code>. Individual model classes must inherit from our custom base class at <code>fides.api.db.base_class.Base</code> to ensure uniformity within the database. Multiple models per file are encouraged so long as they fit the same logical delineation within the project. An example model declaration is added below. For a comprehensive guide see: <a href="https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping">https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping</a>
+You should also import your model in <code>src/fides/api/db/base.py</code> so it is visible for alembic.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -1016,7 +1016,7 @@ You should also import your model in <code>src/fides/api/ops/db/base.py</code> s
 <h3 id="using-the-database-via-models">Using the database via models</h3>
 <p>Once you've added database tables via project models, you're ready to read, write, and update them via Python code. Some examples of common use cases here are listed below. Official documentation is here: <a href="https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query">https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query</a>.</p>
 <ul>
-<li>Import our application's database session: <code>from fides.api.ops.db.session import get_db_session</code></li>
+<li>Import our application's database session: <code>from fides.api.db.session import get_db_session</code></li>
 <li>Instantiate the database interaction object:</li>
 </ul>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>

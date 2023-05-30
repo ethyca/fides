@@ -1386,7 +1386,20 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">332</span>
 <span class="normal">333</span>
 <span class="normal">334</span>
-<span class="normal">335</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1404,7 +1417,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;3b87e0c4e830dcc439662ed599a3a5d5&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;3fc2b721a32c1af2985639b342fc76e4&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1423,6 +1436,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1">#-- DATABASE --#</span>
 <span class="c1">#--------------------------------------------------------------------#</span>
 <span class="p">[</span><span class="n">database</span><span class="p">]</span><span class="w"> </span><span class="c1"># Configuration settings for the application database.</span>
+
+<span class="c1"># Automatically runs migrations on webserver startup. If set to</span>
+<span class="c1"># `false`, will require the user to run migrations manually via the CLI</span>
+<span class="c1"># or API. WARNING: Must be set to `true` for first-time startup.</span>
+<span class="n">automigrate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">true</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1"># Number of concurrent database connections Fides will use for API</span>
 <span class="c1"># requests. Note that the pool begins with no connections, but as they</span>
@@ -1661,6 +1679,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># used by the child server to access the parent server.</span>
 <span class="n">parent_server_username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
+<span class="c1"># The number of requests from a single IP address allowed to hit a</span>
+<span class="c1"># public endpoint within the specified time period</span>
+<span class="n">public_request_rate_limit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;2000/minute&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
 <span class="c1"># The prefix given to keys in the Redis cache used by the rate limiter.</span>
 <span class="n">rate_limit_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides-&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
@@ -1690,6 +1712,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># custom functions. When enabled, custom functions which will be loaded</span>
 <span class="c1"># in a restricted environment to minimize security risks.</span>
 <span class="n">allow_custom_connector_functions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># Either enables the collection of audit log resource data or bypasses</span>
+<span class="c1"># the middleware</span>
+<span class="n">enable_audit_log_resource_middleware</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1">#----------#</span>
 <span class="c1">#-- USER --#</span>
