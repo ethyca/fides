@@ -24,14 +24,17 @@ The types of changes are:
 - Add an automated test to check for `/fides-consent.js` backwards compatibility [#3289](https://github.com/ethyca/fides/pull/3289)
 - Add infrastructure for "overlay" consent components (Preact, CSS bundling, etc.) and initial version of consent banner [#3191](https://github.com/ethyca/fides/pull/3191)
 - Add the modal component of the "overlay" consent components [#3291](https://github.com/ethyca/fides/pull/3291)
+- Added an `automigrate` database setting [#3220](https://github.com/ethyca/fides/pull/3220)
 - Track Privacy Experience with Privacy Preferences [#3311](https://github.com/ethyca/fides/pull/3311)
 - Add ability for `fides-js` to fetch its own geolocation [#3356](https://github.com/ethyca/fides/pull/3356)
 - Add ability to select different locations in the "Cookie House" sample app [#3362](https://github.com/ethyca/fides/pull/3362)
+- Added optional logging of resource changes on the server [#3331](https://github.com/ethyca/fides/pull/3331)
 - Add ability for `fides-js` to make API calls to Fides [#3361](https://github.com/ethyca/fides/pull/3361)
 
 ### Fixed
 
 - Maintain casing differences within Snowflake datasets for proper DSR execution [#3245](https://github.com/ethyca/fides/pull/3245)
+- Handle DynamoDB edge case where no attributes are defined [#3299](https://github.com/ethyca/fides/pull/3299)
 - Support pseudonymous consent requests with `fides_user_device_id` for the new consent workflow [#3203](https://github.com/ethyca/fides/pull/3203)
 - Fides user device id filter to GET Privacy Experience List endpoint to stash user preferences on embedded notices [#3302](https://github.com/ethyca/fides/pull/3302)
 - Support for data categories on manual webhook fields [#3330](https://github.com/ethyca/fides/pull/3330)
@@ -40,6 +43,9 @@ The types of changes are:
 
 ### Changed
 
+- Explicitly escape/unescape certain fields instead of using SafeStr [#3144](https://github.com/ethyca/fides/pull/3144)
+- Updated DynamoDB icon [#3296](https://github.com/ethyca/fides/pull/3296)
+- Increased default page size for the connection type endpoint to 100 [#3298](https://github.com/ethyca/fides/pull/3298)
 - Data model around PrivacyExperiences to better keep Privacy Notices and Experiences in sync [#3292](https://github.com/ethyca/fides/pull/3292)
 - UI calls to support new PrivacyExperiences data model [#3313](https://github.com/ethyca/fides/pull/3313)
 - Ensure email connectors respect the `notifications.notification_service_type` app config property if set [#3355](https://github.com/ethyca/fides/pull/3355)
@@ -49,6 +55,7 @@ The types of changes are:
 - Restrict strack-trace logging when not in Dev mode [#3081](https://github.com/ethyca/fides/pull/3081)
 - Refactor CSS variables for `fides-js` to match brandable color palette [#3321](https://github.com/ethyca/fides/pull/3321)
 - Moved all of the dirs from `fides.api.ops` into `fides.api` [#3318](https://github.com/ethyca/fides/pull/3318)
+- Put global settings for fides.js on privacy center settings [#3333](https://github.com/ethyca/fides/pull/3333)
 - Changed `fides db migrate` to `fides db upgrade` [#3342](https://github.com/ethyca/fides/pull/3342)
 - Add required notice key to privacy notices [#3337](https://github.com/ethyca/fides/pull/3337)
 - Make Privacy Experience List public, and separate public endpoint rate limiting [#3339](https://github.com/ethyca/fides/pull/3339)
@@ -75,12 +82,10 @@ The types of changes are:
 - A JavaScript modal to copy a script tag for `fides.js` [#3238](https://github.com/ethyca/fides/pull/3238)
 - Access and erasure support for OneSignal [#3199](https://github.com/ethyca/fides/pull/3199)
 - Add the ability to "inject" location into `/fides.js` bundles and cache responses for one hour [#3272](https://github.com/ethyca/fides/pull/3272)
-- Added an `automigrate` database setting [#3220](https://github.com/ethyca/fides/pull/3220)
 
 ### Changed
 
 - Merge instances of RTK `createApi` into one instance for better cache invalidation [#3059](https://github.com/ethyca/fides/pull/3059)
-- Explicitly escape/unescape certain fields instead of using SafeStr [#3144](https://github.com/ethyca/fides/pull/3144)
 - Update custom field definition uniqueness to be case insensitive name per resource type [#3215](https://github.com/ethyca/fides/pull/3215)
 - Restrict where privacy notices of certain consent mechanisms must be displayed [#3195](https://github.com/ethyca/fides/pull/3195)
 - Merged the `lib` submodule into the `api.ops` submodule [#3134](https://github.com/ethyca/fides/pull/3134)

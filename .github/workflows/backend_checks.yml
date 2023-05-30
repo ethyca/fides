@@ -75,7 +75,15 @@ jobs:
     strategy:
       matrix:
         session_name:
-          ["isort", "black", "mypy", "pylint", "xenon", "check_install"]
+          [
+            "isort",
+            "black",
+            "mypy",
+            "pylint",
+            "xenon",
+            "check_install",
+            '"pytest(nox)"',
+          ]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -90,6 +98,9 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
+
+      - name: Install Dev Requirements
+        run: pip install -r dev-requirements.txt
 
       - name: Run Static Check
         run: nox -s ${{ matrix.session_name }}
@@ -148,7 +159,6 @@ jobs:
           - "ops-unit"
           - "ops-integration"
           - "lib"
-          - "nox"
 
     runs-on: ubuntu-latest
     timeout-minutes: 25
