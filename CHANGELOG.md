@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.14.0...main)
 
+### Changed
+- Enabled Privacy Experience beta flag [#3364](https://github.com/ethyca/fides/pull/3364)
+
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
 ### Added
