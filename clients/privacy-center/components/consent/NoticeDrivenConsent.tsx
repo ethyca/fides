@@ -10,7 +10,7 @@ import {
 import { useAppSelector } from "~/app/hooks";
 import {
   selectCurrentConsentPreferences,
-  selectExperienceRegion,
+  selectUserRegion,
   selectPrivacyExperience,
   useUpdatePrivacyPreferencesMutation,
 } from "~/features/consent/consent.slice";
@@ -58,7 +58,7 @@ const NoticeDrivenConsent = () => {
   const { fides_user_device_id: fidesUserDeviceId } = cookie.identity;
   const [updatePrivacyPreferencesMutationTrigger] =
     useUpdatePrivacyPreferencesMutation();
-  const region = useAppSelector(selectExperienceRegion);
+  const region = useAppSelector(selectUserRegion);
 
   const initialDraftPreferences = useMemo(() => {
     const newPreferences = { ...serverPreferences };
