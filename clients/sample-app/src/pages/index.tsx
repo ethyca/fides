@@ -81,6 +81,11 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
           'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
           })(window,document,'script','dataLayer','${gtmContainerId}');
         `}
+        {`
+          if (window.Fides) {
+            window.Fides.gtm();
+          }
+        `}
       </Script>
       <Home products={products} />
     </>
