@@ -1294,7 +1294,11 @@ class TestPutConnectionConfigSecrets:
     ) -> None:
         """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = {"host": "localhost", "port": "1234", "dbname": "my_test_db"}
+        payload = {
+            "host": "localhost",
+            "port": "1234",
+            "dbname": "my_test_db",
+        }
         resp = api_client.put(
             url + "?verify=False",
             headers=auth_header,
@@ -1314,6 +1318,7 @@ class TestPutConnectionConfigSecrets:
             "password": None,
             "url": None,
             "db_schema": None,
+            "ssh_required": False,
         }
 
         payload = {"url": "postgresql://test_user:test_pass@localhost:1234/my_test_db"}
@@ -1336,6 +1341,7 @@ class TestPutConnectionConfigSecrets:
             "password": None,
             "url": payload["url"],
             "db_schema": None,
+            "ssh_required": False,
         }
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
