@@ -33,6 +33,24 @@ export type FidesOptions = {
   fidesApiUrl: string;
 };
 
+export class SaveConsentPreference {
+  consentPreference: UserConsentPreference;
+
+  noticeHistoryId: string;
+
+  noticeKey: string;
+
+  constructor(
+    noticeKey: string,
+    noticeHistoryId: string,
+    consentPreference: UserConsentPreference
+  ) {
+    this.noticeKey = noticeKey;
+    this.noticeHistoryId = noticeHistoryId;
+    this.consentPreference = consentPreference;
+  }
+}
+
 export type PrivacyExperience = {
   disabled?: boolean;
   component?: ComponentType;

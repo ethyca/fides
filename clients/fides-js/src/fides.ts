@@ -141,8 +141,10 @@ const experienceIsValid = (
     return false;
   }
   if (
-    !effectiveExperience.privacy_notices ||
-    effectiveExperience.privacy_notices.length === 0
+    !(
+      effectiveExperience.privacy_notices &&
+      effectiveExperience.privacy_notices.length >= 0
+    )
   ) {
     debugLog(
       options.debug,

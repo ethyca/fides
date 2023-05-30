@@ -55,6 +55,8 @@ const stubConfig = (
           ? undefined
           : Object.assign(config.options, options),
     };
+    // We conditionally stub these APIs because we need the exact API urls, which can change or not even exist
+    // depending on the specific test case.
     if (
       typeof updatedConfig.options !== "string" &&
       updatedConfig.options?.geolocationApiUrl
