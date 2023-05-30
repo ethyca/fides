@@ -122,6 +122,10 @@ class SecuritySettings(FidesSettings):
         default=False,
         description="Enables or disables the ability to import connector templates with custom functions. When enabled, custom functions which will be loaded in a restricted environment to minimize security risks.",
     )
+    enable_audit_log_resource_middleware: Optional[bool] = Field(
+        default=False,
+        description="Either enables the collection of audit log resource data or bypasses the middleware",
+    )
 
     bastion_server_host: Optional[str] = Field(
         default=None, description="An optional field to store the bastion server host"
