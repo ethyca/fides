@@ -265,4 +265,5 @@ export * from "./lib/consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 
-export default _Fides;
+// DEFER: this default export isn't very useful, it's just the Fides type
+export default Fides;
