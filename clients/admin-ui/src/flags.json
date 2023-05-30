@@ -25,7 +25,7 @@
     "production": false
   },
   "privacyExperience": {
-    "description": "Page to configure privacy experience",
+    "description": "Page to configure consent privacy experiences",
     "development": true,
     "test": true,
     "production": false
