@@ -27,7 +27,6 @@ import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   ConnectionType,
-  Dataset,
   SystemType,
 } from "~/types/api";
 
@@ -147,7 +146,7 @@ export const useConnectorForm = ({
 > & {
   secretsSchema?: ConnectionTypeSecretSchemaReponse;
 }) => {
-  const { errorAlert, successAlert } = useAlert();
+  const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -188,6 +187,7 @@ export const useConnectorForm = ({
           systemFidesKey,
           createSassConnectionConfig
         );
+        // eslint-disable-next-line no-param-reassign
         connectionConfig = response.connection;
         successAlert(`Connector successfully added!`);
       } else {
@@ -203,11 +203,13 @@ export const useConnectorForm = ({
           !connectionConfig &&
           connectionOption.type === SystemType.DATABASE
         ) {
-          // The connectionConfig is required for patching the
-          // datasetConfig
+          /*
+          The connectionConfig is required for patching the datasetConfig
+           */
+          // eslint-disable-next-line prefer-destructuring,no-param-reassign
           connectionConfig = payload.succeeded[0];
         }
-        const payload2 = await upsertConnectionConfigSecrets(
+        await upsertConnectionConfigSecrets(
           values,
           secretsSchema!,
           payload.succeeded[0].key,
@@ -222,6 +224,7 @@ export const useConnectorForm = ({
         !hasLinkedDatasetConfig
       ) {
         const res = await upsertDataset(values.datasetYaml);
+        // eslint-disable-next-line no-param-reassign
         values.dataset = res;
       }
 

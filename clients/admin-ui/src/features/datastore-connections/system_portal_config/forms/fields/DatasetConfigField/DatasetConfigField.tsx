@@ -41,23 +41,15 @@ type UseDatasetConfigField = {
 export const useDatasetConfigField = ({
   connectionConfig,
 }: UseDatasetConfigField) => {
-  // const [field] = useField<string>(fieldName);
-  // const { setFieldValue } = useFormikContext();
-
   const [patchDatasetConfig] = usePatchDatasetConfigsMutation();
   const [upsertDatasets] = useUpsertDatasetsMutation();
 
   const {
     data: allDatasetConfigs,
-    isFetching,
-    isLoading,
-    isSuccess,
   } = useGetConnectionConfigDatasetConfigsQuery(connectionConfig?.key || "");
 
   const {
     data: allDatasets,
-    isLoading: isLoadingAllDatasets,
-    error: loadAllDatasetsError,
   } = useGetAllDatasetsQuery();
 
   const [datasetConfigFidesKey, setDatasetConfigFidesKey] = useState<
@@ -66,8 +58,6 @@ export const useDatasetConfigField = ({
 
   useEffect(() => {
     if (allDatasetConfigs && allDatasetConfigs.items.length) {
-      console.log(allDatasetConfigs.items[0].fides_key);
-      // setFieldValue(fieldName, allDatasetConfigs.items[0].fides_key);
       setDatasetConfigFidesKey(allDatasetConfigs.items[0].fides_key);
     }
   }, [allDatasetConfigs]);
@@ -75,7 +65,6 @@ export const useDatasetConfigField = ({
   const { handleError } = useAPIHelper();
 
   const { errorAlert, successAlert } = useAlert();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const patchConnectionDatasetConfig = async (
     values: ConnectionConfigFormValues,
@@ -119,7 +108,6 @@ export const useDatasetConfigField = ({
 
   const upsertDataset = async (value: Dataset | Dataset[]) => {
     try {
-      setIsSubmitting(true);
       // First update the datasets
       const datasets = Array.isArray(value) ? (value as Dataset[]) : [value];
       const upsertResult = await upsertDatasets(datasets);
@@ -129,11 +117,10 @@ export const useDatasetConfigField = ({
         return;
       }
 
+      // eslint-disable-next-line consistent-return
       return datasets[0].fides_key;
     } catch (error) {
       handleError(error);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -165,7 +152,7 @@ const DatasetConfigField: React.FC<Props> = ({ dropdownOptions }) => {
 
   const setDatasetYaml = useCallback<(value: Dataset) => void>((value) => {
     setFieldValue("datasetYaml", value);
-  }, []);
+  }, [setFieldValue]);
 
   useEffect(() => {
     if (allDatasets && datasetDropdownOption.value) {
@@ -176,7 +163,7 @@ const DatasetConfigField: React.FC<Props> = ({ dropdownOptions }) => {
         setDatasetYaml(matchingDataset);
       }
     }
-  }, [allDatasets, datasetDropdownOption.value]);
+  }, [allDatasets, datasetDropdownOption.value, setDatasetYaml]);
 
   return (
     <Flex flexDirection="row">
@@ -197,7 +184,6 @@ const DatasetConfigField: React.FC<Props> = ({ dropdownOptions }) => {
       <YamlEditorModal
         isOpen={isOpen}
         onClose={onClose}
-        onConfirm={onClose}
         onChange={setDatasetYaml}
         isDatasetSelected={!!datasetDropdownOption.value}
         dataset={datasetYaml.value}

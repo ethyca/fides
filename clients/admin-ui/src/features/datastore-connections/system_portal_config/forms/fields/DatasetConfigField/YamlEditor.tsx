@@ -18,7 +18,6 @@ import { Dataset } from "~/types/api";
 type YamlEditorFormProps = {
   data: Dataset[];
   isSubmitting: boolean;
-  onSubmit: (value: unknown) => void;
   onChange: (value: Dataset) => void;
   isLoading?: boolean;
   onCancel?: () => void;
@@ -49,6 +48,21 @@ const YamlEditor: React.FC<YamlEditorFormProps> = ({
     setYamlError(undefined as unknown as YAMLException);
   };
 
+
+  const checkForOverWrittenKeys = () => {
+    // Only need the confirmation if we are overwriting, which only happens when
+    // there are already datasets
+    if (allDatasets && allDatasets.length) {
+      const value: string = (monacoRef.current as any).getValue();
+      // Check if the fides key that is in the editor is the same as one that already exists
+      // If so, then it is an overwrite and we should open the confirmation modal
+      const overlappingKeys = allDatasets
+        .filter((d) => value.includes(`fides_key: ${d.fides_key}\n`))
+        .map((d) => d.fides_key);
+      setOverWrittenKeys(overlappingKeys);
+    }
+  };
+
   const handleChange = (value: string | undefined) => {
     try {
       setIsTouched(true);
@@ -71,19 +85,6 @@ const YamlEditor: React.FC<YamlEditorFormProps> = ({
     (monacoRef.current as any).focus();
   };
 
-  const checkForOverWrittenKeys = () => {
-    // Only need the confirmation if we are overwriting, which only happens when
-    // there are already datasets
-    if (allDatasets && allDatasets.length) {
-      const value: string = (monacoRef.current as any).getValue();
-      // Check if the fides key that is in the editor is the same as one that already exists
-      // If so, then it is an overwrite and we should open the confirmation modal
-      const overlappingKeys = allDatasets
-        .filter((d) => value.includes(`fides_key: ${d.fides_key}\n`))
-        .map((d) => d.fides_key);
-      setOverWrittenKeys(overlappingKeys);
-    }
-  };
 
   return (
     <Flex gap="97px">

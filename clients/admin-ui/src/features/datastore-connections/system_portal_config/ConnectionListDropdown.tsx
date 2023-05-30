@@ -16,8 +16,6 @@ import { useMemo,useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import {
   selectConnectionTypeFilters,
-  selectConnectionTypes,
-  setSearch,
   useGetAllConnectionTypesQuery,
 } from "~/features/connection-type";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
@@ -100,11 +98,9 @@ export const useConnectionListDropDown = ({
 
   const dropDownOptions = useMemo(() => {
     const options = new Map<string, ItemOption>();
-    sortedItems?.map((i) => {
-      options.set(i.human_readable, {
+    sortedItems?.map((i) => options.set(i.human_readable, {
         value: i,
-      });
-    });
+      }));
     return options;
   }, [sortedItems]);
 
