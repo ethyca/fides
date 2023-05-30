@@ -28,7 +28,7 @@ export const initOverlay = async ({
     try {
       debugLog(
         options.debug,
-        "Rendering Fides overlay CSS & HTML into the DOM... (updated!)"
+        "Rendering Fides overlay CSS & HTML into the DOM..."
       );
 
       // Find or create the parent element where we should insert the overlay

@@ -17,7 +17,12 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.14.0...main)
 
+### Fixed
+
+- Fix overlay rendering issue by finding/creating a dedicated parent element for Preact [#3397](https://github.com/ethyca/fides/pull/3397)
+
 ### Changed
+
 - Enabled Privacy Experience beta flag [#3364](https://github.com/ethyca/fides/pull/3364)
 
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
