@@ -48,7 +48,6 @@ const YamlEditor: React.FC<YamlEditorFormProps> = ({
     setYamlError(undefined as unknown as YAMLException);
   };
 
-
   const checkForOverWrittenKeys = () => {
     // Only need the confirmation if we are overwriting, which only happens when
     // there are already datasets
@@ -84,7 +83,6 @@ const YamlEditor: React.FC<YamlEditorFormProps> = ({
     monacoRef.current = editor;
     (monacoRef.current as any).focus();
   };
-
 
   return (
     <Flex gap="97px">

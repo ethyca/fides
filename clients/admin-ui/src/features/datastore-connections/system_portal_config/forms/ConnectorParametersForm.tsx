@@ -358,12 +358,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               connectionOption.type
             ) > -1 ? (
               <DatasetConfigField dropdownOptions={datasetDropdownOptions} />
-            ) : (
-              <div>
-                Not rendering the dataset dropdown {connectionOption.type}{" "}
-                {JSON.stringify(connection)}
-              </div>
-            )}
+            ) : null}
             {/* Dynamic connector secret fields */}
             {Object.entries(data.properties).map(([key, item]) => {
               if (key === "advanced_settings") {

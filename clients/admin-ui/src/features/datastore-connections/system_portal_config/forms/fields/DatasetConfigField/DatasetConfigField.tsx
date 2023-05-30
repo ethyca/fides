@@ -1,9 +1,5 @@
 import { EditIcon } from "@chakra-ui/icons";
-import {
-  Flex,
-  IconButton,
-  useDisclosure,
-} from "@fidesui/react";
+import { Flex, IconButton, useDisclosure } from "@fidesui/react";
 import { CustomSelect, Option } from "common/form/inputs";
 import { useAlert, useAPIHelper } from "common/hooks";
 import {
@@ -13,12 +9,7 @@ import {
 import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
 import { useField, useFormikContext } from "formik";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import {
@@ -44,13 +35,11 @@ export const useDatasetConfigField = ({
   const [patchDatasetConfig] = usePatchDatasetConfigsMutation();
   const [upsertDatasets] = useUpsertDatasetsMutation();
 
-  const {
-    data: allDatasetConfigs,
-  } = useGetConnectionConfigDatasetConfigsQuery(connectionConfig?.key || "");
+  const { data: allDatasetConfigs } = useGetConnectionConfigDatasetConfigsQuery(
+    connectionConfig?.key || ""
+  );
 
-  const {
-    data: allDatasets,
-  } = useGetAllDatasetsQuery();
+  const { data: allDatasets } = useGetAllDatasetsQuery();
 
   const [datasetConfigFidesKey, setDatasetConfigFidesKey] = useState<
     string | undefined
@@ -124,12 +113,16 @@ export const useDatasetConfigField = ({
     }
   };
 
-  const dropdownOptions: Option[] = useMemo(() => allDatasets
-      ? allDatasets.map((d) => ({
-          value: d.fides_key,
-          label: d.name || d.fides_key,
-        }))
-      : [], [allDatasets]);
+  const dropdownOptions: Option[] = useMemo(
+    () =>
+      allDatasets
+        ? allDatasets.map((d) => ({
+            value: d.fides_key,
+            label: d.name || d.fides_key,
+          }))
+        : [],
+    [allDatasets]
+  );
   return {
     datasetConfigFidesKey,
     dropdownOptions,
@@ -150,9 +143,12 @@ const DatasetConfigField: React.FC<Props> = ({ dropdownOptions }) => {
 
   const { data: allDatasets, isLoading } = useGetAllDatasetsQuery();
 
-  const setDatasetYaml = useCallback<(value: Dataset) => void>((value) => {
-    setFieldValue("datasetYaml", value);
-  }, [setFieldValue]);
+  const setDatasetYaml = useCallback<(value: Dataset) => void>(
+    (value) => {
+      setFieldValue("datasetYaml", value);
+    },
+    [setFieldValue]
+  );
 
   useEffect(() => {
     if (allDatasets && datasetDropdownOption.value) {

@@ -32,33 +32,33 @@ const YamlEditorModal = ({
   dataset,
   onChange,
 }: Props) => (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      size="xl"
-      returnFocusOnClose={returnFocusOnClose ?? true}
-      isCentered
-    >
-      <ModalOverlay />
-      <ModalContent textAlign="center" data-testid="YamlEditorModal">
-        <ModalHeader fontWeight="medium" pb={0}>
-          {title}
-        </ModalHeader>
-        <ModalBody>
-          <Box data-testid="yaml-editor-section">
-            <YamlEditor
-              data={dataset ? [dataset] : []}
-              isSubmitting={false}
-              onSubmit={() => {}}
-              disabled={isDatasetSelected}
-              onChange={onChange}
-              isLoading={isLoading}
-              onCancel={onClose}
-            />
-          </Box>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
-  );
+  <Modal
+    isOpen={isOpen}
+    onClose={onClose}
+    size="xl"
+    returnFocusOnClose={returnFocusOnClose ?? true}
+    isCentered
+  >
+    <ModalOverlay />
+    <ModalContent textAlign="center" data-testid="YamlEditorModal">
+      <ModalHeader fontWeight="medium" pb={0}>
+        {title}
+      </ModalHeader>
+      <ModalBody>
+        <Box data-testid="yaml-editor-section">
+          <YamlEditor
+            data={dataset ? [dataset] : []}
+            isSubmitting={false}
+            onSubmit={() => {}}
+            disabled={isDatasetSelected}
+            onChange={onChange}
+            isLoading={isLoading}
+            onCancel={onClose}
+          />
+        </Box>
+      </ModalBody>
+    </ModalContent>
+  </Modal>
+);
 
 export default YamlEditorModal;

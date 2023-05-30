@@ -11,7 +11,7 @@ import {
   Text,
   Tooltip,
 } from "@fidesui/react";
-import { useMemo,useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -98,23 +98,25 @@ export const useConnectionListDropDown = ({
 
   const dropDownOptions = useMemo(() => {
     const options = new Map<string, ItemOption>();
-    sortedItems?.map((i) => options.set(i.human_readable, {
+    sortedItems?.map((i) =>
+      options.set(i.human_readable, {
         value: i,
-      }));
+      })
+    );
     return options;
   }, [sortedItems]);
 
-  const systemType = useMemo(() => 
-    // this needs to factor in the selected value as well
-     (
+  const systemType = useMemo(
+    () =>
+      // this needs to factor in the selected value as well
       connectionOptions.find(
         (ct) =>
           ct.identifier === connectionConfig?.connection_type ||
           (connectionConfig?.saas_config &&
             ct.identifier === connectionConfig?.saas_config.type)
-      )?.type || "ethyca"
-    )
-  , [connectionConfig, connectionOptions]);
+      )?.type || "ethyca",
+    [connectionConfig, connectionOptions]
+  );
 
   useMemo(() => {
     const initialSelectedValue = connectionOptions.find(
