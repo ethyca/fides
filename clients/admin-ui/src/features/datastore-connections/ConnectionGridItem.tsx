@@ -18,7 +18,7 @@ type TestDataProps = {
 };
 
 const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
-  const date = formatDate(timestamp);
+  const date = timestamp ?formatDate(timestamp): "";
   const testText = timestamp
     ? `Last tested on ${date}`
     : "This connection has not been tested yet";

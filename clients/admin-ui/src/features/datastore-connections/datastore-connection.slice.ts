@@ -189,7 +189,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         url: `${CONNECTION_ROUTE}/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: () => ["Datastore Connection"],
+      invalidatesTags: () => ["Datastore Connection", "System"],
     }),
     getAccessManualHook: build.query<GetAccessManualWebhookResponse, string>({
       query: (key) => ({

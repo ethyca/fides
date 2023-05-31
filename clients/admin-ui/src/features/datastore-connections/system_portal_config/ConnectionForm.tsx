@@ -6,7 +6,7 @@ import React from "react";
 import { ConnectorParameters } from "~/features/datastore-connections/system_portal_config/forms/ConnectorParameters";
 import {
   ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
+  ConnectionSystemTypeMap, System,
   SystemType,
 } from "~/types/api";
 

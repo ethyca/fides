@@ -15,7 +15,7 @@ import {
   NumberInputStepper,
   Textarea,
   Tooltip,
-  VStack,
+  VStack
 } from "@fidesui/react";
 import { Option } from "common/form/inputs";
 import { useAPIHelper } from "common/hooks";
@@ -37,6 +37,7 @@ import {
 
 import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
+import DeleteConnectionModal from "../DeleteConnectionModal"
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
@@ -56,10 +57,12 @@ type ConnectorParametersFormProps = {
    * Text for the test button. Defaults to "Test connection"
    */
   testButtonLabel?: string;
-  connection?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse;
   connectionOption: ConnectionSystemTypeMap;
   isCreatingConnectionConfig: boolean;
   datasetDropdownOptions: Option[];
+  onDelete: (id: string)=>void;
+  deleteResult: any;
 };
 
 const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
@@ -70,9 +73,11 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   onTestConnectionClick,
   testButtonLabel = "Test connection",
   connectionOption,
-  connection,
+  connectionConfig,
   datasetDropdownOptions,
-  isCreatingConnectionConfig
+  isCreatingConnectionConfig,
+  onDelete,
+  deleteResult
 }) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
@@ -198,13 +203,13 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const getInitialValues = () => {
     const initialValues = { ...defaultValues };
-    if (connection?.key) {
-      initialValues.name = connection.name;
-      initialValues.description = connection.description as string;
+    if (connectionConfig?.key) {
+      initialValues.name = connectionConfig.name;
+      initialValues.description = connectionConfig.description as string;
       initialValues.instance_key =
-        connection.connection_type === ConnectionType.SAAS
-          ? (connection.saas_config?.fides_key as string)
-          : connection.key;
+        connectionConfig.connection_type === ConnectionType.SAAS
+          ? (connectionConfig.saas_config?.fides_key as string)
+          : connectionConfig.key;
     }
     return fillInDefaults(initialValues, secretsSchema);
   };
@@ -228,7 +233,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const handleTestConnectionClick = async () => {
     try {
-      await trigger(connection!.key).unwrap();
+      await trigger(connectionConfig!.key).unwrap();
     } catch (error) {
       handleError(error);
     }
@@ -329,7 +334,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       {...field}
                       autoComplete="off"
                       color="gray.700"
-                      isDisabled={!!connection?.key}
+                      isDisabled={!!connectionConfig?.key}
                       placeholder={`A unique identifier for your new ${
                         connectionOption!.human_readable
                       } connection`}
@@ -372,7 +377,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
                 colorScheme="gray.700"
-                isDisabled={!connection?.key}
+                isDisabled={!connectionConfig?.key || isSubmitting || deleteResult.isLoading}
                 isLoading={result.isLoading || result.isFetching}
                 loadingText="Testing"
                 onClick={handleTestConnectionClick}
@@ -383,18 +388,22 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               <Button
                 bg="primary.800"
                 color="white"
-                isDisabled={isSubmitting}
+                isDisabled={ deleteResult.isLoading||isSubmitting}
                 isLoading={isSubmitting}
                 loadingText="Submitting"
                 size="sm"
                 variant="solid"
                 type="submit"
                 _active={{ bg: "primary.500" }}
-                _disabled={{ opacity: "inherit" }}
                 _hover={{ bg: "primary.400" }}
               >
                 Save
               </Button>
+              {connectionConfig?
+                <DeleteConnectionModal connectionKey={connectionConfig.key} onDelete={onDelete} deleteResult={deleteResult}/>
+
+                :null
+            }
             </ButtonGroup>
           </VStack>
         </Form>
