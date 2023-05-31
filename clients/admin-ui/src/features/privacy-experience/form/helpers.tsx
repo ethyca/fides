@@ -58,7 +58,7 @@ const bannerValidationSchema = Yup.object()
   .shape({
     title: Yup.string().required().label("Banner title"),
     description: Yup.string().required().label("Banner description"),
-    acknowledgement_button_label: Yup.string()
+    acknowledge_button_label: Yup.string()
       .required()
       .label("Acknowledge button label"),
     privacy_preferences_link_label: Yup.string()
@@ -66,10 +66,6 @@ const bannerValidationSchema = Yup.object()
       .label("Privacy preferences link label"),
   })
   .concat(buttonGroupValidationSchema);
-
-export interface ExperienceFormRules {
-  isOverlay: boolean;
-}
 
 /**
  * Use the various rules/conditions of a privacy experience form
@@ -79,7 +75,7 @@ export const useExperienceForm = ({
 }: {
   privacyExperience: ExperienceConfigCreate;
   privacyNotices?: PrivacyNoticeResponse[];
-}): ExperienceFormRules & { validationSchema: any } => {
+}) => {
   const isOverlay = useMemo(
     () => privacyExperience.component === ComponentType.OVERLAY,
     [privacyExperience.component]
