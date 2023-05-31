@@ -1,5 +1,4 @@
-/** @jsx createElement */
-import { createElement } from "react";
+import { h } from "preact";
 
 import { PrivacyNotice } from "../lib/consent-types";
 import Toggle from "./Toggle";
@@ -60,12 +59,6 @@ const NoticeToggle = ({
   );
 };
 
-/**
- * A React component (not Preact!!) to render notices and their toggles
- *
- * We use React instead of Preact so that this component can be shared with
- * the Privacy Center React app.
- */
 const NoticeToggles = ({
   notices,
   enabledNoticeKeys,

@@ -1,5 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
-import { useCallback } from "react";
+import { useEffect, useState, useCallback } from "preact/hooks";
 
 /**
  * Hook which tracks if the app has mounted yet.
