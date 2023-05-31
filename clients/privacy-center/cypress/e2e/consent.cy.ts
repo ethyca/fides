@@ -154,26 +154,35 @@ describe("Consent settings", () => {
       cy.visit("/consent");
       cy.getByTestId("consent");
       cy.loadConfigFixture("config/config_consent.json").as("config");
+      cy.overrideSettings({ IS_OVERLAY_DISABLED: true });
+    });
+
+    it("populates its header and description from config", () => {
+      cy.getByTestId("consent-heading").contains("Manage your consent");
+      cy.getByTestId("consent-description").contains(
+        "Test your consent preferences"
+      );
+      cy.getByTestId("consent-description").contains("When you use our");
     });
 
     it("lets the user update their consent", () => {
       cy.getByTestId("consent");
 
-      cy.getByTestId(`consent-item-card-advertising.first_party`).within(() => {
+      cy.getByTestId(`consent-item-advertising.first_party`).within(() => {
         cy.contains("Test advertising.first_party");
         cy.getRadio().should("not.be.checked");
       });
-      cy.getByTestId(`consent-item-card-improve`).within(() => {
+      cy.getByTestId(`consent-item-improve`).within(() => {
         cy.getRadio().should("be.checked");
       });
 
       // Without GPC, this defaults to true.
-      cy.getByTestId(`consent-item-card-collect.gpc`).within(() => {
+      cy.getByTestId(`consent-item-collect.gpc`).within(() => {
         cy.getRadio().should("be.checked");
       });
 
       // Consent to an item that was opted-out.
-      cy.getByTestId(`consent-item-card-advertising`).within(() => {
+      cy.getByTestId(`consent-item-advertising`).within(() => {
         cy.getRadio().should("not.be.checked").check({ force: true });
       });
       cy.getByTestId("save-btn").click();
@@ -214,9 +223,6 @@ describe("Consent settings", () => {
 
       cy.setCookie("_ga", gaCookieValue);
       cy.setCookie("ljt_readerID", sovrnCookieValue);
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-
       cy.getByTestId("save-btn").click();
 
       cy.wait("@patchConsentPreferences").then((interception) => {
@@ -229,10 +235,10 @@ describe("Consent settings", () => {
 
     it("reflects their choices using fides.js", () => {
       // Opt-out of items default to opt-in.
-      cy.getByTestId(`consent-item-card-advertising`).within(() => {
+      cy.getByTestId(`consent-item-advertising`).within(() => {
         cy.getRadio("false").check({ force: true });
       });
-      cy.getByTestId(`consent-item-card-improve`).within(() => {
+      cy.getByTestId(`consent-item-improve`).within(() => {
         cy.getRadio("false").check({ force: true });
       });
       cy.getByTestId("save-btn").click();
@@ -279,11 +285,12 @@ describe("Consent settings", () => {
         cy.visit("/consent?globalPrivacyControl=true");
         cy.getByTestId("consent");
         cy.loadConfigFixture("config/config_consent.json").as("config");
+        cy.overrideSettings({ IS_OVERLAY_DISABLED: true });
       });
 
       it("applies the GPC defaults", () => {
         cy.getByTestId("gpc-banner");
-        cy.getByTestId(`consent-item-card-collect.gpc`).within(() => {
+        cy.getByTestId(`consent-item-collect.gpc`).within(() => {
           cy.contains("GPC test");
           cy.getRadio().should("not.be.checked");
           cy.getByTestId("gpc-badge").should("contain", GpcStatus.APPLIED);
@@ -306,7 +313,7 @@ describe("Consent settings", () => {
 
       it("lets the user consent to override GPC", () => {
         cy.getByTestId("gpc-banner");
-        cy.getByTestId(`consent-item-card-collect.gpc`).within(() => {
+        cy.getByTestId(`consent-item-collect.gpc`).within(() => {
           cy.contains("GPC test");
           cy.getRadio().should("not.be.checked").check({ force: true });
           cy.getByTestId("gpc-badge").should("contain", GpcStatus.OVERRIDDEN);

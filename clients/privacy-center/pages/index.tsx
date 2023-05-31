@@ -13,7 +13,7 @@ import {
 } from "~/components/modals/consent-request-modal/ConsentRequestModal";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import PrivacyCard from "~/components/PrivacyCard";
-import ConsentCard from "~/components/ConsentCard";
+import ConsentCard from "~/components/consent/ConsentCard";
 import { useConfig } from "~/features/common/config.slice";
 
 const Home: NextPage = () => {
