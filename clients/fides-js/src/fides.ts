@@ -55,22 +55,27 @@ import {
   getOrMakeFidesCookie,
   makeConsentDefaultsLegacy,
   buildCookieConsentForExperiences,
+  FidesCookie,
 } from "./lib/cookie";
 import {
   PrivacyExperience,
   FidesConfig,
   FidesOptions,
   UserGeolocation,
-  ComponentType,
+  ConsentMethod,
+  SaveConsentPreference,
 } from "./lib/consent-types";
 import {
   constructFidesRegionString,
   debugLog,
+  experienceIsValid,
+  transformConsentToFidesUserPreference,
   validateOptions,
 } from "./lib/consent-utils";
 import { fetchExperience } from "./services/fides/api";
 import { getGeolocation } from "./services/external/geolocation";
 import { OverlayProps } from "~/components/Overlay";
+import { updateConsentPreferences } from "./lib/preferences";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -117,46 +122,38 @@ const retrieveEffectiveRegionString = async (
   return fidesRegionString;
 };
 
-/**
- * Determines whether experience is valid and relevant notices exist within the experience
- */
-const experienceIsValid = (
-  effectiveExperience: PrivacyExperience | undefined | null,
-  options: FidesOptions
-): boolean => {
-  if (!effectiveExperience) {
-    debugLog(
-      options.debug,
-      `No relevant experience found. Skipping overlay initialization.`
-    );
-    return false;
-  }
-  if (
-    !(
-      effectiveExperience.privacy_notices &&
-      effectiveExperience.privacy_notices.length >= 0
-    )
-  ) {
-    debugLog(
-      options.debug,
-      `No relevant notices in the privacy experience. Skipping overlay initialization.`,
-      effectiveExperience
-    );
-    return false;
-  }
-  if (effectiveExperience.component !== ComponentType.OVERLAY) {
-    debugLog(
-      options.debug,
-      "No experience found with overlay component. Skipping overlay initialization."
-    );
-    return false;
-  }
-  if (!effectiveExperience.experience_config) {
-    debugLog(
-      options.debug,
-      "No experience config found with for experience. Skipping overlay initialization."
-    );
-    return false;
+const automaticallyApplyGPCPreferences = (
+  cookie: FidesCookie,
+  fidesRegionString: string | null,
+  fidesApiUrl: string,
+  effectiveExperience?: PrivacyExperience | null
+) => {
+  if (getConsentContext().globalPrivacyControl && effectiveExperience) {
+    const consentPreferencesToSave = new Array<SaveConsentPreference>();
+    effectiveExperience.privacy_notices?.forEach((notice) => {
+      if (notice.has_gpc_flag && !notice.current_preference) {
+        consentPreferencesToSave.push(
+          new SaveConsentPreference(
+            notice.notice_key,
+            notice.privacy_notice_history_id,
+            transformConsentToFidesUserPreference(
+              false,
+              notice.consent_mechanism
+            )
+          )
+        );
+      }
+    });
+    if (consentPreferencesToSave.length > 0) {
+      updateConsentPreferences({
+        consentPreferencesToSave,
+        experienceHistoryId: effectiveExperience.privacy_experience_history_id,
+        fidesApiUrl,
+        consentMethod: ConsentMethod.button,
+        userLocationString: fidesRegionString || undefined,
+        cookie,
+      });
+    }
   }
   return true;
 };
@@ -179,7 +176,10 @@ const init = async ({
   );
 
   // Load any existing user preferences from the browser cookie
-  const cookie = getOrMakeFidesCookie(consentDefaults, options.debug);
+  const cookie: FidesCookie = getOrMakeFidesCookie(
+    consentDefaults,
+    options.debug
+  );
 
   let shouldInitOverlay: boolean = !options.isOverlayDisabled;
 
@@ -248,14 +248,12 @@ const init = async ({
   _Fides.options = options;
   _Fides.initialized = true;
 
-  if (getConsentContext().globalPrivacyControl) {
-    effectiveExperience?.privacy_notices?.forEach((notice) => {
-      if (notice.has_gpc_flag) {
-        // todo- write cookie with user preference
-        // todo- send consent request downstream automatically with saveUserPreference()
-      }
-    });
-  }
+  automaticallyApplyGPCPreferences(
+    cookie,
+    fidesRegionString,
+    options.fidesApiUrl,
+    effectiveExperience
+  );
 };
 
 // The global Fides object; this is bound to window.Fides if available
