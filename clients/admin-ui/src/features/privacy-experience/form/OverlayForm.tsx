@@ -56,6 +56,7 @@ const OverlayForm = () => (
         label="“Privacy preferences” link label"
         name="privacy_preferences_link_label"
         variant="stacked"
+        isRequired
       />
       <CustomTextInput
         label="Privacy preferences “Save” button label"

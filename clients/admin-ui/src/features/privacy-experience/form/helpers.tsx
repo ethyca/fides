@@ -59,8 +59,11 @@ const bannerValidationSchema = Yup.object()
     title: Yup.string().required().label("Banner title"),
     description: Yup.string().required().label("Banner description"),
     acknowledgement_button_label: Yup.string()
-      .nullable()
+      .required()
       .label("Acknowledge button label"),
+    privacy_preferences_link_label: Yup.string()
+      .required()
+      .label("Privacy preferences link label"),
   })
   .concat(buttonGroupValidationSchema);
 
