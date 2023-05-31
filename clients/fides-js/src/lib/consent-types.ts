@@ -29,7 +29,7 @@ export type FidesOptions = {
   isGeolocationEnabled: boolean;
 
   // ID of the parent DOM element where the overlay should be inserted (default: "fides-overlay")
-  overlayParentId?: string;
+  overlayParentId: string | null;
 
   // URL for the Privacy Center, used to customize consent preferences. Required.
   privacyCenterUrl: string;

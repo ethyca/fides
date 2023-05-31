@@ -27,6 +27,7 @@
  *           isDisabled: false,
  *           isGeolocationEnabled: false,
  *           geolocationApiUrl: "",
+ *           overlayParentId: null,
  *           privacyCenterUrl: "http://localhost:3000"
  *         }
  *   });
@@ -238,6 +239,7 @@ _Fides = {
     isOverlayDisabled: true,
     isGeolocationEnabled: false,
     geolocationApiUrl: "",
+    overlayParentId: null,
     privacyCenterUrl: "",
   },
   fides_meta: {},
