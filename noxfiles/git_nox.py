@@ -4,8 +4,9 @@ import re
 from enum import Enum
 from typing import List, Optional
 
-import nox
 from packaging.version import Version
+
+import nox
 
 RELEASE_BRANCH_REGEX = r"release-(([0-9]+\.)+[0-9]+)"
 RELEASE_TAG_REGEX = r"(([0-9]+\.)+[0-9]+)"
@@ -145,12 +146,16 @@ def increment_tag(
         version=version_number, tag_type=tag_type.value
     )
     # find our latest existing tag for this version/type
-    latest_tag = next(
+    sorted_tag_matches = sorted(
         (
-            re.fullmatch(version_branch_tag_pattern, tag.name)
+            tag.name
             for tag in all_tags
             if re.fullmatch(version_branch_tag_pattern, tag.name)
         ),
+        reverse=True,
+    )
+    latest_tag = next(
+        (re.fullmatch(version_branch_tag_pattern, tag) for tag in sorted_tag_matches),
         None,
     )
     if latest_tag:  # if we have an existing tag for this version/type, increment it
