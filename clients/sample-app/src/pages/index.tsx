@@ -87,7 +87,7 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
           }
         `}
       </Script>
-      <Home products={products} />
+      <Home privacyCenterUrl={privacyCenterUrl} products={products} />
     </>
   );
 };
