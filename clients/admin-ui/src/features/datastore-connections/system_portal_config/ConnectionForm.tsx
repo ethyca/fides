@@ -2,13 +2,16 @@ import ConnectionListDropdown, {
   useConnectionListDropDown,
 } from "datastore-connections/system_portal_config/ConnectionListDropdown";
 import React from "react";
+import {Flex, Spacer, useDisclosure, Button} from "@fidesui/react"
 
+import ConnectorTemplateUploadModal from "~/features/connector-templates/ConnectorTemplateUploadModal";
 import { ConnectorParameters } from "~/features/datastore-connections/system_portal_config/forms/ConnectorParameters";
 import {
   ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap, System,
+  ConnectionSystemTypeMap, ScopeRegistryEnum,
   SystemType,
 } from "~/types/api";
+import Restrict from "common/Restrict";
 
 export type ConnectionOption = {
   label: string;
@@ -26,6 +29,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
     selectedValue: selectedConnectionOption,
     setSelectedValue,
   } = useConnectionListDropDown({ connectionConfig });
+  const {isOpen, onOpen, onClose} = useDisclosure();
 
   /* STEPS TO UNIFY the database and saas forms
   7. Get it working for manual connectors
@@ -34,12 +38,30 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
 
   return (
     <>
+      <Flex>
+
       <ConnectionListDropdown
         list={dropDownOptions}
         label="Connection Type"
         selectedValue={selectedConnectionOption}
         onChange={setSelectedValue}
       />
+        <Spacer/>
+
+        <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
+          <Button
+            colorScheme="primary"
+            type="submit"
+            minWidth="auto"
+            data-testid="upload-btn"
+            size="sm"
+            onClick={onOpen}
+          >
+            Upload connector
+          </Button>
+        </Restrict>
+       <ConnectorTemplateUploadModal isOpen={isOpen} onClose={onClose} />
+      </Flex>
 
       {selectedConnectionOption?.type === SystemType.DATABASE ? (
         <ConnectorParameters
