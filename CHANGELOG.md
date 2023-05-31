@@ -17,19 +17,20 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.14.0...main)
 
-## Added
+### Added
 
 - Add Google Tag Manager and Privacy Center ENV vars to sample app [#2949](https://github.com/ethyca/fides/pull/2949)
 
-## Fixed
+### Fixed
 
 - Fix sample app `DATABASE_*` ENV vars for backwards compatibility [#3406](https://github.com/ethyca/fides/pull/3406)
+- Fix overlay rendering issue by finding/creating a dedicated parent element for Preact [#3397](https://github.com/ethyca/fides/pull/3397)
 
 ### Changed
 
 - Enabled Privacy Experience beta flag [#3364](https://github.com/ethyca/fides/pull/3364)
 
-## Developer Experience
+### Developer Experience
 
 - Add ability to pass ENV vars to both privacy center and sample app during `fides deploy` via `.env` [#2949](https://github.com/ethyca/fides/pull/2949)
 
