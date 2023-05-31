@@ -91,7 +91,8 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
           patchDatastoreConnection
         );
 
-        closeIfComplete();
+        setSelectedConnectionConfig(null);
+        onClose()
       }
     } catch (e) {
       console.log(e);
