@@ -52,9 +52,9 @@ async def update_privacy_declarations() -> None:
 
         # Since we can't write tests for data migrations, we do it live
         existing_resources = await list_resource(PrivacyDeclaration, session)
-        assert not all(
+        assert not any(
             [
-                False if resource.data_use in data_use_updates.keys() else True
+                resource.data_use in data_use_updates.keys()
                 for resource in existing_resources
             ]
         ), "ERROR: Data Use Migration for Fideslang v1.4 failed for Privacy Declarations!"
@@ -72,9 +72,9 @@ async def update_policy_rules() -> None:
 
         # Since we can't write tests for data migrations, we do it live
         existing_resources = await list_resource(PolicyCtl, session)
-        assert not all(
+        assert not any(
             [
-                False if rule.data_use in data_use_updates.keys() else True
+                rule.data_use in data_use_updates.keys()
                 for resource in existing_resources
                 for rule in resource
             ]
