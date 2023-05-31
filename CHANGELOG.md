@@ -25,6 +25,7 @@ The types of changes are:
 
 - Fix sample app `DATABASE_*` ENV vars for backwards compatibility [#3406](https://github.com/ethyca/fides/pull/3406)
 - Fix overlay rendering issue by finding/creating a dedicated parent element for Preact [#3397](https://github.com/ethyca/fides/pull/3397)
+- Fix the sample app privacy center link to be configurable [#3409](https://github.com/ethyca/fides/pull/3409)
 
 ### Changed
 
@@ -33,6 +34,10 @@ The types of changes are:
 ### Developer Experience
 
 - Add ability to pass ENV vars to both privacy center and sample app during `fides deploy` via `.env` [#2949](https://github.com/ethyca/fides/pull/2949)
+
+### Fixed
+
+- Flaky custom field Cypress test on systems page [#3408](https://github.com/ethyca/fides/pull/3408)
 
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
