@@ -4,9 +4,8 @@ import re
 from enum import Enum
 from typing import List, Optional
 
-from packaging.version import Version
-
 import nox
+from packaging.version import Version
 
 RELEASE_BRANCH_REGEX = r"release-(([0-9]+\.)+[0-9]+)"
 RELEASE_TAG_REGEX = r"(([0-9]+\.)+[0-9]+)"
@@ -72,7 +71,6 @@ def get_current_tag(
     "action",
     [
         nox.param("dry", id="dry"),
-        nox.param("local", id="local"),
         nox.param("push", id="push"),
     ],
 )
@@ -88,7 +86,6 @@ def tag(session: nox.Session, action: str) -> None:
 
     Parameters:
         - tag(dry) = Show the tag that would be applied.
-        - tag(local) = Tag local commit but don't push it.
         - tag(push) = Tag the current commit and push it. NOTE: This will trigger a new CI job to publish the tag.
     """
     from git.repo import Repo
@@ -102,10 +99,6 @@ def tag(session: nox.Session, action: str) -> None:
     # if no args are passed, it's a dry run
     if action == "dry":
         session.log(f"Dry-run -- would generate tag: {generated_tag}")
-
-    elif action == "local":
-        session.log(f"Tagging current HEAD commit with tag: {generated_tag}")
-        repo.create_tag(generated_tag)
 
     elif action == "push":
         repo.create_tag(generated_tag)
