@@ -18,6 +18,7 @@ const PrivacyCenterForm = () => (
         label="Description"
         name="description"
         variant="stacked"
+        isRequired
       />
     </FormSection>
     <FormSection title="Actions" data-testid="actions">

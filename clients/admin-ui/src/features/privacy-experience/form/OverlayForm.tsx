@@ -7,6 +7,7 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
+import InfoBox from "~/features/common/InfoBox";
 import { BANNER_ENABLED_MAP } from "~/features/privacy-experience/constants";
 import { BannerEnabled } from "~/types/api";
 
@@ -17,8 +18,12 @@ const BANNER_ENABLED_OPTIONS = enumToOptions(BannerEnabled).map((opt) => ({
   label: BANNER_ENABLED_MAP.get(opt.value) ?? opt.label,
 }));
 
+const INFO_TEXT =
+  "Configure your notice only banner, your consent banner and your privacy preferences below. It is good practice to complete all fields regardless of whether you are showing a notice only banner or an opt-in/opt-out banner.";
+
 const OverlayForm = () => (
   <Stack spacing={6}>
+    <InfoBox text={INFO_TEXT} />
     <FormSection
       title="Cookie banner and privacy preferences labeling"
       data-testid="banner-and-preferences-labeling"
@@ -33,6 +38,7 @@ const OverlayForm = () => (
         label="Banner description"
         name="description"
         variant="stacked"
+        isRequired
       />
       <CustomTextInput
         label="Accept button displayed on the Banner and “Privacy preferences”"
