@@ -35,6 +35,10 @@ The types of changes are:
 
 - Add ability to pass ENV vars to both privacy center and sample app during `fides deploy` via `.env` [#2949](https://github.com/ethyca/fides/pull/2949)
 
+### Fixed
+
+- Flaky custom field Cypress test on systems page [#3408](https://github.com/ethyca/fides/pull/3408)
+
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
 ### Added
