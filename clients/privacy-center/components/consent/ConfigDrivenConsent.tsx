@@ -1,6 +1,6 @@
 import { Divider, Stack, useToast } from "@fidesui/react";
 import React, { useCallback, useEffect, useMemo } from "react";
-import { getConsentContext, resolveConsentValue } from "fides-js";
+import { getConsentContext, resolveLegacyConsentValue } from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
   changeConsent,
@@ -46,7 +46,10 @@ const ConfigDrivenConsent = ({
    */
   const saveUserConsentOptions = useCallback(() => {
     const consent = consentOptions.map((option) => {
-      const defaultValue = resolveConsentValue(option.default, consentContext);
+      const defaultValue = resolveLegacyConsentValue(
+        option.default,
+        consentContext
+      );
       const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
       const gpcStatus = getGpcStatus({
         value,
@@ -139,7 +142,7 @@ const ConfigDrivenConsent = ({
   const items = useMemo(
     () =>
       consentOptions.map((option) => {
-        const defaultValue = resolveConsentValue(
+        const defaultValue = resolveLegacyConsentValue(
           option.default,
           consentContext
         );
