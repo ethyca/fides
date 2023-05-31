@@ -53,7 +53,7 @@ import {
   CookieMeta,
   getOrMakeFidesCookie,
   makeConsentDefaultsLegacy,
-  makeConsentDefaultsForExperiences,
+  buildCookieConsentForExperiences,
 } from "./lib/cookie";
 import {
   PrivacyExperience,
@@ -105,7 +105,7 @@ const retrieveEffectiveGeolocation = async (
   if (!options.isGeolocationEnabled) {
     debugLog(
       options.debug,
-      `User location is required but could not be retrieved because geolocation is disabled.`
+      `User location could not be retrieved because geolocation is disabled.`
     );
     return null;
   }
@@ -221,8 +221,8 @@ const init = async ({
     );
   }
   if (effectiveExperience) {
-    // Overwrite defaults with experience-based consent values
-    cookie.consent = makeConsentDefaultsForExperiences(
+    // Overwrite cookie consent with experience-based consent values
+    cookie.consent = buildCookieConsentForExperiences(
       effectiveExperience,
       context,
       options.debug

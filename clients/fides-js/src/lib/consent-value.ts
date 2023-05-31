@@ -24,8 +24,12 @@ export const resolveLegacyConsentValue = (
 export const resolveConsentValue = (
   value: UserConsentPreference,
   context: ConsentContext,
+  current_preference?: UserConsentPreference | null,
   has_gpc_flag?: boolean
 ): boolean => {
+  if (current_preference) {
+    return transformUserPreferenceToBoolean(current_preference);
+  }
   const gpcEnabled = !!has_gpc_flag && context.globalPrivacyControl === true;
   if (gpcEnabled) {
     return false;
