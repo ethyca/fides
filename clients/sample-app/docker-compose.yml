@@ -6,11 +6,11 @@ services:
       context: .
     environment:
       - PORT=3000
-      - DATABASE_HOST=postgres-test
-      - DATABASE_PORT=5432
-      - DATABASE_USER=postgres
-      - DATABASE_PASSWORD=postgres
-      - DATABASE_DB=postgres_example
+      - FIDES_SAMPLE_APP__DATABASE_HOST=postgres-test
+      - FIDES_SAMPLE_APP__DATABASE_PORT=5432
+      - FIDES_SAMPLE_APP__DATABASE_USER=postgres
+      - FIDES_SAMPLE_APP__DATABASE_PASSWORD=postgres
+      - FIDES_SAMPLE_APP__DATABASE_DB=postgres_example
     ports:
       - 3000:3000
     depends_on:
