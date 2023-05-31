@@ -558,7 +558,7 @@ def user_login(
 
         if not user_check:
             raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND, detail=invalid_user_error_msg
+                status_code=HTTP_403_FORBIDDEN, detail=invalid_user_error_msg
             )
 
         if not user_check.credentials_valid(user_data.password):
