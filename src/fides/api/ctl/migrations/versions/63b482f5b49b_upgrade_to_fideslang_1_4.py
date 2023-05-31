@@ -11,6 +11,8 @@ from typing import Dict
 from fides.api.ctl.database.crud import list_resource, upsert_resources
 from fides.api.ctl.database.session import async_session
 from fides.api.ctl.sql_models import PolicyCtl, PrivacyDeclaration
+from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
+from fides.api.models.privacy_request import Consent
 
 # revision identifiers, used by Alembic.
 revision = "63b482f5b49b"
@@ -78,6 +80,70 @@ async def upgrade_policy_rules() -> None:
                 for rule in resource
             ]
         ), "ERROR: Data Use Upgrade for Fideslang v1.4 failed for Policy Rules!"
+
+
+async def upgrade_privacy_notice() -> None:
+    async with async_session() as session:
+        resources = await list_resource(PrivacyNotice, session)
+        for resource in resources:
+            # Get the new value if it exists, otherwise use the old one
+            resource.data_uses = [
+                data_use_upgrades.get(use, use) for use in resource.data_uses
+            ]
+        await upsert_resources(PrivacyNotice, resources, session)
+
+        # Since we can't write tests for data migrations, we do it live
+        existing_resources = await list_resource(PrivacyNotice, session)
+        assert not any(
+            [
+                data_use in data_use_upgrades.keys()
+                for resource in existing_resources
+                for data_use in resource.data_uses
+            ]
+        ), "ERROR: Data Use Upgrade for Fideslang v1.4 failed for PrivacyNotices!"
+
+
+async def upgrade_privacy_notice_history() -> None:
+    async with async_session() as session:
+        resources = await list_resource(PrivacyNoticeHistory, session)
+        for resource in resources:
+            # Get the new value if it exists, otherwise use the old one
+            resource.data_uses = [
+                data_use_upgrades.get(use, use) for use in resource.data_uses
+            ]
+        await upsert_resources(PrivacyNoticeHistory, resources, session)
+
+        # Since we can't write tests for data migrations, we do it live
+        existing_resources = await list_resource(PrivacyNoticeHistory, session)
+        assert not any(
+            [
+                data_use in data_use_upgrades.keys()
+                for resource in existing_resources
+                for data_use in resource.data_uses
+            ]
+        ), "ERROR: Data Use Upgrade for Fideslang v1.4 failed for PrivacyNoticeHistory!"
+
+
+async def upgrade_consent() -> None:
+    async with async_session() as session:
+        resources = await list_resource(Consent, session)
+
+        for resource in resources:
+            current_data_use = resource.data_use
+
+            if current_data_use in data_use_upgrades.keys():
+                resource.data_use = data_use_upgrades[resource.data_use]
+
+        await upsert_resources(Consent, resources, session)
+
+        # Since we can't write tests for data migrations, we do it live
+        existing_resources = await list_resource(Consent, session)
+        assert not any(
+            [
+                resource.data_use in data_use_upgrades.keys()
+                for resource in existing_resources
+            ]
+        ), "ERROR: Data Use Upgrade for Fideslang v1.4 failed for Consent!"
 
 
 def upgrade() -> None:
