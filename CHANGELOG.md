@@ -20,6 +20,7 @@ The types of changes are:
 
 ### Changed
 - Removed ExperienceConfig.delivery_mechanism constraint [#3387](https://github.com/ethyca/fides/pull/3387)
+- Updated privacy experience UI forms to reflect updated experience config fields [#3402](https://github.com/ethyca/fides/pull/3402)
 
 
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
