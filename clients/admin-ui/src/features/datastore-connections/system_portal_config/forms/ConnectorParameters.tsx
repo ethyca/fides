@@ -78,14 +78,14 @@ const createSaasConnector = async (
  *
  * Saas connectors: patching
  */
-const patchConnectionConfig = async (
+export const patchConnectionConfig = async (
   values: ConnectionConfigFormValues,
-  secretsSchema: ConnectionTypeSecretSchemaReponse,
   connectionOption: ConnectionSystemTypeMap,
   systemFidesKey: string,
   connectionConfig: ConnectionConfigurationResponse,
   patchFunc: any
 ) => {
+  console.log("values: ",values,"cC",connectionConfig)
   const key =
     [SystemType.DATABASE, SystemType.EMAIL].indexOf(connectionOption.type) > -1
       ? formatKey(values.instance_key as string)
@@ -229,7 +229,6 @@ export const useConnectorForm = ({
       } else {
         const payload = await patchConnectionConfig(
           values,
-          secretsSchema!,
           connectionOption,
           systemFidesKey,
           connectionConfig!,

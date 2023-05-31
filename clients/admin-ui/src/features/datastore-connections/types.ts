@@ -158,6 +158,7 @@ export type DatastoreConnectionParams = {
   test_status?: TestingStatus;
   system_type?: SystemType;
   disabled_status?: DisabledStatus;
+  orphaned_from_system?: boolean;
   page: number;
   size: number;
 };

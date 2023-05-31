@@ -3,7 +3,7 @@ import Restrict from "common/Restrict";
 import ConnectionListDropdown, {
   useConnectionListDropDown,
 } from "datastore-connections/system_portal_config/ConnectionListDropdown";
-import React from "react";
+import React, {useState, useEffect} from "react";
 
 import ConnectorTemplateUploadModal from "~/features/connector-templates/ConnectorTemplateUploadModal";
 import { ConnectorParameters } from "~/features/datastore-connections/system_portal_config/forms/ConnectorParameters";
@@ -13,6 +13,9 @@ import {
   ScopeRegistryEnum,
   SystemType,
 } from "~/types/api";
+import OrphanedConnectionModal from "datastore-connections/system_portal_config/OrphanedConnectionModal";
+import { useGetAllDatastoreConnectionsQuery, selectDatastoreConnectionFilters} from "../datastore-connection.slice"
+import {useAppSelector } from "~/app/hooks"
 
 export type ConnectionOption = {
   label: string;
@@ -30,13 +33,28 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
     selectedValue: selectedConnectionOption,
     setSelectedValue,
   } = useConnectionListDropDown({ connectionConfig });
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const filters = useAppSelector(selectDatastoreConnectionFilters);
+
+  const {data} = useGetAllDatastoreConnectionsQuery(filters)
+  const [orphanedConnectionConfigs, setOrphanedConnectionConfigs] = useState<ConnectionConfigurationResponse[]>([]);
+
+  useEffect(()=>{
+    if(data){
+      setOrphanedConnectionConfigs(data.items)
+    }
+  },[
+    data
+  ])
+
+  const deleteModal = useDisclosure();
 
   /* STEPS TO UNIFY the database and saas forms
   7. Get it working for manual connectors
   8. Add in flow for orphaned connectors
   */
 
+
+  console.log(orphanedConnectionConfigs)
   return (
     <>
       <Flex>
@@ -46,8 +64,15 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           selectedValue={selectedConnectionOption}
           onChange={setSelectedValue}
         />
+
+        {!connectionConfig  && orphanedConnectionConfigs.length > 0?
+          <>
         <Spacer />
 
+        <OrphanedConnectionModal connectionConfigs={orphanedConnectionConfigs} systemFidesKey={systemFidesKey} />
+          </>:null
+        }
+        <Spacer />
         <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
           <Button
             colorScheme="primary"
@@ -55,12 +80,12 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
             minWidth="auto"
             data-testid="upload-btn"
             size="sm"
-            onClick={onOpen}
+            onClick={deleteModal.onOpen}
           >
             Upload connector
           </Button>
         </Restrict>
-        <ConnectorTemplateUploadModal isOpen={isOpen} onClose={onClose} />
+        <ConnectorTemplateUploadModal isOpen={deleteModal.isOpen} onClose={deleteModal.onClose} />
       </Flex>
 
       {selectedConnectionOption?.type === SystemType.DATABASE ? (
