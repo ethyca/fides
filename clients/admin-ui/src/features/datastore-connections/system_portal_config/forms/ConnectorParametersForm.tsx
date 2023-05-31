@@ -15,7 +15,7 @@ import {
   NumberInputStepper,
   Textarea,
   Tooltip,
-  VStack
+  VStack,
 } from "@fidesui/react";
 import { Option } from "common/form/inputs";
 import { useAPIHelper } from "common/hooks";
@@ -35,9 +35,9 @@ import {
   SystemType,
 } from "~/types/api";
 
+import DeleteConnectionModal from "../DeleteConnectionModal";
 import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
-import DeleteConnectionModal from "../DeleteConnectionModal"
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
@@ -61,7 +61,7 @@ type ConnectorParametersFormProps = {
   connectionOption: ConnectionSystemTypeMap;
   isCreatingConnectionConfig: boolean;
   datasetDropdownOptions: Option[];
-  onDelete: (id: string)=>void;
+  onDelete: (id: string) => void;
   deleteResult: any;
 };
 
@@ -77,7 +77,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   datasetDropdownOptions,
   isCreatingConnectionConfig,
   onDelete,
-  deleteResult
+  deleteResult,
 }) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
@@ -219,7 +219,10 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     // from a dot delimited string to a FidesopsDatasetReference
     const updatedValues = { ...values };
     Object.keys(secretsSchema.properties).forEach((key) => {
-      if (secretsSchema.properties[key].allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
+      if (
+        secretsSchema.properties[key].allOf?.[0].$ref ===
+        FIDES_DATASET_REFERENCE
+      ) {
         const referencePath = values[key].split(".");
         updatedValues[key] = {
           dataset: referencePath.shift(),
@@ -377,7 +380,11 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
                 colorScheme="gray.700"
-                isDisabled={!connectionConfig?.key || isSubmitting || deleteResult.isLoading}
+                isDisabled={
+                  !connectionConfig?.key ||
+                  isSubmitting ||
+                  deleteResult.isLoading
+                }
                 isLoading={result.isLoading || result.isFetching}
                 loadingText="Testing"
                 onClick={handleTestConnectionClick}
@@ -388,7 +395,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               <Button
                 bg="primary.800"
                 color="white"
-                isDisabled={ deleteResult.isLoading||isSubmitting}
+                isDisabled={deleteResult.isLoading || isSubmitting}
                 isLoading={isSubmitting}
                 loadingText="Submitting"
                 size="sm"
@@ -399,11 +406,13 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               >
                 Save
               </Button>
-              {connectionConfig?
-                <DeleteConnectionModal connectionKey={connectionConfig.key} onDelete={onDelete} deleteResult={deleteResult}/>
-
-                :null
-            }
+              {connectionConfig ? (
+                <DeleteConnectionModal
+                  connectionKey={connectionConfig.key}
+                  onDelete={onDelete}
+                  deleteResult={deleteResult}
+                />
+              ) : null}
             </ButtonGroup>
           </VStack>
         </Form>

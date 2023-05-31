@@ -6,9 +6,9 @@ import TestConnection from "datastore-connections/add-connection/TestConnection"
 import {
   CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
+  useDeleteDatastoreConnectionMutation,
   useGetConnectionConfigDatasetConfigsQuery,
   useUpdateDatastoreConnectionSecretsMutation,
-  useDeleteDatastoreConnectionMutation
 } from "datastore-connections/datastore-connection.slice";
 import { useDatasetConfigField } from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
@@ -19,19 +19,24 @@ import {
 } from "datastore-connections/types";
 import { useState } from "react";
 
+import { useAppDispatch,useAppSelector } from "~/app/hooks";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import {selectActiveSystem, usePatchSystemConnectionConfigsMutation, setActiveSystem} from "~/features/system/system.slice";
+import {
+  selectActiveSystem,
+  setActiveSystem,
+  usePatchSystemConnectionConfigsMutation,
+} from "~/features/system/system.slice";
 import {
   AccessLevel,
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
-  ConnectionType, SystemResponse,
+  ConnectionType,
+  SystemResponse,
   SystemType,
 } from "~/types/api";
 
-import {useAppSelector, useAppDispatch} from "~/app/hooks";
 import { ConnectionConfigFormValues } from "../types";
 import ConnectorParametersForm from "./ConnectorParametersForm";
 
@@ -182,22 +187,23 @@ export const useConnectorForm = ({
   const [updateDatastoreConnectionSecrets] =
     useUpdateDatastoreConnectionSecretsMutation();
   const [patchDatastoreConnection] = usePatchSystemConnectionConfigsMutation();
-  const [deleteDatastoreConnection, deleteDatastoreConnectionResult] = useDeleteDatastoreConnectionMutation();
+  const [deleteDatastoreConnection, deleteDatastoreConnectionResult] =
+    useDeleteDatastoreConnectionMutation();
   const { data: allDatasetConfigs } = useGetConnectionConfigDatasetConfigsQuery(
     connectionConfig?.key || ""
   );
 
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
 
-  const handleDelete = async (id: string)=>{
+  const handleDelete = async (id: string) => {
     try {
-      await deleteDatastoreConnection(id)
+      await deleteDatastoreConnection(id);
       // @ts-ignore connection_configs isn't on the type yet but will be in the future
-      dispatch(setActiveSystem({...activeSystem, connection_configs: null}))
+      dispatch(setActiveSystem({ ...activeSystem, connection_configs: null }));
     } catch (e) {
-      handleError(e)
+      handleError(e);
     }
-  }
+  };
 
   const handleSubmit = async (values: ConnectionConfigFormValues) => {
     const isCreatingConnectionConfig = !connectionConfig;
@@ -298,7 +304,7 @@ export const useConnectorForm = ({
     datasetDropdownOptions,
     selectedDatasetConfigOption,
     handleDelete,
-    deleteDatastoreConnectionResult
+    deleteDatastoreConnectionResult,
   };
 };
 
@@ -326,7 +332,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     datasetDropdownOptions,
     selectedDatasetConfigOption,
     handleDelete,
-    deleteDatastoreConnectionResult
+    deleteDatastoreConnectionResult,
   } = useConnectorForm({
     secretsSchema,
     systemFidesKey,
@@ -346,7 +352,6 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     return null;
   }
 
-  console.log(connectionConfig)
   return (
     <>
       <Box color="gray.700" fontSize="14px" h="80px">

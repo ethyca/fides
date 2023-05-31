@@ -7,31 +7,29 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Spacer,
   Stack,
   Text,
-  Spacer,
   useDisclosure,
 } from "@fidesui/react";
 import React from "react";
 
-
 type DataConnectionProps = {
   connectionKey: string;
-  onDelete: (connection_key: string)=> void;
-  deleteResult: any
+  onDelete: (connection_key: string) => void;
+  deleteResult: any;
 };
 
 const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
   connectionKey,
   onDelete,
-  deleteResult
-                                                              }) => {
+  deleteResult,
+}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-
-  const handleDeleteConnection = ()=>{
-    onDelete(connectionKey)
-  }
+  const handleDeleteConnection = () => {
+    onDelete(connectionKey);
+  };
 
   const closeIfComplete = () => {
     if (!deleteResult.isLoading && deleteResult.isSuccess) {
@@ -42,9 +40,7 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
   return (
     <>
       <>
-
-
-        <Spacer/>
+        <Spacer />
         <Button
           bg="red.500"
           color="white"
