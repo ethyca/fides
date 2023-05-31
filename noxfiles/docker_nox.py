@@ -1,8 +1,9 @@
 """Contains the nox sessions for docker-related tasks."""
 import platform
-from typing import List
+from typing import List, Tuple
 
 import nox
+
 from constants_nox import (
     IMAGE,
     IMAGE_DEV,
@@ -15,6 +16,59 @@ from constants_nox import (
 )
 from git_nox import get_current_tag, recognized_tag
 
+DOCKER_PLATFORM_MAP = {
+    "amd64": "linux/amd64",
+    "arm64": "linux/arm64",
+    "x86_64": "linux/amd64",
+}
+DOCKER_PLATFORMS = "linux/amd64,linux/arm64"
+
+
+def verify_git_tag(session: nox.Session) -> str:
+    """
+    Get the git tag for HEAD and validate it before using it.
+    """
+    existing_commit_tag = get_current_tag(existing=True)
+    if existing_commit_tag is None:
+        session.error(
+            "Did not find an existing git tag on the current commit, not pushing git-tag images"
+        )
+
+    if not recognized_tag(existing_commit_tag):
+        session.error(
+            f"Existing git tag {existing_commit_tag} is not a recognized tag, not pushing git-tag images"
+        )
+
+    session.log(
+        f"Found git tag {existing_commit_tag} on the current commit, pushing corresponding git-tag images!"
+    )
+    return existing_commit_tag
+
+
+def generate_multiplatform_buildx_command(
+    image_tags: List[str], docker_build_target: str, dockerfile_path: str = "."
+) -> Tuple[str, ...]:
+    """
+    Generate the command for building and publishing a multiplatform image.
+
+    See tests for example usage.
+    """
+    buildx_command: Tuple[str, ...] = (
+        "docker",
+        "buildx",
+        "build",
+        "--push",
+        f"--target={docker_build_target}",
+        "--platform",
+        DOCKER_PLATFORMS,
+        dockerfile_path,
+    )
+
+    for tag in image_tags:
+        buildx_command += ("--tag", tag)
+
+    return buildx_command
+
 
 def get_current_image() -> str:
     """Returns the current image tag"""
@@ -26,17 +80,11 @@ def get_platform(posargs: List[str]) -> str:
     Calculate the CPU platform or get it from the
     positional arguments.
     """
-    # Support Intel Macs
-    docker_platforms = {
-        "amd64": "linux/amd64",
-        "arm64": "linux/arm64",
-        "x86_64": "linux/amd64",
-    }
     if "amd64" in posargs:
-        return docker_platforms["amd64"]
+        return DOCKER_PLATFORM_MAP["amd64"]
     if "arm64" in posargs:
-        return docker_platforms["arm64"]
-    return docker_platforms[platform.machine().lower()]
+        return DOCKER_PLATFORM_MAP["arm64"]
+    return DOCKER_PLATFORM_MAP[platform.machine().lower()]
 
 
 @nox.session()
@@ -56,7 +104,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
 
     Params:
         admin-ui = Build the Next.js Admin UI application.
-        dev = Build the fides webserver/CLI, tagged as `local`.
+        dev = Build the fides webserver/CLI, tagged as `local` and with an editable pip install of Fides.
         privacy-center = Build the Next.js Privacy Center application.
         prod = Build the fides webserver/CLI and tag it as the current application version.
         test = Build the fides webserver/CLI the same as `prod`, but tag it as `local`.
@@ -97,6 +145,8 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
             "docker",
             "build",
             "--target=prod_pc",
+            "--platform",
+            build_platform,
             "--tag",
             privacy_center_image_tag,
             ".",
@@ -108,6 +158,8 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
             "docker",
             "build",
             "clients/sample-app",
+            "--platform",
+            build_platform,
             "--tag",
             sample_app_image_tag,
             external=True,
@@ -132,6 +184,118 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     session.run(*build_command, external=True)
 
 
+def push_prod(session: nox.Session) -> None:
+    """
+    Contains the logic for pushing the suite of 'prod' images.
+
+    Pushed Image Examples:
+      - ethyca/fides:2.0.0
+      - ethyca/fides:latest
+
+      - ethyca/fides-privacy-center:2.0.0
+      - ethyca/fides-privacy-center:latest
+
+      - ethyca/fides-sample-app:2.0.0
+      - ethyca/fides-sample-app:latest
+    """
+    fides_image_name = get_current_image()
+    privacy_center_image_name = f"{PRIVACY_CENTER_IMAGE}:{get_current_tag()}"
+    sample_app_image_name = f"{SAMPLE_APP_IMAGE}:{get_current_tag()}"
+
+    privacy_center_latest = f"{PRIVACY_CENTER_IMAGE}:latest"
+    sample_app_latest = f"{SAMPLE_APP_IMAGE}:latest"
+
+    fides_buildx_command = generate_multiplatform_buildx_command(
+        [fides_image_name, IMAGE_LATEST], docker_build_target="prod"
+    )
+    session.run(*fides_buildx_command, external=True)
+
+    privacy_center_buildx_command = generate_multiplatform_buildx_command(
+        [privacy_center_image_name, privacy_center_latest],
+        docker_build_target="prod_pc",
+    )
+    session.run(*privacy_center_buildx_command, external=True)
+
+    sample_app_buildx_command = generate_multiplatform_buildx_command(
+        [sample_app_image_name, sample_app_latest],
+        docker_build_target="prod",
+        dockerfile_path="clients/sample-app",
+    )
+    session.run(*sample_app_buildx_command, external=True)
+
+
+def push_dev(session: nox.Session) -> None:
+    """
+    Push the bleeding-edge `dev` images.
+
+    Pushed Image Examples:
+      - ethyca/fides:dev
+      - ethyca/fides-privacy-center:dev
+      - ethyca/fides-sample-app:dev
+    """
+    privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:dev"
+    sample_app_dev = f"{SAMPLE_APP_IMAGE}:dev"
+
+    fides_buildx_command = generate_multiplatform_buildx_command(
+        [IMAGE_DEV], docker_build_target="prod"
+    )
+    session.run(*fides_buildx_command, external=True)
+
+    privacy_center_buildx_command = generate_multiplatform_buildx_command(
+        [privacy_center_dev],
+        docker_build_target="prod_pc",
+    )
+    session.run(*privacy_center_buildx_command, external=True)
+
+    sample_app_buildx_command = generate_multiplatform_buildx_command(
+        [sample_app_dev],
+        docker_build_target="prod",
+        dockerfile_path="clients/sample-app",
+    )
+    session.run(*sample_app_buildx_command, external=True)
+
+
+def push_git_tag(session: nox.Session) -> None:
+    """
+    Push an image with the tag of our current commit.
+
+    If we have an existing git tag on the current commit, we push up
+    a set of images that's tagged specifically with this git tag.
+
+    This publishes images that correspond to commits that have been explicitly tagged,
+    e.g. RC builds, `beta` tags on `main`, `alpha` tags for feature branch builds.
+
+    Pushed Image Examples:
+    - ethyca/fides:{current_head_git_tag}
+    - ethyca/fides-privacy-center:{current_head_git_tag}
+    - ethyca/fides-sample-app:{current_head_git_tag}
+    """
+
+    existing_commit_tag = verify_git_tag(session)
+    custom_image_tag = f"{IMAGE}:{existing_commit_tag}"
+    privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:{existing_commit_tag}"
+    sample_app_dev = f"{SAMPLE_APP_IMAGE}:{existing_commit_tag}"
+
+    # Publish
+    fides_buildx_command = generate_multiplatform_buildx_command(
+        [custom_image_tag], docker_build_target="prod"
+    )
+    session.run(*fides_buildx_command, external=True)
+
+    privacy_center_buildx_command = generate_multiplatform_buildx_command(
+        [privacy_center_dev],
+        docker_build_target="prod_pc",
+    )
+    session.run(*privacy_center_buildx_command, external=True)
+
+    sample_app_buildx_command = generate_multiplatform_buildx_command(
+        [sample_app_dev],
+        docker_build_target="prod",
+        dockerfile_path="clients/sample-app",
+    )
+    session.run(*sample_app_buildx_command, external=True)
+
+
 @nox.session()
 @nox.parametrize(
     "tag",
@@ -154,85 +318,27 @@ def push(session: nox.Session, tag: str) -> None:
     dev - Tags images with `dev`
     git-tag - Tags images with the git tag of the current commit, if it exists
 
-    NOTE: Expects these to first be built via 'build(prod)'
+    NOTE: This command also handles building images, including for multiple supported architectures.
     """
-    fides_image_prod = get_current_image()
-    privacy_center_prod = f"{PRIVACY_CENTER_IMAGE}:{get_current_tag()}"
-    sample_app_prod = f"{SAMPLE_APP_IMAGE}:{get_current_tag()}"
+
+    # Create the buildx builder
+    session.run(
+        "docker",
+        "buildx",
+        "create",
+        "--name",
+        "fides_builder",
+        "--bootstrap",
+        "--use",
+        external=True,
+        success_codes=[0, 1],
+    )
 
     if tag == "dev":
-        # Push the ethyca/fides image, tagging with :dev
-        session.run("docker", "tag", fides_image_prod, IMAGE_DEV, external=True)
-        session.run("docker", "push", IMAGE_DEV, external=True)
-
-        # Push the extra images, tagging with :dev
-        #   - ethyca/fides-privacy-center:dev
-        #   - ethyca/fides-sample-app:dev
-        privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:dev"
-        sample_app_dev = f"{SAMPLE_APP_IMAGE}:dev"
-        session.run(
-            "docker", "tag", privacy_center_prod, privacy_center_dev, external=True
-        )
-        session.run("docker", "push", privacy_center_dev, external=True)
-        session.run("docker", "tag", sample_app_prod, sample_app_dev, external=True)
-        session.run("docker", "push", sample_app_dev, external=True)
+        push_dev(session=session)
 
     if tag == "git-tag":
-        # if we have an existing git tag on the current commit, we push up
-        # a set of images that's tagged specifically with this git tag.
-        # this publishes images that correspond to commits that have been explicitly tagged,
-        # e.g. RC builds, `beta` tags on `main`, `alpha` tags for feature branch builds.
-        existing_commit_tag = get_current_tag(existing=True)
-        if existing_commit_tag is None:
-            session.log(
-                "Did not find an existing git tag on the current commit, not pushing git-tag images"
-            )
-            return
-
-        if not recognized_tag(existing_commit_tag):
-            session.log(
-                f"Existing git tag {existing_commit_tag} is not a recognized tag, not pushing git-tag images"
-            )
-            return
-
-        session.log(
-            f"Found git tag {existing_commit_tag} on the current commit, pushing corresponding git-tag images!"
-        )
-        custom_image_tag = f"{IMAGE}:{existing_commit_tag}"
-        # Push the ethyca/fides image, tagging with :{current_head_git_tag}
-        session.run("docker", "tag", fides_image_prod, custom_image_tag, external=True)
-        session.run("docker", "push", custom_image_tag, external=True)
-
-        # Push the extra images, tagging with :{current_head_git_tag}
-        #   - ethyca/fides-privacy-center:{current_head_git_tag}
-        #   - ethyca/fides-sample-app:{current_head_git_tag}
-        privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:{existing_commit_tag}"
-        sample_app_dev = f"{SAMPLE_APP_IMAGE}:{existing_commit_tag}"
-        session.run(
-            "docker", "tag", privacy_center_prod, privacy_center_dev, external=True
-        )
-        session.run("docker", "push", privacy_center_dev, external=True)
-        session.run("docker", "tag", sample_app_prod, sample_app_dev, external=True)
-        session.run("docker", "push", sample_app_dev, external=True)
+        push_git_tag(session=session)
 
     if tag == "prod":
-        # Example: "ethyca/fides:2.0.0" and "ethyca/fides:latest"
-        session.run("docker", "tag", fides_image_prod, IMAGE_LATEST, external=True)
-        session.run("docker", "push", IMAGE_LATEST, external=True)
-        session.run("docker", "push", fides_image_prod, external=True)
-
-        # Example:
-        #   - ethyca/fides-privacy-center:2.0.0
-        #   - ethyca/fides-privacy-center:latest
-        #   - ethyca/fides-sample-app:2.0.0
-        #   - ethyca/fides-sample-app:latest
-        privacy_center_latest = f"{PRIVACY_CENTER_IMAGE}:latest"
-        sample_app_latest = f"{SAMPLE_APP_IMAGE}:latest"
-        session.run(
-            "docker", "tag", privacy_center_prod, privacy_center_latest, external=True
-        )
-        session.run("docker", "push", privacy_center_latest, external=True)
-        session.run("docker", "push", privacy_center_prod, external=True)
-        session.run("docker", "tag", sample_app_prod, sample_app_latest, external=True)
-        session.run("docker", "push", sample_app_latest, external=True)
-        session.run("docker", "push", sample_app_prod, external=True)
+        push_prod(session=session)
