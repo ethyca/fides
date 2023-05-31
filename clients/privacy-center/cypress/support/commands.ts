@@ -4,6 +4,7 @@ import "cypress-wait-until";
 
 import type { AppDispatch } from "~/app/store";
 import type { FidesConfig } from "fides-js";
+import type { PrivacyCenterClientSettings } from "~/app/server-environment";
 
 Cypress.Commands.add("getByTestId", (selector, ...args) =>
   cy.get(`[data-testid='${selector}']`, ...args)
@@ -46,6 +47,12 @@ Cypress.Commands.add("loadConfigFixture", (fixtureName: string, ...args) => {
       () => config
     );
   });
+});
+
+Cypress.Commands.add("overrideSettings", (settings) => {
+  cy.dispatch({ type: "settings/overrideSettings", payload: settings }).then(
+    () => settings
+  );
 });
 
 Cypress.Commands.add("visitConsentDemo", (options?: FidesConfig) => {
@@ -140,6 +147,17 @@ declare global {
        * @example cy.visitConsentDemo(fidesConfig);
        */
       visitConsentDemo(options?: FidesConfig): Chainable<any>;
+      /**
+       * Custom command to load a Privacy Center settings object into the app
+       *
+       * Warning: similar to loadConfigFixture, subsequent page loads will reset this setting
+       * back to the defaults.
+       *
+       * @example cy.overrideSettings({IS_OVERLAY_DISABLED: false})
+       */
+      overrideSettings(
+        settings: Partial<PrivacyCenterClientSettings>
+      ): Chainable<any>;
     }
   }
 }

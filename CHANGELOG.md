@@ -18,7 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.14.0...main)
 
 ### Added
-
+- Privacy center can now render its consent values based on Privacy Notices and Privacy Experiences [#3340](https://github.com/ethyca/fides/pull/3340)
 - Add Google Tag Manager and Privacy Center ENV vars to sample app [#2949](https://github.com/ethyca/fides/pull/2949)
 
 ### Fixed

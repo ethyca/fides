@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { useAppSelector } from "~/app/hooks";
 import { PrivacyCenterClientSettings } from "~/app/server-environment";
@@ -26,6 +26,17 @@ export const settingsSlice = createSlice({
       }
       draftState.settings = payload;
     },
+    /**
+     * Override existing settings with passed in values
+     *
+     * Used for tests
+     */
+    overrideSettings(
+      draftState,
+      { payload }: PayloadAction<PrivacyCenterClientSettings>
+    ) {
+      draftState.settings = { ...draftState.settings, ...payload };
+    },
   },
 });
 
@@ -39,3 +50,7 @@ export const useSettings = (): PrivacyCenterClientSettings => {
   }
   return settings;
 };
+export const selectIsNoticeDriven = createSelector(
+  selectSettings,
+  (settings) => settings.settings?.IS_OVERLAY_DISABLED === false
+);
