@@ -27,6 +27,7 @@
  *           isDisabled: false,
  *           isGeolocationEnabled: false,
  *           geolocationApiUrl: "",
+ *           overlayParentId: null,
  *           privacyCenterUrl: "http://localhost:3000"
  *         }
  *   });
@@ -272,6 +273,7 @@ _Fides = {
     isOverlayDisabled: true,
     isGeolocationEnabled: false,
     geolocationApiUrl: "",
+    overlayParentId: null,
     privacyCenterUrl: "",
     fidesApiUrl: "",
   },
@@ -299,4 +301,5 @@ export * from "./lib/consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 
+// DEFER: this default export isn't very useful, it's just the Fides type
 export default Fides;
