@@ -90,7 +90,7 @@ export const transformConsentToFidesUserPreference = (
 };
 
 /**
- * Validate the fides global config options
+ * Validate the fides global config options. If invalid, we cannot make API calls to Fides or link to the Privacy Center.
  */
 export const validateOptions = (options: FidesOptions): boolean => {
   // Check if options is an invalid type

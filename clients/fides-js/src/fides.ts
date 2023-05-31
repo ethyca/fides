@@ -96,33 +96,22 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-/**
- * Determines effective geolocation
- */
-const retrieveEffectiveGeolocation = async (
-  options: FidesOptions
-): Promise<UserGeolocation | null> => {
-  // If geolocation is not enabled, return null
-  if (!options.isGeolocationEnabled) {
-    debugLog(
-      options.debug,
-      `User location could not be retrieved because geolocation is disabled.`
-    );
-    return null;
-  }
-  // Call the geolocation API
-  return getGeolocation(options.geolocationApiUrl, options.debug);
-};
-
 const retrieveEffectiveRegionString = async (
   geolocation: UserGeolocation | undefined,
   options: FidesOptions
 ) => {
+  // Prefer the provided geolocation if available and valid; otherwise, fallback to automatically
+  // geolocating the user by calling the geolocation API
   const fidesRegionString = constructFidesRegionString(geolocation);
   if (!fidesRegionString) {
     // we always need a region str so that we can PATCH privacy preferences to Fides Api
     return constructFidesRegionString(
-      await retrieveEffectiveGeolocation(options)
+      // Call the geolocation API
+      await getGeolocation(
+        options.isGeolocationEnabled,
+        options.geolocationApiUrl,
+        options.debug
+      )
     );
   }
   return fidesRegionString;
@@ -181,11 +170,6 @@ const init = async ({
   geolocation,
   options,
 }: FidesConfig) => {
-  if (!validateOptions(options)) {
-    debugLog(options.debug, "Invalid overlay options", options);
-    return;
-  }
-
   // Configure the default legacy consent values
   const context = getConsentContext();
   const consentDefaults = makeConsentDefaultsLegacy(
@@ -197,12 +181,22 @@ const init = async ({
   // Load any existing user preferences from the browser cookie
   const cookie = getOrMakeFidesCookie(consentDefaults, options.debug);
 
+  let shouldInitOverlay: boolean = !options.isOverlayDisabled;
+
+  if (!validateOptions(options)) {
+    debugLog(
+      options.debug,
+      "Invalid overlay options. Skipping overlay initialization.",
+      options
+    );
+    shouldInitOverlay = false;
+  }
+
   const fidesRegionString = await retrieveEffectiveRegionString(
     geolocation,
     options
   );
   let effectiveExperience: PrivacyExperience | undefined | null = experience;
-  let shouldInitOverlay: boolean = !options.isOverlayDisabled;
 
   if (!fidesRegionString) {
     debugLog(
@@ -218,29 +212,30 @@ const init = async ({
       options.debug
     );
   }
-  if (effectiveExperience) {
+
+  if (effectiveExperience && experienceIsValid(effectiveExperience, options)) {
     // Overwrite cookie consent with experience-based consent values
     cookie.consent = buildCookieConsentForExperiences(
       effectiveExperience,
       context,
       options.debug
     );
-  }
 
-  if (shouldInitOverlay && experienceIsValid(effectiveExperience, options)) {
-    // Check if there are any notices within the experience that do not have a user preference
-    const noticesWithNoUserPreferenceExist: boolean = Boolean(
-      effectiveExperience?.privacy_notices?.some(
-        (notice) => notice.current_preference == null
-      )
-    );
-    if (noticesWithNoUserPreferenceExist) {
-      await initOverlay(<OverlayProps>{
-        experience: effectiveExperience,
-        fidesRegionString,
-        cookie,
-        options,
-      }).catch(() => {});
+    if (shouldInitOverlay) {
+      // Check if there are any notices within the experience that do not have a user preference
+      const noticesWithNoUserPreferenceExist: boolean = Boolean(
+        effectiveExperience?.privacy_notices?.some(
+          (notice) => notice.current_preference == null
+        )
+      );
+      if (noticesWithNoUserPreferenceExist) {
+        await initOverlay(<OverlayProps>{
+          experience: effectiveExperience,
+          fidesRegionString,
+          cookie,
+          options,
+        }).catch(() => {});
+      }
     }
   }
 
