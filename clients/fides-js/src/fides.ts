@@ -54,24 +54,28 @@ import {
   CookieMeta,
   getOrMakeFidesCookie,
   makeConsentDefaultsLegacy,
-  buildCookieConsentForExperiences, FidesCookie,
+  buildCookieConsentForExperiences,
+  FidesCookie,
 } from "./lib/cookie";
 import {
   PrivacyExperience,
   FidesConfig,
   FidesOptions,
   UserGeolocation,
-  ConsentMethod, SaveConsentPreference,
+  ConsentMethod,
+  SaveConsentPreference,
 } from "./lib/consent-types";
 import {
   constructFidesRegionString,
-  debugLog, experienceIsValid, transformConsentToFidesUserPreference,
+  debugLog,
+  experienceIsValid,
+  transformConsentToFidesUserPreference,
   validateOptions,
 } from "./lib/consent-utils";
 import { fetchExperience } from "./services/fides/api";
 import { getGeolocation } from "./services/external/geolocation";
 import { OverlayProps } from "~/components/Overlay";
-import {updateConsentPreferences} from "~/lib/preferences";
+import { updateConsentPreferences } from "./lib/preferences";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -129,17 +133,25 @@ const retrieveEffectiveRegionString = async (
   return fidesRegionString;
 };
 
-const automaticallyApplyGPCPreferences = (cookie: FidesCookie, fidesRegionString: string | null, fidesApiUrl: string, effectiveExperience?: PrivacyExperience | null) => {
+const automaticallyApplyGPCPreferences = (
+  cookie: FidesCookie,
+  fidesRegionString: string | null,
+  fidesApiUrl: string,
+  effectiveExperience?: PrivacyExperience | null
+) => {
   if (getConsentContext().globalPrivacyControl && effectiveExperience) {
     const consentPreferencesToSave = new Array<SaveConsentPreference>();
     effectiveExperience.privacy_notices?.forEach((notice) => {
       if (notice.has_gpc_flag && !notice.current_preference) {
         consentPreferencesToSave.push(
-            new SaveConsentPreference(
-                notice.notice_key,
-                notice.privacy_notice_history_id,
-                transformConsentToFidesUserPreference(false, notice.consent_mechanism)
+          new SaveConsentPreference(
+            notice.notice_key,
+            notice.privacy_notice_history_id,
+            transformConsentToFidesUserPreference(
+              false,
+              notice.consent_mechanism
             )
+          )
         );
       }
     });
@@ -154,7 +166,7 @@ const automaticallyApplyGPCPreferences = (cookie: FidesCookie, fidesRegionString
       });
     }
   }
-}
+};
 
 /**
  * Initialize the global Fides object with the given configuration values
@@ -179,7 +191,10 @@ const init = async ({
   );
 
   // Load any existing user preferences from the browser cookie
-  const cookie: FidesCookie = getOrMakeFidesCookie(consentDefaults, options.debug);
+  const cookie: FidesCookie = getOrMakeFidesCookie(
+    consentDefaults,
+    options.debug
+  );
 
   const fidesRegionString = await retrieveEffectiveRegionString(
     geolocation,
@@ -229,8 +244,12 @@ const init = async ({
   _Fides.options = options;
   _Fides.initialized = true;
 
-  automaticallyApplyGPCPreferences(cookie, fidesRegionString, options.fidesApiUrl, effectiveExperience)
-
+  automaticallyApplyGPCPreferences(
+    cookie,
+    fidesRegionString,
+    options.fidesApiUrl,
+    effectiveExperience
+  );
 };
 
 // The global Fides object; this is bound to window.Fides if available

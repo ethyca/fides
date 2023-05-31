@@ -1,7 +1,8 @@
 import {
   ComponentType,
   ConsentMechanism,
-  FidesOptions, PrivacyExperience,
+  FidesOptions,
+  PrivacyExperience,
   UserConsentPreference,
   UserGeolocation,
   VALID_ISO_3166_LOCATION_REGEX,
@@ -136,46 +137,45 @@ export const validateOptions = (options: FidesOptions): boolean => {
  * Determines whether experience is valid and relevant notices exist within the experience
  */
 export const experienceIsValid = (
-    effectiveExperience: PrivacyExperience | undefined | null,
-    options: FidesOptions
+  effectiveExperience: PrivacyExperience | undefined | null,
+  options: FidesOptions
 ): boolean => {
   if (!effectiveExperience) {
     debugLog(
-        options.debug,
-        `No relevant experience found. Skipping overlay initialization.`
+      options.debug,
+      `No relevant experience found. Skipping overlay initialization.`
     );
     return false;
   }
   if (
-      !(
-          effectiveExperience.privacy_notices &&
-          effectiveExperience.privacy_notices.length >= 0
-      )
+    !(
+      effectiveExperience.privacy_notices &&
+      effectiveExperience.privacy_notices.length >= 0
+    )
   ) {
     debugLog(
-        options.debug,
-        `No relevant notices in the privacy experience. Skipping overlay initialization.`,
-        effectiveExperience
+      options.debug,
+      `No relevant notices in the privacy experience. Skipping overlay initialization.`,
+      effectiveExperience
     );
     return false;
   }
   if (effectiveExperience.component !== ComponentType.OVERLAY) {
     debugLog(
-        options.debug,
-        "No experience found with overlay component. Skipping overlay initialization."
+      options.debug,
+      "No experience found with overlay component. Skipping overlay initialization."
     );
     return false;
   }
   if (!effectiveExperience.experience_config) {
     debugLog(
-        options.debug,
-        "No experience config found with for experience. Skipping overlay initialization."
+      options.debug,
+      "No experience config found with for experience. Skipping overlay initialization."
     );
     return false;
   }
   // Check if there are any notices within the experience that do not have a user preference
   return effectiveExperience.privacy_notices.some(
-      (notice) => notice.current_preference == null
+    (notice) => notice.current_preference == null
   );
 };
-
