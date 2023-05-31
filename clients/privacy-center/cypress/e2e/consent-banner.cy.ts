@@ -322,19 +322,6 @@ describe("Consent banner", () => {
               [PRIVACY_NOTICE_KEY_1]: true,
               [PRIVACY_NOTICE_KEY_2]: true,
             });
-
-          // subsequent call to get privacy experience should surface current user preferences
-          cy.fixture("consent/test_banner_options.json").then((config) => {
-            const experienceResp = {
-              fixture:
-                "consent/privacy-experience-with-current-preference.json",
-            };
-            cy.intercept(
-              "GET",
-              `${config.options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}*`,
-              experienceResp
-            ).as("getPrivacyExperience");
-          });
         });
       });
 
