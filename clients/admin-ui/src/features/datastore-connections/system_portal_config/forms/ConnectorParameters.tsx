@@ -19,7 +19,7 @@ import {
 } from "datastore-connections/types";
 import { useState } from "react";
 
-import { useAppDispatch,useAppSelector } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
@@ -85,7 +85,7 @@ export const patchConnectionConfig = async (
   connectionConfig: ConnectionConfigurationResponse,
   patchFunc: any
 ) => {
-  console.log("values: ",values,"cC",connectionConfig)
+  console.log("values: ", values, "cC", connectionConfig);
   const key =
     [SystemType.DATABASE, SystemType.EMAIL].indexOf(connectionOption.type) > -1
       ? formatKey(values.instance_key as string)

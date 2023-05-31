@@ -12,17 +12,24 @@ import {
   Text,
   useDisclosure,
   Flex,
-  Box
+  Box,
 } from "@fidesui/react";
-import React, { useState, useMemo} from "react";
-import {ConnectionConfigurationResponse, ConnectionSystemTypeMap, ConnectionType} from "~/types/api";
+import React, { useState, useMemo } from "react";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  ConnectionType,
+} from "~/types/api";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
-import { patchConnectionConfig } from "./forms/ConnectorParameters"
-import {usePatchSystemConnectionConfigsMutation} from "~/features/system";
-import {ConnectionConfigFormValues} from "datastore-connections/system_portal_config/types";
-import {useAppSelector} from "~/app/hooks";
-import {selectConnectionTypeFilters, useGetAllConnectionTypesQuery} from "~/features/connection-type";
-import {useAPIHelper} from "common/hooks";
+import { patchConnectionConfig } from "./forms/ConnectorParameters";
+import { usePatchSystemConnectionConfigsMutation } from "~/features/system";
+import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
+import { useAppSelector } from "~/app/hooks";
+import {
+  selectConnectionTypeFilters,
+  useGetAllConnectionTypesQuery,
+} from "~/features/connection-type";
+import { useAPIHelper } from "common/hooks";
 
 type DataConnectionProps = {
   connectionConfigs: ConnectionConfigurationResponse[];
@@ -31,12 +38,14 @@ type DataConnectionProps = {
 
 const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
   connectionConfigs,
-  systemFidesKey
+  systemFidesKey,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [selectedConnectionConfig, setSelectedConnectionConfig] = useState<ConnectionConfigurationResponse | null>(null);
+  const [selectedConnectionConfig, setSelectedConnectionConfig] =
+    useState<ConnectionConfigurationResponse | null>(null);
 
-  const [patchDatastoreConnection, { isLoading }] = usePatchSystemConnectionConfigsMutation();
+  const [patchDatastoreConnection, { isLoading }] =
+    usePatchSystemConnectionConfigsMutation();
 
   const filters = useAppSelector(selectConnectionTypeFilters);
   const { data } = useGetAllConnectionTypesQuery(filters);
@@ -44,10 +53,10 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
   const connectionOptions = useMemo(() => data?.items || [], [data]);
   const { handleError } = useAPIHelper();
   const closeIfComplete = () => {
-    if (!isLoading ) {
-      return
+    if (!isLoading) {
+      return;
     }
-    if(selectedConnectionConfig){
+    if (selectedConnectionConfig) {
       setSelectedConnectionConfig(null);
     }
     onClose();
@@ -55,43 +64,40 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
 
   const handleLinkingConnection = async () => {
     try {
-
-    if(selectedConnectionConfig){
-      // This is reusing the patchConnectionConfig function from ConnectorParameters.tsx
-      // It's being reused in this context since it's a temporary migration step.
-      // The function is used in a form in the other context so this needs to be passed in.
-      const formValues  = {
-       ...selectedConnectionConfig,
-        instance_key: selectedConnectionConfig.connection_type === ConnectionType.SAAS
+      if (selectedConnectionConfig) {
+        // This is reusing the patchConnectionConfig function from ConnectorParameters.tsx
+        // It's being reused in this context since it's a temporary migration step.
+        // The function is used in a form in the other context so this needs to be passed in.
+        const formValues = {
+          ...selectedConnectionConfig,
+          instance_key:
+            selectedConnectionConfig.connection_type === ConnectionType.SAAS
               ? (selectedConnectionConfig.saas_config?.fides_key as string)
-              : selectedConnectionConfig.key
-      } as  ConnectionConfigFormValues
+              : selectedConnectionConfig.key,
+        } as ConnectionConfigFormValues;
 
+        const connectionOption = connectionOptions.find(
+          (ct) =>
+            (selectedConnectionConfig?.saas_config &&
+              ct.identifier === selectedConnectionConfig?.saas_config.type) ||
+            ct.identifier === selectedConnectionConfig?.connection_type
+        ) as ConnectionSystemTypeMap;
 
-      const connectionOption = connectionOptions.find(
-        (ct) =>
-          (selectedConnectionConfig?.saas_config &&
-            ct.identifier === selectedConnectionConfig?.saas_config.type) ||
-          ct.identifier === selectedConnectionConfig?.connection_type
-      ) as ConnectionSystemTypeMap ;
+        await patchConnectionConfig(
+          formValues,
+          connectionOption,
+          systemFidesKey,
+          selectedConnectionConfig,
+          patchDatastoreConnection
+        );
 
-
-      await patchConnectionConfig(
-        formValues,
-        connectionOption,
-        systemFidesKey,
-        selectedConnectionConfig,
-        patchDatastoreConnection
-        )
-
-      closeIfComplete()
+        closeIfComplete();
+      }
+    } catch (e) {
+      console.log(e);
+      handleError(e);
     }
-    }catch (e) {
-      console.log(e)
-      handleError(e)
-
-    }
-  }
+  };
 
   return (
     <>
@@ -104,9 +110,8 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
           variant="solid"
           color="white"
           colorScheme="primary"
-
         >
-         Link unlinked connector
+          Link unlinked connector
         </Button>
       </>
 
@@ -123,32 +128,38 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
                 fontWeight="sm"
                 lineHeight="20px"
               >
-               These are all the connections that are not linked to a system.
+                These are all the connections that are not linked to a system.
                 Please select a connection to link to a system.
               </Text>
               <Box maxHeight="350px" height="100%" overflowY="auto">
-
-              {connectionConfigs.map((connectionConfig) => (
-                <Flex flexDirection="row" key={connectionConfig.key}
-                      alignItems="center"
-                      _hover={{
-                        bg: "gray.100",
-                        color: "gray.600",
-                      }}
-                      bg={selectedConnectionConfig?.key === connectionConfig.key ? "gray.100" : "unset"}
-                      color={selectedConnectionConfig?.key === connectionConfig.key ? "gray.600" : "unset"}
-                      cursor="pointer"
-                      onClick={() => {
-                        setSelectedConnectionConfig(connectionConfig)
-                      }}
-                >
-
-                  <ConnectionTypeLogo data={connectionConfig} />
-                <Text >
-                  {connectionConfig.name}
-                </Text>
-                </Flex>
-              ))}
+                {connectionConfigs.map((connectionConfig) => (
+                  <Flex
+                    flexDirection="row"
+                    key={connectionConfig.key}
+                    alignItems="center"
+                    _hover={{
+                      bg: "gray.100",
+                      color: "gray.600",
+                    }}
+                    bg={
+                      selectedConnectionConfig?.key === connectionConfig.key
+                        ? "gray.100"
+                        : "unset"
+                    }
+                    color={
+                      selectedConnectionConfig?.key === connectionConfig.key
+                        ? "gray.600"
+                        : "unset"
+                    }
+                    cursor="pointer"
+                    onClick={() => {
+                      setSelectedConnectionConfig(connectionConfig);
+                    }}
+                  >
+                    <ConnectionTypeLogo data={connectionConfig} />
+                    <Text>{connectionConfig.name}</Text>
+                  </Flex>
+                ))}
               </Box>
             </Stack>
           </ModalBody>
@@ -183,7 +194,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
                 color: "gray.600",
               }}
             >
-             Link connector
+              Link connector
             </Button>
           </ModalFooter>
         </ModalContent>

@@ -1,9 +1,9 @@
-import { Button,Flex, Spacer, useDisclosure } from "@fidesui/react";
+import { Button, Flex, Spacer, useDisclosure } from "@fidesui/react";
 import Restrict from "common/Restrict";
 import ConnectionListDropdown, {
   useConnectionListDropDown,
 } from "datastore-connections/system_portal_config/ConnectionListDropdown";
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 
 import ConnectorTemplateUploadModal from "~/features/connector-templates/ConnectorTemplateUploadModal";
 import { ConnectorParameters } from "~/features/datastore-connections/system_portal_config/forms/ConnectorParameters";
@@ -14,8 +14,11 @@ import {
   SystemType,
 } from "~/types/api";
 import OrphanedConnectionModal from "datastore-connections/system_portal_config/OrphanedConnectionModal";
-import { useGetAllDatastoreConnectionsQuery, selectDatastoreConnectionFilters} from "../datastore-connection.slice"
-import {useAppSelector } from "~/app/hooks"
+import {
+  useGetAllDatastoreConnectionsQuery,
+  selectDatastoreConnectionFilters,
+} from "../datastore-connection.slice";
+import { useAppSelector } from "~/app/hooks";
 
 export type ConnectionOption = {
   label: string;
@@ -35,16 +38,16 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   } = useConnectionListDropDown({ connectionConfig });
   const filters = useAppSelector(selectDatastoreConnectionFilters);
 
-  const {data} = useGetAllDatastoreConnectionsQuery(filters)
-  const [orphanedConnectionConfigs, setOrphanedConnectionConfigs] = useState<ConnectionConfigurationResponse[]>([]);
+  const { data } = useGetAllDatastoreConnectionsQuery(filters);
+  const [orphanedConnectionConfigs, setOrphanedConnectionConfigs] = useState<
+    ConnectionConfigurationResponse[]
+  >([]);
 
-  useEffect(()=>{
-    if(data){
-      setOrphanedConnectionConfigs(data.items)
+  useEffect(() => {
+    if (data) {
+      setOrphanedConnectionConfigs(data.items);
     }
-  },[
-    data
-  ])
+  }, [data]);
 
   const deleteModal = useDisclosure();
 
@@ -53,8 +56,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   8. Add in flow for orphaned connectors
   */
 
-
-  console.log(orphanedConnectionConfigs)
+  console.log(orphanedConnectionConfigs);
   return (
     <>
       <Flex>
@@ -65,13 +67,16 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           onChange={setSelectedValue}
         />
 
-        {!connectionConfig  && orphanedConnectionConfigs.length > 0?
+        {!connectionConfig && orphanedConnectionConfigs.length > 0 ? (
           <>
-        <Spacer />
+            <Spacer />
 
-        <OrphanedConnectionModal connectionConfigs={orphanedConnectionConfigs} systemFidesKey={systemFidesKey} />
-          </>:null
-        }
+            <OrphanedConnectionModal
+              connectionConfigs={orphanedConnectionConfigs}
+              systemFidesKey={systemFidesKey}
+            />
+          </>
+        ) : null}
         <Spacer />
         <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
           <Button
@@ -85,7 +90,10 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
             Upload connector
           </Button>
         </Restrict>
-        <ConnectorTemplateUploadModal isOpen={deleteModal.isOpen} onClose={deleteModal.onClose} />
+        <ConnectorTemplateUploadModal
+          isOpen={deleteModal.isOpen}
+          onClose={deleteModal.onClose}
+        />
       </Flex>
 
       {selectedConnectionOption?.type === SystemType.DATABASE ? (
