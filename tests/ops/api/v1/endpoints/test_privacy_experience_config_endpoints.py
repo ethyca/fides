@@ -309,7 +309,7 @@ class TestCreateExperienceConfig:
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "The following additional fields are required when defining an overlay: banner_enabled and privacy_preferences_link_label."
+            == "The following additional fields are required when defining an overlay: acknowledge_button_label, banner_enabled, and privacy_preferences_link_label."
         )
 
     def test_create_privacy_center_config_missing_details(
@@ -361,6 +361,64 @@ class TestCreateExperienceConfig:
         assert response.json()["detail"][0]["msg"] == "Duplicate regions found."
 
     def test_create_experience_config_with_no_regions(
+        self, api_client: TestClient, url, generate_auth_header, db
+    ) -> None:
+        """Experience config can be defined without any regions specified. This is handy for defining default experiences
+
+        No privacy experiences are affected here.  But ExperienceConfig and ExperienceConfigHistory records are created.
+        """
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "accept_button_label": "Yes",
+                "banner_enabled": "always_disabled",
+                "component": "privacy_center",
+                "description": "We take your privacy seriously",
+                "privacy_policy_link_label": "Manage your privacy",
+                "privacy_policy_url": "example.com/privacy",
+                "reject_button_label": "No",
+                "save_button_label": "Save",
+                "title": "Manage your privacy",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 201
+        resp = response.json()["experience_config"]
+        assert resp["accept_button_label"] == "Yes"
+        assert resp["banner_enabled"] == "always_disabled"
+        assert resp["component"] == "privacy_center"
+        assert resp["description"] == "We take your privacy seriously"
+        assert resp["privacy_policy_link_label"] == "Manage your privacy"
+        assert resp["privacy_policy_url"] == "example.com/privacy"
+        assert resp["regions"] == []
+        assert resp["reject_button_label"] == "No"
+        assert resp["save_button_label"] == "Save"
+        assert resp["title"] == "Manage your privacy"
+        assert resp["created_at"] is not None
+        assert resp["updated_at"] is not None
+        assert resp["version"] == 1.0
+
+        experience_config = get_experience_config_or_error(db, resp["id"])
+        assert experience_config.component == ComponentType.privacy_center
+        assert experience_config.privacy_policy_link_label == "Manage your privacy"
+        assert experience_config.experiences.all() == []
+        assert experience_config.histories.count() == 1
+        history = experience_config.histories[0]
+        assert history.version == 1.0
+        assert history.component == ComponentType.privacy_center
+        assert history.privacy_policy_link_label == "Manage your privacy"
+        assert history.experience_config_id == experience_config.id
+
+        assert response.json()["linked_regions"] == []
+        assert response.json()["unlinked_regions"] == []
+
+        history.delete(db)
+        experience_config.delete(db)
+
+    def test_create_experience_config_with_empty_regions(
         self, api_client: TestClient, url, generate_auth_header, db
     ) -> None:
         """Experience config can be defined without any regions specified. This is handy for defining default experiences
@@ -922,7 +980,7 @@ class TestUpdateExperienceConfig:
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "The following additional fields are required when defining an overlay: banner_enabled and privacy_preferences_link_label."
+            == "The following additional fields are required when defining an overlay: acknowledge_button_label, banner_enabled, and privacy_preferences_link_label."
         )
 
     def test_attempt_to_update_component_type(

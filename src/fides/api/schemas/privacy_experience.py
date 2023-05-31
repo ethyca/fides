@@ -69,7 +69,7 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
     accept_button_label: SafeStr
     component: ComponentType
     description: SafeStr
-    regions: List[PrivacyNoticeRegion]
+    regions: Optional[List[PrivacyNoticeRegion]]
     reject_button_label: SafeStr
     save_button_label: SafeStr
     title: SafeStr
@@ -80,7 +80,7 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
         cls, regions: List[PrivacyNoticeRegion]
     ) -> List[PrivacyNoticeRegion]:
         """Assert regions aren't duplicated."""
-        if len(regions) != len(set(regions)):
+        if regions and len(regions) != len(set(regions)):
             raise ValueError("Duplicate regions found.")
         return regions
 
@@ -92,6 +92,7 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
         if component == ComponentType.overlay:
             # Overlays have a few additional required fields beyond the privacy center
             required_overlay_fields = [
+                "acknowledge_button_label",
                 "banner_enabled",
                 "privacy_preferences_link_label",
             ]

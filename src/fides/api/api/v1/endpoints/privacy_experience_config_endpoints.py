@@ -127,7 +127,9 @@ def experience_config_create(
     """
     experience_config_dict: Dict = experience_config_data.dict(exclude_unset=True)
     # Pop the regions off the request
-    new_regions: List[PrivacyNoticeRegion] = experience_config_dict.pop("regions")
+    new_regions: Optional[List[PrivacyNoticeRegion]] = experience_config_dict.pop(
+        "regions", None
+    )
 
     logger.info(
         "Creating experience config of component '{}'.",
@@ -137,15 +139,17 @@ def experience_config_create(
         db, data=experience_config_dict, check_name=False
     )
 
+    linked: List[PrivacyNoticeRegion] = []
+    unlinked: List[PrivacyNoticeRegion] = []
     if new_regions:
         logger.info(
             "Linking regions: {} to experience config '{}'",
             human_friendly_list([reg.value for reg in new_regions]),
             experience_config.id,
         )
-    linked, unlinked = upsert_privacy_experiences_after_config_update(
-        db, experience_config, new_regions
-    )
+        linked, unlinked = upsert_privacy_experiences_after_config_update(
+            db, experience_config, new_regions
+        )
 
     return ExperienceConfigCreateOrUpdateResponse(
         experience_config=experience_config,
@@ -246,11 +250,12 @@ def experience_config_update(
             db, experience_config, regions
         )
 
-        logger.info(
-            "Unlinking regions {} from Privacy Experience Config '{}'.",
-            human_friendly_list([reg.value for reg in unlinked_regions]),
-            experience_config.id,
-        )
+        if unlinked_regions:
+            logger.info(
+                "Unlinking regions {} from Privacy Experience Config '{}'.",
+                human_friendly_list([reg.value for reg in unlinked_regions]),
+                experience_config.id,
+            )
 
     return ExperienceConfigCreateOrUpdateResponse(
         experience_config=experience_config,
