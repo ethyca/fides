@@ -65,11 +65,6 @@ RUN if [ "$TARGETPLATFORM" != "linux/arm64" ] ; \
     fi
 
 
-# Required for M1 Macs currently when connecting to Postgres
-# https://github.com/psycopg/psycopg2/issues/1360#issuecomment-1455169030
-RUN pip uninstall psycopg2-binary -y
-RUN apt update -y && apt install -y build-essential libpq-dev
-RUN pip install psycopg2
 
 # General Application Setup ##
 COPY . /fides
