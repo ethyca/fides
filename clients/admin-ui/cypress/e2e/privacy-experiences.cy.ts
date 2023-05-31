@@ -3,8 +3,8 @@ import { stubPlus } from "cypress/support/stubs";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
-const OVERLAY_EXPERIENCE_ID = "pri_33fd622e-a63a-4847-b910-3b3fdf8c109f";
-const DISABLED_EXPERIENCE_ID = "pri_66b689cb-44ae-4124-8ae8-7dc6d79eff84";
+const OVERLAY_EXPERIENCE_ID = "pri_0338d055-f91b-4a17-ad4e-600c61551199";
+const DISABLED_EXPERIENCE_ID = "pri_8fd9d334-e625-4365-ba25-9c368f0b1231";
 
 describe("Privacy experiences", () => {
   beforeEach(() => {
@@ -114,6 +114,15 @@ describe("Privacy experiences", () => {
       cy.url().should("contain", OVERLAY_EXPERIENCE_ID);
     });
 
+    it("should show default experience as 'Global'", () => {
+      cy.getByTestId(`row-${OVERLAY_EXPERIENCE_ID}`).within(() => {
+        cy.get("td").first().contains("Global");
+      });
+      cy.getByTestId(`row-${DISABLED_EXPERIENCE_ID}`).within(() => {
+        cy.get("td").first().contains("us-ca");
+      });
+    });
+
     describe("enabling and disabling", () => {
       beforeEach(() => {
         cy.intercept("PATCH", "/api/v1/experience-config/*", {
@@ -132,7 +141,7 @@ describe("Privacy experiences", () => {
         cy.wait("@patchExperience").then((interception) => {
           const { body, url } = interception.request;
           expect(url).to.contain(DISABLED_EXPERIENCE_ID);
-          expect(body).to.eql({ disabled: false, regions: ["eu_fr", "eu_ie"] });
+          expect(body).to.eql({ disabled: false, regions: ["us_ca"] });
         });
         // redux should requery after invalidation
         cy.wait("@getExperiences");
@@ -151,7 +160,7 @@ describe("Privacy experiences", () => {
         cy.wait("@patchExperience").then((interception) => {
           const { body, url } = interception.request;
           expect(url).to.contain(OVERLAY_EXPERIENCE_ID);
-          expect(body).to.eql({ disabled: true, regions: ["us_ca"] });
+          expect(body).to.eql({ disabled: true, regions: [] });
         });
         // redux should requery after invalidation
         cy.wait("@getExperiences");
@@ -159,7 +168,7 @@ describe("Privacy experiences", () => {
     });
   });
 
-  describe("form", () => {
+  describe("forms", () => {
     beforeEach(() => {
       cy.intercept("PATCH", "/api/v1/experience-config/*", {
         fixture: "privacy-experiences/experienceConfig.json",
@@ -169,7 +178,7 @@ describe("Privacy experiences", () => {
       component?: "overlay" | "privacy_center";
     }
     /**
-     * Helper function to swap out notices and components in a stubbed experience
+     * Helper function to swap out the component type in a stubbed experience
      * @example stubExperience({component: "overlay"})
      */
     const stubExperience = ({ component }: Props) => {
@@ -186,29 +195,57 @@ describe("Privacy experiences", () => {
       );
     };
 
-    it("renders opt_out notice with all options available", () => {
+    it("can populate an overlay form with existing values", () => {
       stubExperience({ component: "overlay" });
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
-      cy.getByTestId("privacy-center-messaging-form").should("not.exist");
-
-      cy.getByTestId("delivery-mechanism-form").within(() => {
-        cy.getSelectValueContainer("input-delivery_mechanism").within(() => {
-          cy.get("input").should("not.be.disabled");
-        });
-      });
-      cy.getByTestId("banner-text-form");
-      cy.getByTestId("banner-action-form");
+      cy.fixture("privacy-experiences/experienceConfig.json").then(
+        (experience) => {
+          const keys = [
+            "title",
+            "description",
+            "privacy_preferences_link_label",
+            "save_button_label",
+            "accept_button_label",
+            "reject_button_label",
+            "acknowledge_button_label",
+            "privacy_policy_link_label",
+            "privacy_policy_url",
+          ];
+          keys.forEach((key) => {
+            cy.getByTestId(`input-${key}`).should(
+              "have.value",
+              experience[key]
+            );
+          });
+          cy.getSelectValueContainer("input-banner_enabled").contains(
+            "Always disabled"
+          );
+        }
+      );
     });
 
-    it("renders privacy center overlays without banner form sections", () => {
-      stubExperience({
-        component: "privacy_center",
-      });
+    it("can populate a privacy center form with existing values", () => {
+      stubExperience({ component: "privacy_center" });
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
-      cy.getByTestId("privacy-center-messaging-form");
-      cy.getByTestId("delivery-mechanism-form").should("not.exist");
-      cy.getByTestId("banner-text-form").should("not.exist");
-      cy.getByTestId("banner-action-form").should("not.exist");
+      cy.fixture("privacy-experiences/experienceConfig.json").then(
+        (experience) => {
+          const keys = [
+            "title",
+            "description",
+            "save_button_label",
+            "accept_button_label",
+            "reject_button_label",
+            "privacy_policy_link_label",
+            "privacy_policy_url",
+          ];
+          keys.forEach((key) => {
+            cy.getByTestId(`input-${key}`).should(
+              "have.value",
+              experience[key]
+            );
+          });
+        }
+      );
     });
 
     it("can submit an overlay form", () => {
@@ -216,16 +253,20 @@ describe("Privacy experiences", () => {
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
 
       const payload = {
-        delivery_mechanism: "banner",
-        banner_title: "title",
-        banner_description: "description",
-        link_label: "link label",
-        confirmation_button_label: "Accept",
+        title: "title",
+        description: "description",
+        privacy_preferences_link_label: "Manage your preferences",
+        save_button_label: "Save now",
+        accept_button_label: "Accept",
         reject_button_label: "Reject",
+        acknowledge_button_label: "Alright",
+        privacy_policy_link_label: "Check out our privacy policy",
+        privacy_policy_url: "example.com/privacy-policy",
+        banner_enabled: "enabled_where_required",
       };
-      cy.selectOption("input-delivery_mechanism", "Banner");
+      cy.selectOption("input-banner_enabled", "Enabled where legally required");
       Object.entries(payload).forEach(([key, value]) => {
-        if (key !== "delivery_mechanism") {
+        if (key !== "banner_enabled") {
           cy.getByTestId(`input-${key}`).clear().type(value);
         }
       });
@@ -242,8 +283,13 @@ describe("Privacy experiences", () => {
       stubExperience({ component: "privacy_center" });
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
       const payload = {
-        link_label: "link label",
-        component_description: "title",
+        title: "New title",
+        description: "New description",
+        save_button_label: "Save now",
+        accept_button_label: "Accept",
+        reject_button_label: "Reject",
+        privacy_policy_link_label: "Check out our privacy policy",
+        privacy_policy_url: "example.com/privacy-policy",
       };
       Object.entries(payload).forEach(([key, value]) => {
         cy.getByTestId(`input-${key}`).clear().type(value);
