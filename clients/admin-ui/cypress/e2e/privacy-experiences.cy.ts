@@ -141,7 +141,7 @@ describe("Privacy experiences", () => {
         cy.wait("@patchExperience").then((interception) => {
           const { body, url } = interception.request;
           expect(url).to.contain(DISABLED_EXPERIENCE_ID);
-          expect(body).to.eql({ disabled: false, regions: ["us_ca"] });
+          expect(body).to.eql({ disabled: false });
         });
         // redux should requery after invalidation
         cy.wait("@getExperiences");
@@ -160,7 +160,7 @@ describe("Privacy experiences", () => {
         cy.wait("@patchExperience").then((interception) => {
           const { body, url } = interception.request;
           expect(url).to.contain(OVERLAY_EXPERIENCE_ID);
-          expect(body).to.eql({ disabled: true, regions: [] });
+          expect(body).to.eql({ disabled: true });
         });
         // redux should requery after invalidation
         cy.wait("@getExperiences");
@@ -276,6 +276,8 @@ describe("Privacy experiences", () => {
         Object.entries(payload).forEach(([key, value]) => {
           expect(body[key]).to.eql(value);
         });
+        // Make sure regions is still ["us_ca"] (unchanged)
+        expect(body.regions).to.eql(["us_ca"]);
       });
     });
 
@@ -300,6 +302,8 @@ describe("Privacy experiences", () => {
         Object.entries(payload).forEach(([key, value]) => {
           expect(body[key]).to.eql(value);
         });
+        // Make sure regions is still ['us_ca'] (unchanged)
+        expect(body.regions).to.eql(["us_ca"]);
       });
     });
   });

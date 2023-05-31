@@ -40,7 +40,6 @@ export const EnablePrivacyExperienceCell = (
     await patchExperienceMutationTrigger({
       id: row.original.id,
       disabled: !toggle,
-      regions: row.original.regions,
     });
   };
 
