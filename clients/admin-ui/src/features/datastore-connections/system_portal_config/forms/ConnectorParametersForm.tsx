@@ -41,7 +41,7 @@ import { fillInDefaults } from "./helpers";
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
 type ConnectorParametersFormProps = {
-  data: ConnectionTypeSecretSchemaReponse;
+  secretsSchema: ConnectionTypeSecretSchemaReponse;
   defaultValues: ConnectionConfigFormValues;
   isSubmitting: boolean;
   /**
@@ -58,11 +58,12 @@ type ConnectorParametersFormProps = {
   testButtonLabel?: string;
   connection?: ConnectionConfigurationResponse;
   connectionOption: ConnectionSystemTypeMap;
+  isCreatingConnectionConfig: boolean;
   datasetDropdownOptions: Option[];
 };
 
 const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
-  data,
+  secretsSchema,
   defaultValues,
   isSubmitting = false,
   onSaveClick,
@@ -71,6 +72,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   connectionOption,
   connection,
   datasetDropdownOptions,
+  isCreatingConnectionConfig
 }) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
@@ -134,7 +136,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       name={key}
       key={key}
       validate={
-        data.required?.includes(key) || item.type === "integer"
+        secretsSchema.required?.includes(key) || item.type === "integer"
           ? (value: string) =>
               validateField(item.title, value, item.allOf?.[0].$ref)
           : false
@@ -143,7 +145,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {({ field, form }: { field: FieldInputProps<string>; form: any }) => (
         <FormControl
           display="flex"
-          isRequired={data.required?.includes(key)}
+          isRequired={secretsSchema.required?.includes(key)}
           isInvalid={form.errors[key] && form.touched[key]}
         >
           {getFormLabel(key, item.title)}
@@ -204,15 +206,15 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           ? (connection.saas_config?.fides_key as string)
           : connection.key;
     }
-    return fillInDefaults(initialValues, data);
+    return fillInDefaults(initialValues, secretsSchema);
   };
 
   const handleSubmit = (values: any, actions: any) => {
     // convert each property value of type FidesopsDatasetReference
     // from a dot delimited string to a FidesopsDatasetReference
     const updatedValues = { ...values };
-    Object.keys(data.properties).forEach((key) => {
-      if (data.properties[key].allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
+    Object.keys(secretsSchema.properties).forEach((key) => {
+      if (secretsSchema.properties[key].allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
         const referencePath = values[key].split(".");
         updatedValues[key] = {
           dataset: referencePath.shift(),
@@ -356,11 +358,11 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             </Field>
             {[SystemType.SAAS, SystemType.DATABASE].indexOf(
               connectionOption.type
-            ) > -1 ? (
+            ) > -1 && !isCreatingConnectionConfig ? (
               <DatasetConfigField dropdownOptions={datasetDropdownOptions} />
             ) : null}
             {/* Dynamic connector secret fields */}
-            {Object.entries(data.properties).map(([key, item]) => {
+            {Object.entries(secretsSchema.properties).map(([key, item]) => {
               if (key === "advanced_settings") {
                 // TODO: advanced settings
                 return null;

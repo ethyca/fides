@@ -185,7 +185,7 @@ export const useConnectorForm = ({
   );
 
   const handleSubmit = async (values: ConnectionConfigFormValues) => {
-    const isCreatingConnectionConfig = connectionConfig === undefined;
+    const isCreatingConnectionConfig = !connectionConfig;
     const hasLinkedDatasetConfig = allDatasetConfigs
       ? allDatasetConfigs.items.length > 0
       : false;
@@ -336,7 +336,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         processing a privacy request in your Dataset configuration.
       </Box>
       <ConnectorParametersForm
-        data={secretsSchema}
+        secretsSchema={secretsSchema}
         defaultValues={defaultValues}
         isSubmitting={isSubmitting}
         onSaveClick={handleSubmit}
@@ -344,6 +344,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         connectionOption={connectionOption}
         connection={connectionConfig}
         datasetDropdownOptions={datasetDropdownOptions}
+        isCreatingConnectionConfig={!connectionConfig}
       />
 
       {response && (
