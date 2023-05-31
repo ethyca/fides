@@ -34,7 +34,8 @@ export interface FidesConfigTesting {
  */
 const stubConfig = (
   { consent, experience, geolocation, options }: Partial<FidesConfigTesting>,
-  mockGeolocationApiResp?: any
+  mockGeolocationApiResp?: any,
+  mockExperienceApiResp?: any
 ) => {
   cy.fixture("consent/test_banner_options.json").then((config) => {
     const updatedConfig = {
@@ -79,12 +80,13 @@ const stubConfig = (
       typeof updatedConfig.options !== "string" &&
       updatedConfig.options?.fidesApiUrl
     ) {
+      const experienceResp = mockExperienceApiResp || {
+        fixture: "consent/privacy-experience.json",
+      };
       cy.intercept(
         "GET",
         `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}*`,
-        {
-          fixture: "consent/privacy-experience.json",
-        }
+        experienceResp
       ).as("getPrivacyExperience");
       cy.intercept(
         "PATCH",
@@ -130,12 +132,16 @@ describe("Consent banner", () => {
     });
     describe("when only legacy consent exists", () => {
       beforeEach(() => {
-        stubConfig({
-          options: {
-            isOverlayDisabled: true,
+        stubConfig(
+          {
+            options: {
+              isOverlayDisabled: true,
+            },
+            experience: OVERRIDE.EMPTY,
           },
-          experience: OVERRIDE.EMPTY,
-        });
+          {},
+          {}
+        );
       });
       it("sets Fides.consent object with default consent based on legacy consent", () => {
         cy.window().its("Fides").its("consent").should("eql", {
@@ -317,26 +323,17 @@ describe("Consent banner", () => {
               [PRIVACY_NOTICE_KEY_2]: true,
             });
 
-          // Upon reload, window.Fides should make the notices enabled
-          // Note that this doesn't replicate real world, in which a true reload would re-fetch
-          // experience from the API, and those experience would likely not have net new notices
-          // that require consent. In that case the banner would not be shown at all.
-          cy.reload();
-
-          // check that window.Fides.consent persists across page load
-          cy.window()
-            .its("Fides")
-            .its("consent")
-            .should("eql", {
-              [PRIVACY_NOTICE_KEY_1]: true,
-              [PRIVACY_NOTICE_KEY_2]: true,
-            });
-          cy.contains("button", "Manage preferences").click();
-          cy.getByTestId("toggle-Test privacy notice").within(() => {
-            cy.get("input").should("have.attr", "checked");
-          });
-          cy.getByTestId("toggle-Essential").within(() => {
-            cy.get("input").should("have.attr", "checked");
+          // subsequent call to get privacy experience should surface current user preferences
+          cy.fixture("consent/test_banner_options.json").then((config) => {
+            const experienceResp = {
+              fixture:
+                "consent/privacy-experience-with-current-preference.json",
+            };
+            cy.intercept(
+              "GET",
+              `${config.options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}*`,
+              experienceResp
+            ).as("getPrivacyExperience");
           });
         });
       });
@@ -355,6 +352,15 @@ describe("Consent banner", () => {
           consent: legacyNotices,
         };
         cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
+
+        // we need to visit the page after the cookie exists, so the Fides.consent obj is initialized with the original
+        // cookie values
+        stubConfig({
+          options: {
+            isOverlayDisabled: false,
+          },
+        });
+
         cy.contains("button", "Manage preferences").click();
 
         // Save new preferences

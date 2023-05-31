@@ -205,9 +205,7 @@ describe("makeConsentDefaultsLegacy", () => {
     const context: ConsentContext = {};
 
     it("returns the default consent values by key", () => {
-      expect(
-        makeConsentDefaultsLegacy({ config, context, debug: false })
-      ).toEqual({
+      expect(makeConsentDefaultsLegacy(config, context, false)).toEqual({
         default_true: true,
         default_false: false,
         default_true_with_gpc_false: true,
@@ -222,9 +220,7 @@ describe("makeConsentDefaultsLegacy", () => {
     };
 
     it("returns the default consent values by key", () => {
-      expect(
-        makeConsentDefaultsLegacy({ config, context, debug: false })
-      ).toEqual({
+      expect(makeConsentDefaultsLegacy(config, context, false)).toEqual({
         default_true: true,
         default_false: false,
         default_true_with_gpc_false: false,

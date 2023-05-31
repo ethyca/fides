@@ -115,6 +115,11 @@ export const getOrMakeFidesCookie = (
   // Check for an existing cookie for this device
   const cookieString = getCookie(CONSENT_COOKIE_NAME, CODEC);
   if (!cookieString) {
+    debugLog(
+      debug,
+      `No existing Fides consent cookie found, returning defaults.`,
+      cookieString
+    );
     return defaultCookie;
   }
 
@@ -144,7 +149,12 @@ export const getOrMakeFidesCookie = (
       ...parsedCookie.consent,
     };
     parsedCookie.consent = updatedConsent;
-    debugLog(debug, `Constructed Fides consent cookie`, parsedCookie);
+    // since console.log is synchronous, we stringify to accurately read the parsedCookie obj
+    debugLog(
+      debug,
+      `Applied existing consent to data from existing Fides consent cookie.`,
+      JSON.stringify(parsedCookie)
+    );
     return parsedCookie;
   } catch (err) {
     // eslint-disable-next-line no-console
@@ -161,7 +171,7 @@ export const getOrMakeFidesCookie = (
  *   example.com -> example.com
  *   localhost -> localhost
  *
- * NOTE: This won't handled second-level domains like co.uk:
+ * NOTE: This won't handle second-level domains like co.uk:
  *   privacy.example.co.uk -> co.uk # ERROR
  *
  * (see https://github.com/ethyca/fides/issues/2072)
@@ -186,34 +196,35 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
 };
 
 /**
- * Generate the *default* consent preferences for this session, based on:
+ * Builds consent preferences for this session, based on:
  * 1) context: browser context, which can automatically override those defaults
  *    in some cases (e.g. global privacy control => false)
  * 2) experience: current experience-based consent configuration.
  *
- * Returns the final set of "defaults" that can then be changed according to the
+ * Returns cookie consent that can then be changed according to the
  * user's preferences.
  */
-export const makeConsentDefaultsForExperiences = (
+export const buildCookieConsentForExperiences = (
   experience: PrivacyExperience,
   context: ConsentContext,
   debug: boolean
-) => {
-  const defaults: CookieKeyConsent = {};
+): CookieKeyConsent => {
+  const cookieConsent: CookieKeyConsent = {};
   if (!experience.privacy_notices) {
-    return defaults;
+    return cookieConsent;
   }
   experience.privacy_notices.forEach(
-    ({ notice_key, default_preference, has_gpc_flag }) => {
-      defaults[notice_key] = resolveConsentValue(
+    ({ notice_key, current_preference, default_preference, has_gpc_flag }) => {
+      cookieConsent[notice_key] = resolveConsentValue(
         default_preference,
         context,
+        current_preference,
         has_gpc_flag
       );
     }
   );
-  debugLog(debug, `Returning defaults for experiences.`, defaults);
-  return defaults;
+  debugLog(debug, `Returning cookie consent for experiences.`, cookieConsent);
+  return cookieConsent;
 };
 
 /**
@@ -230,7 +241,7 @@ export const makeConsentDefaultsLegacy = (
   config: LegacyConsentConfig | undefined,
   context: ConsentContext,
   debug: boolean
-) => {
+): CookieKeyConsent => {
   const defaults: CookieKeyConsent = {};
   config?.options.forEach(({ cookieKeys, default: current }) => {
     if (current === undefined) {
