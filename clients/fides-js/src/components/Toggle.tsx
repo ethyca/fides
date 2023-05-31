@@ -10,7 +10,7 @@ const Toggle = ({
   name: string;
   id: string;
   checked: boolean;
-  onChange: (noticeId: string) => void;
+  onChange: (noticeKey: string) => void;
 }) => {
   const labelId = `toggle-${id}`;
   return (

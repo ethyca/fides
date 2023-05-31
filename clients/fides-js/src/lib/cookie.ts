@@ -1,9 +1,13 @@
 import { v4 as uuidv4 } from "uuid";
 import { getCookie, setCookie, Types } from "typescript-cookie";
 
-import { ConsentConfig } from "./consent-config";
 import { ConsentContext } from "./consent-context";
-import { resolveConsentValue } from "./consent-value";
+import {
+  resolveConsentValue,
+  resolveLegacyConsentValue,
+} from "./consent-value";
+import { LegacyConsentConfig, PrivacyExperience } from "./consent-types";
+import { debugLog } from "./consent-utils";
 
 /**
  * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
@@ -98,7 +102,8 @@ export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
  * `saveFidesCookie` with a valid cookie after editing the values.
  */
 export const getOrMakeFidesCookie = (
-  defaults?: CookieKeyConsent
+  defaults?: CookieKeyConsent,
+  debug: boolean = false
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults);
@@ -110,11 +115,16 @@ export const getOrMakeFidesCookie = (
   // Check for an existing cookie for this device
   const cookieString = getCookie(CONSENT_COOKIE_NAME, CODEC);
   if (!cookieString) {
+    debugLog(
+      debug,
+      `No existing Fides consent cookie found, returning defaults.`,
+      cookieString
+    );
     return defaultCookie;
   }
 
   try {
-    // Parse the cookie and check it's format; if it's structured like we
+    // Parse the cookie and check its format; if it's structured like we
     // expect, cast it directly. Otherwise, assume it's a previous version of
     // the cookie, which was strictly the consent key/value preferences
     let parsedCookie: FidesCookie;
@@ -139,10 +149,16 @@ export const getOrMakeFidesCookie = (
       ...parsedCookie.consent,
     };
     parsedCookie.consent = updatedConsent;
+    // since console.log is synchronous, we stringify to accurately read the parsedCookie obj
+    debugLog(
+      debug,
+      `Applied existing consent to data from existing Fides consent cookie.`,
+      JSON.stringify(parsedCookie)
+    );
     return parsedCookie;
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.error("Unable to read consent cookie: invalid JSON.", err);
+    debugLog(debug, `Unable to read consent cookie: invalid JSON.`, err);
     return defaultCookie;
   }
 };
@@ -155,7 +171,7 @@ export const getOrMakeFidesCookie = (
  *   example.com -> example.com
  *   localhost -> localhost
  *
- * NOTE: This won't handled second-level domains like co.uk:
+ * NOTE: This won't handle second-level domains like co.uk:
  *   privacy.example.co.uk -> co.uk # ERROR
  *
  * (see https://github.com/ethyca/fides/issues/2072)
@@ -180,8 +196,40 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
 };
 
 /**
+ * Builds consent preferences for this session, based on:
+ * 1) context: browser context, which can automatically override those defaults
+ *    in some cases (e.g. global privacy control => false)
+ * 2) experience: current experience-based consent configuration.
+ *
+ * Returns cookie consent that can then be changed according to the
+ * user's preferences.
+ */
+export const buildCookieConsentForExperiences = (
+  experience: PrivacyExperience,
+  context: ConsentContext,
+  debug: boolean
+): CookieKeyConsent => {
+  const cookieConsent: CookieKeyConsent = {};
+  if (!experience.privacy_notices) {
+    return cookieConsent;
+  }
+  experience.privacy_notices.forEach(
+    ({ notice_key, current_preference, default_preference, has_gpc_flag }) => {
+      cookieConsent[notice_key] = resolveConsentValue(
+        default_preference,
+        context,
+        current_preference,
+        has_gpc_flag
+      );
+    }
+  );
+  debugLog(debug, `Returning cookie consent for experiences.`, cookieConsent);
+  return cookieConsent;
+};
+
+/**
  * Generate the *default* consent preferences for this session, based on:
- * 1) config: current consent configuration, which defines the options and their
+ * 1) config: current legacy consent configuration, which defines the options and their
  *    default values (e.g. "data_sales" => true)
  * 2) context: browser context, which can automatically override those defaults
  *    in some cases (e.g. global privacy control => false)
@@ -189,20 +237,18 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
  * Returns the final set of "defaults" that can then be changed according to the
  * user's preferences.
  */
-export const makeConsentDefaults = ({
-  config,
-  context,
-}: {
-  config?: ConsentConfig;
-  context: ConsentContext;
-}): CookieKeyConsent => {
+export const makeConsentDefaultsLegacy = (
+  config: LegacyConsentConfig | undefined,
+  context: ConsentContext,
+  debug: boolean
+): CookieKeyConsent => {
   const defaults: CookieKeyConsent = {};
   config?.options.forEach(({ cookieKeys, default: current }) => {
     if (current === undefined) {
       return;
     }
 
-    const value = resolveConsentValue(current, context);
+    const value = resolveLegacyConsentValue(current, context);
 
     cookieKeys.forEach((cookieKey) => {
       const previous = defaults[cookieKey];
@@ -214,6 +260,6 @@ export const makeConsentDefaults = ({
       defaults[cookieKey] = previous && value;
     });
   });
-
+  debugLog(debug, `Returning defaults for legacy config.`, defaults);
   return defaults;
 };

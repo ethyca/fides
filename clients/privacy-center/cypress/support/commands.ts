@@ -28,6 +28,18 @@ Cypress.Commands.add("waitUntilCookieExists", (cookieName: string, ...args) => {
   );
 });
 
+Cypress.Commands.add("waitUntilFidesInitialized", (...args) => {
+  cy.waitUntil(
+    () =>
+      cy
+        .window()
+        .its("Fides")
+        .its("initialized")
+        .then(() => true),
+    ...args
+  );
+});
+
 Cypress.Commands.add("loadConfigFixture", (fixtureName: string, ...args) => {
   cy.getByTestId("logo");
   cy.fixture(fixtureName, ...args).then((config) => {
@@ -99,6 +111,19 @@ declare global {
        */
       waitUntilCookieExists(
         cookieName: string,
+        options?: Partial<
+          Cypress.Loggable &
+            Cypress.Timeoutable &
+            Cypress.Withinable &
+            Cypress.Shadow
+        >
+      ): Chainable<boolean>;
+      /**
+       * Custom command to wait until Fides consent script is fully initialized.
+       *
+       * @example cy.waitUntilFidesInitialized();
+       */
+      waitUntilFidesInitialized(
         options?: Partial<
           Cypress.Loggable &
             Cypress.Timeoutable &

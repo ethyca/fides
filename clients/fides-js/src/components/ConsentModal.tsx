@@ -26,11 +26,11 @@ const ConsentModal = ({
   experience: ExperienceConfig;
   notices: PrivacyNotice[];
   onClose: () => void;
-  onSave: (enabledNoticeIds: Array<PrivacyNotice["id"]>) => void;
+  onSave: (enabledNoticeKeys: Array<PrivacyNotice["notice_key"]>) => void;
   onAcceptAll: () => void;
   onRejectAll: () => void;
 }) => {
-  const initialEnabledNoticeIds = useMemo(
+  const initialEnabledNoticeKeys = useMemo(
     () =>
       Object.keys(window.Fides.consent).filter(
         (key) => window.Fides.consent[key]
@@ -38,12 +38,12 @@ const ConsentModal = ({
     []
   );
 
-  const [enabledNoticeIds, setEnabledNoticeIds] = useState<
-    Array<PrivacyNotice["id"]>
-  >(initialEnabledNoticeIds);
+  const [enabledNoticeKeys, setEnabledNoticeKeys] = useState<
+    Array<PrivacyNotice["notice_key"]>
+  >(initialEnabledNoticeKeys);
 
   const handleSave = () => {
-    onSave(enabledNoticeIds);
+    onSave(enabledNoticeKeys);
     onClose();
   };
 
@@ -75,8 +75,8 @@ const ConsentModal = ({
           <div className="modal-notices">
             <NoticeToggles
               notices={notices}
-              enabledNoticeIds={enabledNoticeIds}
-              onChange={setEnabledNoticeIds}
+              enabledNoticeKeys={enabledNoticeKeys}
+              onChange={setEnabledNoticeKeys}
             />
           </div>
           <div className="modal-button-group">

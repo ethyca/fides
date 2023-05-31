@@ -1,10 +1,8 @@
-import { ConsentConfig } from "./consent-config";
-
 export const FIDES_MODAL_LINK = "fides-consent-modal-link";
 
 export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.
-  consent?: ConsentConfig;
+  consent?: LegacyConsentConfig;
   // Set the "experience" to be used for this Fides.js instance -- overrides the "legacy" config.
   // If set, Fides.js will fetch neither experience config nor user geolocation.
   // If not set, Fides.js will fetch its own experience config.
@@ -33,7 +31,28 @@ export type FidesOptions = {
 
   // URL for the Privacy Center, used to customize consent preferences. Required.
   privacyCenterUrl: string;
+
+  // URL for the Fides API, used to fetch and save consent preferences. Required.
+  fidesApiUrl: string;
 };
+
+export class SaveConsentPreference {
+  consentPreference: UserConsentPreference;
+
+  noticeHistoryId: string;
+
+  noticeKey: string;
+
+  constructor(
+    noticeKey: string,
+    noticeHistoryId: string,
+    consentPreference: UserConsentPreference
+  ) {
+    this.noticeKey = noticeKey;
+    this.noticeHistoryId = noticeHistoryId;
+    this.consentPreference = consentPreference;
+  }
+}
 
 export type PrivacyExperience = {
   disabled?: boolean;
@@ -90,8 +109,9 @@ export type PrivacyNotice = {
   version: number;
   privacy_notice_history_id: string;
   default_preference: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
+  current_preference?: UserConsentPreference | null;
+  outdated_preference?: UserConsentPreference | null;
+  notice_key: string;
 };
 
 export enum EnforcementLevel {
@@ -141,16 +161,20 @@ export enum ButtonType {
   TERTIARY = "tertiary",
 }
 
-export type PrivacyPreferencesCreateWithCode = {
-  // TODO: update this schema
+export enum ConsentMethod {
+  button = "button",
+  gpc = "gpc",
+  individual_notice = "api",
+}
+
+export type PrivacyPreferencesRequest = {
   browser_identity: Identity;
   code?: string;
   preferences: Array<ConsentOptionCreate>;
   policy_key?: string; // Will use default consent policy if not supplied
-  request_origin?: RequestOrigin;
-  url_recorded?: string;
-  user_agent?: string;
+  privacy_experience_history_id?: string;
   user_geography?: string;
+  method?: ConsentMethod;
 };
 
 export type ConsentOptionCreate = {
@@ -171,3 +195,34 @@ export enum RequestOrigin {
   overlay = "overlay",
   api = "api",
 }
+
+// ------------------LEGACY TYPES BELOW -------------------
+
+export type ConditionalValue = {
+  value: boolean;
+  globalPrivacyControl: boolean;
+};
+
+/**
+ * A consent value can be a boolean:
+ *  - `true`: consent/opt-in
+ *  - `false`: revoke/opt-out
+ *
+ * A consent value can also be context-dependent, which means it will be decided based on
+ * information about the user's environment (browser). The `ConditionalValue` object maps the
+ * context conditions to the value that should be used:
+ *  - `value`: The default value if no context applies.
+ *  - `globalPrivacyControl`: The value to use if the user's browser has Global Privacy Control
+ *    enabled.
+ */
+export type ConsentValue = boolean | ConditionalValue;
+
+export type ConsentOption = {
+  cookieKeys: string[];
+  default?: ConsentValue;
+  fidesDataUseKey: string;
+};
+
+export type LegacyConsentConfig = {
+  options: ConsentOption[];
+};

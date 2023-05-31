@@ -1,25 +1,32 @@
-import { FunctionComponent, h } from "preact";
+import { h, FunctionComponent } from "preact";
 import { useState } from "preact/hooks";
 import {
-  PrivacyExperience,
+  ConsentMethod,
   FidesOptions,
+  PrivacyExperience,
   PrivacyNotice,
-  UserGeolocation,
+  SaveConsentPreference,
 } from "../lib/consent-types";
 import ConsentBanner from "./ConsentBanner";
-import { CookieKeyConsent } from "../lib/cookie";
 import ConsentModal from "./ConsentModal";
 
 import { updateConsentPreferences } from "../lib/preferences";
+import { transformConsentToFidesUserPreference } from "../lib/consent-utils";
+import { FidesCookie } from "../lib/cookie";
 
 export interface OverlayProps {
-  consentDefaults: CookieKeyConsent;
   options: FidesOptions;
   experience: PrivacyExperience;
-  geolocation?: UserGeolocation;
+  cookie: FidesCookie;
+  fidesRegionString: string;
 }
 
-const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
+const Overlay: FunctionComponent<OverlayProps> = ({
+  experience,
+  options,
+  fidesRegionString,
+  cookie,
+}) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
   if (!experience.experience_config) {
@@ -29,23 +36,70 @@ const Overlay: FunctionComponent<OverlayProps> = ({ experience }) => {
   const privacyNotices = experience.privacy_notices ?? [];
 
   const onAcceptAll = () => {
-    const allNoticeIds = privacyNotices.map((notice) => notice.id);
+    const consentPreferencesToSave = new Array<SaveConsentPreference>();
+    privacyNotices.forEach((notice) => {
+      consentPreferencesToSave.push(
+        new SaveConsentPreference(
+          notice.notice_key,
+          notice.privacy_notice_history_id,
+          transformConsentToFidesUserPreference(true, notice.consent_mechanism)
+        )
+      );
+    });
     updateConsentPreferences({
-      privacyNotices,
-      enabledPrivacyNoticeIds: allNoticeIds,
+      consentPreferencesToSave,
+      experienceHistoryId: experience.privacy_experience_history_id,
+      fidesApiUrl: options.fidesApiUrl,
+      consentMethod: ConsentMethod.button,
+      userLocationString: fidesRegionString,
+      cookie,
     });
   };
 
   const onRejectAll = () => {
-    updateConsentPreferences({ privacyNotices, enabledPrivacyNoticeIds: [] });
+    const consentPreferencesToSave = new Array<SaveConsentPreference>();
+    privacyNotices.forEach((notice) => {
+      consentPreferencesToSave.push(
+        new SaveConsentPreference(
+          notice.notice_key,
+          notice.privacy_notice_history_id,
+          transformConsentToFidesUserPreference(false, notice.consent_mechanism)
+        )
+      );
+    });
+    updateConsentPreferences({
+      consentPreferencesToSave,
+      experienceHistoryId: experience.privacy_experience_history_id,
+      fidesApiUrl: options.fidesApiUrl,
+      consentMethod: ConsentMethod.button,
+      userLocationString: fidesRegionString,
+      cookie,
+    });
   };
 
   const onSavePreferences = (
-    enabledPrivacyNoticeIds: Array<PrivacyNotice["id"]>
+    enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>
   ) => {
+    const consentPreferencesToSave = new Array<SaveConsentPreference>();
+    privacyNotices.forEach((notice) => {
+      consentPreferencesToSave.push(
+        new SaveConsentPreference(
+          notice.notice_key,
+          notice.privacy_notice_history_id,
+          transformConsentToFidesUserPreference(
+            enabledPrivacyNoticeKeys.includes(notice.notice_key),
+            notice.consent_mechanism
+          )
+        )
+      );
+    });
     updateConsentPreferences({
-      privacyNotices,
-      enabledPrivacyNoticeIds,
+      consentPreferencesToSave,
+      experienceHistoryId: experience.privacy_experience_history_id,
+      fidesApiUrl: options.fidesApiUrl,
+      consentMethod: ConsentMethod.button,
+      userLocationString: fidesRegionString,
+      cookie,
     });
   };
 
