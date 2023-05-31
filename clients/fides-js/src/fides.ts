@@ -168,10 +168,7 @@ const experienceIsValid = (
     );
     return false;
   }
-  // Check if there are any notices within the experience that do not have a user preference
-  return effectiveExperience.privacy_notices.some(
-    (notice) => notice.current_preference == null
-  );
+  return true;
 };
 
 /**
@@ -230,12 +227,20 @@ const init = async ({
   }
 
   if (shouldInitOverlay && experienceIsValid(effectiveExperience, options)) {
-    await initOverlay(<OverlayProps>{
-      experience: effectiveExperience,
-      fidesRegionString,
-      cookie,
-      options,
-    }).catch(() => {});
+    // Check if there are any notices within the experience that do not have a user preference
+    const noticesWithNoUserPreferenceExist: boolean = Boolean(
+      effectiveExperience?.privacy_notices?.some(
+        (notice) => notice.current_preference == null
+      )
+    );
+    if (noticesWithNoUserPreferenceExist) {
+      await initOverlay(<OverlayProps>{
+        experience: effectiveExperience,
+        fidesRegionString,
+        cookie,
+        options,
+      }).catch(() => {});
+    }
   }
 
   // Initialize the window.Fides object
