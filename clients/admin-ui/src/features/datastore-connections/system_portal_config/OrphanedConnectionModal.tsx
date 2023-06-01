@@ -1,5 +1,7 @@
 import {
+  Box,
   Button,
+  Flex,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -11,25 +13,25 @@ import {
   Stack,
   Text,
   useDisclosure,
-  Flex,
-  Box,
 } from "@fidesui/react";
-import React, { useState, useMemo } from "react";
-import {
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
-  ConnectionType,
-} from "~/types/api";
+import { useAPIHelper } from "common/hooks";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
-import { patchConnectionConfig } from "./forms/ConnectorParameters";
-import { usePatchSystemConnectionConfigsMutation } from "~/features/system";
 import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
+import React, { useMemo, useState } from "react";
+
 import { useAppSelector } from "~/app/hooks";
 import {
   selectConnectionTypeFilters,
   useGetAllConnectionTypesQuery,
 } from "~/features/connection-type";
-import { useAPIHelper } from "common/hooks";
+import { usePatchSystemConnectionConfigsMutation } from "~/features/system";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  ConnectionType,
+} from "~/types/api";
+
+import { patchConnectionConfig } from "./forms/ConnectorParameters";
 
 type DataConnectionProps = {
   connectionConfigs: ConnectionConfigurationResponse[];
@@ -92,10 +94,9 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
         );
 
         setSelectedConnectionConfig(null);
-        onClose()
+        onClose();
       }
     } catch (e) {
-      console.log(e);
       handleError(e);
     }
   };

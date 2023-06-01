@@ -24,6 +24,7 @@ import {
   ConnectionTypeSecretSchemaReponse,
 } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
+import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import React, { useEffect, useRef } from "react";
 
@@ -42,7 +43,7 @@ import { fillInDefaults } from "./helpers";
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
 type ConnectorParametersFormProps = {
-  secretsSchema: ConnectionTypeSecretSchemaReponse;
+  secretsSchema?: ConnectionTypeSecretSchemaReponse;
   defaultValues: ConnectionConfigFormValues;
   isSubmitting: boolean;
   /**
@@ -141,7 +142,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       name={key}
       key={key}
       validate={
-        secretsSchema.required?.includes(key) || item.type === "integer"
+        secretsSchema?.required?.includes(key) || item.type === "integer"
           ? (value: string) =>
               validateField(item.title, value, item.allOf?.[0].$ref)
           : false
@@ -150,7 +151,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {({ field, form }: { field: FieldInputProps<string>; form: any }) => (
         <FormControl
           display="flex"
-          isRequired={secretsSchema.required?.includes(key)}
+          isRequired={secretsSchema?.required?.includes(key)}
           isInvalid={form.errors[key] && form.touched[key]}
         >
           {getFormLabel(key, item.title)}
@@ -218,19 +219,21 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     // convert each property value of type FidesopsDatasetReference
     // from a dot delimited string to a FidesopsDatasetReference
     const updatedValues = { ...values };
-    Object.keys(secretsSchema.properties).forEach((key) => {
-      if (
-        secretsSchema.properties[key].allOf?.[0].$ref ===
-        FIDES_DATASET_REFERENCE
-      ) {
-        const referencePath = values[key].split(".");
-        updatedValues[key] = {
-          dataset: referencePath.shift(),
-          field: referencePath.join("."),
-          direction: "from",
-        };
-      }
-    });
+    if (secretsSchema) {
+      Object.keys(secretsSchema.properties).forEach((key) => {
+        if (
+          secretsSchema.properties[key].allOf?.[0].$ref ===
+          FIDES_DATASET_REFERENCE
+        ) {
+          const referencePath = values[key].split(".");
+          updatedValues[key] = {
+            dataset: referencePath.shift(),
+            field: referencePath.join("."),
+            direction: "from",
+          };
+        }
+      });
+    }
     onSaveClick(updatedValues, actions);
   };
 
@@ -318,65 +321,70 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               )}
             </Field>
             {/* Connection Identifier */}
-            <Field
-              id="instance_key"
-              name="instance_key"
-              validate={validateConnectionIdentifier}
-            >
-              {({ field }: { field: FieldInputProps<string> }) => (
-                <FormControl
-                  display="flex"
-                  isRequired
-                  isInvalid={
-                    props.errors.instance_key && props.touched.instance_key
-                  }
-                >
-                  {getFormLabel("instance_key", "Connection Identifier")}
-                  <VStack align="flex-start" w="inherit">
-                    <Input
-                      {...field}
-                      autoComplete="off"
-                      color="gray.700"
-                      isDisabled={!!connectionConfig?.key}
-                      placeholder={`A unique identifier for your new ${
-                        connectionOption!.human_readable
-                      } connection`}
-                      size="sm"
-                    />
-                    <FormErrorMessage>
-                      {props.errors.instance_key}
-                    </FormErrorMessage>
-                  </VStack>
-                  <Tooltip
-                    aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
-                    hasArrow
-                    label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
-                    placement="right-start"
-                    openDelay={500}
+            {connectionOption.type !== SystemType.MANUAL ? (
+              <Field
+                id="instance_key"
+                name="instance_key"
+                validate={validateConnectionIdentifier}
+              >
+                {({ field }: { field: FieldInputProps<string> }) => (
+                  <FormControl
+                    display="flex"
+                    isRequired
+                    isInvalid={
+                      props.errors.instance_key && props.touched.instance_key
+                    }
                   >
-                    <Flex alignItems="center" h="32px">
-                      <CircleHelpIcon
-                        marginLeft="8px"
-                        _hover={{ cursor: "pointer" }}
+                    {getFormLabel("instance_key", "Connection Identifier")}
+                    <VStack align="flex-start" w="inherit">
+                      <Input
+                        {...field}
+                        autoComplete="off"
+                        color="gray.700"
+                        isDisabled={!!connectionConfig?.key}
+                        placeholder={`A unique identifier for your new ${
+                          connectionOption!.human_readable
+                        } connection`}
+                        size="sm"
                       />
-                    </Flex>
-                  </Tooltip>
-                </FormControl>
-              )}
-            </Field>
+                      <FormErrorMessage>
+                        {props.errors.instance_key}
+                      </FormErrorMessage>
+                    </VStack>
+                    <Tooltip
+                      aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
+                      hasArrow
+                      label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
+                      placement="right-start"
+                      openDelay={500}
+                    >
+                      <Flex alignItems="center" h="32px">
+                        <CircleHelpIcon
+                          marginLeft="8px"
+                          _hover={{ cursor: "pointer" }}
+                        />
+                      </Flex>
+                    </Tooltip>
+                  </FormControl>
+                )}
+              </Field>
+            ) : null}
             {[SystemType.SAAS, SystemType.DATABASE].indexOf(
               connectionOption.type
             ) > -1 && !isCreatingConnectionConfig ? (
               <DatasetConfigField dropdownOptions={datasetDropdownOptions} />
             ) : null}
             {/* Dynamic connector secret fields */}
-            {Object.entries(secretsSchema.properties).map(([key, item]) => {
-              if (key === "advanced_settings") {
-                // TODO: advanced settings
-                return null;
-              }
-              return getFormField(key, item);
-            })}
+
+            {connectionOption.type !== SystemType.MANUAL && secretsSchema
+              ? Object.entries(secretsSchema.properties).map(([key, item]) => {
+                  if (key === "advanced_settings") {
+                    // TODO: advanced settings
+                    return null;
+                  }
+                  return getFormField(key, item);
+                })
+              : null}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
                 colorScheme="gray.700"
@@ -392,6 +400,10 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               >
                 {testButtonLabel}
               </Button>
+              {connectionOption.type === SystemType.MANUAL &&
+              connectionConfig ? (
+                <DSRCustomizationModal connectionConfig={connectionConfig} />
+              ) : null}
               <Button
                 bg="primary.800"
                 color="white"

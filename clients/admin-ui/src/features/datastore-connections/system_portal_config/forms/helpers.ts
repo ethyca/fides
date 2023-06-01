@@ -5,19 +5,21 @@ import { ConnectionTypeSecretSchemaReponse } from "~/features/connection-type/ty
  */
 export const fillInDefaults = (
   defaultValues: Record<string, any>,
-  connectionSchema: {
+  connectionSchema?: {
     properties: ConnectionTypeSecretSchemaReponse["properties"];
   }
 ) => {
   const filledInValues = { ...defaultValues };
-  Object.entries(connectionSchema.properties).forEach((key) => {
-    const [name, schema] = key;
+  if (connectionSchema) {
+    Object.entries(connectionSchema.properties).forEach((key) => {
+      const [name, schema] = key;
 
-    if (schema.type === "integer") {
-      filledInValues[name] = schema.default ? Number(schema.default) : 0;
-    } else {
-      filledInValues[name] = schema.default ?? "";
-    }
-  });
+      if (schema.type === "integer") {
+        filledInValues[name] = schema.default ? Number(schema.default) : 0;
+      } else {
+        filledInValues[name] = schema.default ?? "";
+      }
+    });
+  }
   return filledInValues;
 };

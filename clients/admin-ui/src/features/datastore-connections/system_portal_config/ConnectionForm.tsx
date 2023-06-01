@@ -3,8 +3,10 @@ import Restrict from "common/Restrict";
 import ConnectionListDropdown, {
   useConnectionListDropDown,
 } from "datastore-connections/system_portal_config/ConnectionListDropdown";
-import React, { useState, useEffect } from "react";
+import OrphanedConnectionModal from "datastore-connections/system_portal_config/OrphanedConnectionModal";
+import React, { useEffect, useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import ConnectorTemplateUploadModal from "~/features/connector-templates/ConnectorTemplateUploadModal";
 import { ConnectorParameters } from "~/features/datastore-connections/system_portal_config/forms/ConnectorParameters";
 import {
@@ -13,12 +15,11 @@ import {
   ScopeRegistryEnum,
   SystemType,
 } from "~/types/api";
-import OrphanedConnectionModal from "datastore-connections/system_portal_config/OrphanedConnectionModal";
+
 import {
-  useGetAllDatastoreConnectionsQuery,
   selectDatastoreConnectionFilters,
+  useGetAllDatastoreConnectionsQuery,
 } from "../datastore-connection.slice";
-import { useAppSelector } from "~/app/hooks";
 
 export type ConnectionOption = {
   label: string;
@@ -56,7 +57,6 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   8. Add in flow for orphaned connectors
   */
 
-  console.log(orphanedConnectionConfigs);
   return (
     <>
       <Flex>
@@ -112,9 +112,13 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
         />
       ) : null}
       {selectedConnectionOption?.type === SystemType.MANUAL &&
-      selectedConnectionOption
-        ? "Manual Form"
-        : null}
+      selectedConnectionOption ? (
+        <ConnectorParameters
+          connectionOption={selectedConnectionOption}
+          connectionConfig={connectionConfig}
+          systemFidesKey={systemFidesKey}
+        />
+      ) : null}
       {selectedConnectionOption?.type === SystemType.EMAIL &&
       selectedConnectionOption ? (
         <ConnectorParameters

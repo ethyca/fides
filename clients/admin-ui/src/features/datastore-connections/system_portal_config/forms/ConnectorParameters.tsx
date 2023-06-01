@@ -85,7 +85,6 @@ export const patchConnectionConfig = async (
   connectionConfig: ConnectionConfigurationResponse,
   patchFunc: any
 ) => {
-  console.log("values: ", values, "cC", connectionConfig);
   const key =
     [SystemType.DATABASE, SystemType.EMAIL].indexOf(connectionOption.type) > -1
       ? formatKey(values.instance_key as string)
@@ -244,17 +243,20 @@ export const useConnectorForm = ({
           // eslint-disable-next-line prefer-destructuring,no-param-reassign
           connectionConfig = payload.succeeded[0];
         }
-        const secretsPayload =
-          connectionOption.type === SystemType.EMAIL
-            ? { ...values, ...STUBBED_ADVANCED_SETTINGS }
-            : values;
 
-        await upsertConnectionConfigSecrets(
-          secretsPayload,
-          secretsSchema!,
-          payload.succeeded[0].key,
-          updateDatastoreConnectionSecrets
-        );
+        if (connectionOption.type !== SystemType.MANUAL) {
+          const secretsPayload =
+            connectionOption.type === SystemType.EMAIL
+              ? { ...values, ...STUBBED_ADVANCED_SETTINGS }
+              : values;
+
+          await upsertConnectionConfigSecrets(
+            secretsPayload,
+            secretsSchema!,
+            payload.succeeded[0].key,
+            updateDatastoreConnectionSecrets
+          );
+        }
       }
 
       if (
@@ -347,7 +349,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     datasetYaml: undefined,
   };
 
-  if (!secretsSchema) {
+  if (!secretsSchema && connectionOption.type !== SystemType.MANUAL) {
     return null;
   }
 
