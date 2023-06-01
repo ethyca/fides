@@ -238,7 +238,7 @@ def consent_request_verify(
         HTTP_200_OK: {
             "consent": [
                 {
-                    "data_use": "advertising",
+                    "data_use": "marketing.advertising",
                     "data_use_description": "We may use some of your personal information for advertising performance "
                     "analysis and audience modeling for ongoing advertising which may be "
                     "interpreted as 'Data Sharing' under some regulations.",

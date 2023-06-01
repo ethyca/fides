@@ -28,8 +28,8 @@ class TestShouldOptIntoService:
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
-        Privacy Notice Data Use = "advertising"
-        System Data Use = "advertising"
+        Privacy Notice Data Use = "marketing.advertising"
+        System Data Use = "marketing.advertising"
         """
         pref = PrivacyPreferenceHistory.create(
             db=db,
@@ -65,12 +65,12 @@ class TestShouldOptIntoService:
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
-        Privacy Notice Data Use = "provide"
-        System Data Use = "provide.service.operations"
+        Privacy Notice Data Use = "essential"
+        System Data Use = "essential.service.operations"
         """
         privacy_declarations = system.privacy_declarations
         system.privacy_declarations[0].update(
-            db=db, data={"data_use": "provide.service.operations"}
+            db=db, data={"data_use": "essential.service.operations"}
         )
 
         system.privacy_declarations = privacy_declarations
@@ -110,11 +110,11 @@ class TestShouldOptIntoService:
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
-        Privacy Notice Data Use = "provide.service.operations"
-        System Data Use = "provide"
+        Privacy Notice Data Use = "essential.service.operations"
+        System Data Use = "essential"
         """
         privacy_declarations = system.privacy_declarations
-        system.privacy_declarations[0].update(db=db, data={"data_use": "provide"})
+        system.privacy_declarations[0].update(db=db, data={"data_use": "essential"})
         system.privacy_declarations = privacy_declarations
         flag_modified(system, "privacy_declarations")
         system.save(db)
@@ -152,8 +152,8 @@ class TestShouldOptIntoService:
     ):
         """
         Privacy Notice Enforcement Level = "frontend"
-        Privacy Notice Data Use = "provided.service" but not checked
-        System Data Use = "advertising"
+        Privacy Notice Data Use = "essential.service" but not checked
+        System Data Use = "marketing.advertising"
         """
         pref = PrivacyPreferenceHistory.create(
             db=db,
@@ -187,7 +187,7 @@ class TestShouldOptIntoService:
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
-        Privacy Notice Data Use = "provide.service.operations"
+        Privacy Notice Data Use = "essential.service.operations"
         """
 
         pref = PrivacyPreferenceHistory.create(
@@ -217,8 +217,8 @@ class TestShouldOptIntoService:
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
-        Privacy Notice Data Use = "advertising" but not checked w/ no system
-        other Privacy Notice Data Use = "provide" but not checked w/ no system
+        Privacy Notice Data Use = "marketing.advertising" but not checked w/ no system
+        other Privacy Notice Data Use = "essential" but not checked w/ no system
         """
         pref_1 = PrivacyPreferenceHistory.create(
             db=db,
@@ -260,7 +260,7 @@ class TestShouldOptIntoService:
         Test old workflow where executable preferences were cached on PrivacyRequest.consent_preferences
         """
         privacy_request_with_consent_policy.consent_preferences = [
-            {"data_use": "advertising", "opt_in": False}
+            {"data_use": "marketing.advertising", "opt_in": False}
         ]
         collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
             system, privacy_request_with_consent_policy
@@ -269,7 +269,7 @@ class TestShouldOptIntoService:
         assert filtered_preferences == []
 
         privacy_request_with_consent_policy.consent_preferences = [
-            {"data_use": "advertising", "opt_in": True}
+            {"data_use": "marketing.advertising", "opt_in": True}
         ]
         collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
             system, privacy_request_with_consent_policy
@@ -278,7 +278,7 @@ class TestShouldOptIntoService:
         assert filtered_preferences == []
 
         privacy_request_with_consent_policy.consent_preferences = [
-            {"data_use": "advertising", "opt_in": True},
+            {"data_use": "marketing.advertising", "opt_in": True},
             {"data_use": "improve", "opt_in": False},
         ]
         collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
