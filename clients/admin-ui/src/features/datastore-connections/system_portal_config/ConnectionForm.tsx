@@ -39,7 +39,10 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   } = useConnectionListDropDown({ connectionConfig });
   const filters = useAppSelector(selectDatastoreConnectionFilters);
 
-  const { data } = useGetAllDatastoreConnectionsQuery(filters);
+  const { data } = useGetAllDatastoreConnectionsQuery({
+    ...filters,
+    orphaned_from_system: true,
+  });
   const [orphanedConnectionConfigs, setOrphanedConnectionConfigs] = useState<
     ConnectionConfigurationResponse[]
   >([]);
