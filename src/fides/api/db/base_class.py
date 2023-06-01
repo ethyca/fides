@@ -175,14 +175,21 @@ class OrmWrappedFidesBase(FidesBase):
 
     @classmethod
     def filter(
-        cls: Type[T], db: Session, *, conditions: BinaryExpression | BooleanClauseList
+        cls: Type[T],
+        db: Session,
+        *,
+        conditions: BinaryExpression | BooleanClauseList,
     ) -> Query:
         """Fetch multiple models from a database table."""
         return db.query(cls).filter(conditions)
 
     @classmethod
     def create(
-        cls: Type[T], db: Session, *, data: dict[str, Any], check_name: bool = True
+        cls: Type[T],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = True,
     ) -> T:
         """Create a new row in the database."""
         # Build properly formatted key for applicable classes
