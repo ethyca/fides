@@ -133,18 +133,8 @@ div#fides-consent-banner-buttons {
   font-size: var(--fides-consent-overlay-font-size-buttons);
 }
 
-div#fides-consent-banner-buttons.fides-consent-banner-buttons-right {
+span.fides-consent-banner-buttons-right {
   float: right;
-}
-
-div#fides-consent-banner-buttons.fides-consent-banner-buttons-left {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--fides-consent-overlay-link-font-color);
-  text-decoration: underline;
-  cursor: pointer;
-  line-height: 2em;
 }
 
 button.fides-consent-banner-button {
@@ -194,6 +184,16 @@ button.fides-consent-banner-button.fides-consent-banner-button-secondary:hover {
   background: var(
     --fides-consent-overlay-secondary-button-background-hover-color
   );
+}
+
+button.fides-consent-banner-button.fides-consent-banner-button-tertiary {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--fides-consent-overlay-link-font-color);
+  text-decoration: underline;
+  cursor: pointer;
+  line-height: 2em;
 }
 
 /** Modal */
