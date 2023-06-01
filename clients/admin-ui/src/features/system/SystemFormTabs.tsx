@@ -125,7 +125,9 @@ const SystemFormTabs = ({
     if (
       index === 0 ||
       (index === 1 && tabIndex === 2) ||
-      (index === 2 && tabIndex === 1)
+      (index === 2 && tabIndex === 1) ||
+      index === 3 ||
+      tabIndex === 3
     ) {
       setTabIndex(index);
     } else {
