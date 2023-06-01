@@ -7,7 +7,6 @@ import {
 } from "~/types/api";
 
 import {
-  AccessLevel,
   ConnectionTestStatus,
   DisabledStatus,
   TestingStatus,
@@ -187,20 +186,6 @@ export type DatastoreConnectionStatus = {
   msg: string;
   test_status?: ConnectionTestStatus;
   failure_reason?: string;
-};
-
-export type DatastoreConnectionUpdate = {
-  name: string;
-  key: string;
-  disabled: boolean;
-  connection_type: ConnectionType;
-  access: AccessLevel;
-};
-
-export type SaasConfig = {
-  fides_key: string;
-  name: string;
-  type: string;
 };
 
 export type CreateSaasConnectionConfigRequest = {

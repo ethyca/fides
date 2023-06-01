@@ -49,7 +49,6 @@ const YamlEditorModal = ({
           <YamlEditor
             data={dataset ? [dataset] : []}
             isSubmitting={false}
-            onSubmit={() => {}}
             disabled={isDatasetSelected}
             onChange={onChange}
             isLoading={isLoading}
