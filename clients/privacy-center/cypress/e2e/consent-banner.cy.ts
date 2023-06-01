@@ -413,6 +413,7 @@ describe("Consent banner", () => {
     describe("when GPC flag is found, and notices apply to GPC", () => {
       beforeEach(() => {
         cy.on("window:before:load", (win) => {
+          // eslint-disable-next-line no-param-reassign
           win.navigator.globalPrivacyControl = true;
         });
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
@@ -505,6 +506,7 @@ describe("Consent banner", () => {
     describe("when GPC flag is found, and no notices apply to GPC", () => {
       beforeEach(() => {
         cy.on("window:before:load", (win) => {
+          // eslint-disable-next-line no-param-reassign
           win.navigator.globalPrivacyControl = true;
         });
         stubConfig({
@@ -542,8 +544,10 @@ describe("Consent banner", () => {
       });
       it("does not set user consent preference automatically", () => {
         // timeout means API call not made, which is expected
-        Cypress.on("fail", (error, runnable) => {
-          if (error.message.indexOf("Timed out retrying") !== 0) throw error;
+        Cypress.on("fail", (error) => {
+          if (error.message.indexOf("Timed out retrying") !== 0) {
+            throw error;
+          }
         });
         // check that preferences aren't sent to Fides API
         cy.wait("@patchPrivacyPreference", {
@@ -560,6 +564,7 @@ describe("Consent banner", () => {
     describe("when no GPC flag is found, and notices apply to GPC", () => {
       beforeEach(() => {
         cy.on("window:before:load", (win) => {
+          // eslint-disable-next-line no-param-reassign
           win.navigator.globalPrivacyControl = undefined;
         });
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
@@ -599,8 +604,10 @@ describe("Consent banner", () => {
 
       it("does not set user consent preference automatically", () => {
         // timeout means API call not made, which is expected
-        Cypress.on("fail", (error, runnable) => {
-          if (error.message.indexOf("Timed out retrying") !== 0) throw error;
+        Cypress.on("fail", (error) => {
+          if (error.message.indexOf("Timed out retrying") !== 0) {
+            throw error;
+          }
         });
         // check that preferences aren't sent to Fides API
         cy.wait("@patchPrivacyPreference", {
@@ -838,6 +845,7 @@ describe("Consent banner", () => {
     describe("when all notices have current user preference set and GPC flag exists", () => {
       beforeEach(() => {
         cy.on("window:before:load", (win) => {
+          // eslint-disable-next-line no-param-reassign
           win.navigator.globalPrivacyControl = true;
         });
         stubConfig({
