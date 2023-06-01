@@ -48,6 +48,9 @@ class ExperienceConfigSchema(FidesSchema):
     privacy_preferences_link_label: Optional[SafeStr] = Field(
         description="Overlay 'Privacy preferences link label'"
     )
+    regions: Optional[List[PrivacyNoticeRegion]] = Field(
+        description="Regions using this ExperienceConfig"
+    )
     reject_button_label: Optional[SafeStr] = Field(
         description="Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'"
     )
@@ -57,6 +60,16 @@ class ExperienceConfigSchema(FidesSchema):
     title: Optional[SafeStr] = Field(
         description="Overlay 'Banner title' or Privacy Center 'title'"
     )
+
+    @validator("regions")
+    @classmethod
+    def validate_regions(
+        cls, regions: List[PrivacyNoticeRegion]
+    ) -> List[PrivacyNoticeRegion]:
+        """Assert regions aren't duplicated."""
+        if regions and len(regions) != len(set(regions)):
+            raise ValueError("Duplicate regions found.")
+        return regions
 
 
 class ExperienceConfigCreate(ExperienceConfigSchema):
@@ -69,20 +82,9 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
     accept_button_label: SafeStr
     component: ComponentType
     description: SafeStr
-    regions: Optional[List[PrivacyNoticeRegion]]
     reject_button_label: SafeStr
     save_button_label: SafeStr
     title: SafeStr
-
-    @validator("regions")
-    @classmethod
-    def validate_regions(
-        cls, regions: List[PrivacyNoticeRegion]
-    ) -> List[PrivacyNoticeRegion]:
-        """Assert regions aren't duplicated."""
-        if regions and len(regions) != len(set(regions)):
-            raise ValueError("Duplicate regions found.")
-        return regions
 
     @root_validator
     def validate_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -110,25 +112,10 @@ class ExperienceConfigUpdate(ExperienceConfigSchema):
     Updating ExperienceConfig. Note that component cannot be updated once its created
     """
 
-    regions: Optional[List[PrivacyNoticeRegion]] = Field(
-        default=None,
-        description="If None, no edits will be made to regions.  If an empty list, all regions will be removed.",
-    )
-
     class Config:
         """Forbid extra values - specifically we don't want component to be updated here."""
 
         extra = Extra.forbid
-
-    @validator("regions")
-    @classmethod
-    def validate_regions(
-        cls, regions: Optional[List[PrivacyNoticeRegion]]
-    ) -> Optional[List[PrivacyNoticeRegion]]:
-        """Assert regions aren't duplicated."""
-        if regions and len(regions) != len(set(regions)):
-            raise ValueError("Duplicate regions found.")
-        return regions
 
 
 class ExperienceConfigSchemaWithId(ExperienceConfigSchema):
