@@ -67,6 +67,7 @@ class SQLConnector(BaseConnector[Engine]):
             raise NotImplementedError(
                 "SQL Connectors must define their secrets schema class"
             )
+        self.ssh_server: sshtunnel._ForwardServer = None
 
     @staticmethod
     def cursor_result_to_rows(results: CursorResult) -> List[Row]:
@@ -167,6 +168,8 @@ class SQLConnector(BaseConnector[Engine]):
         if self.db_client:
             logger.debug(" disposing of {}", self.__class__)
             self.db_client.dispose()
+        if self.ssh_server:
+            self.ssh_server.stop()
 
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
@@ -182,20 +185,28 @@ class SQLConnector(BaseConnector[Engine]):
         """Optionally override to set the schema for a given database that
         persists through the entire session"""
 
+    def create_ssh_tunnel(self, host: str, port: int) -> None:
+        """Creates an SSH Tunnel to forward ports as configured."""
+        with io.BytesIO(
+            CONFIG.security.bastion_server_ssh_pkey.encode("utf8")
+        ) as binary_file:
+            with io.TextIOWrapper(binary_file, encoding="utf8") as file_obj:
+                pkey = paramiko.RSAKey.from_private_key(file_obj=file_obj)
+        self.ssh_server = sshtunnel.SSHTunnelForwarder(
+            (CONFIG.security.bastion_server_host),
+            ssh_username=CONFIG.security.bastion_server_ssh_username,
+            ssh_pkey=pkey,
+            remote_bind_address=(
+                host,
+                port,
+            ),
+        )
+
 
 class PostgreSQLConnector(SQLConnector):
     """Connector specific to postgresql"""
 
     secrets_schema = PostgreSQLSchema
-
-    def __init__(self, configuration: ConnectionConfig):
-        """Instantiate a SQL-based connector"""
-        super().__init__(configuration)
-        if not self.secrets_schema:
-            raise NotImplementedError(
-                "SQL Connectors must define their secrets schema class"
-            )
-        self.ssh_server: sshtunnel._ForwardServer = None
 
     def build_uri(self) -> str:
         """Build URI of format postgresql://[user[:password]@][netloc][:port][/dbname]"""
@@ -228,35 +239,13 @@ class PostgreSQLConnector(SQLConnector):
         dbname = f"/{config.dbname}" if config.dbname else ""
         return f"postgresql://{user_password}{netloc}{port}{dbname}"
 
-    def close(self) -> None:
-        """Close any held resources"""
-        if self.db_client:
-            logger.debug(" disposing of {}", self.__class__)
-            self.db_client.dispose()
-        if self.ssh_server:
-            self.ssh_server.stop()
-
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
 
         config = self.secrets_schema(**self.configuration.secrets or {})
         if config.ssh_required and CONFIG.security.bastion_server_ssh_pkey:
-            with io.BytesIO(
-                CONFIG.security.bastion_server_ssh_pkey.encode("utf8")
-            ) as binary_file:
-                with io.TextIOWrapper(binary_file, encoding="utf8") as file_obj:
-                    pkey = paramiko.RSAKey.from_private_key(file_obj=file_obj)
-            self.ssh_server = sshtunnel.SSHTunnelForwarder(
-                (CONFIG.security.bastion_server_host),
-                ssh_username=CONFIG.security.bastion_server_ssh_username,
-                ssh_pkey=pkey,
-                remote_bind_address=(
-                    config.host,
-                    config.port,
-                ),
-            )
+            self.create_ssh_tunnel(host=config.host, port=config.port)
             self.ssh_server.start()
-
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
         else:
             uri = config.url or self.build_uri()
