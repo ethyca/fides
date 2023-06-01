@@ -42,6 +42,7 @@
         "email": "optional"
       },
       "title": "Manage your consent",
+      "modalTitle": "Manage your consent",
       "confirmButtonText": "Continue",
       "cancelButtonText": "Cancel"
     },
