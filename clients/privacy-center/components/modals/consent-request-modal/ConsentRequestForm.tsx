@@ -280,7 +280,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
 
         <ModalFooter pb={6}>
           <Button variant="outline" flex="1" mr={3} size="sm" onClick={onClose}>
-            Cancel
+            {config.consent?.button.cancelButtonText || "Cancel"}
           </Button>
           <Button
             type="submit"
@@ -293,7 +293,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
             isDisabled={isSubmitting || !(isValid && dirtyCheck)}
             size="sm"
           >
-            Continue
+            {config.consent?.button.confirmButtonText || "Continue"}
           </Button>
         </ModalFooter>
       </chakra.form>

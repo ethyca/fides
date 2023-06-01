@@ -45,6 +45,8 @@ export type ConsentConfig = {
   button: {
     description: string;
     description_subtext?: string[];
+    confirmButtonText?: string;
+    cancelButtonText?: string;
     icon_path: string;
     identity_inputs?: IdentityInputs;
     title: string;
