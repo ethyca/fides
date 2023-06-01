@@ -48,7 +48,7 @@
     "msw": "^1.2.1",
     "narrow-minded": "^1.2.1",
     "next": "^12.3.4",
-    "react": "^17.0.2",
+    "react": "^18.2.0",
     "react-cytoscapejs": "^2.0.0",
     "react-dnd": "^15.0.1",
     "react-dnd-html5-backend": "^16.0.1",
