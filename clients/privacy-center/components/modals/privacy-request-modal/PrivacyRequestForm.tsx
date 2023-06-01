@@ -308,7 +308,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
 
         <ModalFooter pb={6}>
           <Button variant="outline" flex="1" mr={3} size="sm" onClick={onClose}>
-            Cancel
+            {action.confirmButtonText || "Cancel"}
           </Button>
           <Button
             type="submit"
@@ -321,7 +321,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
             isDisabled={isSubmitting || !(isValid && dirty)}
             size="sm"
           >
-            Continue
+            {action.confirmButtonText || "Continue"}
           </Button>
         </ModalFooter>
       </chakra.form>

@@ -66,6 +66,8 @@ export type PrivacyRequestOption = {
   title: string;
   description: string;
   description_subtext?: string[];
+  confirmButtonText?: string;
+  cancelButtonText?: string;
   identity_inputs?: IdentityInputs;
 };
 
