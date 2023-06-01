@@ -14,6 +14,17 @@ import { updateConsentPreferences } from "../lib/preferences";
 import { transformConsentToFidesUserPreference } from "../lib/consent-utils";
 import { FidesCookie } from "../lib/cookie";
 
+import styles from "../lib/overlay.module.css" assert { type: "css" };
+
+if (typeof window !== 'undefined') {
+  // @ts-ignore
+  // Create an empty "constructed" stylesheet
+  const sheet = new CSSStyleSheet();
+  // Apply a rule to the sheet
+  sheet.replaceSync(JSON.stringify(styles));
+  document.adoptedStyleSheets = [sheet];
+}
+
 export interface OverlayProps {
   options: FidesOptions;
   experience: PrivacyExperience;
