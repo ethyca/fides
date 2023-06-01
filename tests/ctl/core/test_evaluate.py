@@ -580,12 +580,12 @@ def test_failed_evaluation_error_message(
                               'qualifier '
                               '(aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified) '
                               'for data uses '
-                              '(third_party_sharing) and '
+                              '(marketing.adversiting.third_party) and '
                               'subjects (customer)',
                     'violating_attributes': { 'data_categories': [ 'user.political_opinion'],
                                               'data_qualifier': 'aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified',
                                               'data_subjects': ['customer'],
-                                              'data_uses': [ 'third_party_sharing']}}]}
+                                              'data_uses': [ 'marketing.advertising.third_party']}}]}
                                               """
     )
     with pytest.raises(SystemExit):
@@ -598,7 +598,7 @@ def test_failed_evaluation_error_message(
     captured_out = string_cleaner(capsys.readouterr().out)
     print(f"Expected output:\n{expected_error_message}")
     print(f"Captured output:\n{captured_out}")
-    assert expected_error_message in captured_out
+    assert captured_out.endswith(expected_error_message)
 
 
 @pytest.mark.unit
