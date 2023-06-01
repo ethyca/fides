@@ -1,4 +1,4 @@
-import { Button, Flex, Spacer, useDisclosure } from "@fidesui/react";
+import { Box,Button, Flex, Spacer, useDisclosure } from "@fidesui/react";
 import Restrict from "common/Restrict";
 import ConnectionListDropdown, {
   useConnectionListDropDown,
@@ -58,8 +58,8 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   */
 
   return (
-    <>
-      <Flex>
+    <Box id="con-wrapper" px={6}>
+      <Flex py={5}>
         <ConnectionListDropdown
           list={dropDownOptions}
           label="Connection Type"
@@ -127,7 +127,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           systemFidesKey={systemFidesKey}
         />
       ) : null}
-    </>
+    </Box>
   );
 };
 

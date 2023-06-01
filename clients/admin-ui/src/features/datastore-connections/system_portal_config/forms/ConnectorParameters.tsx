@@ -355,7 +355,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 
   return (
     <>
-      <Box color="gray.700" fontSize="14px" h="80px">
+      <Box color="gray.700" fontSize="14px" mb={4} h="80px">
         Connect to your {connectionOption!.human_readable} environment by
         providing credential information below. Once you have saved your
         connector credentials, you can review what data is included when

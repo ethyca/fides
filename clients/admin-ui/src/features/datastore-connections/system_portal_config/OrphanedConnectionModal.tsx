@@ -55,7 +55,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
   const connectionOptions = useMemo(() => data?.items || [], [data]);
   const { handleError } = useAPIHelper();
   const closeIfComplete = () => {
-    if (!isLoading) {
+    if (isLoading) {
       return;
     }
     if (selectedConnectionConfig) {
