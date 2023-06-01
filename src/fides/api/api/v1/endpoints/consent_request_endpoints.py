@@ -630,9 +630,13 @@ def _prepare_consent_preferences(
     provided_identity: ProvidedIdentity,
 ) -> ConsentPreferences:
     """Returns consent preferences for the identity given."""
-    consent_records: List[Consent] = Consent.filter(
-        db=db, conditions=Consent.provided_identity_id == provided_identity.id
-    ).all()
+    consent_records: List[Consent] = (
+        Consent.filter(
+            db=db, conditions=Consent.provided_identity_id == provided_identity.id
+        )
+        .order_by(Consent.updated_at)
+        .all()
+    )
 
     if not consent_records:
         return ConsentPreferences(consent=None)
