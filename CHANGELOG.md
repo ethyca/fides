@@ -20,6 +20,8 @@ The types of changes are:
 ### Added
 
 - Add Google Tag Manager and Privacy Center ENV vars to sample app [#2949](https://github.com/ethyca/fides/pull/2949)
+- Add `notice_key` field to Privacy Notice UI form [#3403](https://github.com/ethyca/fides/pull/3403)
+- Add `identity` query param to the consent reporting API view [#3418](https://github.com/ethyca/fides/pull/3418)
 
 ### Fixed
 
@@ -36,6 +38,7 @@ The types of changes are:
 ### Developer Experience
 
 - Add ability to pass ENV vars to both privacy center and sample app during `fides deploy` via `.env` [#2949](https://github.com/ethyca/fides/pull/2949)
+- Handle an edge case when generating tags that finds them out of sequence [#3405](https://github.com/ethyca/fides/pull/3405)
 
 ### Fixed
 
