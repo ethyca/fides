@@ -580,7 +580,7 @@ def test_failed_evaluation_error_message(
                               'qualifier '
                               '(aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified) '
                               'for data uses '
-                              '(marketing.adversiting.third_party) and '
+                              '(marketing.advertising.third_party) and '
                               'subjects (customer)',
                     'violating_attributes': { 'data_categories': [ 'user.political_opinion'],
                                               'data_qualifier': 'aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified',
