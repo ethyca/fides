@@ -22,9 +22,9 @@ depends_on = None
 
 # The `key` is the old value, the `value` is the new value
 data_use_upgrades: Dict[str, str] = {
-    "third_party_sharing.payment_processing": "essential.service.payment_processing"
-    "third_party_sharing.fraud_detection",
-    "essential.service.fraud_detection"
+    "third_party_sharing.payment_processing": "essential.service.payment_processing",
+    "third_party_sharing.fraud_detection": "essential.service.fraud_detection",
+    "advertising": "marketing.advertising",
     "advertising.first_party": "marketing.advertising.first_party",
     "advertising.first_party.contextual": "marketing.advertising.first_party.contextual",
     "advertising.first_party.personalized": "marketing.advertising.first_party.targeted",

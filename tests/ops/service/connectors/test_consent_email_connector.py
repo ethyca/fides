@@ -155,16 +155,22 @@ class TestConsentEmailConnectorMethods:
                     ConsentPreferencesByUser(
                         identities={"email": "customer-1@example.com"},
                         consent_preferences=[
-                            Consent(data_use="advertising", opt_in=False),
-                            Consent(data_use="advertising.first_party", opt_in=True),
+                            Consent(data_use="marketing.advertising", opt_in=False),
+                            Consent(
+                                data_use="marketing.advertising.first_party",
+                                opt_in=True,
+                            ),
                         ],
                         privacy_preferences=[],
                     ),
                     ConsentPreferencesByUser(
                         identities={"email": "customer-2@example.com"},
                         consent_preferences=[
-                            Consent(data_use="advertising", opt_in=True),
-                            Consent(data_use="advertising.first_party", opt_in=False),
+                            Consent(data_use="marketing.advertising", opt_in=True),
+                            Consent(
+                                data_use="marketing.advertising.first_party",
+                                opt_in=False,
+                            ),
                         ],
                         privacy_preferences=[],
                     ),
@@ -186,16 +192,16 @@ class TestConsentEmailConnectorMethods:
             ConsentPreferencesByUser(
                 identities={"email": "customer-1@example.com"},
                 consent_preferences=[
-                    Consent(data_use="advertising", opt_in=False),
-                    Consent(data_use="advertising.first_party", opt_in=True),
+                    Consent(data_use="marketing.advertising", opt_in=False),
+                    Consent(data_use="marketing.advertising.first_party", opt_in=True),
                 ],
                 privacy_preferences=[],
             ),
             ConsentPreferencesByUser(
                 identities={"email": "customer-2@example.com"},
                 consent_preferences=[
-                    Consent(data_use="advertising", opt_in=True),
-                    Consent(data_use="advertising.first_party", opt_in=False),
+                    Consent(data_use="marketing.advertising", opt_in=True),
+                    Consent(data_use="marketing.advertising.first_party", opt_in=False),
                 ],
                 privacy_preferences=[],
             ),
@@ -261,7 +267,7 @@ class TestConsentEmailConnectorMethods:
                             id="test_1",
                             privacy_notice_id="12345",
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["advertising.first_party.personalized"],
+                            data_uses=["marketing.advertising.first_party.targeted"],
                             enforcement_level=EnforcementLevel.system_wide,
                             version=1.0,
                             displayed_in_overlay=True,
@@ -365,7 +371,7 @@ class TestConsentEmailConnectorMethods:
         privacy_request_with_consent_policy,
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
         assert (
             test_sovrn_consent_email_connector.needs_email(
@@ -427,7 +433,7 @@ class TestConsentEmailConnectorMethods:
         self, test_sovrn_consent_email_connector, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
         assert (
             test_sovrn_consent_email_connector.needs_email(
@@ -547,7 +553,7 @@ class TestSovrnConnector:
 
         assert (
             preferences[0]["consent_preferences"][1]["data_use"]
-            == "Improve the capability"
+            == "Improves the product, service, application or system."
         )
         assert preferences[0]["consent_preferences"][1]["opt_in"] is True
 
