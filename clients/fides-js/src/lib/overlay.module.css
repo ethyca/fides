@@ -61,11 +61,6 @@ div#fides-overlay {
   /* CSS reset values, adapted from https://www.joshwcomeau.com/css/custom-css-reset/ */
   line-height: calc(1em + 0.5rem);
   -webkit-font-smoothing: antialiased;
-
-  /* Reset browser defaults for margins so we can consistently apply our own */
-  * {
-    margin: 0;
-  }
 }
 
 #fides-consent-modal-link {
@@ -205,21 +200,21 @@ div#fides-consent-modal {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
 
-  .modal-header {
-    text-align: center;
-    font-weight: 600;
-    font-size: var(--fides-consent-overlay-font-size-title);
-    color: var(--fides-consent-overlay-title-font-color);
-  }
+div#fides-consent-modal .modal-header {
+  text-align: center;
+  font-weight: 600;
+  font-size: var(--fides-consent-overlay-font-size-title);
+  color: var(--fides-consent-overlay-title-font-color);
+}
 
-  .modal-description {
-    margin: 1em 0 1em 0;
-  }
+div#fides-consent-modal .modal-description {
+  margin: 1em 0 1em 0;
+}
 
-  .modal-button-group {
-    display: flex;
-  }
+div#fides-consent-modal .modal-button-group {
+  display: flex;
 }
 
 .modal-overlay {
@@ -249,81 +244,81 @@ div#fides-consent-modal {
   flex-wrap: wrap;
   position: relative;
   gap: 1ch;
+}
 
-  .toggle-input {
-    position: absolute;
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 4;
-    cursor: pointer;
-  }
+.toggle .toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  cursor: pointer;
+}
 
-  .toggle-display {
-    --offset: 0.1em;
-    --diameter: 1em;
+.toggle .toggle-display {
+  --offset: 0.1em;
+  --diameter: 1em;
 
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-around;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-around;
 
-    width: calc(var(--diameter) * 2 + var(--offset) * 2);
-    height: calc(var(--diameter) + var(--offset) * 2);
-    box-sizing: content-box;
+  width: calc(var(--diameter) * 2 + var(--offset) * 2);
+  height: calc(var(--diameter) + var(--offset) * 2);
+  box-sizing: content-box;
 
-    position: relative;
-    border-radius: 100vw;
-    background-color: var(--fides-consent-overlay-inactive-color);
-    transition: 250ms;
-  }
+  position: relative;
+  border-radius: 100vw;
+  background-color: var(--fides-consent-overlay-inactive-color);
+  transition: 250ms;
+}
 
-  .toggle-display::before {
-    content: "";
+.toggle .toggle-display::before {
+  content: "";
 
-    width: var(--diameter);
-    height: var(--diameter);
-    border-radius: 50%;
+  width: var(--diameter);
+  height: var(--diameter);
+  border-radius: 50%;
 
-    box-sizing: border-box;
+  box-sizing: border-box;
 
-    position: absolute;
-    z-index: 3;
-    top: 50%;
-    left: var(--offset);
-    transform: translate(0, -50%);
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: var(--offset);
+  transform: translate(0, -50%);
 
-    background-color: #fff;
-    transition: inherit;
-  }
+  background-color: #fff;
+  transition: inherit;
+}
 
-  /* Checked/unchecked states */
-  .toggle-input:checked + .toggle-display {
-    background-color: var(--fides-consent-overlay-primary-active-color);
-  }
-  .toggle-input:checked + .toggle-display::before {
-    transform: translate(100%, -50%);
-  }
+/* Checked/unchecked states */
+.toggle .toggle-input:checked + .toggle-display {
+  background-color: var(--fides-consent-overlay-primary-active-color);
+}
+.toggle .toggle-input:checked + .toggle-display::before {
+  transform: translate(100%, -50%);
+}
 
-  /* Disabled state */
-  .toggle-input:disabled {
-    cursor: not-allowed;
-  }
-  .toggle-input:disabled + .toggle-display {
-    background-color: var(--fides-consent-overlay-disabled-color);
-  }
-  .toggle-input:disabled:checked + .toggle-display {
-    background-color: var(
-      --fides-consent-overlay-primary-active-disabled-color
-    );
-  }
+/* Disabled state */
+.toggle .toggle-input:disabled {
+  cursor: not-allowed;
+}
+.toggle .toggle-input:disabled + .toggle-display {
+  background-color: var(--fides-consent-overlay-disabled-color);
+}
+.toggle .toggle-input:disabled:checked + .toggle-display {
+  background-color: var(--fides-consent-overlay-primary-active-disabled-color);
+}
 
-  /* Focus ring when using keyboard */
-  .toggle-input:focus + .toggle-display {
-    outline: 1px auto -webkit-focus-ring-color;
-  }
-  .toggle-input:focus:not(:focus-visible) + .toggle-display {
-    outline: 0;
-  }
+/* Focus ring when using keyboard */
+.toggle .toggle-input:focus + .toggle-display {
+  /* Firefox only has Highlight, not -webkit-focus-ring-color */
+  outline: 1px auto Highlight;
+  outline: 1px auto -webkit-focus-ring-color;
+}
+.toggle .toggle-input:focus:not(:focus-visible) + .toggle-display {
+  outline: 0;
 }
 
 /* Divider */
@@ -343,25 +338,23 @@ div#fides-consent-modal {
   margin-bottom: 0px;
 }
 
-.notice-toggle {
-  .notice-toggle-title {
-    padding: 0.5em;
-    display: flex;
-    justify-content: space-between;
-  }
+.notice-toggle .notice-toggle-title {
+  padding: 0.5em;
+  display: flex;
+  justify-content: space-between;
+}
 
-  .notice-toggle-trigger {
-    width: 100%;
-  }
+.notice-toggle .notice-toggle-trigger {
+  width: 100%;
+}
 
-  .notice-toggle-title:hover {
-    cursor: pointer;
-    background-color: var(--fides-consent-overlay-row-hover-color);
-  }
+.notice-toggle .notice-toggle-title:hover {
+  cursor: pointer;
+  background-color: var(--fides-consent-overlay-row-hover-color);
+}
 
-  .disclosure-visible {
-    padding-left: 0.5em;
-  }
+.notice-toggle .disclosure-visible {
+  padding-left: 0.5em;
 }
 
 .notice-toggle-expanded {
