@@ -89,6 +89,7 @@ def _filter_consent(
     updated_gt: Optional[datetime] = None,
     identity: Optional[str] = None,
 ) -> Query:
+    """Filter Consent records against the params passed in."""
     validate_start_and_end_filters(
         [
             (created_lt, created_gt, "created"),
