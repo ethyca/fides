@@ -14,6 +14,8 @@ from fides.api.models.privacy_notice import (
     ConsentMechanism,
     PrivacyNotice,
     PrivacyNoticeRegion,
+    create_historical_data_from_record,
+    update_if_modified,
 )
 from fides.api.models.privacy_preference import CurrentPrivacyPreference
 from fides.api.models.privacy_request import ProvidedIdentity
@@ -108,32 +110,17 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         Overrides the base update method to automatically bump the version of the
         PrivacyExperienceConfig record and also create a new PrivacyExperienceConfigHistory entry
         """
-        # run through potential updates now
-        for key, value in data.items():
-            setattr(self, key, value)
+        resource, updated = update_if_modified(self, db=db, data=data)
 
-        # only if there's a modification do we write the history record
-        if db.is_modified(self):
-            # on any update to a privacy experience record, its version must be incremented
-            # version gets incremented by a full integer, i.e. 1.0 -> 2.0 -> 3.0
-            self.version = float(self.version) + 1.0  # type: ignore
-            self.save(db)
-
-            # history record data is identical to the new privacy experience record data
-            # except the experience's 'id' must be moved to the FK column
-            # and is no longer the history record 'id' column
-            history_data = self.__dict__.copy()
-            history_data.pop("_sa_instance_state")
-            history_data.pop("id")
-            history_data.pop("created_at")
-            history_data.pop("updated_at")
+        if updated:
+            history_data = create_historical_data_from_record(resource)
             history_data["experience_config_id"] = self.id
 
             PrivacyExperienceConfigHistory.create(
                 db, data=history_data, check_name=False
             )
 
-        return self
+        return resource  # type: ignore[return-value]
 
     def dry_update(self, *, data: dict[str, Any]) -> PrivacyExperienceConfig:
         """
@@ -177,6 +164,13 @@ class PrivacyExperienceBase:
     region = Column(EnumColumn(PrivacyNoticeRegion), nullable=False, index=True)
     version = Column(Float, nullable=False, default=1.0)
 
+    # Attribute that can be added as the result of "get_related_privacy_notices". Privacy notices aren't directly
+    # related to experiences.
+    privacy_notices: List[PrivacyNotice] = []
+
+    # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
+    show_banner: bool
+
 
 class PrivacyExperience(PrivacyExperienceBase, Base):
     """Stores Privacy Experiences for a given just a single region.  The Experience describes how to surface
@@ -212,13 +206,6 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
         back_populates="experiences",
         uselist=False,
     )
-
-    # Attribute that can be added as the result of "get_related_privacy_notices". Privacy notices aren't directly
-    # related to experiences.
-    privacy_notices: List[PrivacyNotice] = []
-
-    # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
-    show_banner: bool
 
     @hybridproperty
     def privacy_experience_history_id(self) -> Optional[str]:
@@ -335,31 +322,14 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
         Overrides the base update method to automatically bump the version of the
         PrivacyExperience record and also create a new PrivacyExperienceHistory entry
         """
+        resource, updated = update_if_modified(self, db=db, data=data)
 
-        # run through potential updates now
-        for key, value in data.items():
-            setattr(self, key, value)
-
-        # only if there's a modification do we write the history record
-        if db.is_modified(self):
-            # on any update to a privacy experience record, its version must be incremented
-            # version gets incremented by a full integer, i.e. 1.0 -> 2.0 -> 3.0
-            self.version = float(self.version) + 1.0  # type: ignore
-            self.save(db)
-
-            # history record data is identical to the new privacy experience record data
-            # except the experience's 'id' must be moved to the FK column
-            # and is no longer the history record 'id' column
-            history_data = self.__dict__.copy()
-            history_data.pop("_sa_instance_state")
-            history_data.pop("id")
-            history_data.pop("created_at")
-            history_data.pop("updated_at")
-            history_data["privacy_experience_id"] = self.id
-
+        if updated:
+            history_data = create_historical_data_from_record(resource)
+            history_data["privacy_experience_id"] = resource.id
             PrivacyExperienceHistory.create(db, data=history_data, check_name=False)
 
-        return self
+        return resource  # type: ignore[return-value]
 
     @staticmethod
     def get_experience_by_region_and_component(
