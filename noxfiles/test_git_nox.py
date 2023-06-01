@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 from git import Repo
 
-from noxfiles.git_nox import generate_tag
+from git_nox import generate_tag
 
 
 class TestGitNox:
@@ -31,6 +31,11 @@ class TestGitNox:
                 ["2.9.3a0", "2.9.2"],
                 "2.9.3a1",
             ),  # our repo happens to already have a 2.9.3a0 tag, let's use it for testing here
+            (
+                "some-other-feature",
+                ["2.14.1a0", "2.14.1a1", "2.14.0"],
+                "2.14.1a2",
+            ),  # hit unsorted tags with these versions as of 2023-05-30, testing sorted list of tags
             ("release-2.9.0", [], "2.9.0rc0"),
             ("release-2.9.0", ["2.9.0rc1"], "2.9.0rc2"),
             (
