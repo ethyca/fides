@@ -1945,12 +1945,20 @@ def empty_provided_identity(db):
 
 
 @pytest.fixture(scope="function")
-def provided_identity_and_consent_request(db):
+def provided_identity_value():
+    return "test@email.com"
+
+
+@pytest.fixture(scope="function")
+def provided_identity_and_consent_request(
+    db,
+    provided_identity_value,
+):
     provided_identity_data = {
         "privacy_request_id": None,
         "field_name": "email",
-        "hashed_value": ProvidedIdentity.hash_value("test@email.com"),
-        "encrypted_value": {"value": "test@email.com"},
+        "hashed_value": ProvidedIdentity.hash_value(provided_identity_value),
+        "encrypted_value": {"value": provided_identity_value},
     }
     provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
 
