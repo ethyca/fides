@@ -42,7 +42,6 @@ from fides.api.ctl.database.system import (
 )
 from fides.api.ctl.schemas.system import SystemResponse
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
-from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.oauth.utils import verify_oauth_client, verify_oauth_client_prod
 from fides.api.schemas.connection_configuration.connection_config import (
