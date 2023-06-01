@@ -14,6 +14,8 @@ import { updateConsentPreferences } from "../lib/preferences";
 import { transformConsentToFidesUserPreference } from "../lib/consent-utils";
 import { FidesCookie } from "../lib/cookie";
 
+import "../lib/overlay.module.css";
+
 export interface OverlayProps {
   options: FidesOptions;
   experience: PrivacyExperience;

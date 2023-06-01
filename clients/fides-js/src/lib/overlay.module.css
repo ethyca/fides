@@ -45,13 +45,27 @@
   );
 
   /* Everything else */
-  --fides-consent-overlay-font-family: "inherit";
-  --fides-consent-overlay-font-size: 16px;
-  --fides-consent-overlay-font-size-title: 18px;
-  --fides-consent-overlay-padding: 0.75em 2em 1em;
+  --fides-consent-overlay-font-family: Inter, sans-serif;
+  --fides-consent-overlay-font-size: 1em;
+  --fides-consent-overlay-font-size-title: 1.1em;
+  --fides-consent-overlay-padding: 1.5em;
   --fides-consent-overlay-button-border-radius: 4px;
   --fides-consent-overlay-button-padding: 0.5em 1em;
   --fides-consent-overlay-component-border-radius: 0px;
+}
+
+div#fides-overlay {
+  font-family: var(--fides-consent-overlay-font-family);
+  font-size: var(--fides-consent-overlay-font-size);
+
+  /* CSS reset values, adapted from https://www.joshwcomeau.com/css/custom-css-reset/ */
+  line-height: calc(1em + 0.5rem);
+  -webkit-font-smoothing: antialiased;
+
+  /* Reset browser defaults for margins so we can consistently apply our own */
+  * {
+    margin: 0;
+  }
 }
 
 #fides-consent-modal-link {
@@ -59,8 +73,6 @@
 }
 
 div#fides-consent-banner {
-  font-family: var(--fides-consent-overlay-font-family);
-  font-size: var(--fides-consent-overlay-font-size);
   background: var(--fides-consent-overlay-background-color);
   color: var(--fides-consent-overlay-body-font-color);
   box-sizing: border-box;
@@ -139,7 +151,7 @@ button.fides-consent-banner-button {
   border-radius: var(--fides-consent-overlay-button-border-radius);
 
   font-family: inherit;
-  font-size: 100%;
+  font-size: 0.8em;
   line-height: 1.15;
   text-decoration: none;
 }
@@ -196,8 +208,13 @@ div#fides-consent-modal {
 
   .modal-header {
     text-align: center;
+    font-weight: 600;
     font-size: var(--fides-consent-overlay-font-size-title);
     color: var(--fides-consent-overlay-title-font-color);
+  }
+
+  .modal-description {
+    margin: 1em 0 1em 0;
   }
 
   .modal-button-group {

@@ -2,7 +2,6 @@ import { h, FunctionComponent } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { ButtonType, ExperienceConfig } from "../lib/consent-types";
 import Button from "./Button";
-import "../lib/overlay.module.css";
 import { useHasMounted } from "../lib/hooks";
 
 interface BannerProps {
