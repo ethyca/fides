@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, List, Optional, Tuple, Type
+from typing import Any, List, Optional, Set, Tuple, Type
 
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
@@ -19,6 +19,11 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.privacy_preference import CurrentPrivacyPreference
 from fides.api.models.privacy_request import ProvidedIdentity
+
+BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
+    ConsentMechanism.notice_only,
+    ConsentMechanism.opt_in,
+}
 
 
 class ComponentType(Enum):
@@ -246,9 +251,7 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
 
         return bool(
             privacy_notice_query.filter(
-                PrivacyNotice.consent_mechanism.in_(
-                    [ConsentMechanism.notice_only, ConsentMechanism.opt_in]
-                )
+                PrivacyNotice.consent_mechanism.in_(BANNER_CONSENT_MECHANISMS)
             ).count()
         )
 
