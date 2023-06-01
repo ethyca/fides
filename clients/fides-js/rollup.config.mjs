@@ -5,7 +5,7 @@ import dts from "rollup-plugin-dts";
 import esbuild from "rollup-plugin-esbuild";
 import filesize from "rollup-plugin-filesize";
 import nodeResolve from "@rollup/plugin-node-resolve";
-import css from "rollup-plugin-import-css";
+import postcss from "rollup-plugin-postcss";
 
 const name = "fides";
 const isDev = process.env.NODE_ENV === "development";
@@ -30,7 +30,7 @@ export default [
     plugins: [
       alias(preactAliases),
       nodeResolve(),
-      css(),
+      postcss(),
       esbuild({
         minify: !isDev,
       }),
@@ -38,14 +38,6 @@ export default [
         // Automatically add the built script to the privacy center's static files for bundling:
         targets: [
           { src: `dist/${name}.js`, dest: "../privacy-center/public/lib/" },
-        ],
-        verbose: true,
-        hook: "writeBundle",
-      }),
-      copy({
-        // Automatically add the built css to the privacy center's static files for bundling:
-        targets: [
-          { src: `dist/${name}.css`, dest: "../privacy-center/public/lib/" },
         ],
         verbose: true,
         hook: "writeBundle",
@@ -92,7 +84,7 @@ export default [
   },
   {
     input: `src/${name}.ts`,
-    plugins: [alias(preactAliases), nodeResolve(), css(), esbuild()],
+    plugins: [alias(preactAliases), nodeResolve(), postcss(), esbuild()],
     output: [
       {
         // Compatible with ES module imports. Apps in this repo may be able to share the code.
@@ -104,7 +96,7 @@ export default [
   },
   {
     input: `src/${name}.ts`,
-    plugins: [dts(), css()],
+    plugins: [dts(), postcss()],
     output: [
       {
         file: `dist/${name}.d.ts`,
