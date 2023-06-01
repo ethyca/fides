@@ -20,6 +20,9 @@ from fides.api.schemas.storage.storage import (
     S3AuthMethod,
     StorageSecrets,
 )
+from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
+    DsrReportBuilder,
+)
 from fides.api.util.cache import get_cache, get_encryption_cache_key
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
@@ -90,6 +93,19 @@ def write_to_in_memory_buffer(
 
         zipped_csvs.seek(0)
         return zipped_csvs
+
+    if resp_format == ResponseFormat.html.value:
+        return DsrReportBuilder(
+            folder_name="dsr-report",
+            request_data={
+                "id": "BGSJETG543",
+                "name": "James Brophy",
+                "type": "access",
+                "email": "james.brophy@email.com",
+                "submission_datetime": "04/05/2023 12:34 EDT",
+            },
+            dsr_data=data,
+        ).generate()
 
     raise NotImplementedError(f"No handling for response format {resp_format}.")
 
@@ -164,16 +180,20 @@ def _handle_json_encoding(field: Any) -> Union[str, Dict[str, str]]:
     return field
 
 
-def upload_to_local(payload: Dict, file_key: str, request_id: str) -> str:
+def upload_to_local(
+    data: Dict,
+    file_key: str,
+    request_id: str,
+    resp_format: str = ResponseFormat.json.value,
+) -> str:
     """Uploads access request data to a local folder - for testing/demo purposes only"""
     if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
         os.makedirs(LOCAL_FIDES_UPLOAD_DIRECTORY)
 
     filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"
-    data_str: str = encrypt_access_request_results(
-        json.dumps(payload, default=_handle_json_encoding), request_id
-    )
-    with open(filename, "w") as file:  # pylint: disable=W1514
-        file.write(data_str)
+    in_memory_file = write_to_in_memory_buffer(resp_format, data, request_id)
+
+    with open(filename, "wb") as file:
+        file.write(in_memory_file.getvalue())
 
     return "your local fides_uploads folder"

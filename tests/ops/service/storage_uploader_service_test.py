@@ -287,6 +287,47 @@ def test_uploader_local_success(
     config.delete(db)
 
 
+def test_uploader_local_dsr_package(db: Session) -> None:
+    request_id = "dsr-package-12345"
+
+    mock_config = {
+        "name": "test dest",
+        "key": "test_dest_local",
+        "type": StorageType.local.value,
+        "details": {
+            StorageDetails.NAMING.value: FileNaming.request_id.value,
+        },
+        "secrets": None,
+        "format": ResponseFormat.html.value,
+    }
+    config = StorageConfig.create(db, data=mock_config)
+
+    upload_data = {
+        "mysql:users": [{"name": "Hannah Testing"}],
+        "mongo:orders": [
+            {
+                "orderId": "23456",
+                "phone": "234523454",
+                "address": "123 mains st",
+                "birthday": "1995-01-01T00:00:00",
+                "city": "Plainville",
+            }
+        ],
+    }
+
+    upload(
+        db=db,
+        request_id=request_id,
+        data=upload_data,
+        storage_key=mock_config["key"],
+    )
+
+    dsr_report_path = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{request_id}.zip"
+    assert os.path.isfile(dsr_report_path)
+    os.remove(dsr_report_path)
+    config.delete(db)
+
+
 class TestWriteToInMemoryBuffer:
     key = "test--encryption"
 
@@ -380,6 +421,28 @@ class TestWriteToInMemoryBuffer:
                 "[1, 2]",
             ]
 
+    def test_html_format(self, data):
+        buff = write_to_in_memory_buffer("html", data, "test_request_id")
+        assert isinstance(buff, BytesIO)
+
+        zipfile = ZipFile(buff)
+        assert zipfile.namelist() == [
+            "dsr-report/main.css",
+            "dsr-report/logo.svg",
+            "dsr-report/back.svg",
+            "dsr-report/mongo/address/1.html",
+            "dsr-report/mongo/address/2.html",
+            "dsr-report/mongo/address/index.html",
+            "dsr-report/mongo/foobar/1.html",
+            "dsr-report/mongo/foobar/index.html",
+            "dsr-report/mongo/index.html",
+            "dsr-report/mysql/customer/1.html",
+            "dsr-report/mysql/customer/2.html",
+            "dsr-report/mysql/customer/index.html",
+            "dsr-report/mysql/index.html",
+            "dsr-report/index.html",
+        ]
+
     def test_not_implemented(self, data):
         with pytest.raises(NotImplementedError):
             write_to_in_memory_buffer("not-a-valid-format", data, "test_request_id")
@@ -453,3 +516,4 @@ class TestEncryptResultsPackage:
 def test_get_extension():
     assert get_extension(ResponseFormat.json) == "json"
     assert get_extension(ResponseFormat.csv) == "zip"
+    assert get_extension(ResponseFormat.html) == "zip"

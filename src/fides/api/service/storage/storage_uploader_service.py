@@ -39,13 +39,16 @@ def get_extension(resp_format: ResponseFormat) -> str:
     """
     Determine file extension for various response formats.
 
-    CSV's are zipped together before uploading to s3.
+    CSV's and HTML reports are zipped together before uploading to s3.
     """
     if resp_format == ResponseFormat.csv:
         return "zip"
 
     if resp_format == ResponseFormat.json:
         return "json"
+
+    if resp_format == ResponseFormat.html:
+        return "zip"
 
     raise NotImplementedError(f"No extension defined for {resp_format}")
 
@@ -86,4 +89,4 @@ def _local_uploader(
 ) -> str:
     """Uploads data to local storage, used for quick-start/demo purposes"""
     file_key: str = _construct_file_key(request_id, config)
-    return upload_to_local(data, file_key, request_id)
+    return upload_to_local(data, file_key, request_id, config.format.value)  # type: ignore

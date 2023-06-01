@@ -13,6 +13,7 @@ class ResponseFormat(Enum):
 
     json = "json"
     csv = "csv"
+    html = "html"
 
 
 class FileNaming(Enum):
