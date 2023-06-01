@@ -2,22 +2,20 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { ConsentMethod } from "./ConsentMethod";
 import type { ConsentOptionCreate } from "./ConsentOptionCreate";
 import type { Identity } from "./Identity";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
-import type { RequestOrigin } from "./RequestOrigin";
 
 /**
- * Schema for saving privacy preferences and accompanying user data
- * including the verification code.
+ * Request body for creating PrivacyPreferences.
  */
-export type PrivacyPreferencesCreateWithCode = {
+export type PrivacyPreferencesRequest = {
   browser_identity: Identity;
   code?: string;
   preferences: Array<ConsentOptionCreate>;
   policy_key?: string;
-  request_origin?: RequestOrigin;
-  url_recorded?: string;
-  user_agent?: string;
+  privacy_experience_history_id?: string;
   user_geography?: PrivacyNoticeRegion;
+  method?: ConsentMethod;
 };

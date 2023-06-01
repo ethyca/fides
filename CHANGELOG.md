@@ -31,6 +31,7 @@ The types of changes are:
 
 - Enabled Privacy Experience beta flag [#3364](https://github.com/ethyca/fides/pull/3364)
 - Removed ExperienceConfig.delivery_mechanism constraint [#3387](https://github.com/ethyca/fides/pull/3387)
+- Updated privacy experience UI forms to reflect updated experience config fields [#3402](https://github.com/ethyca/fides/pull/3402)
 
 ### Developer Experience
 
