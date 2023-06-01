@@ -102,7 +102,7 @@ const DSRCustomizationModal: React.FC<Props> = ({ connectionConfig }) => {
       <Modal isCentered isOpen={isOpen} size="lg" onClose={onClose}>
         <ModalOverlay />
         <ModalContent minWidth="775px">
-          <ModalHeader>Unlinked Connections</ModalHeader>
+          <ModalHeader>Customize DSR</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <VStack align="stretch" gap="16px">
