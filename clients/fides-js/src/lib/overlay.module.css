@@ -5,7 +5,8 @@
   /* Colors */
   --fides-consent-overlay-primary-color: #8243f2;
   --fides-consent-overlay-background-color: #f7fafc;
-  --fides-consent-overlay-font-color: #4a5568;
+  --fides-consent-overlay-font-color-light: #4a5568;
+  --fides-consent-overlay-font-color-dark: #2d3748;
   --fides-consent-overlay-hover-color: #edf2f7;
   /* Buttons */
   --fides-consent-overlay-primary-button-background-color: var(
@@ -26,10 +27,13 @@
   );
   /* Text */
   --fides-consent-overlay-title-font-color: var(
-    --fides-consent-overlay-font-color
+    --fides-consent-overlay-font-color-light
   );
   --fides-consent-overlay-body-font-color: var(
-    --fides-consent-overlay-font-color
+    --fides-consent-overlay-font-color-light
+  );
+  --fides-consent-overlay-link-font-color: var(
+    --fides-consent-overlay-font-color-dark
   );
   /* Switches */
   --fides-consent-overlay-primary-active-color: var(
@@ -46,8 +50,9 @@
 
   /* Everything else */
   --fides-consent-overlay-font-family: "inherit";
-  --fides-consent-overlay-font-size: 16px;
-  --fides-consent-overlay-font-size-title: 18px;
+  --fides-consent-overlay-font-size-body: 12px;
+  --fides-consent-overlay-font-size-title: 16px;
+  --fides-consent-overlay-font-size-buttons: 14px;
   --fides-consent-overlay-padding: 0.75em 2em 1em;
   --fides-consent-overlay-button-border-radius: 4px;
   --fides-consent-overlay-button-padding: 0.5em 1em;
@@ -60,7 +65,7 @@
 
 div#fides-consent-banner {
   font-family: var(--fides-consent-overlay-font-family);
-  font-size: var(--fides-consent-overlay-font-size);
+  font-size: var(--fides-consent-overlay-font-size-body);
   background: var(--fides-consent-overlay-background-color);
   color: var(--fides-consent-overlay-body-font-color);
   box-sizing: border-box;
@@ -74,6 +79,10 @@ div#fides-consent-banner {
   justify-content: space-between;
   align-items: center;
   transition: transform 1s;
+}
+
+div#fides-consent-banner-inner {
+  width: 100%;
 }
 
 div#fides-consent-banner.fides-consent-banner-bottom {
@@ -104,6 +113,7 @@ div#fides-consent-banner.fides-consent-banner-top.fides-consent-banner-hidden {
 
 div#fides-consent-banner-title {
   font-size: var(--fides-consent-overlay-font-size-title);
+  font-weight: 600;
   margin-top: 0.5em;
   margin-right: 2em;
   min-width: 33%;
@@ -119,9 +129,22 @@ div#fides-consent-banner-description {
 }
 
 div#fides-consent-banner-buttons {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  margin-top: 0.5em;
+  font-size: var(--fides-consent-overlay-font-size-buttons);
+}
+
+div#fides-consent-banner-buttons.fides-consent-banner-buttons-right {
+  float: right;
+}
+
+div#fides-consent-banner-buttons.fides-consent-banner-buttons-left {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--fides-consent-overlay-link-font-color);
+  text-decoration: underline;
+  cursor: pointer;
+  line-height: 2em;
 }
 
 button.fides-consent-banner-button {
@@ -136,7 +159,6 @@ button.fides-consent-banner-button {
   background: var(--fides-consent-overlay-primary-button-background-color);
   color: var(--fides-consent-overlay-primary-button-text-color);
   border: 1px solid;
-  border-radius: var(--fides-consent-overlay-button-border-radius);
 
   font-family: inherit;
   font-size: 100%;
@@ -177,7 +199,7 @@ button.fides-consent-banner-button.fides-consent-banner-button-secondary:hover {
 /** Modal */
 div#fides-consent-modal {
   font-family: var(--fides-consent-overlay-font-family);
-  font-size: var(--fides-consent-overlay-font-size);
+  font-size: var(--fides-consent-overlay-font-size-body);
   color: var(--fides-consent-overlay-body-font-color);
   box-sizing: border-box;
   padding: var(--fides-consent-overlay-padding);
