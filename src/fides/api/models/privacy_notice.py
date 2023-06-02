@@ -152,6 +152,11 @@ class PrivacyNoticeBase:
     displayed_in_api = Column(Boolean, nullable=False, default=False)
     notice_key = Column(String, nullable=False)
 
+    # Attribute that can be temporarily cached as the result of "get_related_privacy_notices"
+    # for a given user, for surfacing CurrentPrivacyPreferences for the user.
+    current_preference = None
+    outdated_preference = None
+
     def applies_to_system(self, system: System) -> bool:
         """Privacy Notice applies to System if a data use matches or the Privacy Notice
         Data Use is a parent of a System Data Use
@@ -181,11 +186,6 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     histories = relationship(
         "PrivacyNoticeHistory", backref="privacy_notice", lazy="dynamic"
     )
-
-    # Attribute that can be temporarily cached as the result of "get_related_privacy_notices"
-    # for a given user, for surfacing CurrentPrivacyPreferences for the user.
-    current_preference = None
-    outdated_preference = None
 
     @hybridproperty
     def privacy_notice_history_id(self) -> Optional[str]:
@@ -238,41 +238,14 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         Overrides the base update method to automatically bump the version of the
         PrivacyNotice record and also create a new PrivacyNoticeHistory entry
         """
+        resource, updated = update_if_modified(self, db=db, data=data)
 
-        # run through potential updates now
-        for key, value in data.items():
-            setattr(self, key, value)
-
-        # only if there's a modification do we write the history record
-        if db.is_modified(self):
-            # on any update to a privacy notice record, its version must be incremented
-            # version gets incremented by a full integer, i.e. 1.0 -> 2.0 -> 3.0
-            self.version = float(self.version) + 1.0  # type: ignore
-            self.save(db)
-
-            # history record data is identical to the new privacy notice record data
-            # except the notice's 'id' must be moved to the FK column
-            # and is no longer the history record 'id' column
-            history_data = {
-                "name": self.name,
-                "notice_key": self.notice_key,
-                "description": self.description or None,
-                "origin": self.origin or None,
-                "regions": self.regions,
-                "consent_mechanism": self.consent_mechanism,
-                "data_uses": self.data_uses,
-                "enforcement_level": self.enforcement_level,
-                "version": self.version,
-                "disabled": self.disabled,
-                "has_gpc_flag": self.has_gpc_flag,
-                "displayed_in_privacy_center": self.displayed_in_privacy_center,
-                "displayed_in_overlay": self.displayed_in_overlay,
-                "displayed_in_api": self.displayed_in_api,
-                "privacy_notice_id": self.id,
-            }
+        if updated:
+            history_data = create_historical_data_from_record(resource)
+            history_data["privacy_notice_id"] = resource.id
             PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
 
-        return self
+        return resource  # type: ignore[return-value]
 
     def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
         """
@@ -378,3 +351,37 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
                     relevant_systems.append(system.fides_key)
                     continue
         return relevant_systems
+
+
+def update_if_modified(
+    resource: Base, db: Session, *, data: dict[str, Any]
+) -> Tuple[Base, bool]:
+    """Update the resource and increment its version if applicable.
+
+    Return the updated resource and whether it was modified (which determines if we should create
+    a corresponding historical record).
+
+    Currently used for PrivacyNotice, PrivacyExperience, and PrivacyExperienceConfig models.
+    """
+    # run through potential updates now
+    for key, value in data.items():
+        setattr(resource, key, value)
+
+    if db.is_modified(resource):
+        # on any update to a privacy experience record, its version must be incremented
+        # version gets incremented by a full integer, i.e. 1.0 -> 2.0 -> 3.0
+        resource.version = float(resource.version) + 1.0  # type: ignore
+        resource.save(db)
+        return resource, True
+
+    return resource, False
+
+
+def create_historical_data_from_record(resource: Base) -> Dict:
+    """Prep data to be saved in a historical table for record keeping"""
+    history_data = resource.__dict__.copy()
+    history_data.pop("_sa_instance_state")
+    history_data.pop("id")
+    history_data.pop("created_at")
+    history_data.pop("updated_at")
+    return history_data

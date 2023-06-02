@@ -1,5 +1,6 @@
 {
   "name": "Essential",
+  "notice_key": "essential",
   "description": "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
   "internal_description": null,
   "origin": null,
