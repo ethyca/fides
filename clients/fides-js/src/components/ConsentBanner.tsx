@@ -47,6 +47,8 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     return null;
   }
 
+  console.log("cache");
+
   return (
     <div
       id="fides-consent-banner"
@@ -67,36 +69,36 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         >
           {description}
         </div>
-      </div>
-      <div
-        id="fides-consent-banner-buttons"
-        className="fides-consent-banner-buttons"
-      >
-        <span className="fides-consent-banner-buttons-left">
-          <Button
-            buttonType={ButtonType.TERTIARY}
-            label={privacyPreferencesLabel}
-            onClick={handleManagePreferencesClick}
-          />
-        </span>
-        <span className="fides-consent-banner-buttons-right">
-          <Button
-            buttonType={ButtonType.PRIMARY}
-            label={rejectButtonLabel}
-            onClick={() => {
-              onRejectAll();
-              setIsShown(false);
-            }}
-          />
-          <Button
-            buttonType={ButtonType.PRIMARY}
-            label={acceptButtonLabel}
-            onClick={() => {
-              onAcceptAll();
-              setIsShown(false);
-            }}
-          />
-        </span>
+        <div
+          id="fides-consent-banner-buttons"
+          className="fides-consent-banner-buttons"
+        >
+          <span className="fides-consent-banner-buttons-left">
+            <Button
+              buttonType={ButtonType.TERTIARY}
+              label={privacyPreferencesLabel}
+              onClick={handleManagePreferencesClick}
+            />
+          </span>
+          <span className="fides-consent-banner-buttons-right">
+            <Button
+              buttonType={ButtonType.PRIMARY}
+              label={rejectButtonLabel}
+              onClick={() => {
+                onRejectAll();
+                setIsShown(false);
+              }}
+            />
+            <Button
+              buttonType={ButtonType.PRIMARY}
+              label={acceptButtonLabel}
+              onClick={() => {
+                onAcceptAll();
+                setIsShown(false);
+              }}
+            />
+          </span>
+        </div>
       </div>
     </div>
   );

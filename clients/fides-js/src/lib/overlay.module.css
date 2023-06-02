@@ -122,7 +122,6 @@ div#fides-consent-banner-title {
   font-size: var(--fides-consent-overlay-font-size-title);
   font-weight: 600;
   margin-top: 0.5em;
-  margin-right: 2em;
   min-width: 33%;
   flex: 1;
   color: var(--fides-consent-overlay-title-font-color);
@@ -130,7 +129,6 @@ div#fides-consent-banner-title {
 
 div#fides-consent-banner-description {
   margin-top: 0.5em;
-  margin-right: 2em;
   min-width: 33%;
   flex: 1;
 }
