@@ -9,11 +9,17 @@ from typing import Any, Dict
 from fides.api.models.connectionconfig import ConnectionConfig as ConnectionConfig
 from fides.api.models.connectionconfig import ConnectionType as ConnectionType
 from fides.api.service.connectors.base_connector import BaseConnector as BaseConnector
+from fides.api.service.connectors.consent_email_connector import (
+    GenericConsentEmailConnector,
+)
 from fides.api.service.connectors.dynamodb_connector import (
     DynamoDBConnector as DynamoDBConnector,
 )
 from fides.api.service.connectors.email.attentive_connector import AttentiveConnector
 from fides.api.service.connectors.email.sovrn_connector import SovrnConnector
+from fides.api.service.connectors.erasure_email_connector import (
+    GenericErasureEmailConnector,
+)
 from fides.api.service.connectors.fides_connector import (
     FidesConnector as FidesConnector,
 )
@@ -56,6 +62,8 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.bigquery.value: BigQueryConnector,
     ConnectionType.dynamodb.value: DynamoDBConnector,
     ConnectionType.fides.value: FidesConnector,
+    ConnectionType.generic_consent_email.value: GenericConsentEmailConnector,
+    ConnectionType.generic_erasure_email.value: GenericErasureEmailConnector,
     ConnectionType.https.value: HTTPSConnector,
     ConnectionType.manual.value: ManualConnector,
     ConnectionType.manual_webhook.value: ManualWebhookConnector,
