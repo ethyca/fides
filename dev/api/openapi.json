@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.1b1.post0.dev11"
+    "version": "2.14.1b1.post0.dev12"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -7898,7 +7898,7 @@
           "Privacy Experience Config"
         ],
         "summary": "Experience Config Update",
-        "description": "Update Experience Config and then attempt to upsert Experiences and link back to ExperienceConfig.\n\nAll regions that should be linked to this ExperienceConfig (or remain linked) need to be\nincluded in this request.",
+        "description": "Update Experience Config and then attempt to upsert Experiences and link back to ExperienceConfig.\n\nAll regions that should be linked to this ExperienceConfig (or remain linked) need to be\nincluded in this request.  Don't pass in a regions key if you want to leave regions untouched.\nPassing in an empty list will remove all regions.",
         "operationId": "experience_config_update_api_v1_experience_config__experience_config_id__patch",
         "parameters": [
           {
@@ -12921,6 +12921,15 @@
         "type": "string",
         "description": "Enum for audit log actions, reflecting what a user did."
       },
+      "BannerEnabled": {
+        "title": "BannerEnabled",
+        "enum": [
+          "always_enabled",
+          "enabled_where_required",
+          "always_disabled"
+        ],
+        "description": "Whether the banner should display - not formalized in the db"
+      },
       "BigQueryConfig": {
         "title": "BigQueryConfig",
         "required": [
@@ -14820,14 +14829,6 @@
         },
         "description": "Describes whether or not the parent dataset is traversable; if not, includes\nan error message describing the traversal issues."
       },
-      "DeliveryMechanism": {
-        "title": "DeliveryMechanism",
-        "enum": [
-          "banner",
-          "link"
-        ],
-        "description": "The delivery mechanism - not formalized in the db"
-      },
       "DenyPrivacyRequests": {
         "title": "DenyPrivacyRequests",
         "required": [
@@ -15266,66 +15267,84 @@
       "ExperienceConfigCreate": {
         "title": "ExperienceConfigCreate",
         "required": [
-          "component",
-          "component_title",
-          "delivery_mechanism",
-          "regions"
+          "accept_button_label",
+          "description",
+          "reject_button_label",
+          "save_button_label",
+          "title",
+          "component"
         ],
         "type": "object",
         "properties": {
-          "acknowledgement_button_label": {
-            "title": "Acknowledgement Button Label",
+          "accept_button_label": {
+            "title": "Accept Button Label",
             "type": "string"
           },
-          "banner_title": {
-            "title": "Banner Title",
+          "acknowledge_button_label": {
+            "title": "Acknowledge Button Label",
+            "type": "string",
+            "description": "Overlay 'Acknowledge button label for notice only banner'"
+          },
+          "banner_enabled": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BannerEnabled"
+              }
+            ],
+            "description": "Overlay 'Banner'"
+          },
+          "description": {
+            "title": "Description",
             "type": "string"
-          },
-          "banner_description": {
-            "title": "Banner Description",
-            "type": "string"
-          },
-          "component": {
-            "$ref": "#/components/schemas/ComponentType"
-          },
-          "component_title": {
-            "title": "Component Title",
-            "type": "string"
-          },
-          "component_description": {
-            "title": "Component Description",
-            "type": "string"
-          },
-          "confirmation_button_label": {
-            "title": "Confirmation Button Label",
-            "type": "string"
-          },
-          "delivery_mechanism": {
-            "$ref": "#/components/schemas/DeliveryMechanism"
           },
           "disabled": {
             "title": "Disabled",
             "type": "boolean",
+            "description": "Whether the given ExperienceConfig is disabled",
             "default": false
           },
           "is_default": {
             "title": "Is Default",
             "type": "boolean",
+            "description": "Whether the given ExperienceConfig is a global default",
             "default": false
           },
-          "link_label": {
-            "title": "Link Label",
-            "type": "string"
+          "privacy_policy_link_label": {
+            "title": "Privacy Policy Link Label",
+            "type": "string",
+            "description": "Overlay and Privacy Center 'Privacy policy link label'"
           },
-          "reject_button_label": {
-            "title": "Reject Button Label",
-            "type": "string"
+          "privacy_policy_url": {
+            "title": "Privacy Policy Url",
+            "type": "string",
+            "description": "Overlay and Privacy Center 'Privacy policy URl'"
+          },
+          "privacy_preferences_link_label": {
+            "title": "Privacy Preferences Link Label",
+            "type": "string",
+            "description": "Overlay 'Privacy preferences link label'"
           },
           "regions": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PrivacyNoticeRegion"
-            }
+            },
+            "description": "Regions using this ExperienceConfig"
+          },
+          "reject_button_label": {
+            "title": "Reject Button Label",
+            "type": "string"
+          },
+          "save_button_label": {
+            "title": "Save Button Label",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "component": {
+            "$ref": "#/components/schemas/ComponentType"
           }
         },
         "description": "An API representation to create ExperienceConfig.\nThis model doesn't include an `id` so that it can be used for creation.\nIt also establishes some fields _required_ for creation"
@@ -15335,8 +15354,7 @@
         "required": [
           "experience_config",
           "linked_regions",
-          "unlinked_regions",
-          "skipped_regions"
+          "unlinked_regions"
         ],
         "type": "object",
         "properties": {
@@ -15354,12 +15372,6 @@
             "items": {
               "$ref": "#/components/schemas/PrivacyNoticeRegion"
             }
-          },
-          "skipped_regions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrivacyNoticeRegion"
-            }
           }
         },
         "description": "Schema with the created/updated experience config with regions that succeeded or failed"
@@ -15367,66 +15379,93 @@
       "ExperienceConfigResponse": {
         "title": "ExperienceConfigResponse",
         "required": [
+          "regions",
           "id",
+          "component",
           "experience_config_history_id",
           "version",
           "created_at",
-          "updated_at",
-          "regions"
+          "updated_at"
         ],
         "type": "object",
         "properties": {
-          "acknowledgement_button_label": {
-            "title": "Acknowledgement Button Label",
-            "type": "string"
+          "accept_button_label": {
+            "title": "Accept Button Label",
+            "type": "string",
+            "description": "Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'"
           },
-          "banner_title": {
-            "title": "Banner Title",
-            "type": "string"
+          "acknowledge_button_label": {
+            "title": "Acknowledge Button Label",
+            "type": "string",
+            "description": "Overlay 'Acknowledge button label for notice only banner'"
           },
-          "banner_description": {
-            "title": "Banner Description",
-            "type": "string"
+          "banner_enabled": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BannerEnabled"
+              }
+            ],
+            "description": "Overlay 'Banner'"
           },
-          "component": {
-            "$ref": "#/components/schemas/ComponentType"
-          },
-          "component_title": {
-            "title": "Component Title",
-            "type": "string"
-          },
-          "component_description": {
-            "title": "Component Description",
-            "type": "string"
-          },
-          "confirmation_button_label": {
-            "title": "Confirmation Button Label",
-            "type": "string"
-          },
-          "delivery_mechanism": {
-            "$ref": "#/components/schemas/DeliveryMechanism"
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "Overlay 'Banner Description' or Privacy Center 'Description'"
           },
           "disabled": {
             "title": "Disabled",
             "type": "boolean",
+            "description": "Whether the given ExperienceConfig is disabled",
             "default": false
           },
           "is_default": {
             "title": "Is Default",
             "type": "boolean",
+            "description": "Whether the given ExperienceConfig is a global default",
             "default": false
           },
-          "link_label": {
-            "title": "Link Label",
-            "type": "string"
+          "privacy_policy_link_label": {
+            "title": "Privacy Policy Link Label",
+            "type": "string",
+            "description": "Overlay and Privacy Center 'Privacy policy link label'"
+          },
+          "privacy_policy_url": {
+            "title": "Privacy Policy Url",
+            "type": "string",
+            "description": "Overlay and Privacy Center 'Privacy policy URl'"
+          },
+          "privacy_preferences_link_label": {
+            "title": "Privacy Preferences Link Label",
+            "type": "string",
+            "description": "Overlay 'Privacy preferences link label'"
+          },
+          "regions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
           },
           "reject_button_label": {
             "title": "Reject Button Label",
-            "type": "string"
+            "type": "string",
+            "description": "Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'"
+          },
+          "save_button_label": {
+            "title": "Save Button Label",
+            "type": "string",
+            "description": "Overlay 'Privacy preferences 'Save' button label"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string",
+            "description": "Overlay 'Banner title' or Privacy Center 'title'"
           },
           "id": {
             "title": "Id",
             "type": "string"
+          },
+          "component": {
+            "$ref": "#/components/schemas/ComponentType"
           },
           "experience_config_history_id": {
             "title": "Experience Config History Id",
@@ -15445,79 +15484,89 @@
             "title": "Updated At",
             "type": "string",
             "format": "date-time"
-          },
-          "regions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrivacyNoticeRegion"
-            }
           }
         },
         "description": "An API representation of ExperienceConfig used for response payloads"
       },
       "ExperienceConfigUpdate": {
         "title": "ExperienceConfigUpdate",
-        "required": [
-          "regions"
-        ],
         "type": "object",
         "properties": {
-          "acknowledgement_button_label": {
-            "title": "Acknowledgement Button Label",
-            "type": "string"
+          "accept_button_label": {
+            "title": "Accept Button Label",
+            "type": "string",
+            "description": "Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'"
           },
-          "banner_title": {
-            "title": "Banner Title",
-            "type": "string"
+          "acknowledge_button_label": {
+            "title": "Acknowledge Button Label",
+            "type": "string",
+            "description": "Overlay 'Acknowledge button label for notice only banner'"
           },
-          "banner_description": {
-            "title": "Banner Description",
-            "type": "string"
+          "banner_enabled": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BannerEnabled"
+              }
+            ],
+            "description": "Overlay 'Banner'"
           },
-          "component": {
-            "$ref": "#/components/schemas/ComponentType"
-          },
-          "component_title": {
-            "title": "Component Title",
-            "type": "string"
-          },
-          "component_description": {
-            "title": "Component Description",
-            "type": "string"
-          },
-          "confirmation_button_label": {
-            "title": "Confirmation Button Label",
-            "type": "string"
-          },
-          "delivery_mechanism": {
-            "$ref": "#/components/schemas/DeliveryMechanism"
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "Overlay 'Banner Description' or Privacy Center 'Description'"
           },
           "disabled": {
             "title": "Disabled",
             "type": "boolean",
+            "description": "Whether the given ExperienceConfig is disabled",
             "default": false
           },
           "is_default": {
             "title": "Is Default",
             "type": "boolean",
+            "description": "Whether the given ExperienceConfig is a global default",
             "default": false
           },
-          "link_label": {
-            "title": "Link Label",
-            "type": "string"
+          "privacy_policy_link_label": {
+            "title": "Privacy Policy Link Label",
+            "type": "string",
+            "description": "Overlay and Privacy Center 'Privacy policy link label'"
           },
-          "reject_button_label": {
-            "title": "Reject Button Label",
-            "type": "string"
+          "privacy_policy_url": {
+            "title": "Privacy Policy Url",
+            "type": "string",
+            "description": "Overlay and Privacy Center 'Privacy policy URl'"
+          },
+          "privacy_preferences_link_label": {
+            "title": "Privacy Preferences Link Label",
+            "type": "string",
+            "description": "Overlay 'Privacy preferences link label'"
           },
           "regions": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PrivacyNoticeRegion"
-            }
+            },
+            "description": "Regions using this ExperienceConfig"
+          },
+          "reject_button_label": {
+            "title": "Reject Button Label",
+            "type": "string",
+            "description": "Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'"
+          },
+          "save_button_label": {
+            "title": "Save Button Label",
+            "type": "string",
+            "description": "Overlay 'Privacy preferences 'Save' button label"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string",
+            "description": "Overlay 'Banner title' or Privacy Center 'title'"
           }
         },
-        "description": "Updating ExperienceConfig - requires regions to be patched specifically"
+        "additionalProperties": false,
+        "description": "Updating ExperienceConfig. Note that component cannot be updated once its created"
       },
       "ExtendedIdentityTypes": {
         "title": "ExtendedIdentityTypes",
@@ -17869,19 +17918,16 @@
         ],
         "type": "object",
         "properties": {
-          "disabled": {
-            "title": "Disabled",
-            "type": "boolean",
-            "default": false
+          "region": {
+            "$ref": "#/components/schemas/PrivacyNoticeRegion"
           },
           "component": {
             "$ref": "#/components/schemas/ComponentType"
           },
-          "delivery_mechanism": {
-            "$ref": "#/components/schemas/DeliveryMechanism"
-          },
-          "region": {
-            "$ref": "#/components/schemas/PrivacyNoticeRegion"
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
           },
           "experience_config": {
             "$ref": "#/components/schemas/ExperienceConfigResponse"
@@ -17907,6 +17953,10 @@
           "privacy_experience_history_id": {
             "title": "Privacy Experience History Id",
             "type": "string"
+          },
+          "show_banner": {
+            "title": "Show Banner",
+            "type": "boolean"
           },
           "privacy_notices": {
             "title": "Privacy Notices",
