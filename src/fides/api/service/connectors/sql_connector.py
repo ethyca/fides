@@ -185,22 +185,23 @@ class SQLConnector(BaseConnector[Engine]):
         """Optionally override to set the schema for a given database that
         persists through the entire session"""
 
-    def create_ssh_tunnel(self, host: str, port: int) -> None:
+    def create_ssh_tunnel(self, host: Optional[str], port: Optional[int]) -> None:
         """Creates an SSH Tunnel to forward ports as configured."""
-        with io.BytesIO(
-            CONFIG.security.bastion_server_ssh_pkey.encode("utf8")
-        ) as binary_file:
-            with io.TextIOWrapper(binary_file, encoding="utf8") as file_obj:
-                pkey = paramiko.RSAKey.from_private_key(file_obj=file_obj)
-        self.ssh_server = sshtunnel.SSHTunnelForwarder(
-            (CONFIG.security.bastion_server_host),
-            ssh_username=CONFIG.security.bastion_server_ssh_username,
-            ssh_pkey=pkey,
-            remote_bind_address=(
-                host,
-                port,
-            ),
-        )
+        if CONFIG.security.bastion_server_ssh_pkey:
+            with io.BytesIO(
+                CONFIG.security.bastion_server_ssh_pkey.encode("utf8")
+            ) as binary_file:
+                with io.TextIOWrapper(binary_file, encoding="utf8") as file_obj:
+                    pkey = paramiko.RSAKey.from_private_key(file_obj=file_obj)
+            self.ssh_server = sshtunnel.SSHTunnelForwarder(
+                (CONFIG.security.bastion_server_host),
+                ssh_username=CONFIG.security.bastion_server_ssh_username,
+                ssh_pkey=pkey,
+                remote_bind_address=(
+                    host,
+                    port,
+                ),
+            )
 
 
 class PostgreSQLConnector(SQLConnector):
@@ -224,7 +225,7 @@ class PostgreSQLConnector(SQLConnector):
         return f"postgresql://{user_password}{netloc}{port}{dbname}"
 
     def build_ssh_uri(self, local_address: tuple) -> str:
-        """Build URI of format postgresql://[user[:password]@][netloc][:port][/dbname]"""
+        """Build URI of format postgresql://[user[:password]@][ssh_host][:ssh_port][/dbname]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         user_password = ""
@@ -239,9 +240,9 @@ class PostgreSQLConnector(SQLConnector):
         dbname = f"/{config.dbname}" if config.dbname else ""
         return f"postgresql://{user_password}{netloc}{port}{dbname}"
 
+    # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
-
         config = self.secrets_schema(**self.configuration.secrets or {})
         if config.ssh_required and CONFIG.security.bastion_server_ssh_pkey:
             self.create_ssh_tunnel(host=config.host, port=config.port)
@@ -328,6 +329,19 @@ class RedshiftConnector(SQLConnector):
 
     secrets_schema = RedshiftSchema
 
+    def build_ssh_uri(self, local_address: tuple) -> str:
+        """Build SSH URI of format redshift+psycopg2://[user[:password]@][ssh_host][:ssh_port][/dbname]"""
+        config = self.secrets_schema(**self.configuration.secrets or {})
+
+        local_host, local_port = local_address
+
+        config = self.secrets_schema(**self.configuration.secrets or {})
+
+        port = f":{local_port}" if local_port else ""
+        database = f"/{config.database}" if config.database else ""
+        url = f"redshift+psycopg2://{config.user}:{config.password}@{local_host}{port}{database}"
+        return url
+
     # Overrides BaseConnector.build_uri
     def build_uri(self) -> str:
         """Build URI of format redshift+psycopg2://user:password@[host][:port][/database]"""
@@ -337,6 +351,22 @@ class RedshiftConnector(SQLConnector):
         database = f"/{config.database}" if config.database else ""
         url = f"redshift+psycopg2://{config.user}:{config.password}@{config.host}{port}{database}"
         return url
+
+    # Overrides SQLConnector.create_client
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with a database"""
+        config = self.secrets_schema(**self.configuration.secrets or {})
+        if config.ssh_required and CONFIG.security.bastion_server_ssh_pkey:
+            self.create_ssh_tunnel(host=config.host, port=config.port)
+            self.ssh_server.start()
+            uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
+        else:
+            uri = config.url or self.build_uri()
+        return create_engine(
+            uri,
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
+        )
 
     def set_schema(self, connection: Connection) -> None:
         """Sets the search_path for the duration of the session"""
