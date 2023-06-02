@@ -5,12 +5,13 @@
 import type { ConsentMechanism } from "./ConsentMechanism";
 import type { EnforcementLevel } from "./EnforcementLevel";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
- * An API representation of a PrivacyNotice that includes an `id` field.
- * Used to help model API responses and update payloads
+ * If retrieving notices for a given user, also return the default preferences for that notice
+ * and any saved preferences.
  */
-export type PrivacyNoticeWithId = {
+export type PrivacyNoticeResponseWithUserPreferences = {
   name?: string;
   notice_key?: string;
   description?: string;
@@ -26,4 +27,11 @@ export type PrivacyNoticeWithId = {
   displayed_in_overlay?: boolean;
   displayed_in_api?: boolean;
   id: string;
+  created_at: string;
+  updated_at: string;
+  version: number;
+  privacy_notice_history_id: string;
+  default_preference: UserConsentPreference;
+  current_preference?: UserConsentPreference;
+  outdated_preference?: UserConsentPreference;
 };

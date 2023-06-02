@@ -964,9 +964,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         return V1_URL_PREFIX + PRIVACY_PREFERENCES
 
     @pytest.fixture(scope="function")
-    def request_body(
-        self, privacy_notice, consent_policy, privacy_experience_overlay_banner
-    ):
+    def request_body(self, privacy_notice, consent_policy, privacy_experience_overlay):
         return {
             "browser_identity": {
                 "ga_client_id": "test",
@@ -980,9 +978,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             ],
             "policy_key": consent_policy.key,
             "user_geography": "us_ca",
-            "privacy_experience_history_id": privacy_experience_overlay_banner.histories[
-                0
-            ].id,
+            "privacy_experience_history_id": privacy_experience_overlay.histories[0].id,
             "method": "button",
         }
 
@@ -1052,7 +1048,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         url,
         request_body,
         privacy_notice,
-        privacy_experience_overlay_banner,
+        privacy_experience_overlay,
     ):
         """Assert CurrentPrivacyPreference records were updated and PrivacyPreferenceHistory records were created
         for recordkeeping with respect to the fides user device id in the request
@@ -1115,13 +1111,11 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         )  # Retrieved from request headers
         assert (
             privacy_preference_history.privacy_experience_config_history_id
-            == privacy_experience_overlay_banner.histories[
-                0
-            ].experience_config_history_id
+            == privacy_experience_overlay.histories[0].experience_config_history_id
         )
         assert (
             privacy_preference_history.privacy_experience_history_id
-            == privacy_experience_overlay_banner.histories[0].id
+            == privacy_experience_overlay.histories[0].id
         )
         assert privacy_preference_history.anonymized_ip_address == masked_ip
         assert privacy_preference_history.url_recorded is None
@@ -1176,7 +1170,7 @@ class TestHistoricalPreferences:
         privacy_preference_history,
         privacy_request_with_consent_policy,
         system,
-        privacy_experience_privacy_center_link,
+        privacy_experience_privacy_center,
     ) -> None:
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
@@ -1240,13 +1234,13 @@ class TestHistoricalPreferences:
         assert response_body["truncated_ip_address"] == "92.158.1.0"
         assert (
             response_body["experience_config_history_id"]
-            == privacy_experience_privacy_center_link.histories[
+            == privacy_experience_privacy_center.histories[
                 0
             ].experience_config_history_id
         )
         assert (
             response_body["privacy_experience_history_id"]
-            == privacy_experience_privacy_center_link.histories[0].id
+            == privacy_experience_privacy_center.histories[0].id
         )
 
     def test_get_historical_preferences_ordering(

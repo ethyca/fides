@@ -12,5 +12,4 @@ export type ExperienceConfigCreateOrUpdateResponse = {
   experience_config: ExperienceConfigResponse;
   linked_regions: Array<PrivacyNoticeRegion>;
   unlinked_regions: Array<PrivacyNoticeRegion>;
-  skipped_regions: Array<PrivacyNoticeRegion>;
 };
