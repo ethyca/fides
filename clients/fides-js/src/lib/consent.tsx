@@ -19,11 +19,6 @@ export const initOverlay = async ({
 }: OverlayProps): Promise<void> => {
   debugLog(options.debug, "Initializing Fides consent overlays...");
 
-  debugLog(
-    options.debug,
-    "Validating Fides consent overlay options...",
-    options
-  );
   async function renderFidesOverlay(): Promise<void> {
     try {
       debugLog(

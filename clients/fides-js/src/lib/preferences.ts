@@ -27,7 +27,7 @@ export const updateConsentPreferences = ({
   experienceHistoryId: string;
   fidesApiUrl: string;
   consentMethod: ConsentMethod;
-  userLocationString: string;
+  userLocationString?: string;
   cookie: FidesCookie;
   debug?: boolean;
 }) => {
