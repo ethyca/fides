@@ -64,6 +64,7 @@ class Consent(FidesSchema):
 class ConsentReport(Consent):
     """Schema for reporting Consent requests."""
 
+    id: str
     identity: IdentityBase
     created_at: datetime
     updated_at: datetime

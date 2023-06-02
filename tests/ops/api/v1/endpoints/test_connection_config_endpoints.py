@@ -1396,6 +1396,10 @@ class TestPutConnectionConfigSecrets:
         generate_auth_header,
         sovrn_email_connection_config,
     ) -> None:
+        """
+        Test that the request uses default AdvancedSettings if none are provided
+        """
+
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{sovrn_email_connection_config.key}/secret"
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {
@@ -1407,9 +1411,7 @@ class TestPutConnectionConfigSecrets:
             headers=auth_header,
             json=payload,
         )
-        assert resp.status_code == 422
-        assert resp.json()["detail"][0]["loc"] == ["advanced_settings"]
-        assert resp.json()["detail"][0]["msg"] == "field required"
+        assert resp.status_code == 200
 
     def test_put_connection_config_redshift_secrets(
         self,

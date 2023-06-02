@@ -182,6 +182,7 @@ From the release branch, confirm the following:
 
 * [ ] Quickstart works: `nox -s quickstart` (verify you can complete the interactive prompts from the command-line)
 * [ ] Test environment works: `nox -s "fides_env(test)"` (verify the admin UI on localhost:8080, privacy center on localhost:3001, CLI and webserver)
+* [ ] Have Roger run a QATouch automation run
 
 Next, run the following checks via the test environment:
 

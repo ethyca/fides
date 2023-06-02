@@ -23,4 +23,6 @@ export enum ConnectionType {
   MANUAL_WEBHOOK = "manual_webhook",
   TIMESCALE = "timescale",
   FIDES = "fides",
+  GENERIC_ERASURE_EMAIL = "erasure_email",
+  GENERIC_CONSENT_EMAIL = "consent_email",
 }

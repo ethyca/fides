@@ -138,13 +138,15 @@ def get_connection_types(
                 for conn_type in ConnectionType
                 if conn_type
                 not in [
-                    ConnectionType.saas,
+                    ConnectionType.attentive,
+                    ConnectionType.fides,
+                    ConnectionType.generic_consent_email,
+                    ConnectionType.generic_erasure_email,
                     ConnectionType.https,
                     ConnectionType.manual,
                     ConnectionType.manual_webhook,
-                    ConnectionType.fides,
+                    ConnectionType.saas,
                     ConnectionType.sovrn,
-                    ConnectionType.attentive,
                 ]
                 and is_match(conn_type.value)
             ]
