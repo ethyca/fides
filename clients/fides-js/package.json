@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "build": "NODE_ENV=production rollup -c",
-    "clean": "rm -rf dist .turbo",
+    "clean": "rm -rf dist .turbo node_modules",
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
     "lint": "eslint . --ext .ts,.tsx",

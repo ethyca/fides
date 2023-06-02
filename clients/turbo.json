@@ -5,6 +5,9 @@
       "dependsOn": ["^build"],
       "outputs": [".next/*", "!.next/cache/*", "dist/*"]
     },
+    "clean": {
+      "dependsOn": []
+    },
     "dev": {
       "dependsOn": ["^build"],
       "outputs": [".next/*", "!.next/cache/*"],
