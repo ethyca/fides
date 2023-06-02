@@ -180,7 +180,7 @@ describe("Consent banner", () => {
             "div#fides-consent-banner-buttons.fides-consent-banner-buttons"
           ).within(() => {
             cy.get(
-              "button#fides-consent-banner-button-secondary.fides-consent-banner-button.fides-consent-banner-button-secondary"
+              "button#fides-consent-banner-button-tertiary.fides-consent-banner-button.fides-consent-banner-button-tertiary"
             ).contains("Manage preferences");
             cy.get(
               "button#fides-consent-banner-button-primary.fides-consent-banner-button.fides-consent-banner-button-primary"
@@ -191,7 +191,7 @@ describe("Consent banner", () => {
             // Order matters - it should always be secondary, then primary!
             cy.get("button")
               .eq(0)
-              .should("have.id", "fides-consent-banner-button-secondary");
+              .should("have.id", "fides-consent-banner-button-tertiary");
             cy.get("button")
               .eq(1)
               .should("have.id", "fides-consent-banner-button-primary");
