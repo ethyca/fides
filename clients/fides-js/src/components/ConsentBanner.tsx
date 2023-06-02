@@ -47,8 +47,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     return null;
   }
 
-  console.log("cache");
-
   return (
     <div
       id="fides-consent-banner"
