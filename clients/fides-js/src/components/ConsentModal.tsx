@@ -69,7 +69,7 @@ const ConsentModal = ({
           <h1 data-testid="modal-header" className="modal-header">
             {experience.component_title}
           </h1>
-          <p data-testid="modal-description">
+          <p data-testid="modal-description" className="modal-description">
             {experience.component_description}
           </p>
           <div className="modal-notices">
