@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.1b1.post0.dev10"
+    "version": "2.14.1b1.post0.dev11"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -13455,9 +13455,11 @@
           "dynamodb",
           "manual_webhook",
           "timescale",
-          "fides"
+          "fides",
+          "generic_erasure_email",
+          "generic_consent_email"
         ],
-        "description": "Supported types to which we can connect fidesops."
+        "description": "Supported types to which we can connect Fides."
       },
       "ConnectorParam": {
         "title": "ConnectorParam",
@@ -15019,8 +15021,7 @@
         "title": "EmailDocsSchema",
         "required": [
           "third_party_vendor_name",
-          "recipient_email_address",
-          "advanced_settings"
+          "recipient_email_address"
         ],
         "type": "object",
         "properties": {
@@ -15039,7 +15040,18 @@
             "format": "email"
           },
           "advanced_settings": {
-            "$ref": "#/components/schemas/AdvancedSettings"
+            "title": "Advanced Settings",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdvancedSettings"
+              }
+            ],
+            "default": {
+              "identity_types": {
+                "email": true,
+                "phone_number": false
+              }
+            }
           }
         },
         "additionalProperties": false,
@@ -19778,9 +19790,6 @@
       },
       "SovrnDocsSchema": {
         "title": "SovrnDocsSchema",
-        "required": [
-          "advanced_settings"
-        ],
         "type": "object",
         "properties": {
           "third_party_vendor_name": {
@@ -19800,7 +19809,21 @@
             "format": "email"
           },
           "advanced_settings": {
-            "$ref": "#/components/schemas/AdvancedSettingsWithExtendedIdentityTypes"
+            "title": "Advanced Settings",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdvancedSettingsWithExtendedIdentityTypes"
+              }
+            ],
+            "default": {
+              "identity_types": {
+                "email": false,
+                "phone_number": false,
+                "cookie_ids": [
+                  "ljt_readerID"
+                ]
+              }
+            }
           }
         },
         "additionalProperties": false,
