@@ -66,6 +66,7 @@ class DsrReportBuilder:
         """Generates a file from the template and data"""
         report_data = {
             "heading": heading,
+            "description": description,
             "data": data,
             "request": self.request_data,
         }
