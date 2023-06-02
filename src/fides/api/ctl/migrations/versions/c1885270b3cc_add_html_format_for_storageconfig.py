@@ -1,7 +1,7 @@
 """add html format for storageconfig
 
 Revision ID: c1885270b3cc
-Revises: 587c53fe3e99
+Revises: deb97d9393f3
 Create Date: 2023-05-31 21:43:45.404454
 
 """
@@ -9,7 +9,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "c1885270b3cc"
-down_revision = "587c53fe3e99"
+down_revision = "deb97d9393f3"
 branch_labels = None
 depends_on = None
 
