@@ -9,12 +9,20 @@ from typing import Any, Dict, List, Optional
 import jinja2
 from jinja2 import Environment, FileSystemLoader
 
+from fides.api.models.policy import ActionType
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.redis_cache import Identity
+
 DSR_DIRECTORY = os.path.dirname(__file__)
 
 
+# pylint: disable=too-many-instance-attributes
 class DsrReportBuilder:
     def __init__(
-        self, folder_name: str, request_data: Dict[str, Any], dsr_data: Dict[str, Any]
+        self,
+        folder_name: str,
+        privacy_request: PrivacyRequest,
+        dsr_data: Dict[str, Any],
     ):
         """
         Manages populating HTML templates from the given data and adding the generated
@@ -24,6 +32,9 @@ class DsrReportBuilder:
         # zip file variables
         self.folder_name = folder_name
         self.baos = BytesIO()
+
+        # we close this in the finally block of generate()
+        # pylint: disable=consider-using-with
         self.out = zipfile.ZipFile(self.baos, "w")
 
         # Jinja template environment initialization
@@ -32,21 +43,27 @@ class DsrReportBuilder:
 
         jinja2.filters.FILTERS["pretty_print"] = pretty_print
         self.template_loader = Environment(loader=FileSystemLoader(DSR_DIRECTORY))
-        self.template_data: Dict[str, Any] = {}  # colors go here
+
+        # to pass in custom colors in the future
+        self.template_data: Dict[str, Any] = {
+            "text_color": "#4A5568",
+            "header_color": "#F7FAFC",
+            "border_color": "#E2E8F0",
+        }
         self.main_links: Dict[str, Any] = {}  # used to track the generated pages
 
         # report data to populate the templates
-        self.request_data = request_data
+        self.request_data = _map_privacy_request(privacy_request)
         self.dsr_data = dsr_data
 
-    def generate_page(
+    def populate_template(
         self,
         template_path: str,
-        heading: str,
-        description: Optional[str],
-        data: Dict[str, Any],
+        heading: Optional[str] = None,
+        description: Optional[str] = None,
+        data: Optional[Dict[str, Any]] = None,
     ) -> str:
-        """Generates an HTML page from the template and data"""
+        """Generates a file from the template and data"""
         report_data = {
             "heading": heading,
             "data": data,
@@ -76,8 +93,8 @@ class DsrReportBuilder:
         # generate dataset index page
         self.add_file(
             f"/{dataset_name}/index.html",
-            self.generate_page(
-                "templates/dataset_index.jinja",
+            self.populate_template(
+                "templates/dataset_index.html.jinja",
                 dataset_name,
                 None,
                 collection_links,
@@ -93,8 +110,8 @@ class DsrReportBuilder:
             detail_url = f"{index}.html"
             self.add_file(
                 f"/{dataset_name}/{collection_name}/{index}.html",
-                self.generate_page(
-                    "templates/item.jinja",
+                self.populate_template(
+                    "templates/item.html.jinja",
                     f"{collection_name} (item #{index})",
                     None,
                     item,
@@ -105,8 +122,11 @@ class DsrReportBuilder:
         # generate detail index page
         self.add_file(
             f"/{dataset_name}/{collection_name}/index.html",
-            self.generate_page(
-                "templates/collection_index.jinja", collection_name, None, detail_links
+            self.populate_template(
+                "templates/collection_index.html.jinja",
+                collection_name,
+                None,
+                detail_links,
             ),
         )
 
@@ -115,40 +135,63 @@ class DsrReportBuilder:
         Processes the request and DSR data to build zip file containing the DSR report.
         Returns the zip file as an in-memory byte array.
         """
-        # all the css for the pages is in main.css
+        try:
+            # all the css for the pages is in main.css
+            self.add_file(
+                "/main.css",
+                self.populate_template("templates/main.css.jinja"),
+            )
+            self.add_file(
+                "/logo.svg",
+                Path(os.path.join(DSR_DIRECTORY, "./assets/logo.svg")).read_text(
+                    encoding="utf-8"
+                ),
+            )
+            self.add_file(
+                "/back.svg",
+                Path(os.path.join(DSR_DIRECTORY, "./assets/back.svg")).read_text(
+                    encoding="utf-8"
+                ),
+            )
 
-        self.add_file(
-            "/main.css",
-            Path(os.path.join(DSR_DIRECTORY, "./assets/main.css")).read_text(),
-        )
-        self.add_file(
-            "/logo.svg",
-            Path(os.path.join(DSR_DIRECTORY, "./assets/logo.svg")).read_text(),
-        )
-        self.add_file(
-            "/back.svg",
-            Path(os.path.join(DSR_DIRECTORY, "./assets/back.svg")).read_text(),
-        )
+            # pre-process data to split the dataset:collection keys
+            datasets: Dict[str, Any] = defaultdict(lambda: defaultdict(list))
+            for key, rows in self.dsr_data.items():
+                [dataset_name, collection_name] = key.split(":")
+                datasets[dataset_name][collection_name].extend(rows)
 
-        # pre-process data to split the dataset:collection keys
-        datasets: Dict[str, Any] = defaultdict(lambda: defaultdict(list))
-        for key, rows in self.dsr_data.items():
-            [dataset_name, collection_name] = key.split(":")
-            datasets[dataset_name][collection_name].extend(rows)
+            for dataset_name, collections in datasets.items():
+                self.add_dataset(dataset_name, collections)
+                self.main_links[dataset_name] = f"{dataset_name}/index.html"
 
-        for dataset_name, collections in datasets.items():
-            self.add_dataset(dataset_name, collections)
-            self.main_links[dataset_name] = f"{dataset_name}/index.html"
+            # create the main index once all the datasets have been added
+            self.add_file(
+                "/index.html",
+                self.populate_template(
+                    "templates/index.html.jinja", "DSR Report", None, self.main_links
+                ),
+            )
+        finally:
+            # close out zip file in the finally block to always close, even when an exception occurs
+            self.out.close()
 
-        # create the main index once all the datasets have been added
-        self.add_file(
-            "/index.html",
-            self.generate_page(
-                "templates/index.jinja", "DSR Report", None, self.main_links
-            ),
-        )
-
-        # close out zip file and reset the file pointer so the file can be fully read by the caller
-        self.out.close()
+        # reset the file pointer so the file can be fully read by the caller
         self.baos.seek(0)
         return self.baos
+
+
+def _map_privacy_request(privacy_request: PrivacyRequest) -> Dict[str, Any]:
+    """Creates a map with a subset of values from the privacy request"""
+    request_data = {}
+    request_data["id"] = privacy_request.id
+    action_type: Optional[ActionType] = privacy_request.policy.get_action_type()
+    if action_type:
+        request_data["type"] = action_type.value
+    identity: Identity = privacy_request.get_persisted_identity()
+    if identity.email:
+        request_data["email"] = identity.email
+    if privacy_request.requested_at:
+        request_data["requested_at"] = privacy_request.requested_at.strftime(
+            "%m/%d/%Y %H:%M %Z"
+        )
+    return request_data

@@ -15,6 +15,7 @@ from bson import ObjectId
 from loguru import logger
 
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.storage.storage import (
     ResponseFormat,
     S3AuthMethod,
@@ -59,7 +60,7 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
 
 
 def write_to_in_memory_buffer(
-    resp_format: str, data: Dict[str, Any], request_id: str
+    resp_format: str, data: Dict[str, Any], privacy_request: PrivacyRequest
 ) -> BytesIO:
     """Write JSON/CSV data to in-memory file-like object to be passed to S3. Encrypt data if encryption key/nonce
     has been cached for the given privacy request id
@@ -73,7 +74,7 @@ def write_to_in_memory_buffer(
     if resp_format == ResponseFormat.json.value:
         json_str = json.dumps(data, indent=2, default=_handle_json_encoding)
         return BytesIO(
-            encrypt_access_request_results(json_str, request_id).encode(
+            encrypt_access_request_results(json_str, privacy_request.id).encode(
                 CONFIG.security.encoding
             )
         )
@@ -88,7 +89,9 @@ def write_to_in_memory_buffer(
                 buffer.seek(0)
                 f.writestr(
                     f"{key}.csv",
-                    encrypt_access_request_results(buffer.getvalue(), request_id),
+                    encrypt_access_request_results(
+                        buffer.getvalue(), privacy_request.id
+                    ),
                 )
 
         zipped_csvs.seek(0)
@@ -97,13 +100,7 @@ def write_to_in_memory_buffer(
     if resp_format == ResponseFormat.html.value:
         return DsrReportBuilder(
             folder_name="dsr-report",
-            request_data={
-                "id": "BGSJETG543",
-                "name": "James Brophy",
-                "type": "access",
-                "email": "james.brophy@email.com",
-                "submission_datetime": "04/05/2023 12:34 EDT",
-            },
+            privacy_request=privacy_request,
             dsr_data=data,
         ).generate()
 
@@ -136,7 +133,7 @@ def upload_to_s3(  # pylint: disable=R0913
     bucket_name: str,
     file_key: str,
     resp_format: str,
-    request_id: str,
+    privacy_request: PrivacyRequest,
     auth_method: S3AuthMethod,
 ) -> str:
     """Uploads arbitrary data to s3 returned from an access request"""
@@ -149,7 +146,7 @@ def upload_to_s3(  # pylint: disable=R0913
         # handles file chunking
         try:
             s3_client.upload_fileobj(
-                Fileobj=write_to_in_memory_buffer(resp_format, data, request_id),
+                Fileobj=write_to_in_memory_buffer(resp_format, data, privacy_request),
                 Bucket=bucket_name,
                 Key=file_key,
             )
@@ -183,7 +180,7 @@ def _handle_json_encoding(field: Any) -> Union[str, Dict[str, str]]:
 def upload_to_local(
     data: Dict,
     file_key: str,
-    request_id: str,
+    privacy_request: PrivacyRequest,
     resp_format: str = ResponseFormat.json.value,
 ) -> str:
     """Uploads access request data to a local folder - for testing/demo purposes only"""
@@ -191,7 +188,7 @@ def upload_to_local(
         os.makedirs(LOCAL_FIDES_UPLOAD_DIRECTORY)
 
     filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"
-    in_memory_file = write_to_in_memory_buffer(resp_format, data, request_id)
+    in_memory_file = write_to_in_memory_buffer(resp_format, data, privacy_request)
 
     with open(filename, "wb") as file:
         file.write(in_memory_file.getvalue())

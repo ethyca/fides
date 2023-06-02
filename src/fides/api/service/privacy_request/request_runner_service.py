@@ -228,7 +228,7 @@ def upload_access_results(  # pylint: disable=R0912
         try:
             download_url: Optional[str] = upload(
                 db=session,
-                request_id=privacy_request.id,
+                privacy_request=privacy_request,
                 data=filtered_results,
                 storage_key=storage_destination.key,  # type: ignore
             )
