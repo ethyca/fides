@@ -3,8 +3,8 @@ from time import sleep
 import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 
-MSSQL_URL_TEMPLATE = "mssql+pymssql://sa:Mssql_pw1@mssql_example:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
-MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
+MSSQL_URL_TEMPLATE = "mssql+pymssql://sa:Mssql_pw1@mssql_example:1433/{}"
+MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master")
 
 
 def mssql_setup():
@@ -13,7 +13,9 @@ def mssql_setup():
     The query file must have each query on a separate line.
     Initial connection must be done to the master database.
     """
-    engine = sqlalchemy.create_engine(MASTER_MSSQL_URL)
+    engine = sqlalchemy.create_engine(MASTER_MSSQL_URL).execution_options(
+        isolation_level="AUTOCOMMIT"
+    )
 
     # Wait until mssql is ready. MSSQL tests were randomly failing in CI because the
     # server wasn't ready. This is a workaround to that issue.

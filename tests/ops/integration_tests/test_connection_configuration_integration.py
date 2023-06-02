@@ -892,7 +892,7 @@ class TestMicrosoftSQLServerConnection:
         connection_config_mssql,
     ) -> None:
         payload = {
-            "url": "mssql+pymssql://sa:Mssql_pw1@mssql_example:1433/mssql_example?driver=ODBC+Driver+17+for+SQL+Server"
+            "url": "mssql+pymssql://sa:Mssql_pw1@mssql_example:1433/mssql_example"
         }
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])

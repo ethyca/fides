@@ -365,9 +365,9 @@ POSTGRES_URL = (
 
 MYSQL_URL = "mysql+pymysql://mysql_user:mysql_pw@mysql-test:3306/mysql_example"
 
-MSSQL_URL_TEMPLATE = "mssql+pymssql://sa:SQLserver1@sqlserver-test:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
+MSSQL_URL_TEMPLATE = "mssql+pymssql://sa:SQLserver1@sqlserver-test:1433/{}"
 MSSQL_URL = MSSQL_URL_TEMPLATE.format("sqlserver_example")
-MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
+MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master")
 
 # External databases require credentials passed through environment variables
 SNOWFLAKE_URL_TEMPLATE = "snowflake://FIDESCTL:{}@ZOA73785/FIDESCTL_TEST"
