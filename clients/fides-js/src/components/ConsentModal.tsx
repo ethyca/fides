@@ -61,7 +61,7 @@ const ConsentModal = ({
     <div>
       <div
         data-testid="consent-modal"
-        id="fides-consent-modal"
+        id="fides-modal"
         role="dialog"
         aria-modal="true"
       >

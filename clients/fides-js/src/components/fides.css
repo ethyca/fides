@@ -1,0 +1,372 @@
+/**
+* Default CSS styles for the banner
+*/
+:root {
+  /* Colors */
+  --fides-overlay-primary-color: #8243f2;
+  --fides-overlay-background-color: #f7fafc;
+  --fides-overlay-font-color: #4a5568;
+  --fides-overlay-font-color-dark: #2d3748;
+  --fides-overlay-hover-color: #edf2f7;
+  /* Buttons */
+  --fides-overlay-primary-button-background-color: var(
+    --fides-overlay-primary-color
+  );
+  --fides-overlay-primary-button-background-hover-color: #9569f4;
+  --fides-overlay-primary-button-text-color: #ffffff;
+  --fides-overlay-primary-button-border-color: transparent;
+  --fides-overlay-secondary-button-background-color: var(
+    --fides-overlay-background-color
+  );
+  --fides-overlay-secondary-button-background-hover-color: var(
+    --fides-overlay-hover-color
+  );
+  --fides-overlay-secondary-button-text-color: #2d3748;
+  --fides-overlay-secondary-button-border-color: var(
+    --fides-overlay-primary-color
+  );
+  /* Text */
+  --fides-overlay-title-font-color: var(--fides-overlay-font-color);
+  --fides-overlay-body-font-color: var(--fides-overlay-font-color);
+  --fides-overlay-link-font-color: var(--fides-overlay-font-color-dark);
+  /* Switches */
+  --fides-overlay-primary-active-color: var(--fides-overlay-primary-color);
+  --fides-overlay-primary-active-disabled-color: #bda4f7;
+  --fides-overlay-inactive-color: #cbd5e0;
+  --fides-overlay-disabled-color: #e1e7ee;
+  /* Dividers */
+  --fides-overlay-row-divider-color: #e2e8f0;
+  --fides-overlay-row-hover-color: var(--fides-overlay-hover-color);
+
+  /* Everything else */
+  --fides-overlay-font-family: Inter, sans-serif;
+  --fides-overlay-font-size-body: 1em;
+  --fides-overlay-font-size-title: 1.1em;
+  --fides-overlay-font-size-buttons: 0.9em;
+  --fides-overlay-padding: 1.5em;
+  --fides-overlay-button-border-radius: 4px;
+  --fides-overlay-button-padding: 0.5em 1em;
+  --fides-overlay-component-border-radius: 0px;
+}
+
+div#fides-overlay {
+  font-family: var(--fides-overlay-font-family);
+  font-size: var(--fides-overlay-font-size-body);
+
+  /* CSS reset values, adapted from https://www.joshwcomeau.com/css/custom-css-reset/ */
+  line-height: calc(1em + 0.5rem);
+  -webkit-font-smoothing: antialiased;
+}
+
+#fides-modal-link {
+  display: none;
+}
+
+div#fides-banner {
+  background: var(--fides-overlay-background-color);
+  color: var(--fides-overlay-body-font-color);
+  box-sizing: border-box;
+  padding: var(--fides-overlay-padding);
+  border: 1px solid var(--fides-overlay-primary-color);
+  border-radius: var(--fides-overlay-component-border-radius);
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 1s;
+}
+
+div#fides-banner-inner {
+  width: 100%;
+}
+
+div#fides-banner.fides-banner-bottom {
+  position: fixed;
+  z-index: 1;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  transform: translateY(0%);
+}
+
+div#fides-banner.fides-banner-bottom.fides-banner-hidden {
+  transform: translateY(100%);
+}
+
+div#fides-banner.fides-banner-top {
+  position: fixed;
+  z-index: 1;
+  width: 100%;
+  top: 0;
+  left: 0;
+  transform: translateY(0%);
+}
+
+div#fides-banner.fides-banner-top.fides-banner-hidden {
+  transform: translateY(-100%);
+}
+
+div#fides-banner-title {
+  font-size: var(--fides-overlay-font-size-title);
+  font-weight: 600;
+  margin-top: 0.5em;
+  min-width: 33%;
+  flex: 1;
+  color: var(--fides-overlay-title-font-color);
+}
+
+div#fides-banner-description {
+  margin-top: 0.5em;
+  min-width: 33%;
+  flex: 1;
+}
+
+div#fides-banner-buttons {
+  margin-top: 0.5em;
+  font-size: var(--fides-overlay-font-size-buttons);
+}
+
+span.fides-banner-buttons-right {
+  float: right;
+}
+
+button.fides-banner-button {
+  display: inline-block;
+  flex: auto;
+  cursor: pointer;
+  text-align: center;
+  margin: 0;
+  margin-top: 0.25em;
+  margin-right: 0.5em;
+  padding: var(--fides-overlay-button-padding);
+  background: var(--fides-overlay-primary-button-background-color);
+  color: var(--fides-overlay-primary-button-text-color);
+  border: 1px solid;
+
+  font-family: inherit;
+  line-height: 1.15;
+  text-decoration: none;
+}
+
+button.fides-banner-button:hover {
+  background: var(--fides-overlay-primary-button-background-hover-color);
+}
+
+button.fides-banner-button.fides-banner-button-primary {
+  background: var(--fides-overlay-primary-button-background-color);
+  color: var(--fides-overlay-primary-button-text-color);
+  border: none;
+}
+
+button.fides-banner-button.fides-banner-button-primary:hover {
+  background: var(--fides-overlay-primary-button-background-hover-color);
+}
+
+button.fides-banner-button.fides-banner-button-secondary {
+  background: var(--fides-overlay-secondary-button-background-color);
+  color: var(--fides-overlay-secondary-button-text-color);
+  border: 1px solid var(--fides-overlay-primary-button-background-color);
+}
+
+button.fides-banner-button.fides-banner-button-secondary:hover {
+  background: var(--fides-overlay-secondary-button-background-hover-color);
+}
+
+button.fides-banner-button.fides-banner-button-tertiary {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--fides-overlay-link-font-color);
+  text-decoration: underline;
+  cursor: pointer;
+  line-height: 2em;
+}
+
+/** Modal */
+div#fides-modal {
+  font-family: var(--fides-overlay-font-family);
+  font-size: var(--fides-overlay-font-size-body);
+  color: var(--fides-overlay-body-font-color);
+  box-sizing: border-box;
+  padding: var(--fides-overlay-padding);
+  border: 1px solid var(--fides-overlay-primary-color);
+  background-color: var(--fides-overlay-background-color);
+  border-radius: var(--fides-overlay-component-border-radius);
+  max-height: 100%;
+  max-width: 100%;
+  /* TODO: use a system for z-indexes */
+  z-index: 1010;
+
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+div#fides-modal .modal-header {
+  text-align: center;
+  font-weight: 600;
+  font-size: var(--fides-overlay-font-size-title);
+  color: var(--fides-overlay-title-font-color);
+}
+
+div#fides-modal .modal-description {
+  margin: 1em 0 1em 0;
+}
+
+div#fides-modal .modal-button-group {
+  display: flex;
+}
+
+.modal-overlay {
+  z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.modal-notices {
+  margin-bottom: 1em;
+}
+
+.modal-privacy-policy {
+  display: block;
+  text-align: center;
+  margin-top: 1.5em;
+  color: var(--fides-overlay-primary-color);
+}
+
+/** Toggle, adapted from https://kittygiraudel.com/2021/04/05/an-accessible-toggle/ */
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle-display {
+    transition-duration: 0ms;
+  }
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  position: relative;
+  gap: 1ch;
+}
+
+.toggle .toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  cursor: pointer;
+}
+
+.toggle .toggle-display {
+  --offset: 0.1em;
+  --diameter: 1em;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-around;
+
+  width: calc(var(--diameter) * 2 + var(--offset) * 2);
+  height: calc(var(--diameter) + var(--offset) * 2);
+  box-sizing: content-box;
+
+  position: relative;
+  border-radius: 100vw;
+  background-color: var(--fides-overlay-inactive-color);
+  transition: 250ms;
+}
+
+.toggle .toggle-display::before {
+  content: "";
+
+  width: var(--diameter);
+  height: var(--diameter);
+  border-radius: 50%;
+
+  box-sizing: border-box;
+
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: var(--offset);
+  transform: translate(0, -50%);
+
+  background-color: #fff;
+  transition: inherit;
+}
+
+/* Checked/unchecked states */
+.toggle .toggle-input:checked + .toggle-display {
+  background-color: var(--fides-overlay-primary-active-color);
+}
+.toggle .toggle-input:checked + .toggle-display::before {
+  transform: translate(100%, -50%);
+}
+
+/* Disabled state */
+.toggle .toggle-input:disabled {
+  cursor: not-allowed;
+}
+.toggle .toggle-input:disabled + .toggle-display {
+  background-color: var(--fides-overlay-disabled-color);
+}
+.toggle .toggle-input:disabled:checked + .toggle-display {
+  background-color: var(--fides-overlay-primary-active-disabled-color);
+}
+
+/* Focus ring when using keyboard */
+.toggle .toggle-input:focus + .toggle-display {
+  /* Firefox only has Highlight, not -webkit-focus-ring-color */
+  outline: 1px auto Highlight;
+  outline: 1px auto -webkit-focus-ring-color;
+}
+.toggle .toggle-input:focus:not(:focus-visible) + .toggle-display {
+  outline: 0;
+}
+
+/* Divider */
+
+.divider {
+  border-width: 0px 0px 1px;
+  border-color: var(--fides-overlay-row-divider-color);
+  margin: 0;
+}
+
+/* Disclosure */
+
+.disclosure-hidden {
+  visibility: hidden;
+  height: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.notice-toggle .notice-toggle-title {
+  padding: 0.5em;
+  display: flex;
+  justify-content: space-between;
+}
+
+.notice-toggle .notice-toggle-trigger {
+  width: 100%;
+}
+
+.notice-toggle .notice-toggle-title:hover {
+  cursor: pointer;
+  background-color: var(--fides-overlay-row-hover-color);
+}
+
+.notice-toggle .disclosure-visible {
+  padding-left: 0.5em;
+}
+
+.notice-toggle-expanded {
+  background-color: var(--fides-overlay-row-hover-color);
+}

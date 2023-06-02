@@ -14,8 +14,8 @@ const Button: FunctionComponent<ButtonProps> = ({
 }) => (
   <button
     type="button"
-    id={`fides-consent-banner-button-${buttonType.valueOf()}`}
-    className={`fides-consent-banner-button fides-consent-banner-button-${buttonType.valueOf()}`}
+    id={`fides-banner-button-${buttonType.valueOf()}`}
+    className={`fides-banner-button fides-banner-button-${buttonType.valueOf()}`}
     onClick={onClick}
     data-testid={`${label}-btn`}
   >
