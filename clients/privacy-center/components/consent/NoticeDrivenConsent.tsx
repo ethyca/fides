@@ -33,6 +33,7 @@ import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { useLocalStorage } from "~/common/hooks";
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
+import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
 const resolveConsentValue = (
   notice: PrivacyNoticeResponseWithUserPreferences,
@@ -173,7 +174,7 @@ const NoticeDrivenConsent = () => {
   };
 
   return (
-    <Stack spacing={4}>
+    <Stack spacing={6} paddingX={12}>
       {items.map((item, index) => {
         const { id, highlight, url, name, description, historyId } = item;
         const handleChange = (value: boolean) => {
@@ -201,7 +202,13 @@ const NoticeDrivenConsent = () => {
           </React.Fragment>
         );
       })}
-      <SaveCancel onSave={handleSave} onCancel={handleCancel} />
+      <SaveCancel
+        onSave={handleSave}
+        onCancel={handleCancel}
+        saveLabel={experience?.experience_config?.save_button_label}
+        justifyContent="center"
+      />
+      <PrivacyPolicyLink alignSelf="center" experience={experience} />
     </Stack>
   );
 };

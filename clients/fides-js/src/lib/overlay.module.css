@@ -122,7 +122,6 @@ div#fides-consent-banner-title {
   font-size: var(--fides-consent-overlay-font-size-title);
   font-weight: 600;
   margin-top: 0.5em;
-  margin-right: 2em;
   min-width: 33%;
   flex: 1;
   color: var(--fides-consent-overlay-title-font-color);
@@ -130,7 +129,6 @@ div#fides-consent-banner-title {
 
 div#fides-consent-banner-description {
   margin-top: 0.5em;
-  margin-right: 2em;
   min-width: 33%;
   flex: 1;
 }
@@ -249,6 +247,13 @@ div#fides-consent-modal .modal-button-group {
 
 .modal-notices {
   margin-bottom: 1em;
+}
+
+.modal-privacy-policy {
+  display: block;
+  text-align: center;
+  margin-top: 1.5em;
+  color: var(--fides-consent-overlay-primary-color);
 }
 
 /** Toggle, adapted from https://kittygiraudel.com/2021/04/05/an-accessible-toggle/ */

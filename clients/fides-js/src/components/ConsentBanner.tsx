@@ -18,17 +18,17 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onAcceptAll,
   onRejectAll,
   waitBeforeShow,
-  managePreferencesLabel = "Manage preferences",
   onOpenModal,
 }) => {
   const [isShown, setIsShown] = useState(false);
   const hasMounted = useHasMounted();
   const {
-    banner_title: bannerTitle = "Manage your consent",
-    banner_description:
-      bannerDescription = "This website processes your data respectfully, so we require your consent to use cookies.",
-    confirmation_button_label: confirmationButtonLabel = "Accept All",
+    title = "Manage your consent",
+    description = "This website processes your data respectfully, so we require your consent to use cookies.",
+    accept_button_label: acceptButtonLabel = "Accept All",
     reject_button_label: rejectButtonLabel = "Reject All",
+    privacy_preferences_link_label:
+      privacyPreferencesLabel = "Manage preferences",
   } = experience;
 
   useEffect(() => {
@@ -59,13 +59,13 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
           id="fides-consent-banner-title"
           className="fides-consent-banner-title"
         >
-          {bannerTitle || ""}
+          {title}
         </div>
         <div
           id="fides-consent-banner-description"
           className="fides-consent-banner-description"
         >
-          {bannerDescription || ""}
+          {description}
         </div>
         <div
           id="fides-consent-banner-buttons"
@@ -74,7 +74,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
           <span className="fides-consent-banner-buttons-left">
             <Button
               buttonType={ButtonType.TERTIARY}
-              label={managePreferencesLabel}
+              label={privacyPreferencesLabel}
               onClick={handleManagePreferencesClick}
             />
           </span>
@@ -89,7 +89,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
             />
             <Button
               buttonType={ButtonType.PRIMARY}
-              label={confirmationButtonLabel}
+              label={acceptButtonLabel}
               onClick={() => {
                 onAcceptAll();
                 setIsShown(false);

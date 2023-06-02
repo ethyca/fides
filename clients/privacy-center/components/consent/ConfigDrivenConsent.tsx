@@ -163,7 +163,7 @@ const ConfigDrivenConsent = ({
   );
 
   return (
-    <Stack spacing={4}>
+    <Stack spacing={4} paddingX={12}>
       {items.map((item, index) => {
         const { fidesDataUseKey, highlight, url, name, description } = item;
         const handleChange = (value: boolean) => {

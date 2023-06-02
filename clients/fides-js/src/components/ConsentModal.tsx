@@ -67,10 +67,10 @@ const ConsentModal = ({
       >
         <div data-testid="modal-content">
           <h1 data-testid="modal-header" className="modal-header">
-            {experience.component_title}
+            {experience.title}
           </h1>
           <p data-testid="modal-description" className="modal-description">
-            {experience.component_description}
+            {experience.description}
           </p>
           <div className="modal-notices">
             <NoticeToggles
@@ -81,7 +81,7 @@ const ConsentModal = ({
           </div>
           <div className="modal-button-group">
             <Button
-              label="Save"
+              label={experience.save_button_label}
               buttonType={ButtonType.SECONDARY}
               onClick={handleSave}
             />
@@ -91,11 +91,22 @@ const ConsentModal = ({
               onClick={handleRejectAll}
             />
             <Button
-              label={experience.confirmation_button_label}
+              label={experience.accept_button_label}
               buttonType={ButtonType.PRIMARY}
               onClick={handleAcceptAll}
             />
           </div>
+          {experience.privacy_policy_link_label &&
+          experience.privacy_policy_url ? (
+            <a
+              href={experience.privacy_policy_url}
+              rel="noopener noreferrer"
+              target="_blank"
+              className="modal-privacy-policy"
+            >
+              {experience.privacy_policy_link_label}
+            </a>
+          ) : null}
         </div>
       </div>
       <div className="modal-overlay" id="modal-overlay" />

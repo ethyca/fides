@@ -2,7 +2,6 @@ import LegacyConsentConfig, {
   ComponentType,
   CONSENT_COOKIE_NAME,
   ConsentMethod,
-  DeliveryMechanism,
   FidesCookie,
 } from "fides-js";
 import {
@@ -81,7 +80,7 @@ const stubConfig = (
       updatedConfig.options?.fidesApiUrl
     ) {
       const experienceResp = mockExperienceApiResp || {
-        fixture: "consent/privacy-experience.json",
+        fixture: "consent/overlay_experience.json",
       };
       cy.intercept(
         "GET",
@@ -258,7 +257,7 @@ describe("Consent banner", () => {
           });
           cy.getByTestId("toggle-Essential").click();
 
-          cy.getByTestId("Save-btn").click();
+          cy.getByTestId("Save test-btn").click();
           // Modal should close after saving
           cy.getByTestId("consent-modal").should("not.exist");
 
@@ -353,7 +352,7 @@ describe("Consent banner", () => {
         // Save new preferences
         cy.getByTestId("toggle-Test privacy notice").click();
         cy.getByTestId("toggle-Essential").click();
-        cy.getByTestId("Save-btn").click();
+        cy.getByTestId("Save test-btn").click();
 
         // New privacy notice values only, no legacy ones
         const expectedConsent = {
@@ -680,7 +679,7 @@ describe("Consent banner", () => {
                 consent_mechanism: ConsentMechanism.OPT_IN,
                 default_preference: UserConsentPreference.OPT_IN,
                 current_preference: UserConsentPreference.OPT_IN,
-                outdated_preference: null,
+                outdated_preference: undefined,
                 has_gpc_flag: true,
                 data_uses: ["advertising", "third_party_sharing"],
                 enforcement_level: EnforcementLevel.SYSTEM_WIDE,
@@ -710,11 +709,11 @@ describe("Consent banner", () => {
       });
     });
 
-    describe("when experience delivery mechanism is link", () => {
+    describe("when banner should not be shown", () => {
       beforeEach(() => {
         stubConfig({
           experience: {
-            delivery_mechanism: DeliveryMechanism.LINK,
+            show_banner: false,
           },
         });
       });

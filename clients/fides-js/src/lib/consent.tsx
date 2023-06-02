@@ -1,6 +1,6 @@
 import { h, render } from "preact";
 
-import { ComponentType, DeliveryMechanism } from "./consent-types";
+import { ComponentType } from "./consent-types";
 import { debugLog } from "./consent-utils";
 
 import Overlay, { OverlayProps } from "../components/Overlay";
@@ -46,7 +46,7 @@ export const initOverlay = async ({
       }
 
       if (experience.component === ComponentType.OVERLAY) {
-        if (experience.delivery_mechanism === DeliveryMechanism.BANNER) {
+        if (experience.show_banner) {
           // Render the Overlay to the DOM!
           render(
             <Overlay
@@ -58,7 +58,7 @@ export const initOverlay = async ({
             parentElem
           );
           debugLog(options.debug, "Fides overlay is now showing!");
-        } else if (experience.delivery_mechanism === DeliveryMechanism.LINK) {
+        } else {
           showModalLinkAndSetOnClick(options.debug);
         }
       }

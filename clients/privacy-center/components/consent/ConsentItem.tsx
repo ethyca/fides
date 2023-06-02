@@ -45,7 +45,6 @@ const ConsentItem = ({
       backgroundColor={highlight ? "gray.100" : undefined}
       borderRadius="md"
       data-testid={`consent-item-${id}`}
-      paddingX={12}
       paddingY={3}
       width="full"
       lineHeight={5}
