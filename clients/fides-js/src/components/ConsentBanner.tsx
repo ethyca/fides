@@ -2,7 +2,6 @@ import { h, FunctionComponent } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { ButtonType, ExperienceConfig } from "../lib/consent-types";
 import Button from "./Button";
-import { useHasMounted } from "../lib/hooks";
 
 interface BannerProps {
   experience: ExperienceConfig;
@@ -21,7 +20,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onOpenModal,
 }) => {
   const [isShown, setIsShown] = useState(false);
-  const hasMounted = useHasMounted();
+
   const {
     title = "Manage your consent",
     description = "This website processes your data respectfully, so we require your consent to use cookies.",
@@ -42,10 +41,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     onOpenModal();
     setIsShown(false);
   };
-
-  if (!hasMounted) {
-    return null;
-  }
 
   return (
     <div

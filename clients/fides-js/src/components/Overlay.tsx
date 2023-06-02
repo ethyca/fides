@@ -13,6 +13,7 @@ import ConsentModal from "./ConsentModal";
 import { updateConsentPreferences } from "../lib/preferences";
 import { transformConsentToFidesUserPreference } from "../lib/consent-utils";
 import { FidesCookie } from "../lib/cookie";
+import { useHasMounted } from "../lib/hooks";
 
 import "../lib/overlay.module.css";
 
@@ -29,7 +30,12 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   fidesRegionString,
   cookie,
 }) => {
+  const hasMounted = useHasMounted();
   const [modalIsOpen, setModalIsOpen] = useState(false);
+
+  if (!hasMounted) {
+    return null;
+  }
 
   if (!experience.experience_config) {
     return null;
