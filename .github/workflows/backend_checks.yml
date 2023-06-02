@@ -5,6 +5,7 @@ on:
     paths-ignore:
       - "**.md"
       - "clients/**"
+      - "CHANGELOG.md"
   push:
     branches:
       - "main"
