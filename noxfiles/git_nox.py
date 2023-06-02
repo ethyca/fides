@@ -4,8 +4,9 @@ import re
 from enum import Enum
 from typing import List, Optional
 
-import nox
 from packaging.version import Version
+
+import nox
 
 RELEASE_BRANCH_REGEX = r"release-(([0-9]+\.)+[0-9]+)"
 RELEASE_TAG_REGEX = r"(([0-9]+\.)+[0-9]+)"
@@ -14,10 +15,6 @@ GENERIC_TAG_REGEX = r"{tag_type}([0-9]+)$"
 
 INITIAL_TAG_INCREMENT = 0
 TAG_INCREMENT = 1
-
-# posarg options for `tag`
-ONLY_TAG = "only_tag"
-PUSH = "push"
 
 
 class TagType(Enum):
@@ -96,7 +93,6 @@ def tag(session: nox.Session, action: str) -> None:
     # generate a tag based on the current repo state
     generated_tag = generate_tag(session, repo.active_branch.name, all_tags)
 
-    # if no args are passed, it's a dry run
     if action == "dry":
         session.log(f"Dry-run -- would generate tag: {generated_tag}")
 
@@ -145,13 +141,17 @@ def increment_tag(
         version=version_number, tag_type=tag_type.value
     )
     # find our latest existing tag for this version/type
-    latest_tag = next(
+    sorted_tag_matches = sorted(
         (
-            re.fullmatch(version_branch_tag_pattern, tag.name)
+            tag.name
             for tag in all_tags
             if re.fullmatch(version_branch_tag_pattern, tag.name)
         ),
-        None,
+        reverse=True,
+    )
+    latest_tag = re.fullmatch(
+        version_branch_tag_pattern,
+        sorted_tag_matches[0] if sorted_tag_matches else "",
     )
     if latest_tag:  # if we have an existing tag for this version/type, increment it
         session.log(

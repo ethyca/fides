@@ -104,6 +104,29 @@ class TestConsentRequestReporting:
         item = data["items"][0]
         assert item["data_use"] == "email"
 
+    def test_consent_request_report_filters_identity(
+        self,
+        url,
+        generate_auth_header,
+        api_client,
+        consent_records,
+        provided_identity_value,
+    ):
+        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+        response = api_client.get(
+            url + f"?identity={provided_identity_value}",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert response.json()["total"] == 2
+
+        response = api_client.get(
+            url + "?identity=not-an-identity",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert response.json()["total"] == 0
+
     def test_consent_request_report_filters_opt_in(
         self,
         url,
