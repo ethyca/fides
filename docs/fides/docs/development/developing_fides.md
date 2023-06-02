@@ -1,4 +1,4 @@
-# Developing Fides
+# Developing Fides using Nox
 
 The primary developer interface for Fides is via a tool called Nox. Nox is a pure-Python replacement for tools like `make`. You can read more about Nox in the official documentation [here](https://nox.thea.codes/en/stable/index.html).
 

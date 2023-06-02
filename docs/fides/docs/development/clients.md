@@ -1,6 +1,6 @@
-# Clients
+# Client/UI Development
 
-The clients directory houses all front-end packages and shared code amongst clients, and also includes e2e tests. For information on how to build the clients, please look at our (clients documentation)[https://ethyca.github.io/fides/dev/development/clients/]
+The clients directory houses all front-end packages and shared code amongst clients, and also includes e2e tests.
 
 ## Prerequisites
 
