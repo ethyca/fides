@@ -1,6 +1,12 @@
 """
 Entrypoint for the Fides command-line.
 """
+# pylint: disable=wrong-import-position
+import warnings
+
+# Ignore the UserWarning from the Snowflake module to keep CLI output clean
+warnings.filterwarnings("ignore", category=UserWarning, module="snowflake")
+
 from importlib.metadata import version
 from platform import system
 
