@@ -1,13 +1,16 @@
-import { Button, Stack } from "@fidesui/react";
+import { Button, Stack, StackProps } from "@fidesui/react";
 
 const SaveCancel = ({
   onSave,
   onCancel,
+  saveLabel = "Save",
+  ...props
 }: {
   onSave: () => void;
   onCancel: () => void;
-}) => (
-  <Stack direction="row" justifyContent="flex-start" paddingX={12} width="full">
+  saveLabel?: string;
+} & StackProps) => (
+  <Stack direction="row" justifyContent="flex-start" width="full" {...props}>
     <Button size="sm" variant="outline" onClick={onCancel}>
       Cancel
     </Button>
@@ -20,7 +23,7 @@ const SaveCancel = ({
       onClick={onSave}
       data-testid="save-btn"
     >
-      Save
+      {saveLabel}
     </Button>
   </Stack>
 );
