@@ -175,9 +175,7 @@ describe("Consent banner", () => {
           ).contains(
             "This test website is overriding the banner description label."
           );
-          cy.get(
-            "div#fides-banner-buttons.fides-banner-buttons"
-          ).within(() => {
+          cy.get("div#fides-banner-buttons.fides-banner-buttons").within(() => {
             cy.get(
               "button#fides-banner-button-tertiary.fides-banner-button.fides-banner-button-tertiary"
             ).contains("Manage preferences");

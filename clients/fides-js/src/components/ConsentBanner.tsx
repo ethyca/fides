@@ -55,22 +55,13 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
       } `}
     >
       <div id="fides-banner-inner">
-        <div
-          id="fides-banner-title"
-          className="fides-banner-title"
-        >
+        <div id="fides-banner-title" className="fides-banner-title">
           {title}
         </div>
-        <div
-          id="fides-banner-description"
-          className="fides-banner-description"
-        >
+        <div id="fides-banner-description" className="fides-banner-description">
           {description}
         </div>
-        <div
-          id="fides-banner-buttons"
-          className="fides-banner-buttons"
-        >
+        <div id="fides-banner-buttons" className="fides-banner-buttons">
           <span className="fides-banner-buttons-left">
             <Button
               buttonType={ButtonType.TERTIARY}

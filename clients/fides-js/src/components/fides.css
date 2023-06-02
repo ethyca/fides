@@ -26,27 +26,17 @@
     --fides-overlay-primary-color
   );
   /* Text */
-  --fides-overlay-title-font-color: var(
-    --fides-overlay-font-color
-  );
-  --fides-overlay-body-font-color: var(
-    --fides-overlay-font-color
-  );
-  --fides-overlay-link-font-color: var(
-    --fides-overlay-font-color-dark
-  );
+  --fides-overlay-title-font-color: var(--fides-overlay-font-color);
+  --fides-overlay-body-font-color: var(--fides-overlay-font-color);
+  --fides-overlay-link-font-color: var(--fides-overlay-font-color-dark);
   /* Switches */
-  --fides-overlay-primary-active-color: var(
-    --fides-overlay-primary-color
-  );
+  --fides-overlay-primary-active-color: var(--fides-overlay-primary-color);
   --fides-overlay-primary-active-disabled-color: #bda4f7;
   --fides-overlay-inactive-color: #cbd5e0;
   --fides-overlay-disabled-color: #e1e7ee;
   /* Dividers */
   --fides-overlay-row-divider-color: #e2e8f0;
-  --fides-overlay-row-hover-color: var(
-    --fides-overlay-hover-color
-  );
+  --fides-overlay-row-hover-color: var(--fides-overlay-hover-color);
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
@@ -161,9 +151,7 @@ button.fides-banner-button {
 }
 
 button.fides-banner-button:hover {
-  background: var(
-    --fides-overlay-primary-button-background-hover-color
-  );
+  background: var(--fides-overlay-primary-button-background-hover-color);
 }
 
 button.fides-banner-button.fides-banner-button-primary {
@@ -173,9 +161,7 @@ button.fides-banner-button.fides-banner-button-primary {
 }
 
 button.fides-banner-button.fides-banner-button-primary:hover {
-  background: var(
-    --fides-overlay-primary-button-background-hover-color
-  );
+  background: var(--fides-overlay-primary-button-background-hover-color);
 }
 
 button.fides-banner-button.fides-banner-button-secondary {
@@ -185,9 +171,7 @@ button.fides-banner-button.fides-banner-button-secondary {
 }
 
 button.fides-banner-button.fides-banner-button-secondary:hover {
-  background: var(
-    --fides-overlay-secondary-button-background-hover-color
-  );
+  background: var(--fides-overlay-secondary-button-background-hover-color);
 }
 
 button.fides-banner-button.fides-banner-button-tertiary {
