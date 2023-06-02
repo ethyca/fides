@@ -325,7 +325,6 @@ describe("Consent banner", () => {
       });
 
       it("overwrites privacy notices that no longer exist", () => {
-        cy.clearCookies();
         const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
         const now = "2023-04-28T12:00:00.000Z";
         const legacyNotices = {
@@ -467,7 +466,7 @@ describe("Consent banner", () => {
             ],
             privacy_experience_history_id: "2342345",
             user_geography: "us_ca",
-            method: ConsentMethod.button,
+            method: ConsentMethod.gpc,
           };
           // uuid is generated automatically if the user has no saved consent cookie
           generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -891,8 +890,23 @@ describe("Consent banner", () => {
         cy.get("#fides-consent-modal-link").should("not.be.visible");
       });
 
-      it("does not set GPC preference downstream to Fides", () => {
-        // todo - assert mock api call not called
+      it("does not set user consent preference automatically", () => {
+        // timeout means API call not made, which is expected
+        Cypress.on("fail", (error) => {
+          if (error.message.indexOf("Timed out retrying") !== 0) {
+            throw error;
+          }
+        });
+        // check that preferences aren't sent to Fides API
+        cy.wait("@patchPrivacyPreference", {
+          requestTimeout: 500,
+        }).then((xhr) => {
+          assert.isNull(xhr?.response?.body);
+        });
+        // check that Fides consent obj is empty
+        cy.window().its("Fides").its("consent").should("eql", {});
+        // check that preferences do not exist in cookie
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       });
     });
 

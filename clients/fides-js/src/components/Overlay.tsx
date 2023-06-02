@@ -38,7 +38,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   const privacyNotices = experience.privacy_notices ?? [];
 
   const onAcceptAll = () => {
-    const consentPreferencesToSave = new Array<SaveConsentPreference>();
+    const consentPreferencesToSave: Array<SaveConsentPreference> = [];
     privacyNotices.forEach((notice) => {
       consentPreferencesToSave.push(
         new SaveConsentPreference(
@@ -59,7 +59,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   };
 
   const onRejectAll = () => {
-    const consentPreferencesToSave = new Array<SaveConsentPreference>();
+    const consentPreferencesToSave: Array<SaveConsentPreference> = [];
     privacyNotices.forEach((notice) => {
       consentPreferencesToSave.push(
         new SaveConsentPreference(
@@ -82,7 +82,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   const onSavePreferences = (
     enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>
   ) => {
-    const consentPreferencesToSave = new Array<SaveConsentPreference>();
+    const consentPreferencesToSave: Array<SaveConsentPreference> = [];
     privacyNotices.forEach((notice) => {
       consentPreferencesToSave.push(
         new SaveConsentPreference(

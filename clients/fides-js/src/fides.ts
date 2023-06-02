@@ -128,34 +128,36 @@ const automaticallyApplyGPCPreferences = (
   fidesApiUrl: string,
   effectiveExperience?: PrivacyExperience | null
 ) => {
-  if (getConsentContext().globalPrivacyControl && effectiveExperience) {
-    const consentPreferencesToSave = new Array<SaveConsentPreference>();
-    effectiveExperience.privacy_notices?.forEach((notice) => {
-      if (notice.has_gpc_flag && !notice.current_preference) {
-        consentPreferencesToSave.push(
-          new SaveConsentPreference(
-            notice.notice_key,
-            notice.privacy_notice_history_id,
-            transformConsentToFidesUserPreference(
-              false,
-              notice.consent_mechanism
-            )
-          )
-        );
-      }
-    });
-    if (consentPreferencesToSave.length > 0) {
-      updateConsentPreferences({
-        consentPreferencesToSave,
-        experienceHistoryId: effectiveExperience.privacy_experience_history_id,
-        fidesApiUrl,
-        consentMethod: ConsentMethod.button,
-        userLocationString: fidesRegionString || undefined,
-        cookie,
-      });
-    }
+  if (!effectiveExperience) {
+    return;
   }
-  return true;
+
+  if (!getConsentContext().globalPrivacyControl) {
+    return;
+  }
+
+  const consentPreferencesToSave: Array<SaveConsentPreference> = [];
+  effectiveExperience.privacy_notices?.forEach((notice) => {
+    if (notice.has_gpc_flag && !notice.current_preference) {
+      consentPreferencesToSave.push(
+        new SaveConsentPreference(
+          notice.notice_key,
+          notice.privacy_notice_history_id,
+          transformConsentToFidesUserPreference(false, notice.consent_mechanism)
+        )
+      );
+    }
+  });
+  if (consentPreferencesToSave.length > 0) {
+    updateConsentPreferences({
+      consentPreferencesToSave,
+      experienceHistoryId: effectiveExperience.privacy_experience_history_id,
+      fidesApiUrl,
+      consentMethod: ConsentMethod.gpc,
+      userLocationString: fidesRegionString || undefined,
+      cookie,
+    });
+  }
 };
 
 /**
