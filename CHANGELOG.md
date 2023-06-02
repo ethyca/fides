@@ -28,7 +28,7 @@ The types of changes are:
 - Fix sample app `DATABASE_*` ENV vars for backwards compatibility [#3406](https://github.com/ethyca/fides/pull/3406)
 - Fix overlay rendering issue by finding/creating a dedicated parent element for Preact [#3397](https://github.com/ethyca/fides/pull/3397)
 - Fix the sample app privacy center link to be configurable [#3409](https://github.com/ethyca/fides/pull/3409)
-- Prevented the CLI output showing a version warning for Snowflake [#3434](https://github.com/ethyca/fides/pull/3434)
+- Fix CLI output showing a version warning for Snowflake [#3434](https://github.com/ethyca/fides/pull/3434)
 
 ### Changed
 
