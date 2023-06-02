@@ -1,7 +1,7 @@
 """Upgrade to fideslang 1.4
 
 Revision ID: 63b482f5b49b
-Revises: 587c53fe3e99
+Revises: deb97d9393f3
 Create Date: 2023-05-26 07:51:25.947974
 
 """
@@ -16,7 +16,7 @@ from sqlalchemy.sql.elements import TextClause
 
 # revision identifiers, used by Alembic.
 revision = "63b482f5b49b"
-down_revision = "587c53fe3e99"
+down_revision = "deb97d9393f3"
 branch_labels = None
 depends_on = None
 
