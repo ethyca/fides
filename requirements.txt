@@ -28,7 +28,7 @@ packaging==23.0
 pandas==1.4.3
 passlib[bcrypt]==1.7.4
 plotly==5.13.1
-pyarrow==7.0.0
+pyarrow==6.0.0
 psycopg2-binary==2.9.5
 pydantic<1.10.2
 pydash==6.0.2
