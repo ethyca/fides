@@ -413,7 +413,6 @@ TEST_DATABASE_PARAMETERS = {
         "server": "sqlserver-test:1433",
         "username": "sa",
         "password": "SQLserver1",
-        "database": "master",
         "init_script_path": "tests/ctl/data/example_sql/sqlserver_example.sql",
         "is_external": False,
         "expected_collection": {
@@ -467,27 +466,25 @@ class TestDatabase:
                     query for query in query_file.read().splitlines() if query != ""
                 ]
 
-            for query in queries:
-                try:
-                    if "pymssql" not in database_parameters.get("setup_url"):
+            try:
+                if "pymssql" not in database_parameters.get("setup_url", ""):
+                    for query in queries:
                         engine.execute(sqlalchemy.sql.text(query))
-                    else:
-                        # This special MSSQL case is required due to how autocommit is activated
-                        with pymssql.connect(
-                            database_parameters["server"],
-                            database_parameters["username"],
-                            database_parameters["password"],
-                            database_parameters["database"],
-                            autocommit=True,
-                        ) as connection:
+                else:
+                    # This special MSSQL case is required due to how autocommit is activated
+                    with pymssql.connect(
+                        database_parameters["server"],
+                        database_parameters["username"],
+                        database_parameters["password"],
+                        autocommit=True,
+                    ) as connection:
+                        for query in queries:
                             with connection.cursor() as cursor:
                                 cursor.execute(query)
-                except:
-                    print(
-                        f"> FAILED DB SETUP: {database_parameters.get('setup_url')}\nQUERY: {query}"
-                    )
-                    # We don't want to error all tests if a single setup fails
-                    pass
+            except:
+                print(f"> FAILED DB SETUP: {database_parameters.get('setup_url')}")
+                # We don't want to error all tests if a single setup fails
+                pass
         yield
 
     def test_get_db_tables(self, request: Dict, database_type: str) -> None:
