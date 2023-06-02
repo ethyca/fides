@@ -30,7 +30,9 @@ export default [
     plugins: [
       alias(preactAliases),
       nodeResolve(),
-      postcss(),
+      postcss({
+        minimize: !isDev,
+      }),
       esbuild({
         minify: !isDev,
       }),
