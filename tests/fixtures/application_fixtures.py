@@ -39,8 +39,8 @@ from fides.api.models.policy import (
     RuleTarget,
 )
 from fides.api.models.privacy_experience import (
+    BannerEnabled,
     ComponentType,
-    DeliveryMechanism,
     PrivacyExperience,
     PrivacyExperienceConfig,
 )
@@ -2025,7 +2025,7 @@ def privacy_preference_history(
     db,
     provided_identity_and_consent_request,
     privacy_notice,
-    privacy_experience_privacy_center_link,
+    privacy_experience_privacy_center,
 ):
     provided_identity, consent_request = provided_identity_and_consent_request
     privacy_notice_history = privacy_notice.histories[0]
@@ -2036,10 +2036,10 @@ def privacy_preference_history(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "privacy_experience_config_history_id": privacy_experience_privacy_center_link.histories[
+            "privacy_experience_config_history_id": privacy_experience_privacy_center.histories[
                 0
             ].experience_config_history_id,
-            "privacy_experience_history_id": privacy_experience_privacy_center_link.histories[
+            "privacy_experience_history_id": privacy_experience_privacy_center.histories[
                 0
             ].id,
             "preference": "opt_out",
@@ -2093,10 +2093,13 @@ def experience_config_privacy_center(db: Session) -> Generator:
     exp = PrivacyExperienceConfig.create(
         db=db,
         data={
+            "accept_button_label": "Accept all",
+            "description": "We care about your privacy",
             "component": "privacy_center",
-            "delivery_mechanism": "link",
-            "component_title": "Control your privacy",
-            "link_label": "Manage your preferences",
+            "reject_button_label": "Reject all",
+            "save_button_label": "Save",
+            "title": "Control your privacy",
+            "disabled": True,
         },
     )
     yield exp
@@ -2106,15 +2109,14 @@ def experience_config_privacy_center(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def privacy_experience_privacy_center_link(
+def privacy_experience_privacy_center(
     db: Session, experience_config_privacy_center
 ) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
             "component": ComponentType.privacy_center,
-            "disabled": False,
-            "delivery_mechanism": DeliveryMechanism.link,
+            "disabled": True,
             "region": PrivacyNoticeRegion.us_co,
             "experience_config_id": experience_config_privacy_center.id,
             "experience_config_history_id": experience_config_privacy_center.histories[
@@ -2130,84 +2132,41 @@ def privacy_experience_privacy_center_link(
 
 
 @pytest.fixture(scope="function")
-def experience_config_overlay_link(db: Session) -> Generator:
-    exp = PrivacyExperienceConfig.create(
+def experience_config_overlay(db: Session) -> Generator:
+    config = PrivacyExperienceConfig.create(
         db=db,
         data={
+            "accept_button_label": "Accept all",
+            "acknowledge_button_label": "Confirm",
+            "banner_enabled": "enabled_where_required",
             "component": "overlay",
-            "delivery_mechanism": "link",
-            "component_title": "Manage your consent preferences",
-            "component_description": "On this page you can opt in and out of these data uses cases",
-            "link_label": "Manage your privacy",
-        },
-    )
-    yield exp
-    for history in exp.histories:
-        history.delete(db)
-    exp.delete(db)
-
-
-@pytest.fixture(scope="function")
-def privacy_experience_overlay_link(
-    db: Session, experience_config_overlay_link
-) -> Generator:
-    privacy_experience = PrivacyExperience.create(
-        db=db,
-        data={
-            "component": ComponentType.overlay,
-            "delivery_mechanism": DeliveryMechanism.link,
-            "region": PrivacyNoticeRegion.eu_fr,
-            "experience_config_id": experience_config_overlay_link.id,
-            "experience_config_history_id": experience_config_overlay_link.histories[
-                0
-            ].id,
-        },
-    )
-
-    yield privacy_experience
-    for history in privacy_experience.histories:
-        history.delete(db)
-    privacy_experience.delete(db)
-
-
-@pytest.fixture(scope="function")
-def experience_config_overlay_banner(db: Session) -> Generator:
-    exp = PrivacyExperienceConfig.create(
-        db=db,
-        data={
-            "component_title": "Manage your consent",
-            "component_description": "On this page you can opt in and out of these data uses cases",
-            "banner_title": "Manage your consent",
-            "banner_description": "We use cookies to recognize visitors and remember their preferences",
-            "confirmation_button_label": "Accept all",
+            "description": "On this page you can opt in and out of these data uses cases",
+            "disabled": False,
+            "privacy_preferences_link_label": "Manage preferences",
+            "privacy_policy_link_label": "View our privacy policy",
+            "privacy_policy_url": "example.com/privacy",
             "reject_button_label": "Reject all",
-            "disabled": True,
-            "component": ComponentType.overlay,
-            "delivery_mechanism": DeliveryMechanism.banner,
-            "acknowledgement_button_label": "Confirm",
+            "save_button_label": "Save",
+            "title": "Manage your consent",
         },
     )
-    yield exp
-    for history in exp.histories:
+
+    yield config
+    for history in config.histories:
         history.delete(db)
-    exp.delete(db)
+    config.delete(db)
 
 
 @pytest.fixture(scope="function")
-def privacy_experience_overlay_banner(
-    db: Session, experience_config_overlay_banner
-) -> Generator:
+def privacy_experience_overlay(db: Session, experience_config_overlay) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
             "component": ComponentType.overlay,
-            "delivery_mechanism": DeliveryMechanism.banner,
             "region": PrivacyNoticeRegion.us_ca,
-            "experience_config_id": experience_config_overlay_banner.id,
-            "experience_config_history_id": experience_config_overlay_banner.histories[
-                0
-            ].id,
-            "disabled": True,
+            "experience_config_id": experience_config_overlay.id,
+            "experience_config_history_id": experience_config_overlay.histories[0].id,
+            "disabled": False,
         },
     )
 

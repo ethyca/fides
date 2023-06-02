@@ -1,8 +1,9 @@
-import { Text } from "@fidesui/react";
+import { Flex, Text } from "@fidesui/react";
 import React from "react";
 import { CellProps } from "react-table";
 
-import { EnableCell } from "~/features/common/table/";
+import { GlobeIcon } from "~/features/common/Icon";
+import { EnableCell, MultiTagCell } from "~/features/common/table/";
 import { ExperienceConfigResponse } from "~/types/api";
 
 import { COMPONENT_MAP } from "./constants";
@@ -14,6 +15,21 @@ export const ComponentCell = ({
   <Text>{COMPONENT_MAP.get(value) ?? value}</Text>
 );
 
+export const LocationCell = ({
+  row,
+  ...rest
+}: CellProps<ExperienceConfigResponse, string[]>) => {
+  if (row.original.is_default) {
+    return (
+      <Flex alignItems="center">
+        <GlobeIcon mr="2" />
+        <Text>Global</Text>
+      </Flex>
+    );
+  }
+  return <MultiTagCell row={row} {...rest} />;
+};
+
 export const EnablePrivacyExperienceCell = (
   cellProps: CellProps<ExperienceConfigResponse, boolean>
 ) => {
@@ -24,7 +40,6 @@ export const EnablePrivacyExperienceCell = (
     await patchExperienceMutationTrigger({
       id: row.original.id,
       disabled: !toggle,
-      regions: row.original.regions,
     });
   };
 
