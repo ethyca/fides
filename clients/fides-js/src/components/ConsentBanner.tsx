@@ -18,17 +18,17 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onAcceptAll,
   onRejectAll,
   waitBeforeShow,
-  managePreferencesLabel = "Manage preferences",
   onOpenModal,
 }) => {
   const [isShown, setIsShown] = useState(false);
   const hasMounted = useHasMounted();
   const {
-    banner_title: bannerTitle = "Manage your consent",
-    banner_description:
-      bannerDescription = "This website processes your data respectfully, so we require your consent to use cookies.",
-    confirmation_button_label: confirmationButtonLabel = "Accept All",
+    title = "Manage your consent",
+    description = "This website processes your data respectfully, so we require your consent to use cookies.",
+    accept_button_label: acceptButtonLabel = "Accept All",
     reject_button_label: rejectButtonLabel = "Reject All",
+    privacy_preferences_link_label:
+      privacyPreferencesLabel = "Manage pereferences",
   } = experience;
 
   useEffect(() => {
@@ -59,44 +59,44 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
           id="fides-consent-banner-title"
           className="fides-consent-banner-title"
         >
-          {bannerTitle || ""}
+          {title}
         </div>
         <div
           id="fides-consent-banner-description"
           className="fides-consent-banner-description"
         >
-          {bannerDescription || ""}
+          {description}
         </div>
-        <div
-          id="fides-consent-banner-buttons"
-          className="fides-consent-banner-buttons"
-        >
-          <span className="fides-consent-banner-buttons-left">
-            <Button
-              buttonType={ButtonType.TERTIARY}
-              label={managePreferencesLabel}
-              onClick={handleManagePreferencesClick}
-            />
-          </span>
-          <span className="fides-consent-banner-buttons-right">
-            <Button
-              buttonType={ButtonType.PRIMARY}
-              label={rejectButtonLabel}
-              onClick={() => {
-                onRejectAll();
-                setIsShown(false);
-              }}
-            />
-            <Button
-              buttonType={ButtonType.PRIMARY}
-              label={confirmationButtonLabel}
-              onClick={() => {
-                onAcceptAll();
-                setIsShown(false);
-              }}
-            />
-          </span>
-        </div>
+      </div>
+      <div
+        id="fides-consent-banner-buttons"
+        className="fides-consent-banner-buttons"
+      >
+        <span className="fides-consent-banner-buttons-left">
+          <Button
+            buttonType={ButtonType.TERTIARY}
+            label={privacyPreferencesLabel}
+            onClick={handleManagePreferencesClick}
+          />
+        </span>
+        <span className="fides-consent-banner-buttons-right">
+          <Button
+            buttonType={ButtonType.PRIMARY}
+            label={rejectButtonLabel}
+            onClick={() => {
+              onRejectAll();
+              setIsShown(false);
+            }}
+          />
+          <Button
+            buttonType={ButtonType.PRIMARY}
+            label={acceptButtonLabel}
+            onClick={() => {
+              onAcceptAll();
+              setIsShown(false);
+            }}
+          />
+        </span>
       </div>
     </div>
   );

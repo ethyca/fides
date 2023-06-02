@@ -55,33 +55,34 @@ export class SaveConsentPreference {
 }
 
 export type PrivacyExperience = {
-  disabled?: boolean;
-  component?: ComponentType;
-  delivery_mechanism?: DeliveryMechanism;
   region: string; // intentionally using plain string instead of Enum, since BE is susceptible to change
+  component?: ComponentType;
+  disabled?: boolean;
   experience_config?: ExperienceConfig;
   id: string;
   created_at: string;
   updated_at: string;
   version: number;
   privacy_experience_history_id: string;
+  show_banner?: boolean;
   privacy_notices?: Array<PrivacyNotice>;
 };
 
 export type ExperienceConfig = {
-  acknowledgement_button_label?: string;
-  banner_title?: string;
-  banner_description?: string;
-  component?: ComponentType;
-  component_title?: string;
-  component_description?: string;
-  confirmation_button_label?: string;
-  delivery_mechanism?: DeliveryMechanism;
+  accept_button_label?: string;
+  acknowledge_button_label?: string;
+  banner_enabled?: BannerEnabled;
+  description?: string;
   disabled?: boolean;
   is_default?: boolean;
-  link_label?: string;
+  privacy_policy_link_label?: string;
+  privacy_policy_url?: string;
+  privacy_preferences_link_label?: string;
   reject_button_label?: string;
+  save_button_label?: string;
+  title?: string;
   id: string;
+  component: ComponentType;
   experience_config_history_id: string;
   version: number;
   created_at: string;
@@ -91,6 +92,7 @@ export type ExperienceConfig = {
 
 export type PrivacyNotice = {
   name?: string;
+  notice_key: string;
   description?: string;
   internal_description?: string;
   origin?: string;
@@ -109,9 +111,8 @@ export type PrivacyNotice = {
   version: number;
   privacy_notice_history_id: string;
   default_preference: UserConsentPreference;
-  current_preference?: UserConsentPreference | null;
-  outdated_preference?: UserConsentPreference | null;
-  notice_key: string;
+  current_preference?: UserConsentPreference;
+  outdated_preference?: UserConsentPreference;
 };
 
 export enum EnforcementLevel {
@@ -137,9 +138,10 @@ export enum ComponentType {
   PRIVACY_CENTER = "privacy_center",
 }
 
-export enum DeliveryMechanism {
-  BANNER = "banner",
-  LINK = "link",
+export enum BannerEnabled {
+  ALWAYS_ENABLED = "always_enabled",
+  ENABLED_WHERE_REQUIRED = "enabled_where_required",
+  ALWAYS_DISABLED = "always_disabled",
 }
 
 export type UserGeolocation = {
