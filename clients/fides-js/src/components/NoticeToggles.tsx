@@ -32,17 +32,22 @@ const NoticeToggle = ({
   return (
     <div
       className={
-        isOpen ? "notice-toggle notice-toggle-expanded" : "notice-toggle"
+        isOpen
+          ? "fides-overlay-notice-toggle fides-overlay-notice-toggle-expanded"
+          : "fides-overlay-notice-toggle"
       }
     >
-      <div key={notice.notice_key} className="notice-toggle-title">
+      <div
+        key={notice.notice_key}
+        className="fides-overlay-notice-toggle-title"
+      >
         <span
           role="button"
           tabIndex={0}
           onKeyDown={handleKeyDown}
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...getButtonProps()}
-          className="notice-toggle-trigger"
+          className="fides-overlay-notice-toggle-trigger"
         >
           {notice.name}
         </span>

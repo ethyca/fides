@@ -68,7 +68,7 @@ div#fides-overlay {
   -webkit-font-smoothing: antialiased;
 }
 
-#fides-consent-modal-link {
+#fides-overlay-modal-link {
   display: none;
 }
 
@@ -201,7 +201,7 @@ button.fides-consent-banner-button.fides-consent-banner-button-tertiary {
 }
 
 /** Modal */
-div#fides-consent-modal {
+div#fides-overlay-modal {
   font-family: var(--fides-consent-overlay-font-family);
   font-size: var(--fides-consent-overlay-font-size-body);
   color: var(--fides-consent-overlay-body-font-color);
@@ -221,22 +221,22 @@ div#fides-consent-modal {
   transform: translate(-50%, -50%);
 }
 
-div#fides-consent-modal .modal-header {
+div#fides-overlay-modal .fides-overlay-modal-header {
   text-align: center;
   font-weight: 600;
   font-size: var(--fides-consent-overlay-font-size-title);
   color: var(--fides-consent-overlay-title-font-color);
 }
 
-div#fides-consent-modal .modal-description {
+div#fides-overlay-modal .fides-overlay-modal-description {
   margin: 1em 0 1em 0;
 }
 
-div#fides-consent-modal .modal-button-group {
+div#fides-overlay-modal .fides-overlay-modal-button-group {
   display: flex;
 }
 
-.modal-overlay {
+.fides-overlay-modal-overlay {
   z-index: 1000;
   position: fixed;
   top: 0;
@@ -245,11 +245,11 @@ div#fides-consent-modal .modal-button-group {
   height: 100%;
 }
 
-.modal-notices {
+.fides-overlay-modal-notices {
   margin-bottom: 1em;
 }
 
-.modal-privacy-policy {
+.fides-overlay-modal-privacy-policy {
   display: block;
   text-align: center;
   margin-top: 1.5em;
@@ -259,12 +259,12 @@ div#fides-consent-modal .modal-button-group {
 /** Toggle, adapted from https://kittygiraudel.com/2021/04/05/an-accessible-toggle/ */
 
 @media (prefers-reduced-motion: reduce) {
-  .toggle-display {
+  .fides-overlay-toggle-display {
     transition-duration: 0ms;
   }
 }
 
-.toggle {
+.fides-overlay-toggle {
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
@@ -272,7 +272,7 @@ div#fides-consent-modal .modal-button-group {
   gap: 1ch;
 }
 
-.toggle .toggle-input {
+.fides-overlay-toggle .fides-overlay-toggle-input {
   position: absolute;
   opacity: 0;
   width: 100%;
@@ -281,7 +281,7 @@ div#fides-consent-modal .modal-button-group {
   cursor: pointer;
 }
 
-.toggle .toggle-display {
+.fides-overlay-toggle .fides-overlay-toggle-display {
   --offset: 0.1em;
   --diameter: 1em;
 
@@ -299,7 +299,7 @@ div#fides-consent-modal .modal-button-group {
   transition: 250ms;
 }
 
-.toggle .toggle-display::before {
+.fides-overlay-toggle .fides-overlay-toggle-display::before {
   content: "";
 
   width: var(--diameter);
@@ -319,37 +319,49 @@ div#fides-consent-modal .modal-button-group {
 }
 
 /* Checked/unchecked states */
-.toggle .toggle-input:checked + .toggle-display {
+.fides-overlay-toggle
+  .fides-overlay-toggle-input:checked
+  + .fides-overlay-toggle-display {
   background-color: var(--fides-consent-overlay-primary-active-color);
 }
-.toggle .toggle-input:checked + .toggle-display::before {
+.fides-overlay-toggle
+  .fides-overlay-toggle-input:checked
+  + .fides-overlay-toggle-display::before {
   transform: translate(100%, -50%);
 }
 
 /* Disabled state */
-.toggle .toggle-input:disabled {
+.fides-overlay-toggle .fides-overlay-toggle-input:disabled {
   cursor: not-allowed;
 }
-.toggle .toggle-input:disabled + .toggle-display {
+.fides-overlay-toggle
+  .fides-overlay-toggle-input:disabled
+  + .fides-overlay-toggle-display {
   background-color: var(--fides-consent-overlay-disabled-color);
 }
-.toggle .toggle-input:disabled:checked + .toggle-display {
+.fides-overlay-toggle
+  .fides-overlay-toggle-input:disabled:checked
+  + .fides-overlay-toggle-display {
   background-color: var(--fides-consent-overlay-primary-active-disabled-color);
 }
 
 /* Focus ring when using keyboard */
-.toggle .toggle-input:focus + .toggle-display {
+.fides-overlay-toggle
+  .fides-overlay-toggle-input:focus
+  + .fides-overlay-toggle-display {
   /* Firefox only has Highlight, not -webkit-focus-ring-color */
   outline: 1px auto Highlight;
   outline: 1px auto -webkit-focus-ring-color;
 }
-.toggle .toggle-input:focus:not(:focus-visible) + .toggle-display {
+.fides-overlay-toggle
+  .fides-overlay-toggle-input:focus:not(:focus-visible)
+  + .fides-overlay-toggle-display {
   outline: 0;
 }
 
 /* Divider */
 
-.divider {
+.fides-overlay-divider {
   border-width: 0px 0px 1px;
   border-color: var(--fides-consent-overlay-row-divider-color);
   margin: 0;
@@ -357,32 +369,32 @@ div#fides-consent-modal .modal-button-group {
 
 /* Disclosure */
 
-.disclosure-hidden {
+.fides-overlay-disclosure-hidden {
   visibility: hidden;
   height: 0px;
   margin-top: 0px;
   margin-bottom: 0px;
 }
 
-.notice-toggle .notice-toggle-title {
+.fides-overlay-notice-toggle .fides-overlay-notice-toggle-title {
   padding: 0.5em;
   display: flex;
   justify-content: space-between;
 }
 
-.notice-toggle .notice-toggle-trigger {
+.fides-overlay-notice-toggle .fides-overlay-notice-toggle-trigger {
   width: 100%;
 }
 
-.notice-toggle .notice-toggle-title:hover {
+.fides-overlay-notice-toggle .fides-overlay-notice-toggle-title:hover {
   cursor: pointer;
   background-color: var(--fides-consent-overlay-row-hover-color);
 }
 
-.notice-toggle .disclosure-visible {
+.fides-overlay-notice-toggle .disclosure-visible {
   padding-left: 0.5em;
 }
 
-.notice-toggle-expanded {
+.fides-overlay-notice-toggle-expanded {
   background-color: var(--fides-consent-overlay-row-hover-color);
 }

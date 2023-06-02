@@ -60,26 +60,32 @@ const ConsentModal = ({
   return (
     <div>
       <div
-        data-testid="consent-modal"
-        id="fides-consent-modal"
+        data-testid="fides-overlay-modal"
+        id="fides-overlay-modal"
         role="dialog"
         aria-modal="true"
       >
-        <div data-testid="modal-content">
-          <h1 data-testid="modal-header" className="modal-header">
+        <div data-testid="fides-overlay-modal-content">
+          <h1
+            data-testid="fides-overlay-modal-header"
+            className="fides-overlay-modal-header"
+          >
             {experience.title}
           </h1>
-          <p data-testid="modal-description" className="modal-description">
+          <p
+            data-testid="fides-overlay-modal-description"
+            className="fides-overlay-modal-description"
+          >
             {experience.description}
           </p>
-          <div className="modal-notices">
+          <div className="fides-overlay-modal-notices">
             <NoticeToggles
               notices={notices}
               enabledNoticeKeys={enabledNoticeKeys}
               onChange={setEnabledNoticeKeys}
             />
           </div>
-          <div className="modal-button-group">
+          <div className="fides-overlay-modal-button-group">
             <Button
               label={experience.save_button_label}
               buttonType={ButtonType.SECONDARY}
@@ -102,14 +108,17 @@ const ConsentModal = ({
               href={experience.privacy_policy_url}
               rel="noopener noreferrer"
               target="_blank"
-              className="modal-privacy-policy"
+              className="fides-overlay-modal-privacy-policy"
             >
               {experience.privacy_policy_link_label}
             </a>
           ) : null}
         </div>
       </div>
-      <div className="modal-overlay" id="modal-overlay" />
+      <div
+        className="fides-overlay-modal-overlay"
+        id="fides-overlay-modal-overlay"
+      />
     </div>
   );
 };
