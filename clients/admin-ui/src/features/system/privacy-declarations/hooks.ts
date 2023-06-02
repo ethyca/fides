@@ -14,14 +14,22 @@ import {
 } from "~/features/taxonomy";
 
 /**
- * Set up subscriptions to all taxonomy resources
+ * Set up subscriptions to all taxonomy resources.
+ *
+ * Conditionally subscribe to datasets, as not all privacy declarations need this field.
  */
-export const usePrivacyDeclarationData = () => {
+export const usePrivacyDeclarationData = ({
+  includeDatasets,
+}: {
+  includeDatasets?: boolean;
+}) => {
   // Query subscriptions:
   const { isLoading: isLoadingDataCategories } = useGetAllDataCategoriesQuery();
   const { isLoading: isLoadingDataSubjects } = useGetAllDataSubjectsQuery();
   const { isLoading: isLoadingDataUses } = useGetAllDataUsesQuery();
-  const { isLoading: isLoadingDatasets } = useGetAllDatasetsQuery();
+  const { isLoading: isLoadingDatasets } = useGetAllDatasetsQuery(undefined, {
+    skip: !includeDatasets,
+  });
 
   const allDataCategories = useAppSelector(selectDataCategories);
   const allDataSubjects = useAppSelector(selectDataSubjects);
@@ -38,7 +46,7 @@ export const usePrivacyDeclarationData = () => {
     allDataCategories,
     allDataSubjects,
     allDataUses,
-    allDatasets,
+    allDatasets: includeDatasets ? allDatasets : undefined,
     isLoading,
   };
 };

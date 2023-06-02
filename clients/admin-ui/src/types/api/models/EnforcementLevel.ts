@@ -8,4 +8,5 @@
 export enum EnforcementLevel {
   FRONTEND = "frontend",
   SYSTEM_WIDE = "system_wide",
+  NOT_APPLICABLE = "not_applicable",
 }

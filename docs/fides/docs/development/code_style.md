@@ -94,6 +94,10 @@ nox -s mypy
 nox -s xenon
 ```
 
+Additionally, there is a single command that will run all static check tools at once:
+
+`nox -s static_checks`
+
 ### Black formatting
 
 Fides' code is formatted using the [black](https://github.com/ambv/black) style. This style is checked in a CI step, and merges to master are prevented if code does not conform.

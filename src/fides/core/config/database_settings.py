@@ -16,6 +16,10 @@ ENV_PREFIX = "FIDES__DATABASE__"
 class DatabaseSettings(FidesSettings):
     """Configuration settings for the application database."""
 
+    automigrate: bool = Field(
+        default=True,
+        description="Automatically runs migrations on webserver startup. If set to `false`, will require the user to run migrations manually via the CLI or API. WARNING: Must be set to `true` for first-time startup.",
+    )
     api_engine_pool_size: int = Field(
         default=50,
         description="Number of concurrent database connections Fides will use for API requests. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
@@ -26,6 +30,13 @@ class DatabaseSettings(FidesSettings):
     )
     db: str = Field(
         default="default_db", description="The name of the application database."
+    )
+    load_samples: bool = Field(
+        default=False,
+        description=(
+            "When set to True, initializes the database with sample data for testing (Systems, Datasets, Connectors, etc.) "
+            "Used by 'fides deploy' to configure the sample project."
+        ),
     )
     password: str = Field(
         default="defaultpassword",

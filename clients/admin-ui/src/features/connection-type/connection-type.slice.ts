@@ -1,10 +1,10 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
-import { addCommonHeaders } from "common/CommonHeaders";
 import { STEPS } from "datastore-connections/add-connection/constants";
 import { AddConnectionStep } from "datastore-connections/add-connection/types";
 import { DatastoreConnection } from "datastore-connections/types";
 
+import { CONNECTION_TYPE_ROUTE } from "~/constants";
+import { baseApi } from "~/features/common/api.slice";
 import {
   ConnectionSystemTypeMap,
   Page_ConnectionSystemTypeMap_,
@@ -12,8 +12,6 @@ import {
 } from "~/types/api";
 
 import type { RootState } from "../../app/store";
-import { BASE_URL, CONNECTION_TYPE_ROUTE } from "../../constants";
-import { selectToken } from "../auth";
 import {
   ConnectionTypeParams,
   ConnectionTypeSecretSchemaReponse,
@@ -108,17 +106,7 @@ export const selectConnectionTypeFilters = (
   system_type: state.connectionType.system_type,
 });
 
-export const connectionTypeApi = createApi({
-  reducerPath: "connectionTypeApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
-      addCommonHeaders(headers, token);
-      return headers;
-    },
-  }),
-  tagTypes: ["ConnectionType"],
+export const connectionTypeApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllConnectionTypes: build.query<
       Page_ConnectionSystemTypeMap_,
@@ -127,7 +115,7 @@ export const connectionTypeApi = createApi({
       query: (filters) => ({
         url: `${CONNECTION_TYPE_ROUTE}${mapFiltersToSearchParams(filters)}`,
       }),
-      providesTags: () => ["ConnectionType"],
+      providesTags: () => ["Connection Type"],
     }),
     getConnectionTypeSecretSchema: build.query<
       ConnectionTypeSecretSchemaReponse,
@@ -136,7 +124,7 @@ export const connectionTypeApi = createApi({
       query: (connectionType) => ({
         url: `${CONNECTION_TYPE_ROUTE}/${connectionType}/secret`,
       }),
-      providesTags: () => ["ConnectionType"],
+      providesTags: () => ["Connection Type"],
     }),
   }),
 });
@@ -147,8 +135,11 @@ export const {
 } = connectionTypeApi;
 
 export const selectConnectionTypes = createSelector(
-  connectionTypeApi.endpoints.getAllConnectionTypes.select({
-    search: "",
-  }),
-  ({ data }) => data?.items ?? []
+  [
+    (RootState) => RootState,
+    connectionTypeApi.endpoints.getAllConnectionTypes.select({
+      search: "",
+    }),
+  ],
+  (RootState, { data }) => data?.items ?? []
 );

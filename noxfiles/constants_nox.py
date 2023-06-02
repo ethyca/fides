@@ -32,6 +32,7 @@ IMAGE_NAME = "fides"
 IMAGE = f"{REGISTRY}/{IMAGE_NAME}"
 IMAGE_LOCAL = f"{IMAGE}:local"
 IMAGE_LOCAL_UI = f"{IMAGE}:local-ui"
+IMAGE_LOCAL_PC = f"{IMAGE}:local-pc"
 IMAGE_DEV = f"{IMAGE}:dev"
 IMAGE_LATEST = f"{IMAGE}:latest"
 
@@ -40,7 +41,7 @@ PRIVACY_CENTER_IMAGE = f"{REGISTRY}/fides-privacy-center"
 SAMPLE_APP_IMAGE = f"{REGISTRY}/fides-sample-app"
 
 # Image names for 3rd party apps
-CYPRESS_IMAGE = "cypress/included:12.3.0"
+CYPRESS_IMAGE = "cypress/included:12.8.1"
 
 # Helpful paths
 CWD = getcwd()
@@ -135,8 +136,14 @@ RUN_CYPRESS_TESTS = (
     "-t",
     "--network=host",
     "-v",
-    f"{CWD}/clients/cypress-e2e:/e2e",
+    f"{CWD}/clients/cypress-e2e:/cypress-e2e",
     "-w",
-    "/e2e",
+    "/cypress-e2e",
+    "--entrypoint=",
+    "-e",
+    "CYPRESS_VIDEO=false",
     CYPRESS_IMAGE,
+    "/bin/bash",
+    "-c",
+    "npm install && cypress run",
 )

@@ -11,19 +11,19 @@ from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
+from fides.api.cryptography import cryptographic_util
 from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ops.models.connectionconfig import (
+from fides.api.db import session
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.util.saas_util import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.lib.cryptography import cryptographic_util
-from fides.lib.db import session
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 

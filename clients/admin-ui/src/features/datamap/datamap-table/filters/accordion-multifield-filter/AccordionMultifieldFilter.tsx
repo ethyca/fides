@@ -15,8 +15,9 @@ import { useState } from "react";
 import { ColumnInstance } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
-import { DatamapRow, selectDataCategoriesMap } from "~/features/datamap";
+import { DatamapRow } from "~/features/datamap";
 import { DATA_CATEGORY_COLUMN_ID } from "~/features/datamap/constants";
+import { selectDataCategoriesMap } from "~/features/taxonomy";
 
 import { useAccordionMultifieldFilter } from "./helpers";
 

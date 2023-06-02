@@ -19,12 +19,16 @@ export const FLAG_NAMES = Object.keys(FLAG_CONFIG) as Array<FlagNames>;
 
 type FeaturesState = {
   flags: Partial<FlagConfig>;
+  /**
+   * Not currently used, but useful for one-time messages that display on every page
+   * until acknowledged (see fides#2842)
+   */
   showNotificationBanner: boolean;
 };
 
 const initialState: FeaturesState = { flags: {}, showNotificationBanner: true };
 
-const featuresSlice = createSlice({
+export const featuresSlice = createSlice({
   name: "features",
   initialState,
   reducers: {

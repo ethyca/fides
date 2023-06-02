@@ -2,20 +2,20 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     CONNECTION_READ,
     STORAGE_READ,
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
     WEBHOOK_READ,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     ACCESS_MANUAL_WEBHOOK,
     ACCESS_MANUAL_WEBHOOKS,
     CONNECTION_TEST,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.models.manual_webhook import AccessManualWebhook
 
 
 class TestGetAccessManualWebhook:
@@ -81,8 +81,16 @@ class TestGetAccessManualWebhook:
         resp = response.json()
 
         assert resp["fields"] == [
-            {"pii_field": "email", "dsr_package_label": "email"},
-            {"pii_field": "Last Name", "dsr_package_label": "last_name"},
+            {
+                "pii_field": "email",
+                "dsr_package_label": "email",
+                "data_categories": ["user.contact.email"],
+            },
+            {
+                "pii_field": "Last Name",
+                "dsr_package_label": "last_name",
+                "data_categories": ["user.name"],
+            },
         ]
         connection_config_details = resp["connection_config"]
         assert connection_config_details["key"] == integration_manual_webhook_config.key
@@ -104,9 +112,21 @@ class TestPostAccessManualWebhook:
     def payload(self):
         return {
             "fields": [
-                {"pii_field": "First name", "dsr_package_label": None},
-                {"pii_field": "Last name", "dsr_package_label": "last_name"},
-                {"pii_field": "Order number", "dsr_package_label": "order_number"},
+                {
+                    "pii_field": "First name",
+                    "dsr_package_label": None,
+                    "data_categories": ["user.name"],
+                },
+                {
+                    "pii_field": "Last name",
+                    "dsr_package_label": "last_name",
+                    "data_categories": ["user.name"],
+                },
+                {
+                    "pii_field": "Order number",
+                    "dsr_package_label": "order_number",
+                    "data_categories": None,
+                },
             ]
         }
 
@@ -205,16 +225,32 @@ class TestPostAccessManualWebhook:
     ):
         payload = {
             "fields": [
-                {"pii_field": "first_name", "dsr_package_label": "First Name"},
-                {"pii_field": "last_name", "dsr_package_label": ""},
+                {
+                    "pii_field": "first_name",
+                    "dsr_package_label": "First Name",
+                    "data_categories": ["user.name"],
+                },
+                {
+                    "pii_field": "last_name",
+                    "dsr_package_label": "",
+                    "data_categories": ["user.name"],
+                },
             ]
         }
         auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 201
         assert response.json()["fields"] == [
-            {"pii_field": "first_name", "dsr_package_label": "First Name"},
-            {"pii_field": "last_name", "dsr_package_label": "last_name"},
+            {
+                "pii_field": "first_name",
+                "dsr_package_label": "First Name",
+                "data_categories": ["user.name"],
+            },
+            {
+                "pii_field": "last_name",
+                "dsr_package_label": "last_name",
+                "data_categories": ["user.name"],
+            },
         ]
 
     def test_post_access_manual_webhook_dsr_package_labels_spaces(
@@ -222,16 +258,32 @@ class TestPostAccessManualWebhook:
     ):
         payload = {
             "fields": [
-                {"pii_field": "first_name", "dsr_package_label": "First Name"},
-                {"pii_field": "last_name", "dsr_package_label": "  "},
+                {
+                    "pii_field": "first_name",
+                    "dsr_package_label": "First Name",
+                    "data_categories": ["user.name"],
+                },
+                {
+                    "pii_field": "last_name",
+                    "dsr_package_label": "  ",
+                    "data_categories": ["user.name"],
+                },
             ]
         }
         auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 201
         assert response.json()["fields"] == [
-            {"pii_field": "first_name", "dsr_package_label": "First Name"},
-            {"pii_field": "last_name", "dsr_package_label": "last_name"},
+            {
+                "pii_field": "first_name",
+                "dsr_package_label": "First Name",
+                "data_categories": ["user.name"],
+            },
+            {
+                "pii_field": "last_name",
+                "dsr_package_label": "last_name",
+                "data_categories": ["user.name"],
+            },
         ]
 
     def test_post_access_manual_webhook_wrong_connection_config_type(
@@ -275,9 +327,21 @@ class TestPostAccessManualWebhook:
         resp = response.json()
 
         assert resp["fields"] == [
-            {"pii_field": "First name", "dsr_package_label": "first_name"},
-            {"pii_field": "Last name", "dsr_package_label": "last_name"},
-            {"pii_field": "Order number", "dsr_package_label": "order_number"},
+            {
+                "pii_field": "First name",
+                "dsr_package_label": "first_name",
+                "data_categories": ["user.name"],
+            },
+            {
+                "pii_field": "Last name",
+                "dsr_package_label": "last_name",
+                "data_categories": ["user.name"],
+            },
+            {
+                "pii_field": "Order number",
+                "dsr_package_label": "order_number",
+                "data_categories": None,
+            },
         ]
         connection_config_details = resp["connection_config"]
         assert connection_config_details["key"] == integration_manual_webhook_config.key
@@ -316,7 +380,11 @@ class TestPatchAccessManualWebhook:
         auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         payload = {
             "fields": [
-                {"pii_field": "New Field", "dsr_package_label": None},
+                {
+                    "pii_field": "New Field",
+                    "dsr_package_label": None,
+                    "data_categories": None,
+                },
             ]
         }
 
@@ -339,7 +407,15 @@ class TestPatchAccessManualWebhook:
         auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         payload = {
             "fields": [
-                {"pii_field": "New Field", "dsr_package_label": None},
+                {
+                    "pii_field": "New Field",
+                    "dsr_package_label": None,
+                    "data_categories": [
+                        "user.contact.address.street",
+                        "user.contact.address.city",
+                        "user.contact.address.state",
+                    ],
+                },
             ]
         }
 
@@ -349,7 +425,15 @@ class TestPatchAccessManualWebhook:
         resp = response.json()
 
         assert resp["fields"] == [
-            {"pii_field": "New Field", "dsr_package_label": "new_field"},
+            {
+                "pii_field": "New Field",
+                "dsr_package_label": "new_field",
+                "data_categories": [
+                    "user.contact.address.street",
+                    "user.contact.address.city",
+                    "user.contact.address.state",
+                ],
+            },
         ]
         connection_config_details = resp["connection_config"]
         assert connection_config_details["key"] == integration_manual_webhook_config.key
@@ -463,8 +547,16 @@ class TestGetAccessManualWebhooks:
         resp = response.json()[0]
 
         assert resp["fields"] == [
-            {"pii_field": "email", "dsr_package_label": "email"},
-            {"pii_field": "Last Name", "dsr_package_label": "last_name"},
+            {
+                "pii_field": "email",
+                "dsr_package_label": "email",
+                "data_categories": ["user.contact.email"],
+            },
+            {
+                "pii_field": "Last Name",
+                "dsr_package_label": "last_name",
+                "data_categories": ["user.name"],
+            },
         ]
         connection_config_details = resp["connection_config"]
         assert connection_config_details["key"] == integration_manual_webhook_config.key

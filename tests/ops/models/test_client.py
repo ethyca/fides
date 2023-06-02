@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.cryptography.cryptographic_util import hash_with_salt
+from fides.api.models.client import ClientDetail
 from fides.core.config import CONFIG
-from fides.lib.cryptography.cryptographic_util import hash_with_salt
-from fides.lib.models.client import ClientDetail
 
 
 class TestClientModel:

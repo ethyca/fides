@@ -1,14 +1,14 @@
-import { hostUrl } from "~/constants";
+import { API_URL } from "../support/constants";
 
 describe("Privacy request", () => {
   describe("when requesting data access", () => {
     beforeEach(() => {
-      cy.intercept("POST", `${hostUrl}/privacy-request`, {
+      cy.intercept("POST", `${API_URL}/privacy-request`, {
         fixture: "privacy-request/unverified",
       }).as("postPrivacyRequest");
       cy.intercept(
         "POST",
-        `${hostUrl}/privacy-request/privacy-request-id/verify`,
+        `${API_URL}/privacy-request/privacy-request-id/verify`,
         { body: {} }
       ).as("postPrivacyRequestVerify");
     });

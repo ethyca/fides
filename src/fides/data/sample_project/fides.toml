@@ -4,6 +4,7 @@ user = "postgres"
 password = "postgres"
 port = "5432"
 db = "fides"
+load_samples = true
 
 [redis]
 host = "redis"
@@ -13,7 +14,7 @@ db_index = 0
 
 [security]
 env = "prod"
-cors_origins = [ "http://localhost:8080", "http://localhost:3001",]
+cors_origins = [ "http://localhost:8080", "http://localhost:3001", "http://localhost:3000" ]
 app_encryption_key = "examplevalidprojectencryptionkey"
 oauth_root_client_id = "fidesadmin"
 oauth_root_client_secret = "fidesadminsecret"
@@ -38,3 +39,4 @@ password = "Testpassword1!"
 
 [logging]
 level = "DEBUG"
+log_pii = true

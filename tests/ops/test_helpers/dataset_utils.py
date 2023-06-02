@@ -4,17 +4,17 @@ from typing import Any, Dict, Iterable, List, Optional
 import yaml
 from fideslang.models import Dataset
 
-from fides.api.ops.graph.config import (
+from fides.api.graph.config import (
     Collection,
     Field,
     FieldPath,
     ObjectField,
     ScalarField,
 )
-from fides.api.ops.graph.data_type import DataType, get_data_type, to_data_type_string
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
-from fides.api.ops.util.collection_util import Row
+from fides.api.graph.data_type import DataType, get_data_type, to_data_type_string
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
+from fides.api.util.collection_util import Row
 
 SAAS_DATASET_DIRECTORY = "data/saas/dataset/"
 

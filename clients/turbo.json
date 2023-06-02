@@ -1,0 +1,60 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/*", "!.next/cache/*", "dist/*"]
+    },
+    "dev": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/*", "!.next/cache/*"],
+      "cache": false,
+      "persistent": true
+    },
+    "start": {
+      "dependsOn": ["build"],
+      "outputs": [".next/*", "!.next/cache/*"]
+    },
+    "lint": {
+      "dependsOn": []
+    },
+    "lint:fix": {
+      "dependsOn": []
+    },
+    "format": {
+      "dependsOn": []
+    },
+    "format:ci": {
+      "dependsOn": []
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "test:ci": {
+      "dependsOn": ["build"]
+    },
+    "cy:open": {
+      "dependsOn": []
+    },
+    "cy:run": {
+      "dependsOn": []
+    },
+    "cy:start": {
+      "dependsOn": []
+    },
+    "analyze": {
+      "dependsOn": []
+    },
+    "analyze:browser": {
+      "dependsOn": []
+    },
+    "analyze:server": {
+      "dependsOn": []
+    },
+    "openapi:generate": {
+      "dependsOn": []
+    }
+  }
+}

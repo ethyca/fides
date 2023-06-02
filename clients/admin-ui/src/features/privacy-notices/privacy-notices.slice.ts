@@ -4,6 +4,7 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   Page_PrivacyNoticeResponse_,
+  PrivacyNoticeCreation,
   PrivacyNoticeRegion,
   PrivacyNoticeResponse,
 } from "~/types/api";
@@ -16,7 +17,7 @@ export interface State {
 
 const initialState: State = {
   page: 1,
-  pageSize: 10,
+  pageSize: 50,
 };
 
 interface PrivacyNoticesParams {
@@ -37,7 +38,7 @@ const privacyNoticesApi = baseApi.injectEndpoints({
         url: `privacy-notice/`,
         params: { ...params, systems_applicable: true, show_disabled: true },
       }),
-      providesTags: () => ["PrivacyNotices"],
+      providesTags: () => ["Privacy Notices"],
     }),
     patchPrivacyNotices: build.mutation<
       PrivacyNoticeResponse[],
@@ -48,13 +49,36 @@ const privacyNoticesApi = baseApi.injectEndpoints({
         url: `privacy-notice/`,
         body: payload,
       }),
-      invalidatesTags: () => ["PrivacyNotices"],
+      invalidatesTags: () => ["Privacy Notices"],
+    }),
+    getPrivacyNoticeById: build.query<PrivacyNoticeResponse, string>({
+      query: (id) => ({
+        url: `privacy-notice/${id}`,
+      }),
+      providesTags: (result, error, arg) => [
+        { type: "Privacy Notices", id: arg },
+      ],
+    }),
+    postPrivacyNotice: build.mutation<
+      PrivacyNoticeResponse[],
+      PrivacyNoticeCreation[]
+    >({
+      query: (payload) => ({
+        method: "POST",
+        url: `privacy-notice/`,
+        body: payload,
+      }),
+      invalidatesTags: () => ["Privacy Notices"],
     }),
   }),
 });
 
-export const { useGetAllPrivacyNoticesQuery, usePatchPrivacyNoticesMutation } =
-  privacyNoticesApi;
+export const {
+  useGetAllPrivacyNoticesQuery,
+  usePatchPrivacyNoticesMutation,
+  useGetPrivacyNoticeByIdQuery,
+  usePostPrivacyNoticeMutation,
+} = privacyNoticesApi;
 
 export const privacyNoticesSlice = createSlice({
   name: "privacyNotices",

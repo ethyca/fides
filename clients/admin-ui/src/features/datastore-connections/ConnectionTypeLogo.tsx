@@ -2,14 +2,17 @@ import { Image, ImageProps } from "@fidesui/react";
 import React from "react";
 
 import { ConnectionSystemTypeMap, ConnectionType } from "~/types/api";
-import { isConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
 
 import {
   CONNECTION_TYPE_LOGO_MAP,
   CONNECTOR_LOGOS_PATH,
   FALLBACK_CONNECTOR_LOGOS_PATH,
 } from "./constants";
-import { DatastoreConnection, isDatastoreConnection } from "./types";
+import {
+  DatastoreConnection,
+  isConnectionSystemTypeMap,
+  isDatastoreConnection,
+} from "./types";
 
 type ConnectionTypeLogoProps = {
   data: string | DatastoreConnection | ConnectionSystemTypeMap;

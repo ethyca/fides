@@ -2,8 +2,10 @@
 from pathlib import Path
 
 import nox
+
 from constants_nox import COMPOSE_FILE_LIST
 from run_infrastructure import run_infrastructure
+
 
 @nox.session()
 def seed_test_data(session: nox.Session) -> None:

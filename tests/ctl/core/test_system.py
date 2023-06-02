@@ -6,6 +6,7 @@ import pytest
 from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 
+from fides.api.ctl.sql_models import System as sql_System
 from fides.connectors.models import OktaConfig
 from fides.core import api
 from fides.core import system as _system
@@ -32,19 +33,24 @@ def delete_server_systems(test_config: FidesConfig, systems: List[System]) -> No
         )
 
 
-def test_get_system_data_uses(system) -> None:
-    privacy_declarations = system.privacy_declarations.copy()
+def test_get_system_data_uses(db, system) -> None:
+    assert sql_System.get_data_uses([system]) == {"advertising"}
 
-    assert system.get_data_uses() == {"advertising"}
+    system.privacy_declarations[0].update(
+        db=db, data={"data_use": "advertising.first_party"}
+    )
 
-    system.privacy_declarations[0]["data_use"] = "advertising.first_party"
+    assert sql_System.get_data_uses([system]) == {
+        "advertising",
+        "advertising.first_party",
+    }
+    assert sql_System.get_data_uses([system], include_parents=False) == {
+        "advertising.first_party"
+    }
 
-    assert system.get_data_uses() == {"advertising", "advertising.first_party"}
-    assert system.get_data_uses(include_parents=False) == {"advertising.first_party"}
-
-    system.privacy_declarations = None
-    assert system.get_data_uses() == set()
-    system.privacy_declarations = privacy_declarations
+    system.privacy_declarations[0].delete(db)
+    db.refresh(system)
+    assert sql_System.get_data_uses([system]) == set()
 
 
 @pytest.fixture(scope="function")

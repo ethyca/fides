@@ -4,7 +4,7 @@ from typing import Any, Dict
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ops.models.application_config import ApplicationConfig
+from fides.api.models.application_config import ApplicationConfig
 from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
 

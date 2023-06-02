@@ -4,35 +4,35 @@ from unittest import mock
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.policy import ActionType
-from fides.api.ops.schemas.connection_configuration.connection_config import SystemType
-from fides.api.ops.service.connectors.saas.connector_registry_service import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.policy import ActionType
+from fides.api.schemas.connection_configuration.connection_config import SystemType
+from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
-from fides.lib.models.client import ClientDetail
 
 
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
-        return V1_URL_PREFIX + CONNECTION_TYPES
+        return V1_URL_PREFIX + CONNECTION_TYPES + "?"
 
     def test_get_connection_types_not_authenticated(self, api_client, url):
         resp = api_client.get(url, headers={})
@@ -80,6 +80,53 @@ class TestGetConnections:
         assert "custom" not in [item["identifier"] for item in data]
         assert "manual" not in [item["identifier"] for item in data]
 
+    def test_get_connection_types_size_param(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ) -> None:
+        """Test to ensure size param works as expected since it overrides default value"""
+
+        # ensure default size is 100 (effectively testing that here since we have > 50 connectors)
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(url, headers=auth_header)
+        data = resp.json()["items"]
+        assert resp.status_code == 200
+        assert (
+            len(data)
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 4
+        )  # there are 4 connection types that are not returned by the endpoint
+        # this value is > 50, so we've efectively tested our "default" size is
+        # > than the default of 50 (it's 100!)
+
+        # ensure specifying size works as expected
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(url + "size=50", headers=auth_header)
+        data = resp.json()["items"]
+        assert resp.status_code == 200
+        assert (
+            len(data) == 50
+        )  # should be 50 items in response since we explicitly set size=50
+
+        # ensure specifying size and page works as expected
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(url + "size=2", headers=auth_header)
+        data = resp.json()["items"]
+        assert resp.status_code == 200
+        assert (
+            len(data) == 2
+        )  # should be 2 items in response since we explicitly set size=2
+        page_1_response = data  # save this response for comparison below
+        # now get second page
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(url + "size=2&page=2", headers=auth_header)
+        data = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(data) == 2  # should be 2 items on second page too
+        # second page should be different than first page!
+        assert data != page_1_response
+
     def test_search_connection_types(
         self,
         api_client,
@@ -107,7 +154,7 @@ class TestGetConnections:
             for saas_template in expected_saas_templates
         ]
 
-        resp = api_client.get(url + f"?search={search}", headers=auth_header)
+        resp = api_client.get(url + f"search={search}", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
 
@@ -133,12 +180,12 @@ class TestGetConnections:
             for saas_template in expected_saas_templates
         ]
 
-        resp = api_client.get(url + f"?search={search}", headers=auth_header)
+        resp = api_client.get(url + f"search={search}", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
 
-        # 2 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_templates) + 2
+        # 3 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_templates) + 3
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -179,7 +226,7 @@ class TestGetConnections:
             for saas_template in expected_saas_types
         ]
 
-        resp = api_client.get(url + f"?search={search}", headers=auth_header)
+        resp = api_client.get(url + f"search={search}", headers=auth_header)
 
         assert resp.status_code == 200
         data = resp.json()["items"]
@@ -214,11 +261,11 @@ class TestGetConnections:
             for saas_template in expected_saas_types
         ]
 
-        resp = api_client.get(url + f"?search={search}", headers=auth_header)
+        resp = api_client.get(url + f"search={search}", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        # 2 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 2
+        # 3 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_types) + 3
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -238,18 +285,18 @@ class TestGetConnections:
     def test_search_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
-        resp = api_client.get(url + "?system_type=nothing", headers=auth_header)
+        resp = api_client.get(url + "system_type=nothing", headers=auth_header)
         assert resp.status_code == 422
 
-        resp = api_client.get(url + "?system_type=saas", headers=auth_header)
+        resp = api_client.get(url + "system_type=saas", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
         assert len(data) == len(ConnectorRegistry.connector_types())
 
-        resp = api_client.get(url + "?system_type=database", headers=auth_header)
+        resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 9
+        assert len(data) == 10
 
     def test_search_system_type_and_connection_type(
         self,
@@ -261,7 +308,7 @@ class TestGetConnections:
 
         search = "str"
         resp = api_client.get(
-            url + f"?search={search}&system_type=saas", headers=auth_header
+            url + f"search={search}&system_type=saas", headers=auth_header
         )
         assert resp.status_code == 200
         data = resp.json()["items"]
@@ -273,7 +320,7 @@ class TestGetConnections:
         assert len(data) == len(expected_saas_types)
 
         resp = api_client.get(
-            url + "?search=re&system_type=database", headers=auth_header
+            url + "search=re&system_type=database", headers=auth_header
         )
         assert resp.status_code == 200
         data = resp.json()["items"]
@@ -282,7 +329,7 @@ class TestGetConnections:
     def test_search_manual_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
-        resp = api_client.get(url + "?system_type=manual", headers=auth_header)
+        resp = api_client.get(url + "system_type=manual", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
         assert len(data) == 1
@@ -298,22 +345,34 @@ class TestGetConnections:
     def test_search_email_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
-        resp = api_client.get(url + "?system_type=email", headers=auth_header)
+        resp = api_client.get(url + "system_type=email", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 2
+        assert len(data) == 4
         assert data == [
             {
+                "encoded_icon": None,
+                "human_readable": "Attentive",
                 "identifier": "attentive",
                 "type": "email",
-                "human_readable": "Attentive",
-                "encoded_icon": None,
             },
             {
+                "encoded_icon": None,
+                "human_readable": "Generic Consent Email",
+                "identifier": "generic_consent_email",
+                "type": "email",
+            },
+            {
+                "encoded_icon": None,
+                "human_readable": "Generic Erasure Email",
+                "identifier": "generic_erasure_email",
+                "type": "email",
+            },
+            {
+                "encoded_icon": None,
+                "human_readable": "Sovrn",
                 "identifier": "sovrn",
                 "type": "email",
-                "human_readable": "Sovrn",
-                "encoded_icon": None,
             },
         ]
 
@@ -338,15 +397,14 @@ class TestGetConnectionsActionTypeParams:
 
     @pytest.fixture(scope="function")
     def url(self) -> str:
-        return V1_URL_PREFIX + CONNECTION_TYPES
+        return V1_URL_PREFIX + CONNECTION_TYPES + "?"
 
     @pytest.fixture(scope="function")
     def url_with_params(self) -> str:
         return (
             V1_URL_PREFIX
             + CONNECTION_TYPES
-            + "?"
-            + "consent={consent}"
+            + "?consent={consent}"
             + "&access={access}"
             + "&erasure={erasure}"
         )
@@ -580,7 +638,7 @@ class TestGetConnectionsActionTypeParams:
         # now run another request, this time omitting non-specified filter params
         # rather than setting them to false explicitly. we should get identical results.
         if action_types:
-            the_url = url + "?"
+            the_url = url
             if ActionType.consent in action_types:
                 the_url += "consent=true&"
             if ActionType.access in action_types:
@@ -915,7 +973,7 @@ class TestInstantiateConnectionFromTemplate:
         }
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.saas_config_endpoints.upsert_dataset_config_from_template"
+        "fides.api.api.v1.endpoints.saas_config_endpoints.upsert_dataset_config_from_template"
     )
     def test_dataset_config_saving_fails(
         self, mock_create_dataset, db, generate_auth_header, api_client, base_url
