@@ -398,14 +398,14 @@ class MicrosoftSQLServerConnector(SQLConnector):
     def build_uri(self) -> URL:
         """
         Build URI of format
-        mssql+pyodbc://[username]:[password]@[host]:[port]/[dbname]?driver=ODBC+Driver+17+for+SQL+Server
+        mssql+pymssql://[username]:[password]@[host]:[port]/[dbname]?driver=ODBC+Driver+17+for+SQL+Server
         Returns URL obj, since SQLAlchemy's create_engine method accepts either a URL obj or a string
         """
 
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         url = URL.create(
-            "mssql+pyodbc",
+            "mssql+pymssql",
             username=config.username,
             password=config.password,
             host=config.host,

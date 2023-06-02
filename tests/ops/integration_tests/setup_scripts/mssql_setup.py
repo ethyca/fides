@@ -3,7 +3,7 @@ from time import sleep
 import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 
-MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:Mssql_pw1@mssql_example:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
+MSSQL_URL_TEMPLATE = "mssql+pymssql://sa:Mssql_pw1@mssql_example:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
 MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
 
 

@@ -365,7 +365,7 @@ POSTGRES_URL = (
 
 MYSQL_URL = "mysql+pymysql://mysql_user:mysql_pw@mysql-test:3306/mysql_example"
 
-MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:SQLserver1@sqlserver-test:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
+MSSQL_URL_TEMPLATE = "mssql+pymssql://sa:SQLserver1@sqlserver-test:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
 MSSQL_URL = MSSQL_URL_TEMPLATE.format("sqlserver_example")
 MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
 
