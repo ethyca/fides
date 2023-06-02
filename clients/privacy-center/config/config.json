@@ -4,6 +4,7 @@
   "description_subtext": [],
   "addendum": [],
   "logo_path": "/logo.svg",
+  "favicon_path": "/favicon.ico",
   "actions": [
     {
       "policy_key": "default_access_policy",
