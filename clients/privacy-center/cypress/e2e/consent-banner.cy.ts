@@ -80,7 +80,7 @@ const stubConfig = (
       updatedConfig.options?.fidesApiUrl
     ) {
       const experienceResp = mockExperienceApiResp || {
-        fixture: "consent/overlay-experience.json",
+        fixture: "consent/overlay_experience.json",
       };
       cy.intercept(
         "GET",
