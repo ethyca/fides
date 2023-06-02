@@ -28,6 +28,7 @@ FROM python:${PYTHON_VERSION}-slim-bullseye as backend
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    curl \
     git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
