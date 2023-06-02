@@ -3,6 +3,7 @@ import os
 from typing import Dict, Generator, List
 from urllib.parse import quote_plus
 from uuid import uuid4
+import pymssql
 
 import pytest
 import sqlalchemy
@@ -409,6 +410,10 @@ TEST_DATABASE_PARAMETERS = {
     "mssql": {
         "url": MSSQL_URL,
         "setup_url": MASTER_MSSQL_URL,
+        "username": "sa",
+        "password": "SQLserver1",
+        "database": "master",
+        "server": "sqlserver-test",
         "init_script_path": "tests/ctl/data/example_sql/sqlserver_example.sql",
         "is_external": False,
         "expected_collection": {
@@ -461,9 +466,23 @@ class TestDatabase:
                 queries = [
                     query for query in query_file.read().splitlines() if query != ""
                 ]
-            print(queries)
+            print(f"Database Setup Queries:\n{queries}")
+
             for query in queries:
-                engine.execute(sqlalchemy.sql.text(query))
+                if "pymssql" not in database_parameters.get("setup_url"):
+                    engine.execute(sqlalchemy.sql.text(query))
+                else:
+                    # This special MSSQL case is required due to how autocommit is activated
+                    with pymssql.connect(
+                        database_parameters["server"],
+                        database_parameters["username"],
+                        database_parameters["password"],
+                        database_parameters["database"],
+                        autocommit=True,
+                    ) as connection:
+                        with connection.cursor() as cursor:
+                            cursor.execute(query)
+
         yield
 
     def test_get_db_tables(self, request: Dict, database_type: str) -> None:

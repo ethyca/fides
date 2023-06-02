@@ -2,9 +2,15 @@ from time import sleep
 
 import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
+import pymssql
 
 MSSQL_URL_TEMPLATE = "mssql+pymssql://sa:Mssql_pw1@mssql_example:1433/{}"
 MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master")
+
+SERVER = "mssql_example"
+USER = "sa"
+PASSWORD = "Mssql_pw1"
+DATABASE = "master"
 
 
 def mssql_setup():
@@ -13,9 +19,7 @@ def mssql_setup():
     The query file must have each query on a separate line.
     Initial connection must be done to the master database.
     """
-    engine = sqlalchemy.create_engine(MASTER_MSSQL_URL).execution_options(
-        isolation_level="AUTOCOMMIT"
-    )
+    engine = sqlalchemy.create_engine(MASTER_MSSQL_URL)
 
     # Wait until mssql is ready. MSSQL tests were randomly failing in CI because the
     # server wasn't ready. This is a workaround to that issue.
@@ -28,13 +32,19 @@ def mssql_setup():
             break
         except SQLAlchemyError:
             try_number += 1
-            print(f"Error connecting, retrying. Try number {try_number}")
+            print(f"Error connecting with URL: {MASTER_MSSQL_URL}\nRetrying...Try number {try_number}")
             sleep(1)
 
     with open("./docker/sample_data/mssql_example.sql", "r") as query_file:
         queries = [query for query in query_file.read().splitlines() if query != ""]
+
     for query in queries:
-        engine.execute(sqlalchemy.sql.text(query))
+        # This must be done within a direct connection to enable autocommit
+        with pymssql.connect(
+            SERVER, USER, PASSWORD, DATABASE, autocommit=True
+        ) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query)
 
 
 if __name__ == "__main__":
