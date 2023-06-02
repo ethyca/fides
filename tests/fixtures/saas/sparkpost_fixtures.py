@@ -101,6 +101,10 @@ def sparkpost_erasure_data(
     sparkpost_erasure_recipient_id: str,
     sparkpost_secrets
 ) -> Generator:
+    """
+    Creates a dynamic test data record for tests.
+    Yields recipient ID as this may be useful to have in test scenarios
+    """
     response = sparkpost_client.create_recipient(
         sparkpost_erasure_identity_email, sparkpost_secrets
     )
