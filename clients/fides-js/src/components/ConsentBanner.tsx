@@ -55,7 +55,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         isShown ? "" : "fides-consent-banner-hidden"
       } `}
     >
-      <div>
+      <div id="fides-consent-banner-inner">
         <div
           id="fides-consent-banner-title"
           className="fides-consent-banner-title"
@@ -68,32 +68,36 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         >
           {bannerDescription || ""}
         </div>
-      </div>
-      <div
-        id="fides-consent-banner-buttons"
-        className="fides-consent-banner-buttons"
-      >
-        <Button
-          buttonType={ButtonType.SECONDARY}
-          label={managePreferencesLabel}
-          onClick={handleManagePreferencesClick}
-        />
-        <Button
-          buttonType={ButtonType.PRIMARY}
-          label={rejectButtonLabel}
-          onClick={() => {
-            onRejectAll();
-            setIsShown(false);
-          }}
-        />
-        <Button
-          buttonType={ButtonType.PRIMARY}
-          label={confirmationButtonLabel}
-          onClick={() => {
-            onAcceptAll();
-            setIsShown(false);
-          }}
-        />
+        <div
+          id="fides-consent-banner-buttons"
+          className="fides-consent-banner-buttons"
+        >
+          <span className="fides-consent-banner-buttons-left">
+            <Button
+              buttonType={ButtonType.TERTIARY}
+              label={managePreferencesLabel}
+              onClick={handleManagePreferencesClick}
+            />
+          </span>
+          <span className="fides-consent-banner-buttons-right">
+            <Button
+              buttonType={ButtonType.PRIMARY}
+              label={rejectButtonLabel}
+              onClick={() => {
+                onRejectAll();
+                setIsShown(false);
+              }}
+            />
+            <Button
+              buttonType={ButtonType.PRIMARY}
+              label={confirmationButtonLabel}
+              onClick={() => {
+                onAcceptAll();
+                setIsShown(false);
+              }}
+            />
+          </span>
+        </div>
       </div>
     </div>
   );
