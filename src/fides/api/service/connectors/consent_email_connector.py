@@ -51,7 +51,10 @@ from fides.core.config import get_config
 
 CONFIG = get_config()
 
-CONSENT_EMAIL_CONNECTOR_TYPES = [ConnectionType.sovrn]
+CONSENT_EMAIL_CONNECTOR_TYPES = [
+    ConnectionType.generic_consent_email,
+    ConnectionType.sovrn,
+]
 
 
 class GenericConsentEmailConnector(BaseEmailConnector):

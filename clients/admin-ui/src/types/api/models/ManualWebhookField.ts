@@ -8,5 +8,5 @@
 export type ManualWebhookField = {
   pii_field: string;
   dsr_package_label?: string;
-  data_categories?: string[];
+  data_categories?: Array<string>;
 };
