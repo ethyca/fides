@@ -1,7 +1,7 @@
 """remove delivery mechanism
 
 Revision ID: deb97d9393f3
-Revises: 587c53fe3e99
+Revises: ed46521679fb
 Create Date: 2023-05-25 16:47:16.566034
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "deb97d9393f3"
-down_revision = "587c53fe3e99"
+down_revision = "ed46521679fb"
 branch_labels = None
 depends_on = None
 
