@@ -1,4 +1,4 @@
-export const FIDES_MODAL_LINK = "fides-consent-modal-link";
+export const FIDES_MODAL_LINK = "fides-modal-link";
 
 export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.

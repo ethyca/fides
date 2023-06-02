@@ -49,36 +49,36 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
 
   return (
     <div
-      id="fides-consent-banner"
-      className={`fides-consent-banner fides-consent-banner-bottom ${
-        isShown ? "" : "fides-consent-banner-hidden"
+      id="fides-banner"
+      className={`fides-banner fides-banner-bottom ${
+        isShown ? "" : "fides-banner-hidden"
       } `}
     >
-      <div id="fides-consent-banner-inner">
+      <div id="fides-banner-inner">
         <div
-          id="fides-consent-banner-title"
-          className="fides-consent-banner-title"
+          id="fides-banner-title"
+          className="fides-banner-title"
         >
           {title}
         </div>
         <div
-          id="fides-consent-banner-description"
-          className="fides-consent-banner-description"
+          id="fides-banner-description"
+          className="fides-banner-description"
         >
           {description}
         </div>
         <div
-          id="fides-consent-banner-buttons"
-          className="fides-consent-banner-buttons"
+          id="fides-banner-buttons"
+          className="fides-banner-buttons"
         >
-          <span className="fides-consent-banner-buttons-left">
+          <span className="fides-banner-buttons-left">
             <Button
               buttonType={ButtonType.TERTIARY}
               label={privacyPreferencesLabel}
               onClick={handleManagePreferencesClick}
             />
           </span>
-          <span className="fides-consent-banner-buttons-right">
+          <span className="fides-banner-buttons-right">
             <Button
               buttonType={ButtonType.PRIMARY}
               label={rejectButtonLabel}
