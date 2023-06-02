@@ -39,7 +39,9 @@ data_use_downgrades: Dict[str, str] = {
 }
 
 
-def update_privacy_declaration_data_uses(bind, data_use_map: Dict[str, str]):
+def update_privacy_declaration_data_uses(
+    bind: Connection, data_use_map: Dict[str, str]
+):
     """Upgrade or downgrade data uses from fideslang 1.4 for privacy declarations"""
     existing_ctl_policies: ResultProxy = bind.execute(
         text("SELECT id, data_use FROM privacydeclaration;")

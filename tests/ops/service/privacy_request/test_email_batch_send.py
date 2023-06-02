@@ -390,7 +390,9 @@ class TestConsentEmailBatchSend:
                 identities={"ljt_readerID": "12345"},
                 consent_preferences=[
                     Consent(
-                        data_use="advertising", data_use_description=None, opt_in=False
+                        data_use="marketing.advertising",
+                        data_use_description=None,
+                        opt_in=False,
                     )
                 ],
                 privacy_preferences=[],
@@ -672,7 +674,7 @@ class TestConsentEmailBatchSend:
                             origin="privacy_notice_template_1",
                             regions=["us_ca", "us_co"],
                             consent_mechanism="opt_in",
-                            data_uses=["advertising", "third_party_sharing"],
+                            data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level="system_wide",
                             disabled=False,
                             has_gpc_flag=False,

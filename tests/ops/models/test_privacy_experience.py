@@ -438,7 +438,7 @@ class TestPrivacyExperience:
                 "description": "a test sample privacy notice configuration",
                 "regions": [PrivacyNoticeRegion.eu_fr, PrivacyNoticeRegion.eu_it],
                 "consent_mechanism": ConsentMechanism.opt_out,
-                "data_uses": ["advertising", "third_party_sharing"],
+                "data_uses": ["marketing.advertising", "third_party_sharing"],
                 "enforcement_level": EnforcementLevel.system_wide,
                 "displayed_in_overlay": False,
                 "displayed_in_api": True,
