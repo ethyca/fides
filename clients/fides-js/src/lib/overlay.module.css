@@ -251,6 +251,13 @@ div#fides-consent-modal .modal-button-group {
   margin-bottom: 1em;
 }
 
+.modal-privacy-policy {
+  display: block;
+  text-align: center;
+  margin-top: 1.5em;
+  color: var(--fides-consent-overlay-primary-color);
+}
+
 /** Toggle, adapted from https://kittygiraudel.com/2021/04/05/an-accessible-toggle/ */
 
 @media (prefers-reduced-motion: reduce) {

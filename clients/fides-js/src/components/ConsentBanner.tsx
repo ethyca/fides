@@ -28,7 +28,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     accept_button_label: acceptButtonLabel = "Accept All",
     reject_button_label: rejectButtonLabel = "Reject All",
     privacy_preferences_link_label:
-      privacyPreferencesLabel = "Manage pereferences",
+      privacyPreferencesLabel = "Manage preferences",
   } = experience;
 
   useEffect(() => {

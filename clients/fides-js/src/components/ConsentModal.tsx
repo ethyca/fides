@@ -96,6 +96,17 @@ const ConsentModal = ({
               onClick={handleAcceptAll}
             />
           </div>
+          {experience.privacy_policy_link_label &&
+          experience.privacy_policy_url ? (
+            <a
+              href={experience.privacy_policy_url}
+              rel="noopener noreferrer"
+              target="_blank"
+              className="modal-privacy-policy"
+            >
+              {experience.privacy_policy_link_label}
+            </a>
+          ) : null}
         </div>
       </div>
       <div className="modal-overlay" id="modal-overlay" />
