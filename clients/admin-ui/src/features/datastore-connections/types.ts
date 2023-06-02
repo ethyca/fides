@@ -1,4 +1,5 @@
 import {
+  ConnectionSystemTypeMap,
   ConnectionType,
   DatasetConfigCtlDataset,
   SystemType,
@@ -156,6 +157,11 @@ export type DatastoreConnection = {
 
 export const isDatastoreConnection = (obj: any): obj is DatastoreConnection =>
   (obj as DatastoreConnection).connection_type !== undefined;
+
+export const isConnectionSystemTypeMap = (
+  obj: any
+): obj is ConnectionSystemTypeMap =>
+  (obj as ConnectionSystemTypeMap).encoded_icon !== undefined;
 
 export type DatastoreConnectionParams = {
   search: string;

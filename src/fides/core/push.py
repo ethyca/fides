@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple
 from deepdiff import DeepDiff
 from fideslang import FidesModel, Taxonomy
 
-from fides.cli.utils import handle_cli_response
+from fides.common.utils import handle_cli_response
 from fides.core import api
 from fides.core.api_helpers import get_server_resources
 from fides.core.utils import echo_green, echo_red

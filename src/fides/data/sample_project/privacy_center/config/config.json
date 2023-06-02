@@ -3,24 +3,24 @@
   "description": "When you use our services, you’re trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control.",
   "description_subtext": [],
   "addendum": [],
-  "server_url_development": "http://localhost:8080/api/v1",
-  "server_url_production": "http://localhost:8080/api/v1",
-  "logo_path": "/assets/logo.svg",
+  "logo_path": "https://ethyca-cdn-harpocrates.s3.amazonaws.com/assets/cookiehouse_assets/logo.svg",
   "actions": [
     {
       "policy_key": "default_access_policy",
-      "icon_path": "/assets/access.svg",
+      "icon_path": "https://ethyca-cdn-harpocrates.s3.amazonaws.com/assets/cookiehouse_assets/access.svg",
       "title": "Access your data",
       "description": "We will provide you a report of all your personal data.",
+      "description_subtext": [],
       "identity_inputs": {
         "email": "required"
       }
     },
     {
       "policy_key": "default_erasure_policy",
-      "icon_path": "/assets/erase.svg",
+      "icon_path": "https://ethyca-cdn-harpocrates.s3.amazonaws.com/assets/cookiehouse_assets/erase.svg",
       "title": "Erase your data",
       "description": "We will erase all of your personal data. This action cannot be undone.",
+      "description_subtext": [],
       "identity_inputs": {
         "email": "required"
       }
@@ -29,10 +29,13 @@
   "includeConsent": true,
   "consent": {
     "button": {
-      "description": "Manage your consent preferences, including the option to select 'Do Not Sell My Personal Information'.",
-      "icon_path": "/assets/consent.svg",
+      "description": "Manage your consent preferences, including the option to select 'Do Not Sell or Share My Personal Information'.",
+      "description_subtext": [
+        "In order to opt-out of certain consent preferences, we may need to identify your account via your email address. This is optional."
+      ],
+      "icon_path": "https://ethyca-cdn-harpocrates.s3.amazonaws.com/assets/cookiehouse_assets/consent.svg",
       "identity_inputs": {
-        "email": "required"
+        "email": "optional"
       },
       "title": "Manage your consent"
     },
@@ -71,11 +74,11 @@
           "url": "https://example.com/privacy#analytics",
           "default": true,
           "highlight": false,
-          "cookieKeys": ["tracking"],
+          "cookieKeys": ["analytics"],
           "executable": false
         }
       ],
-      "description": "Manage your consent preferences, including the option to select 'Do Not Sell My Personal Information'.",
+      "description": "Manage your consent preferences, including the option to select 'Do Not Sell or Share My Personal Information'.",
       "description_subtext": [
         "When you use our services, you're trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control."
       ],

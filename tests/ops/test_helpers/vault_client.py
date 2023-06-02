@@ -4,7 +4,7 @@ from typing import Any, Dict
 from hvac import Client
 from loguru import logger
 
-from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.common_exceptions import FidesopsException
 
 params = {
     "VAULT_ADDR": os.environ.get("VAULT_ADDR"),

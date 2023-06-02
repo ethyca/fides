@@ -9,16 +9,16 @@ from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 
-from fides.api.ops.common_exceptions import SkippingConsentPropagation
-from fides.api.ops.graph.graph import Node
-from fides.api.ops.graph.traversal import TraversalNode
-from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.schemas.saas.saas_config import SaaSConfig, SaaSRequest
-from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
-from fides.api.ops.service.connectors import get_connector
-from fides.api.ops.service.connectors.saas_connector import SaaSConnector
+from fides.api.common_exceptions import SkippingConsentPropagation
+from fides.api.graph.graph import Node
+from fides.api.graph.traversal import TraversalNode
+from fides.api.models.policy import Policy
+from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
+from fides.api.schemas.saas.shared_schemas import HTTPMethod
+from fides.api.service.connectors import get_connector
+from fides.api.service.connectors.saas_connector import SaaSConnector
 from tests.ops.graph.graph_test_util import generate_node
 
 
@@ -151,9 +151,7 @@ class TestSaasConnector:
             traversal_node, Policy(), PrivacyRequest(id="123"), {}
         ) == [{}]
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
-    )
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_input_values(
         self, mock_send: Mock, saas_example_config, saas_example_connection_config
     ):
@@ -218,9 +216,7 @@ class TestSaasConnector:
             == []
         )
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
-    )
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_grouped_input_values(
         self, mock_send: Mock, saas_example_config, saas_example_connection_config
     ):
@@ -285,9 +281,7 @@ class TestSaasConnector:
             == []
         )
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
-    )
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_skip_missing_param_values_masking(
         self, mock_send: Mock, saas_example_config, saas_example_connection_config
     ):
@@ -434,6 +428,7 @@ class TestSaasConnectorRunConsentRequest:
         consent_policy,
         privacy_request_with_consent_policy,
         mailchimp_transactional_connection_config_no_secrets,
+        db,
     ):
         connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
         with pytest.raises(SkippingConsentPropagation) as exc:
@@ -442,6 +437,7 @@ class TestSaasConnectorRunConsentRequest:
                 policy=consent_policy,
                 privacy_request=privacy_request_with_consent_policy,
                 identity_data={"ljt_readerID": "abcde"},
+                session=db,
             )
         assert "no actionable consent preferences to propagate" in str(exc)
 
@@ -468,9 +464,15 @@ class TestSaasConnectorRunConsentRequest:
                 policy=consent_policy,
                 privacy_request=privacy_request_with_consent_policy,
                 identity_data={"ljt_readerID": "abcde"},
+                session=db,
             )
 
         assert "no actionable consent preferences to propagate" in str(exc)
+
+        db.refresh(privacy_preference_history_us_ca_provide)
+        assert (
+            privacy_preference_history_us_ca_provide.affected_system_status == {}
+        )  # This is updated elsewhere, in graph task, not tested here
 
     def test_enforcement_level_not_system_wide(
         self,
@@ -493,8 +495,15 @@ class TestSaasConnectorRunConsentRequest:
                 policy=consent_policy,
                 privacy_request=privacy_request_with_consent_policy,
                 identity_data={"ljt_readerID": "abcde"},
+                session=db,
             )
         assert "no actionable consent preferences to propagate" in str(exc)
+
+        db.refresh(privacy_preference_history_eu_fr_provide_service_frontend_only)
+        assert (
+            privacy_preference_history_eu_fr_provide_service_frontend_only.affected_system_status
+            == {}
+        )  # This is updated elsewhere, in graph task, not tested here
 
     def test_missing_identity_data_failure(
         self,
@@ -523,7 +532,13 @@ class TestSaasConnectorRunConsentRequest:
                 policy=consent_policy,
                 privacy_request=privacy_request,
                 identity_data={"ljt_readerID": "abcde"},
+                session=db,
             )
+
+        db.refresh(privacy_preference_history)
+        assert privacy_preference_history.affected_system_status == {
+            system.fides_key: "pending"
+        }, "Updated to error in graph task, not updated here"
 
     def test_missing_identity_data_skipped(
         self,
@@ -554,9 +569,14 @@ class TestSaasConnectorRunConsentRequest:
                 policy=consent_policy,
                 privacy_request=privacy_request,
                 identity_data={"ljt_readerID": "abcde"},
+                session=db,
             )
 
         assert "Missing needed values to propagate request" in str(exc)
+        db.refresh(privacy_preference_history)
+        assert privacy_preference_history.affected_system_status == {
+            system.fides_key: "pending"
+        }, "Updated to skipped in graph task, not updated here"
 
     def test_no_requests_of_that_type_defined(
         self,
@@ -586,13 +606,16 @@ class TestSaasConnectorRunConsentRequest:
                 policy=consent_policy,
                 privacy_request=privacy_request,
                 identity_data={"ljt_readerID": "abcde"},
+                session=db,
             )
 
         assert "No 'opt_in' requests defined" in str(exc)
+        db.refresh(privacy_preference_history)
+        assert (
+            privacy_preference_history.affected_system_status == {}
+        ), "Updated to skipped in graph task, not updated here"
 
-    @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
-    )
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_preferences_executable(
         self,
         mock_send,
@@ -613,5 +636,47 @@ class TestSaasConnectorRunConsentRequest:
             policy=consent_policy,
             privacy_request=privacy_request_with_consent_policy,
             identity_data={"ljt_readerID": "abcde"},
+            session=db,
         )
         assert mock_send.called
+        db.refresh(privacy_preference_history)
+        assert privacy_preference_history.affected_system_status == {
+            mailchimp_transactional_connection_config_no_secrets.system_key: "complete"
+        }, "Updated to skipped in graph task, not updated here"
+
+
+class TestRelevantConsentIdentities:
+    def test_no_consent_requests(
+        self, mailchimp_transactional_connection_config_no_secrets
+    ):
+        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+
+        connector.relevant_consent_identities([], {"customer_1@example.com"}) == {}
+
+    def test_no_identity_data(
+        self, mailchimp_transactional_connection_config_no_secrets
+    ):
+        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+
+        request = SaaSRequest(
+            method=HTTPMethod.POST,
+            path="/allowlists/add",
+            param_values=[ParamValue(identity="email", name="email")],
+            body="testbody",
+        )
+        assert connector.relevant_consent_identities([request], {}) == {}
+
+    def test_get_relevant_identities_only(
+        self, mailchimp_transactional_connection_config_no_secrets
+    ):
+        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+
+        request = SaaSRequest(
+            method=HTTPMethod.POST,
+            path="/allowlists/add",
+            param_values=[ParamValue(identity="email", name="email")],
+            body="testbody",
+        )
+        assert connector.relevant_consent_identities(
+            [request], {"email": "customer-1@example.com", "ljt_readerID": "12345"}
+        ) == {"email": "customer-1@example.com"}

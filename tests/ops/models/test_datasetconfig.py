@@ -2,8 +2,8 @@ import pytest
 from fideslang.models import Dataset, FidesDatasetReference
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import ValidationError
-from fides.api.ops.models.datasetconfig import (
+from fides.api.common_exceptions import ValidationError
+from fides.api.models.datasetconfig import (
     DatasetConfig,
     FieldAddress,
     convert_dataset_to_graph,

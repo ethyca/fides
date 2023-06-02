@@ -1,7 +1,20 @@
-import { Box, Button, Stack, Tooltip, useToast } from "@fidesui/react";
-import { useMemo, useState } from "react";
+import {
+  Box,
+  Button,
+  ButtonProps,
+  Stack,
+  Tooltip,
+  useToast,
+} from "@fidesui/react";
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+import { useEffect, useMemo, useState } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { useUpdateSystemMutation } from "~/features/system/system.slice";
 import { PrivacyDeclaration, System } from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 import {
@@ -25,21 +38,21 @@ const transformDeclarationForSubmission = (
 
 interface Props {
   system: System;
-  onCollision: () => void;
-  onSave: (
-    privacyDeclarations: PrivacyDeclaration[],
-    isDelete?: boolean
-  ) => Promise<boolean>;
+  addButtonProps?: ButtonProps;
+  includeCustomFields?: boolean;
+  onSave?: (system: System) => void;
 }
 
 const PrivacyDeclarationManager = ({
   system,
-  onCollision,
+  addButtonProps,
+  includeCustomFields,
   onSave,
   ...dataProps
 }: Props & DataProps) => {
   const toast = useToast();
 
+  const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const [showNewForm, setShowNewForm] = useState(false);
   const [newDeclaration, setNewDeclaration] = useState<
     PrivacyDeclarationWithId | undefined
@@ -52,6 +65,7 @@ const PrivacyDeclarationManager = ({
     if (!newDeclaration) {
       return declarations;
     }
+
     return declarations.filter((pd) => pd.id !== newDeclaration.id);
   }, [newDeclaration, system]);
 
@@ -61,7 +75,11 @@ const PrivacyDeclarationManager = ({
         (d) => d.data_use === values.data_use && d.name === values.name
       ).length > 0
     ) {
-      onCollision();
+      toast(
+        errorToastParams(
+          "A declaration already exists with that data use in this system. Please supply a different data use."
+        )
+      );
       return true;
     }
     return false;
@@ -74,8 +92,39 @@ const PrivacyDeclarationManager = ({
     const transformedDeclarations = updatedDeclarations.map((d) =>
       transformDeclarationForSubmission(d)
     );
-    const success = await onSave(transformedDeclarations, isDelete);
-    return success;
+    const systemBodyWithDeclaration = {
+      ...system,
+      privacy_declarations: transformedDeclarations,
+    };
+    const handleResult = (
+      result:
+        | { data: System }
+        | { error: FetchBaseQueryError | SerializedError }
+    ) => {
+      if (isErrorResult(result)) {
+        const errorMsg = getErrorMessage(
+          result.error,
+          "An unexpected error occurred while updating the system. Please try again."
+        );
+
+        toast(errorToastParams(errorMsg));
+        return undefined;
+      }
+      toast.closeAll();
+      toast(
+        successToastParams(isDelete ? "Data use deleted" : "Data use saved")
+      );
+      if (onSave) {
+        onSave(result.data);
+      }
+      return result.data.privacy_declarations as PrivacyDeclarationWithId[];
+    };
+
+    const updateSystemResult = await updateSystemMutationTrigger(
+      systemBodyWithDeclaration
+    );
+
+    return handleResult(updateSystemResult);
   };
 
   const handleEditDeclaration = async (
@@ -87,7 +136,7 @@ const PrivacyDeclarationManager = ({
       updatedDeclaration.id !== oldDeclaration.id &&
       checkAlreadyExists(updatedDeclaration)
     ) {
-      return false;
+      return undefined;
     }
     // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
@@ -99,13 +148,21 @@ const PrivacyDeclarationManager = ({
 
   const saveNewDeclaration = async (values: PrivacyDeclarationWithId) => {
     if (checkAlreadyExists(values)) {
-      return false;
+      return undefined;
     }
 
     toast.closeAll();
-    setNewDeclaration(values);
     const updatedDeclarations = [...accordionDeclarations, values];
-    return handleSave(updatedDeclarations);
+    const res = await handleSave(updatedDeclarations);
+    if (res) {
+      const savedDeclaration = res.filter(
+        (pd) =>
+          (pd.name ? pd.name === values.name : true) &&
+          pd.data_use === values.data_use
+      )[0];
+      setNewDeclaration(savedDeclaration);
+    }
+    return res;
   };
 
   const handleShowNewForm = () => {
@@ -137,20 +194,27 @@ const PrivacyDeclarationManager = ({
     system.privacy_declarations.length > 0 ||
     (system.privacy_declarations.length === 0 && !showNewForm);
 
+  // Reset the new form when the system changes (i.e. when clicking on a new datamap node)
+  useEffect(() => {
+    setShowNewForm(false);
+  }, [system.fides_key]);
+
   return (
     <Stack spacing={3}>
       <PrivacyDeclarationAccordion
         privacyDeclarations={accordionDeclarations}
         onEdit={handleEditDeclaration}
         onDelete={handleDelete}
+        includeCustomFields={includeCustomFields}
         {...dataProps}
       />
       {showNewForm ? (
-        <Box backgroundColor="gray.50" p={6} data-testid="new-declaration-form">
+        <Box backgroundColor="gray.50" p={4} data-testid="new-declaration-form">
           <PrivacyDeclarationForm
             initialValues={newDeclaration}
             onSubmit={saveNewDeclaration}
             onDelete={handleDeleteNew}
+            includeCustomFields={includeCustomFields}
             {...dataProps}
           />
         </Box>
@@ -158,7 +222,7 @@ const PrivacyDeclarationManager = ({
       {showAddDataUseButton ? (
         <Box py={2}>
           <Tooltip
-            label="Add another use case"
+            label="Add a Data Use"
             hasArrow
             placement="top"
             isDisabled={accordionDeclarations.length === 0}
@@ -169,6 +233,7 @@ const PrivacyDeclarationManager = ({
               data-testid="add-btn"
               onClick={handleShowNewForm}
               disabled={showNewForm && !newDeclaration}
+              {...addButtonProps}
             >
               Add a Data Use +
             </Button>

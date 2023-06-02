@@ -3,6 +3,7 @@
 A minimal Postman collection is included to assist in setting up your privacy request configurations, and in executing example `access` and `erasure` requests against mock external databases.
 
 ## Loading the collection
+
 1. Get [Postman](https://www.postman.com/)
 2. Postman > File > Import
 
@@ -24,6 +25,7 @@ A minimal Postman collection is included to assist in setting up your privacy re
       ![Add root client id and secret](../../img/postman_images/add_root_client_id_and_secret.png)
 
 ## Bring up local servers and mock databases
+
 1. Run `nox -s dev -- <datastore>` in your terminal. 
       - This brings up the Fides server and the list of datastores specified, i.e. `nox -s dev -- postgres mongodb`. These mock datastores are pre-populated with test data to represent your datastores.
   
@@ -33,6 +35,7 @@ A minimal Postman collection is included to assist in setting up your privacy re
    ![Fides container](../../img/postman_images/fidesops_container.png)
 
 ## Saving Authentication variables
+
 1. Click on the `Get Root Client Token` request, and click `Send` to send a `POST` request to Fides to create a root token.
 
       ![Create root token](../../img/postman_images/create_root_client_token.png)
@@ -52,13 +55,12 @@ A minimal Postman collection is included to assist in setting up your privacy re
 
       - If you click on **Body**, you can see that the `client_id` and `client_secret` have been added as form data for you.
 
-
 5. Save the returned token under `client_token` in the Fides variables.  The `client_token` will be automatically passed into the rest of your requests as the Bearer Token.
 
       ![final token](../../img/postman_images/final_token.png)
 
-
 ## Building out remaining privacy request configuration
+
 Run through the remaining requests in the `Minimum API calls to create an Access Privacy Request` folder. Because variables are automatically being populated for you, you should be able to click on each request, clicking `Send` for each one.
 
 Inspect the `Body` of each request to see what is sent to Fides:
@@ -82,6 +84,7 @@ Inspect the `Body` of each request to see what is sent to Fides:
       API calls to additional supported datastores (MsSQL, MySQL) are in separate folders within the collection. 
 
 ## Run a privacy request
+
 You have now completed the basic configuration required to create an Access Request.
 
 1. SEND `Create Access Privacy Requests`
@@ -94,9 +97,8 @@ You have now completed the basic configuration required to create an Access Requ
 
       ![Local Results](../../img/postman_images/local_results.png)
 
-
-
 ## Next steps
+
 1.  Check out other requests in the collection!
       - The `Calls to create an Erasure Request` folder walks you through configuring a separate erasure policy, and executing an erasure request.
 

@@ -8,5 +8,5 @@
 export enum ConsentMechanism {
   OPT_IN = "opt_in",
   OPT_OUT = "opt_out",
-  NECESSARY = "necessary",
+  NOTICE_ONLY = "notice_only",
 }

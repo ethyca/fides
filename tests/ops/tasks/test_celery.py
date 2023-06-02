@@ -4,7 +4,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import QueuePool
 
-from fides.api.ops.tasks import DatabaseTask, _create_celery
+from fides.api.tasks import DatabaseTask, _create_celery
 from fides.core.config import CONFIG, get_config
 
 

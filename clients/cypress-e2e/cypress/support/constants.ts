@@ -6,3 +6,4 @@ export const CREDENTIALS = {
 export const API_URL = Cypress.env("API_URL");
 export const ADMIN_UI_URL = Cypress.env("ADMIN_UI_URL");
 export const PRIVACY_CENTER_URL = Cypress.env("PRIVACY_CENTER_URL");
+export const SAMPLE_APP_URL = Cypress.env("SAMPLE_APP_URL");

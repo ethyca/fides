@@ -1,6 +1,6 @@
 from bson import ObjectId
 
-from fides.api.ops.graph.data_type import (
+from fides.api.graph.data_type import (
     DataType,
     NoOpTypeConverter,
     StringTypeConverter,

@@ -1,0 +1,47 @@
+{
+  "items": [
+    {
+      "acknowledgement_button_label": "ok",
+      "banner_title": "Title",
+      "banner_description": "desc",
+      "component": "overlay",
+      "component_title": "two",
+      "component_description": null,
+      "confirmation_button_label": "yes",
+      "delivery_mechanism": "link",
+      "disabled": false,
+      "is_default": false,
+      "link_label": "Manage preferences",
+      "reject_button_label": "no",
+      "id": "pri_33fd622e-a63a-4847-b910-3b3fdf8c109f",
+      "experience_config_history_id": "pri_691d010f-946c-4302-8b2e-c533cbe39409",
+      "version": 3.0,
+      "created_at": "2023-05-16T17:05:19.710987+00:00",
+      "updated_at": "2023-05-16T17:06:24.231571+00:00",
+      "regions": ["us_ca"]
+    },
+    {
+      "acknowledgement_button_label": null,
+      "banner_title": null,
+      "banner_description": null,
+      "component": "privacy_center",
+      "component_title": "one",
+      "component_description": "description",
+      "confirmation_button_label": null,
+      "delivery_mechanism": "link",
+      "disabled": true,
+      "is_default": false,
+      "link_label": "Manage preferencesss",
+      "reject_button_label": null,
+      "id": "pri_66b689cb-44ae-4124-8ae8-7dc6d79eff84",
+      "experience_config_history_id": "pri_479114bd-202f-4f46-91e1-6ffc294c41bd",
+      "version": 3.0,
+      "created_at": "2023-05-16T17:02:30.818864+00:00",
+      "updated_at": "2023-05-16T17:04:39.960231+00:00",
+      "regions": ["eu_fr", "eu_ie"]
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "size": 50
+}

@@ -6,7 +6,7 @@ import {
   UserPasswordReset,
   UserPermissionsCreate,
   UserPermissionsEdit,
-  UserPermissionsResponse,
+  UserPermissionsPlusResponse,
   UserResponse,
   UserUpdate,
 } from "~/types/api";
@@ -16,7 +16,7 @@ export type {
   UserCreate,
   UserCreateResponse,
   UserPermissionsCreate,
-  UserPermissionsResponse,
+  UserPermissionsPlusResponse,
   UserResponse,
   UserUpdate,
 };
@@ -25,7 +25,7 @@ export interface UsersResponse extends Page_UserResponse_ {}
 
 export interface User extends UserResponse {}
 
-export interface UserPermissions extends UserPermissionsResponse {}
+export interface UserPermissions extends UserPermissionsPlusResponse {}
 
 export interface UserUpdateParams extends UserUpdate {
   id: string;

@@ -1,5 +1,5 @@
-from fides.api.ops.schemas.masking.masking_configuration import HmacMaskingConfiguration
-from fides.api.ops.util.encryption.hmac_encryption_scheme import (
+from fides.api.schemas.masking.masking_configuration import HmacMaskingConfiguration
+from fides.api.util.encryption.hmac_encryption_scheme import (
     hmac_encrypt_return_bytes,
     hmac_encrypt_return_str,
 )

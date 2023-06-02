@@ -1,11 +1,11 @@
-from fides.api.ops.graph.config import FieldPath
-from fides.api.ops.task.refine_target_path import (
+from fides.api.graph.config import FieldPath
+from fides.api.task.refine_target_path import (
     _match_found,
     build_refined_target_paths,
     join_detailed_path,
     refine_target_path,
 )
-from fides.api.ops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
+from fides.api.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
 
 
 class TestRefineTargetPathToValue:

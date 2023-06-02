@@ -1,0 +1,62 @@
+{
+  "title": "Cypress Test Privacy Center",
+  "description": "This Privacy Center is exclusively about consent. Edit `cypress/fixtures/config/config_consent.json` to make changes!",
+  "logo_path": "/logo.svg",
+  "actions": [],
+  "includeConsent": true,
+  "consent": {
+    "button": {
+      "description": "Test your consent preferences, including defaults, cookie keys, and GPC signals.",
+      "icon_path": "/consent.svg",
+      "identity_inputs": {
+        "email": "required"
+      },
+      "title": "Manage your consent"
+    },
+    "page": {
+      "consentOptions": [
+        {
+          "fidesDataUseKey": "advertising",
+          "name": "Test advertising",
+          "description": "",
+          "url": "https://example.com/privacy#data-sales",
+          "default": true,
+          "highlight": false,
+          "cookieKeys": ["data_sales"]
+        },
+        {
+          "fidesDataUseKey": "advertising.first_party",
+          "name": "Test advertising.first_party",
+          "description": "",
+          "url": "https://example.com/privacy#email-marketing",
+          "default": true,
+          "highlight": false,
+          "cookieKeys": ["tracking"]
+        },
+        {
+          "fidesDataUseKey": "improve",
+          "name": "Test improve",
+          "description": "",
+          "url": "https://example.com/privacy#analytics",
+          "default": true,
+          "highlight": false,
+          "cookieKeys": ["tracking"]
+        },
+        {
+          "fidesDataUseKey": "collect.gpc",
+          "name": "GPC test",
+          "description": "Just used for testing GPC.",
+          "url": "https://example.com/privacy#gpc",
+          "default": {
+            "value": true,
+            "globalPrivacyControl": false
+          },
+          "cookieKeys": ["gpc_test"]
+        }
+      ],
+      "description": "Test your consent preferences, including defaults, cookie keys, and GPC signals.",
+      "policy_key": "default_consent_policy",
+      "title": "Manage your consent"
+    }
+  }
+}
