@@ -184,8 +184,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
 
-        # 2 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_templates) + 2
+        # 3 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_templates) + 3
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -264,8 +264,8 @@ class TestGetConnections:
         resp = api_client.get(url + f"search={search}", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        # 2 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 2
+        # 3 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_types) + 3
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -348,19 +348,31 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=email", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 2
+        assert len(data) == 4
         assert data == [
             {
+                "encoded_icon": None,
+                "human_readable": "Attentive",
                 "identifier": "attentive",
                 "type": "email",
-                "human_readable": "Attentive",
-                "encoded_icon": None,
             },
             {
+                "encoded_icon": None,
+                "human_readable": "Generic Consent Email",
+                "identifier": "generic_consent_email",
+                "type": "email",
+            },
+            {
+                "encoded_icon": None,
+                "human_readable": "Generic Erasure Email",
+                "identifier": "generic_erasure_email",
+                "type": "email",
+            },
+            {
+                "encoded_icon": None,
+                "human_readable": "Sovrn",
                 "identifier": "sovrn",
                 "type": "email",
-                "human_readable": "Sovrn",
-                "encoded_icon": None,
             },
         ]
 

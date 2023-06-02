@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Spinner, Stack } from "@fidesui/react";
 import { PRIVACY_EXPERIENCE_ROUTE, SYSTEM_ROUTE } from "common/nav/v2/routes";
 import { useHasPermission } from "common/Restrict";
-import { DateCell, FidesTable, MultiTagCell } from "common/table";
+import { DateCell, FidesTable } from "common/table";
 import EmptyTableState from "common/table/EmptyTableState";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -12,6 +12,7 @@ import { useAppSelector } from "~/app/hooks";
 import {
   ComponentCell,
   EnablePrivacyExperienceCell,
+  LocationCell,
 } from "~/features/privacy-experience/cells";
 import {
   selectAllExperienceConfigs,
@@ -45,7 +46,7 @@ const PrivacyExperiencesTable = () => {
 
   const columns: Column<ExperienceConfigResponse>[] = useMemo(
     () => [
-      { Header: "Location", accessor: "regions", Cell: MultiTagCell },
+      { Header: "Location", accessor: "regions", Cell: LocationCell },
       {
         Header: "Component",
         accessor: "component",
