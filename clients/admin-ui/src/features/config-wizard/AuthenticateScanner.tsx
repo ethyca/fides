@@ -14,6 +14,7 @@ const AuthenticateScanner = () => {
   return (
     <Box w="40%">
       {infrastructure === ValidTargets.AWS ? <AuthenticateAwsForm /> : null}
+      {infrastructure === ValidTargets.AWSS3 ? <AuthenticateAwsForm /> : null}
       {infrastructure === ValidTargets.OKTA ? <AuthenticateOktaForm /> : null}
       {/*
        * Data flow scanner currently authenticates via fidesctl.toml, so there is not

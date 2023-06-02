@@ -33,7 +33,9 @@ import {
   changeStep,
   selectOrganizationFidesKey,
   setSystemsForReview,
+  selectAddSystemsMethod
 } from "./config-wizard.slice";
+
 import {
   AWS_REGION_OPTIONS,
   DOCS_URL_AWS_PERMISSIONS,
@@ -68,6 +70,8 @@ const ValidationSchema = Yup.object().shape({
 
 const AuthenticateAwsForm = () => {
   const organizationKey = useAppSelector(selectOrganizationFidesKey);
+  const infrastructure = useAppSelector(selectAddSystemsMethod);
+
   const dispatch = useAppDispatch();
   const { successAlert } = useAlert();
 
@@ -103,7 +107,8 @@ const AuthenticateAwsForm = () => {
       organization_key: organizationKey,
       generate: {
         config: values,
-        target: ValidTargets.AWS,
+        // We set this to infrastructure because this can be used to scan General AWS or S3 buckets
+        target: infrastructure !== ValidTargets.AWSS3 && infrastructure !== ValidTargets.AWS ? ValidTargets.AWS : infrastructure,
         type: GenerateTypes.SYSTEMS,
       },
     });

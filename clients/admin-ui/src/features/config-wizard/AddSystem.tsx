@@ -6,7 +6,11 @@ import {
   AWSLogoIcon,
   ManualSetupIcon,
   OktaLogoIcon,
+  AWSS3Logo,
 } from "~/features/common/Icon";
+
+import { useFeatures } from "~/features/common/features";
+
 import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/v2/routes";
 import { ValidTargets } from "~/types/api";
 
@@ -30,6 +34,7 @@ const SectionTitle = ({ children }: { children: string }) => (
 const AddSystem = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const features = useFeatures();
 
   return (
     <Stack spacing={9} data-testid="add-systems">
@@ -89,6 +94,16 @@ const AddSystem = () => {
             }}
             data-testid="okta-btn"
           />
+          {features?.plus && <SystemOption
+            label="Amazon S3 Bucket Scanner"
+            description="Automatically discover PII within your S3 buckets"
+            icon={<AWSS3Logo boxSize={8} />}
+            onClick={() => {
+              dispatch(setAddSystemsMethod(ValidTargets.AWSS3));
+              dispatch(changeStep());
+            }}
+            data-testid="awss3-btn"
+          />}
           <DataFlowScannerOption
             onClick={() => {
               dispatch(changeStep());
