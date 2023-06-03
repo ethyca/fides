@@ -411,7 +411,6 @@ class MicrosoftSQLServerConnector(SQLConnector):
             host=config.host,
             port=config.port,
             database=config.dbname,
-            query={"driver": "ODBC Driver 17 for SQL Server"},
         )
 
         return url
