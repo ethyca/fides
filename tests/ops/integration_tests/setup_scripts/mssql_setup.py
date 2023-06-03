@@ -32,17 +32,19 @@ def mssql_setup():
             break
         except SQLAlchemyError:
             try_number += 1
-            print(f"Error connecting with URL: {MASTER_MSSQL_URL}\nRetrying...Try number {try_number}")
+            print(
+                f"Error connecting with URL: {MASTER_MSSQL_URL}\nRetrying...Try number {try_number}"
+            )
             sleep(1)
 
     with open("./docker/sample_data/mssql_example.sql", "r") as query_file:
         queries = [query for query in query_file.read().splitlines() if query != ""]
 
-    for query in queries:
-        # This must be done within a direct connection to enable autocommit
-        with pymssql.connect(
-            SERVER, USER, PASSWORD, DATABASE, autocommit=True
-        ) as connection:
+    # This must be done within a direct connection to enable autocommit
+    with pymssql.connect(
+        SERVER, USER, PASSWORD, DATABASE, autocommit=True
+    ) as connection:
+        for query in queries:
             with connection.cursor() as cursor:
                 cursor.execute(query)
 
