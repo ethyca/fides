@@ -22,6 +22,7 @@ The types of changes are:
 - Add Google Tag Manager and Privacy Center ENV vars to sample app [#2949](https://github.com/ethyca/fides/pull/2949)
 - Add `notice_key` field to Privacy Notice UI form [#3403](https://github.com/ethyca/fides/pull/3403)
 - Add `identity` query param to the consent reporting API view [#3418](https://github.com/ethyca/fides/pull/3418)
+- Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401/files)
 
 ### Fixed
 
