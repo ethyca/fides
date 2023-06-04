@@ -74,13 +74,13 @@ class TestValidateDataUses:
         with pytest.raises(HTTPException):
             validate_notice_data_uses([privacy_notice_request], db)
 
-        privacy_notice_request.data_uses = ["advertising", "invalid_data_use"]
+        privacy_notice_request.data_uses = ["marketing.advertising", "invalid_data_use"]
         with pytest.raises(HTTPException):
             validate_notice_data_uses([privacy_notice_request], db)
 
         privacy_notice_request.data_uses = [
-            "advertising",
-            "advertising.invalid_data_use",
+            "marketing.advertising",
+            "marketing.advertising.invalid_data_use",
         ]
         with pytest.raises(HTTPException):
             validate_notice_data_uses([privacy_notice_request], db)
@@ -89,11 +89,15 @@ class TestValidateDataUses:
     def test_validate_data_uses_default_taxonomy(
         self, db, privacy_notice_request: PrivacyNoticeCreation
     ):
-        privacy_notice_request.data_uses = ["advertising"]
+        privacy_notice_request.data_uses = ["marketing.advertising"]
         validate_notice_data_uses([privacy_notice_request], db)
-        privacy_notice_request.data_uses = ["advertising", "provide"]
+        privacy_notice_request.data_uses = ["marketing.advertising", "essential"]
         validate_notice_data_uses([privacy_notice_request], db)
-        privacy_notice_request.data_uses = ["advertising", "provide", "provide.service"]
+        privacy_notice_request.data_uses = [
+            "marketing.advertising",
+            "essential",
+            "essential.service",
+        ]
         validate_notice_data_uses([privacy_notice_request], db)
 
     @pytest.mark.usefixtures("load_default_data_uses")
@@ -109,7 +113,10 @@ class TestValidateDataUses:
 
         privacy_notice_request.data_uses = [custom_data_use.fides_key]
         validate_notice_data_uses([privacy_notice_request], db)
-        privacy_notice_request.data_uses = ["advertising", custom_data_use.fides_key]
+        privacy_notice_request.data_uses = [
+            "marketing.advertising",
+            custom_data_use.fides_key,
+        ]
         validate_notice_data_uses([privacy_notice_request], db)
 
 
@@ -151,7 +158,7 @@ class TestGetPrivacyNotices:
         # update this privacy notice to associate it with a data use associatd with a system
         # this allows us to get > 1 object in our response to the API call
         privacy_notice_us_ca_provide.update(
-            db, data={"data_uses": ["advertising", "provide"]}
+            db, data={"data_uses": ["marketing.advertising", "essential"]}
         )
 
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_READ])
@@ -500,7 +507,7 @@ class TestGetPrivacyNotices:
                         "description": "a sample privacy notice configuration",
                         "regions": [PrivacyNoticeRegion.us_ca],
                         "consent_mechanism": ConsentMechanism.opt_in,
-                        "data_uses": ["advertising"],
+                        "data_uses": ["marketing.advertising"],
                         "enforcement_level": EnforcementLevel.system_wide,
                         "displayed_in_overlay": True,
                     },
@@ -547,7 +554,7 @@ class TestGetPrivacyNotices:
                         "description": "a sample privacy notice configuration",
                         "regions": [PrivacyNoticeRegion.us_ca],
                         "consent_mechanism": ConsentMechanism.opt_in,
-                        "data_uses": ["advertising"],
+                        "data_uses": ["marketing.advertising"],
                         "enforcement_level": EnforcementLevel.system_wide,
                         "displayed_in_overlay": True,
                     },
@@ -611,7 +618,7 @@ class TestGetPrivacyNotices:
                 "description": "a sample privacy notice configuration",
                 "regions": [PrivacyNoticeRegion.us_ca],
                 "consent_mechanism": ConsentMechanism.opt_in,
-                "data_uses": ["advertising"],
+                "data_uses": ["marketing.advertising"],
                 "enforcement_level": EnforcementLevel.system_wide,
                 "displayed_in_overlay": True,
             },
@@ -733,7 +740,7 @@ class TestGetPrivacyNoticeDetail:
                         PrivacyNoticeRegion.us_ca.value,
                     ],
                     "consent_mechanism": ConsentMechanism.opt_in.value,
-                    "data_uses": ["advertising"],
+                    "data_uses": ["marketing.advertising"],
                     "enforcement_level": EnforcementLevel.system_wide.value,
                     "displayed_in_overlay": True,
                 }
@@ -812,7 +819,7 @@ class TestGetPrivacyNoticesByDataUse:
                             PrivacyNoticeRegion.us_co,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["advertising", "third_party_sharing"],
+                        data_uses=["marketing.advertising", "third_party_sharing"],
                         enforcement_level=EnforcementLevel.system_wide,
                         created_at=NOW,
                         updated_at=NOW,
@@ -823,7 +830,7 @@ class TestGetPrivacyNoticesByDataUse:
                     )
                 ],
                 {
-                    "advertising": [
+                    "marketing.advertising": [
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
                             name=f"{PRIVACY_NOTICE_NAME}-1",
@@ -835,7 +842,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 PrivacyNoticeRegion.us_co,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["advertising", "third_party_sharing"],
+                            data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level=EnforcementLevel.system_wide,
                             created_at=NOW,
                             updated_at=NOW,
@@ -862,7 +869,7 @@ class TestGetPrivacyNoticesByDataUse:
                             PrivacyNoticeRegion.us_co,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["advertising", "third_party_sharing"],
+                        data_uses=["marketing.advertising", "third_party_sharing"],
                         enforcement_level=EnforcementLevel.system_wide,
                         created_at=NOW,
                         updated_at=NOW,
@@ -881,7 +888,7 @@ class TestGetPrivacyNoticesByDataUse:
                             PrivacyNoticeRegion.eu_be,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["advertising"],
+                        data_uses=["marketing.advertising"],
                         enforcement_level=EnforcementLevel.system_wide,
                         created_at=NOW,
                         updated_at=NOW,
@@ -892,7 +899,7 @@ class TestGetPrivacyNoticesByDataUse:
                     ),
                 ],
                 {
-                    "advertising": [
+                    "marketing.advertising": [
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
                             name=f"{PRIVACY_NOTICE_NAME}-1",
@@ -904,7 +911,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 PrivacyNoticeRegion.us_co,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["advertising", "third_party_sharing"],
+                            data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level=EnforcementLevel.system_wide,
                             created_at=NOW,
                             updated_at=NOW,
@@ -924,7 +931,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 PrivacyNoticeRegion.eu_be,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["advertising"],
+                            data_uses=["marketing.advertising"],
                             enforcement_level=EnforcementLevel.system_wide,
                             created_at=NOW,
                             updated_at=NOW,
@@ -951,7 +958,7 @@ class TestGetPrivacyNoticesByDataUse:
                             PrivacyNoticeRegion.us_co,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["advertising", "third_party_sharing"],
+                        data_uses=["marketing.advertising", "third_party_sharing"],
                         enforcement_level=EnforcementLevel.system_wide,
                         created_at=NOW,
                         updated_at=NOW,
@@ -970,7 +977,7 @@ class TestGetPrivacyNoticesByDataUse:
                             PrivacyNoticeRegion.eu_be,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["advertising"],
+                        data_uses=["marketing.advertising"],
                         enforcement_level=EnforcementLevel.system_wide,
                         created_at=NOW,
                         updated_at=NOW,
@@ -981,7 +988,7 @@ class TestGetPrivacyNoticesByDataUse:
                     ),
                 ],
                 {
-                    "advertising": [
+                    "marketing.advertising": [
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
                             notice_key=PrivacyNotice.generate_notice_key(
@@ -993,7 +1000,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 PrivacyNoticeRegion.us_co,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["advertising", "third_party_sharing"],
+                            data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level=EnforcementLevel.system_wide,
                             created_at=NOW,
                             updated_at=NOW,
@@ -1011,7 +1018,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 PrivacyNoticeRegion.eu_be,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["advertising"],
+                            data_uses=["marketing.advertising"],
                             enforcement_level=EnforcementLevel.system_wide,
                             created_at=NOW,
                             updated_at=NOW,
@@ -1032,7 +1039,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 PrivacyNoticeRegion.us_co,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["advertising", "third_party_sharing"],
+                            data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level=EnforcementLevel.system_wide,
                             created_at=NOW,
                             updated_at=NOW,
@@ -1058,7 +1065,7 @@ class TestGetPrivacyNoticesByDataUse:
                         ],
                         disabled=True,  # test that disabling removes from map
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["advertising", "third_party_sharing"],
+                        data_uses=["marketing.advertising", "third_party_sharing"],
                         enforcement_level=EnforcementLevel.system_wide,
                         created_at=NOW,
                         updated_at=NOW,
@@ -1077,7 +1084,7 @@ class TestGetPrivacyNoticesByDataUse:
                             PrivacyNoticeRegion.eu_be,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["advertising"],
+                        data_uses=["marketing.advertising"],
                         enforcement_level=EnforcementLevel.system_wide,
                         created_at=NOW,
                         updated_at=NOW,
@@ -1088,7 +1095,7 @@ class TestGetPrivacyNoticesByDataUse:
                     ),
                 ],
                 {
-                    "advertising": [
+                    "marketing.advertising": [
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
                             name=f"{PRIVACY_NOTICE_NAME}-2",
@@ -1099,7 +1106,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 PrivacyNoticeRegion.eu_be,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["advertising"],
+                            data_uses=["marketing.advertising"],
                             enforcement_level=EnforcementLevel.system_wide,
                             created_at=NOW,
                             updated_at=NOW,
@@ -1136,7 +1143,7 @@ class TestGetPrivacyNoticesByDataUse:
                         displayed_in_api=False,
                     ),
                 ],
-                {"advertising": []},
+                {"marketing.advertising": []},
             ),
             (
                 # to test hierarchical overlaps
@@ -1153,7 +1160,7 @@ class TestGetPrivacyNoticesByDataUse:
                             PrivacyNoticeRegion.us_co,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["advertising", "third_party_sharing"],
+                        data_uses=["marketing.advertising", "third_party_sharing"],
                         enforcement_level=EnforcementLevel.system_wide,
                         created_at=NOW,
                         updated_at=NOW,
@@ -1172,7 +1179,7 @@ class TestGetPrivacyNoticesByDataUse:
                             PrivacyNoticeRegion.us_ca,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["provide"],
+                        data_uses=["essential"],
                         enforcement_level=EnforcementLevel.system_wide,
                         created_at=NOW,
                         updated_at=NOW,
@@ -1191,7 +1198,7 @@ class TestGetPrivacyNoticesByDataUse:
                             PrivacyNoticeRegion.us_co,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["provide.service.operations"],
+                        data_uses=["essential.service.operations"],
                         enforcement_level=EnforcementLevel.system_wide,
                         created_at=NOW,
                         updated_at=NOW,
@@ -1210,7 +1217,7 @@ class TestGetPrivacyNoticesByDataUse:
                             PrivacyNoticeRegion.us_va,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["provide.service.operations.support.optimization"],
+                        data_uses=["essential.service.operations.support.optimization"],
                         enforcement_level=EnforcementLevel.system_wide,
                         created_at=NOW,
                         updated_at=NOW,
@@ -1221,7 +1228,7 @@ class TestGetPrivacyNoticesByDataUse:
                     ),
                 ],
                 {
-                    "advertising": [
+                    "marketing.advertising": [
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-1",
                             name=f"{PRIVACY_NOTICE_NAME}-1",
@@ -1233,7 +1240,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 PrivacyNoticeRegion.us_co,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["advertising", "third_party_sharing"],
+                            data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level=EnforcementLevel.system_wide,
                             created_at=NOW,
                             updated_at=NOW,
@@ -1244,7 +1251,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_api=False,
                         )
                     ],
-                    "provide.service.operations.support.optimization": [
+                    "essential.service.operations.support.optimization": [
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-4",
                             name=f"{PRIVACY_NOTICE_NAME}-4",
@@ -1256,7 +1263,7 @@ class TestGetPrivacyNoticesByDataUse:
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
                             data_uses=[
-                                "provide.service.operations.support.optimization"
+                                "essential.service.operations.support.optimization"
                             ],
                             enforcement_level=EnforcementLevel.system_wide,
                             created_at=NOW,
@@ -1277,7 +1284,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 PrivacyNoticeRegion.us_co,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["provide.service.operations"],
+                            data_uses=["essential.service.operations"],
                             enforcement_level=EnforcementLevel.system_wide,
                             created_at=NOW,
                             updated_at=NOW,
@@ -1297,7 +1304,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 PrivacyNoticeRegion.us_ca,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["provide"],
+                            data_uses=["essential"],
                             enforcement_level=EnforcementLevel.system_wide,
                             created_at=NOW,
                             updated_at=NOW,
@@ -1376,7 +1383,7 @@ class TestPostPrivacyNotices:
                 PrivacyNoticeRegion.us_ca.value,
             ],
             "consent_mechanism": ConsentMechanism.opt_in.value,
-            "data_uses": ["advertising"],
+            "data_uses": ["marketing.advertising"],
             "enforcement_level": EnforcementLevel.system_wide.value,
             "displayed_in_overlay": True,
         }
@@ -1392,7 +1399,7 @@ class TestPostPrivacyNotices:
                 PrivacyNoticeRegion.us_ca.value,
             ],
             "consent_mechanism": ConsentMechanism.opt_in.value,
-            "data_uses": ["advertising"],
+            "data_uses": ["marketing.advertising"],
             "enforcement_level": EnforcementLevel.system_wide.value,
             "displayed_in_overlay": True,
         }
@@ -1532,7 +1539,10 @@ class TestPostPrivacyNotices:
         )
         assert resp.status_code == 422
 
-        notice_request_bad_data_uses["data_uses"] = ["advertising", "invalid_data_use"]
+        notice_request_bad_data_uses["data_uses"] = [
+            "marketing.advertising",
+            "invalid_data_use",
+        ]
         # try post with one invalid data_use one valid data_use specified, should be rejected
         resp = api_client.post(
             url, headers=auth_header, json=[notice_request_bad_data_uses]
@@ -1586,7 +1596,7 @@ class TestPostPrivacyNotices:
             url,
             headers=auth_header,
             json=[notice_request, notice_request_identical_use],
-        )  # overlap of eu and "advertising" data_use
+        )  # overlap of eu and "marketing.advertising" data_use
         assert resp.status_code == 422
 
         # conflict with parent/child data uses within region
@@ -1596,11 +1606,11 @@ class TestPostPrivacyNotices:
         # keep one overlapping region with other request notice, no overlaps with
         notice_request_child_use["region"] = [PrivacyNoticeRegion.eu_be.value]
         # update our data_use to be a child of the other request notice
-        notice_request_child_use["data_use"] = ["advertising.first_party"]
+        notice_request_child_use["data_use"] = ["marketing.advertising.first_party"]
 
         resp = api_client.post(
             url, headers=auth_header, json=[notice_request, notice_request_child_use]
-        )  # overlap of eu and "advertising" data_use as a parent
+        )  # overlap of eu and "marketing.advertising" data_use as a parent
         assert resp.status_code == 422
 
     def test_post_invalid_privacy_notice_data_use_conflicts_with_existing_notice(
@@ -1618,13 +1628,13 @@ class TestPostPrivacyNotices:
         # conflict with identical data uses within region
         resp = api_client.post(
             url, headers=auth_header, json=[notice_request]
-        )  # overlap of us_ca and "advertising" data_use
+        )  # overlap of us_ca and "marketing.advertising" data_use
         assert resp.status_code == 422
 
         # conflict with parent/child data uses within region
         notice_request_updated_data_use = notice_request.copy()
         notice_request_updated_data_use["data_uses"] = [
-            "advertising.first_party",
+            "marketing.advertising.first_party",
             "third_party_sharing",
         ]
 
@@ -2046,7 +2056,7 @@ class TestPatchPrivacyNotices:
                 PrivacyNoticeRegion.us_ca.value,
             ],
             "consent_mechanism": ConsentMechanism.opt_out.value,
-            "data_uses": ["advertising"],
+            "data_uses": ["marketing.advertising"],
             "displayed_in_overlay": True,
         }
 
@@ -2224,7 +2234,7 @@ class TestPatchPrivacyNotices:
         assert resp.status_code == 422
 
         patch_privacy_notice_payload_bad_data_uses["data_uses"] = [
-            "advertising",
+            "marketing.advertising",
             "invalid_data_use",
         ]
         # try patch with one invalid data_use one valid data_use specified, should be rejected
@@ -2330,7 +2340,9 @@ class TestPatchPrivacyNotices:
             patch_privacy_notice_payload_us_ca_provide.copy()
         )
         # we make the patch payload conflict with the existing notice in the db
-        patch_privacy_notice_us_ca_updated_data_use["data_uses"] = ["advertising"]
+        patch_privacy_notice_us_ca_updated_data_use["data_uses"] = [
+            "marketing.advertising"
+        ]
 
         resp = api_client.patch(
             url,
@@ -2343,7 +2355,7 @@ class TestPatchPrivacyNotices:
 
         # we make the patch payload conflict with the existing notice in the db
         patch_privacy_notice_us_ca_updated_data_use["data_uses"] = [
-            "advertising.first_party"
+            "marketing.advertising.first_party"
         ]
 
         resp = api_client.patch(
@@ -2382,7 +2394,9 @@ class TestPatchPrivacyNotices:
             patch_privacy_notice_payload_us_ca_provide.copy()
         )
         # we make the patch payload conflict with the existing notice in the db
-        patch_privacy_notice_us_ca_updated_data_use["data_uses"] = ["advertising"]
+        patch_privacy_notice_us_ca_updated_data_use["data_uses"] = [
+            "marketing.advertising"
+        ]
         # but also disabling the conflicting existing notice should make the update OK
         patch_privacy_notice_payload["disabled"] = True
         resp = api_client.patch(
