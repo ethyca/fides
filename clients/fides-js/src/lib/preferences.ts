@@ -6,6 +6,7 @@ import {
 } from "./consent-types";
 import { debugLog, transformUserPreferenceToBoolean } from "./consent-utils";
 import { CookieKeyConsent, FidesCookie, saveFidesCookie } from "./cookie";
+import { dispatchFidesEvent } from "./events";
 import { patchUserPreferenceToFidesServer } from "../services/fides/api";
 
 /**
@@ -49,6 +50,9 @@ export const updateConsentPreferences = ({
     });
   });
 
+  // Update the cookie object
+  cookie.consent = consentCookieKey;
+
   // 1. Save preferences to Fides API
   debugLog(debug, "Saving preferences to Fides API");
   const privacyPreferenceCreate: PrivacyPreferencesRequest = {
@@ -67,9 +71,12 @@ export const updateConsentPreferences = ({
 
   // 2. Update the window.Fides.consent object
   debugLog(debug, "Updating window.Fides");
-  window.Fides.consent = consentCookieKey;
+  window.Fides.consent = cookie.consent;
 
   // 3. Save preferences to the cookie
   debugLog(debug, "Saving preferences to cookie");
-  saveFidesCookie({ ...cookie, consent: consentCookieKey });
+  saveFidesCookie(cookie);
+
+  // 4. Dispatch a "FidesUpdated" event
+  dispatchFidesEvent("FidesUpdated", cookie)
 };
