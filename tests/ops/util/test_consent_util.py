@@ -626,7 +626,7 @@ class TestUpsertDefaultExperienceConfig:
         assert not created
 
         default_overlay_config_data[
-            "banner_enabled"
+            "privacy_preferences_link_label"
         ] = None  # Marking required field as None
 
         with pytest.raises(ValueError) as exc:

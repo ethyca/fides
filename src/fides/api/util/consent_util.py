@@ -20,6 +20,7 @@ from fides.api.models.privacy_request import (
 from fides.api.schemas.privacy_experience import (
     ExperienceConfigCreate,
     ExperienceConfigCreateWithId,
+    ExperienceConfigUpdate,
 )
 from fides.api.schemas.redis_cache import Identity
 
@@ -265,6 +266,10 @@ def upsert_default_experience_config(
     Split from load_default_experience_configs_on_startup for easier testing
     of a function that runs on application startup.
     """
+    experience_config_data = (
+        experience_config_data.copy()
+    )  # Avoids unexpected behavior on update in testing
+
     experience_config_schema: ExperienceConfigCreateWithId = (
         ExperienceConfigCreateWithId(**experience_config_data)
     )
@@ -277,14 +282,23 @@ def upsert_default_experience_config(
 
     if existing_experience_config:
         logger.info(
-            "Updating default experience config {}",
+            "Checking default experience config {} for updates",
             existing_experience_config.id,
         )
+
         dry_update: PrivacyExperienceConfig = existing_experience_config.dry_update(
-            data=experience_config_data
+            data=experience_config_schema.dict(exclude_unset=True)
         )
+        # Validating some required fields if this is an overlay
         ExperienceConfigCreate.from_orm(dry_update)
-        existing_experience_config.update(db=db, data=experience_config_data)
+
+        del experience_config_data["component"]
+        del experience_config_data["id"]
+        # This is important for making sure config is only updated if it actually changed
+        update_data = ExperienceConfigUpdate(**experience_config_data)
+        experience_config_data_dict: Dict = update_data.dict(exclude_unset=True)
+
+        existing_experience_config.update(db=db, data=experience_config_data_dict)
         return False, existing_experience_config
 
     logger.info("Creating default experience config {}", experience_config_schema.id)
