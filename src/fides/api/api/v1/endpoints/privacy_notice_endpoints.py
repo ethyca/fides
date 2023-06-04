@@ -33,6 +33,7 @@ from fides.api.util.consent_util import (
     create_privacy_notices_util,
     ensure_unique_ids,
     prepare_privacy_notice_patches,
+    validate_notice_data_uses,
 )
 
 router = APIRouter(tags=["Privacy Notice"], prefix=urls.V1_URL_PREFIX)
@@ -192,22 +193,6 @@ def get_privacy_notice(
             fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
         )  # type: ignore
     return notice
-
-
-def validate_notice_data_uses(
-    privacy_notices: List[schemas.PrivacyNotice],
-    db: Session,
-) -> None:
-    """
-    Ensures that all the provided `PrivacyNotice`s have valid data uses.
-    Raises a 422 HTTP exception if an unknown data use is found on any `PrivacyNotice`
-    """
-    valid_data_uses = [data_use.fides_key for data_use in DataUse.query(db).all()]
-    try:
-        for privacy_notice in privacy_notices:
-            privacy_notice.validate_data_uses(valid_data_uses)
-    except ValueError as e:
-        raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
 
 @router.post(

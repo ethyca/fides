@@ -11,9 +11,6 @@ from starlette.exceptions import HTTPException
 from starlette.testclient import TestClient
 
 from fides.api.api.v1 import scope_registry as scopes
-from fides.api.api.v1.endpoints.privacy_notice_endpoints import (
-    validate_notice_data_uses,
-)
 from fides.api.api.v1.urn_registry import (
     PRIVACY_NOTICE,
     PRIVACY_NOTICE_BY_DATA_USE,
@@ -33,6 +30,7 @@ from fides.api.schemas.privacy_notice import (
     PrivacyNoticeCreation,
     PrivacyNoticeResponse,
 )
+from fides.api.util.consent_util import validate_notice_data_uses
 
 
 class TestValidateDataUses:
