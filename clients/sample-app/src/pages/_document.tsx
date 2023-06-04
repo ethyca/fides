@@ -8,11 +8,7 @@ import Document, {
 } from "next/document";
 
 /**
- * Define a custom Document, so that we can load some external scripts for all pages:
- * 1) Fides.js, for consent management
- * 2) Google Tag Manager, for managing tags
- * 3) etc.
- *
+ * Define a custom Document, so that we can load external stylesheets, scripts, etc.
  * See https://nextjs.org/docs/pages/building-your-application/routing/custom-document
  */
 class SampleAppDocument extends Document {
