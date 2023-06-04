@@ -2,7 +2,8 @@
 
 # pylint: disable=C0115,C0116, E0213
 
-from typing import Dict, Optional, Union
+from copy import deepcopy
+from typing import Dict, Optional, Union, cast
 from urllib.parse import quote, urlencode
 
 from pydantic import Field, PostgresDsn, validator
@@ -68,7 +69,7 @@ class DatabaseSettings(FidesSettings):
         default="defaultuser",
         description="The database user with which to login to the application database.",
     )
-    params: dict = Field(
+    params: Dict = Field(
         default={},
         description="Additional connection parameters used when connecting to the applicaiton database.",
     )
@@ -113,7 +114,9 @@ class DatabaseSettings(FidesSettings):
                 host=values["server"],
                 port=values.get("port"),
                 path=f"/{db_name or ''}",
-                query=urlencode(values["params"], quote_via=quote, safe="/"),
+                query=urlencode(
+                    cast(Dict, values["params"]), quote_via=quote, safe="/"
+                ),
             )
         )
 
@@ -127,6 +130,12 @@ class DatabaseSettings(FidesSettings):
             return value
 
         db_name = values["test_db"] if get_test_mode() else values["db"]
+        # Workaround https://github.com/MagicStack/asyncpg/issues/737
+        params = cast(Dict, deepcopy(values["params"]))
+        if "sslmode" in params.keys():
+            params["ssl"] = params["sslmode"]
+            del params["sslmode"]
+        # End workaround
         return str(
             PostgresDsn.build(
                 scheme="postgresql+asyncpg",
@@ -135,7 +144,7 @@ class DatabaseSettings(FidesSettings):
                 host=values["server"],
                 port=values.get("port"),
                 path=f"/{db_name or ''}",
-                query=urlencode(values["params"], quote_via=quote, safe="/"),
+                query=urlencode(params, quote_via=quote, safe="/"),
             )
         )
 
@@ -155,7 +164,9 @@ class DatabaseSettings(FidesSettings):
                 host=values["server"],
                 port=values.get("port"),
                 path=f"/{values.get('db') or ''}",
-                query=urlencode(values["params"], quote_via=quote, safe="/"),
+                query=urlencode(
+                    cast(Dict, values["params"]), quote_via=quote, safe="/"
+                ),
             )
         )
 
@@ -175,7 +186,9 @@ class DatabaseSettings(FidesSettings):
                 host=values["server"],
                 port=values["port"],
                 path=f"/{values.get('test_db') or ''}",
-                query=urlencode(values["params"], quote_via=quote, safe="/"),
+                query=urlencode(
+                    cast(Dict, values["params"]), quote_via=quote, safe="/"
+                ),
             )
         )
 

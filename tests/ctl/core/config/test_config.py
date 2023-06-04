@@ -377,7 +377,7 @@ class TestBuildingDatabaseValues:
         )
         assert (
             database_settings.async_database_uri
-            == "postgresql+asyncpg://postgres:fides@fides-db:5432/database?sslmode=verify-full&sslrootcert=/etc/ssl/private/myca.crt"
+            == "postgresql+asyncpg://postgres:fides@fides-db:5432/database?sslrootcert=/etc/ssl/private/myca.crt&ssl=verify-full"
         )
         assert (
             database_settings.sync_database_uri
