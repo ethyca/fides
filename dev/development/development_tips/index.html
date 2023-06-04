@@ -1072,6 +1072,7 @@ You should also import your model in <code>src/fides/api/db/base.py</code> so it
 <p>In the <code>/src/fides/api/ctl</code> directory:</p>
 <ul>
 <li>Migrate your database to the latest state: <code>alembic upgrade head</code></li>
+<li>Merge heads (for when you have conflicting heads from a merge/rebase): <code>alembic merge heads</code></li>
 <li>Get revision id of previous migration: <code>alembic current</code></li>
 <li>Automatically generate a new migration: <code>alembic revision --autogenerate -m "&lt;a message describing your changes&gt;"</code></li>
 <li>Create a new migration file to manually fill out: <code>alembic revision -m "&lt;a message describing your changes&gt;"</code></li>

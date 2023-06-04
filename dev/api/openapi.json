@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.1b1.post0.dev13"
+    "version": "2.14.1b1.post0.dev14"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -4881,7 +4881,7 @@
             },
             "consent": [
               {
-                "data_use": "advertising",
+                "data_use": "marketing.advertising",
                 "data_use_description": "We may use some of your personal information for advertising performance analysis and audience modeling for ongoing advertising which may be interpreted as 'Data Sharing' under some regulations.",
                 "opt_in": true,
                 "highlight": false
@@ -20255,15 +20255,6 @@
             },
             "description": "\n    The PrivacyDeclaration resource model.\n\n    States a function of a system, and describes how it relates\n    to the privacy data types.\n    "
           },
-          "system_dependencies": {
-            "title": "System Dependencies",
-            "type": "array",
-            "items": {
-              "pattern": "^[a-zA-Z0-9_.<>-]+$",
-              "type": "string"
-            },
-            "description": "A list of fides keys to model dependencies."
-          },
           "joint_controller": {
             "title": "Joint Controller",
             "allOf": [
@@ -20422,15 +20413,6 @@
               "$ref": "#/components/schemas/PrivacyDeclarationResponse"
             },
             "description": "Extension of base pydantic model to include DB `id` field in the response"
-          },
-          "system_dependencies": {
-            "title": "System Dependencies",
-            "type": "array",
-            "items": {
-              "pattern": "^[a-zA-Z0-9_.<>-]+$",
-              "type": "string"
-            },
-            "description": "A list of fides keys to model dependencies."
           },
           "joint_controller": {
             "title": "Joint Controller",
