@@ -45,6 +45,7 @@ The types of changes are:
 ### Fixed
 
 - Flaky custom field Cypress test on systems page [#3408](https://github.com/ethyca/fides/pull/3408)
+- Fix NextJS errors & warnings for Cookie House sample app [#3447](https://github.com/ethyca/fides/pull/3447)
 
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
