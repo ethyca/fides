@@ -36,7 +36,7 @@ def cache_identity_and_consent_preferences(privacy_request, db, reader_id):
     identity = Identity(email="customer_1#@example.com", ljt_readerID=reader_id)
     privacy_request.cache_identity(identity)
     privacy_request.consent_preferences = [
-        Consent(data_use="advertising", opt_in=False).dict()
+        Consent(data_use="marketing.advertising", opt_in=False).dict()
     ]
     privacy_request.save(db)
 
@@ -189,7 +189,7 @@ class TestConsentEmailBatchSend:
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
         privacy_request_awaiting_consent_email_send.cache_identity(identity)
         privacy_request_awaiting_consent_email_send.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
         privacy_request_awaiting_consent_email_send.save(db)
 
@@ -318,7 +318,9 @@ class TestConsentEmailBatchSend:
                 identities={"ljt_readerID": "12345"},
                 consent_preferences=[
                     Consent(
-                        data_use="advertising", data_use_description=None, opt_in=False
+                        data_use="marketing.advertising",
+                        data_use_description=None,
+                        opt_in=False,
                     )
                 ],
                 privacy_preferences=[],
@@ -388,7 +390,9 @@ class TestConsentEmailBatchSend:
                 identities={"ljt_readerID": "12345"},
                 consent_preferences=[
                     Consent(
-                        data_use="advertising", data_use_description=None, opt_in=False
+                        data_use="marketing.advertising",
+                        data_use_description=None,
+                        opt_in=False,
                     )
                 ],
                 privacy_preferences=[],
@@ -539,7 +543,7 @@ class TestConsentEmailBatchSend:
                             description="a sample privacy notice configuration",
                             regions=["us_ca", "us_co"],
                             consent_mechanism="opt_in",
-                            data_uses=["advertising", "third_party_sharing"],
+                            data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level="system_wide",
                             disabled=False,
                             has_gpc_flag=False,
@@ -669,7 +673,7 @@ class TestConsentEmailBatchSend:
                             origin="privacy_notice_template_1",
                             regions=["us_ca", "us_co"],
                             consent_mechanism="opt_in",
-                            data_uses=["advertising", "third_party_sharing"],
+                            data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level="system_wide",
                             disabled=False,
                             has_gpc_flag=False,

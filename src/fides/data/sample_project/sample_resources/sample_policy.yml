@@ -12,7 +12,7 @@ policy:
         data_uses:
           matches: ANY
           values:
-            - advertising.third_party
+            - marketing.advertising.third_party
         data_subjects:
           matches: ANY
           values:
