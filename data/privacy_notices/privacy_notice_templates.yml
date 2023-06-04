@@ -128,7 +128,7 @@ privacy_notices:
     - li
   consent_mechanism: opt_in
   data_uses:
-    - personalization
+    - personalize
   enforcement_level: frontend
   disabled: False
   has_gpc_flag: False

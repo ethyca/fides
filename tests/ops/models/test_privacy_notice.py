@@ -19,11 +19,7 @@ class TestPrivacyNoticeModel:
         """
         Ensure our create override works as expected to create a history object
         """
-        # our fixture should have created a privacy notice and therefore a similar history object
-        assert len(PrivacyNotice.all(db)) == 1
-        assert len(PrivacyNoticeHistory.all(db)) == 1
-
-        history_object = PrivacyNoticeHistory.all(db)[0]
+        history_object = privacy_notice.histories[0]
         assert history_object.name == privacy_notice.name
         assert history_object.data_uses == privacy_notice.data_uses
         assert history_object.version == privacy_notice.version

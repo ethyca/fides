@@ -1,7 +1,7 @@
 """Add privacy notice template
 
 Revision ID: b8248ce6b8a1
-Revises: deb97d9393f3
+Revises: 63b482f5b49b
 Create Date: 2023-05-30 14:19:20.629394
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "b8248ce6b8a1"
-down_revision = "deb97d9393f3"
+down_revision = "63b482f5b49b"
 branch_labels = None
 depends_on = None
 
