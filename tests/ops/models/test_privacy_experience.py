@@ -213,11 +213,10 @@ class TestPrivacyExperience:
         db.delete(pc_exp.histories[0])
         db.delete(pc_exp)
 
-    def test_unlink_privacy_experience_config(
-        self, db, experience_config_privacy_center
-    ):
+    def test_link_default_experience_config(self, db, experience_config_privacy_center):
         """
-        Test Experience.unlink_experience_config unlinks the experience and bumps the version
+        Test Experience.link_default_experience_config points the experience towards the default config
+        and bumps the version
         """
         pc_exp = PrivacyExperience.create(
             db=db,
@@ -233,40 +232,16 @@ class TestPrivacyExperience:
 
         assert pc_exp.version == 1.0
         assert pc_exp.experience_config == experience_config_privacy_center
-        pc_exp.unlink_experience_config(db)
+        pc_exp.link_default_experience_config(db)
         db.refresh(pc_exp)
 
-        assert pc_exp.experience_config_id is None
-        assert pc_exp.experience_config_history_id is None
+        assert pc_exp.experience_config_id is not None
+        assert pc_exp.experience_config_id == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+        assert pc_exp.experience_config_history_id is not None
+        assert pc_exp.experience_config_history_id != pc_exp.experience_config_id
         assert pc_exp.version == 2.0
         assert pc_exp.created_at == created_at
         assert pc_exp.updated_at > updated_at
-
-        for history in pc_exp.histories:
-            history.delete(db)
-        pc_exp.delete(db)
-
-    def test_unlink_privacy_experience_config_nothing_to_unlink(self, db):
-        """
-        Test Experience.unlink_experience_config does nothing if no experience config is attached
-        """
-        pc_exp = PrivacyExperience.create(
-            db=db,
-            data={"component": "privacy_center", "region": "eu_at"},
-        )
-        created_at = pc_exp.created_at
-        updated_at = pc_exp.updated_at
-
-        assert pc_exp.version == 1.0
-        assert pc_exp.experience_config is None
-        pc_exp.unlink_experience_config(db)
-        db.refresh(pc_exp)
-
-        assert pc_exp.experience_config_id is None
-        assert pc_exp.experience_config_history_id is None
-        assert pc_exp.version == 1.0
-        assert pc_exp.created_at == created_at
-        assert pc_exp.updated_at == updated_at
 
         for history in pc_exp.histories:
             history.delete(db)
@@ -706,8 +681,12 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ca
         assert privacy_center_experience.disabled is False
         assert privacy_center_experience.version == 1.0
-        assert privacy_center_experience.experience_config_id is None
-        assert privacy_center_experience.experience_config_history_id is None
+        # Experience automatically linked to default privacy center config
+        assert (
+            privacy_center_experience.experience_config_id
+            == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+        )
+        assert privacy_center_experience.experience_config_history_id is not None
         assert privacy_center_experience.histories.count() == 1
 
         history = privacy_center_experience.histories[0]
@@ -715,8 +694,8 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         assert history.region == PrivacyNoticeRegion.us_ca
         assert history.disabled is False
         assert history.version == 1.0
-        assert history.experience_config_id is None
-        assert history.experience_config_history_id is None
+        assert history.experience_config_id == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+        assert history.experience_config_history_id is not None
 
         assert privacy_center_experience.get_related_privacy_notices(db) == [notice]
 
@@ -847,8 +826,11 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         assert overlay_experience.region == PrivacyNoticeRegion.eu_it
         assert overlay_experience.disabled is False
         assert overlay_experience.version == 1.0
-        assert overlay_experience.experience_config_id is None
-        assert overlay_experience.experience_config_history_id is None
+        assert (
+            overlay_experience.experience_config_id
+            == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        )
+        assert overlay_experience.experience_config_history_id is not None
         assert overlay_experience.histories.count() == 1
 
         history = overlay_experience.histories[0]
@@ -856,8 +838,8 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         assert history.region == PrivacyNoticeRegion.eu_it
         assert history.disabled is False
         assert history.version == 1.0
-        assert history.experience_config_id is None
-        assert history.experience_config_history_id is None
+        assert history.experience_config_id == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        assert history.experience_config_history_id is not None
 
         assert overlay_experience.get_related_privacy_notices(db) == [notice]
 
@@ -993,16 +975,22 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ca
         assert privacy_center_experience.disabled is False
         assert privacy_center_experience.version == 1.0
-        assert privacy_center_experience.experience_config_id is None
-        assert privacy_center_experience.experience_config_history_id is None
+        assert (
+            privacy_center_experience.experience_config_id
+            == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+        )
+        assert privacy_center_experience.experience_config_history_id is not None
         assert privacy_center_experience.histories.count() == 1
 
         assert overlay_experience.component == ComponentType.overlay
         assert overlay_experience.region == PrivacyNoticeRegion.us_ca
         assert overlay_experience.disabled is False
         assert overlay_experience.version == 1.0
-        assert overlay_experience.experience_config_id is None
-        assert overlay_experience.experience_config_history_id is None
+        assert (
+            overlay_experience.experience_config_id
+            == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        )
+        assert overlay_experience.experience_config_history_id is not None
         assert overlay_experience.histories.count() == 1
 
         assert privacy_center_experience.get_related_privacy_notices(db) == [notice]
@@ -1190,8 +1178,8 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         config.delete(db)
 
     def test_experience_config_unlinks_region(self, db):
-        """Privacy Center Experience Config updated, and we attempt to add AK to this,
-        but it is already linked, so no action needed"""
+        """Privacy Center Experience Config updated, and we attempt to remove the
+        regions. Any affected experiences have the default linked instead"""
 
         config = PrivacyExperienceConfig.create(
             db=db,
@@ -1242,8 +1230,11 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         assert privacy_center_experience.component == ComponentType.privacy_center
         assert privacy_center_experience.version == 2.0
         assert privacy_center_experience.disabled is False
-        assert privacy_center_experience.experience_config_id is None
-        assert privacy_center_experience.experience_config_history_id is None
+        assert (
+            privacy_center_experience.experience_config_id
+            == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+        )
+        assert privacy_center_experience.experience_config_history_id is not None
 
         privacy_center_experience.histories[1].delete(db)
         privacy_center_experience.histories[0].delete(db)

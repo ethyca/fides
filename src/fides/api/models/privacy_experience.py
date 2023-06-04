@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, List, Optional, Set, Tuple, Type
+from typing import Any, Dict, List, Optional, Set, Tuple, Type
 
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
@@ -100,9 +100,11 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         experience_config: PrivacyExperienceConfig = super().create(
             db=db, data=data, check_name=check_name
         )
-
         # create the history after the initial object creation succeeds, to avoid
         # writing history if the creation fails and so that we can get the generated ID
+        data.pop(
+            "id", None
+        )  # Default Experience Configs have id specified but we don't want to use the same id for the historical record
         history_data = {
             **data,
             "experience_config_id": experience_config.id,
@@ -151,6 +153,18 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
             version=self.version
         ).first()
         return history.id if history else None
+
+    @classmethod
+    def get_default_config(
+        cls, db: Session, component: ComponentType
+    ) -> Optional[PrivacyExperienceConfig]:
+        """Load the first default config of a given component type"""
+        return (
+            db.query(PrivacyExperienceConfig)
+            .filter(PrivacyExperienceConfig.component == component)
+            .filter(PrivacyExperienceConfig.is_default.is_(True))
+            .first()
+        )
 
 
 class PrivacyExperienceConfigHistory(ExperienceConfigBase, Base):
@@ -313,12 +327,38 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
 
         # create the history after the initial object creation succeeds, to avoid
         # writing history if the creation fails and so that we can get the generated ID
+        data.pop("id", None)
         history_data = {
             **data,
             "privacy_experience_id": privacy_experience.id,
         }
         PrivacyExperienceHistory.create(db, data=history_data, check_name=False)
         return privacy_experience
+
+    @staticmethod
+    def create_default_experience_for_region(
+        db: Session, region: PrivacyNoticeRegion, component: ComponentType
+    ) -> PrivacyExperience:
+        """Creates an Experience for a given Component Type and Region and links
+        to default copy (ExperienceConfig)"""
+        experience_data: Dict = {
+            "region": region,
+            "component": component,
+        }
+        default_config: Optional[
+            PrivacyExperienceConfig
+        ] = PrivacyExperienceConfig.get_default_config(db, component)
+
+        if default_config:
+            experience_data["experience_config_id"] = default_config.id
+            experience_data[
+                "experience_config_history_id"
+            ] = default_config.experience_config_history_id
+
+        return PrivacyExperience.create(
+            db=db,
+            data=experience_data,
+        )
 
     def update(self, db: Session, *, data: dict[str, Any]) -> PrivacyExperience:
         """
@@ -367,16 +407,23 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
 
         return overlay_experience, privacy_center_experience
 
-    def unlink_experience_config(self, db: Session) -> PrivacyExperience:
-        """Remove config from experience
+    def link_default_experience_config(self, db: Session) -> PrivacyExperience:
+        """Replace config from experience with default config
 
-        Removes the FK only; does not delete Privacy Experiences or Privacy Experience Configs
+        Replaces the FK only; does not delete Privacy Experiences or Privacy Experience Configs
         """
+        default_config: Optional[
+            PrivacyExperienceConfig
+        ] = PrivacyExperienceConfig.get_default_config(
+            db, self.component  # type: ignore[arg-type]
+        )
         return self.update(
             db,
             data={
-                "experience_config_id": None,
-                "experience_config_history_id": None,
+                "experience_config_id": default_config.id if default_config else None,
+                "experience_config_history_id": default_config.experience_config_history_id
+                if default_config
+                else None,
             },
         )
 
@@ -464,12 +511,10 @@ def upsert_privacy_experiences_after_notice_update(
             existing_experience=privacy_center_experience,
             related_notices=privacy_center_notices,
         ):
-            privacy_center_experience = PrivacyExperience.create(
-                db=db,
-                data={
-                    "region": region,
-                    "component": ComponentType.privacy_center,
-                },
+            privacy_center_experience = (
+                PrivacyExperience.create_default_experience_for_region(
+                    db, region, ComponentType.privacy_center
+                )
             )
             added_experiences.append(privacy_center_experience)
 
@@ -477,12 +522,8 @@ def upsert_privacy_experiences_after_notice_update(
         if new_experience_needed(
             existing_experience=overlay_experience, related_notices=overlay_notices
         ):
-            overlay_experience = PrivacyExperience.create(
-                db=db,
-                data={
-                    "region": region,
-                    "component": ComponentType.overlay,
-                },
+            overlay_experience = PrivacyExperience.create_default_experience_for_region(
+                db, region, ComponentType.overlay
             )
             added_experiences.append(overlay_experience)
 
@@ -503,7 +544,7 @@ def remove_config_from_matched_experiences(
     ).all()
 
     for experience in experiences_to_unlink:
-        experience.unlink_experience_config(db)
+        experience.link_default_experience_config(db)
     return [experience.region for experience in experiences_to_unlink]  # type: ignore[misc]
 
 

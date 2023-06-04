@@ -1,11 +1,14 @@
 from typing import Any, Dict, List, Optional, Tuple
 
+import yaml
 from fastapi import HTTPException
+from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.privacy_experience import PrivacyExperienceConfig
 from fides.api.models.privacy_notice import EnforcementLevel, UserConsentPreference
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
@@ -13,6 +16,10 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     ProvidedIdentity,
     ProvidedIdentityType,
+)
+from fides.api.schemas.privacy_experience import (
+    ExperienceConfigCreate,
+    ExperienceConfigCreateWithId,
 )
 from fides.api.schemas.redis_cache import Identity
 
@@ -228,3 +235,62 @@ def get_or_create_fides_user_device_id_provided_identity(
         )
 
     return identity  # type: ignore[return-value]
+
+
+def load_default_experience_configs_on_startup(
+    db: Session, notice_yaml_file_path: str
+) -> None:
+    """
+    On startup, loads default ExperienceConfigs into the database. Creates the defaults
+    if they don't exist, otherwise, updates them with any new values from the default
+    yaml file if applicable.
+    """
+    logger.info(
+        "Loading default privacy experience configs from {}", notice_yaml_file_path
+    )
+    with open(notice_yaml_file_path, "r", encoding="utf-8") as file:
+        experience_configs = yaml.safe_load(file).get("privacy_experience_configs", [])
+
+        for experience_config_data in experience_configs:
+            upsert_default_experience_config(db, experience_config_data)
+
+
+def upsert_default_experience_config(
+    db: Session, experience_config_data: dict
+) -> Tuple[bool, PrivacyExperienceConfig]:
+    """Upserts an experience config - intended to be used for upserting default
+    configs on startup.  The id is specified upfront.
+
+    Returns whether the resource is new, and the experience config object.
+    Split from load_default_experience_configs_on_startup for easier testing
+    of a function that runs on application startup.
+    """
+    experience_config_schema: ExperienceConfigCreateWithId = (
+        ExperienceConfigCreateWithId(**experience_config_data)
+    )
+    if not experience_config_schema.is_default:
+        raise Exception("This method is for created default experience configs.")
+
+    existing_experience_config = PrivacyExperienceConfig.get(
+        db=db, object_id=experience_config_schema.id
+    )
+
+    if existing_experience_config:
+        logger.info(
+            "Updating default experience config {}",
+            existing_experience_config.id,
+        )
+        dry_update: PrivacyExperienceConfig = existing_experience_config.dry_update(
+            data=experience_config_data
+        )
+        ExperienceConfigCreate.from_orm(dry_update)
+        existing_experience_config.update(db=db, data=experience_config_data)
+        return False, existing_experience_config
+
+    logger.info("Creating default experience config {}", experience_config_schema.id)
+    new_experience_config = PrivacyExperienceConfig.create(
+        db,
+        data=experience_config_schema.dict(exclude_unset=True),
+        check_name=False,
+    )
+    return True, new_experience_config

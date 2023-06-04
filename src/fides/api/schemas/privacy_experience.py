@@ -118,6 +118,11 @@ class ExperienceConfigUpdate(ExperienceConfigSchema):
         extra = Extra.forbid
 
 
+class ExperienceConfigCreateWithId(ExperienceConfigCreate):
+    """Schema for creating out-of-the-box experience configs"""
+    id: str
+
+
 class ExperienceConfigSchemaWithId(ExperienceConfigSchema):
     """
     An API representation of a ExperienceConfig that includes an `id` field.
