@@ -98,7 +98,7 @@ class DatabaseSettings(FidesSettings):
     @validator("sync_database_uri", pre=True)
     @classmethod
     def assemble_sync_database_uri(
-        cls, value: Optional[str], values: Dict[str, Union(str, Dict)]
+        cls, value: Optional[str], values: Dict[str, Union[str, Dict]]
     ) -> str:
         """Join DB connection credentials into a connection string"""
         if isinstance(value, str) and value:
@@ -120,7 +120,7 @@ class DatabaseSettings(FidesSettings):
     @validator("async_database_uri", pre=True)
     @classmethod
     def assemble_async_database_uri(
-        cls, value: Optional[str], values: Dict[str, Union(str, Dict)]
+        cls, value: Optional[str], values: Dict[str, Union[str, Dict]]
     ) -> str:
         """Join DB connection credentials into an async connection string."""
         if isinstance(value, str) and value:
@@ -142,7 +142,7 @@ class DatabaseSettings(FidesSettings):
     @validator("sqlalchemy_database_uri", pre=True)
     @classmethod
     def assemble_db_connection(
-        cls, v: Optional[str], values: Dict[str, Union(str, Dict)]
+        cls, v: Optional[str], values: Dict[str, Union[str, Dict]]
     ) -> str:
         """Join DB connection credentials into a synchronous connection string."""
         if isinstance(v, str) and v:
@@ -162,7 +162,7 @@ class DatabaseSettings(FidesSettings):
     @validator("sqlalchemy_test_database_uri", pre=True)
     @classmethod
     def assemble_test_db_connection(
-        cls, v: Optional[str], values: Dict[str, Union(str, Dict)]
+        cls, v: Optional[str], values: Dict[str, Union[str, Dict]]
     ) -> str:
         """Join DB connection credentials into a connection string"""
         if isinstance(v, str) and v:
