@@ -135,6 +135,10 @@ class DatabaseSettings(FidesSettings):
         if "sslmode" in params.keys():
             params["ssl"] = params["sslmode"]
             del params["sslmode"]
+        # This must be constructed in fides.api.ctl.database.session as part of the ssl context
+        # ref: https://github.com/sqlalchemy/sqlalchemy/discussions/5975
+        if "sslrootcert" in params.keys():
+            del params["sslrootcert"]
         # End workaround
         return str(
             PostgresDsn.build(

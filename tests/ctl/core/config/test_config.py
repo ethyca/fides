@@ -377,7 +377,15 @@ class TestBuildingDatabaseValues:
         )
         assert (
             database_settings.async_database_uri
-            == "postgresql+asyncpg://postgres:fides@fides-db:5432/database?sslrootcert=/etc/ssl/private/myca.crt&ssl=verify-full"
+            == "postgresql+asyncpg://postgres:fides@fides-db:5432/database?ssl=verify-full"
+            # Q: But why! Where did the sslrootcert parameter go?
+            # A: asyncpg cannot accept it, and an ssl context must be
+            #    passed to the create_async_engine function.
+            # Q: But wait! `ssl` is a different name than what we
+            #    passed in the parameters!
+            # A: That was more of a statement, but Jeopardy rules
+            #    aside, asyncpg has a different set of names
+            #    for these extremely standardized parameter names...
         )
         assert (
             database_settings.sync_database_uri
