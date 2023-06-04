@@ -4,6 +4,7 @@ import pytest
 from fastapi import HTTPException
 from sqlalchemy.orm.attributes import flag_modified
 
+from fides.api.app_setup import DEFAULT_PRIVACY_NOTICES_PATH
 from fides.api.models.privacy_experience import PrivacyExperience
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
@@ -580,6 +581,7 @@ class TestLoadDefaultNotices:
         assert history.displayed_in_overlay is True
         assert history.displayed_in_api is False
         assert history.version == 1.0
+        assert history.origin == new_templates[0].id
 
         assert len(new_templates) == 1
         assert new_templates[0].id == notice.origin
@@ -758,6 +760,14 @@ class TestLoadDefaultNotices:
         new_template.delete(db)
         template.delete(db)
 
+    def test_load_actual_default_notices(self, db):
+        """Sanity check, makings sure that default privacy notices don't load with errors"""
+        new_templates, new_privacy_notices = load_default_notices_on_startup(
+            db, DEFAULT_PRIVACY_NOTICES_PATH
+        )
+        assert len(new_templates) == 5
+        assert len(new_privacy_notices) == 5
+
 
 class TestUpsertPrivacyNoticeTemplates:
     def test_ensure_unique_ids(self, db, load_default_data_uses):
@@ -773,7 +783,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         name="A",
                         regions=["eu_it"],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["provide"],
+                        data_uses=["essential"],
                         enforcement_level=EnforcementLevel.system_wide,
                         displayed_in_overlay=True,
                     ),
@@ -782,7 +792,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         name="A",
                         regions=["eu_it"],
                         consent_mechanism=ConsentMechanism.opt_out,
-                        data_uses=["provide"],
+                        data_uses=["essential"],
                         enforcement_level=EnforcementLevel.frontend,
                         displayed_in_overlay=True,
                     ),
@@ -806,7 +816,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         name="A",
                         regions=["eu_it"],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["provide"],
+                        data_uses=["essential"],
                         enforcement_level=EnforcementLevel.system_wide,
                         displayed_in_overlay=True,
                     ),
@@ -816,7 +826,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         name="B",
                         regions=["eu_it"],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["provide.service"],
+                        data_uses=["essential.service"],
                         enforcement_level=EnforcementLevel.frontend,
                         disabled=True,
                         displayed_in_overlay=True,
@@ -826,7 +836,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert exc._excinfo[1].status_code == 422
         assert (
             exc._excinfo[1].detail
-            == "Privacy Notice 'A' has already assigned data use 'provide' to region 'eu_it'"
+            == "Privacy Notice 'A' has already assigned data use 'essential' to region 'eu_it'"
         )
 
     def test_bad_data_uses(self, db, load_default_data_uses):
@@ -861,7 +871,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     name="A",
                     regions=["eu_it"],
                     consent_mechanism=ConsentMechanism.opt_in,
-                    data_uses=["provide"],
+                    data_uses=["essential"],
                     enforcement_level=EnforcementLevel.system_wide,
                     displayed_in_overlay=True,
                 ),
@@ -888,7 +898,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert first_template.name == "A"
         assert first_template.regions == [PrivacyNoticeRegion.eu_it]
         assert first_template.consent_mechanism == ConsentMechanism.opt_in
-        assert first_template.data_uses == ["provide"]
+        assert first_template.data_uses == ["essential"]
         assert first_template.enforcement_level == EnforcementLevel.system_wide
 
         assert second_template.id == "test_id_2"
@@ -908,7 +918,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     name="B",
                     regions=["eu_it"],
                     consent_mechanism=ConsentMechanism.opt_out,
-                    data_uses=["advertising"],
+                    data_uses=["marketing.advertising"],
                     enforcement_level=EnforcementLevel.frontend,
                     disabled=True,
                     displayed_in_overlay=True,
@@ -941,7 +951,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert first_template.name == "A"
         assert first_template.regions == [PrivacyNoticeRegion.eu_it]
         assert first_template.consent_mechanism == ConsentMechanism.opt_in
-        assert first_template.data_uses == ["provide"]
+        assert first_template.data_uses == ["essential"]
         assert first_template.enforcement_level == EnforcementLevel.system_wide
 
         # Second template updated data use and consent mechanism
@@ -949,7 +959,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert second_template.name == "B"
         assert second_template.regions == [PrivacyNoticeRegion.eu_it]
         assert second_template.consent_mechanism == ConsentMechanism.opt_out
-        assert second_template.data_uses == ["advertising"]
+        assert second_template.data_uses == ["marketing.advertising"]
         assert second_template.enforcement_level == EnforcementLevel.frontend
         assert second_template.disabled
 

@@ -168,6 +168,8 @@ async def run_database_startup() -> None:
         db.close()
 
     if not CONFIG.test_mode:
+        # Default notices subject to change, so preventing these from
+        # loading in test mode to avoid interfering with unit tests.
         load_default_privacy_notices()
     db.close()
 
