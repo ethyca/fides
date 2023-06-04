@@ -120,6 +120,7 @@ class ExperienceConfigUpdate(ExperienceConfigSchema):
 
 class ExperienceConfigCreateWithId(ExperienceConfigCreate):
     """Schema for creating out-of-the-box experience configs"""
+
     id: str
 
 

@@ -394,6 +394,36 @@ class TestCreateExperienceConfig:
         assert response.status_code == 422
         assert response.json()["detail"][0]["msg"] == "Duplicate regions found."
 
+    def test_create_another_default_experience_config(
+        self, api_client: TestClient, url, generate_auth_header, db
+    ) -> None:
+        """We have defaults loaded in at startup so don't allow other defaults to be created here"""
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "accept_button_label": "Yes",
+                "banner_enabled": "always_disabled",
+                "component": "privacy_center",
+                "description": "We take your privacy seriously",
+                "is_default": True,
+                "privacy_policy_link_label": "Manage your privacy",
+                "privacy_policy_url": "example.com/privacy",
+                "reject_button_label": "No",
+                "save_button_label": "Save",
+                "title": "Manage your privacy",
+            },
+            headers=auth_header,
+        )
+
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == "Cannot set as the default. Only one default privacy_center config can be in the system."
+        )
+
     def test_create_experience_config_with_no_regions(
         self, api_client: TestClient, url, generate_auth_header, db
     ) -> None:
@@ -1015,6 +1045,29 @@ class TestUpdateExperienceConfig:
         assert (
             response.json()["detail"][0]["msg"]
             == "The following additional fields are required when defining an overlay: acknowledge_button_label, banner_enabled, and privacy_preferences_link_label."
+        )
+
+    def test_update_as_default(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        overlay_experience_config,
+    ):
+        """We already have a default overlay added to the system on startup, so we don't
+        want to update this separate overlay to be a default"""
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "is_default": True,
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == "Cannot set as the default. Only one default overlay config can be in the system."
         )
 
     def test_attempt_to_update_component_type(
