@@ -899,7 +899,7 @@ class TestSaveConsent:
 
         consent_data: list[dict[str, Any]] = [
             {
-                "data_use": "advertising",
+                "data_use": "marketing.advertising",
                 "data_use_description": None,
                 "opt_in": True,
                 "has_gpc_flag": True,
@@ -924,7 +924,7 @@ class TestSaveConsent:
             "consent": consent_data,
             "policy_key": consent_policy.key,  # Optional policy_key supplied,
             "executable_options": [
-                {"data_use": "advertising", "executable": True},
+                {"data_use": "marketing.advertising", "executable": True},
                 {"data_use": "improve", "executable": False},
             ],
             "browser_identity": {"ga_client_id": "test_ga_client_id"},
@@ -937,7 +937,7 @@ class TestSaveConsent:
         assert response.status_code == 200
         expected_consent_data: list[dict[str, Any]] = [
             {
-                "data_use": "advertising",
+                "data_use": "marketing.advertising",
                 "data_use_description": None,
                 "opt_in": True,
                 "has_gpc_flag": True,
@@ -973,7 +973,7 @@ class TestSaveConsent:
             {
                 "conflicts_with_gpc": False,
                 "opt_in": True,
-                "data_use": "advertising",
+                "data_use": "marketing.advertising",
                 "has_gpc_flag": True,
                 "data_use_description": None,
             },
@@ -1004,7 +1004,7 @@ class TestSaveConsent:
 
         consent_data: list[dict[str, Any]] = [
             {
-                "data_use": "advertising",
+                "data_use": "marketing.advertising",
                 "data_use_description": None,
                 "opt_in": True,
                 "has_gpc_flag": True,
@@ -1022,7 +1022,7 @@ class TestSaveConsent:
             "consent": consent_data,
             "policy_key": consent_policy.key,  # Optional policy_key supplied,
             "executable_options": [
-                {"data_use": "advertising", "executable": True},
+                {"data_use": "marketing.advertising", "executable": True},
                 {"data_use": "improve", "executable": False},
             ],
             "browser_identity": {"ga_client_id": "test_ga_client_id"},
