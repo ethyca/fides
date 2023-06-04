@@ -306,6 +306,9 @@ def create_privacy_notices_util(
 
     for privacy_notice in privacy_notice_schemas:
         if should_escape:
+            # should_escape flag is for when we're creating a notice
+            # from a template. The content was already escaped in the
+            # template - we don't want to escape twice.
             privacy_notice = transform_fields(  # type: ignore
                 transformation=escape,
                 model=privacy_notice,
