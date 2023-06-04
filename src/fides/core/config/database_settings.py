@@ -2,7 +2,8 @@
 
 # pylint: disable=C0115,C0116, E0213
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
+from urllib.parse import quote, urlencode
 
 from pydantic import Field, PostgresDsn, validator
 
@@ -67,6 +68,10 @@ class DatabaseSettings(FidesSettings):
         default="defaultuser",
         description="The database user with which to login to the application database.",
     )
+    params: dict = Field(
+        default={},
+        description="Additional connection parameters used when connecting to the applicaiton database.",
+    )
 
     # These must be at the end because they require other values to construct
     sqlalchemy_database_uri: str = Field(
@@ -93,7 +98,7 @@ class DatabaseSettings(FidesSettings):
     @validator("sync_database_uri", pre=True)
     @classmethod
     def assemble_sync_database_uri(
-        cls, value: Optional[str], values: Dict[str, str]
+        cls, value: Optional[str], values: Dict[str, Union(str, Dict)]
     ) -> str:
         """Join DB connection credentials into a connection string"""
         if isinstance(value, str) and value:
@@ -108,13 +113,14 @@ class DatabaseSettings(FidesSettings):
                 host=values["server"],
                 port=values.get("port"),
                 path=f"/{db_name or ''}",
+                query=urlencode(values["params"], quote_via=quote, safe="/"),
             )
         )
 
     @validator("async_database_uri", pre=True)
     @classmethod
     def assemble_async_database_uri(
-        cls, value: Optional[str], values: Dict[str, str]
+        cls, value: Optional[str], values: Dict[str, Union(str, Dict)]
     ) -> str:
         """Join DB connection credentials into an async connection string."""
         if isinstance(value, str) and value:
@@ -129,12 +135,15 @@ class DatabaseSettings(FidesSettings):
                 host=values["server"],
                 port=values.get("port"),
                 path=f"/{db_name or ''}",
+                query=urlencode(values["params"], quote_via=quote, safe="/"),
             )
         )
 
     @validator("sqlalchemy_database_uri", pre=True)
     @classmethod
-    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, str]) -> str:
+    def assemble_db_connection(
+        cls, v: Optional[str], values: Dict[str, Union(str, Dict)]
+    ) -> str:
         """Join DB connection credentials into a synchronous connection string."""
         if isinstance(v, str) and v:
             return v
@@ -146,13 +155,14 @@ class DatabaseSettings(FidesSettings):
                 host=values["server"],
                 port=values.get("port"),
                 path=f"/{values.get('db') or ''}",
+                query=urlencode(values["params"], quote_via=quote, safe="/"),
             )
         )
 
     @validator("sqlalchemy_test_database_uri", pre=True)
     @classmethod
     def assemble_test_db_connection(
-        cls, v: Optional[str], values: Dict[str, str]
+        cls, v: Optional[str], values: Dict[str, Union(str, Dict)]
     ) -> str:
         """Join DB connection credentials into a connection string"""
         if isinstance(v, str) and v:
@@ -165,6 +175,7 @@ class DatabaseSettings(FidesSettings):
                 host=values["server"],
                 port=values["port"],
                 path=f"/{values.get('test_db') or ''}",
+                query=urlencode(values["params"], quote_via=quote, safe="/"),
             )
         )
 
