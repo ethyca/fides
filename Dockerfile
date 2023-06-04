@@ -19,14 +19,16 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python Dependencies
-COPY dangerous-requirements.txt .
-RUN if [ $TARGETPLATFORM != linux/arm64 ] ; then pip install --user -U pip --no-cache-dir install -r dangerous-requirements.txt ; fi
+RUN python3 -m venv /opt/fides
+ENV PATH="/opt/fides/bin:${PATH}"
+RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools wheel
 
-COPY dev-requirements.txt .
-RUN pip install --user -U pip --no-cache-dir install -r dev-requirements.txt
+
+COPY dangerous-requirements.txt .
+RUN if [ $TARGETPLATFORM != linux/arm64 ] ; then pip install --no-cache-dir install -r dangerous-requirements.txt ; fi
 
 COPY requirements.txt .
-RUN pip install --user -U pip --no-cache-dir install -r requirements.txt
+RUN pip install --no-cache-dir install -r requirements.txt
 
 ##################
 ## Backend Base ##
@@ -35,8 +37,8 @@ FROM python:${PYTHON_VERSION}-slim-bullseye as backend
 ARG TARGETPLATFORM
 
 # Loads compiled requirements and adds the to the path
-COPY --from=compile_image /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+COPY --from=compile_image /opt/fides /opt/fides
+ENV PATH=/opt/fides/bin:$PATH
 
 # These are all required for MSSQL
 RUN : \
@@ -88,6 +90,9 @@ CMD [ "fides", "webserver" ]
 ## Development Application ##
 #############################
 FROM backend as dev
+
+COPY dev-requirements.txt .
+RUN pip install --no-cache-dir install -r dev-requirements.txt
 
 RUN pip install -e . --no-deps
 
