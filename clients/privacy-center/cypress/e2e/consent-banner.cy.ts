@@ -560,7 +560,7 @@ describe("Consent banner", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       });
     });
-    
+
     describe("when no GPC flag is found, and notices apply to GPC", () => {
       beforeEach(() => {
         cy.on("window:before:load", (win) => {
@@ -621,7 +621,7 @@ describe("Consent banner", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       });
     });
-    
+
     describe("when experience component is not an overlay", () => {
       beforeEach(() => {
         stubConfig({
@@ -939,8 +939,7 @@ describe("Consent banner", () => {
     });
   });
 
-  // TODO: remove .only()
-  describe.only("when listening for fides.js events", () => {
+  describe("when listening for fides.js events", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       stubConfig({
@@ -966,7 +965,7 @@ describe("Consent banner", () => {
           consent: {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: false,
-          }
+          },
         });
       cy.get("@FidesUpdated")
         .should("have.been.calledOnce")
@@ -975,7 +974,7 @@ describe("Consent banner", () => {
           consent: {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: false,
-          }
+          },
         });
     });
 
@@ -989,7 +988,7 @@ describe("Consent banner", () => {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,
               [PRIVACY_NOTICE_KEY_2]: false,
-            }
+            },
           });
         cy.get("@FidesUpdated")
           .its("secondCall.args.0.detail")
@@ -997,7 +996,7 @@ describe("Consent banner", () => {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,
               [PRIVACY_NOTICE_KEY_2]: false,
-            }
+            },
           });
       });
 
@@ -1010,7 +1009,7 @@ describe("Consent banner", () => {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,
               [PRIVACY_NOTICE_KEY_2]: false,
-            }
+            },
           });
         cy.get("@FidesUpdated")
           .its("secondCall.args.0.detail")
@@ -1018,12 +1017,14 @@ describe("Consent banner", () => {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: true,
               [PRIVACY_NOTICE_KEY_2]: true,
-            }
+            },
           });
       });
 
       it("emits another FidesUpdated event when customized preferences are saved", () => {
-        cy.contains("button", "Manage preferences").should("be.visible").click();
+        cy.contains("button", "Manage preferences")
+          .should("be.visible")
+          .click();
         cy.getByTestId("toggle-Test privacy notice").click();
         cy.getByTestId("consent-modal").contains("Save").click();
         cy.get("@FidesUpdated")
@@ -1033,7 +1034,7 @@ describe("Consent banner", () => {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,
               [PRIVACY_NOTICE_KEY_2]: false,
-            }
+            },
           });
         cy.get("@FidesUpdated")
           .its("secondCall.args.0.detail")
@@ -1041,7 +1042,7 @@ describe("Consent banner", () => {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: true,
               [PRIVACY_NOTICE_KEY_2]: false,
-            }
+            },
           });
       });
     });
@@ -1050,7 +1051,7 @@ describe("Consent banner", () => {
       cy.contains("button", "Accept Test").should("be.visible").click();
       cy.get("@dataLayerPush")
         .should("have.been.calledTwice")
-        .its("firstCall.args.0.detail")
+        .its("firstCall.args.0")
         .should("deep.equal", {
           // TODO: add the event name, once I'm sure this isn't a breaking change
           // event: "FidesInitialized",
@@ -1058,19 +1059,19 @@ describe("Consent banner", () => {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,
               [PRIVACY_NOTICE_KEY_2]: false,
-            }
-          }
+            },
+          },
         });
       cy.get("@dataLayerPush")
-        .its("secondCall.args.0.detail")
+        .its("secondCall.args.0")
         .should("deep.equal", {
           event: "FidesUpdated",
           Fides: {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: true,
               [PRIVACY_NOTICE_KEY_2]: true,
-            }
-          }
+            },
+          },
         });
     });
   });

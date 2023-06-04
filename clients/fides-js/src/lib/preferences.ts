@@ -51,6 +51,7 @@ export const updateConsentPreferences = ({
   });
 
   // Update the cookie object
+  // eslint-disable-next-line no-param-reassign
   cookie.consent = consentCookieKey;
 
   // 1. Save preferences to Fides API
@@ -78,5 +79,5 @@ export const updateConsentPreferences = ({
   saveFidesCookie(cookie);
 
   // 4. Dispatch a "FidesUpdated" event
-  dispatchFidesEvent("FidesUpdated", cookie)
+  dispatchFidesEvent("FidesUpdated", cookie);
 };
