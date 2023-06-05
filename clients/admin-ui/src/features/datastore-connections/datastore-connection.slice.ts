@@ -190,7 +190,24 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         };
       },
       // Creating a connection config also creates a dataset behind the scenes
-      invalidatesTags: ["Datastore Connection", "Datasets", "System"],
+      invalidatesTags:()=> ["Datastore Connection", "Datasets", "System"],
+    }),
+
+    createUnlinkedSassConnectionConfig: build.mutation<
+      CreateSaasConnectionConfigResponse,
+      CreateSaasConnectionConfigRequest
+    >({
+      query: (params) => {
+        const url = `${CONNECTION_ROUTE}/instantiate/${params.saas_connector_type}`;
+
+        return {
+          url,
+          method: "POST",
+          body: { ...params },
+        };
+      },
+      // Creating a connection config also creates a dataset behind the scenes
+      invalidatesTags:()=> ["Datastore Connection", "Datasets", "System"],
     }),
     deleteDatastoreConnection: build.mutation({
       query: (id) => ({
@@ -346,6 +363,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
 export const {
   useCreateAccessManualWebhookMutation,
   useCreateSassConnectionConfigMutation,
+  useCreateUnlinkedSassConnectionConfigMutation,
   useGetAccessManualHookQuery,
   useGetAllEnabledAccessManualHooksQuery,
   useGetAllDatastoreConnectionsQuery,
