@@ -1,5 +1,4 @@
 """Contains the nox sessions for docker-related tasks."""
-import platform
 from typing import List, Tuple
 
 import nox
