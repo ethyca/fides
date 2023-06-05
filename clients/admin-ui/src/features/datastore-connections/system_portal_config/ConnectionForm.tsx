@@ -53,7 +53,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
     }
   }, [data]);
 
-  const deleteModal = useDisclosure();
+  const uploadTemplateModal = useDisclosure();
 
   /* STEPS TO UNIFY the database and saas forms
   7. Get it working for manual connectors
@@ -88,14 +88,14 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
             minWidth="auto"
             data-testid="upload-btn"
             size="sm"
-            onClick={deleteModal.onOpen}
+            onClick={uploadTemplateModal.onOpen}
           >
             Upload connector
           </Button>
         </Restrict>
         <ConnectorTemplateUploadModal
-          isOpen={deleteModal.isOpen}
-          onClose={deleteModal.onClose}
+          isOpen={uploadTemplateModal.isOpen}
+          onClose={uploadTemplateModal.onClose}
         />
       </Flex>
 
