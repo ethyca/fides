@@ -1780,7 +1780,17 @@ class TestPostPrivacyNotices:
         overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
             db, PrivacyNoticeRegion.eu_be
         )
-        assert overlay_exp is not None
+        assert overlay_exp is not None  # Overlay Experience Created Automatically
+        assert (
+            overlay_exp.experience_config_id is not None
+        )  # And automatically linked to a default config
+        assert overlay_exp.experience_config_history_id is not None
+        overlay_copy = (
+            overlay_exp.experience_config
+        )  # Overlay Experience linked to default overlay copy
+        assert overlay_copy.component == ComponentType.overlay
+        assert overlay_copy.is_default
+
         assert privacy_center_exp is None
 
         (
@@ -1855,8 +1865,8 @@ class TestPostPrivacyNotices:
         assert overlay_exp.component == ComponentType.overlay
         assert overlay_exp.version == 1.0
         assert overlay_exp.disabled is False
-        assert overlay_exp.experience_config_id is None
-        assert overlay_exp.experience_config_history_id is None
+        assert overlay_exp.experience_config_id is not None
+        assert overlay_exp.experience_config_history_id is not None
 
         (
             ca_overlay_exp,
@@ -1868,8 +1878,8 @@ class TestPostPrivacyNotices:
         assert ca_overlay_exp.component == ComponentType.overlay
         assert ca_overlay_exp.version == 1.0
         assert ca_overlay_exp.disabled is False
-        assert ca_overlay_exp.experience_config_id is None
-        assert ca_overlay_exp.experience_config_history_id is None
+        assert ca_overlay_exp.experience_config_id is not None
+        assert ca_overlay_exp.experience_config_history_id is not None
 
         overlay_exp.histories[0].delete(db)
         overlay_exp.delete(db)

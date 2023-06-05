@@ -13,6 +13,7 @@ from fides.api.ctl.sql_models import DataUse, System  # type: ignore[attr-define
 from fides.api.custom_types import SafeStr
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_experience import (
+    PrivacyExperienceConfig,
     upsert_privacy_experiences_after_notice_update,
 )
 from fides.api.models.privacy_notice import (
@@ -29,6 +30,11 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     ProvidedIdentity,
     ProvidedIdentityType,
+)
+from fides.api.schemas.privacy_experience import (
+    ExperienceConfigCreate,
+    ExperienceConfigCreateWithId,
+    ExperienceConfigUpdate,
 )
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.schemas.redis_cache import Identity
@@ -525,3 +531,75 @@ def load_default_notices_on_startup(
         )
 
         return new_templates, new_privacy_notices
+
+
+def load_default_experience_configs_on_startup(
+    db: Session, notice_yaml_file_path: str
+) -> None:
+    """
+    On startup, loads default ExperienceConfigs into the database. Creates the defaults
+    if they don't exist, otherwise, updates them with any new values from the default
+    yaml file if applicable.
+    """
+    logger.info(
+        "Loading default privacy experience configs from {}", notice_yaml_file_path
+    )
+    with open(notice_yaml_file_path, "r", encoding="utf-8") as file:
+        experience_configs = yaml.safe_load(file).get("privacy_experience_configs", [])
+
+        for experience_config_data in experience_configs:
+            upsert_default_experience_config(db, experience_config_data)
+
+
+def upsert_default_experience_config(
+    db: Session, experience_config_data: dict
+) -> Tuple[bool, PrivacyExperienceConfig]:
+    """Upserts an experience config - intended to be used for upserting default
+    configs on startup.  The id is specified upfront.
+
+    Returns whether the resource is new, and the experience config object.
+    Split from load_default_experience_configs_on_startup for easier testing
+    of a function that runs on application startup.
+    """
+    experience_config_data = (
+        experience_config_data.copy()
+    )  # Avoids unexpected behavior on update in testing
+
+    experience_config_schema: ExperienceConfigCreateWithId = (
+        ExperienceConfigCreateWithId(**experience_config_data)
+    )
+    if not experience_config_schema.is_default:
+        raise Exception("This method is for created default experience configs.")
+
+    existing_experience_config = PrivacyExperienceConfig.get(
+        db=db, object_id=experience_config_schema.id
+    )
+
+    if existing_experience_config:
+        logger.info(
+            "Checking default experience config {} for updates",
+            existing_experience_config.id,
+        )
+
+        dry_update: PrivacyExperienceConfig = existing_experience_config.dry_update(
+            data=experience_config_schema.dict(exclude_unset=True)
+        )
+        # Validating some required fields if this is an overlay
+        ExperienceConfigCreate.from_orm(dry_update)
+
+        del experience_config_data["component"]
+        del experience_config_data["id"]
+        # This is important for making sure config is only updated if it actually changed
+        update_data = ExperienceConfigUpdate(**experience_config_data)
+        experience_config_data_dict: Dict = update_data.dict(exclude_unset=True)
+
+        existing_experience_config.update(db=db, data=experience_config_data_dict)
+        return False, existing_experience_config
+
+    logger.info("Creating default experience config {}", experience_config_schema.id)
+    new_experience_config = PrivacyExperienceConfig.create(
+        db,
+        data=experience_config_schema.dict(exclude_unset=True),
+        check_name=False,
+    )
+    return True, new_experience_config

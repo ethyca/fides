@@ -287,6 +287,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         # create the history after the initial object creation succeeds, to avoid
         # writing history if the creation fails and so that we can get the generated ID
+        data.pop("id", None)
         history_data = {**data, "privacy_notice_id": created.id}
         PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
         return created
