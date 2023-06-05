@@ -1053,8 +1053,7 @@ describe("Consent banner", () => {
         .should("have.been.calledTwice")
         .its("firstCall.args.0")
         .should("deep.equal", {
-          // TODO: add the event name, once I'm sure this isn't a breaking change
-          // event: "FidesInitialized",
+          event: "FidesInitialized",
           Fides: {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,

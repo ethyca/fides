@@ -29,14 +29,7 @@ const pushFidesVariableToGTM = (fidesEvent: {
   };
 
   // Push to the GTM dataLayer
-  if (fidesEvent.type === "FidesInitialized") {
-    // NOTE: For backwards-compatibility, we don't provide an "event" for the
-    // initialization event, just for updates.
-    // TODO: check if adding the "event" to the existing behaviour would be a breaking change... probably not?
-    dataLayer.push({ Fides });
-  } else {
-    dataLayer.push({ event: fidesEvent.type, Fides });
-  }
+  dataLayer.push({ event: fidesEvent.type, Fides });
 };
 
 /**
@@ -54,7 +47,7 @@ export const gtm = () => {
   );
 
   // If Fides was already initialized, publish a synthetic event immediately
-  if (window.Fides.initialized) {
+  if (window.Fides?.initialized) {
     pushFidesVariableToGTM({
       type: "FidesInitialized",
       detail: { consent: window.Fides.consent },
