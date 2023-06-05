@@ -40,9 +40,10 @@
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
-  --fides-overlay-font-size-body: 1em;
-  --fides-overlay-font-size-title: 1.1em;
-  --fides-overlay-font-size-buttons: 0.9em;
+  --fides-overlay-font-size-body-small: 0.875em;
+  --fides-overlay-font-size-body: 0.95em;
+  --fides-overlay-font-size-title: 1.2em;
+  --fides-overlay-font-size-buttons: 1.05em;
   --fides-overlay-padding: 1.5em;
   --fides-overlay-button-border-radius: 4px;
   --fides-overlay-button-padding: 0.5em 1em;
@@ -54,7 +55,7 @@ div#fides-overlay {
   font-size: var(--fides-overlay-font-size-body);
 
   /* CSS reset values, adapted from https://www.joshwcomeau.com/css/custom-css-reset/ */
-  line-height: calc(1em + 0.5rem);
+  line-height: calc(1em + 0.4rem);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -63,6 +64,7 @@ div#fides-overlay {
 }
 
 div#fides-banner {
+  font-size: var(--fides-overlay-font-size-body-small);
   background: var(--fides-overlay-background-color);
   color: var(--fides-overlay-body-font-color);
   box-sizing: border-box;
@@ -111,21 +113,21 @@ div#fides-banner.fides-banner-top.fides-banner-hidden {
 div#fides-banner-title {
   font-size: var(--fides-overlay-font-size-title);
   font-weight: 600;
-  margin-top: 0.5em;
+  margin-top: 0.2em;
   min-width: 33%;
   flex: 1;
   color: var(--fides-overlay-title-font-color);
 }
 
 div#fides-banner-description {
-  margin-top: 0.5em;
+  margin-top: 0.75em;
+  line-height: 1.2em;
   min-width: 33%;
   flex: 1;
 }
 
 div#fides-banner-buttons {
   margin-top: 0.5em;
-  font-size: var(--fides-overlay-font-size-buttons);
 }
 
 span.fides-banner-buttons-right {
@@ -133,6 +135,7 @@ span.fides-banner-buttons-right {
 }
 
 button.fides-banner-button {
+  font-size: var(--fides-overlay-font-size-buttons);
   display: inline-block;
   flex: auto;
   cursor: pointer;
@@ -207,6 +210,8 @@ div#fides-modal {
 
 div#fides-modal .modal-header {
   text-align: center;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
   font-weight: 600;
   font-size: var(--fides-overlay-font-size-title);
   color: var(--fides-overlay-title-font-color);
