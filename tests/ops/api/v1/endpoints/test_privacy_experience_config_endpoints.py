@@ -77,11 +77,11 @@ class TestGetExperienceConfigList:
         )
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 2
+        assert resp["total"] == 4  # Two default configs loaded on startup plus two here
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 2
+        assert len(data) == 4
 
         first_config = data[0]
         assert first_config["id"] == experience_config_overlay.id
@@ -111,6 +111,22 @@ class TestGetExperienceConfigList:
             == experience_config_privacy_center.experience_config_history_id
         )
 
+        third_config = data[2]
+        assert third_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+        assert third_config["is_default"] is True
+        assert third_config["component"] == "privacy_center"
+        assert third_config["regions"] == []
+        assert third_config["version"] == 1.0
+        assert third_config["created_at"] is not None
+        assert third_config["updated_at"] is not None
+
+        fourth_config = data[3]
+        assert fourth_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        assert fourth_config["is_default"] is True
+        assert fourth_config["disabled"] is False
+        assert fourth_config["regions"] == []
+        assert fourth_config["component"] == "overlay"
+
     @pytest.mark.usefixtures(
         "privacy_experience_overlay",
         "privacy_experience_privacy_center",
@@ -130,11 +146,11 @@ class TestGetExperienceConfigList:
         )
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 1
+        assert resp["total"] == 3
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 1
+        assert len(data) == 3
 
         config = data[0]
         assert config["id"] == experience_config_overlay.id
@@ -148,6 +164,22 @@ class TestGetExperienceConfigList:
             config["experience_config_history_id"]
             == experience_config_overlay.experience_config_history_id
         )
+
+        second_config = data[1]
+        assert second_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+        assert second_config["is_default"] is True
+        assert second_config["component"] == "privacy_center"
+        assert second_config["disabled"] is False
+        assert second_config["version"] == 1.0
+        assert second_config["created_at"] is not None
+        assert second_config["updated_at"] is not None
+
+        third_config = data[2]
+        assert third_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        assert third_config["is_default"] is True
+        assert third_config["disabled"] is False
+        assert third_config["regions"] == []
+        assert third_config["component"] == "overlay"
 
     @pytest.mark.usefixtures(
         "privacy_experience_overlay",
@@ -199,13 +231,14 @@ class TestGetExperienceConfigList:
         )
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 1
+        assert resp["total"] == 2
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 1
+        assert len(data) == 2
 
         assert data[0]["id"] == experience_config_overlay.id
+        assert data[1]["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
 
         response = api_client.get(
             url + "?component=privacy_center",
@@ -213,13 +246,14 @@ class TestGetExperienceConfigList:
         )
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 1
+        assert resp["total"] == 2
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 1
+        assert len(data) == 2
 
         assert data[0]["id"] == experience_config_privacy_center.id
+        assert data[1]["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
 
 
 class TestCreateExperienceConfig:
@@ -359,6 +393,36 @@ class TestCreateExperienceConfig:
         )
         assert response.status_code == 422
         assert response.json()["detail"][0]["msg"] == "Duplicate regions found."
+
+    def test_create_another_default_experience_config(
+        self, api_client: TestClient, url, generate_auth_header, db
+    ) -> None:
+        """We have defaults loaded in at startup so don't allow other defaults to be created here"""
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "accept_button_label": "Yes",
+                "banner_enabled": "always_disabled",
+                "component": "privacy_center",
+                "description": "We take your privacy seriously",
+                "is_default": True,
+                "privacy_policy_link_label": "Manage your privacy",
+                "privacy_policy_url": "example.com/privacy",
+                "reject_button_label": "No",
+                "save_button_label": "Save",
+                "title": "Manage your privacy",
+            },
+            headers=auth_header,
+        )
+
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == "Cannot set as the default. Only one default privacy_center config can be in the system."
+        )
 
     def test_create_experience_config_with_no_regions(
         self, api_client: TestClient, url, generate_auth_header, db
@@ -983,6 +1047,29 @@ class TestUpdateExperienceConfig:
             == "The following additional fields are required when defining an overlay: acknowledge_button_label, banner_enabled, and privacy_preferences_link_label."
         )
 
+    def test_update_as_default(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        overlay_experience_config,
+    ):
+        """We already have a default overlay added to the system on startup, so we don't
+        want to update this separate overlay to be a default"""
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "is_default": True,
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == "Cannot set as the default. Only one default overlay config can be in the system."
+        )
+
     def test_attempt_to_update_component_type(
         self,
         api_client: TestClient,
@@ -1478,8 +1565,15 @@ class TestUpdateExperienceConfig:
         db.refresh(privacy_experience)
 
         assert privacy_experience.version == 2.0
-        assert privacy_experience.experience_config_id is None
-        assert privacy_experience.experience_config_history_id is None
+        assert (
+            privacy_experience.experience_config_id
+            == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        )  # Default overlay experience config linked instead
+        assert privacy_experience.experience_config_history_id is not None
+        assert (
+            privacy_experience.experience_config_history_id
+            != privacy_experience.experience_config_id
+        )  # Sanity check
 
         # Created Experience History - new version of Privacy Experience created due to config being *unlinked*
         assert privacy_experience.histories.count() == 2
@@ -1488,8 +1582,11 @@ class TestUpdateExperienceConfig:
         assert experience_history.component == ComponentType.overlay
         assert experience_history.disabled is False
         assert experience_history.version == 2.0
-        assert experience_history.experience_config_id is None
-        assert experience_history.experience_config_history_id is None
+        assert (
+            experience_history.experience_config_id
+            == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        )  # Default overlay experience config linked instead
+        assert experience_history.experience_config_history_id is not None
         assert experience_history.privacy_experience_id == privacy_experience.id
 
         for history in privacy_experience.histories:
