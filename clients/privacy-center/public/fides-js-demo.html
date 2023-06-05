@@ -70,8 +70,11 @@
           JSON.stringify(Fides.geolocation, null, 2);
 
         // Pretty-print the fides options object and add it to the page.
-        document.getElementById("consent-options").textContent =
-          JSON.stringify(Fides.options, null, 2);
+        document.getElementById("consent-options").textContent = JSON.stringify(
+          Fides.options,
+          null,
+          2
+        );
 
         // Test behavior of integrations that can be configured without/before their platform scripts.
         Fides.gtm();
