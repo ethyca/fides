@@ -36,27 +36,8 @@ privacy_notices:
     - gb_sct
     - gb_wls
     - gb_nir
-    - is_1
-    - is_2
-    - is_3
-    - is_4
-    - is_5
-    - is_6
-    - is_7
-    - is_8
-    - no_42
-    - no_34
-    - no_15
-    - no_18
-    - no_03
-    - no_11
-    - no_54
-    - no_50
-    - no_38
-    - no_46
-    - no_30
-    - no_22
-    - no_21
+    - isl
+    - nor
     - li
   consent_mechanism: notice_only
   data_uses:
@@ -104,27 +85,8 @@ privacy_notices:
     - gb_sct
     - gb_wls
     - gb_nir
-    - is_1
-    - is_2
-    - is_3
-    - is_4
-    - is_5
-    - is_6
-    - is_7
-    - is_8
-    - no_42
-    - no_34
-    - no_15
-    - no_18
-    - no_03
-    - no_11
-    - no_54
-    - no_50
-    - no_38
-    - no_46
-    - no_30
-    - no_22
-    - no_21
+    - isl
+    - nor
     - li
   consent_mechanism: opt_in
   data_uses:
@@ -172,27 +134,8 @@ privacy_notices:
     - gb_sct
     - gb_wls
     - gb_nir
-    - is_1
-    - is_2
-    - is_3
-    - is_4
-    - is_5
-    - is_6
-    - is_7
-    - is_8
-    - no_42
-    - no_34
-    - no_15
-    - no_18
-    - no_03
-    - no_11
-    - no_54
-    - no_50
-    - no_38
-    - no_46
-    - no_30
-    - no_22
-    - no_21
+    - isl
+    - nor
     - li
   consent_mechanism: opt_in
   data_uses:
@@ -240,27 +183,8 @@ privacy_notices:
     - gb_sct
     - gb_wls
     - gb_nir
-    - is_1
-    - is_2
-    - is_3
-    - is_4
-    - is_5
-    - is_6
-    - is_7
-    - is_8
-    - no_42
-    - no_34
-    - no_15
-    - no_18
-    - no_03
-    - no_11
-    - no_54
-    - no_50
-    - no_38
-    - no_46
-    - no_30
-    - no_22
-    - no_21
+    - isl
+    - nor
     - li
   consent_mechanism: opt_in
   data_uses:

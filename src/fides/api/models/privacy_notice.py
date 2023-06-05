@@ -113,28 +113,8 @@ class PrivacyNoticeRegion(Enum):
     gb_wls = "gb_wls"  # wales
     gb_nir = "gb_nir"  # northern ireland
 
-    is_1 = "is_1"  # iceland, capital region
-    is_2 = "is_2"  # iceland, southern peninsula
-    is_3 = "is_3"  # iceland, western region
-    is_4 = "is_4"  # iceland, westfjords
-    is_5 = "is_5"  # iceland, northwestern region
-    is_6 = "is_6"  # iceland, northeastern region
-    is_7 = "is_7"  # iceland, eastern region
-    is_8 = "is_8"  # iceland, southern region
-
-    no_42 = "no_42"  # norway, agder
-    no_34 = "no_34"  # norway, innlandet
-    no_15 = "no_15"  # norway, møre og romsdal
-    no_18 = "no_18"  # norway, nordland
-    no_03 = "no_03"  # norway, oslo
-    no_11 = "no_11"  # norway, rogaland
-    no_54 = "no_54"  # norway, troms og finnmark
-    no_50 = "no_50"  # norway, trøndelag
-    no_38 = "no_38"  # norway, vestfold og telemark
-    no_46 = "no_46"  # norway, vestland
-    no_30 = "no_30"  # norway, viken
-    no_22 = "no_22"  # norway, jan mayen
-    no_21 = "no_21"  # norway, svalbard
+    isl = "isl"  # iceland, 3 letter country code
+    nor = "nor"  # norway, 3 letter country code
 
     li = "li"  # liechtenstein
 
@@ -307,9 +287,12 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         return resource  # type: ignore[return-value]
 
 
+PRIVACY_NOTICE_TYPE = Union[PrivacyNotice, PrivacyNoticeTemplate]
+
+
 def check_conflicting_data_uses(
-    new_privacy_notices: Iterable[Union[PrivacyNotice, PrivacyNoticeTemplate]],
-    existing_privacy_notices: Iterable[Union[PrivacyNotice, PrivacyNoticeTemplate]],
+    new_privacy_notices: Iterable[PRIVACY_NOTICE_TYPE],
+    existing_privacy_notices: Iterable[Union[PRIVACY_NOTICE_TYPE]],
     ignore_disabled: bool = True,  # For PrivacyNoticeTemplates, set to False
 ) -> None:
     """

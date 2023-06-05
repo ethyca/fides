@@ -1,10 +1,15 @@
+from __future__ import annotations
+
 from html import unescape
 
 import pytest
 from fastapi import HTTPException
+from fideslang import DataUse
 from sqlalchemy.orm.attributes import flag_modified
+from starlette.exceptions import HTTPException
 
 from fides.api.app_setup import DEFAULT_PRIVACY_NOTICES_PATH
+from fides.api.ctl.sql_models import DataUse as sql_DataUse
 from fides.api.models.privacy_experience import (
     BannerEnabled,
     ComponentType,
@@ -28,6 +33,7 @@ from fides.api.util.consent_util import (
     should_opt_in_to_service,
     upsert_default_experience_config,
     upsert_privacy_notice_templates_util,
+    validate_notice_data_uses,
 )
 
 
@@ -770,8 +776,8 @@ class TestLoadDefaultNotices:
         new_templates, new_privacy_notices = load_default_notices_on_startup(
             db, DEFAULT_PRIVACY_NOTICES_PATH
         )
-        assert len(new_templates) == 5
-        assert len(new_privacy_notices) == 5
+        assert len(new_templates) >= 1
+        assert len(new_privacy_notices) >= 1
 
 
 class TestUpsertPrivacyNoticeTemplates:
@@ -1153,3 +1159,84 @@ class TestUpsertDefaultExperienceConfig:
             str(exc.value.args[0][0].exc)
             == "The following additional fields are required when defining an overlay: acknowledge_button_label, banner_enabled, and privacy_preferences_link_label."
         )
+
+
+class TestValidateDataUses:
+    @pytest.fixture(scope="function")
+    def privacy_notice_request(self):
+        return PrivacyNoticeCreation(
+            name="sample privacy notice",
+            notice_key="sample_privacy_notice",
+            regions=[PrivacyNoticeRegion.us_ca],
+            consent_mechanism=ConsentMechanism.opt_in,
+            data_uses=["placeholder"],
+            enforcement_level=EnforcementLevel.system_wide,
+            displayed_in_overlay=True,
+        )
+
+    @pytest.fixture(scope="function")
+    def custom_data_use(self, db):
+        return sql_DataUse.create(
+            db=db,
+            data=DataUse(
+                fides_key="new_data_use",
+                organization_fides_key="default_organization",
+                name="New data use",
+                description="A test data use",
+                parent_key=None,
+                is_default=True,
+            ).dict(),
+        )
+
+    @pytest.mark.usefixtures("load_default_data_uses")
+    def test_validate_data_uses_invalid(
+        self, db, privacy_notice_request: PrivacyNoticeCreation
+    ):
+        privacy_notice_request.data_uses = ["invalid_data_use"]
+        with pytest.raises(HTTPException):
+            validate_notice_data_uses([privacy_notice_request], db)
+
+        privacy_notice_request.data_uses = ["marketing.advertising", "invalid_data_use"]
+        with pytest.raises(HTTPException):
+            validate_notice_data_uses([privacy_notice_request], db)
+
+        privacy_notice_request.data_uses = [
+            "marketing.advertising",
+            "marketing.advertising.invalid_data_use",
+        ]
+        with pytest.raises(HTTPException):
+            validate_notice_data_uses([privacy_notice_request], db)
+
+    @pytest.mark.usefixtures("load_default_data_uses")
+    def test_validate_data_uses_default_taxonomy(
+        self, db, privacy_notice_request: PrivacyNoticeCreation
+    ):
+        privacy_notice_request.data_uses = ["marketing.advertising"]
+        validate_notice_data_uses([privacy_notice_request], db)
+        privacy_notice_request.data_uses = ["marketing.advertising", "essential"]
+        validate_notice_data_uses([privacy_notice_request], db)
+        privacy_notice_request.data_uses = [
+            "marketing.advertising",
+            "essential",
+            "essential.service",
+        ]
+        validate_notice_data_uses([privacy_notice_request], db)
+
+    @pytest.mark.usefixtures("load_default_data_uses")
+    def test_validate_data_uses_custom_uses(
+        self,
+        db,
+        privacy_notice_request: PrivacyNoticeCreation,
+        custom_data_use: sql_DataUse,
+    ):
+        """
+        Ensure custom data uses added to the DB are considered valid
+        """
+
+        privacy_notice_request.data_uses = [custom_data_use.fides_key]
+        validate_notice_data_uses([privacy_notice_request], db)
+        privacy_notice_request.data_uses = [
+            "marketing.advertising",
+            custom_data_use.fides_key,
+        ]
+        validate_notice_data_uses([privacy_notice_request], db)

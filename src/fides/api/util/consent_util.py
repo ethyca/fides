@@ -17,6 +17,7 @@ from fides.api.models.privacy_experience import (
     upsert_privacy_experiences_after_notice_update,
 )
 from fides.api.models.privacy_notice import (
+    PRIVACY_NOTICE_TYPE,
     EnforcementLevel,
     PrivacyNotice,
     PrivacyNoticeRegion,
@@ -357,9 +358,7 @@ def prepare_privacy_notice_patches(
     privacy_notice_updates: List[PrivacyNoticeWithId],
     db: Session,
     model: Union[Type[PrivacyNotice], Type[PrivacyNoticeTemplate]],
-) -> List[
-    Tuple[PrivacyNoticeWithId, Optional[Union[PrivacyNotice, PrivacyNoticeTemplate]]]
-]:
+) -> List[Tuple[PrivacyNoticeWithId, Optional[PRIVACY_NOTICE_TYPE]]]:
     """
     Prepares PrivacyNotice or Template upserts including performing data use
     conflict validation on proposed changes.
@@ -380,16 +379,14 @@ def prepare_privacy_notice_patches(
     ignore_disabled: bool = model != PrivacyNoticeTemplate
 
     # first we populate a map of privacy notices or templates in the db, indexed by ID
-    existing_notices: Dict[str, Union[PrivacyNotice, PrivacyNoticeTemplate]] = {}
+    existing_notices: Dict[str, PRIVACY_NOTICE_TYPE] = {}
     for existing_notice in model.query(db).all():
         existing_notices[existing_notice.id] = existing_notice
 
     # then associate existing notices/templates with their creates/updates
     # we'll return this set of data to actually process updates
     updates_and_existing: List[
-        Tuple[
-            PrivacyNoticeWithId, Optional[Union[PrivacyNotice, PrivacyNoticeTemplate]]
-        ]
+        Tuple[PrivacyNoticeWithId, Optional[PRIVACY_NOTICE_TYPE]]
     ] = []
     for update_data in privacy_notice_updates:
         update_data = transform_fields(

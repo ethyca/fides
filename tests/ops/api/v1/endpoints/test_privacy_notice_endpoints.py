@@ -5,9 +5,7 @@ from typing import Any, Dict, List
 from uuid import uuid4
 
 import pytest
-from fideslang import DataUse
 from sqlalchemy.orm import Session
-from starlette.exceptions import HTTPException
 from starlette.testclient import TestClient
 
 from fides.api.api.v1 import scope_registry as scopes
@@ -17,7 +15,6 @@ from fides.api.api.v1.urn_registry import (
     PRIVACY_NOTICE_DETAIL,
     V1_URL_PREFIX,
 )
-from fides.api.ctl.sql_models import DataUse as sql_DataUse
 from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
@@ -26,92 +23,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
 )
-from fides.api.schemas.privacy_notice import (
-    PrivacyNoticeCreation,
-    PrivacyNoticeResponse,
-)
-from fides.api.util.consent_util import validate_notice_data_uses
-
-
-class TestValidateDataUses:
-    @pytest.fixture(scope="function")
-    def privacy_notice_request(self):
-        return PrivacyNoticeCreation(
-            name="sample privacy notice",
-            notice_key="sample_privacy_notice",
-            regions=[PrivacyNoticeRegion.us_ca],
-            consent_mechanism=ConsentMechanism.opt_in,
-            data_uses=["placeholder"],
-            enforcement_level=EnforcementLevel.system_wide,
-            displayed_in_overlay=True,
-        )
-
-    @pytest.fixture(scope="function")
-    def custom_data_use(self, db):
-        return sql_DataUse.create(
-            db=db,
-            data=DataUse(
-                fides_key="new_data_use",
-                organization_fides_key="default_organization",
-                name="New data use",
-                description="A test data use",
-                parent_key=None,
-                is_default=True,
-            ).dict(),
-        )
-
-    @pytest.mark.usefixtures("load_default_data_uses")
-    def test_validate_data_uses_invalid(
-        self, db, privacy_notice_request: PrivacyNoticeCreation
-    ):
-        privacy_notice_request.data_uses = ["invalid_data_use"]
-        with pytest.raises(HTTPException):
-            validate_notice_data_uses([privacy_notice_request], db)
-
-        privacy_notice_request.data_uses = ["marketing.advertising", "invalid_data_use"]
-        with pytest.raises(HTTPException):
-            validate_notice_data_uses([privacy_notice_request], db)
-
-        privacy_notice_request.data_uses = [
-            "marketing.advertising",
-            "marketing.advertising.invalid_data_use",
-        ]
-        with pytest.raises(HTTPException):
-            validate_notice_data_uses([privacy_notice_request], db)
-
-    @pytest.mark.usefixtures("load_default_data_uses")
-    def test_validate_data_uses_default_taxonomy(
-        self, db, privacy_notice_request: PrivacyNoticeCreation
-    ):
-        privacy_notice_request.data_uses = ["marketing.advertising"]
-        validate_notice_data_uses([privacy_notice_request], db)
-        privacy_notice_request.data_uses = ["marketing.advertising", "essential"]
-        validate_notice_data_uses([privacy_notice_request], db)
-        privacy_notice_request.data_uses = [
-            "marketing.advertising",
-            "essential",
-            "essential.service",
-        ]
-        validate_notice_data_uses([privacy_notice_request], db)
-
-    @pytest.mark.usefixtures("load_default_data_uses")
-    def test_validate_data_uses_custom_uses(
-        self,
-        db,
-        privacy_notice_request: PrivacyNoticeCreation,
-        custom_data_use: sql_DataUse,
-    ):
-        """
-        Ensure custom data uses added to the DB are considered valid
-        """
-
-        privacy_notice_request.data_uses = [custom_data_use.fides_key]
-        validate_notice_data_uses([privacy_notice_request], db)
-        privacy_notice_request.data_uses = [
-            "marketing.advertising",
-            custom_data_use.fides_key,
-        ]
-        validate_notice_data_uses([privacy_notice_request], db)
+from fides.api.schemas.privacy_notice import PrivacyNoticeResponse
 
 
 class TestGetPrivacyNotices:
