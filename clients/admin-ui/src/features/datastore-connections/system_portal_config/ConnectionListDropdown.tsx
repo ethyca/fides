@@ -4,18 +4,19 @@ import {
   Button,
   ButtonProps,
   Flex,
+  Input,
+  InputGroup,
+  InputLeftElement,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
+  SearchLineIcon,
   Text,
   Tooltip,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  SearchLineIcon,
 } from "@fidesui/react";
-import { useMemo, useState, useCallback } from "react";
+import { debounce } from "common/utils";
+import { useCallback,useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -27,7 +28,6 @@ import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
 } from "~/types/api";
-import { debounce } from "common/utils";
 
 type ItemOption = {
   /**
