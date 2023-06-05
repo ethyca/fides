@@ -56,7 +56,8 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     selectConnectionTypeState
   );
 
-  const [createSassConnectionConfig] = useCreateUnlinkedSassConnectionConfigMutation();
+  const [createSassConnectionConfig] =
+    useCreateUnlinkedSassConnectionConfigMutation();
   const [patchDatastoreConnection] = usePatchDatastoreConnectionMutation();
   const [updateDatastoreConnectionSecrets] =
     useUpdateDatastoreConnectionSecretsMutation();

@@ -190,7 +190,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         };
       },
       // Creating a connection config also creates a dataset behind the scenes
-      invalidatesTags:()=> ["Datastore Connection", "Datasets", "System"],
+      invalidatesTags: () => ["Datastore Connection", "Datasets", "System"],
     }),
 
     createUnlinkedSassConnectionConfig: build.mutation<
@@ -207,7 +207,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         };
       },
       // Creating a connection config also creates a dataset behind the scenes
-      invalidatesTags:()=> ["Datastore Connection", "Datasets", "System"],
+      invalidatesTags: () => ["Datastore Connection", "Datasets", "System"],
     }),
     deleteDatastoreConnection: build.mutation({
       query: (id) => ({
