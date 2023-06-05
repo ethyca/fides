@@ -162,7 +162,7 @@ jobs:
           - "lib"
 
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     continue-on-error: true
     steps:
       - name: Download container

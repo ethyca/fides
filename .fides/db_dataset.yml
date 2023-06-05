@@ -1116,6 +1116,10 @@ dataset:
       description: 'The identifier of the system to locate this data within'
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: enabled_actions
+      description: 'The privacy actions that are enabled for this connection'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: consent
     description: 'A database table used to map consent preference to identities'
     data_categories: []
