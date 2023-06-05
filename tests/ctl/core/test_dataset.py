@@ -3,8 +3,8 @@ import os
 from typing import Dict, Generator, List
 from urllib.parse import quote_plus
 from uuid import uuid4
-import pymssql
 
+import pymssql
 import pytest
 import sqlalchemy
 from fideslang.manifests import write_manifest
