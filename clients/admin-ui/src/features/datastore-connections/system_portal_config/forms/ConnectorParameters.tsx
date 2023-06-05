@@ -274,24 +274,11 @@ export const useConnectorForm = ({
         await patchConnectionDatasetConfig(values, connectionConfig.key);
       }
 
-      // TODO: I think it's worth moving the testing phase to the very end
-      // I need to make sure the semantics around that are good
-
-      // if (payload2.test_status === "failed") {
-      //   errorAlert(
-      //     <>
-      //       <b>Message:</b> {payload2.msg}
-      //       <br />
-      //       <b>Failure Reason:</b> {payload2.failure_reason}
-      //     </>
-      //   );
-      // } else {
-      //   successAlert(
-      //     `Connector successfully ${
-      //       connectionConfig?.key ? "updated" : "added"
-      //     }!`
-      //   );
-      // }
+      successAlert(
+        `Connector successfully ${
+          isCreatingConnectionConfig ? "added" : "updated"
+        }!`
+      );
     } catch (error) {
       handleError(error);
     } finally {
