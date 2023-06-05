@@ -271,6 +271,17 @@ describe("Consent settings", () => {
                   },
                 },
               },
+              {
+                event: "FidesUpdated",
+                Fides: {
+                  consent: {
+                    data_sales: false,
+                    tracking: false,
+                    analytics: true,
+                    gpc_test: true,
+                  },
+                },
+              },
             ]);
 
           // Meta Pixel configuration
@@ -359,6 +370,16 @@ describe("Consent settings", () => {
             .that.eql([
               {
                 event: "FidesInitialized",
+                Fides: {
+                  consent: {
+                    data_sales: true,
+                    tracking: true,
+                    analytics: true,
+                  },
+                },
+              },
+              {
+                event: "FidesUpdated",
                 Fides: {
                   consent: {
                     data_sales: true,
