@@ -1605,6 +1605,58 @@ dataset:
       data_categories: [system.operations]
     - name: version
       data_categories: [system.operations]
+  - name: privacynoticetemplate
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: name
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: notice_key
+      data_categories: [ system.operations ]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: description
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: internal_description
+      data_categories: [ system.operations ]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: regions
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: consent_mechanism
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: data_uses
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: enforcement_level
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: disabled
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: has_gpc_flag
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: displayed_in_privacy_center
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: displayed_in_overlay
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: displayed_in_api
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: privacynotice
     data_categories: []
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

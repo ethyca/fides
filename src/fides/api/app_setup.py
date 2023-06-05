@@ -32,7 +32,10 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.util.cache import get_cache
-from fides.api.util.consent_util import load_default_experience_configs_on_startup
+from fides.api.util.consent_util import (
+    load_default_experience_configs_on_startup,
+    load_default_notices_on_startup,
+)
 from fides.api.util.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
@@ -44,8 +47,9 @@ from fides.core.config import CONFIG
 VERSION = fides.__version__
 
 ROUTERS = [CTL_ROUTER, api_router]
-
-
+DEFAULT_PRIVACY_NOTICES_PATH = (
+    "/fides/data/privacy_notices/privacy_notice_templates.yml"
+)
 PRIVACY_EXPERIENCE_CONFIGS_PATH = (
     "/fides/data/privacy_notices/privacy_experience_config_defaults.yml"
 )
@@ -171,6 +175,10 @@ async def run_database_startup() -> None:
 
     load_default_experience_configs()  # Must occur before loading default privacy notices
 
+    if not CONFIG.test_mode:
+        # Default notices subject to change, so preventing these from
+        # loading in test mode to avoid interfering with unit tests.
+        load_default_privacy_notices()
     db.close()
 
 
@@ -186,6 +194,18 @@ def check_redis() -> None:
         return
     else:
         logger.debug("Connection to cache succeeded")
+
+
+def load_default_privacy_notices() -> None:
+    """Load default templates into the db, and add new notices from those templates where applicable"""
+    logger.info("Loading default privacy notices")
+    try:
+        db = get_api_session()
+        load_default_notices_on_startup(db, DEFAULT_PRIVACY_NOTICES_PATH)
+    except Exception as e:
+        logger.error("Skipping loading default privacy notices: {}", str(e))
+    finally:
+        db.close()
 
 
 def load_default_experience_configs() -> None:
