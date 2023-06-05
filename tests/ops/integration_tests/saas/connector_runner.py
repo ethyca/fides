@@ -3,25 +3,25 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
+from fides.api.cryptography import cryptographic_util
 from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ops.cryptography import cryptographic_util
-from fides.api.ops.graph.config import GraphDataset
-from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.models.connectionconfig import (
+from fides.api.graph.config import GraphDataset
+from fides.api.graph.graph import DatasetGraph
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.connectors import get_connector
-from fides.api.ops.task import graph_task
-from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.api.ops.util.cache import FidesopsRedis
-from fides.api.ops.util.collection_util import Row
-from fides.api.ops.util.saas_util import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.policy import Policy
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.redis_cache import Identity
+from fides.api.service.connectors import get_connector
+from fides.api.task import graph_task
+from fides.api.task.graph_task import get_cached_data_for_erasures
+from fides.api.util.cache import FidesopsRedis
+from fides.api.util.collection_util import Row
+from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )

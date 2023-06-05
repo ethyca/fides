@@ -7,31 +7,31 @@ from uuid import uuid4
 from sqlalchemy import orm
 
 from fides.api.ctl.database.database import init_db
-from fides.api.ops.db.session import get_db_session
-from fides.api.ops.models.audit_log import AuditLog, AuditLogAction
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.connectionconfig import (
+from fides.api.db.session import get_db_session
+from fides.api.models.audit_log import AuditLog, AuditLogAction
+from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.fides_user import FidesUser
-from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fides.api.ops.models.privacy_request import (
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.ops.models.storage import StorageConfig
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.schemas.storage.storage import (
+from fides.api.models.storage import StorageConfig
+from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
     StorageDetails,
     StorageType,
 )
-from fides.api.ops.util.data_category import DataCategory
+from fides.api.util.data_category import DataCategory
 from fides.core.config import get_config
 
 CONFIG = get_config()

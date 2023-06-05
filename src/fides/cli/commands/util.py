@@ -10,10 +10,10 @@ import fides
 from fides.cli.utils import (
     FIDES_ASCII_ART,
     check_server,
-    print_divider,
     send_init_analytics,
     with_analytics,
 )
+from fides.common.utils import print_divider
 from fides.core.config.create import create_and_update_config_file
 from fides.core.deploy import (
     check_docker_version,
@@ -95,7 +95,7 @@ def worker(ctx: click.Context) -> None:
     Start a Celery worker for the Fides webserver.
     """
     # This has to be here to avoid a circular dependency
-    from fides.api.ops.worker import start_worker
+    from fides.api.worker import start_worker
 
     start_worker()
 

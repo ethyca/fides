@@ -41,7 +41,7 @@ system:
         data_categories:
           #- user.contact # uncomment to add this category to the system
           - user.device.cookie_id
-        data_use: advertising
+        data_use: marketing.advertising
         data_subjects:
           - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

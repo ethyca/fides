@@ -3,28 +3,26 @@ from unittest import mock
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.models.messaging import MessagingConfig
-from fides.api.ops.models.policy import ActionType, Policy
-from fides.api.ops.models.privacy_preference import UserConsentPreference
-from fides.api.ops.models.privacy_request import (
+from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.messaging import MessagingConfig
+from fides.api.models.policy import ActionType, Policy
+from fides.api.models.privacy_preference import UserConsentPreference
+from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.ops.schemas.messaging.messaging import ConsentPreferencesByUser
-from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.api.ops.schemas.privacy_preference import (
-    MinimalPrivacyPreferenceHistorySchema,
-)
-from fides.api.ops.schemas.privacy_request import Consent
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.privacy_request.email_batch_service import (
+from fides.api.schemas.messaging.messaging import ConsentPreferencesByUser
+from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
+from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
+from fides.api.schemas.privacy_request import Consent
+from fides.api.schemas.redis_cache import Identity
+from fides.api.service.privacy_request.email_batch_service import (
     EmailExitState,
     send_email_batch,
 )
-from fides.api.ops.util.cache import get_all_cache_keys_for_privacy_request, get_cache
+from fides.api.util.cache import get_all_cache_keys_for_privacy_request, get_cache
 from fides.core.config import get_config
 from tests.fixtures.application_fixtures import (
     _create_privacy_request_for_policy,
@@ -38,7 +36,7 @@ def cache_identity_and_consent_preferences(privacy_request, db, reader_id):
     identity = Identity(email="customer_1#@example.com", ljt_readerID=reader_id)
     privacy_request.cache_identity(identity)
     privacy_request.consent_preferences = [
-        Consent(data_use="advertising", opt_in=False).dict()
+        Consent(data_use="marketing.advertising", opt_in=False).dict()
     ]
     privacy_request.save(db)
 
@@ -98,10 +96,10 @@ def third_privacy_request_awaiting_erasure_email_send(
 
 class TestConsentEmailBatchSend:
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_email_batch_no_applicable_privacy_requests(
         self,
@@ -115,10 +113,10 @@ class TestConsentEmailBatchSend:
         assert not requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("privacy_request_awaiting_consent_email_send")
     def test_send_email_batch_no_applicable_connectors(
@@ -133,10 +131,10 @@ class TestConsentEmailBatchSend:
         assert requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("privacy_request_awaiting_consent_email_send")
     @pytest.mark.usefixtures("sovrn_email_connection_config")
@@ -152,10 +150,10 @@ class TestConsentEmailBatchSend:
         assert requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     def test_send_consent_email_no_consent_or_privacy_preferences_saved(
@@ -174,7 +172,7 @@ class TestConsentEmailBatchSend:
         assert requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("sovrn_email_connection_config", "test_fides_org")
     def test_send_consent_email_failure_old_workflow(
@@ -191,7 +189,7 @@ class TestConsentEmailBatchSend:
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
         privacy_request_awaiting_consent_email_send.cache_identity(identity)
         privacy_request_awaiting_consent_email_send.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
         privacy_request_awaiting_consent_email_send.save(db)
 
@@ -212,7 +210,7 @@ class TestConsentEmailBatchSend:
         assert not email_execution_log
 
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("test_fides_org")
     def test_send_consent_email_failure_new_workflow(
@@ -286,10 +284,10 @@ class TestConsentEmailBatchSend:
         assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_consent_email_old_workflow(
         self,
@@ -320,7 +318,9 @@ class TestConsentEmailBatchSend:
                 identities={"ljt_readerID": "12345"},
                 consent_preferences=[
                     Consent(
-                        data_use="advertising", data_use_description=None, opt_in=False
+                        data_use="marketing.advertising",
+                        data_use_description=None,
+                        opt_in=False,
                     )
                 ],
                 privacy_preferences=[],
@@ -356,10 +356,82 @@ class TestConsentEmailBatchSend:
         assert logs_for_privacy_request_without_identity is None
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    )
+    def test_send_generic_consent_email_old_workflow(
+        self,
+        requeue_privacy_requests,
+        send_single_consent_email,
+        db,
+        privacy_request_awaiting_consent_email_send,
+        second_privacy_request_awaiting_consent_email_send,
+        generic_consent_email_connection_config,
+    ) -> None:
+        cache_identity_and_consent_preferences(
+            privacy_request_awaiting_consent_email_send, db, "12345"
+        )
+        exit_state = send_email_batch.delay().get()
+        assert exit_state == EmailExitState.complete
+
+        assert send_single_consent_email.called
+        assert requeue_privacy_requests.called
+
+        call_kwargs = send_single_consent_email.call_args.kwargs
+
+        assert not call_kwargs["db"] == db
+        assert call_kwargs["subject_email"] == "sovrn@example.com"
+        assert call_kwargs["subject_name"] == "Sovrn"
+        assert call_kwargs["required_identities"] == ["ljt_readerID"]
+        assert call_kwargs["user_consent_preferences"] == [
+            ConsentPreferencesByUser(
+                identities={"ljt_readerID": "12345"},
+                consent_preferences=[
+                    Consent(
+                        data_use="marketing.advertising",
+                        data_use_description=None,
+                        opt_in=False,
+                    )
+                ],
+                privacy_preferences=[],
+            )
+        ]
+        assert not call_kwargs["test_mode"]
+
+        email_execution_log: ExecutionLog = ExecutionLog.filter(
+            db=db,
+            conditions=(
+                (
+                    ExecutionLog.privacy_request_id
+                    == privacy_request_awaiting_consent_email_send.id
+                )
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
+            ),
+        ).first()
+        assert (
+            email_execution_log.message
+            == f"Consent email instructions dispatched for '{generic_consent_email_connection_config.name}'"
+        )
+
+        logs_for_privacy_request_without_identity = ExecutionLog.filter(
+            db=db,
+            conditions=(
+                (
+                    ExecutionLog.privacy_request_id
+                    == second_privacy_request_awaiting_consent_email_send.id
+                )
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
+            ),
+        ).first()
+        assert logs_for_privacy_request_without_identity is None
+
+    @mock.patch(
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_consent_email_skipped_logs_due_to_data_use_mismatch(
         self,
@@ -410,10 +482,10 @@ class TestConsentEmailBatchSend:
         assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_consent_email_new_workflow(
         self,
@@ -467,11 +539,12 @@ class TestConsentEmailBatchSend:
                         preference=UserConsentPreference.opt_out,
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="example privacy notice",
+                            notice_key="example_privacy_notice",
                             description="a sample privacy notice configuration",
                             origin="privacy_notice_template_1",
                             regions=["us_ca", "us_co"],
                             consent_mechanism="opt_in",
-                            data_uses=["advertising", "third_party_sharing"],
+                            data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level="system_wide",
                             disabled=False,
                             has_gpc_flag=False,
@@ -540,10 +613,140 @@ class TestConsentEmailBatchSend:
         assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    )
+    def test_send_generic_consent_email_new_workflow(
+        self,
+        requeue_privacy_requests,
+        send_single_consent_email,
+        db,
+        privacy_request_awaiting_consent_email_send,
+        second_privacy_request_awaiting_consent_email_send,
+        generic_consent_email_connection_config,
+        privacy_preference_history,
+        privacy_preference_history_us_ca_provide,
+        system,
+    ) -> None:
+        generic_consent_email_connection_config.system_id = system.id
+        generic_consent_email_connection_config.save(db)
+
+        # This preference matches on data use
+        cache_identity_and_privacy_preferences(
+            privacy_request_awaiting_consent_email_send,
+            db,
+            "12345",
+            privacy_preference_history,
+        )
+
+        # This preference does not match on data use
+        cache_identity_and_privacy_preferences(
+            privacy_request_awaiting_consent_email_send,
+            db,
+            "12345",
+            privacy_preference_history_us_ca_provide,
+        )
+
+        exit_state = send_email_batch.delay().get()
+        assert exit_state == EmailExitState.complete
+
+        assert send_single_consent_email.called
+        assert requeue_privacy_requests.called
+
+        call_kwargs = send_single_consent_email.call_args.kwargs
+
+        assert not call_kwargs["db"] == db
+        assert call_kwargs["subject_email"] == "sovrn@example.com"
+        assert call_kwargs["subject_name"] == "Sovrn"
+        assert call_kwargs["required_identities"] == ["ljt_readerID"]
+        assert call_kwargs["user_consent_preferences"] == [
+            ConsentPreferencesByUser(
+                identities={"ljt_readerID": "12345"},
+                consent_preferences=[],
+                privacy_preferences=[
+                    MinimalPrivacyPreferenceHistorySchema(
+                        preference=UserConsentPreference.opt_out,
+                        privacy_notice_history=PrivacyNoticeHistorySchema(
+                            name="example privacy notice",
+                            description="a sample privacy notice configuration",
+                            origin="privacy_notice_template_1",
+                            regions=["us_ca", "us_co"],
+                            consent_mechanism="opt_in",
+                            data_uses=["marketing.advertising", "third_party_sharing"],
+                            enforcement_level="system_wide",
+                            disabled=False,
+                            has_gpc_flag=False,
+                            displayed_in_privacy_center=True,
+                            displayed_in_api=False,
+                            displayed_in_overlay=True,
+                            id=privacy_preference_history.privacy_notice_history.id,
+                            version=1.0,
+                            privacy_notice_id=privacy_preference_history.privacy_notice_history.privacy_notice_id,
+                        ),
+                    )
+                ],
+            )
+        ]
+        assert not call_kwargs["test_mode"]
+
+        email_execution_log: ExecutionLog = ExecutionLog.filter(
+            db=db,
+            conditions=(
+                (
+                    ExecutionLog.privacy_request_id
+                    == privacy_request_awaiting_consent_email_send.id
+                )
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
+            ),
+        ).first()
+        assert (
+            email_execution_log.message
+            == f"Consent email instructions dispatched for '{generic_consent_email_connection_config.name}'"
+        )
+
+        logs_for_privacy_request_without_identity = ExecutionLog.filter(
+            db=db,
+            conditions=(
+                (
+                    ExecutionLog.privacy_request_id
+                    == second_privacy_request_awaiting_consent_email_send.id
+                )
+            ),
+        )
+        assert logs_for_privacy_request_without_identity.count() == 1
+        assert (
+            logs_for_privacy_request_without_identity[0].status
+            == ExecutionLogStatus.skipped
+        )
+
+        # Sovrn complete status and identities added to affected systems and secondary user ids because this preference is relevant
+        assert (
+            privacy_preference_history.affected_system_status[
+                generic_consent_email_connection_config.system_key
+            ]
+            == "complete"
+        )
+        assert privacy_preference_history.secondary_user_ids == {
+            "ljt_readerID": "12345"
+        }
+
+        # Sovrn skipped status added and identities not added to affected systems and secondary user ids for irrelevant preference
+        db.refresh(privacy_preference_history_us_ca_provide)
+        assert (
+            privacy_preference_history_us_ca_provide.affected_system_status[
+                generic_consent_email_connection_config.system_key
+            ]
+            == "skipped"
+        )
+        assert not privacy_preference_history_us_ca_provide.secondary_user_ids
+
+    @mock.patch(
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_consent_email_multiple_users_old_workflow(
         self,
@@ -606,10 +809,10 @@ class TestConsentEmailBatchSend:
         )
 
     @mock.patch(
-        "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
+        "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_consent_email_multiple_users_new_workflow(
         self,
@@ -682,10 +885,10 @@ class TestConsentEmailBatchSend:
 
 class TestErasureEmailBatchSend:
     @mock.patch(
-        "fides.api.ops.service.connectors.erasure_email_connector.send_single_erasure_email",
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_email_batch_no_applicable_privacy_requests(
         self,
@@ -699,10 +902,10 @@ class TestErasureEmailBatchSend:
         assert not requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.connectors.erasure_email_connector.send_single_erasure_email",
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("privacy_request_awaiting_consent_email_send")
     def test_send_email_batch_no_applicable_connectors(
@@ -717,10 +920,10 @@ class TestErasureEmailBatchSend:
         assert requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.connectors.erasure_email_connector.send_single_erasure_email",
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("privacy_request_awaiting_consent_email_send")
     @pytest.mark.usefixtures("attentive_email_connection_config")
@@ -736,7 +939,7 @@ class TestErasureEmailBatchSend:
         assert requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("attentive_email_connection_config", "test_fides_org")
     def test_send_erasure_email_failure(
@@ -771,10 +974,10 @@ class TestErasureEmailBatchSend:
         assert not email_execution_log
 
     @mock.patch(
-        "fides.api.ops.service.connectors.erasure_email_connector.send_single_erasure_email",
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_erasure_email(
         self,
@@ -862,10 +1065,101 @@ class TestErasureEmailBatchSend:
         )
 
     @mock.patch(
-        "fides.api.ops.service.connectors.erasure_email_connector.send_single_erasure_email",
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    )
+    def test_send_generic_erasure_email(
+        self,
+        requeue_privacy_requests,
+        send_single_erasure_email,
+        db,
+        privacy_request_awaiting_erasure_email_send,
+        second_privacy_request_awaiting_consent_email_send,
+        third_privacy_request_awaiting_erasure_email_send,
+        generic_erasure_email_connection_config,
+    ) -> None:
+        """
+        Test for batch erasure email, also verifies that a privacy request
+        queued for a consent email doesn't trigger an erasure email.
+        """
+        # third_privacy_request_awaiting_erasure_email_send has no identities
+        cache = get_cache()
+        all_keys = get_all_cache_keys_for_privacy_request(
+            privacy_request_id=third_privacy_request_awaiting_erasure_email_send.id
+        )
+        for key in all_keys:
+            cache.delete(key)
+
+        exit_state = send_email_batch.delay().get()
+        assert exit_state == EmailExitState.complete
+
+        assert send_single_erasure_email.called
+        assert requeue_privacy_requests.called
+
+        call_kwargs = send_single_erasure_email.call_args.kwargs
+
+        assert not call_kwargs["db"] == db
+        assert call_kwargs["subject_email"] == "attentive@example.com"
+        assert call_kwargs["subject_name"] == "Attentive"
+        assert call_kwargs["batch_identities"] == [
+            "test@example.com",
+        ]
+        assert not call_kwargs["test_mode"]
+
+        email_execution_log: ExecutionLog = ExecutionLog.filter(
+            db=db,
+            conditions=(
+                (
+                    ExecutionLog.privacy_request_id
+                    == privacy_request_awaiting_erasure_email_send.id
+                )
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
+            ),
+        ).first()
+        assert (
+            email_execution_log.message
+            == f"Erasure email instructions dispatched for '{generic_erasure_email_connection_config.name}'"
+        )
+
+        # Consent privacy request awaiting email send not relevant here
+        consent_logs = ExecutionLog.filter(
+            db=db,
+            conditions=(
+                (
+                    ExecutionLog.privacy_request_id
+                    == second_privacy_request_awaiting_consent_email_send.id
+                )
+            ),
+        ).first()
+        assert consent_logs is None
+
+        # Erasure privacy request without identity data
+        logs_for_privacy_request_without_identity = ExecutionLog.filter(
+            db=db,
+            conditions=(
+                (
+                    ExecutionLog.privacy_request_id
+                    == third_privacy_request_awaiting_erasure_email_send.id
+                )
+            ),
+        )
+        assert logs_for_privacy_request_without_identity.count() == 1
+        assert (
+            logs_for_privacy_request_without_identity[0].status
+            == ExecutionLogStatus.skipped
+        )
+        assert (
+            logs_for_privacy_request_without_identity[0].action_type
+            == ActionType.erasure
+        )
+
+    @mock.patch(
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email",
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     def test_send_erasure_email_multiple_users(
         self,

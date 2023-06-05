@@ -2,15 +2,17 @@ import { useCallback, useState } from "react";
 import { Product, UserData } from "../../types";
 import Button from "../Button";
 import Header from "../Header";
+import GeolocationSelect from "../GeolocationSelect";
 import Popup from "../Popup";
 import PurchaseModal from "../PurchaseModal";
 import css from "./style.module.scss";
 
 interface Props {
+  privacyCenterUrl: string;
   products: Product[];
 }
 
-const Home = ({ products }: Props) => {
+const Home = ({ privacyCenterUrl, products }: Props) => {
   const [productInPurchase, setProductInPurchase] = useState<Product | null>(
     null
   );
@@ -37,9 +39,9 @@ const Home = ({ products }: Props) => {
   }, []);
 
   return (
-    <div className={css.main}>
+    <div className={css.home}>
       <Header />
-      <main>
+      <main className={css.main}>
         <div className={css.products}>
           {products.map((product) => (
             <div key={product.id} className={css.product}>
@@ -60,9 +62,14 @@ const Home = ({ products }: Props) => {
         </div>
       </main>
       <footer className={css.footer}>
-        <a href="http://localhost:3001">
-          Do not sell or share my personal information
-        </a>
+        <div>
+          <a href={privacyCenterUrl}>
+            Do not sell or share my personal information
+          </a>
+        </div>
+        <div className={css.select}>
+          <GeolocationSelect menuPlacement="top" />
+        </div>
       </footer>
       <PurchaseModal
         isOpen={!!productInPurchase}

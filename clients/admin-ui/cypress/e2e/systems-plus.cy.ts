@@ -68,19 +68,30 @@ describe("System management with Plus features", () => {
       cy.getByTestId("save-btn").click();
 
       cy.wait("@putSystem");
-      cy.wait("@updateParty").then((interception) => {
-        expect(interception.request.body.id).to.eql(
-          "id-custom-field-pokemon-party"
-        );
-        expect(interception.request.body.resource_id).to.eql(
-          "demo_analytics_system"
-        );
-        expect(interception.request.body.value).to.eql([
-          "Charmander",
-          "Eevee",
-          "Snorlax",
-          "Bulbasaur",
-        ]);
+
+      // There are two custom field updates that will take place, but order is not stable
+      const expectedValues = [
+        {
+          id: "id-custom-field-pokemon-party",
+          resource_id: "demo_analytics_system",
+          value: ["Charmander", "Eevee", "Snorlax", "Bulbasaur"],
+        },
+        {
+          id: "id-custom-field-starter-pokemon",
+          resource_id: "demo_analytics_system",
+          value: "Squirtle",
+        },
+      ];
+      cy.wait(["@updateParty", "@updateParty"]).then((interceptions) => {
+        expectedValues.forEach((expected) => {
+          const interception = interceptions.find(
+            (i) => i.request.body.id === expected.id
+          );
+          expect(interception.request.body.resource_id).to.eql(
+            expected.resource_id
+          );
+          expect(interception.request.body.value).to.eql(expected.value);
+        });
       });
     });
   });

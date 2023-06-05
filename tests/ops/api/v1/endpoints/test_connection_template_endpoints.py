@@ -4,27 +4,27 @@ from unittest import mock
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.policy import ActionType
-from fides.api.ops.schemas.connection_configuration.connection_config import SystemType
-from fides.api.ops.service.connectors.saas.connector_registry_service import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.policy import ActionType
+from fides.api.schemas.connection_configuration.connection_config import SystemType
+from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
 
@@ -184,8 +184,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
 
-        # 2 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_templates) + 2
+        # 3 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_templates) + 3
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -264,8 +264,8 @@ class TestGetConnections:
         resp = api_client.get(url + f"search={search}", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        # 2 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 2
+        # 3 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_types) + 3
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -348,19 +348,31 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=email", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 2
+        assert len(data) == 4
         assert data == [
             {
+                "encoded_icon": None,
+                "human_readable": "Attentive",
                 "identifier": "attentive",
                 "type": "email",
-                "human_readable": "Attentive",
-                "encoded_icon": None,
             },
             {
+                "encoded_icon": None,
+                "human_readable": "Generic Consent Email",
+                "identifier": "generic_consent_email",
+                "type": "email",
+            },
+            {
+                "encoded_icon": None,
+                "human_readable": "Generic Erasure Email",
+                "identifier": "generic_erasure_email",
+                "type": "email",
+            },
+            {
+                "encoded_icon": None,
+                "human_readable": "Sovrn",
                 "identifier": "sovrn",
                 "type": "email",
-                "human_readable": "Sovrn",
-                "encoded_icon": None,
             },
         ]
 
@@ -961,7 +973,7 @@ class TestInstantiateConnectionFromTemplate:
         }
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.saas_config_endpoints.upsert_dataset_config_from_template"
+        "fides.api.api.v1.endpoints.saas_config_endpoints.upsert_dataset_config_from_template"
     )
     def test_dataset_config_saving_fails(
         self, mock_create_dataset, db, generate_auth_header, api_client, base_url

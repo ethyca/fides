@@ -3,106 +3,82 @@ import * as Yup from "yup";
 
 import {
   ComponentType,
-  ConsentMechanism,
-  DeliveryMechanism,
-  PrivacyExperienceCreate,
-  PrivacyExperienceResponse,
+  ExperienceConfigCreate,
+  ExperienceConfigResponse,
   PrivacyNoticeResponse,
 } from "~/types/api";
 
-export const defaultInitialValues: PrivacyExperienceCreate = {
+export const defaultInitialValues: ExperienceConfigCreate = {
+  title: "",
+  description: "",
+  accept_button_label: "",
+  reject_button_label: "",
+  save_button_label: "",
   regions: [],
   component: ComponentType.OVERLAY,
-  delivery_mechanism: DeliveryMechanism.LINK,
 };
 
-export const transformPrivacyExperienceResponseToCreation = (
-  experience: PrivacyExperienceResponse
-): PrivacyExperienceCreate => {
+export const transformExperienceConfigResponseToCreation = (
+  experienceConfig: ExperienceConfigResponse
+): ExperienceConfigCreate => {
   // Remove the fields not needed for editing/creation
   const {
     created_at: createdAt,
     updated_at: updatedAt,
-    privacy_experience_history_id: historyId,
-    privacy_experience_template_id: templateId,
     version,
-    privacy_notices: notices,
+    experience_config_history_id: experienceConfigHistoryId,
     ...rest
-  } = experience;
+  } = experienceConfig;
   return {
     ...rest,
-
-    regions: experience.regions ?? defaultInitialValues.regions,
-    component: experience.component ?? defaultInitialValues.component,
-    delivery_mechanism:
-      experience.delivery_mechanism ?? defaultInitialValues.delivery_mechanism,
+    title: experienceConfig.title ?? "",
+    description: experienceConfig.description ?? "",
+    accept_button_label: experienceConfig.accept_button_label ?? "",
+    reject_button_label: experienceConfig.reject_button_label ?? "",
+    save_button_label: experienceConfig.save_button_label ?? "",
+    regions: experienceConfig.regions ?? defaultInitialValues.regions,
+    component: experienceConfig.component ?? defaultInitialValues.component,
   };
 };
 
-const privacyCenterValidationSchema = Yup.object().shape({
-  link_label: Yup.string().required().label("Link label"),
-  component_description: Yup.string(),
-});
-
-const bannerValidationSchema = Yup.object().shape({
-  banner_title: Yup.string().required().label("Banner title"),
-  banner_description: Yup.string(),
-  link_label: Yup.string().required().label("Link label"),
-});
-
-const confirmRejectValidationSchema = Yup.object().shape({
-  confirmation_button_label: Yup.string()
-    .required()
-    .label("Confirmation button label"),
+const buttonGroupValidationSchema = Yup.object().shape({
+  accept_button_label: Yup.string().label("Accept button label").required(),
   reject_button_label: Yup.string().required().label("Reject button label"),
+  save_button_label: Yup.string().required().label("Save button label"),
 });
 
-const acknowledgeValidationSchema = Yup.object().shape({
-  acknowledgement_button_label: Yup.string()
-    .required()
-    .label("Acknowledgment button label"),
-});
+const privacyCenterValidationSchema = Yup.object()
+  .shape({
+    title: Yup.string().required().label("Title"),
+    description: Yup.string().required().label("Description"),
+  })
+  .concat(buttonGroupValidationSchema);
 
-export interface ExperienceFormRules {
-  isOverlay: boolean;
-  needsBanner: boolean;
-  hasOnlyNoticeOnlyNotices: boolean;
-}
+const bannerValidationSchema = Yup.object()
+  .shape({
+    title: Yup.string().required().label("Banner title"),
+    description: Yup.string().required().label("Banner description"),
+    acknowledge_button_label: Yup.string()
+      .required()
+      .label("Acknowledge button label"),
+    privacy_preferences_link_label: Yup.string()
+      .required()
+      .label("Privacy preferences link label"),
+  })
+  .concat(buttonGroupValidationSchema);
 
 /**
  * Use the various rules/conditions of a privacy experience form
  */
-export const useExperienceFormRules = ({
+export const useExperienceForm = ({
   privacyExperience,
-  privacyNotices,
 }: {
-  privacyExperience: PrivacyExperienceCreate;
+  privacyExperience: ExperienceConfigCreate;
   privacyNotices?: PrivacyNoticeResponse[];
-}): ExperienceFormRules & { validationSchema: any } => {
+}) => {
   const isOverlay = useMemo(
     () => privacyExperience.component === ComponentType.OVERLAY,
     [privacyExperience.component]
-  );
-
-  const needsBanner = useMemo(
-    () =>
-      !!privacyNotices &&
-      privacyNotices.some(
-        (notice) =>
-          notice.consent_mechanism === ConsentMechanism.OPT_IN ||
-          notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
-      ),
-    [privacyNotices]
-  );
-
-  const hasOnlyNoticeOnlyNotices = useMemo(
-    () =>
-      !!privacyNotices &&
-      privacyNotices.length > 0 &&
-      privacyNotices.every(
-        (notice) => notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
-      ),
-    [privacyNotices]
   );
 
   // Build the validation schema based on the rules
@@ -110,17 +86,11 @@ export const useExperienceFormRules = ({
     if (!isOverlay) {
       return privacyCenterValidationSchema;
     }
-
-    const buttonSchema = hasOnlyNoticeOnlyNotices
-      ? acknowledgeValidationSchema
-      : confirmRejectValidationSchema;
-    return bannerValidationSchema.concat(buttonSchema);
-  }, [isOverlay, hasOnlyNoticeOnlyNotices]);
+    return bannerValidationSchema;
+  }, [isOverlay]);
 
   return {
     isOverlay,
-    needsBanner,
-    hasOnlyNoticeOnlyNotices,
     validationSchema,
   };
 };

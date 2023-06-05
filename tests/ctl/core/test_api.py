@@ -20,12 +20,7 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.ctl.database.crud import get_resource
-from fides.api.ctl.routes import health
-from fides.api.ctl.routes.util import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
-from fides.api.ctl.schemas.system import PrivacyDeclarationResponse
-from fides.api.ctl.sql_models import Dataset, PrivacyDeclaration, System
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     CREATE,
     DELETE,
     POLICY_CREATE_OR_UPDATE,
@@ -38,8 +33,13 @@ from fides.api.ops.api.v1.scope_registry import (
     SYSTEM_UPDATE,
     UPDATE,
 )
-from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
-from fides.api.ops.oauth.roles import OWNER, VIEWER
+from fides.api.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.ctl.database.crud import get_resource
+from fides.api.ctl.routes import health
+from fides.api.ctl.routes.util import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
+from fides.api.ctl.schemas.system import PrivacyDeclarationResponse
+from fides.api.ctl.sql_models import Dataset, PrivacyDeclaration, System
+from fides.api.oauth.roles import OWNER, VIEWER
 from fides.core import api as _api
 from fides.core.config import FidesConfig, get_config
 
@@ -444,7 +444,7 @@ class TestSystemCreate:
                 models.PrivacyDeclaration(
                     name="declaration-name",
                     data_categories=[],
-                    data_use="provide",
+                    data_use="essential",
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
@@ -452,7 +452,7 @@ class TestSystemCreate:
                 models.PrivacyDeclaration(
                     name="declaration-name-2",
                     data_categories=[],
-                    data_use="advertising",
+                    data_use="marketing.advertising",
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
@@ -667,7 +667,7 @@ class TestSystemUpdate:
                 models.PrivacyDeclaration(
                     name="declaration-name",
                     data_categories=[],
-                    data_use="provide",
+                    data_use="essential",
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
@@ -853,7 +853,7 @@ class TestSystemUpdate:
         assert result.status_code == HTTP_400_BAD_REQUEST
         # assert the system's privacy declaration has not been updated
         db.refresh(system)
-        assert system.privacy_declarations[0].data_use == "advertising"
+        assert system.privacy_declarations[0].data_use == "marketing.advertising"
 
     def test_system_update_privacy_declaration_invalid_duplicate(
         self,
@@ -870,7 +870,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="declaration-name",  # same as initial PrivacyDeclaration
                 data_categories=["user.payment"],  # other fields can differ
-                data_use="provide",  # same as initial PrivacyDeclaration
+                data_use="essential",  # same as initial PrivacyDeclaration
                 data_subjects=["anonymous_user"],  # other fields can differ
                 data_qualifier="aggregated",  # other fields can differ
                 dataset_references=[],
@@ -885,7 +885,7 @@ class TestSystemUpdate:
         assert result.status_code == HTTP_400_BAD_REQUEST
         # assert the system's privacy declaration has not been updated
         db.refresh(system)
-        assert system.privacy_declarations[0].data_use == "advertising"
+        assert system.privacy_declarations[0].data_use == "marketing.advertising"
 
         # test that duplicate with no name on either declaration fails
         system_update_request_body.privacy_declarations = []
@@ -893,7 +893,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="",  # no name specified
                 data_categories=["user.payment"],
-                data_use="provide",  # identical data use
+                data_use="essential",  # identical data use
                 data_subjects=["anonymous_user"],  # other fields can differ
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -903,7 +903,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="",  # no name specified
                 data_categories=["user.payment"],
-                data_use="provide",  # identicial data use
+                data_use="essential",  # identicial data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -918,7 +918,7 @@ class TestSystemUpdate:
         assert result.status_code == HTTP_400_BAD_REQUEST
         # assert the system's privacy declaration has not been updated
         db.refresh(system)
-        assert system.privacy_declarations[0].data_use == "advertising"
+        assert system.privacy_declarations[0].data_use == "marketing.advertising"
 
         # test that duplicate data_use with no name on one declaration succeeds
         system_update_request_body.privacy_declarations = []
@@ -926,7 +926,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="",  # no name specified
                 data_categories=["user.payment"],
-                data_use="provide",  # identical data use
+                data_use="essential",  # identical data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -936,7 +936,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="new declaration",  # this name distinguishes the declaration from the above
                 data_categories=["user.payment"],
-                data_use="provide",  # identicial data use
+                data_use="essential",  # identicial data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -952,8 +952,8 @@ class TestSystemUpdate:
         # assert the system's privacy declarations have been updated
         db.refresh(system)
         # both declarations should have 'provide' data_use since the update was allowed
-        assert system.privacy_declarations[0].data_use == "provide"
-        assert system.privacy_declarations[1].data_use == "provide"
+        assert system.privacy_declarations[0].data_use == "essential"
+        assert system.privacy_declarations[1].data_use == "essential"
 
         # test that duplicate data_use with differeing names on declarations succeeds
         system_update_request_body.privacy_declarations = []
@@ -961,7 +961,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="new declaration 1",  # specify a unique name here
                 data_categories=["user.payment"],
-                data_use="advertising",  # identical data use
+                data_use="marketing.advertising",  # identical data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -971,7 +971,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="new declaration 2",  # this name distinguishes the declaration from the above
                 data_categories=["user.payment"],
-                data_use="advertising",  # identicial data use
+                data_use="marketing.advertising",  # identicial data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -987,8 +987,8 @@ class TestSystemUpdate:
         # assert the system's privacy declarations have been updated
         db.refresh(system)
         # both declarations should have 'advertising' data_use since the update was allowed
-        assert system.privacy_declarations[0].data_use == "advertising"
-        assert system.privacy_declarations[1].data_use == "advertising"
+        assert system.privacy_declarations[0].data_use == "marketing.advertising"
+        assert system.privacy_declarations[1].data_use == "marketing.advertising"
 
         # test that differeing data_use with same names on declarations succeeds
         system_update_request_body.privacy_declarations = []
@@ -996,7 +996,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="new declaration 1",  # identical name
                 data_categories=["user.payment"],
-                data_use="advertising",  # differing data use
+                data_use="marketing.advertising",  # differing data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -1006,7 +1006,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="new declaration 1",  # identical name
                 data_categories=["user.payment"],
-                data_use="provide",  # differing data use
+                data_use="essential",  # differing data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -1023,11 +1023,11 @@ class TestSystemUpdate:
         db.refresh(system)
         # should be one declaration with advertising, one with provide
         assert (
-            system.privacy_declarations[0].data_use == "advertising"
-            and system.privacy_declarations[1].data_use == "provide"
+            system.privacy_declarations[0].data_use == "marketing.advertising"
+            and system.privacy_declarations[1].data_use == "essential"
         ) or (
-            system.privacy_declarations[1].data_use == "advertising"
-            and system.privacy_declarations[0].data_use == "provide"
+            system.privacy_declarations[1].data_use == "marketing.advertising"
+            and system.privacy_declarations[0].data_use == "essential"
         )
         assert (
             system.privacy_declarations[0].name == "new declaration 1"
@@ -1042,7 +1042,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name",
                         data_categories=[],
-                        data_use="provide",
+                        data_use="essential",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1055,7 +1055,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name",
                         data_categories=[],
-                        data_use="provide",
+                        data_use="essential",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1084,7 +1084,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1097,7 +1097,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1105,7 +1105,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1177,7 +1177,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1189,7 +1189,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name-1",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1201,7 +1201,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1214,7 +1214,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1235,7 +1235,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1256,7 +1256,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1264,7 +1264,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1277,7 +1277,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name-1",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1285,7 +1285,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
                         data_categories=[],
-                        data_use="provide",
+                        data_use="essential",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1298,7 +1298,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name",
                         data_categories=[],
-                        data_use="provide",
+                        data_use="essential",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1319,7 +1319,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],

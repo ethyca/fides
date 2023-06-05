@@ -18,28 +18,30 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from toml import load as load_toml
 
-from fides.api.ctl.database.session import sync_engine
-from fides.api.ctl.sql_models import DataUse, PrivacyDeclaration
-from fides.api.main import app
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.api.ops.cryptography.schemas.jwt import (
+from fides.api.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.app_setup import PRIVACY_EXPERIENCE_CONFIGS_PATH
+from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
-from fides.api.ops.models.privacy_request import generate_request_callback_jwe
-from fides.api.ops.oauth.jwt import generate_jwe
-from fides.api.ops.oauth.roles import (
+from fides.api.ctl.database.session import sync_engine
+from fides.api.ctl.sql_models import DataUse, PrivacyDeclaration
+from fides.api.main import app
+from fides.api.models.privacy_request import generate_request_callback_jwe
+from fides.api.oauth.jwt import generate_jwe
+from fides.api.oauth.roles import (
     APPROVER,
     CONTRIBUTOR,
     OWNER,
     VIEWER,
     VIEWER_AND_APPROVER,
 )
-from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
-from fides.api.ops.util.cache import get_cache
+from fides.api.schemas.messaging.messaging import MessagingServiceType
+from fides.api.util.cache import get_cache
+from fides.api.util.consent_util import load_default_experience_configs_on_startup
 from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
@@ -102,6 +104,7 @@ async def async_session(test_client):
 @pytest.fixture(scope="session")
 def api_client():
     """Return a client used to make API requests"""
+
     with TestClient(app) as c:
         yield c
 
@@ -355,7 +358,7 @@ def resources_dict():
         "policy_rule": models.PolicyRule(
             name="Test Policy",
             data_categories=models.PrivacyRule(matches="NONE", values=[]),
-            data_uses=models.PrivacyRule(matches="NONE", values=["provide.service"]),
+            data_uses=models.PrivacyRule(matches="NONE", values=["essential.service"]),
             data_subjects=models.PrivacyRule(matches="ANY", values=[]),
             data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
         ),
@@ -377,7 +380,7 @@ def resources_dict():
                 models.PrivacyDeclaration(
                     name="declaration-name",
                     data_categories=[],
-                    data_use="provide",
+                    data_use="essential",
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
@@ -555,7 +558,7 @@ def run_privacy_request_task(celery_session_app):
     registered to the `celery_app` fixture which uses the virtualised `celery_worker`
     """
     yield celery_session_app.tasks[
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request"
     ]
 
 
@@ -664,6 +667,43 @@ def set_notification_service_type_mailgun(db):
     CONFIG.notifications.notification_service_type = original_value
     ApplicationConfig.update_config_set(db, CONFIG)
     db.commit()
+
+
+@pytest.fixture(scope="function")
+def set_notification_service_type_to_none(db):
+    """Overrides autouse fixture to remove default notification service type"""
+    original_value = CONFIG.notifications.notification_service_type
+    CONFIG.notifications.notification_service_type = None
+    ApplicationConfig.update_config_set(db, CONFIG)
+    yield
+    CONFIG.notifications.notification_service_type = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
+
+
+@pytest.fixture(scope="function")
+def set_notification_service_type_to_twilio_email(db):
+    """Overrides autouse fixture to set notification service type to twilio email"""
+    original_value = CONFIG.notifications.notification_service_type
+    CONFIG.notifications.notification_service_type = (
+        MessagingServiceType.twilio_email.value
+    )
+    ApplicationConfig.update_config_set(db, CONFIG)
+    yield
+    CONFIG.notifications.notification_service_type = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
+
+
+@pytest.fixture(scope="function")
+def set_notification_service_type_to_twilio_text(db):
+    """Overrides autouse fixture to set notification service type to twilio text"""
+    original_value = CONFIG.notifications.notification_service_type
+    CONFIG.notifications.notification_service_type = (
+        MessagingServiceType.twilio_text.value
+    )
+    ApplicationConfig.update_config_set(db, CONFIG)
+    yield
+    CONFIG.notifications.notification_service_type = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @pytest.fixture(scope="session")
@@ -949,7 +989,7 @@ def system(db: Session) -> System:
             "name": "Collect data for marketing",
             "system_id": system.id,
             "data_categories": ["user.device.cookie_id"],
-            "data_use": "advertising",
+            "data_use": "marketing.advertising",
             "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
@@ -1049,7 +1089,7 @@ def system_provide_service(db: Session) -> System:
             "name": "The source service, system, or product being provided to the user",
             "system_id": system_provide_service.id,
             "data_categories": ["user.device.cookie_id"],
-            "data_use": "provide.service",
+            "data_use": "essential.service",
             "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
@@ -1086,7 +1126,7 @@ def system_provide_service_operations_support_optimization(db: Session) -> Syste
             "name": "Optimize and improve support operations in order to provide the service",
             "system_id": system_provide_service_operations_support_optimization.id,
             "data_categories": ["user.device.cookie_id"],
-            "data_use": "provide.service.operations.support.optimization",
+            "data_use": "essential.service.operations.support.optimization",
             "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
@@ -1121,3 +1161,14 @@ def load_default_data_uses(db):
         # loaded, in which case the create will throw an error. so we first check existence.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
             DataUse.create(db=db, data=data_use.dict())
+
+
+@pytest.fixture(scope="function", autouse=True)
+def load_default_privacy_experience_configs(db):
+    """Ops tests drop db data, so for now, load these back in if they don't exist"""
+    if not PrivacyExperienceConfig.get_default_config(
+        db, ComponentType.overlay
+    ) or not PrivacyExperienceConfig.get_default_config(
+        db, ComponentType.privacy_center
+    ):
+        load_default_experience_configs_on_startup(db, PRIVACY_EXPERIENCE_CONFIGS_PATH)

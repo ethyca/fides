@@ -12,12 +12,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists
 from sqlalchemy_utils.types.encrypted.encrypted_type import InvalidCiphertextError
 
+from fides.api.ctl.database.seed import load_default_resources, load_samples
+from fides.api.ctl.database.session import async_session
 from fides.api.ctl.utils.errors import get_full_exception_name
-from fides.api.ops.db.base import Base  # type: ignore[attr-defined]
+from fides.api.db.base import Base  # type: ignore[attr-defined]
 from fides.core.utils import get_db_engine
-
-from .seed import load_default_resources, load_samples
-from .session import async_session
 
 DatabaseHealth = Literal["healthy", "unhealthy", "needs migration"]
 
@@ -41,9 +40,11 @@ def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
     command.upgrade(alembic_config, revision)
 
 
-async def init_db(database_url: str, samples: bool = False) -> None:
+async def migrate_db(database_url: str, samples: bool = False) -> None:
     """
-    Runs the migrations and creates all of the database objects.
+    Runs migrations and creates database objects if needed.
+
+    Safe to run on an existing database when upgrading Fides version.
     """
     log.info("Initializing database")
     alembic_config = get_alembic_config(database_url)
@@ -104,7 +105,7 @@ async def configure_db(database_url: str, samples: bool = False) -> None:
     """Set up the db to be used by the app."""
     try:
         create_db_if_not_exists(database_url)
-        await init_db(database_url, samples=samples)
+        await migrate_db(database_url, samples=samples)
     except InvalidCiphertextError as cipher_error:
         log.error(
             "Unable to configure database due to a decryption error! Check to ensure your `app_encryption_key` has not changed."

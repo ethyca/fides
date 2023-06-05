@@ -3,7 +3,8 @@
 import rich_click as click
 from toml import dumps
 
-from fides.cli.utils import print_divider, with_analytics
+from fides.cli.utils import with_analytics
+from fides.common.utils import print_divider
 from fides.core.utils import echo_red, get_credentials_path, read_credentials_file
 
 

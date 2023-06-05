@@ -3,7 +3,8 @@ import rich_click as click
 import yaml
 
 from fides.cli.options import fides_key_argument, resource_type_argument
-from fides.cli.utils import handle_cli_response, print_divider, with_analytics
+from fides.cli.utils import with_analytics
+from fides.common.utils import handle_cli_response, print_divider
 from fides.core import api as _api
 from fides.core.api_helpers import get_server_resource, list_server_resources
 from fides.core.utils import echo_green, echo_red
@@ -82,6 +83,8 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
                 {resource["fides_key"] for resource in resources if resource}
             )
             formatted_fides_keys = "\n  ".join(sorted_fides_keys)
-            echo_green(f"{resource_type.capitalize()} list:\n  {formatted_fides_keys}")
+            echo_green(
+                f"List of resources of type '{resource_type}':\n  {formatted_fides_keys}"
+            )
         else:
             echo_red(f"No {resource_type.capitalize()} resources found!")

@@ -4,8 +4,8 @@ from typing import Any, Optional
 
 from sqlalchemy.orm import Session
 
-from fides.api.ops.models.application_config import ApplicationConfig
-from fides.api.ops.schemas.storage.storage import StorageType
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.schemas.storage.storage import StorageType
 
 
 class ConfigProxyBase:

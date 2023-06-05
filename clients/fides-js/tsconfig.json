@@ -18,9 +18,11 @@
     "plugins": [{ "name": "typescript-plugin-css-modules" }],
     "baseUrl": "./",
     "paths": {
-      "~/*": ["src/*"]
+      "~/*": ["src/*"],
+      "react": ["../node_modules/preact/compat/"],
+      "react-dom": ["../node_modules/preact/compat/"]
     }
   },
-  "include": ["**/*.ts", "**/*.d.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.d.ts", "**/*.tsx", "rollup.config.mjs"],
   "exclude": ["node_modules", "dist"]
 }

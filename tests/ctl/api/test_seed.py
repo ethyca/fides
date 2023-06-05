@@ -11,10 +11,10 @@ from sqlalchemy.future import select
 
 from fides.api.ctl.database import samples, seed
 from fides.api.ctl.sql_models import Dataset, PolicyCtl, System
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.fides_user import FidesUser
-from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.core import api as _api
 from fides.core.config import CONFIG, FidesConfig
 

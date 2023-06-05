@@ -9,9 +9,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fides.api.ctl.sql_models import DataCategory as DataCategoryDbModel
-from fides.api.ops.db.base import Base
-from fides.api.ops.db.session import get_db_engine, get_db_session
-from fides.api.ops.tasks.scheduled.scheduler import scheduler
+from fides.api.db.base import Base
+from fides.api.db.session import get_db_engine, get_db_session
+from fides.api.tasks.scheduled.scheduler import scheduler
 from tests.conftest import create_citext_extension
 
 

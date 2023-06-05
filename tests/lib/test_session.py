@@ -1,6 +1,6 @@
 import pytest
 
-from fides.api.ops.db import session
+from fides.api.db import session
 from fides.core.config import get_config
 
 

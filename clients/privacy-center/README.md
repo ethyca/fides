@@ -1,6 +1,6 @@
 # Fides Privacy Center
 
-Privacy center for Fides. A web application built in Next.js with the FidesUI component library.
+Privacy Center for Fides, A web application built in Next.js to collect privacy requests from users: access, erasure, consent, and more!
 
 ## Configuration
 
@@ -91,6 +91,12 @@ turbo run build
 
 As a Next application, it will output build artifacts to the `.next` directory.
 
+## API
+
+The Privacy Center is a full-stack webserver but generally makes all it's API calls to the connected Fides server. However, it does host a small API of it's own that enables some basic "edge" functions like hosting a customized bundle of the `fides.js` script.
+
+To view the OpenAPI documentation, run the application locally and visit the `/docs` page for details: http://localhost:3000/docs
+
 ## Testing
 
 To run the interactive test interface, run:
@@ -113,4 +119,4 @@ There are two ways to test Fides consent components:
 
 ## Deployment
 
-To deploy this site, fork this repository. Then, configure a smart hosting service such as Vercel or Netlify to deploy it, specifying the root directory for the client application as the `clients/privacy-center` directory (relative to the root of the repository).
+To deploy this site, typically you should use the published `ethyca/fides-privacy-center` Docker image which is production-built Next.js image. See https://docs.ethyca.com for more!

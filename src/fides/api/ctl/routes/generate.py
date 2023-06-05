@@ -10,13 +10,13 @@ from loguru import logger as log
 from pydantic import BaseModel, root_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from fides.api.api.v1 import scope_registry
 from fides.api.ctl.database.crud import get_resource
 from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
-from fides.api.ops.api.v1 import scope_registry
-from fides.api.ops.oauth.utils import verify_oauth_client_prod
+from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.connectors.models import (
     AWSConfig,
     BigQueryConfig,
@@ -32,6 +32,8 @@ from fides.core.dataset import (
 )
 from fides.core.system import generate_aws_systems, generate_okta_systems
 from fides.core.utils import validate_db_engine
+
+GENERATE_ROUTER = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
 
 
 class ValidTargets(str, Enum):
@@ -102,10 +104,7 @@ class GenerateResponse(BaseModel):
     generate_results: Optional[List[Union[Dataset, System]]]
 
 
-router = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
-
-
-@router.post(
+@GENERATE_ROUTER.post(
     "/",
     status_code=status.HTTP_200_OK,
     dependencies=[

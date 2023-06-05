@@ -178,13 +178,7 @@ describe("Connectors", () => {
           third_party_vendor_name: "Sovrn",
           recipient_email_address: recipientEmailAddress,
           test_email_address: "",
-          advanced_settings: {
-            identity_types: {
-              email: false,
-              phone_number: false,
-              cookie_ids: [],
-            },
-          },
+          advanced_settings: "",
         });
       });
     });

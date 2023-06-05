@@ -7,16 +7,16 @@ from faker import Faker
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
+from fides.api.cryptography import cryptographic_util
 from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ops.cryptography import cryptographic_util
-from fides.api.ops.db import session
-from fides.api.ops.models.connectionconfig import (
+from fides.api.db import session
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.util.saas_util import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
