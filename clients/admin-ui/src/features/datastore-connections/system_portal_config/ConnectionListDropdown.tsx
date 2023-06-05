@@ -13,7 +13,7 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
-  SearchLineIcon
+  SearchLineIcon,
 } from "@fidesui/react";
 import { useMemo, useState, useCallback } from "react";
 
@@ -27,7 +27,7 @@ import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
 } from "~/types/api";
-import {debounce} from "common/utils";
+import { debounce } from "common/utils";
 
 type ItemOption = {
   /**
@@ -145,7 +145,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
 }) => {
   // Hooks
   const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Listeners
   const handleClose = () => {
@@ -153,7 +153,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
   };
   const handleClear = () => {
     onChange(undefined);
-    setSearchTerm("")
+    setSearchTerm("");
     handleClose();
   };
   const handleOpen = () => {
@@ -164,11 +164,10 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
     ([, option]) => option.value.identifier === selectedValue?.identifier
   )?.[0];
 
-
   const handleSearchChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length === 0 || event.target.value.length > 1) {
-        setSearchTerm(event.target.value)
+        setSearchTerm(event.target.value);
       }
     },
     []
@@ -179,7 +178,10 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
     [handleSearchChange]
   );
 
-  const filteredListItems = useMemo(()=>[...list].filter((l)=> l[0].toLowerCase().includes(searchTerm)),[list, searchTerm])
+  const filteredListItems = useMemo(
+    () => [...list].filter((l) => l[0].toLowerCase().includes(searchTerm)),
+    [list, searchTerm]
+  );
 
   return (
     <Menu
@@ -221,24 +223,22 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
           data-testid="select-dropdown-list"
           width="300px"
         >
-
           <Box px="8px" mt={2}>
-
-          <InputGroup size="sm">
-            <InputLeftElement pointerEvents="none">
-              <SearchLineIcon color="gray.300" h="17px" w="17px" />
-            </InputLeftElement>
-            <Input
-              autoComplete="off"
-              autoFocus
-              borderRadius="md"
-              name="search"
-              onChange={debounceHandleSearchChange}
-              placeholder="Search Integrations"
-              size="sm"
-              type="search"
-            />
-          </InputGroup>
+            <InputGroup size="sm">
+              <InputLeftElement pointerEvents="none">
+                <SearchLineIcon color="gray.300" h="17px" w="17px" />
+              </InputLeftElement>
+              <Input
+                autoComplete="off"
+                autoFocus
+                borderRadius="md"
+                name="search"
+                onChange={debounceHandleSearchChange}
+                placeholder="Search Integrations"
+                size="sm"
+                type="search"
+              />
+            </InputGroup>
           </Box>
           {hasClear && (
             <Flex
@@ -254,41 +254,39 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
           )}
           {/* MenuItems are not rendered unless Menu is open */}
           <Box overflowY="auto" maxHeight="300px">
-            {filteredListItems.map(
-              ([key, option]) => (
-                <Tooltip
-                  aria-label={option.toolTip}
-                  hasArrow
-                  label={option.toolTip}
-                  key={key}
-                  placement="auto-start"
-                  openDelay={500}
-                  shouldWrapChildren
+            {filteredListItems.map(([key, option]) => (
+              <Tooltip
+                aria-label={option.toolTip}
+                hasArrow
+                label={option.toolTip}
+                key={key}
+                placement="auto-start"
+                openDelay={500}
+                shouldWrapChildren
+              >
+                <MenuItem
+                  color={
+                    selectedValue === option.value
+                      ? "complimentary.500"
+                      : undefined
+                  }
+                  isDisabled={option.isDisabled}
+                  onClick={() => onChange(option.value)}
+                  paddingTop="10px"
+                  paddingRight="8.5px"
+                  paddingBottom="10px"
+                  paddingLeft="8.5px"
+                  _focus={{
+                    bg: "gray.100",
+                  }}
                 >
-                  <MenuItem
-                    color={
-                      selectedValue === option.value
-                        ? "complimentary.500"
-                        : undefined
-                    }
-                    isDisabled={option.isDisabled}
-                    onClick={() => onChange(option.value)}
-                    paddingTop="10px"
-                    paddingRight="8.5px"
-                    paddingBottom="10px"
-                    paddingLeft="8.5px"
-                    _focus={{
-                      bg: "gray.100",
-                    }}
-                  >
-                    <ConnectionTypeLogo data={option.value} />
-                    <Text ml={2} fontSize="0.75rem" isTruncated>
-                      {key}
-                    </Text>
-                  </MenuItem>
-                </Tooltip>
-              )
-            )}
+                  <ConnectionTypeLogo data={option.value} />
+                  <Text ml={2} fontSize="0.75rem" isTruncated>
+                    {key}
+                  </Text>
+                </MenuItem>
+              </Tooltip>
+            ))}
           </Box>
         </MenuList>
       ) : null}

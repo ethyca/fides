@@ -167,7 +167,7 @@ const DatasetConfigField: React.FC<Props> = ({ dropdownOptions }) => {
         label="Dataset"
         labelProps={{
           fontWeight: "semibold",
-          fontSize: "sm"
+          fontSize: "sm",
         }}
         name={fieldName}
         options={dropdownOptions}
