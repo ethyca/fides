@@ -10,8 +10,12 @@ import {
   MenuList,
   Text,
   Tooltip,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  SearchLineIcon
 } from "@fidesui/react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -23,6 +27,7 @@ import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
 } from "~/types/api";
+import {debounce} from "common/utils";
 
 type ItemOption = {
   /**
@@ -162,6 +167,24 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
     ([, option]) => option.value.identifier === selectedValue?.identifier
   )?.[0];
 
+  const [searchTerm, setSearchTerm] = useState("")
+
+  const handleSearchChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (event.target.value.length === 0 || event.target.value.length > 1) {
+        setSearchTerm(event.target.value)
+      }
+    },
+    []
+  );
+
+  const debounceHandleSearchChange = useMemo(
+    () => debounce(handleSearchChange, 100),
+    [handleSearchChange]
+  );
+
+  const filteredListItems = useMemo(()=>[...list].filter((l)=> l[0].toLowerCase().includes(searchTerm)),[list, searchTerm])
+
   return (
     <Menu
       isLazy
@@ -202,6 +225,25 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
           data-testid="select-dropdown-list"
           width="300px"
         >
+
+          <Box px="8px" mt={2}>
+
+          <InputGroup size="sm">
+            <InputLeftElement pointerEvents="none">
+              <SearchLineIcon color="gray.300" h="17px" w="17px" />
+            </InputLeftElement>
+            <Input
+              autoComplete="off"
+              autoFocus
+              borderRadius="md"
+              name="search"
+              onChange={debounceHandleSearchChange}
+              placeholder="Search Integrations"
+              size="sm"
+              type="search"
+            />
+          </InputGroup>
+          </Box>
           {hasClear && (
             <Flex
               borderBottom="1px"
@@ -216,7 +258,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
           )}
           {/* MenuItems are not rendered unless Menu is open */}
           <Box overflowY="auto" maxHeight="300px">
-            {(enableSorting ? [...list].sort() : [...list]).map(
+            {filteredListItems.map(
               ([key, option]) => (
                 <Tooltip
                   aria-label={option.toolTip}
