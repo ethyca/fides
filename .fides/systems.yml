@@ -46,7 +46,7 @@ system:
     privacy_declarations:
       - name: Manage privacy request Fufillment
         data_categories: [] # comprehensive list of data categories in `fides_db`
-        data_use: provide.service
+        data_use: essential.service
         data_subjects:
           - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -73,7 +73,7 @@ system:
     privacy_declarations:
       - name: Manage privacy request Fufillment
         data_categories: [] # comprehensive list of data categories in `fides_db`
-        data_use: provide.service
+        data_use: essential.service
         data_subjects:
           - employee
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

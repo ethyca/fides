@@ -155,16 +155,22 @@ class TestConsentEmailConnectorMethods:
                     ConsentPreferencesByUser(
                         identities={"email": "customer-1@example.com"},
                         consent_preferences=[
-                            Consent(data_use="advertising", opt_in=False),
-                            Consent(data_use="advertising.first_party", opt_in=True),
+                            Consent(data_use="marketing.advertising", opt_in=False),
+                            Consent(
+                                data_use="marketing.advertising.first_party",
+                                opt_in=True,
+                            ),
                         ],
                         privacy_preferences=[],
                     ),
                     ConsentPreferencesByUser(
                         identities={"email": "customer-2@example.com"},
                         consent_preferences=[
-                            Consent(data_use="advertising", opt_in=True),
-                            Consent(data_use="advertising.first_party", opt_in=False),
+                            Consent(data_use="marketing.advertising", opt_in=True),
+                            Consent(
+                                data_use="marketing.advertising.first_party",
+                                opt_in=False,
+                            ),
                         ],
                         privacy_preferences=[],
                     ),
@@ -186,16 +192,16 @@ class TestConsentEmailConnectorMethods:
             ConsentPreferencesByUser(
                 identities={"email": "customer-1@example.com"},
                 consent_preferences=[
-                    Consent(data_use="advertising", opt_in=False),
-                    Consent(data_use="advertising.first_party", opt_in=True),
+                    Consent(data_use="marketing.advertising", opt_in=False),
+                    Consent(data_use="marketing.advertising.first_party", opt_in=True),
                 ],
                 privacy_preferences=[],
             ),
             ConsentPreferencesByUser(
                 identities={"email": "customer-2@example.com"},
                 consent_preferences=[
-                    Consent(data_use="advertising", opt_in=True),
-                    Consent(data_use="advertising.first_party", opt_in=False),
+                    Consent(data_use="marketing.advertising", opt_in=True),
+                    Consent(data_use="marketing.advertising.first_party", opt_in=False),
                 ],
                 privacy_preferences=[],
             ),
@@ -257,10 +263,11 @@ class TestConsentEmailConnectorMethods:
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="Targeted Advertising",
                             regions=["us_ca"],
+                            notice_key="targeted_advertising",
                             id="test_1",
                             privacy_notice_id="12345",
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["advertising.first_party.personalized"],
+                            data_uses=["marketing.advertising.first_party.targeted"],
                             enforcement_level=EnforcementLevel.system_wide,
                             version=1.0,
                             displayed_in_overlay=True,
@@ -276,6 +283,7 @@ class TestConsentEmailConnectorMethods:
                         preference=UserConsentPreference.opt_out,
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="Analytics",
+                            notice_key="analytics",
                             regions=["us_ca"],
                             id="test_2",
                             privacy_notice_id="67890",
@@ -332,13 +340,38 @@ class TestConsentEmailConnectorMethods:
             == "Test notification of users' consent preference changes from Test Org"
         )
 
+    @mock.patch("fides.api.service.connectors.consent_email_connector.dispatch_message")
+    @pytest.mark.usefixtures(
+        "test_fides_org",
+        "messaging_config",
+        "set_notification_service_type_to_twilio_email",
+    )
+    def test_send_single_consent_email_respects_messaging_service_type(
+        self,
+        mock_dispatch,
+        db,
+    ):
+        """Ensure `notifications.notification_service_type` property is respected in dispatching consent emails"""
+        send_single_consent_email(
+            db=db,
+            subject_email="test@example.com",
+            subject_name="To whom it may concern",
+            required_identities=["email"],
+            user_consent_preferences=[],
+            test_mode=True,
+        )
+
+        assert mock_dispatch.called
+        call_kwargs = mock_dispatch.call_args.kwargs
+        assert call_kwargs["service_type"] == "twilio_email"
+
     def test_needs_email_old_workflow(
         self,
         test_sovrn_consent_email_connector,
         privacy_request_with_consent_policy,
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
         assert (
             test_sovrn_consent_email_connector.needs_email(
@@ -400,7 +433,7 @@ class TestConsentEmailConnectorMethods:
         self, test_sovrn_consent_email_connector, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
         assert (
             test_sovrn_consent_email_connector.needs_email(
@@ -520,7 +553,7 @@ class TestSovrnConnector:
 
         assert (
             preferences[0]["consent_preferences"][1]["data_use"]
-            == "Improve the capability"
+            == "Improves the product, service, application or system."
         )
         assert preferences[0]["consent_preferences"][1]["opt_in"] is True
 

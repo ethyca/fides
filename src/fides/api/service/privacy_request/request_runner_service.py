@@ -297,6 +297,10 @@ async def run_privacy_request(
 
     with self.get_new_session() as session:
         privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
+        if not privacy_request:
+            raise common_exceptions.PrivacyRequestNotFound(
+                f"Privacy request with id {privacy_request_id} not found"
+            )
 
         privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
 
@@ -328,7 +332,7 @@ async def run_privacy_request(
             if not proceed:
                 return
         try:
-            policy.rules[0]
+            policy.rules[0]  # type: ignore[attr-defined]
         except IndexError:
             raise common_exceptions.MisconfiguredPolicyException(
                 f"Policy with key {policy.key} must contain at least one Rule."

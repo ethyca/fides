@@ -31,7 +31,7 @@ class ConnectionTestStatus(enum.Enum):
 
 class ConnectionType(enum.Enum):
     """
-    Supported types to which we can connect fidesops.
+    Supported types to which we can connect Fides.
     """
 
     postgres = "postgres"
@@ -51,6 +51,8 @@ class ConnectionType(enum.Enum):
     manual_webhook = "manual_webhook"  # Run before the traversal
     timescale = "timescale"
     fides = "fides"
+    generic_erasure_email = "generic_erasure_email"  # Run after the traversal
+    generic_consent_email = "generic_consent_email"  # Run after the traversal
 
     @property
     def human_readable(self) -> str:
@@ -62,6 +64,8 @@ class ConnectionType(enum.Enum):
             ConnectionType.bigquery.value: "BigQuery",
             ConnectionType.dynamodb.value: "DynamoDB",
             ConnectionType.fides.value: "Fides Connector",
+            ConnectionType.generic_consent_email.value: "Generic Consent Email",
+            ConnectionType.generic_erasure_email.value: "Generic Erasure Email",
             ConnectionType.https.value: "Policy Webhook",
             ConnectionType.manual.value: "Manual Connector",
             ConnectionType.manual_webhook.value: "Manual Process",

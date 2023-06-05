@@ -51,7 +51,10 @@ from fides.core.config import get_config
 
 CONFIG = get_config()
 
-CONSENT_EMAIL_CONNECTOR_TYPES = [ConnectionType.sovrn]
+CONSENT_EMAIL_CONNECTOR_TYPES = [
+    ConnectionType.generic_consent_email,
+    ConnectionType.sovrn,
+]
 
 
 class GenericConsentEmailConnector(BaseEmailConnector):
@@ -95,7 +98,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                     ConsentPreferencesByUser(
                         identities=self.identities_for_test_email,
                         consent_preferences=[  # TODO slated for deprecation
-                            Consent(data_use="advertising", opt_in=False),
+                            Consent(data_use="marketing.advertising", opt_in=False),
                             Consent(data_use="improve", opt_in=True),
                         ],
                         privacy_preferences=[
@@ -103,11 +106,14 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                                 preference=UserConsentPreference.opt_in,
                                 privacy_notice_history=PrivacyNoticeHistorySchema(
                                     name="Targeted Advertising",
+                                    notice_key="targeted_advertising",
                                     regions=["us_ca"],
                                     id="test_1",
                                     privacy_notice_id="12345",
                                     consent_mechanism=ConsentMechanism.opt_in,
-                                    data_uses=["advertising.first_party.personalized"],
+                                    data_uses=[
+                                        "marketing.advertising.first_party.targeted"
+                                    ],
                                     enforcement_level=EnforcementLevel.system_wide,
                                     version=1.0,
                                     displayed_in_overlay=True,
@@ -117,6 +123,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                                 preference=UserConsentPreference.opt_out,
                                 privacy_notice_history=PrivacyNoticeHistorySchema(
                                     name="Analytics",
+                                    notice_key="analytics",
                                     regions=["us_ca"],
                                     id="test_2",
                                     privacy_notice_id="67890",
@@ -155,7 +162,8 @@ class GenericConsentEmailConnector(BaseEmailConnector):
         new_workflow_consent_preferences: List[
             PrivacyPreferenceHistory
         ] = filter_privacy_preferences_for_propagation(
-            self.configuration.system, privacy_request.privacy_preferences
+            self.configuration.system,
+            privacy_request.privacy_preferences,  # type: ignore[attr-defined]
         )
         if not (old_workflow_consent_preferences or new_workflow_consent_preferences):
             return False
@@ -181,7 +189,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 "message": f"Consent email skipped for '{self.configuration.name}'",
             },
         )
-        for pref in privacy_request.privacy_preferences:
+        for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
             pref.cache_system_status(
                 db, self.configuration.system_key, ExecutionLogStatus.skipped
             )

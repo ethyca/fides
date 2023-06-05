@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
@@ -9,6 +9,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
+from sqlalchemy import column
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Query, Session
 from starlette.responses import StreamingResponse
@@ -77,6 +78,7 @@ CONFIG_JSON_PATH = "clients/privacy-center/config/config.json"
 
 
 def _filter_consent(
+    db: Session,
     query: Query,
     data_use: Optional[str] = None,
     has_gpc_flag: Optional[bool] = None,
@@ -85,20 +87,33 @@ def _filter_consent(
     created_gt: Optional[datetime] = None,
     updated_lt: Optional[datetime] = None,
     updated_gt: Optional[datetime] = None,
+    identity: Optional[str] = None,
 ) -> Query:
-    if data_use:
-        query = query.filter(Consent.data_use == data_use)
-    if has_gpc_flag is not None:
-        query = query.filter(Consent.has_gpc_flag == has_gpc_flag)
-    if opt_in is not None:
-        query = query.filter(Consent.opt_in == opt_in)
-
+    """Filter Consent records against the params passed in."""
     validate_start_and_end_filters(
         [
             (created_lt, created_gt, "created"),
             (updated_lt, updated_gt, "updated"),
         ]
     )
+
+    if identity:
+        hashed_identity = ProvidedIdentity.hash_value(value=identity)
+        identities: Set[str] = {
+            identity[0]
+            for identity in ProvidedIdentity.filter(
+                db=db,
+                conditions=(ProvidedIdentity.hashed_value == hashed_identity),
+            ).values(column("id"))
+        }
+        query = query.filter(Consent.provided_identity_id.in_(identities))
+
+    if data_use:
+        query = query.filter(Consent.data_use == data_use)
+    if has_gpc_flag is not None:
+        query = query.filter(Consent.has_gpc_flag == has_gpc_flag)
+    if opt_in is not None:
+        query = query.filter(Consent.opt_in == opt_in)
 
     if created_lt:
         query = query.filter(Consent.created_at < created_lt)
@@ -128,11 +143,13 @@ def report_consent_requests(
     created_gt: Optional[datetime] = None,
     updated_lt: Optional[datetime] = None,
     updated_gt: Optional[datetime] = None,
+    identity: Optional[str] = None,
 ) -> Union[StreamingResponse, AbstractPage[ConsentReport]]:
     """Provides a paginated list of all consent requests sorted by the most recently updated."""
 
     query = Consent.query(db).order_by(Consent.updated_at.desc())
     query = _filter_consent(
+        db,
         query,
         data_use,
         has_gpc_flag,
@@ -141,6 +158,7 @@ def report_consent_requests(
         created_gt,
         updated_lt,
         updated_gt,
+        identity,
     )
     paginated = paginate(query, params)
     paginated.items = [  # type: ignore
@@ -238,7 +256,7 @@ def consent_request_verify(
         HTTP_200_OK: {
             "consent": [
                 {
-                    "data_use": "advertising",
+                    "data_use": "marketing.advertising",
                     "data_use_description": "We may use some of your personal information for advertising performance "
                     "analysis and audience modeling for ongoing advertising which may be "
                     "interpreted as 'Data Sharing' under some regulations.",
@@ -620,7 +638,7 @@ def _prepare_consent_report(
         field="id",
         value=consent.provided_identity_id,
     )
-    consent.identity = provided_identity.as_identity_schema()
+    consent.identity = provided_identity.as_identity_schema()  # type: ignore[union-attr]
     report = ConsentReport.from_orm(consent)
     return report
 
@@ -630,9 +648,13 @@ def _prepare_consent_preferences(
     provided_identity: ProvidedIdentity,
 ) -> ConsentPreferences:
     """Returns consent preferences for the identity given."""
-    consent_records: List[Consent] = Consent.filter(
-        db=db, conditions=Consent.provided_identity_id == provided_identity.id
-    ).all()
+    consent_records: List[Consent] = (
+        Consent.filter(
+            db=db, conditions=Consent.provided_identity_id == provided_identity.id
+        )
+        .order_by(Consent.updated_at)
+        .all()
+    )
 
     if not consent_records:
         return ConsentPreferences(consent=None)

@@ -16,10 +16,6 @@ GENERIC_TAG_REGEX = r"{tag_type}([0-9]+)$"
 INITIAL_TAG_INCREMENT = 0
 TAG_INCREMENT = 1
 
-# posarg options for `tag`
-ONLY_TAG = "only_tag"
-PUSH = "push"
-
 
 class TagType(Enum):
     """
@@ -72,7 +68,6 @@ def get_current_tag(
     "action",
     [
         nox.param("dry", id="dry"),
-        nox.param("local", id="local"),
         nox.param("push", id="push"),
     ],
 )
@@ -88,7 +83,6 @@ def tag(session: nox.Session, action: str) -> None:
 
     Parameters:
         - tag(dry) = Show the tag that would be applied.
-        - tag(local) = Tag local commit but don't push it.
         - tag(push) = Tag the current commit and push it. NOTE: This will trigger a new CI job to publish the tag.
     """
     from git.repo import Repo
@@ -99,13 +93,8 @@ def tag(session: nox.Session, action: str) -> None:
     # generate a tag based on the current repo state
     generated_tag = generate_tag(session, repo.active_branch.name, all_tags)
 
-    # if no args are passed, it's a dry run
     if action == "dry":
         session.log(f"Dry-run -- would generate tag: {generated_tag}")
-
-    elif action == "local":
-        session.log(f"Tagging current HEAD commit with tag: {generated_tag}")
-        repo.create_tag(generated_tag)
 
     elif action == "push":
         repo.create_tag(generated_tag)
@@ -152,13 +141,17 @@ def increment_tag(
         version=version_number, tag_type=tag_type.value
     )
     # find our latest existing tag for this version/type
-    latest_tag = next(
+    sorted_tag_matches = sorted(
         (
-            re.fullmatch(version_branch_tag_pattern, tag.name)
+            tag.name
             for tag in all_tags
             if re.fullmatch(version_branch_tag_pattern, tag.name)
         ),
-        None,
+        reverse=True,
+    )
+    latest_tag = re.fullmatch(
+        version_branch_tag_pattern,
+        sorted_tag_matches[0] if sorted_tag_matches else "",
     )
     if latest_tag:  # if we have an existing tag for this version/type, increment it
         session.log(
