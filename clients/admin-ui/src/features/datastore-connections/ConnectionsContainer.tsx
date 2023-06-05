@@ -51,7 +51,7 @@ const ConnectionsContainer: React.FC = () => {
 
   useEffect(() => {
     dispatch(setOrphanedFromSystem(true));
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     mounted.current = true;

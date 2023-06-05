@@ -1,8 +1,6 @@
 import { Flex, Text } from "@fidesui/react";
 import React from "react";
 
-import AddConnectionButton from "./add-connection/AddConnectionButton";
-
 const ConnectionsEmptyState: React.FC = () => (
   <Flex
     bg="gray.50"

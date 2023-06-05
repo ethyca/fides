@@ -1,8 +1,9 @@
-import { Text, Flex, Heading, Box, Link } from "@fidesui/react";
+import { Box, Flex, Heading, Link, Text } from "@fidesui/react";
 import React from "react";
+
 import { ADD_SYSTEMS_ROUTE } from "../common/nav/v2/routes";
 
-const ConnectionsHeader: React.FC = ({}) => (
+const ConnectionsHeader: React.FC = () => (
   <Flex
     mb="24px"
     flexDirection="column"
