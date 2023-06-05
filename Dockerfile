@@ -15,7 +15,6 @@ RUN apt-get update && \
     git \
     gnupg \
     gcc \
-    git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
