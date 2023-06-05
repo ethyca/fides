@@ -58,10 +58,6 @@ type SelectDropdownProps = {
    */
   label: string;
   /**
-   * Sort the list items before rendering
-   */
-  enableSorting?: boolean;
-  /**
    * Display the Clear button. Default value is true.
    */
   hasClear?: boolean;
@@ -140,7 +136,6 @@ export const useConnectionListDropDown = ({
 
 const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
   disabled = false,
-  enableSorting = true,
   hasClear = true,
   label,
   list,
@@ -150,6 +145,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
 }) => {
   // Hooks
   const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("")
 
   // Listeners
   const handleClose = () => {
@@ -157,6 +153,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
   };
   const handleClear = () => {
     onChange(undefined);
+    setSearchTerm("")
     handleClose();
   };
   const handleOpen = () => {
@@ -167,7 +164,6 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
     ([, option]) => option.value.identifier === selectedValue?.identifier
   )?.[0];
 
-  const [searchTerm, setSearchTerm] = useState("")
 
   const handleSearchChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
