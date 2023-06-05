@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-sync-scripts */
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Script from "next/script";
@@ -65,14 +64,22 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
         <title>Cookie House</title>
       </Head>
       {/**
-      Insert the fides.js script. Note that "beforeInteractive" would be more
-      efficient, but since we dynamically change the URL we want this to render
-      client-side and whenever we select a new location.
+      Insert the fides.js script and run the GTM integration once ready
+      DEFER: using "beforeInteractive" here triggers a lint warning from NextJS
+      as it should only be used in the _document.tsx file. This still works and
+      ensures that fides.js fires earlier than other scripts, but isn't a best
+      practice.
       */}
       <Script
         id="fides-js"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         src={fidesScriptTagUrl}
+        onReady={() => {
+          // Enable the GTM integration, if GTM is configured
+          if (gtmContainerId) {
+            (window as any).Fides.gtm();
+          }
+        }}
       />
       {/* Insert the GTM script, if a container ID was provided */}
       {gtmContainerId ? (
@@ -83,11 +90,6 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
             j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
             })(window,document,'script','dataLayer','${gtmContainerId}');
-          `}
-          {`
-          if (window.Fides) {
-            window.Fides.gtm();
-          }
           `}
         </Script>
       ) : null}
