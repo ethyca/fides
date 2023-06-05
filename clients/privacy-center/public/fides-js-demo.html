@@ -51,8 +51,9 @@
         return;
       }
 
+
       // Once Fides.js is initialized, show some debug information on the page
-      window.addEventListener("FidesInitialized", () => {
+      const onInitialized = () => {
         console.log("Fides has been initialized!");
         // Pretty-print the fides consent object and add it to the page.
         document.getElementById("consent-json").textContent = JSON.stringify(
@@ -82,7 +83,14 @@
           consent: Fides.consent.tracking,
           dataUse: Fides.consent.data_sales,
         });
-      });
+      };
+
+      // Handle both synchronous & asynchronous initialization
+      if (Fides.initialized) {
+        onInitialized();
+      } else {
+        window.addEventListener("FidesInitialized", onInitialized);
+      }
     })();
   </script>
 </html>

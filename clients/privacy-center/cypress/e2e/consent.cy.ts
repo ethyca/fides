@@ -258,31 +258,18 @@ describe("Consent settings", () => {
 
           // GTM configuration
           expect(win)
-            .to.have.nested.property("dataLayer")
-            .that.eql([
-              {
-                event: "FidesInitialized",
-                Fides: {
-                  consent: {
-                    data_sales: false,
-                    tracking: false,
-                    analytics: true,
-                    gpc_test: true,
-                  },
+            .to.have.nested.property("dataLayer[0]")
+            .that.eql({
+              event: "FidesInitialized",
+              Fides: {
+                consent: {
+                  data_sales: false,
+                  tracking: false,
+                  analytics: true,
+                  gpc_test: true,
                 },
               },
-              {
-                event: "FidesUpdated",
-                Fides: {
-                  consent: {
-                    data_sales: false,
-                    tracking: false,
-                    analytics: true,
-                    gpc_test: true,
-                  },
-                },
-              },
-            ]);
+            });
 
           // Meta Pixel configuration
           expect(win)
@@ -366,29 +353,17 @@ describe("Consent settings", () => {
 
           // GTM configuration
           expect(win)
-            .to.have.nested.property("dataLayer")
-            .that.eql([
-              {
-                event: "FidesInitialized",
-                Fides: {
-                  consent: {
-                    data_sales: true,
-                    tracking: true,
-                    analytics: true,
-                  },
+            .to.have.nested.property("dataLayer[0]")
+            .that.eql({
+              event: "FidesInitialized",
+              Fides: {
+                consent: {
+                  data_sales: true,
+                  tracking: true,
+                  analytics: true,
                 },
               },
-              {
-                event: "FidesUpdated",
-                Fides: {
-                  consent: {
-                    data_sales: true,
-                    tracking: true,
-                    analytics: true,
-                  },
-                },
-              },
-            ]);
+            });
 
           // Meta Pixel configuration
           expect(win)
