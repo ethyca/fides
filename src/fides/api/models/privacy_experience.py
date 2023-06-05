@@ -407,6 +407,17 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
 
         return overlay_experience, privacy_center_experience
 
+    def unlink_experience_config(self, db: Session) -> PrivacyExperience:
+        """Removes the experience config
+
+        Note that neither the Experience Config or Experience are deleted; we're only removing
+        a FK if it exists.
+        """
+        return self.update(
+            db,
+            data={"experience_config_id": None, "experience_config_history_id": None},
+        )
+
     def link_default_experience_config(self, db: Session) -> PrivacyExperience:
         """Replace config from experience with default config
 
@@ -544,7 +555,10 @@ def remove_config_from_matched_experiences(
     ).all()
 
     for experience in experiences_to_unlink:
-        experience.link_default_experience_config(db)
+        if experience_config.is_default:
+            experience.unlink_experience_config(db)
+        else:
+            experience.link_default_experience_config(db)
     return [experience.region for experience in experiences_to_unlink]  # type: ignore[misc]
 
 

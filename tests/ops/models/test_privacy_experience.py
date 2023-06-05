@@ -213,6 +213,39 @@ class TestPrivacyExperience:
         db.delete(pc_exp.histories[0])
         db.delete(pc_exp)
 
+    def test_unlink_privacy_experience_config(
+        self, db, experience_config_privacy_center
+    ):
+        """
+        Test Experience.unlink_experience_config unlinks the experience and bumps the version
+        """
+        pc_exp = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": "privacy_center",
+                "region": "eu_at",
+                "experience_config_id": experience_config_privacy_center.id,
+                "experience_config_history_id": experience_config_privacy_center.experience_config_history_id,
+            },
+        )
+        created_at = pc_exp.created_at
+        updated_at = pc_exp.updated_at
+
+        assert pc_exp.version == 1.0
+        assert pc_exp.experience_config == experience_config_privacy_center
+        pc_exp.unlink_experience_config(db)
+        db.refresh(pc_exp)
+
+        assert pc_exp.experience_config_id is None
+        assert pc_exp.experience_config_history_id is None
+        assert pc_exp.version == 2.0
+        assert pc_exp.created_at == created_at
+        assert pc_exp.updated_at > updated_at
+
+        for history in pc_exp.histories:
+            history.delete(db)
+        pc_exp.delete(db)
+
     def test_link_default_experience_config(self, db, experience_config_privacy_center):
         """
         Test Experience.link_default_experience_config points the experience towards the default config
