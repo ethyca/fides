@@ -1,21 +1,26 @@
-import { Flex, Heading, Spacer } from "@fidesui/react";
+import { Text, Flex, Heading, Box, Link } from "@fidesui/react";
 import React from "react";
+import { ADD_SYSTEMS_ROUTE } from "../common/nav/v2/routes";
 
-import AddConnectionButton from "./add-connection/AddConnectionButton";
-
-type ConnectionsHeaderProps = {
-  hasConnections: boolean;
-};
-
-const ConnectionsHeader: React.FC<ConnectionsHeaderProps> = ({
-  hasConnections = false,
-}) => (
-  <Flex mb="24px" justifyContent="center" alignItems="center">
-    <Heading fontSize="2xl" fontWeight="semibold">
-      Connections
+const ConnectionsHeader: React.FC = ({}) => (
+  <Flex
+    mb="24px"
+    flexDirection="column"
+    justifyContent="center"
+    alignItems="left"
+  >
+    <Heading marginBottom={4} fontSize="2xl" fontWeight="semibold">
+      Unlinked Connections
     </Heading>
-    <Spacer />
-    {hasConnections && <AddConnectionButton />}
+    <Box maxWidth="450px">
+      <Text fontSize="sm">
+        Connections are now created in the{" "}
+        <Link color="complimentary.500" href={ADD_SYSTEMS_ROUTE}>
+          system configuration
+        </Link>{" "}
+        section. You can link existing connections to a new or existing system.
+      </Text>
+    </Box>
   </Flex>
 );
 

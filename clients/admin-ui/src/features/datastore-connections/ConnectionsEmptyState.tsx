@@ -20,12 +20,11 @@ const ConnectionsEmptyState: React.FC = () => (
       fontWeight="600"
       mb="7px"
     >
-      Welcome to your Datastores!
+      All of your connections have been linked!
     </Text>
     <Text color="gray.600" fontSize="sm" lineHeight="20px" mb="11px">
-      You don&lsquo;t have any Connections set up yet.
+      You are ready to upgrade Fides
     </Text>
-    <AddConnectionButton />
   </Flex>
 );
 

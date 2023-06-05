@@ -38,6 +38,7 @@ function mapFiltersToSearchParams({
   test_status,
   system_type,
   disabled_status,
+  orphaned_from_system,
 }: Partial<DatastoreConnectionParams>): string {
   let queryString = "";
   if (connection_type) {
@@ -70,6 +71,12 @@ function mapFiltersToSearchParams({
   if (disabled_status) {
     const value = disabled_status === DisabledStatus.DISABLED;
     queryString += queryString ? `&disabled=${value}` : `disabled=${value}`;
+  }
+
+  if (typeof orphaned_from_system !== "undefined") {
+    queryString += queryString
+      ? `&orphaned_from_system=${orphaned_from_system}`
+      : `orphaned_from_system=${orphaned_from_system}`;
   }
 
   return queryString ? `?${queryString}` : "";
@@ -124,6 +131,11 @@ export const datastoreConnectionSlice = createSlice({
       page: initialState.page,
       size: action.payload,
     }),
+    setOrphanedFromSystem: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      page: initialState.page,
+      orphaned_from_system: action.payload,
+    }),
   },
 });
 
@@ -135,6 +147,7 @@ export const {
   setSystemType,
   setTestingStatus,
   setDisabledStatus,
+  setOrphanedFromSystem,
 } = datastoreConnectionSlice.actions;
 export const selectDatastoreConnectionFilters = (
   state: RootState
@@ -146,6 +159,7 @@ export const selectDatastoreConnectionFilters = (
   system_type: state.datastoreConnections.system_type,
   test_status: state.datastoreConnections.test_status,
   disabled_status: state.datastoreConnections.disabled_status,
+  orphaned_from_system: state.datastoreConnections.orphaned_from_system,
 });
 
 export const { reducer } = datastoreConnectionSlice;
