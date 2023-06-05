@@ -138,6 +138,7 @@ const upsertConnectionConfigSecrets = async (
 type ConnectorParametersProps = {
   systemFidesKey: string;
   connectionOption: ConnectionSystemTypeMap;
+  setSelectedConnectionOption: (option: ConnectionSystemTypeMap | undefined)=> void;
   connectionConfig?: ConnectionConfigurationResponse;
 };
 
@@ -161,9 +162,10 @@ export const useConnectorForm = ({
   systemFidesKey,
   connectionOption,
   connectionConfig,
+  setSelectedConnectionOption
 }: Pick<
   ConnectorParametersProps,
-  "systemFidesKey" | "connectionOption" | "connectionConfig"
+  "systemFidesKey" | "connectionOption" | "connectionConfig" | "setSelectedConnectionOption"
 > & {
   secretsSchema?: ConnectionTypeSecretSchemaReponse;
 }) => {
@@ -199,6 +201,10 @@ export const useConnectorForm = ({
       await deleteDatastoreConnection(id);
       // @ts-ignore connection_configs isn't on the type yet but will be in the future
       dispatch(setActiveSystem({ ...activeSystem, connection_configs: null }));
+      setSelectedConnectionOption(undefined)
+       successAlert(
+        `Connector successfully deleted!`
+      );
     } catch (e) {
       handleError(e);
     }
@@ -299,6 +305,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   systemFidesKey,
   connectionOption,
   connectionConfig,
+  setSelectedConnectionOption
 }) => {
   const [response, setResponse] = useState<any>();
 
@@ -325,6 +332,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     systemFidesKey,
     connectionOption,
     connectionConfig,
+    setSelectedConnectionOption
   });
 
   const defaultValues: ConnectionConfigFormValues = {

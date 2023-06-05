@@ -35,7 +35,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   const {
     dropDownOptions,
     selectedValue: selectedConnectionOption,
-    setSelectedValue,
+    setSelectedValue: setSelectedConnectionOption,
   } = useConnectionListDropDown({ connectionConfig });
   const filters = useAppSelector(selectDatastoreConnectionFilters);
 
@@ -67,7 +67,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           list={dropDownOptions}
           label="Connection Type"
           selectedValue={selectedConnectionOption}
-          onChange={setSelectedValue}
+          onChange={setSelectedConnectionOption}
         />
 
         {!connectionConfig && orphanedConnectionConfigs.length > 0 ? (
@@ -102,6 +102,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
       {selectedConnectionOption?.type === SystemType.DATABASE ? (
         <ConnectorParameters
           connectionConfig={connectionConfig}
+          setSelectedConnectionOption={setSelectedConnectionOption}
           connectionOption={selectedConnectionOption}
           systemFidesKey={systemFidesKey}
         />
@@ -110,6 +111,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
       selectedConnectionOption ? (
         <ConnectorParameters
           connectionOption={selectedConnectionOption}
+          setSelectedConnectionOption={setSelectedConnectionOption}
           connectionConfig={connectionConfig}
           systemFidesKey={systemFidesKey}
         />
@@ -118,6 +120,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
       selectedConnectionOption ? (
         <ConnectorParameters
           connectionOption={selectedConnectionOption}
+          setSelectedConnectionOption={setSelectedConnectionOption}
           connectionConfig={connectionConfig}
           systemFidesKey={systemFidesKey}
         />
@@ -126,6 +129,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
       selectedConnectionOption ? (
         <ConnectorParameters
           connectionOption={selectedConnectionOption}
+          setSelectedConnectionOption={setSelectedConnectionOption}
           connectionConfig={connectionConfig}
           systemFidesKey={systemFidesKey}
         />
