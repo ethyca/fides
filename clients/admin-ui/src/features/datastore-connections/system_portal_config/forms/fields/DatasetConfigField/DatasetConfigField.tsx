@@ -165,6 +165,10 @@ const DatasetConfigField: React.FC<Props> = ({ dropdownOptions }) => {
     <Flex flexDirection="row">
       <CustomSelect
         label="Dataset"
+        labelProps={{
+          fontWeight: "semibold",
+          fontSize: "sm"
+        }}
         name={fieldName}
         options={dropdownOptions}
         isRequired

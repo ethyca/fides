@@ -224,7 +224,6 @@ export const useConnectorForm = ({
         );
         // eslint-disable-next-line no-param-reassign
         connectionConfig = response.connection;
-        successAlert(`Connector successfully added!`);
       } else {
         const payload = await patchConnectionConfig(
           values,
