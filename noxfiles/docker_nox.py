@@ -16,11 +16,6 @@ from constants_nox import (
 )
 from git_nox import get_current_tag, recognized_tag
 
-DOCKER_PLATFORM_MAP = {
-    "amd64": "linux/amd64",
-    "arm64": "linux/arm64",
-    "x86_64": "linux/amd64",
-}
 DOCKER_PLATFORMS = "linux/amd64,linux/arm64"
 
 
@@ -75,18 +70,6 @@ def get_current_image() -> str:
     return f"{IMAGE}:{get_current_tag()}"
 
 
-def get_platform(posargs: List[str]) -> str:
-    """
-    Calculate the CPU platform or get it from the
-    positional arguments.
-    """
-    if "amd64" in posargs:
-        return DOCKER_PLATFORM_MAP["amd64"]
-    if "arm64" in posargs:
-        return DOCKER_PLATFORM_MAP["arm64"]
-    return DOCKER_PLATFORM_MAP[platform.machine().lower()]
-
-
 @nox.session()
 @nox.parametrize(
     "image",
@@ -109,7 +92,6 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         prod = Build the fides webserver/CLI and tag it as the current application version.
         test = Build the fides webserver/CLI the same as `prod`, but tag it as `local`.
     """
-    build_platform = get_platform(session.posargs)
 
     # This check needs to be here so it has access to the session to throw an error
     if image == "prod":
@@ -145,8 +127,6 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
             "docker",
             "build",
             "--target=prod_pc",
-            "--platform",
-            build_platform,
             "--tag",
             privacy_center_image_tag,
             ".",
@@ -158,8 +138,6 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
             "docker",
             "build",
             "clients/sample-app",
-            "--platform",
-            build_platform,
             "--tag",
             sample_app_image_tag,
             external=True,
@@ -172,8 +150,6 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         "docker",
         "build",
         f"--target={target}",
-        "--platform",
-        build_platform,
         "--tag",
         tag(),
         ".",

@@ -14,6 +14,20 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+
+# Install FreeTDS (used for PyMSSQL)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libssl-dev \
+    libkrb5-dev \
+    unixodbc \
+    unixodbc-dev \
+    freetds-dev \
+    freetds-bin \
+    tdsodbc \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install Python Dependencies
 COPY dev-requirements.txt .
 RUN pip install --user -U pip --no-cache-dir install -r dev-requirements.txt
