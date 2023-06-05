@@ -1,6 +1,7 @@
 import { Flex, Heading, Text, Stack, useToast } from "@fidesui/react";
 import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
+import { useRouter } from 'next/router';
 import { ConfigErrorToastOptions } from "~/common/toast-options";
 
 import {
@@ -17,6 +18,7 @@ import ConsentCard from "~/components/ConsentCard";
 import { useConfig } from "~/features/common/config.slice";
 
 const Home: NextPage = () => {
+  const router = useRouter();
   const config = useConfig();
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
@@ -33,7 +35,7 @@ const Home: NextPage = () => {
     successHandler: privacyModalSuccessHandler,
   } = usePrivacyRequestModal();
 
-  const {
+  let {
     isOpen: isConsentModalOpen,
     onOpen: onConsentModalOpen,
     onClose: onConsentModalClose,
@@ -89,6 +91,11 @@ const Home: NextPage = () => {
         onOpen={onConsentModalOpen}
       />
     );
+    if (router.query?.showConsentModal == "true") {
+      // manually override whether to show the consent modal given
+      // the query param `showConsentModal`
+      isConsentModalOpen = true;
+    }
   }
 
   return (
