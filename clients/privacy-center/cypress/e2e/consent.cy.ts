@@ -261,6 +261,7 @@ describe("Consent settings", () => {
             .to.have.nested.property("dataLayer")
             .that.eql([
               {
+                event: "FidesInitialized",
                 Fides: {
                   consent: {
                     data_sales: false,
@@ -357,6 +358,7 @@ describe("Consent settings", () => {
             .to.have.nested.property("dataLayer")
             .that.eql([
               {
+                event: "FidesInitialized",
                 Fides: {
                   consent: {
                     data_sales: true,
