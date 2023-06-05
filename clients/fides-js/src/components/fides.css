@@ -188,7 +188,7 @@ button.fides-banner-button.fides-banner-button-tertiary {
 }
 
 /** Modal */
-div#fides-modal {
+div.modal-content {
   font-family: var(--fides-overlay-font-family);
   font-size: var(--fides-overlay-font-size-body);
   color: var(--fides-overlay-body-font-color);
@@ -199,13 +199,30 @@ div#fides-modal {
   border-radius: var(--fides-overlay-component-border-radius);
   max-height: 100%;
   max-width: 100%;
-  /* TODO: use a system for z-indexes */
-  z-index: 1010;
 
+  z-index: 2;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+.modal-container,
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.modal-container {
+  z-index: 2;
+  display: flex;
+}
+
+.modal-container[aria-hidden="true"] {
+  display: none;
 }
 
 div#fides-modal .modal-header {
@@ -223,15 +240,6 @@ div#fides-modal .modal-description {
 
 div#fides-modal .modal-button-group {
   display: flex;
-}
-
-.modal-overlay {
-  z-index: 1000;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
 }
 
 .modal-notices {

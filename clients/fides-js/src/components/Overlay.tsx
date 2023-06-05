@@ -1,5 +1,4 @@
 import { h, FunctionComponent } from "preact";
-import { useState } from "preact/hooks";
 import {
   ConsentMethod,
   FidesOptions,
@@ -8,13 +7,14 @@ import {
   SaveConsentPreference,
 } from "../lib/consent-types";
 import ConsentBanner from "./ConsentBanner";
-import ConsentModal from "./ConsentModal";
 
 import { updateConsentPreferences } from "../lib/preferences";
 import { transformConsentToFidesUserPreference } from "../lib/consent-utils";
 import { FidesCookie } from "../lib/cookie";
 
 import "./fides.css";
+import { useA11yDialog } from "../lib/a11y-dialog";
+import ConsentModal from "./ConsentModal";
 
 export interface OverlayProps {
   options: FidesOptions;
@@ -29,7 +29,23 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   fidesRegionString,
   cookie,
 }) => {
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const { instance, attributes } = useA11yDialog({
+    id: "fides-modal",
+    role: "dialog",
+    title: experience?.experience_config?.title || "",
+  });
+
+  const handleOpenModal = () => {
+    if (instance) {
+      instance.show();
+    }
+  };
+
+  const handleCloseModal = () => {
+    if (instance) {
+      instance.hide();
+    }
+  };
 
   if (!experience.experience_config) {
     return null;
@@ -112,18 +128,17 @@ const Overlay: FunctionComponent<OverlayProps> = ({
         onAcceptAll={onAcceptAll}
         onRejectAll={onRejectAll}
         waitBeforeShow={100}
-        onOpenModal={() => setModalIsOpen(true)}
+        onOpenModal={handleOpenModal}
       />
-      {modalIsOpen ? (
-        <ConsentModal
-          experience={experience.experience_config}
-          notices={privacyNotices}
-          onClose={() => setModalIsOpen(false)}
-          onAcceptAll={onAcceptAll}
-          onRejectAll={onRejectAll}
-          onSave={onSavePreferences}
-        />
-      ) : null}
+      <ConsentModal
+        attributes={attributes}
+        experience={experience.experience_config}
+        notices={privacyNotices}
+        onClose={handleCloseModal}
+        onAcceptAll={onAcceptAll}
+        onRejectAll={onRejectAll}
+        onSave={onSavePreferences}
+      />
     </div>
   );
 };
