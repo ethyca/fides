@@ -554,13 +554,17 @@ def user_login(
             db, field="username", value=user_data.username
         )
 
+        invalid_user_error_msg = "Incorrect username or password."
+
         if not user_check:
-            raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="No user found.")
+            raise HTTPException(
+                status_code=HTTP_403_FORBIDDEN, detail=invalid_user_error_msg
+            )
 
         if not user_check.credentials_valid(user_data.password):
             raise HTTPException(
                 status_code=HTTP_403_FORBIDDEN,
-                detail="Incorrect user name or password.",
+                detail=invalid_user_error_msg,
             )
 
         # We have already checked for None but mypy still complains. This prevents mypy

@@ -576,12 +576,14 @@ interface CustomTextAreaProps {
   label?: string;
   tooltip?: string;
   variant?: Variant;
+  isRequired?: boolean;
 }
 export const CustomTextArea = ({
   textAreaProps,
   label,
   tooltip,
   variant = "inline",
+  isRequired = false,
   ...props
 }: CustomTextAreaProps & StringField) => {
   const [initialField, meta] = useField(props);
@@ -600,7 +602,7 @@ export const CustomTextArea = ({
   // since we only render the text field
   if (!label) {
     return (
-      <FormControl isInvalid={isInvalid}>
+      <FormControl isInvalid={isInvalid} isRequired={isRequired}>
         <Flex>
           <Flex flexDir="column" flexGrow={1}>
             {innerTextArea}
@@ -618,7 +620,7 @@ export const CustomTextArea = ({
 
   if (variant === "inline") {
     return (
-      <FormControl isInvalid={isInvalid}>
+      <FormControl isInvalid={isInvalid} isRequired={isRequired}>
         <Grid templateColumns="1fr 3fr">
           {label ? <FormLabel>{label}</FormLabel> : null}
           <Flex>
@@ -637,7 +639,7 @@ export const CustomTextArea = ({
     );
   }
   return (
-    <FormControl isInvalid={isInvalid}>
+    <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
           <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>

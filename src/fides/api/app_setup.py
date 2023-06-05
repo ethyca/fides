@@ -8,14 +8,14 @@ from fastapi import FastAPI
 from loguru import logger
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
-from slowapi.extension import Limiter, _rate_limit_exceeded_handler  # type: ignore
+from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
 from slowapi.middleware import SlowAPIMiddleware  # type: ignore
-from slowapi.util import get_remote_address  # type: ignore
 from starlette.middleware.cors import CORSMiddleware
 
 import fides
 from fides.api.api.deps import get_api_session
 from fides.api.api.v1.api import api_router
+from fides.api.api.v1.endpoints.utils import fides_limiter
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
 from fides.api.ctl.database.database import configure_db
@@ -32,6 +32,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.util.cache import get_cache
+from fides.api.util.consent_util import load_default_experience_configs_on_startup
 from fides.api.util.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
@@ -45,13 +46,16 @@ VERSION = fides.__version__
 ROUTERS = [CTL_ROUTER, api_router]
 
 
+PRIVACY_EXPERIENCE_CONFIGS_PATH = (
+    "/fides/data/privacy_notices/privacy_experience_config_defaults.yml"
+)
+
+
 def create_fides_app(
     cors_origins: Union[str, List[str]] = CONFIG.security.cors_origins,
     cors_origin_regex: Optional[Pattern] = CONFIG.security.cors_origin_regex,
     routers: List = ROUTERS,
     app_version: str = VERSION,
-    request_rate_limit: str = CONFIG.security.request_rate_limit,
-    rate_limit_prefix: str = CONFIG.security.rate_limit_prefix,
     security_env: str = CONFIG.security.env,
 ) -> FastAPI:
     """Return a properly configured application."""
@@ -65,13 +69,7 @@ def create_fides_app(
     )
 
     fastapi_app = FastAPI(title="fides", version=app_version)
-    fastapi_app.state.limiter = Limiter(
-        default_limits=[request_rate_limit],
-        headers_enabled=True,
-        key_prefix=rate_limit_prefix,
-        key_func=get_remote_address,
-        retry_after="http-date",
-    )
+    fastapi_app.state.limiter = fides_limiter
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     for handler in ExceptionHandlers.get_handlers():
         fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)
@@ -170,6 +168,9 @@ async def run_database_startup() -> None:
         return
     finally:
         db.close()
+
+    load_default_experience_configs()  # Must occur before loading default privacy notices
+
     db.close()
 
 
@@ -185,3 +186,15 @@ def check_redis() -> None:
         return
     else:
         logger.debug("Connection to cache succeeded")
+
+
+def load_default_experience_configs() -> None:
+    """Load default experience_configs into the db"""
+    logger.info("Loading default privacy experience configs")
+    try:
+        db = get_api_session()
+        load_default_experience_configs_on_startup(db, PRIVACY_EXPERIENCE_CONFIGS_PATH)
+    except Exception as e:
+        logger.error("Skipping loading default privacy experience configs: {}", str(e))
+    finally:
+        db.close()

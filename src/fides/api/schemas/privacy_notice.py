@@ -3,14 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from fideslang.validation import FidesKey
 from pydantic import Extra, conlist, root_validator, validator
 
-from fides.api.models.privacy_notice import (
-    ConsentMechanism,
-    EnforcementLevel,
-    PrivacyNoticeRegion,
-    UserConsentPreference,
-)
+from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
+from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel
+from fides.api.models.privacy_notice import PrivacyNoticeRegion, UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
 
 
@@ -23,6 +21,7 @@ class PrivacyNotice(FidesSchema):
     """
 
     name: Optional[str]
+    notice_key: Optional[FidesKey]
     description: Optional[str]
     internal_description: Optional[str]
     origin: Optional[str]
@@ -62,12 +61,38 @@ class PrivacyNotice(FidesSchema):
             if data_use not in valid_data_uses:
                 raise ValueError(f"Unknown data_use '{data_use}'")
 
+
+class PrivacyNoticeCreation(PrivacyNotice):
+    """
+    An API representation of a PrivacyNotice.
+    This model doesn't include an `id` so that it can be used for creation.
+    It also establishes some fields _required_ for creation
+    """
+
+    name: str
+    regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
+    consent_mechanism: ConsentMechanism
+    data_uses: conlist(str, min_items=1)  # type: ignore
+    enforcement_level: EnforcementLevel
+
+    @root_validator(pre=True)
+    def validate_notice_key(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate the notice_key from the name if not supplied
+        """
+        if not values.get("notice_key"):
+            values["notice_key"] = PrivacyNoticeModel.generate_notice_key(
+                values.get("name")
+            )
+
+        return values
+
     @root_validator
     def validate_consent_mechanisms_and_display(
         cls, values: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
-        Add some validation on where certain consent mechanisms must be displayed
+        Add some validation regarding where certain consent mechanisms must be displayed
         """
         consent_mechanism: Optional[str] = values.get("consent_mechanism")
         displayed_in_overlay: Optional[bool] = values.get("displayed_in_overlay")
@@ -95,20 +120,6 @@ class PrivacyNotice(FidesSchema):
             raise ValueError("Notice-only notices must be served in an overlay.")
 
         return values
-
-
-class PrivacyNoticeCreation(PrivacyNotice):
-    """
-    An API representation of a PrivacyNotice.
-    This model doesn't include an `id` so that it can be used for creation.
-    It also establishes some fields _required_ for creation
-    """
-
-    name: str
-    regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
-    consent_mechanism: ConsentMechanism
-    data_uses: conlist(str, min_items=1)  # type: ignore
-    enforcement_level: EnforcementLevel
 
 
 class PrivacyNoticeWithId(PrivacyNotice):

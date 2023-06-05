@@ -104,6 +104,29 @@ class TestConsentRequestReporting:
         item = data["items"][0]
         assert item["data_use"] == "email"
 
+    def test_consent_request_report_filters_identity(
+        self,
+        url,
+        generate_auth_header,
+        api_client,
+        consent_records,
+        provided_identity_value,
+    ):
+        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+        response = api_client.get(
+            url + f"?identity={provided_identity_value}",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert response.json()["total"] == 2
+
+        response = api_client.get(
+            url + "?identity=not-an-identity",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert response.json()["total"] == 0
+
     def test_consent_request_report_filters_opt_in(
         self,
         url,
@@ -876,7 +899,7 @@ class TestSaveConsent:
 
         consent_data: list[dict[str, Any]] = [
             {
-                "data_use": "advertising",
+                "data_use": "marketing.advertising",
                 "data_use_description": None,
                 "opt_in": True,
                 "has_gpc_flag": True,
@@ -901,7 +924,7 @@ class TestSaveConsent:
             "consent": consent_data,
             "policy_key": consent_policy.key,  # Optional policy_key supplied,
             "executable_options": [
-                {"data_use": "advertising", "executable": True},
+                {"data_use": "marketing.advertising", "executable": True},
                 {"data_use": "improve", "executable": False},
             ],
             "browser_identity": {"ga_client_id": "test_ga_client_id"},
@@ -914,7 +937,7 @@ class TestSaveConsent:
         assert response.status_code == 200
         expected_consent_data: list[dict[str, Any]] = [
             {
-                "data_use": "advertising",
+                "data_use": "marketing.advertising",
                 "data_use_description": None,
                 "opt_in": True,
                 "has_gpc_flag": True,
@@ -950,7 +973,7 @@ class TestSaveConsent:
             {
                 "conflicts_with_gpc": False,
                 "opt_in": True,
-                "data_use": "advertising",
+                "data_use": "marketing.advertising",
                 "has_gpc_flag": True,
                 "data_use_description": None,
             },
@@ -981,7 +1004,7 @@ class TestSaveConsent:
 
         consent_data: list[dict[str, Any]] = [
             {
-                "data_use": "advertising",
+                "data_use": "marketing.advertising",
                 "data_use_description": None,
                 "opt_in": True,
                 "has_gpc_flag": True,
@@ -999,7 +1022,7 @@ class TestSaveConsent:
             "consent": consent_data,
             "policy_key": consent_policy.key,  # Optional policy_key supplied,
             "executable_options": [
-                {"data_use": "advertising", "executable": True},
+                {"data_use": "marketing.advertising", "executable": True},
                 {"data_use": "improve", "executable": False},
             ],
             "browser_identity": {"ga_client_id": "test_ga_client_id"},
