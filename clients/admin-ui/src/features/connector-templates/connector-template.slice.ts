@@ -27,7 +27,7 @@ export const connectorTemplateApi = baseApi.injectEndpoints({
           body: formData,
         };
       },
-      invalidatesTags: ()=> ["Connection Type"]
+      invalidatesTags: () => ["Connection Type"],
     }),
   }),
 });
