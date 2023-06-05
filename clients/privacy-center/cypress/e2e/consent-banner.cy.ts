@@ -983,6 +983,7 @@ describe("Consent banner", () => {
         cy.contains("button", "Reject Test").should("be.visible").click();
         cy.get("@FidesUpdated")
           .should("have.been.calledTwice")
+          // First call should be from initialization, before the user rejects all
           .its("firstCall.args.0.detail")
           .should("deep.equal", {
             consent: {
@@ -991,6 +992,7 @@ describe("Consent banner", () => {
             },
           });
         cy.get("@FidesUpdated")
+          // Second call is when the user rejects all
           .its("secondCall.args.0.detail")
           .should("deep.equal", {
             consent: {
@@ -1004,6 +1006,7 @@ describe("Consent banner", () => {
         cy.contains("button", "Accept Test").should("be.visible").click();
         cy.get("@FidesUpdated")
           .should("have.been.calledTwice")
+          // First call should be from initialization, before the user accepts all
           .its("firstCall.args.0.detail")
           .should("deep.equal", {
             consent: {
@@ -1012,6 +1015,7 @@ describe("Consent banner", () => {
             },
           });
         cy.get("@FidesUpdated")
+          // Second call is when the user accepts all
           .its("secondCall.args.0.detail")
           .should("deep.equal", {
             consent: {
@@ -1029,6 +1033,7 @@ describe("Consent banner", () => {
         cy.getByTestId("consent-modal").contains("Save").click();
         cy.get("@FidesUpdated")
           .should("have.been.calledTwice")
+          // First call should be from initialization, before the user saved preferences
           .its("firstCall.args.0.detail")
           .should("deep.equal", {
             consent: {
@@ -1037,6 +1042,7 @@ describe("Consent banner", () => {
             },
           });
         cy.get("@FidesUpdated")
+          // Second call is when the user saved preferences and opted-in to the first notice
           .its("secondCall.args.0.detail")
           .should("deep.equal", {
             consent: {
@@ -1051,6 +1057,7 @@ describe("Consent banner", () => {
       cy.contains("button", "Accept Test").should("be.visible").click();
       cy.get("@dataLayerPush")
         .should("have.been.calledTwice")
+          // First call should be from initialization, before the user accepts all
         .its("firstCall.args.0")
         .should("deep.equal", {
           event: "FidesInitialized",
@@ -1062,6 +1069,7 @@ describe("Consent banner", () => {
           },
         });
       cy.get("@dataLayerPush")
+        // Second call is when the user accepts all
         .its("secondCall.args.0")
         .should("deep.equal", {
           event: "FidesUpdated",
