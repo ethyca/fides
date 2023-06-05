@@ -26,7 +26,7 @@ export const initOverlay = async ({
       )
     );
     const modalLinkEl = document.getElementById(FIDES_MODAL_LINK);
-    if (!noticesWithNoUserPreferenceExist || !modalLinkEl) {
+    if (!(noticesWithNoUserPreferenceExist || modalLinkEl)) {
       return Promise.resolve();
     }
     try {

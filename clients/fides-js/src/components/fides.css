@@ -60,9 +60,7 @@ div#fides-overlay {
 }
 
 #fides-modal-link {
-  text-decoration: underline;
   cursor: pointer;
-  color: blue;
   display: none;
 }
 

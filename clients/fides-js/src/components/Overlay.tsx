@@ -24,7 +24,7 @@ export interface OverlayProps {
   experience: PrivacyExperience;
   cookie: FidesCookie;
   fidesRegionString: string;
-  modalLinkEl?: HTMLElement;
+  modalLinkEl?: HTMLElement | null;
 }
 
 const Overlay: FunctionComponent<OverlayProps> = ({
