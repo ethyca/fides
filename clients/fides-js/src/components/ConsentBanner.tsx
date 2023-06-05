@@ -1,5 +1,5 @@
 import { h, FunctionComponent } from "preact";
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, StateUpdater } from "preact/hooks";
 import { ButtonType, ExperienceConfig } from "../lib/consent-types";
 import Button from "./Button";
 import { useHasMounted } from "../lib/hooks";
@@ -11,6 +11,8 @@ interface BannerProps {
   waitBeforeShow?: number;
   managePreferencesLabel?: string;
   onOpenModal: () => void;
+  bannerIsOpen: boolean;
+  setBannerIsOpen: StateUpdater<boolean>;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
@@ -19,8 +21,9 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onRejectAll,
   waitBeforeShow,
   onOpenModal,
+  bannerIsOpen,
+  setBannerIsOpen,
 }) => {
-  const [isShown, setIsShown] = useState(false);
   const hasMounted = useHasMounted();
   const {
     title = "Manage your consent",
@@ -33,14 +36,14 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
 
   useEffect(() => {
     const delayBanner = setTimeout(() => {
-      setIsShown(true);
+      setBannerIsOpen(true);
     }, waitBeforeShow);
     return () => clearTimeout(delayBanner);
-  }, [setIsShown, waitBeforeShow]);
+  }, [setBannerIsOpen, waitBeforeShow]);
 
   const handleManagePreferencesClick = (): void => {
     onOpenModal();
-    setIsShown(false);
+    setBannerIsOpen(false);
   };
 
   if (!hasMounted) {
@@ -51,7 +54,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     <div
       id="fides-banner"
       className={`fides-banner fides-banner-bottom ${
-        isShown ? "" : "fides-banner-hidden"
+        bannerIsOpen ? "" : "fides-banner-hidden"
       } `}
     >
       <div id="fides-banner-inner">
@@ -75,7 +78,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
               label={rejectButtonLabel}
               onClick={() => {
                 onRejectAll();
-                setIsShown(false);
+                setBannerIsOpen(false);
               }}
             />
             <Button
@@ -83,7 +86,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
               label={acceptButtonLabel}
               onClick={() => {
                 onAcceptAll();
-                setIsShown(false);
+                setBannerIsOpen(false);
               }}
             />
           </span>
