@@ -1057,7 +1057,7 @@ describe("Consent banner", () => {
       cy.contains("button", "Accept Test").should("be.visible").click();
       cy.get("@dataLayerPush")
         .should("have.been.calledTwice")
-          // First call should be from initialization, before the user accepts all
+        // First call should be from initialization, before the user accepts all
         .its("firstCall.args.0")
         .should("deep.equal", {
           event: "FidesInitialized",
