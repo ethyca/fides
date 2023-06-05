@@ -3,7 +3,7 @@ saas_config:
   name: Adobe Campaign
   type: adobe_campaign
   description: A schema representing the Adobe Campaign connector for Fides
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
@@ -11,13 +11,19 @@ saas_config:
     - name: organization
       description: e.g. ORGANIZATION for production or ORGANIZATION-mkt-stage for staging
     - name: organization_id
+      label: Organization ID
       description: e.g. ***@AdobeOrg
     - name: client_id
+      label: Client ID
+      sensitive: True
     - name: client_secret
+      sensitive: True
     - name: technical_account_id
+      label: Technical Account ID
       description: e.g. ***@techacct.adobe.com
     - name: private_key
       description: PEM formatted
+      sensitive: True
     - name: namespace
       default_value: defaultNamespace1
       description: The namespace to use for data protections requests

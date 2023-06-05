@@ -3,12 +3,14 @@ saas_config:
   name: Braintree
   type: braintree
   description: A sample schema representing the Braintree connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: domain
     - name: public_key
+      sensitive: True
     - name: private_key
+      sensitive: True
 
   external_references:
     - name: braintree_user_id

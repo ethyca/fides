@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from pydantic import Field
+
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
@@ -10,7 +12,7 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to Snowflake"""
 
     user_login_name: Optional[str] = None
-    password: Optional[str] = None
+    password: Optional[str] = Field(sensitive=True)
     account_identifier: Optional[
         str
     ] = None  # Do not include the snowflakecomputing.com domain name as part of your account identifier.

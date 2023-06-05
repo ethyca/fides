@@ -3,7 +3,7 @@ saas_config:
   name: Outreach
   type: outreach
   description: A sample schema representing the Outreach connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: domain
@@ -11,8 +11,12 @@ saas_config:
     - name: requester_email
       description: The email of the Outreach user to associate with each automated compliance request (data_protection_request)
     - name: client_id
+      label: Client ID
+      sensitive: True
     - name: client_secret
+      sensitive: True
     - name: redirect_uri
+      label: Redirect URI
     - name: page_size
       description: The number of entries to return per page
 

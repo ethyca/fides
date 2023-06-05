@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from pydantic import Field
+
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
@@ -13,8 +15,8 @@ class RedshiftSchema(ConnectionConfigSecretsSchema):
     port: Optional[int] = None
     database: Optional[str] = None
     user: Optional[str] = None
-    password: Optional[str] = None
-    db_schema: Optional[str] = None
+    password: Optional[str] = Field(sensitive=True)
+    db_schema: Optional[str] = Field(None, title="DB Schema")
 
     _required_components: List[str] = ["host", "user", "password"]
 

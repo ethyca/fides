@@ -3,15 +3,17 @@ saas_config:
   name: Aircall
   type: aircall
   description: A sample schema representing the Aircall connector for Fides
-  version: 0.1.0
+  version: 0.1.1
 
   connector_params:
     - name: domain
       default_value: api.aircall.io
     - name: api_id
       label: API ID
+      sensitive: True
     - name: api_token
       label: API Token
+      sensitive: True
 
   client_config:
     protocol: https

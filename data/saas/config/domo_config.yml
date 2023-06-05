@@ -3,12 +3,14 @@ saas_config:
   name: Domo
   type: domo
   description: A sample schema representing the Domo connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: domain
     - name: client_id
+      sensitive: True
     - name: client_secret
+      sensitive: True
 
   client_config:
     protocol: https

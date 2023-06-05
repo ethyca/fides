@@ -3,7 +3,7 @@ saas_config:
   name: Firebase Auth
   type: firebase_auth
   description: A sample schema representing the Firebase Auth connector for Fides
-  version: 0.0.3
+  version: 0.0.4
 
   connector_params:
     - name: domain
@@ -11,17 +11,27 @@ saas_config:
     - name: type
       default_value: service_account
     - name: project_id
+      label: Project ID
     - name: private_key_id
+      label: Private Key ID
+      sensitive: True
     - name: private_key
+      sensitive: True
     - name: client_email
     - name: client_id
+      label: Client ID
+      sensitive: True
     - name: auth_uri
+      label: Auth URI
       default_value: https://accounts.google.com/o/oauth2/auth
     - name: token_uri
+      label: Token URI
       default_value: https://oauth2.googleapis.com/token
     - name: auth_provider_x509_cert_url
+      label: Auth Provider X509 Cert URL
       default_value: https://www.googleapis.com/oauth2/v1/certs
     - name: client_x509_cert_url
+      label: Client X509 Cert URL
 
   client_config:
     protocol: NOT_USED

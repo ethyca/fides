@@ -3,14 +3,18 @@ saas_config:
   name: Salesforce Classic
   type: salesforce
   description: A sample schema representing the Salesforce Classic connector for Fides
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
       description: yourdomain.my.salesforce.com
     - name: client_id
+      label: Client ID
+      sensitive: True
     - name: client_secret
+      sensitive: True
     - name: redirect_uri
+      label: Redirect URI
 
   client_config:
     protocol: https

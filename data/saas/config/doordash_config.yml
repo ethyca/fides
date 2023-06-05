@@ -3,16 +3,19 @@ saas_config:
   name: Doordash
   type: doordash
   description: A sample schema representing the Doordash connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: domain
       default_value: openapi.doordash.com
     - name: developer_id
       label: Developer ID
+      sensitive: True
     - name: key_id
       label: Key ID
+      sensitive: True
     - name: signing_secret
+      sensitive: True
 
   external_references:
     - name: doordash_delivery_id

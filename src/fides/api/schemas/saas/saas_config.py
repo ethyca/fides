@@ -271,6 +271,7 @@ class ConnectorParam(BaseModel):
     default_value: Optional[Union[str, List[str]]]
     multiselect: Optional[bool] = False
     description: Optional[str]
+    sensitive: Optional[bool] = False
 
     @root_validator
     def validate_connector_param(cls, values: Dict[str, Any]) -> Dict[str, Any]:

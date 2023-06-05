@@ -3,13 +3,16 @@ saas_config:
   name: Amplitude
   type: amplitude
   description: A sample schema representing the Amplitude connector for Fides
-  version: 0.1.0
+  version: 0.1.1
 
   connector_params:
     - name: domain
       default_value: amplitude.com
     - name: api_key
+      label: API Key
+      sensitive: True
     - name: secret_key
+      sensitive: True
 
   client_config:
     protocol: https

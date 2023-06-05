@@ -3,11 +3,12 @@ saas_config:
   name: Square
   type: square
   description: A sample schema representing the Square connector for Fides
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
     - name: access_token
+      sensitive: True
 
   client_config:
     protocol: https

@@ -67,7 +67,7 @@ const Label = ({
   </FormLabel>
 );
 
-const TextInput = ({
+export const TextInput = ({
   isPassword,
   ...props
 }: InputProps & { isPassword: boolean }) => {

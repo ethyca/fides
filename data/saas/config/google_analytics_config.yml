@@ -3,13 +3,18 @@ saas_config:
   name: Google Analytics 4
   type: google_analytics
   description: A schema representing the Google Analytics 4 (GA4) connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: client_id
+      label: Client ID
+      sensitive: True
     - name: client_secret
+      sensitive: True
     - name: redirect_uri
+      label: Redirect URI
     - name: property_id
+      label: Property ID
       description: Property ID of a GA4 Property
 
   client_config:
