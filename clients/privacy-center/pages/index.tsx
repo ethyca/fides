@@ -91,7 +91,7 @@ const Home: NextPage = () => {
         onOpen={onConsentModalOpen}
       />
     );
-    if (router.query?.showConsentModal == "true") {
+    if (router.query?.showConsentModal === "true") {
       // manually override whether to show the consent modal given
       // the query param `showConsentModal`
       isConsentModalOpen = true;
