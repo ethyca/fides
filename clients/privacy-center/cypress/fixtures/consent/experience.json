@@ -3,7 +3,6 @@
     {
       "region": "us_ca",
       "component": "privacy_center",
-      "disabled": false,
       "experience_config": {
         "accept_button_label": "sounds good",
         "acknowledge_button_label": "ok",
@@ -28,8 +27,6 @@
       "id": "pri_041acb07-c99b-4085-a435-c0d6f3a42b6f",
       "created_at": "2023-06-02T15:22:02.604734+00:00",
       "updated_at": "2023-06-02T15:28:28.469659+00:00",
-      "version": 3.0,
-      "privacy_experience_history_id": "pri_94142e00-97da-4eb4-8f8c-9b848b65636c",
       "show_banner": false,
       "privacy_notices": [
         {
