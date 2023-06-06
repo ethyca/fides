@@ -184,28 +184,30 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     session.run(*build_command, external=True)
 
 
-def push_fides_images(session: nox.Session, tag_suffixes: List[str]):
+def push_fides_images(session: nox.Session, tag_suffixes: List[str]) -> None:
+    # Publish Fides
     fides_tags = [f"{IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes]
-    privacy_center_tags = [
-        f"{PRIVACY_CENTER_IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes
-    ]
-    sample_app_tags = [
-        f"{SAMPLE_APP_IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes
-    ]
-
     fides_buildx_command = generate_multiplatform_buildx_command(
-        fides_tags, docker_build_target="prod"
+        image_tags=fides_tags, docker_build_target="prod"
     )
     session.run(*fides_buildx_command, external=True)
 
+    # Publish the Privacy Center
+    privacy_center_tags = [
+        f"{PRIVACY_CENTER_IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes
+    ]
     privacy_center_buildx_command = generate_multiplatform_buildx_command(
-        privacy_center_tags,
+        image_tags=privacy_center_tags,
         docker_build_target="prod_pc",
     )
     session.run(*privacy_center_buildx_command, external=True)
 
+    # Publish the Sample App
+    sample_app_tags = [
+        f"{SAMPLE_APP_IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes
+    ]
     sample_app_buildx_command = generate_multiplatform_buildx_command(
-        sample_app_tags,
+        image_tags=sample_app_tags,
         docker_build_target="prod",
         dockerfile_path="clients/sample-app",
     )
@@ -251,28 +253,16 @@ def push(session: nox.Session, tag: str) -> None:
         "--bootstrap",
         "--use",
         external=True,
-        success_codes=[0, 1],
+        success_codes=[0, 1],  # Will fail if it already exists, but this is fine
     )
 
-    if tag == "dev":
-        # Push the bleeding-edge `dev` images.
-        push_fides_images(session=session, tag_suffixes=[DEV_TAG_SUFFIX])
+    # Use lambdas to force lazy evaluation
+    param_tag_map = {
+        "dev": lambda: [DEV_TAG_SUFFIX],
+        "prerelease": lambda: [PRERELEASE_TAG_SUFFIX],
+        "rc": lambda: [RC_TAG_SUFFIX],
+        "git_tag": lambda: [verify_git_tag(session)],
+        "prod": lambda: [get_current_tag(), "latest"],
+    }
 
-    if tag == "prerelease":
-        # Push the `prerelease` images, triggered by alpha or beta tags (on feature branch or `main` commits)
-        push_fides_images(session=session, tag_suffixes=[PRERELEASE_TAG_SUFFIX])
-
-    if tag == "rc":
-        # Push the `rc` images, triggered by rc tags (on release branch commits)
-        push_fides_images(session=session, tag_suffixes=[RC_TAG_SUFFIX])
-
-    if tag == "git-tag":
-        # Push images with the git tag of our current commit, if it exists.
-        # This publishes images that correspond to commits that have been explicitly tagged.
-
-        existing_commit_tag = verify_git_tag(session)
-        push_fides_images(session=session, tag_suffixes=[existing_commit_tag])
-
-    if tag == "prod":
-        # Pushes the suite of 'prod' images, tagged with the version number and constant "latest tag
-        push_fides_images(session=session, tag_suffixes=[get_current_tag(), "latest"])
+    push_fides_images(session=session, tag_suffixes=param_tag_map[tag]())
