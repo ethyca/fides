@@ -13,13 +13,10 @@ import type { PrivacyNoticeResponseWithUserPreferences } from "./PrivacyNoticeRe
 export type PrivacyExperienceResponse = {
   region: PrivacyNoticeRegion;
   component?: ComponentType;
-  disabled?: boolean;
   experience_config?: ExperienceConfigResponse;
   id: string;
   created_at: string;
   updated_at: string;
-  version: number;
-  privacy_experience_history_id: string;
   show_banner?: boolean;
   privacy_notices?: Array<PrivacyNoticeResponseWithUserPreferences>;
 };

@@ -8,6 +8,7 @@ import { API_URL } from "../support/constants";
 const VERIFICATION_CODE = "112358";
 const PRIVACY_NOTICE_ID_1 = "pri_b4360591-3cc7-400d-a5ff-a9f095ab3061";
 const PRIVACY_NOTICE_ID_2 = "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae821";
+const PRIVACY_EXPERIENCE_ID = "pri_041acb07-c99b-4085-a435-c0d6f3a42b6f";
 const GEOLOCATION_API_URL = "https://www.example.com/location";
 const SETTINGS = {
   IS_OVERLAY_DISABLED: false,
@@ -95,9 +96,10 @@ describe("Privacy notice driven consent", () => {
       cy.getByTestId("save-btn").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
         const { body } = interception.request;
-        const { preferences, code, method } = body;
+        const { preferences, code, method, privacy_experience_id: id } = body;
         expect(method).to.eql("button");
         expect(code).to.eql(VERIFICATION_CODE);
+        expect(id).to.eql(PRIVACY_EXPERIENCE_ID);
         expect(
           preferences.map((p: ConsentOptionCreate) => p.preference)
         ).to.eql(["opt_in", "opt_in"]);

@@ -46,6 +46,7 @@ export type ExperienceConfigResponse = {
    * Overlay 'Privacy preferences link label'
    */
   privacy_preferences_link_label?: string;
+  regions: Array<PrivacyNoticeRegion>;
   /**
    * Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'
    */
@@ -64,5 +65,4 @@ export type ExperienceConfigResponse = {
   version: number;
   created_at: string;
   updated_at: string;
-  regions: Array<PrivacyNoticeRegion>;
 };

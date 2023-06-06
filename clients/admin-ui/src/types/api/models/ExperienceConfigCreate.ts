@@ -42,9 +42,12 @@ export type ExperienceConfigCreate = {
    * Overlay 'Privacy preferences link label'
    */
   privacy_preferences_link_label?: string;
+  /**
+   * Regions using this ExperienceConfig
+   */
+  regions?: Array<PrivacyNoticeRegion>;
   reject_button_label: string;
   save_button_label: string;
   title: string;
   component: ComponentType;
-  regions: Array<PrivacyNoticeRegion>;
 };

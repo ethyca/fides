@@ -50,7 +50,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     });
     updateConsentPreferences({
       consentPreferencesToSave,
-      experienceHistoryId: experience.privacy_experience_history_id,
+      experienceId: experience.id,
       fidesApiUrl: options.fidesApiUrl,
       consentMethod: ConsentMethod.button,
       userLocationString: fidesRegionString,
@@ -71,7 +71,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     });
     updateConsentPreferences({
       consentPreferencesToSave,
-      experienceHistoryId: experience.privacy_experience_history_id,
+      experienceId: experience.id,
       fidesApiUrl: options.fidesApiUrl,
       consentMethod: ConsentMethod.button,
       userLocationString: fidesRegionString,
@@ -97,7 +97,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     });
     updateConsentPreferences({
       consentPreferencesToSave,
-      experienceHistoryId: experience.privacy_experience_history_id,
+      experienceId: experience.id,
       fidesApiUrl: options.fidesApiUrl,
       consentMethod: ConsentMethod.button,
       userLocationString: fidesRegionString,
