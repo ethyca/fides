@@ -44,6 +44,7 @@ The types of changes are:
 
 - Add ability to pass ENV vars to both privacy center and sample app during `fides deploy` via `.env` [#2949](https://github.com/ethyca/fides/pull/2949)
 - Handle an edge case when generating tags that finds them out of sequence [#3405](https://github.com/ethyca/fides/pull/3405)
+- Add support for pushing `prerelease` and `rc` tagged images to Dockerhub [#3474](https://github.com/ethyca/fides/pull/3474)
 
 ### Fixed
 
