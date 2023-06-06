@@ -116,6 +116,12 @@ div#fides-banner-container.fides-banner-top.fides-banner-hidden {
     border-radius: var(--fides-overlay-component-border-radius);
     border: 1px solid var(--fides-overlay-primary-color);
   }
+  div#fides-banner-container.fides-banner-bottom {
+    bottom: 48px;
+  }
+  div#fides-banner-container.fides-banner-top {
+    top: 48px;
+  }
 }
 
 @media only screen and (min-width: 80em) {
