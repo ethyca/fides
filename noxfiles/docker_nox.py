@@ -261,7 +261,7 @@ def push(session: nox.Session, tag: str) -> None:
         "dev": lambda: [DEV_TAG_SUFFIX],
         "prerelease": lambda: [PRERELEASE_TAG_SUFFIX],
         "rc": lambda: [RC_TAG_SUFFIX],
-        "git_tag": lambda: [verify_git_tag(session)],
+        "git-tag": lambda: [verify_git_tag(session)],
         "prod": lambda: [get_current_tag(), "latest"],
     }
 
