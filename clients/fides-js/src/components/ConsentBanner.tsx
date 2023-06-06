@@ -3,6 +3,7 @@ import { useState, useEffect } from "preact/hooks";
 import { ButtonType, ExperienceConfig } from "../lib/consent-types";
 import Button from "./Button";
 import { useHasMounted } from "../lib/hooks";
+import CloseButton from "./CloseButton";
 
 interface BannerProps {
   experience: ExperienceConfig;
@@ -56,6 +57,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     >
       <div id="fides-banner">
         <div id="fides-banner-inner">
+          <CloseButton
+            ariaLabel="Close banner"
+            onClick={() => {
+              setIsShown(false);
+            }}
+          />
           <div id="fides-banner-title" className="fides-banner-title">
             {title}
           </div>

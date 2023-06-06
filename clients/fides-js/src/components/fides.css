@@ -86,6 +86,7 @@ div#fides-banner {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 
 div#fides-banner-inner {
