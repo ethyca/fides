@@ -434,7 +434,6 @@ class TestWriteToInMemoryBuffer:
         zipfile = ZipFile(buff)
         assert zipfile.namelist() == [
             "dsr-report/main.css",
-            "dsr-report/logo.svg",
             "dsr-report/back.svg",
             "dsr-report/mongo/address/1.html",
             "dsr-report/mongo/address/2.html",

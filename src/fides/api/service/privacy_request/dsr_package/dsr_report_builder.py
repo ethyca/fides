@@ -143,12 +143,6 @@ class DsrReportBuilder:
                 self.populate_template("templates/main.css.jinja"),
             )
             self.add_file(
-                "/logo.svg",
-                Path(os.path.join(DSR_DIRECTORY, "./assets/logo.svg")).read_text(
-                    encoding="utf-8"
-                ),
-            )
-            self.add_file(
                 "/back.svg",
                 Path(os.path.join(DSR_DIRECTORY, "./assets/back.svg")).read_text(
                     encoding="utf-8"
