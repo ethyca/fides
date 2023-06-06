@@ -34,18 +34,19 @@ def delete_server_systems(test_config: FidesConfig, systems: List[System]) -> No
 
 
 def test_get_system_data_uses(db, system) -> None:
-    assert sql_System.get_data_uses([system]) == {"advertising"}
+    assert sql_System.get_data_uses([system]) == {"marketing", "marketing.advertising"}
 
     system.privacy_declarations[0].update(
-        db=db, data={"data_use": "advertising.first_party"}
+        db=db, data={"data_use": "marketing.advertising.first_party"}
     )
 
     assert sql_System.get_data_uses([system]) == {
-        "advertising",
-        "advertising.first_party",
+        "marketing",
+        "marketing.advertising",
+        "marketing.advertising.first_party",
     }
     assert sql_System.get_data_uses([system], include_parents=False) == {
-        "advertising.first_party"
+        "marketing.advertising.first_party"
     }
 
     system.privacy_declarations[0].delete(db)

@@ -113,10 +113,10 @@ class PrivacyPreferenceHistory(Base):
         nullable=True,
         index=True,
     )
-    # The specific version of experience under which the user was presented the relevant notice
-    # Minimal information stored here, mostly the region, version, component type, and how it was delivered.
-    privacy_experience_history_id = Column(
-        String, ForeignKey("privacyexperiencehistory.id"), nullable=True, index=True
+    # The specific experience under which the user was presented the relevant notice
+    # Minimal information stored here, mostly just region and component type
+    privacy_experience_id = Column(
+        String, ForeignKey("privacyexperience.id"), nullable=True, index=True
     )
     # The specific historical record the user consented to
     privacy_notice_history_id = Column(

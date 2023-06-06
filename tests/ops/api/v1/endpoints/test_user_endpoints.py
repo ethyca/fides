@@ -1435,7 +1435,7 @@ class TestUpdateSystemsManagedByUser:
                 "name": "Collect data for marketing",
                 "system_id": second_system.id,
                 "data_categories": ["user.device.cookie_id"],
-                "data_use": "advertising",
+                "data_use": "marketing.advertising",
                 "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "dataset_references": None,
