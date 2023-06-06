@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import { useCallback, useState } from "react";
 import { Product, UserData } from "../../types";
 import Button from "../Button";
