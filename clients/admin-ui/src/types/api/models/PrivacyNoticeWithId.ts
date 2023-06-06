@@ -12,6 +12,7 @@ import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
  */
 export type PrivacyNoticeWithId = {
   name?: string;
+  notice_key?: string;
   description?: string;
   internal_description?: string;
   origin?: string;

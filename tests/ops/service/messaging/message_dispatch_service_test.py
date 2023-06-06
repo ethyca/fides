@@ -453,8 +453,11 @@ class TestMessageDispatchService:
                     ConsentPreferencesByUser(
                         identities={"ljt_readerID": "test_user_id"},
                         consent_preferences=[
-                            Consent(data_use="advertising", opt_in=False),
-                            Consent(data_use="advertising.first_party", opt_in=True),
+                            Consent(data_use="marketing.advertising", opt_in=False),
+                            Consent(
+                                data_use="marketing.advertising.first_party",
+                                opt_in=True,
+                            ),
                         ],
                         privacy_preferences=[],
                     )
