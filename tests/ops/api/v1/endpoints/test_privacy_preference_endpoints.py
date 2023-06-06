@@ -291,7 +291,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         assert privacy_preference_history.request_origin is None
         assert privacy_preference_history.user_agent == "testclient"
         assert privacy_preference_history.privacy_experience_config_history_id is None
-        assert privacy_preference_history.privacy_experience_history_id is None
+        assert privacy_preference_history.privacy_experience_id is None
         assert mock_anonymize.call_args.args[0] == "testclient"
         assert privacy_preference_history.anonymized_ip_address == masked_ip
         assert privacy_preference_history.url_recorded is None
@@ -978,7 +978,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             ],
             "policy_key": consent_policy.key,
             "user_geography": "us_ca",
-            "privacy_experience_history_id": privacy_experience_overlay.histories[0].id,
+            "privacy_experience_id": privacy_experience_overlay.id,
             "method": "button",
         }
 
@@ -1027,15 +1027,12 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         request_body,
     ):
         """Privacy experiences need to be valid when setting preferences"""
-        request_body["privacy_experience_history_id"] = "bad_id"
+        request_body["privacy_experience_id"] = "bad_id"
         response = api_client.patch(
             url, json=request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 404
-        assert (
-            response.json()["detail"]
-            == f"Privacy Experience History 'bad_id' not found."
-        )
+        assert response.json()["detail"] == f"Privacy Experience 'bad_id' not found."
 
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
@@ -1111,11 +1108,11 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         )  # Retrieved from request headers
         assert (
             privacy_preference_history.privacy_experience_config_history_id
-            == privacy_experience_overlay.histories[0].experience_config_history_id
+            == privacy_experience_overlay.experience_config.experience_config_history_id
         )
         assert (
-            privacy_preference_history.privacy_experience_history_id
-            == privacy_experience_overlay.histories[0].id
+            privacy_preference_history.privacy_experience_id
+            == privacy_experience_overlay.id
         )
         assert privacy_preference_history.anonymized_ip_address == masked_ip
         assert privacy_preference_history.url_recorded is None
@@ -1234,13 +1231,11 @@ class TestHistoricalPreferences:
         assert response_body["truncated_ip_address"] == "92.158.1.0"
         assert (
             response_body["experience_config_history_id"]
-            == privacy_experience_privacy_center.histories[
-                0
-            ].experience_config_history_id
+            == privacy_experience_privacy_center.experience_config.experience_config_history_id
         )
         assert (
-            response_body["privacy_experience_history_id"]
-            == privacy_experience_privacy_center.histories[0].id
+            response_body["privacy_experience_id"]
+            == privacy_experience_privacy_center.id
         )
 
     def test_get_historical_preferences_ordering(

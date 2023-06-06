@@ -15,10 +15,6 @@ GENERIC_TAG_REGEX = r"{tag_type}([0-9]+)$"
 INITIAL_TAG_INCREMENT = 0
 TAG_INCREMENT = 1
 
-# posarg options for `tag`
-ONLY_TAG = "only_tag"
-PUSH = "push"
-
 
 class TagType(Enum):
     """
@@ -96,7 +92,6 @@ def tag(session: nox.Session, action: str) -> None:
     # generate a tag based on the current repo state
     generated_tag = generate_tag(session, repo.active_branch.name, all_tags)
 
-    # if no args are passed, it's a dry run
     if action == "dry":
         session.log(f"Dry-run -- would generate tag: {generated_tag}")
 
