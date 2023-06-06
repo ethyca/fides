@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.1b1.post0.dev17"
+    "version": "2.14.1b1.post0.dev18"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -13806,8 +13806,8 @@
             "title": "The historical config for the experience that the user was presented - contains the experience language",
             "type": "string"
           },
-          "privacy_experience_history_id": {
-            "title": "The historical id of the experience that the user was presented - contains the experience type, region, and delivery mechanism",
+          "privacy_experience_id": {
+            "title": "The id of the experience that the user was presented - contains the experience type and region",
             "type": "string"
           },
           "truncated_ip_address": {
@@ -17912,9 +17912,7 @@
           "region",
           "id",
           "created_at",
-          "updated_at",
-          "version",
-          "privacy_experience_history_id"
+          "updated_at"
         ],
         "type": "object",
         "properties": {
@@ -17923,11 +17921,6 @@
           },
           "component": {
             "$ref": "#/components/schemas/ComponentType"
-          },
-          "disabled": {
-            "title": "Disabled",
-            "type": "boolean",
-            "default": false
           },
           "experience_config": {
             "$ref": "#/components/schemas/ExperienceConfigResponse"
@@ -17945,14 +17938,6 @@
             "title": "Updated At",
             "type": "string",
             "format": "date-time"
-          },
-          "version": {
-            "title": "Version",
-            "type": "number"
-          },
-          "privacy_experience_history_id": {
-            "title": "Privacy Experience History Id",
-            "type": "string"
           },
           "show_banner": {
             "title": "Show Banner",
@@ -18566,8 +18551,8 @@
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
-          "privacy_experience_history_id": {
-            "title": "Privacy Experience History Id",
+          "privacy_experience_id": {
+            "title": "Privacy Experience Id",
             "type": "string"
           },
           "user_geography": {
