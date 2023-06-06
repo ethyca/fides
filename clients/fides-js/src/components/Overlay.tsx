@@ -1,5 +1,5 @@
 import { h, FunctionComponent } from "preact";
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import {
   ConsentMethod,
   FidesOptions,
@@ -11,7 +11,10 @@ import ConsentBanner from "./ConsentBanner";
 import ConsentModal from "./ConsentModal";
 
 import { updateConsentPreferences } from "../lib/preferences";
-import { transformConsentToFidesUserPreference } from "../lib/consent-utils";
+import {
+  debugLog,
+  transformConsentToFidesUserPreference,
+} from "../lib/consent-utils";
 import { FidesCookie } from "../lib/cookie";
 
 import "./fides.css";
@@ -21,6 +24,7 @@ export interface OverlayProps {
   experience: PrivacyExperience;
   cookie: FidesCookie;
   fidesRegionString: string;
+  modalLinkEl?: HTMLElement | null;
 }
 
 const Overlay: FunctionComponent<OverlayProps> = ({
@@ -28,10 +32,39 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   options,
   fidesRegionString,
   cookie,
+  modalLinkEl,
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [bannerIsOpen, setBannerIsOpen] = useState(false);
+
+  useEffect(() => {
+    const delayBanner = setTimeout(() => {
+      setBannerIsOpen(true);
+    }, 100);
+    return () => clearTimeout(delayBanner);
+  }, [setBannerIsOpen]);
+
+  useEffect(() => {
+    if (modalLinkEl) {
+      debugLog(
+        options.debug,
+        "Modal link element found, updating it to show and trigger modal on click."
+      );
+      // Update modal link to trigger modal on click
+      const modalLink = modalLinkEl;
+      modalLink.onclick = () => {
+        setModalIsOpen(true);
+        setBannerIsOpen(false);
+      };
+      // Update to show the pre-existing modal link in the DOM
+      modalLink.classList.add("fides-modal-link-shown");
+    } else {
+      debugLog(options.debug, "Modal link element not found.");
+    }
+  }, [modalLinkEl, options.debug]);
 
   if (!experience.experience_config) {
+    debugLog(options.debug, "No experience config found");
     return null;
   }
 
@@ -56,6 +89,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       userLocationString: fidesRegionString,
       cookie,
     });
+    setBannerIsOpen(false);
   };
 
   const onRejectAll = () => {
@@ -77,6 +111,12 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       userLocationString: fidesRegionString,
       cookie,
     });
+    setBannerIsOpen(false);
+  };
+
+  const handleManagePreferencesClick = (): void => {
+    setModalIsOpen(true);
+    setBannerIsOpen(false);
   };
 
   const onSavePreferences = (
@@ -107,13 +147,15 @@ const Overlay: FunctionComponent<OverlayProps> = ({
 
   return (
     <div id="fides-js-root">
-      <ConsentBanner
-        experience={experience.experience_config}
-        onAcceptAll={onAcceptAll}
-        onRejectAll={onRejectAll}
-        waitBeforeShow={100}
-        onOpenModal={() => setModalIsOpen(true)}
-      />
+      {experience.show_banner ? (
+        <ConsentBanner
+          experience={experience.experience_config}
+          onAcceptAll={onAcceptAll}
+          onRejectAll={onRejectAll}
+          onManagePreferences={handleManagePreferencesClick}
+          bannerIsOpen={bannerIsOpen}
+        />
+      ) : null}
       {modalIsOpen ? (
         <ConsentModal
           experience={experience.experience_config}

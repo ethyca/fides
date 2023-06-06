@@ -61,7 +61,12 @@ div#fides-overlay {
 }
 
 #fides-modal-link {
+  cursor: pointer;
   display: none;
+}
+
+#fides-modal-link.fides-modal-link-shown {
+  display: inline;
 }
 
 div#fides-banner-container {

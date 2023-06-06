@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import { useCallback, useState } from "react";
 import { Product, UserData } from "../../types";
 import Button from "../Button";
@@ -69,9 +68,9 @@ const Home = ({ privacyCenterUrl, products }: Props) => {
           </a>
         </div>
         <div>
-          <a className={css.modalLink} href="#" id="fides-modal-link">
-            Manage preferences
-          </a>
+          <button type="button" className={css.modalLink} id="fides-modal-link">
+            Manage Preferences
+          </button>
         </div>
         <div className={css.select}>
           <GeolocationSelect menuPlacement="top" />

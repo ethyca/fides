@@ -78,6 +78,7 @@ export default async function handler(
       isGeolocationEnabled: environment.settings.IS_GEOLOCATION_ENABLED,
       isOverlayDisabled: environment.settings.IS_OVERLAY_DISABLED,
       overlayParentId: environment.settings.OVERLAY_PARENT_ID,
+      modalLinkId: environment.settings.MODAL_LINK_ID,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
       fidesApiUrl: environment.settings.FIDES_API_URL,
     },

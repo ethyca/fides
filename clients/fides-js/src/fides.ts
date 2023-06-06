@@ -28,6 +28,7 @@
  *           isGeolocationEnabled: false,
  *           geolocationApiUrl: "",
  *           overlayParentId: null,
+ *           modalLinkId: null,
  *           privacyCenterUrl: "http://localhost:3000"
  *         }
  *   });
@@ -225,20 +226,12 @@ const init = async ({
     );
 
     if (shouldInitOverlay) {
-      // Check if there are any notices within the experience that do not have a user preference
-      const noticesWithNoUserPreferenceExist: boolean = Boolean(
-        effectiveExperience?.privacy_notices?.some(
-          (notice) => notice.current_preference == null
-        )
-      );
-      if (noticesWithNoUserPreferenceExist) {
-        await initOverlay(<OverlayProps>{
-          experience: effectiveExperience,
-          fidesRegionString,
-          cookie,
-          options,
-        }).catch(() => {});
-      }
+      await initOverlay(<OverlayProps>{
+        experience: effectiveExperience,
+        fidesRegionString,
+        cookie,
+        options,
+      }).catch(() => {});
     }
   }
 
@@ -276,6 +269,7 @@ _Fides = {
     isGeolocationEnabled: false,
     geolocationApiUrl: "",
     overlayParentId: null,
+    modalLinkId: null,
     privacyCenterUrl: "",
     fidesApiUrl: "",
   },
@@ -298,7 +292,6 @@ export * from "./components";
 export * from "./lib/consent";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
-export * from "./lib/consent-links";
 export * from "./lib/consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
