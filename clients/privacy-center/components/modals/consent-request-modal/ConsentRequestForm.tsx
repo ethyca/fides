@@ -127,26 +127,24 @@ const useConsentRequestForm = ({
     validationSchema: Yup.object().shape({
       email: emailValidation(identityInputs?.email).test(
         "one of email or phone entered",
-        "You must enter either email or phone",
+        "You must enter an email",
         (value, context) => {
           if (
-            identityInputs?.email === "optional" &&
-            identityInputs?.phone === "optional"
+            identityInputs?.email !== "optional"
           ) {
-            return Boolean(context.parent.phone || context.parent.email);
+            return Boolean(context.parent.email);
           }
           return true;
         }
       ),
       phone: phoneValidation(identityInputs?.phone).test(
         "one of email or phone entered",
-        "You must enter either email or phone",
+        "You must enter a phone number",
         (value, context) => {
           if (
-            identityInputs?.email === "optional" &&
-            identityInputs?.phone === "optional"
+            identityInputs?.phone !== "optional"
           ) {
-            return Boolean(context.parent.phone || context.parent.email);
+            return Boolean(context.parent.phone);
           }
           return true;
         }
