@@ -1,5 +1,4 @@
 import { h, FunctionComponent } from "preact";
-import { useEffect, StateUpdater } from "preact/hooks";
 import { ButtonType, ExperienceConfig } from "../lib/consent-types";
 import Button from "./Button";
 import { useHasMounted } from "../lib/hooks";
