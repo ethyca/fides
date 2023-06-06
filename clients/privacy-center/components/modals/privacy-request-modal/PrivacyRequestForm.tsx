@@ -308,7 +308,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
 
         <ModalFooter pb={6}>
           <Button variant="outline" flex="1" mr={3} size="sm" onClick={onClose}>
-            {action.confirmButtonText || "Cancel"}
+            {action.cancelButtonText || "Cancel"}
           </Button>
           <Button
             type="submit"
