@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { ActionType } from "./ActionType";
+import type { ConsentMethod } from "./ConsentMethod";
 import type { ExecutionLogStatus } from "./ExecutionLogStatus";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
@@ -31,4 +32,8 @@ export type ConsentReportingSchema = {
   affected_system_status: Record<string, ExecutionLogStatus>;
   url_recorded?: string;
   user_agent?: string;
+  experience_config_history_id?: string;
+  privacy_experience_history_id?: string;
+  truncated_ip_address?: string;
+  method?: ConsentMethod;
 };

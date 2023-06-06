@@ -16,7 +16,11 @@ from starlette.status import (
 from fides.api.api import deps
 from fides.api.api.v1 import urn_registry as urls
 from fides.api.api.v1.endpoints.utils import fides_limiter
-from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
+from fides.api.models.privacy_experience import (
+    ComponentType,
+    PrivacyExperience,
+    PrivacyExperienceConfig,
+)
 from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
@@ -90,9 +94,13 @@ def privacy_experience_list(
     experience_query = db.query(PrivacyExperience)
 
     if show_disabled is False:
-        experience_query = experience_query.filter(
-            PrivacyExperience.disabled.is_(False)
-        )
+        # This field is actually stored on the PrivacyExperienceConfig.  This is a useful filter in that
+        # it forces the ExperienceConfig to exist, and it has to be enabled.
+        experience_query = experience_query.join(
+            PrivacyExperienceConfig,
+            PrivacyExperienceConfig.id == PrivacyExperience.experience_config_id,
+        ).filter(PrivacyExperienceConfig.disabled.is_(False))
+
     if region is not None:
         experience_query = experience_query.filter(PrivacyExperience.region == region)
     if component is not None:
@@ -117,7 +125,12 @@ def privacy_experience_list(
         ] = privacy_experience.get_related_privacy_notices(
             db, show_disabled, fides_user_provided_identity
         )
+        # Temporarily save privacy notices on the privacy experience object
         privacy_experience.privacy_notices = privacy_notices
+        # Temporarily save "show_banner" on the privacy experience object
+        privacy_experience.show_banner = privacy_experience.get_should_show_banner(
+            db, show_disabled
+        )
         if not (has_notices and not privacy_notices):
             results.append(privacy_experience)
 

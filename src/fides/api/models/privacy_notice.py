@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from fideslang.validation import FidesKey
 from sqlalchemy import Boolean, Column
@@ -108,6 +108,16 @@ class PrivacyNoticeRegion(Enum):
     eu_fi = "eu_fi"  # finland
     eu_se = "eu_se"  # sweden
 
+    gb_eng = "gb_eng"  # england
+    gb_sct = "gb_sct"  # scotland
+    gb_wls = "gb_wls"  # wales
+    gb_nir = "gb_nir"  # northern ireland
+
+    isl = "isl"  # iceland, 3 letter country code
+    nor = "nor"  # norway, 3 letter country code
+
+    li = "li"  # liechtenstein
+
 
 class ConsentMechanism(Enum):
     opt_in = "opt_in"
@@ -127,13 +137,12 @@ class EnforcementLevel(Enum):
 
 class PrivacyNoticeBase:
     """
-    Base class to establish the common columns for `PrivacyNotice`s and `PrivacyNoticeHistory`s
+    This class contains the common fields between PrivacyNoticeTemplate, PrivacyNotice, and PrivacyNoticeHistory
     """
 
     name = Column(String, nullable=False)
     description = Column(String)  # User-facing description
     internal_description = Column(String)  # Visible to internal users only
-    origin = Column(String)  # pointer back to an origin template ID
     regions = Column(
         ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
         index=True,
@@ -144,13 +153,17 @@ class PrivacyNoticeBase:
         ARRAY(String), nullable=False
     )  # a list of `fides_key`s of `DataUse` records
     enforcement_level = Column(EnumColumn(EnforcementLevel), nullable=False)
-    version = Column(Float, nullable=False, default=1.0)
     disabled = Column(Boolean, nullable=False, default=False)
     has_gpc_flag = Column(Boolean, nullable=False, default=False)
     displayed_in_privacy_center = Column(Boolean, nullable=False, default=False)
     displayed_in_overlay = Column(Boolean, nullable=False, default=False)
     displayed_in_api = Column(Boolean, nullable=False, default=False)
     notice_key = Column(String, nullable=False)
+
+    # Attribute that can be temporarily cached as the result of "get_related_privacy_notices"
+    # for a given user, for surfacing CurrentPrivacyPreferences for the user.
+    current_preference = None
+    outdated_preference = None
 
     def applies_to_system(self, system: System) -> bool:
         """Privacy Notice applies to System if a data use matches or the Privacy Notice
@@ -171,6 +184,31 @@ class PrivacyNoticeBase:
         FidesKey.validate(notice_key)
         return notice_key
 
+    def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
+        """
+        A utility method to get an updated object without saving it to the db.
+
+        This is used to see what an object update would look like, in memory,
+        without actually persisting the update to the db
+        """
+        # Update our attributes with values in data
+        cloned_attributes = self.__dict__.copy()
+        for key, val in data.items():
+            cloned_attributes[key] = val
+
+        # remove protected fields from the cloned dict
+        cloned_attributes.pop("_sa_instance_state")
+
+        # create a new object with the updated attribute data to keep this
+        # ORM object (i.e., `self`) pristine
+        return PrivacyNotice(**cloned_attributes)
+
+
+class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
+    """
+    This table contains the out-of-the-box Privacy Notices that are shipped with Fides
+    """
+
 
 class PrivacyNotice(PrivacyNoticeBase, Base):
     """
@@ -178,14 +216,14 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     accepts or rejects to indicate their consent for particular data uses
     """
 
+    origin = Column(
+        String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
+    )  # pointer back to the PrivacyNoticeTemplate
+    version = Column(Float, nullable=False, default=1.0)
+
     histories = relationship(
         "PrivacyNoticeHistory", backref="privacy_notice", lazy="dynamic"
     )
-
-    # Attribute that can be temporarily cached as the result of "get_related_privacy_notices"
-    # for a given user, for surfacing CurrentPrivacyPreferences for the user.
-    current_preference = None
-    outdated_preference = None
 
     @hybridproperty
     def privacy_notice_history_id(self) -> Optional[str]:
@@ -229,6 +267,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         # create the history after the initial object creation succeeds, to avoid
         # writing history if the creation fails and so that we can get the generated ID
+        data.pop("id", None)
         history_data = {**data, "privacy_notice_id": created.id}
         PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
         return created
@@ -238,65 +277,23 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         Overrides the base update method to automatically bump the version of the
         PrivacyNotice record and also create a new PrivacyNoticeHistory entry
         """
+        resource, updated = update_if_modified(self, db=db, data=data)
 
-        # run through potential updates now
-        for key, value in data.items():
-            setattr(self, key, value)
-
-        # only if there's a modification do we write the history record
-        if db.is_modified(self):
-            # on any update to a privacy notice record, its version must be incremented
-            # version gets incremented by a full integer, i.e. 1.0 -> 2.0 -> 3.0
-            self.version = float(self.version) + 1.0  # type: ignore
-            self.save(db)
-
-            # history record data is identical to the new privacy notice record data
-            # except the notice's 'id' must be moved to the FK column
-            # and is no longer the history record 'id' column
-            history_data = {
-                "name": self.name,
-                "notice_key": self.notice_key,
-                "description": self.description or None,
-                "origin": self.origin or None,
-                "regions": self.regions,
-                "consent_mechanism": self.consent_mechanism,
-                "data_uses": self.data_uses,
-                "enforcement_level": self.enforcement_level,
-                "version": self.version,
-                "disabled": self.disabled,
-                "has_gpc_flag": self.has_gpc_flag,
-                "displayed_in_privacy_center": self.displayed_in_privacy_center,
-                "displayed_in_overlay": self.displayed_in_overlay,
-                "displayed_in_api": self.displayed_in_api,
-                "privacy_notice_id": self.id,
-            }
+        if updated:
+            history_data = create_historical_data_from_record(resource)
+            history_data["privacy_notice_id"] = resource.id
             PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
 
-        return self
+        return resource  # type: ignore[return-value]
 
-    def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
-        """
-        A utility method to get an updated object without saving it to the db.
 
-        This is used to see what an object update would look like, in memory,
-        without actually persisting the update to the db
-        """
-        # Update our attributes with values in data
-        cloned_attributes = self.__dict__.copy()
-        for key, val in data.items():
-            cloned_attributes[key] = val
-
-        # remove protected fields from the cloned dict
-        cloned_attributes.pop("_sa_instance_state")
-
-        # create a new object with the updated attribute data to keep this
-        # ORM object (i.e., `self`) pristine
-        return PrivacyNotice(**cloned_attributes)
+PRIVACY_NOTICE_TYPE = Union[PrivacyNotice, PrivacyNoticeTemplate]
 
 
 def check_conflicting_data_uses(
-    new_privacy_notices: Iterable[PrivacyNotice],
-    existing_privacy_notices: Iterable[PrivacyNotice],
+    new_privacy_notices: Iterable[PRIVACY_NOTICE_TYPE],
+    existing_privacy_notices: Iterable[Union[PRIVACY_NOTICE_TYPE]],
+    ignore_disabled: bool = True,  # For PrivacyNoticeTemplates, set to False
 ) -> None:
     """
     Checks the provided lists of potential "new" (incoming) `PrivacyNotice` records
@@ -310,13 +307,15 @@ def check_conflicting_data_uses(
     hierarchical overlap, e.g. `DataUse`s of `advertising` and `advertising.first_party` as well as
     `advertising` and `advertising.first_party.contextual` would both be considered conflicts
     if they occurred in `PrivacyNotice`s that are associated with the same `PrivacyNoticeRegion`.
+
+    For templates, we don't want to ignore disabled data uses.
     """
     # first, we map the existing [region -> data use] associations based on the set of
     # existing notices.
     # this gives us a simple "lookup table" for region and data use conflicts in incoming notices
     uses_by_region: Dict[PrivacyNoticeRegion, List[Tuple[str, str]]] = defaultdict(list)
     for privacy_notice in existing_privacy_notices:
-        if privacy_notice.disabled:
+        if privacy_notice.disabled and ignore_disabled:
             continue
         for region in privacy_notice.regions:
             for data_use in privacy_notice.data_uses:
@@ -326,7 +325,7 @@ def check_conflicting_data_uses(
 
     # now, validate the new (incoming) notices
     for privacy_notice in new_privacy_notices:
-        if privacy_notice.disabled:
+        if privacy_notice.disabled and ignore_disabled:
             # if the incoming notice is disabled, it skips validation
             continue
         # check each of the incoming notice's regions
@@ -335,7 +334,7 @@ def check_conflicting_data_uses(
             # check each of the incoming notice's data uses
             for data_use in privacy_notice.data_uses:
                 for existing_use, notice_name in region_uses:
-                    # we need to check for hierachical overlaps in _both_ directions
+                    # we need to check for hierarchical overlaps in _both_ directions
                     # i.e. whether the incoming DataUse is a parent _or_ a child of
                     # an existing DataUse
                     if new_data_use_conflicts_with_existing_use(existing_use, data_use):
@@ -361,6 +360,11 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
     "current" versions are stored in the `PrivacyNotice` table/model
     """
 
+    origin = Column(
+        String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
+    )  # pointer back to the PrivacyNoticeTemplate
+    version = Column(Float, nullable=False, default=1.0)
+
     privacy_notice_id = Column(
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=False
     )
@@ -378,3 +382,37 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
                     relevant_systems.append(system.fides_key)
                     continue
         return relevant_systems
+
+
+def update_if_modified(
+    resource: Base, db: Session, *, data: dict[str, Any]
+) -> Tuple[Base, bool]:
+    """Update the resource and increment its version if applicable.
+
+    Return the updated resource and whether it was modified (which determines if we should create
+    a corresponding historical record).
+
+    Currently used for PrivacyNotice, PrivacyExperience, and PrivacyExperienceConfig models.
+    """
+    # run through potential updates now
+    for key, value in data.items():
+        setattr(resource, key, value)
+
+    if db.is_modified(resource):
+        # on any update to a privacy experience record, its version must be incremented
+        # version gets incremented by a full integer, i.e. 1.0 -> 2.0 -> 3.0
+        resource.version = float(resource.version) + 1.0  # type: ignore
+        resource.save(db)
+        return resource, True
+
+    return resource, False
+
+
+def create_historical_data_from_record(resource: Base) -> Dict:
+    """Prep data to be saved in a historical table for record keeping"""
+    history_data = resource.__dict__.copy()
+    history_data.pop("_sa_instance_state")
+    history_data.pop("id")
+    history_data.pop("created_at")
+    history_data.pop("updated_at")
+    return history_data

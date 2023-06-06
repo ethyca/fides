@@ -22,16 +22,23 @@ The types of changes are:
 - Add Google Tag Manager and Privacy Center ENV vars to sample app [#2949](https://github.com/ethyca/fides/pull/2949)
 - Add `notice_key` field to Privacy Notice UI form [#3403](https://github.com/ethyca/fides/pull/3403)
 - Add `identity` query param to the consent reporting API view [#3418](https://github.com/ethyca/fides/pull/3418)
+- Add default experience configs on startup [#3449](https://github.com/ethyca/fides/pull/3449)
+- Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401/files)
 
 ### Fixed
 
 - Fix sample app `DATABASE_*` ENV vars for backwards compatibility [#3406](https://github.com/ethyca/fides/pull/3406)
 - Fix overlay rendering issue by finding/creating a dedicated parent element for Preact [#3397](https://github.com/ethyca/fides/pull/3397)
 - Fix the sample app privacy center link to be configurable [#3409](https://github.com/ethyca/fides/pull/3409)
+- Fix CLI output showing a version warning for Snowflake [#3434](https://github.com/ethyca/fides/pull/3434)
 
 ### Changed
 
 - Enabled Privacy Experience beta flag [#3364](https://github.com/ethyca/fides/pull/3364)
+- Removed ExperienceConfig.delivery_mechanism constraint [#3387](https://github.com/ethyca/fides/pull/3387)
+- Updated privacy experience UI forms to reflect updated experience config fields [#3402](https://github.com/ethyca/fides/pull/3402)
+- Bump SlowAPI Version [#3456](https://github.com/ethyca/fides/pull/3456)
+- Reduced duplication between PrivacyExperience and PrivacyExperienceConfig [#3470](https://github.com/ethyca/fides/pull/3470)
 
 ### Developer Experience
 
