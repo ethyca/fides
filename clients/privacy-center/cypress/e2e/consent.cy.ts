@@ -10,6 +10,19 @@ describe("Consent modal deeplink", () => {
   });
 
   it("opens the consent modal", () => {
+    beforeEach(() => {
+      cy.intercept("POST", `${API_URL}/consent-request`, {
+        body: {
+          consent_request_id: "consent-request-id",
+        },
+      }).as("postConsentRequest");
+      cy.intercept(
+        "POST",
+        `${API_URL}/consent-request/consent-request-id/verify`,
+        { fixture: "consent/verify" }
+      ).as("postConsentRequestVerify");
+    });
+
     // This test does the same as below, without clicking the card
     cy.getByTestId("consent-request-form").should("be.visible");
     cy.getByTestId("consent-request-form").within(() => {
