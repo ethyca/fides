@@ -63,7 +63,7 @@ from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import ActionType, CurrentStep, Policy
+from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,

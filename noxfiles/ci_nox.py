@@ -3,7 +3,6 @@ from functools import partial
 from typing import Callable, Dict
 
 import nox
-
 from constants_nox import (
     CONTAINER_NAME,
     IMAGE_NAME,
