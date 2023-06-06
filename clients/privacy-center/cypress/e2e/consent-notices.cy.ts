@@ -96,11 +96,10 @@ describe("Privacy notice driven consent", () => {
       cy.getByTestId("save-btn").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
         const { body } = interception.request;
-        console.log({ body });
-        const { preferences, code, method, privacy_experience_id } = body;
+        const { preferences, code, method, privacy_experience_id: id } = body;
         expect(method).to.eql("button");
         expect(code).to.eql(VERIFICATION_CODE);
-        expect(privacy_experience_id).to.eql(PRIVACY_EXPERIENCE_ID);
+        expect(id).to.eql(PRIVACY_EXPERIENCE_ID);
         expect(
           preferences.map((p: ConsentOptionCreate) => p.preference)
         ).to.eql(["opt_in", "opt_in"]);
