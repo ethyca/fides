@@ -996,6 +996,7 @@ def system(db: Session) -> System:
             "dataset_references": None,
             "egress": None,
             "ingress": None,
+            "cookies": ["test_cookie"],
         },
     )
 

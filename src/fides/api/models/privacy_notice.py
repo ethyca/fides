@@ -3,18 +3,21 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 
 from fideslang.validation import FidesKey
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Float, ForeignKey, String
+from sqlalchemy import Float, ForeignKey, String, or_
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.util import hybridproperty
 
 from fides.api.common_exceptions import ValidationError
-from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
+from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
+    PrivacyDeclaration,
+    System,
+)
 from fides.api.db.base_class import Base, FidesBase
 
 
@@ -254,6 +257,23 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             return UserConsentPreference.acknowledge
 
         raise Exception("Invalid notice consent mechanism.")
+
+    @property
+    def cookies(self) -> Set[str]:
+        """Return relevant cookie names (via the data use)"""
+        db = Session.object_session(self)
+        all_cookies: Set[str] = set()
+        query = db.query(PrivacyDeclaration.cookies).filter(
+            or_(
+                *[
+                    PrivacyDeclaration.data_use.like(f"{notice_use}%")
+                    for notice_use in self.data_uses
+                ]
+            )
+        )
+        for row in query:
+            all_cookies = all_cookies.union(row.cookies or set())
+        return all_cookies
 
     @classmethod
     def create(

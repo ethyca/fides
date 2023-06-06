@@ -61,7 +61,7 @@ class TestGetPrivacyNotices:
         # we should have 3 privacy notices in the db
         assert len(PrivacyNotice.all(db)) == 3
 
-        # update this privacy notice to associate it with a data use associatd with a system
+        # update this privacy notice to associate it with a data use associated with a system
         # this allows us to get > 1 object in our response to the API call
         privacy_notice_us_ca_provide.update(
             db, data={"data_uses": ["marketing.advertising", "essential"]}
@@ -100,6 +100,7 @@ class TestGetPrivacyNotices:
             assert "enforcement_level" in notice_detail
             assert "privacy_notice_history_id" in notice_detail
             assert notice_detail["privacy_notice_history_id"] is not None
+            assert "cookies" in notice_detail
 
     @pytest.mark.usefixtures(
         "privacy_notice",
@@ -756,6 +757,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=["test_cookie"],
                         )
                     ],
                 },
@@ -825,6 +827,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=["test_cookie"],
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -845,6 +848,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=["test_cookie"],
                         ),
                     ],
                 },
@@ -912,6 +916,7 @@ class TestGetPrivacyNoticesByDataUse:
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
                             displayed_in_overlay=True,
+                            cookies=["test_cookie"],
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -930,6 +935,7 @@ class TestGetPrivacyNoticesByDataUse:
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
                             displayed_in_overlay=True,
+                            cookies=["test_cookie"],
                         ),
                     ],
                     "third_party_sharing": [
@@ -951,6 +957,7 @@ class TestGetPrivacyNoticesByDataUse:
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
                             displayed_in_overlay=True,
+                            cookies=["test_cookie"],
                         ),
                     ],
                 },
@@ -1020,6 +1027,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=["test_cookie"],
                         ),
                     ],
                     "third_party_sharing": [],
@@ -1154,6 +1162,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=["test_cookie"],
                         )
                     ],
                     "essential.service.operations.support.optimization": [
@@ -1178,6 +1187,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=[],
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-3",
@@ -1198,6 +1208,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=[],
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -1218,6 +1229,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=[],
                         ),
                     ],
                 },

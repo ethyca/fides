@@ -140,6 +140,7 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
     updated_at: datetime
     version: float
     privacy_notice_history_id: str
+    cookies: Optional[List[str]]
 
 
 class PrivacyNoticeResponseWithUserPreferences(PrivacyNoticeResponse):

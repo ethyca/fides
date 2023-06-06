@@ -27,6 +27,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
@@ -376,6 +377,7 @@ class PrivacyDeclaration(Base):
     data_qualifier = Column(String)
     data_subjects = Column(ARRAY(String))
     dataset_references = Column(ARRAY(String))
+    cookies = Column(MutableList.as_mutable(ARRAY(String)))
 
     ### proper FK references to other tables
     # System

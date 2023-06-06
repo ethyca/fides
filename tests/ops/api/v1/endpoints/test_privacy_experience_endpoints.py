@@ -79,6 +79,8 @@ class TestGetPrivacyExperiences:
         assert resp["privacy_notices"][0]["current_preference"] is None
         assert resp["privacy_notices"][0]["outdated_preference"] is None
 
+        assert resp["privacy_notices"][0]["cookies"] == []
+
     def test_get_privacy_experiences_show_disabled_filter(
         self,
         api_client: TestClient,
