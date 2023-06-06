@@ -46,6 +46,10 @@ export type ExperienceConfigUpdate = {
    */
   privacy_preferences_link_label?: string;
   /**
+   * Regions using this ExperienceConfig
+   */
+  regions?: Array<PrivacyNoticeRegion>;
+  /**
    * Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'
    */
   reject_button_label?: string;
@@ -57,8 +61,4 @@ export type ExperienceConfigUpdate = {
    * Overlay 'Banner title' or Privacy Center 'title'
    */
   title?: string;
-  /**
-   * If None, no edits will be made to regions.  If an empty list, all regions will be removed.
-   */
-  regions?: Array<PrivacyNoticeRegion>;
 };

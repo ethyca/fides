@@ -138,7 +138,7 @@ const NoticeDrivenConsent = () => {
       browser_identity: identities,
       preferences,
       user_geography: region,
-      privacy_experience_history_id: experience?.privacy_experience_history_id,
+      privacy_experience_id: experience?.id,
       method: ConsentMethod.BUTTON,
       code: verificationCode,
     };
