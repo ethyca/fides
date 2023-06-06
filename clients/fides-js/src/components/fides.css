@@ -64,6 +64,10 @@ div#fides-overlay {
   display: none;
 }
 
+#fides-modal-link.fides-modal-link-shown {
+  display: inline;
+}
+
 div#fides-banner {
   font-size: var(--fides-overlay-font-size-body-small);
   background: var(--fides-overlay-background-color);

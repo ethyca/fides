@@ -1,5 +1,5 @@
 import { h, FunctionComponent } from "preact";
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import {
   ConsentMethod,
   FidesOptions,
@@ -37,29 +37,31 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
 
+  useEffect(() => {
+    if (modalLinkEl) {
+      debugLog(
+        options.debug,
+        "Modal link element found, updating it to show and trigger modal on click."
+      );
+      // Update modal link to trigger modal on click
+      const modalLink = modalLinkEl;
+      modalLink.onclick = () => {
+        setModalIsOpen(true);
+        setBannerIsOpen(false);
+      };
+      // Update to show the pre-existing modal link in the DOM
+      modalLink.classList.add("fides-modal-link-shown");
+    } else {
+      debugLog(options.debug, "Modal link element not found.");
+    }
+  }, [modalLinkEl, options.debug]);
+
   if (!experience.experience_config) {
     debugLog(options.debug, "No experience config found");
     return null;
   }
 
   const privacyNotices = experience.privacy_notices ?? [];
-
-  if (modalLinkEl) {
-    debugLog(
-      options.debug,
-      "Modal link element found, updating it to show and trigger modal on click."
-    );
-    // Update modal link to trigger modal on click
-    const modalLink = modalLinkEl;
-    modalLink.onclick = () => {
-      setModalIsOpen(true);
-      setBannerIsOpen(false);
-    };
-    // Update to show the pre-existing modal link in the DOM
-    modalLink.style.display = "inline";
-  } else {
-    debugLog(options.debug, "Modal link element not found.");
-  }
 
   const onAcceptAll = () => {
     const consentPreferencesToSave: Array<SaveConsentPreference> = [];
