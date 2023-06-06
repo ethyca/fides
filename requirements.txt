@@ -29,7 +29,7 @@ pandas==1.4.3
 passlib[bcrypt]==1.7.4
 plotly==5.13.1
 pyarrow==6.0.0
-psycopg2-binary==2.9.5
+psycopg2-binary==2.9.6
 pydantic<1.10.2
 pydash==6.0.2
 PyJWT==2.4.0
@@ -41,7 +41,7 @@ redis==3.5.3
 RestrictedPython==6.0.0
 rich-click==1.6.1
 sendgrid==6.9.7
-slowapi==0.1.7
+slowapi==0.1.8
 snowflake-sqlalchemy==1.4.3
 sqlalchemy[asyncio]==1.4.27
 sqlalchemy-citext==1.8.0
