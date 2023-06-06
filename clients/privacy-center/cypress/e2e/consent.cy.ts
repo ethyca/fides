@@ -38,7 +38,7 @@ describe("Consent modal deeplink", () => {
 
     // assert the modal is closed and query_param removed
     cy.url().should("not.contain", "showConsentModal=true");
-    cy.getByTestId("consent-request-form").should('not.exist');
+    cy.getByTestId("consent-request-form").should("not.exist");
   });
 });
 
