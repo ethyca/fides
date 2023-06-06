@@ -152,7 +152,7 @@ const automaticallyApplyGPCPreferences = (
   if (consentPreferencesToSave.length > 0) {
     updateConsentPreferences({
       consentPreferencesToSave,
-      experienceHistoryId: effectiveExperience.privacy_experience_history_id,
+      experienceId: effectiveExperience.id,
       fidesApiUrl,
       consentMethod: ConsentMethod.gpc,
       userLocationString: fidesRegionString || undefined,
