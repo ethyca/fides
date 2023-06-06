@@ -31,7 +31,7 @@ export const useConsentRequestModal = () => {
     setIsOpen(false);
     setCurrentView(ModalViews.ConsentRequest);
     setConsentRequestId("");
-    router.push('/', undefined, { shallow: true });
+    router.push("/", undefined, { shallow: true });
   };
 
   return {

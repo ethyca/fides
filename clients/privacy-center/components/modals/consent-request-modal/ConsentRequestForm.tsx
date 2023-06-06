@@ -129,9 +129,7 @@ const useConsentRequestForm = ({
         "one of email or phone entered",
         "You must enter an email",
         (value, context) => {
-          if (
-            identityInputs?.email !== "optional"
-          ) {
+          if (identityInputs?.email !== "optional") {
             return Boolean(context.parent.email);
           }
           return true;
@@ -141,9 +139,7 @@ const useConsentRequestForm = ({
         "one of email or phone entered",
         "You must enter a phone number",
         (value, context) => {
-          if (
-            identityInputs?.phone !== "optional"
-          ) {
+          if (identityInputs?.phone !== "optional") {
             return Boolean(context.parent.phone);
           }
           return true;

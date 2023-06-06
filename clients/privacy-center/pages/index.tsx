@@ -1,7 +1,7 @@
 import { Flex, Heading, Text, Stack, useToast } from "@fidesui/react";
 import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
-import { useRouter } from 'next/router';
+import { useRouter } from "next/router";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
 
 import {
