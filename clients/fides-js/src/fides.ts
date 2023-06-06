@@ -73,9 +73,10 @@ import {
   transformConsentToFidesUserPreference,
   validateOptions,
 } from "./lib/consent-utils";
+import { dispatchFidesEvent } from "./lib/events";
 import { fetchExperience } from "./services/fides/api";
 import { getGeolocation } from "./services/external/geolocation";
-import { OverlayProps } from "~/components/Overlay";
+import { OverlayProps } from "./components/Overlay";
 import { updateConsentPreferences } from "./lib/preferences";
 
 export type Fides = {
@@ -243,6 +244,12 @@ const init = async ({
   _Fides.options = options;
   _Fides.initialized = true;
 
+  // Dispatch the "FidesInitialized" event to update listeners with the initial
+  // state. For convenience, also dispatch the "FidesUpdated" event; this allows
+  // listeners to ignore the initialization event if they prefer
+  dispatchFidesEvent("FidesInitialized", cookie);
+  dispatchFidesEvent("FidesUpdated", cookie);
+
   automaticallyApplyGPCPreferences(
     cookie,
     fidesRegionString,
@@ -281,13 +288,14 @@ if (typeof window !== "undefined") {
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
 // TODO: pretty sure we need ./services/* too?
-export * from "./lib/consent";
 export * from "./components";
+export * from "./lib/consent";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
 export * from "./lib/consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
+export * from "./lib/events";
 
 // DEFER: this default export isn't very useful, it's just the Fides type
 export default Fides;

@@ -52,44 +52,49 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
 
   return (
     <div
-      id="fides-banner"
+      id="fides-banner-container"
       className={`fides-banner fides-banner-bottom ${
         bannerIsOpen ? "" : "fides-banner-hidden"
       } `}
     >
-      <div id="fides-banner-inner">
-        <div id="fides-banner-title" className="fides-banner-title">
-          {title}
-        </div>
-        <div id="fides-banner-description" className="fides-banner-description">
-          {description}
-        </div>
-        <div id="fides-banner-buttons" className="fides-banner-buttons">
-          <span className="fides-banner-buttons-left">
-            <Button
-              buttonType={ButtonType.TERTIARY}
-              label={privacyPreferencesLabel}
-              onClick={handleManagePreferencesClick}
-            />
-          </span>
-          <span className="fides-banner-buttons-right">
-            <Button
-              buttonType={ButtonType.PRIMARY}
-              label={rejectButtonLabel}
-              onClick={() => {
-                onRejectAll();
-                setBannerIsOpen(false);
-              }}
-            />
-            <Button
-              buttonType={ButtonType.PRIMARY}
-              label={acceptButtonLabel}
-              onClick={() => {
-                onAcceptAll();
-                setBannerIsOpen(false);
-              }}
-            />
-          </span>
+      <div id="fides-banner">
+        <div id="fides-banner-inner">
+          <div id="fides-banner-title" className="fides-banner-title">
+            {title}
+          </div>
+          <div
+            id="fides-banner-description"
+            className="fides-banner-description"
+          >
+            {description}
+          </div>
+          <div id="fides-banner-buttons" className="fides-banner-buttons">
+            <span className="fides-banner-buttons-left">
+              <Button
+                buttonType={ButtonType.TERTIARY}
+                label={privacyPreferencesLabel}
+                onClick={handleManagePreferencesClick}
+              />
+            </span>
+            <span className="fides-banner-buttons-right">
+              <Button
+                buttonType={ButtonType.PRIMARY}
+                label={rejectButtonLabel}
+                onClick={() => {
+                  onRejectAll();
+                  setBannerIsOpen(false);
+                }}
+              />
+              <Button
+                buttonType={ButtonType.PRIMARY}
+                label={acceptButtonLabel}
+                onClick={() => {
+                  onAcceptAll();
+                  setBannerIsOpen(false);
+                }}
+              />
+            </span>
+          </div>
         </div>
       </div>
     </div>

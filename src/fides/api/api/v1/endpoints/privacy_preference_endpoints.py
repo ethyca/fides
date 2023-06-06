@@ -37,7 +37,7 @@ from fides.api.api.v1.urn_registry import (
 )
 from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.privacy_experience import PrivacyExperienceHistory
+from fides.api.models.privacy_experience import PrivacyExperience
 from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
 from fides.api.models.privacy_preference import (
     CurrentPrivacyPreference,
@@ -205,25 +205,29 @@ def _get_request_origin_and_config(
 
     Additionally validate that the experience config history is valid if supplied.
     """
-    privacy_experience_history: Optional[PrivacyExperienceHistory] = None
-    experience_config_id: Optional[str] = None
-    if data.privacy_experience_history_id:
-        privacy_experience_history = PrivacyExperienceHistory.get(
-            db=db, object_id=data.privacy_experience_history_id
+    privacy_experience: Optional[PrivacyExperience] = None
+    experience_config_history_id: Optional[str] = None
+    if data.privacy_experience_id:
+        privacy_experience = PrivacyExperience.get(
+            db=db, object_id=data.privacy_experience_id
         )
-        if not privacy_experience_history:
+        if not privacy_experience:
             raise HTTPException(
                 status_code=HTTP_404_NOT_FOUND,
-                detail=f"Privacy Experience History '{data.privacy_experience_history_id}' not found.",
+                detail=f"Privacy Experience '{data.privacy_experience_id}' not found.",
             )
-        experience_config_id = privacy_experience_history.experience_config_history_id
+        experience_config_id = privacy_experience.experience_config_id
+        if experience_config_id:
+            experience_config_history_id = (
+                privacy_experience.experience_config.experience_config_history_id
+            )
 
     origin: Optional[str] = (
-        privacy_experience_history.component.value  # type: ignore[attr-defined]
-        if privacy_experience_history
+        privacy_experience.component.value  # type: ignore[attr-defined]
+        if privacy_experience
         else None
     )
-    return origin, experience_config_id
+    return origin, experience_config_history_id
 
 
 def supplement_privacy_preferences_with_user_and_experience_details(
@@ -346,8 +350,8 @@ def _save_privacy_preferences_for_identities(
                 "privacy_experience_config_history_id": request_data.experience_config_history_id
                 if request_data.experience_config_history_id
                 else None,
-                "privacy_experience_history_id": request_data.privacy_experience_history_id
-                if request_data.privacy_experience_history_id
+                "privacy_experience_id": request_data.privacy_experience_id
+                if request_data.privacy_experience_id
                 else None,
                 "fides_user_device": fides_user_device_id,
                 "fides_user_device_provided_identity_id": fides_user_provided_identity.id
@@ -529,8 +533,8 @@ def get_historical_consent_report(
             ),
             PrivacyPreferenceHistory.url_recorded.label("url_recorded"),
             PrivacyPreferenceHistory.user_agent.label("user_agent"),
-            PrivacyPreferenceHistory.privacy_experience_history_id.label(
-                "privacy_experience_history_id"
+            PrivacyPreferenceHistory.privacy_experience_id.label(
+                "privacy_experience_id"
             ),
             PrivacyPreferenceHistory.privacy_experience_config_history_id.label(
                 "experience_config_history_id"
