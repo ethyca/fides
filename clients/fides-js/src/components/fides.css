@@ -48,6 +48,7 @@
   --fides-overlay-button-border-radius: 4px;
   --fides-overlay-button-padding: 0.5em 1em;
   --fides-overlay-component-border-radius: 4px;
+  --fides-overlay-banner-offset: 48px;
 }
 
 div#fides-overlay {
@@ -97,7 +98,7 @@ div#fides-banner-container.fides-banner-bottom {
 }
 
 div#fides-banner-container.fides-banner-bottom.fides-banner-hidden {
-  transform: translateY(100%);
+  transform: translateY(150%);
 }
 
 div#fides-banner-container.fides-banner-top {
@@ -106,7 +107,7 @@ div#fides-banner-container.fides-banner-top {
 }
 
 div#fides-banner-container.fides-banner-top.fides-banner-hidden {
-  transform: translateY(-100%);
+  transform: translateY(-150%);
 }
 
 /* Responsive banner */
@@ -117,10 +118,10 @@ div#fides-banner-container.fides-banner-top.fides-banner-hidden {
     border: 1px solid var(--fides-overlay-primary-color);
   }
   div#fides-banner-container.fides-banner-bottom {
-    bottom: 48px;
+    bottom: var(--fides-overlay-banner-offset);
   }
   div#fides-banner-container.fides-banner-top {
-    top: 48px;
+    top: var(--fides-overlay-banner-offset);
   }
 }
 
