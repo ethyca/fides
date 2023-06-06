@@ -279,7 +279,7 @@ describe("Consent banner", () => {
                   preference: "acknowledge",
                 },
               ],
-              privacy_experience_history_id: "2342345",
+              privacy_experience_id: "132345243",
               user_geography: "us_ca",
               method: ConsentMethod.button,
             };
@@ -287,8 +287,8 @@ describe("Consent banner", () => {
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
             expect(generatedUserDeviceId).to.be.a("string");
             expect(body.preferences).to.eql(expected.preferences);
-            expect(body.privacy_experience_history_id).to.eql(
-              expected.privacy_experience_history_id
+            expect(body.privacy_experience_id).to.eql(
+              expected.privacy_experience_id
             );
             expect(body.user_geography).to.eql(expected.user_geography);
             expect(body.method).to.eql(expected.method);
@@ -376,7 +376,7 @@ describe("Consent banner", () => {
                 preference: "acknowledge",
               },
             ],
-            privacy_experience_history_id: "2342345",
+            privacy_experience_id: "132345243",
             user_geography: "us_ca",
             method: ConsentMethod.button,
           };
@@ -428,8 +428,8 @@ describe("Consent banner", () => {
                 regions: ["us_ca"],
                 consent_mechanism: ConsentMechanism.OPT_OUT,
                 default_preference: UserConsentPreference.OPT_IN,
-                current_preference: null,
-                outdated_preference: null,
+                current_preference: undefined,
+                outdated_preference: undefined,
                 has_gpc_flag: true,
                 data_uses: ["advertising", "third_party_sharing"],
                 enforcement_level: EnforcementLevel.SYSTEM_WIDE,
@@ -463,7 +463,7 @@ describe("Consent banner", () => {
                 preference: "opt_out",
               },
             ],
-            privacy_experience_history_id: "2342345",
+            privacy_experience_id: "132345243",
             user_geography: "us_ca",
             method: ConsentMethod.gpc,
           };
@@ -471,8 +471,8 @@ describe("Consent banner", () => {
           generatedUserDeviceId = body.browser_identity.fides_user_device_id;
           expect(generatedUserDeviceId).to.be.a("string");
           expect(body.preferences).to.eql(expected.preferences);
-          expect(body.privacy_experience_history_id).to.eql(
-            expected.privacy_experience_history_id
+          expect(body.privacy_experience_id).to.eql(
+            expected.privacy_experience_id
           );
           expect(body.user_geography).to.eql(expected.user_geography);
           expect(body.method).to.eql(expected.method);
@@ -521,8 +521,8 @@ describe("Consent banner", () => {
                 regions: ["us_ca"],
                 consent_mechanism: ConsentMechanism.OPT_OUT,
                 default_preference: UserConsentPreference.OPT_IN,
-                current_preference: null,
-                outdated_preference: null,
+                current_preference: undefined,
+                outdated_preference: undefined,
                 has_gpc_flag: false,
                 data_uses: ["advertising", "third_party_sharing"],
                 enforcement_level: EnforcementLevel.SYSTEM_WIDE,
@@ -581,8 +581,8 @@ describe("Consent banner", () => {
                 regions: ["us_ca"],
                 consent_mechanism: ConsentMechanism.OPT_OUT,
                 default_preference: UserConsentPreference.OPT_IN,
-                current_preference: null,
-                outdated_preference: null,
+                current_preference: undefined,
+                outdated_preference: undefined,
                 has_gpc_flag: true,
                 data_uses: ["advertising", "third_party_sharing"],
                 enforcement_level: EnforcementLevel.SYSTEM_WIDE,
