@@ -38,6 +38,7 @@ The types of changes are:
 - Removed ExperienceConfig.delivery_mechanism constraint [#3387](https://github.com/ethyca/fides/pull/3387)
 - Updated privacy experience UI forms to reflect updated experience config fields [#3402](https://github.com/ethyca/fides/pull/3402)
 - Bump SlowAPI Version [#3456](https://github.com/ethyca/fides/pull/3456)
+- Reduced duplication between PrivacyExperience and PrivacyExperienceConfig [#3470](https://github.com/ethyca/fides/pull/3470)
 
 ### Developer Experience
 

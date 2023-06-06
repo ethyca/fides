@@ -2032,12 +2032,8 @@ def privacy_preference_history(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "privacy_experience_config_history_id": privacy_experience_privacy_center.histories[
-                0
-            ].experience_config_history_id,
-            "privacy_experience_history_id": privacy_experience_privacy_center.histories[
-                0
-            ].id,
+            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
+            "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_out",
             "privacy_notice_history_id": privacy_notice_history.id,
             "provided_identity_id": provided_identity.id,
@@ -2112,18 +2108,12 @@ def privacy_experience_privacy_center(
         db=db,
         data={
             "component": ComponentType.privacy_center,
-            "disabled": True,
             "region": PrivacyNoticeRegion.us_co,
             "experience_config_id": experience_config_privacy_center.id,
-            "experience_config_history_id": experience_config_privacy_center.histories[
-                0
-            ].id,
         },
     )
 
     yield privacy_experience
-    for history in privacy_experience.histories:
-        history.delete(db)
     privacy_experience.delete(db)
 
 
@@ -2161,12 +2151,8 @@ def privacy_experience_overlay(db: Session, experience_config_overlay) -> Genera
             "component": ComponentType.overlay,
             "region": PrivacyNoticeRegion.us_ca,
             "experience_config_id": experience_config_overlay.id,
-            "experience_config_history_id": experience_config_overlay.histories[0].id,
-            "disabled": False,
         },
     )
 
     yield privacy_experience
-    for history in privacy_experience.histories:
-        history.delete(db)
     privacy_experience.delete(db)
