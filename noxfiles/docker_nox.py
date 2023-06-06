@@ -30,14 +30,16 @@ def verify_git_tag(session: nox.Session) -> str:
     """
     existing_commit_tag = get_current_tag(existing=True)
     if existing_commit_tag is None:
-        session.error(
+        session.warn(
             "Did not find an existing git tag on the current commit, not pushing git-tag images"
         )
+        return None
 
     if not recognized_tag(existing_commit_tag):
-        session.error(
+        session.warn(
             f"Existing git tag {existing_commit_tag} is not a recognized tag, not pushing git-tag images"
         )
+        return None
 
     session.log(
         f"Found git tag {existing_commit_tag} on the current commit, pushing corresponding git-tag images!"
@@ -255,6 +257,10 @@ def push(session: nox.Session, tag: str) -> None:
         external=True,
         success_codes=[0, 1],  # Will fail if it already exists, but this is fine
     )
+
+    # special case for git-tag - if we don't find a valid one, exit gracefully
+    if tag == "git-tag" and verify_git_tag(session) is None:
+        return
 
     # Use lambdas to force lazy evaluation
     param_tag_map = {
