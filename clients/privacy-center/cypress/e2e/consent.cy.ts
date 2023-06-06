@@ -12,6 +12,7 @@ describe("Consent modal deeplink", () => {
 
   it("opens the consent modal", () => {
     // This test does the same as below, without clicking the card
+    cy.getByTestId("consent-request-form").should('be.visible');
     cy.getByTestId("consent-request-form").within(() => {
       cy.get("input#email").type("test@example.com");
       cy.get("button").contains("Continue").click();
@@ -36,6 +37,7 @@ describe("Consent modal deeplink", () => {
 
     // assert the modal is closed and query_param removed
     cy.url().should("not.contain", "showConsentModal=true");
+    cy.getByTestId("consent-request-form").should('not.be.visible');
   });
 });
 
