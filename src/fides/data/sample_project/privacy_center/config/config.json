@@ -37,9 +37,7 @@
       "identity_inputs": {
         "email": "optional"
       },
-      "title": "Manage your consent",
-      "proceed_button_text": "Continue",
-      "cancel_button_text": "Cancel"
+      "title": "Manage your consent"
     },
     "page": {
       "consentOptions": [
@@ -53,9 +51,7 @@
             "globalPrivacyControl": false
           },
           "highlight": false,
-          "cookieKeys": [
-            "data_sales"
-          ],
+          "cookieKeys": ["data_sales"],
           "executable": false
         },
         {
@@ -68,9 +64,7 @@
             "globalPrivacyControl": false
           },
           "highlight": false,
-          "cookieKeys": [
-            "tracking"
-          ],
+          "cookieKeys": ["tracking"],
           "executable": false
         },
         {
@@ -80,9 +74,7 @@
           "url": "https://example.com/privacy#analytics",
           "default": true,
           "highlight": false,
-          "cookieKeys": [
-            "analytics"
-          ],
+          "cookieKeys": ["analytics"],
           "executable": false
         }
       ],
