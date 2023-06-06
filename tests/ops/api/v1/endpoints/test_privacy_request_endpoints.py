@@ -84,7 +84,7 @@ from fides.api.schemas.messaging.messaging import (
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
-from fides.api.schemas.policy import PolicyResponse
+from fides.api.schemas.policy import ActionType, PolicyResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.task import graph_task
 from fides.api.tasks import MESSAGING_QUEUE_NAME

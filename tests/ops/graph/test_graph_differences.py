@@ -19,6 +19,7 @@ from fides.api.graph.graph_differences import (
 from fides.api.graph.traversal import TraversalNode, artificial_traversal_node
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.policy import Policy
+from fides.api.schemas.policy import ActionType
 from fides.api.task.graph_task import EMPTY_REQUEST, GraphTask
 from fides.api.task.task_resources import TaskResources
 
