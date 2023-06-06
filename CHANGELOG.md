@@ -23,6 +23,8 @@ The types of changes are:
 - Add `notice_key` field to Privacy Notice UI form [#3403](https://github.com/ethyca/fides/pull/3403)
 - Add `identity` query param to the consent reporting API view [#3418](https://github.com/ethyca/fides/pull/3418)
 - Use `rollup-plugin-postcss` to bundle and optimize the `fides.js` components CSS [#3431](https://github.com/ethyca/fides/pull/3431)
+- Dispatch Fides.js lifecycle events on window (FidesInitialized, FidesUpdated) and cross-publish to Fides.gtm() integration [#3454](https://github.com/ethyca/fides/pull/3454)
+
 
 ### Fixed
 

@@ -60,6 +60,18 @@ Cypress.Commands.add("visitConsentDemo", (options?: FidesConfig) => {
     onBeforeLoad: (win) => {
       // eslint-disable-next-line no-param-reassign
       win.fidesConfig = options;
+
+      // Add event listeners for Fides.js events
+      win.addEventListener(
+        "FidesInitialized",
+        cy.stub().as("FidesInitialized")
+      );
+      win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
+
+      // Add GTM stub
+      // eslint-disable-next-line no-param-reassign
+      win.dataLayer = [];
+      cy.stub(win.dataLayer, "push").as("dataLayerPush");
     },
   });
 });
@@ -167,6 +179,7 @@ declare global {
 declare global {
   interface Window {
     fidesConfig?: FidesConfig;
+    dataLayer?: Array<any>;
   }
 }
 
