@@ -57,7 +57,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           build-args: PYTHON_VERSION=${{ matrix.python_version }}
-          target: dev
+          target: prod
           outputs: type=docker,dest=/tmp/python-${{ matrix.python_version }}.tar
           push: false
           tags: ${{ env.IMAGE }}
