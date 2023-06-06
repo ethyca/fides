@@ -8,21 +8,17 @@ interface BannerProps {
   experience: ExperienceConfig;
   onAcceptAll: () => void;
   onRejectAll: () => void;
-  waitBeforeShow?: number;
+  onManagePreferences: () => void;
   managePreferencesLabel?: string;
-  onOpenModal: () => void;
   bannerIsOpen: boolean;
-  setBannerIsOpen: StateUpdater<boolean>;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
   experience,
   onAcceptAll,
   onRejectAll,
-  waitBeforeShow,
-  onOpenModal,
+  onManagePreferences,
   bannerIsOpen,
-  setBannerIsOpen,
 }) => {
   const hasMounted = useHasMounted();
   const {
@@ -33,18 +29,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     privacy_preferences_link_label:
       privacyPreferencesLabel = "Manage preferences",
   } = experience;
-
-  useEffect(() => {
-    const delayBanner = setTimeout(() => {
-      setBannerIsOpen(true);
-    }, waitBeforeShow);
-    return () => clearTimeout(delayBanner);
-  }, [setBannerIsOpen, waitBeforeShow]);
-
-  const handleManagePreferencesClick = (): void => {
-    onOpenModal();
-    setBannerIsOpen(false);
-  };
 
   if (!hasMounted) {
     return null;
@@ -73,7 +57,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
               <Button
                 buttonType={ButtonType.TERTIARY}
                 label={privacyPreferencesLabel}
-                onClick={handleManagePreferencesClick}
+                onClick={onManagePreferences}
               />
             </span>
             <span className="fides-banner-buttons-right">
@@ -82,7 +66,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                 label={rejectButtonLabel}
                 onClick={() => {
                   onRejectAll();
-                  setBannerIsOpen(false);
                 }}
               />
               <Button
@@ -90,7 +73,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                 label={acceptButtonLabel}
                 onClick={() => {
                   onAcceptAll();
-                  setBannerIsOpen(false);
                 }}
               />
             </span>

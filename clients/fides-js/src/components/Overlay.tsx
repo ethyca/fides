@@ -38,6 +38,13 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
 
   useEffect(() => {
+    const delayBanner = setTimeout(() => {
+      setBannerIsOpen(true);
+    }, 100);
+    return () => clearTimeout(delayBanner);
+  }, [setBannerIsOpen]);
+
+  useEffect(() => {
     if (modalLinkEl) {
       debugLog(
         options.debug,
@@ -82,6 +89,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       userLocationString: fidesRegionString,
       cookie,
     });
+    setBannerIsOpen(false);
   };
 
   const onRejectAll = () => {
@@ -103,6 +111,12 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       userLocationString: fidesRegionString,
       cookie,
     });
+    setBannerIsOpen(false);
+  };
+
+  const handleManagePreferencesClick = (): void => {
+    setModalIsOpen(true);
+    setBannerIsOpen(false);
   };
 
   const onSavePreferences = (
@@ -138,10 +152,8 @@ const Overlay: FunctionComponent<OverlayProps> = ({
           experience={experience.experience_config}
           onAcceptAll={onAcceptAll}
           onRejectAll={onRejectAll}
-          waitBeforeShow={100}
-          onOpenModal={() => setModalIsOpen(true)}
+          onManagePreferences={handleManagePreferencesClick}
           bannerIsOpen={bannerIsOpen}
-          setBannerIsOpen={setBannerIsOpen}
         />
       ) : null}
       {modalIsOpen ? (
