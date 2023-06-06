@@ -30,9 +30,6 @@ const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
               egress: obj.values["system.egress"]
                 ? obj.values["system.egress"].split(", ")
                 : [],
-              dependencies: obj.values["system.system_dependencies"]
-                ? obj.values["system.system_dependencies"].split(",")
-                : [],
               id: obj.values["system.fides_key"],
             };
           }
