@@ -44,7 +44,7 @@ async def test_mailchimp_transactional_consent_request_task_old_workflow(
 
     privacy_request = PrivacyRequest(
         id=str(uuid4()),
-        consent_preferences=[{"data_use": "advertising", "opt_in": False}],
+        consent_preferences=[{"data_use": "marketing.advertising", "opt_in": False}],
     )
 
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
@@ -128,7 +128,7 @@ async def test_mailchimp_transactional_consent_prepared_requests_old_workflow(
 
     privacy_request = PrivacyRequest(
         id=str(uuid4()),
-        consent_preferences=[{"data_use": "advertising", "opt_in": False}],
+        consent_preferences=[{"data_use": "marketing.advertising", "opt_in": False}],
     )
 
     identity = Identity(**{"email": mailchimp_transactional_identity_email})

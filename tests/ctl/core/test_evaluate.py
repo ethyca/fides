@@ -111,7 +111,7 @@ def test_populate_referenced_keys_recursively(test_config: FidesConfig) -> None:
                         PrivacyDeclaration(
                             name="privacy_declaration_1",
                             data_categories=["user.contact.email"],
-                            data_use="provide.service",
+                            data_use="essential.service",
                             data_qualifier="aggregated.anonymized",
                             data_subjects=["customer"],
                         )
@@ -132,7 +132,7 @@ def test_populate_referenced_keys_recursively(test_config: FidesConfig) -> None:
     )
 
     populated_data_uses = [data_use.fides_key for data_use in result_taxonomy.data_use]
-    assert sorted(populated_data_uses) == sorted(["provide.service", "provide"])
+    assert sorted(populated_data_uses) == sorted(["essential.service", "essential"])
 
     populated_qualifiers = [
         data_qualifier.fides_key for data_qualifier in result_taxonomy.data_qualifier
@@ -166,7 +166,7 @@ def test_populate_referenced_keys_fails_missing_keys(
                             PrivacyDeclaration(
                                 name="privacy_declaration_1",
                                 data_categories=["missing.category"],
-                                data_use="provide.service",
+                                data_use="essential.service",
                                 data_qualifier="aggregated.anonymized",
                                 data_subjects=["customer"],
                             )
@@ -580,12 +580,12 @@ def test_failed_evaluation_error_message(
                               'qualifier '
                               '(aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified) '
                               'for data uses '
-                              '(third_party_sharing.payment_processing) and '
+                              '(marketing.advertising.third_party) and '
                               'subjects (customer)',
                     'violating_attributes': { 'data_categories': [ 'user.political_opinion'],
                                               'data_qualifier': 'aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified',
                                               'data_subjects': ['customer'],
-                                              'data_uses': [ 'third_party_sharing.payment_processing']}}]}
+                                              'data_uses': [ 'marketing.advertising.third_party']}}]}
                                               """
     )
     with pytest.raises(SystemExit):
@@ -598,7 +598,7 @@ def test_failed_evaluation_error_message(
     captured_out = string_cleaner(capsys.readouterr().out)
     print(f"Expected output:\n{expected_error_message}")
     print(f"Captured output:\n{captured_out}")
-    assert expected_error_message in captured_out
+    assert captured_out.endswith(expected_error_message)
 
 
 @pytest.mark.unit

@@ -7,7 +7,7 @@ system:
       - name: Share Political Opinions
         data_categories:
           - user.political_opinion
-        data_use: third_party_sharing.payment_processing
+        data_use: essential.service.payment_processing
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         data_subjects:
           - customer
@@ -27,7 +27,7 @@ policy:
         data_uses:
           matches: ANY
           values:
-            - advertising
+            - marketing.advertising
         data_subjects:
           matches: ANY
           values:

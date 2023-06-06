@@ -130,6 +130,16 @@ def experience_config_create(
     new_regions: Optional[List[PrivacyNoticeRegion]] = experience_config_dict.pop(
         "regions", None
     )
+    default_config: Optional[
+        PrivacyExperienceConfig
+    ] = PrivacyExperienceConfig.get_default_config(
+        db, experience_config_data.component  # type: ignore[arg-type]
+    )
+    if default_config and experience_config_data.is_default:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Cannot set as the default. Only one default {experience_config_data.component.value} config can be in the system.",
+        )
 
     logger.info(
         "Creating experience config of component '{}'.",
@@ -207,6 +217,22 @@ def experience_config_update(
     experience_config: PrivacyExperienceConfig = get_experience_config_or_error(
         db, experience_config_id
     )
+
+    default_config: Optional[
+        PrivacyExperienceConfig
+    ] = PrivacyExperienceConfig.get_default_config(
+        db, experience_config.component  # type: ignore[arg-type]
+    )
+    if (
+        default_config
+        and default_config.id != experience_config_id
+        and experience_config_data.is_default
+    ):
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Cannot set as the default. Only one default {experience_config.component.value} config can be in the system.",  # type: ignore[attr-defined]
+        )
+
     experience_config_data_dict: Dict = experience_config_data.dict(exclude_unset=True)
     # Pop the regions off the request
     regions: Optional[List[PrivacyNoticeRegion]] = experience_config_data_dict.pop(

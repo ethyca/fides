@@ -129,6 +129,7 @@ describe("Consent banner", () => {
         cy.get("#fides-modal-link").should("not.be.visible");
       });
     });
+
     describe("when only legacy consent exists", () => {
       beforeEach(() => {
         stubConfig(
@@ -169,7 +170,7 @@ describe("Consent banner", () => {
         });
       });
       it("should render the expected HTML banner", () => {
-        cy.get("div#fides-banner.fides-banner").within(() => {
+        cy.get("div#fides-banner").within(() => {
           cy.get(
             "div#fides-banner-description.fides-banner-description"
           ).contains(
@@ -500,6 +501,7 @@ describe("Consent banner", () => {
           });
       });
     });
+
     describe("when GPC flag is found, and no notices apply to GPC", () => {
       beforeEach(() => {
         cy.on("window:before:load", (win) => {
@@ -558,6 +560,7 @@ describe("Consent banner", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       });
     });
+
     describe("when no GPC flag is found, and notices apply to GPC", () => {
       beforeEach(() => {
         cy.on("window:before:load", (win) => {
@@ -618,6 +621,7 @@ describe("Consent banner", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       });
     });
+
     describe("when experience component is not an overlay", () => {
       beforeEach(() => {
         stubConfig({
@@ -932,6 +936,150 @@ describe("Consent banner", () => {
           expect(false).is.eql(true);
         });
       });
+    });
+  });
+
+  describe("when listening for fides.js events", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      stubConfig({
+        options: {
+          isOverlayDisabled: false,
+        },
+      });
+    });
+    // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
+    // register listeners for these window events
+    it("emits both a FidesInitialized and FidesUpdated event when initialized", () => {
+      cy.window()
+        .its("Fides")
+        .its("consent")
+        .should("eql", {
+          [PRIVACY_NOTICE_KEY_1]: false,
+          [PRIVACY_NOTICE_KEY_2]: false,
+        });
+      cy.get("@FidesInitialized")
+        .should("have.been.calledOnce")
+        .its("firstCall.args.0.detail")
+        .should("deep.equal", {
+          consent: {
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: false,
+          },
+        });
+      cy.get("@FidesUpdated")
+        .should("have.been.calledOnce")
+        .its("firstCall.args.0.detail")
+        .should("deep.equal", {
+          consent: {
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: false,
+          },
+        });
+    });
+
+    describe("when preferences are updated", () => {
+      it("emits another FidesUpdated event when reject all is clicked", () => {
+        cy.contains("button", "Reject Test").should("be.visible").click();
+        cy.get("@FidesUpdated")
+          .should("have.been.calledTwice")
+          // First call should be from initialization, before the user rejects all
+          .its("firstCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: false,
+              [PRIVACY_NOTICE_KEY_2]: false,
+            },
+          });
+        cy.get("@FidesUpdated")
+          // Second call is when the user rejects all
+          .its("secondCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: false,
+              [PRIVACY_NOTICE_KEY_2]: false,
+            },
+          });
+      });
+
+      it("emits another FidesUpdated event when accept all is clicked", () => {
+        cy.contains("button", "Accept Test").should("be.visible").click();
+        cy.get("@FidesUpdated")
+          .should("have.been.calledTwice")
+          // First call should be from initialization, before the user accepts all
+          .its("firstCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: false,
+              [PRIVACY_NOTICE_KEY_2]: false,
+            },
+          });
+        cy.get("@FidesUpdated")
+          // Second call is when the user accepts all
+          .its("secondCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: true,
+              [PRIVACY_NOTICE_KEY_2]: true,
+            },
+          });
+      });
+
+      it("emits another FidesUpdated event when customized preferences are saved", () => {
+        cy.contains("button", "Manage preferences")
+          .should("be.visible")
+          .click();
+        cy.getByTestId("toggle-Test privacy notice").click();
+        cy.getByTestId("consent-modal").contains("Save").click();
+        cy.get("@FidesUpdated")
+          .should("have.been.calledTwice")
+          // First call should be from initialization, before the user saved preferences
+          .its("firstCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: false,
+              [PRIVACY_NOTICE_KEY_2]: false,
+            },
+          });
+        cy.get("@FidesUpdated")
+          // Second call is when the user saved preferences and opted-in to the first notice
+          .its("secondCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: true,
+              [PRIVACY_NOTICE_KEY_2]: false,
+            },
+          });
+      });
+    });
+
+    it("pushes events to the GTM integration", () => {
+      cy.contains("button", "Accept Test").should("be.visible").click();
+      cy.get("@dataLayerPush")
+        .should("have.been.calledTwice")
+        // First call should be from initialization, before the user accepts all
+        .its("firstCall.args.0")
+        .should("deep.equal", {
+          event: "FidesInitialized",
+          Fides: {
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: false,
+              [PRIVACY_NOTICE_KEY_2]: false,
+            },
+          },
+        });
+      cy.get("@dataLayerPush")
+        // Second call is when the user accepts all
+        .its("secondCall.args.0")
+        .should("deep.equal", {
+          event: "FidesUpdated",
+          Fides: {
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: true,
+              [PRIVACY_NOTICE_KEY_2]: true,
+            },
+          },
+        });
     });
   });
 });
