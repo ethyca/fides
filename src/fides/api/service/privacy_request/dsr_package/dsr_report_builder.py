@@ -13,7 +13,7 @@ from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 
-DSR_DIRECTORY = os.path.dirname(__file__)
+DSR_DIRECTORY = Path(__file__).parent.resolve()
 
 
 # pylint: disable=too-many-instance-attributes

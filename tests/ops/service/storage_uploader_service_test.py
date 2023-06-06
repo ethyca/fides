@@ -330,7 +330,7 @@ def test_uploader_local_dsr_package(
 
     dsr_report_path = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{privacy_request.id}.zip"
     assert os.path.isfile(dsr_report_path)
-    # os.remove(dsr_report_path)
+    os.remove(dsr_report_path)
     config.delete(db)
 
 
