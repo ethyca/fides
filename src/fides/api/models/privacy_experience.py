@@ -175,28 +175,15 @@ class PrivacyExperienceConfigHistory(ExperienceConfigBase, Base):
     )
 
 
-class PrivacyExperienceBase:
-    """Base Privacy Experience fields that are common between privacy experiences and historical records"""
-
-    disabled = Column(Boolean, nullable=False, default=False)
-    component = Column(EnumColumn(ComponentType), nullable=False)
-    region = Column(EnumColumn(PrivacyNoticeRegion), nullable=False, index=True)
-    version = Column(Float, nullable=False, default=1.0)
-
-    # Attribute that can be added as the result of "get_related_privacy_notices". Privacy notices aren't directly
-    # related to experiences.
-    privacy_notices: List[PrivacyNotice] = []
-
-    # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
-    show_banner: bool
-
-
-class PrivacyExperience(PrivacyExperienceBase, Base):
+class PrivacyExperience(Base):
     """Stores Privacy Experiences for a given just a single region.  The Experience describes how to surface
     multiple Privacy Notices to the end user in a given region.
 
     There can only be one component per region.
     """
+
+    component = Column(EnumColumn(ComponentType), nullable=False)
+    region = Column(EnumColumn(PrivacyNoticeRegion), nullable=False, index=True)
 
     experience_config_id = Column(
         String,
@@ -205,20 +192,8 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
         index=True,
     )
 
-    experience_config_history_id = Column(
-        String,
-        ForeignKey(PrivacyExperienceConfigHistory.id_field_path),
-        nullable=True,
-        index=True,
-    )  # Also links to the historical record, so if the version of config gets updated, that
-    # triggers a new version of the experience.
-
     # There can only be one component per region
     __table_args__ = (UniqueConstraint("region", "component", name="region_component"),)
-
-    histories = relationship(
-        "PrivacyExperienceHistory", backref="privacy_experience", lazy="dynamic"
-    )
 
     experience_config = relationship(
         "PrivacyExperienceConfig",
@@ -226,17 +201,12 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
         uselist=False,
     )
 
-    @hybridproperty
-    def privacy_experience_history_id(self) -> Optional[str]:
-        """Convenience property that returns the historical privacy experience id for the current version.
+    # Attribute that can be added as the result of "get_related_privacy_notices". Privacy notices aren't directly
+    # related to experiences.
+    privacy_notices: List[PrivacyNotice] = []
 
-        Note that there are possibly many historical records for the given experience, this just returns the current
-        corresponding historical record.
-        """
-        history: PrivacyExperienceHistory = self.histories.filter_by(  # type: ignore # pylint: disable=no-member
-            version=self.version
-        ).first()
-        return history.id if history else None
+    # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
+    show_banner: bool
 
     def get_should_show_banner(
         self, db: Session, show_disabled: Optional[bool] = True
@@ -314,27 +284,6 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
 
         return notices
 
-    @classmethod
-    def create(
-        cls: Type[PrivacyExperience],
-        db: Session,
-        *,
-        data: dict[str, Any],
-        check_name: bool = False,
-    ) -> PrivacyExperience:
-        """Create a privacy experience and the clone this record into the history table for record keeping"""
-        privacy_experience = super().create(db=db, data=data, check_name=check_name)
-
-        # create the history after the initial object creation succeeds, to avoid
-        # writing history if the creation fails and so that we can get the generated ID
-        data.pop("id", None)
-        history_data = {
-            **data,
-            "privacy_experience_id": privacy_experience.id,
-        }
-        PrivacyExperienceHistory.create(db, data=history_data, check_name=False)
-        return privacy_experience
-
     @staticmethod
     def create_default_experience_for_region(
         db: Session, region: PrivacyNoticeRegion, component: ComponentType
@@ -351,28 +300,11 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
 
         if default_config:
             experience_data["experience_config_id"] = default_config.id
-            experience_data[
-                "experience_config_history_id"
-            ] = default_config.experience_config_history_id
 
         return PrivacyExperience.create(
             db=db,
             data=experience_data,
         )
-
-    def update(self, db: Session, *, data: dict[str, Any]) -> PrivacyExperience:
-        """
-        Overrides the base update method to automatically bump the version of the
-        PrivacyExperience record and also create a new PrivacyExperienceHistory entry
-        """
-        resource, updated = update_if_modified(self, db=db, data=data)
-
-        if updated:
-            history_data = create_historical_data_from_record(resource)
-            history_data["privacy_experience_id"] = resource.id
-            PrivacyExperienceHistory.create(db, data=history_data, check_name=False)
-
-        return resource  # type: ignore[return-value]
 
     @staticmethod
     def get_experience_by_region_and_component(
@@ -413,7 +345,7 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
         Note that neither the Experience Config or Experience are deleted; we're only removing
         a FK if it exists.
         """
-        return self.update(
+        return self.update(  # type: ignore[return-value]
             db,
             data={"experience_config_id": None, "experience_config_history_id": None},
         )
@@ -428,7 +360,7 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
         ] = PrivacyExperienceConfig.get_default_config(
             db, self.component  # type: ignore[arg-type]
         )
-        return self.update(
+        return self.update(  # type: ignore[return-value]
             db,
             data={
                 "experience_config_id": default_config.id if default_config else None,
@@ -437,28 +369,6 @@ class PrivacyExperience(PrivacyExperienceBase, Base):
                 else None,
             },
         )
-
-
-class PrivacyExperienceHistory(PrivacyExperienceBase, Base):
-    """Stores the history of a privacy experience for a given region for Consent Reporting"""
-
-    version = Column(Float, nullable=False, default=1.0)
-    privacy_experience_id = Column(
-        String, ForeignKey(PrivacyExperience.id_field_path), nullable=False, index=True
-    )
-    experience_config_id = Column(
-        String,
-        ForeignKey(PrivacyExperienceConfig.id_field_path),
-        nullable=True,
-        index=True,
-    )
-
-    experience_config_history_id = Column(
-        String,
-        ForeignKey(PrivacyExperienceConfigHistory.id_field_path),
-        nullable=True,
-        index=True,
-    )
 
 
 def get_privacy_notices_by_region_and_component(
@@ -605,8 +515,6 @@ def upsert_privacy_experiences_after_config_update(
             "component": experience_config.component,
             "region": region,
             "experience_config_id": experience_config.id,
-            "experience_config_history_id": experience_config.experience_config_history_id,
-            "disabled": experience_config.disabled,
         }
 
         # If existing experience exists, link to experience config

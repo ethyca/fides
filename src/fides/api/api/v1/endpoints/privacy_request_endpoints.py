@@ -84,13 +84,7 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
-from fides.api.models.policy import (
-    ActionType,
-    CurrentStep,
-    Policy,
-    PolicyPreWebhook,
-    Rule,
-)
+from fides.api.models.policy import CurrentStep, Policy, PolicyPreWebhook, Rule
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
@@ -110,6 +104,7 @@ from fides.api.schemas.messaging.messaging import (
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,

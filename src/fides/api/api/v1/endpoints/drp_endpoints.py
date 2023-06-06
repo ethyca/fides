@@ -20,7 +20,7 @@ from fides.api.api.v1 import urn_registry as urls
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )
-from fides.api.models.policy import DrpAction, Policy
+from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.drp_privacy_request import (
@@ -30,6 +30,7 @@ from fides.api.schemas.drp_privacy_request import (
     DrpPrivacyRequestCreate,
     DrpRevokeRequest,
 )
+from fides.api.schemas.policy import DrpAction
 from fides.api.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.drp.drp_fidesops_mapper import DrpFidesopsMapper

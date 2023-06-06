@@ -45,7 +45,6 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
-    ActionType,
     CurrentStep,
     Policy,
     PolicyPreWebhook,
@@ -57,6 +56,7 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.external_https import SecondPartyResponseFormat, WebhookJWE
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity, IdentityBase
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (

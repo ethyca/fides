@@ -16,7 +16,7 @@ from fides.api.graph.config import (
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import ExecutionLog, ExecutionLogStatus
 from fides.api.task.graph_task import (
     EMPTY_REQUEST,

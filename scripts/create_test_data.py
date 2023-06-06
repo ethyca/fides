@@ -16,7 +16,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
