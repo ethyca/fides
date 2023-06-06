@@ -541,7 +541,6 @@ class TestConsentEmailBatchSend:
                             name="example privacy notice",
                             notice_key="example_privacy_notice",
                             description="a sample privacy notice configuration",
-                            origin="privacy_notice_template_1",
                             regions=["us_ca", "us_co"],
                             consent_mechanism="opt_in",
                             data_uses=["marketing.advertising", "third_party_sharing"],
@@ -670,8 +669,8 @@ class TestConsentEmailBatchSend:
                         preference=UserConsentPreference.opt_out,
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="example privacy notice",
+                            notice_key="example_privacy_notice",
                             description="a sample privacy notice configuration",
-                            origin="privacy_notice_template_1",
                             regions=["us_ca", "us_co"],
                             consent_mechanism="opt_in",
                             data_uses=["marketing.advertising", "third_party_sharing"],

@@ -20,7 +20,11 @@ from fides.api.models.privacy_experience import (
     PrivacyExperienceConfigHistory,
     PrivacyExperienceHistory,
 )
-from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
+from fides.api.models.privacy_notice import (
+    PrivacyNotice,
+    PrivacyNoticeHistory,
+    PrivacyNoticeTemplate,
+)
 from fides.api.models.privacy_preference import (
     CurrentPrivacyPreference,
     PrivacyPreferenceHistory,
