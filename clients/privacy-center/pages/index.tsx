@@ -35,8 +35,8 @@ const Home: NextPage = () => {
     successHandler: privacyModalSuccessHandler,
   } = usePrivacyRequestModal();
 
-  let {
-    isOpen: isConsentModalOpen,
+  const {
+    isOpen: isConsentModalOpenConst,
     onOpen: onConsentModalOpen,
     onClose: onConsentModalClose,
     currentView: currentConsentModalView,
@@ -45,7 +45,7 @@ const Home: NextPage = () => {
     setConsentRequestId,
     successHandler: consentModalSuccessHandler,
   } = useConsentRequestModal();
-
+  let isConsentModalOpen = isConsentModalOpenConst;
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
 
   useEffect(() => {
