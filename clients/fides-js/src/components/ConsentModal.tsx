@@ -9,6 +9,7 @@ import {
   ExperienceConfig,
 } from "../lib/consent-types";
 import NoticeToggles from "./NoticeToggles";
+import CloseButton from "./CloseButton";
 
 const ConsentModal = ({
   attributes,
@@ -27,7 +28,7 @@ const ConsentModal = ({
   onAcceptAll: () => void;
   onRejectAll: () => void;
 }) => {
-  const { container, overlay, dialog, title } = attributes;
+  const { container, overlay, dialog, title, closeButton } = attributes;
 
   const initialEnabledNoticeKeys = useMemo(
     () =>
@@ -57,10 +58,11 @@ const ConsentModal = ({
   };
 
   return (
-    // @ts-ignore
+    // @ts-ignore A11yDialog ref obj type isn't quite the same
     <div data-testid="consent-modal" {...container} className="modal-container">
       <div {...overlay} className="modal-overlay" />
       <div data-testid="modal-content" {...dialog} className="modal-content">
+        <CloseButton ariaLabel="Close modal" onClick={closeButton.onClick} />
         <h1 data-testid="modal-header" {...title} className="modal-header">
           {experience.title}
         </h1>

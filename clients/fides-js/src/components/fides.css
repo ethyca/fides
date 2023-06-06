@@ -263,6 +263,20 @@ div#fides-modal .modal-button-group {
   display: flex;
 }
 
+.fides-close-button {
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  cursor: pointer;
+  background: none;
+  border: none;
+  display: flex;
+}
+
+.fides-close-button:hover {
+  background: var(--fides-overlay-hover-color);
+}
+
 .modal-notices {
   margin-bottom: 1em;
 }
