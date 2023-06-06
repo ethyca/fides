@@ -76,7 +76,7 @@ jobs:
       # if an alpha or beta tag, then we run the prerelease job to publish images with an ":prerelease" tag
       - name: Push Fides prerelease Tags
         if: steps.check-alpha-tag.outputs.match == 'true' || steps.check-beta-tag.outputs.match == 'true'
-        run: nox -s "push(rc)"
+        run: nox -s "push(prerelease)"
 
       # if not a prod tag, then we run the git-tag job to publish images with a git tag
       # if one exists on the current commit. the job is a no-op if the commit hasn't been tagged
