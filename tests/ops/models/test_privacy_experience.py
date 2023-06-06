@@ -1119,3 +1119,53 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         privacy_center_experience.delete(db)
         config.histories[0].delete(db)
         config.delete(db)
+
+    def test_experience_config_unlinks_region_from_default_config(self, db):
+        """Default Privacy Center Experience Config updated, and we attempt to remove the
+        regions. Affected experiences have no config because there's nothing to which we can automatically link.
+        """
+        default_privacy_center_config = PrivacyExperienceConfig.get_default_config(
+            db, ComponentType.privacy_center
+        )
+
+        pc_exp = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": "privacy_center",
+                "region": "us_ak",
+                "experience_config_id": default_privacy_center_config.id,
+            },
+        )
+        assert pc_exp.experience_config_id == default_privacy_center_config.id
+        assert default_privacy_center_config.experiences.count() == 1
+
+        (
+            overlay_experience,
+            privacy_center_experience,
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+
+        assert overlay_experience is None
+        assert privacy_center_experience == pc_exp
+
+        linked, unlinked = upsert_privacy_experiences_after_config_update(
+            db,
+            default_privacy_center_config,
+            regions=[],  # Empty region list will remove regions
+        )
+        (
+            overlay_experience,
+            privacy_center_experience,
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+
+        assert overlay_experience is None
+        assert privacy_center_experience is not None
+        assert linked == []
+        assert unlinked == [PrivacyNoticeRegion.us_ak]
+        db.refresh(default_privacy_center_config)
+        assert default_privacy_center_config.experiences.count() == 0
+
+        assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
+        assert privacy_center_experience.component == ComponentType.privacy_center
+        assert privacy_center_experience.experience_config_id is None
+
+        privacy_center_experience.delete(db)

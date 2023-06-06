@@ -1474,15 +1474,6 @@ dataset:
     - name: created_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: delivery_mechanism
-      data_categories: [system.operations]
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: disabled
-      data_categories: [system.operations]
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: experience_config_history_id
-      data_categories: [ system.operations ]
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: experience_config_id
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -1493,9 +1484,6 @@ dataset:
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: updated_at
-      data_categories: [system.operations]
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: version
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: privacyexperienceconfig
@@ -1573,33 +1561,6 @@ dataset:
     - name: save_button_label
       data_categories: [ system.operations ]
     - name: title
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
-    - name: version
-      data_categories: [system.operations]
-  - name: privacyexperiencehistory
-    description: 'Stores the history of an experience for a region for consent reporting'
-    data_categories: []
-    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    fields:
-    - name: component
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: delivery_mechanism
-      data_categories: [system.operations]
-    - name: disabled
-      data_categories: [system.operations]
-    - name: experience_config_history_id
-      data_categories: [system.operations]
-    - name: experience_config_id
-      data_categories: [system.operations]
-    - name: id
-      data_categories: [system.operations]
-    - name: privacy_experience_id
-      data_categories: [system.operations]
-    - name: region
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
@@ -2199,7 +2160,7 @@ dataset:
         data_categories:
         - system.operations
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-      - name: privacy_experience_history_id
+      - name: privacy_experience_id
         data_categories:
         - system.operations
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
