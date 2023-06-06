@@ -175,8 +175,6 @@ class TestPrivacyExperience:
         assert queried_overlay_exp == overlay_exp
         assert queried_pc_exp == pc_exp
 
-        db.delete(pc_exp.histories[0])
-        db.delete(overlay_exp.histories[0])
         overlay_exp.delete(db)
         pc_exp.delete(db)
 
@@ -210,14 +208,13 @@ class TestPrivacyExperience:
             == pc_exp
         )
 
-        db.delete(pc_exp.histories[0])
         db.delete(pc_exp)
 
     def test_unlink_privacy_experience_config(
         self, db, experience_config_privacy_center
     ):
         """
-        Test Experience.unlink_experience_config unlinks the experience and bumps the version
+        Test Experience.unlink_experience_config unlinks the experience
         """
         pc_exp = PrivacyExperience.create(
             db=db,
@@ -225,31 +222,24 @@ class TestPrivacyExperience:
                 "component": "privacy_center",
                 "region": "eu_at",
                 "experience_config_id": experience_config_privacy_center.id,
-                "experience_config_history_id": experience_config_privacy_center.experience_config_history_id,
             },
         )
         created_at = pc_exp.created_at
         updated_at = pc_exp.updated_at
 
-        assert pc_exp.version == 1.0
         assert pc_exp.experience_config == experience_config_privacy_center
         pc_exp.unlink_experience_config(db)
         db.refresh(pc_exp)
 
         assert pc_exp.experience_config_id is None
-        assert pc_exp.experience_config_history_id is None
-        assert pc_exp.version == 2.0
         assert pc_exp.created_at == created_at
         assert pc_exp.updated_at > updated_at
 
-        for history in pc_exp.histories:
-            history.delete(db)
         pc_exp.delete(db)
 
     def test_link_default_experience_config(self, db, experience_config_privacy_center):
         """
         Test Experience.link_default_experience_config points the experience towards the default config
-        and bumps the version
         """
         pc_exp = PrivacyExperience.create(
             db=db,
@@ -257,31 +247,24 @@ class TestPrivacyExperience:
                 "component": "privacy_center",
                 "region": "eu_at",
                 "experience_config_id": experience_config_privacy_center.id,
-                "experience_config_history_id": experience_config_privacy_center.experience_config_history_id,
             },
         )
         created_at = pc_exp.created_at
         updated_at = pc_exp.updated_at
 
-        assert pc_exp.version == 1.0
         assert pc_exp.experience_config == experience_config_privacy_center
         pc_exp.link_default_experience_config(db)
         db.refresh(pc_exp)
 
         assert pc_exp.experience_config_id is not None
         assert pc_exp.experience_config_id == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
-        assert pc_exp.experience_config_history_id is not None
-        assert pc_exp.experience_config_history_id != pc_exp.experience_config_id
-        assert pc_exp.version == 2.0
         assert pc_exp.created_at == created_at
         assert pc_exp.updated_at > updated_at
 
-        for history in pc_exp.histories:
-            history.delete(db)
         pc_exp.delete(db)
 
     def test_create_privacy_experience(self, db):
-        """Assert PrivacyExperience and its historical record are created"""
+        """Assert PrivacyExperience is created as expected"""
         exp = PrivacyExperience.create(
             db=db,
             data={
@@ -290,27 +273,14 @@ class TestPrivacyExperience:
             },
         )
 
-        assert exp.disabled is False
         assert exp.component == ComponentType.overlay
         assert exp.region == PrivacyNoticeRegion.us_tx
-        assert exp.version == 1.0
         assert exp.experience_config_id is None
-        assert exp.experience_config_history_id is None
 
-        assert exp.histories.count() == 1
-        history = exp.histories[0]
-        assert exp.privacy_experience_history_id == history.id
-        assert history.component == ComponentType.overlay
-        assert history.region == PrivacyNoticeRegion.us_tx
-        assert history.version == 1.0
-        assert history.experience_config_id is None
-        assert history.experience_config_history_id is None
-
-        history.delete(db)
         exp.delete(db=db)
 
     def test_update_privacy_experience(self, db, experience_config_overlay):
-        """Assert if PrivacyExperience is updated, its version is bumped and another historical record is created"""
+        """Assert PrivacyExperience is updated as expected"""
         exp = PrivacyExperience.create(
             db=db,
             data={
@@ -326,42 +296,17 @@ class TestPrivacyExperience:
             db=db,
             data={
                 "experience_config_id": experience_config_overlay.id,
-                "experience_config_history_id": experience_config_overlay.histories[
-                    0
-                ].id,
             },
         )
         db.refresh(exp)
 
-        assert exp.disabled is False
         assert exp.component == ComponentType.overlay
         assert exp.region == PrivacyNoticeRegion.us_ca
-        assert exp.version == 2.0
         assert exp.experience_config == experience_config_overlay
         assert exp.id is not None
         assert exp.created_at == exp_created_at
         assert exp.updated_at > exp_updated_at
 
-        assert exp.histories.count() == 2
-        history = exp.histories[1]
-        assert history.component == ComponentType.overlay
-        assert history.experience_config_id == experience_config_overlay.id
-        assert (
-            history.experience_config_history_id
-            == experience_config_overlay.histories[0].id
-        )
-        assert history.version == 2.0
-
-        assert exp.privacy_experience_history_id == history.id
-
-        old_history = exp.histories[0]
-        assert old_history.version == 1.0
-        assert old_history.component == ComponentType.overlay
-        assert old_history.experience_config_id is None
-        assert old_history.experience_config_history_id is None
-
-        old_history.delete(db)
-        history.delete(db)
         exp.delete(db)
 
     def test_get_related_privacy_notices(self, db):
@@ -600,7 +545,6 @@ class TestPrivacyExperience:
         assert refreshed_notices[0].current_preference is None
         assert refreshed_notices[0].outdated_preference == UserConsentPreference.opt_in
 
-        privacy_experience.histories[0].delete(db)
         privacy_experience.delete(db)
 
         another_session = get_api_session()
@@ -630,7 +574,6 @@ class TestPrivacyExperience:
                 },
             )
 
-        exp.histories[0].delete(db)
         exp.delete(db)
 
     def test_update_multiple_experiences_of_same_component_type(self, db):
@@ -661,9 +604,7 @@ class TestPrivacyExperience:
                 },
             )
 
-        exp_2.histories[0].delete(db)
         exp_2.delete(db)
-        exp.histories[0].delete(db)
         exp.delete(db)
 
 
@@ -671,7 +612,7 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
     def test_privacy_center_experience_needed(self, db):
         """
         Notice that needs to be displayed in the PrivacyCenter is created and no Privacy Center Experience
-        exists.  Assert that both a privacy center PrivacyExperience and a historical record are created.
+        exists.  Assert that a privacy center PrivacyExperience is created.
         """
         notice = PrivacyNotice.create(
             db=db,
@@ -712,27 +653,13 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
 
         assert privacy_center_experience.component == ComponentType.privacy_center
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ca
-        assert privacy_center_experience.disabled is False
-        assert privacy_center_experience.version == 1.0
         # Experience automatically linked to default privacy center config
         assert (
             privacy_center_experience.experience_config_id
             == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
         )
-        assert privacy_center_experience.experience_config_history_id is not None
-        assert privacy_center_experience.histories.count() == 1
-
-        history = privacy_center_experience.histories[0]
-        assert history.component == ComponentType.privacy_center
-        assert history.region == PrivacyNoticeRegion.us_ca
-        assert history.disabled is False
-        assert history.version == 1.0
-        assert history.experience_config_id == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
-        assert history.experience_config_history_id is not None
-
         assert privacy_center_experience.get_related_privacy_notices(db) == [notice]
 
-        history.delete(db)
         privacy_center_experience.delete(db)
 
         notice.histories[0].delete(db)
@@ -792,25 +719,12 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
 
         assert privacy_center_experience.component == ComponentType.privacy_center
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ca
-        assert privacy_center_experience.disabled is False
-        assert privacy_center_experience.version == 1.0
         assert privacy_center_experience.experience_config_id is None
-        assert privacy_center_experience.experience_config_history_id is None
-        assert privacy_center_experience.histories.count() == 1
         assert privacy_center_experience.created_at == exp_created_at
         assert privacy_center_experience.updated_at == exp_updated_at
 
-        history = privacy_center_experience.histories[0]
-        assert history.component == ComponentType.privacy_center
-        assert history.region == PrivacyNoticeRegion.us_ca
-        assert history.disabled is False
-        assert history.version == 1.0
-        assert history.experience_config_id is None
-        assert history.experience_config_history_id is None
-
         assert privacy_center_experience.get_related_privacy_notices(db) == [notice]
 
-        history.delete(db)
         privacy_center_experience.delete(db)
 
         notice.histories[0].delete(db)
@@ -857,26 +771,13 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
 
         assert overlay_experience.component == ComponentType.overlay
         assert overlay_experience.region == PrivacyNoticeRegion.eu_it
-        assert overlay_experience.disabled is False
-        assert overlay_experience.version == 1.0
         assert (
             overlay_experience.experience_config_id
             == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
         )
-        assert overlay_experience.experience_config_history_id is not None
-        assert overlay_experience.histories.count() == 1
-
-        history = overlay_experience.histories[0]
-        assert history.component == ComponentType.overlay
-        assert history.region == PrivacyNoticeRegion.eu_it
-        assert history.disabled is False
-        assert history.version == 1.0
-        assert history.experience_config_id == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
-        assert history.experience_config_history_id is not None
 
         assert overlay_experience.get_related_privacy_notices(db) == [notice]
 
-        history.delete(db)
         overlay_experience.delete(db)
 
         notice.histories[0].delete(db)
@@ -938,25 +839,12 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
 
         assert overlay_experience.component == ComponentType.overlay
         assert overlay_experience.region == PrivacyNoticeRegion.us_ca
-        assert overlay_experience.disabled is False
-        assert overlay_experience.version == 1.0
         assert overlay_experience.experience_config_id is None
-        assert overlay_experience.experience_config_history_id is None
-        assert overlay_experience.histories.count() == 1
         assert overlay_experience.created_at == exp_created_at
         assert overlay_experience.updated_at == exp_updated_at
 
-        history = overlay_experience.histories[0]
-        assert history.component == ComponentType.overlay
-        assert history.region == PrivacyNoticeRegion.us_ca
-        assert history.disabled is False
-        assert history.version == 1.0
-        assert history.experience_config_id is None
-        assert history.experience_config_history_id is None
-
         assert overlay_experience.get_related_privacy_notices(db) == [notice]
 
-        history.delete(db)
         overlay_experience.delete(db)
 
         notice.histories[0].delete(db)
@@ -1006,33 +894,22 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
 
         assert privacy_center_experience.component == ComponentType.privacy_center
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ca
-        assert privacy_center_experience.disabled is False
-        assert privacy_center_experience.version == 1.0
         assert (
             privacy_center_experience.experience_config_id
             == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
         )
-        assert privacy_center_experience.experience_config_history_id is not None
-        assert privacy_center_experience.histories.count() == 1
 
         assert overlay_experience.component == ComponentType.overlay
         assert overlay_experience.region == PrivacyNoticeRegion.us_ca
-        assert overlay_experience.disabled is False
-        assert overlay_experience.version == 1.0
         assert (
             overlay_experience.experience_config_id
             == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
         )
-        assert overlay_experience.experience_config_history_id is not None
-        assert overlay_experience.histories.count() == 1
 
         assert privacy_center_experience.get_related_privacy_notices(db) == [notice]
         assert overlay_experience.get_related_privacy_notices(db) == [notice]
 
-        overlay_experience.histories[0].delete(db)
         overlay_experience.delete(db)
-
-        privacy_center_experience.histories[0].delete(db)
         privacy_center_experience.delete(db)
 
         notice.histories[0].delete(db)
@@ -1076,15 +953,8 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
 
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
         assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.version == 1.0
-        assert privacy_center_experience.disabled is False
         assert privacy_center_experience.experience_config_id == config.id
-        assert (
-            privacy_center_experience.experience_config_history_id
-            == config.histories[0].id
-        )
 
-        privacy_center_experience.histories[0].delete(db)
         privacy_center_experience.delete(db)
         config.histories[0].delete(db)
         config.delete(db)
@@ -1110,7 +980,6 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             },
         )
         assert pc_exp.experience_config_id is None
-        assert pc_exp.experience_config_history_id is None
 
         (
             overlay_experience,
@@ -1134,16 +1003,8 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
 
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
         assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.version == 2.0
-        assert privacy_center_experience.disabled is False
         assert privacy_center_experience.experience_config_id == config.id
-        assert (
-            privacy_center_experience.experience_config_history_id
-            == config.histories[0].id
-        )
 
-        privacy_center_experience.histories[1].delete(db)
-        privacy_center_experience.histories[0].delete(db)
         privacy_center_experience.delete(db)
         config.histories[0].delete(db)
         config.delete(db)
@@ -1167,11 +1028,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
                 "component": "privacy_center",
                 "region": "us_ak",
                 "experience_config_id": config.id,
-                "experience_config_history_id": config.histories[0].id,
             },
         )
         assert pc_exp.experience_config_id == config.id
-        assert pc_exp.experience_config_history_id == config.histories[0].id
 
         (
             overlay_experience,
@@ -1197,15 +1056,8 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
 
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
         assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.version == 1.0
-        assert privacy_center_experience.disabled is False
         assert privacy_center_experience.experience_config_id == config.id
-        assert (
-            privacy_center_experience.experience_config_history_id
-            == config.histories[0].id
-        )
 
-        privacy_center_experience.histories[0].delete(db)
         privacy_center_experience.delete(db)
         config.histories[0].delete(db)
         config.delete(db)
@@ -1229,11 +1081,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
                 "component": "privacy_center",
                 "region": "us_ak",
                 "experience_config_id": config.id,
-                "experience_config_history_id": config.histories[0].id,
             },
         )
         assert pc_exp.experience_config_id == config.id
-        assert pc_exp.experience_config_history_id == config.histories[0].id
         assert config.experiences.count() == 1
 
         (
@@ -1261,16 +1111,11 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
 
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
         assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.version == 2.0
-        assert privacy_center_experience.disabled is False
         assert (
             privacy_center_experience.experience_config_id
             == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
         )
-        assert privacy_center_experience.experience_config_history_id is not None
 
-        privacy_center_experience.histories[1].delete(db)
-        privacy_center_experience.histories[0].delete(db)
         privacy_center_experience.delete(db)
         config.histories[0].delete(db)
         config.delete(db)
