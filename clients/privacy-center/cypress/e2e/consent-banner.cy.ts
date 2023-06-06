@@ -170,7 +170,7 @@ describe("Consent banner", () => {
         });
       });
       it("should render the expected HTML banner", () => {
-        cy.get("div#fides-banner.fides-banner").within(() => {
+        cy.get("div#fides-banner").within(() => {
           cy.get(
             "div#fides-banner-description.fides-banner-description"
           ).contains(

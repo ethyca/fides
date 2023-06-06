@@ -47,7 +47,7 @@
   --fides-overlay-padding: 1.5em;
   --fides-overlay-button-border-radius: 4px;
   --fides-overlay-button-padding: 0.5em 1em;
-  --fides-overlay-component-border-radius: 0px;
+  --fides-overlay-component-border-radius: 4px;
 }
 
 div#fides-overlay {
@@ -63,51 +63,71 @@ div#fides-overlay {
   display: none;
 }
 
+div#fides-banner-container {
+  position: fixed;
+  z-index: 1;
+  width: 100%;
+  transform: translateY(0%);
+  transition: transform 1s;
+  display: flex;
+  justify-content: center;
+}
+
 div#fides-banner {
   font-size: var(--fides-overlay-font-size-body-small);
   background: var(--fides-overlay-background-color);
   color: var(--fides-overlay-body-font-color);
   box-sizing: border-box;
   padding: var(--fides-overlay-padding);
-  border: 1px solid var(--fides-overlay-primary-color);
-  border-radius: var(--fides-overlay-component-border-radius);
 
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  transition: transform 1s;
 }
 
 div#fides-banner-inner {
   width: 100%;
 }
 
-div#fides-banner.fides-banner-bottom {
-  position: fixed;
-  z-index: 1;
-  width: 100%;
+div#fides-banner-container.fides-banner-bottom {
   bottom: 0;
   left: 0;
-  transform: translateY(0%);
 }
 
-div#fides-banner.fides-banner-bottom.fides-banner-hidden {
+div#fides-banner-container.fides-banner-bottom.fides-banner-hidden {
   transform: translateY(100%);
 }
 
-div#fides-banner.fides-banner-top {
-  position: fixed;
-  z-index: 1;
-  width: 100%;
+div#fides-banner-container.fides-banner-top {
   top: 0;
   left: 0;
-  transform: translateY(0%);
 }
 
-div#fides-banner.fides-banner-top.fides-banner-hidden {
+div#fides-banner-container.fides-banner-top.fides-banner-hidden {
   transform: translateY(-100%);
+}
+
+/* Responsive banner */
+@media screen and (min-width: 48em) {
+  div#fides-banner {
+    width: 75%;
+    border-radius: var(--fides-overlay-component-border-radius);
+    border: 1px solid var(--fides-overlay-primary-color);
+  }
+  div#fides-banner-container.fides-banner-bottom {
+    bottom: 48px;
+  }
+  div#fides-banner-container.fides-banner-top {
+    top: 48px;
+  }
+}
+
+@media only screen and (min-width: 80em) {
+  div#fides-banner {
+    width: 60%;
+  }
 }
 
 div#fides-banner-title {
