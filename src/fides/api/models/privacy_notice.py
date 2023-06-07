@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from fideslang.validation import FidesKey
 from sqlalchemy import Boolean, Column
@@ -108,6 +108,16 @@ class PrivacyNoticeRegion(Enum):
     eu_fi = "eu_fi"  # finland
     eu_se = "eu_se"  # sweden
 
+    gb_eng = "gb_eng"  # england
+    gb_sct = "gb_sct"  # scotland
+    gb_wls = "gb_wls"  # wales
+    gb_nir = "gb_nir"  # northern ireland
+
+    isl = "isl"  # iceland, 3 letter country code
+    nor = "nor"  # norway, 3 letter country code
+
+    li = "li"  # liechtenstein
+
 
 class ConsentMechanism(Enum):
     opt_in = "opt_in"
@@ -127,13 +137,12 @@ class EnforcementLevel(Enum):
 
 class PrivacyNoticeBase:
     """
-    Base class to establish the common columns for `PrivacyNotice`s and `PrivacyNoticeHistory`s
+    This class contains the common fields between PrivacyNoticeTemplate, PrivacyNotice, and PrivacyNoticeHistory
     """
 
     name = Column(String, nullable=False)
     description = Column(String)  # User-facing description
     internal_description = Column(String)  # Visible to internal users only
-    origin = Column(String)  # pointer back to an origin template ID
     regions = Column(
         ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
         index=True,
@@ -144,7 +153,6 @@ class PrivacyNoticeBase:
         ARRAY(String), nullable=False
     )  # a list of `fides_key`s of `DataUse` records
     enforcement_level = Column(EnumColumn(EnforcementLevel), nullable=False)
-    version = Column(Float, nullable=False, default=1.0)
     disabled = Column(Boolean, nullable=False, default=False)
     has_gpc_flag = Column(Boolean, nullable=False, default=False)
     displayed_in_privacy_center = Column(Boolean, nullable=False, default=False)
@@ -176,12 +184,42 @@ class PrivacyNoticeBase:
         FidesKey.validate(notice_key)
         return notice_key
 
+    def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
+        """
+        A utility method to get an updated object without saving it to the db.
+
+        This is used to see what an object update would look like, in memory,
+        without actually persisting the update to the db
+        """
+        # Update our attributes with values in data
+        cloned_attributes = self.__dict__.copy()
+        for key, val in data.items():
+            cloned_attributes[key] = val
+
+        # remove protected fields from the cloned dict
+        cloned_attributes.pop("_sa_instance_state")
+
+        # create a new object with the updated attribute data to keep this
+        # ORM object (i.e., `self`) pristine
+        return PrivacyNotice(**cloned_attributes)
+
+
+class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
+    """
+    This table contains the out-of-the-box Privacy Notices that are shipped with Fides
+    """
+
 
 class PrivacyNotice(PrivacyNoticeBase, Base):
     """
     A notice set up by a system administrator that an end user (i.e., data subject)
     accepts or rejects to indicate their consent for particular data uses
     """
+
+    origin = Column(
+        String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
+    )  # pointer back to the PrivacyNoticeTemplate
+    version = Column(Float, nullable=False, default=1.0)
 
     histories = relationship(
         "PrivacyNoticeHistory", backref="privacy_notice", lazy="dynamic"
@@ -229,6 +267,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         # create the history after the initial object creation succeeds, to avoid
         # writing history if the creation fails and so that we can get the generated ID
+        data.pop("id", None)
         history_data = {**data, "privacy_notice_id": created.id}
         PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
         return created
@@ -247,29 +286,14 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         return resource  # type: ignore[return-value]
 
-    def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
-        """
-        A utility method to get an updated object without saving it to the db.
 
-        This is used to see what an object update would look like, in memory,
-        without actually persisting the update to the db
-        """
-        # Update our attributes with values in data
-        cloned_attributes = self.__dict__.copy()
-        for key, val in data.items():
-            cloned_attributes[key] = val
-
-        # remove protected fields from the cloned dict
-        cloned_attributes.pop("_sa_instance_state")
-
-        # create a new object with the updated attribute data to keep this
-        # ORM object (i.e., `self`) pristine
-        return PrivacyNotice(**cloned_attributes)
+PRIVACY_NOTICE_TYPE = Union[PrivacyNotice, PrivacyNoticeTemplate]
 
 
 def check_conflicting_data_uses(
-    new_privacy_notices: Iterable[PrivacyNotice],
-    existing_privacy_notices: Iterable[PrivacyNotice],
+    new_privacy_notices: Iterable[PRIVACY_NOTICE_TYPE],
+    existing_privacy_notices: Iterable[Union[PRIVACY_NOTICE_TYPE]],
+    ignore_disabled: bool = True,  # For PrivacyNoticeTemplates, set to False
 ) -> None:
     """
     Checks the provided lists of potential "new" (incoming) `PrivacyNotice` records
@@ -283,13 +307,15 @@ def check_conflicting_data_uses(
     hierarchical overlap, e.g. `DataUse`s of `advertising` and `advertising.first_party` as well as
     `advertising` and `advertising.first_party.contextual` would both be considered conflicts
     if they occurred in `PrivacyNotice`s that are associated with the same `PrivacyNoticeRegion`.
+
+    For templates, we don't want to ignore disabled data uses.
     """
     # first, we map the existing [region -> data use] associations based on the set of
     # existing notices.
     # this gives us a simple "lookup table" for region and data use conflicts in incoming notices
     uses_by_region: Dict[PrivacyNoticeRegion, List[Tuple[str, str]]] = defaultdict(list)
     for privacy_notice in existing_privacy_notices:
-        if privacy_notice.disabled:
+        if privacy_notice.disabled and ignore_disabled:
             continue
         for region in privacy_notice.regions:
             for data_use in privacy_notice.data_uses:
@@ -299,7 +325,7 @@ def check_conflicting_data_uses(
 
     # now, validate the new (incoming) notices
     for privacy_notice in new_privacy_notices:
-        if privacy_notice.disabled:
+        if privacy_notice.disabled and ignore_disabled:
             # if the incoming notice is disabled, it skips validation
             continue
         # check each of the incoming notice's regions
@@ -308,7 +334,7 @@ def check_conflicting_data_uses(
             # check each of the incoming notice's data uses
             for data_use in privacy_notice.data_uses:
                 for existing_use, notice_name in region_uses:
-                    # we need to check for hierachical overlaps in _both_ directions
+                    # we need to check for hierarchical overlaps in _both_ directions
                     # i.e. whether the incoming DataUse is a parent _or_ a child of
                     # an existing DataUse
                     if new_data_use_conflicts_with_existing_use(existing_use, data_use):
@@ -333,6 +359,11 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
     An "audit table" tracking outdated versions of `PrivacyNotice` records whose
     "current" versions are stored in the `PrivacyNotice` table/model
     """
+
+    origin = Column(
+        String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
+    )  # pointer back to the PrivacyNoticeTemplate
+    version = Column(Float, nullable=False, default=1.0)
 
     privacy_notice_id = Column(
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=False
