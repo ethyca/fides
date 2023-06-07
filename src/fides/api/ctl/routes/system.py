@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from fastapi import APIRouter, Depends, Response, Security
+from fastapi import Depends, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -51,6 +51,7 @@ from fides.api.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateResponse,
     SaasConnectionTemplateValues,
 )
+from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import patch_connection_configs
 from fides.api.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
