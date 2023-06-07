@@ -17,16 +17,26 @@ import fides
 from fides.cli.utils import check_server
 from fides.core.config import get_config
 
-# Reorganize the command groups
 from . import cli_formatting
 from .commands.annotate import annotate
-from .commands.core import evaluate, parse, pull, push
-from .commands.crud import delete, get_resource, list_resources
 from .commands.db import database
+from .commands.deploy import deploy
 from .commands.generate import generate
 from .commands.scan import scan
+from .commands.ungrouped import (
+    delete,
+    evaluate,
+    get_resource,
+    init,
+    list_resources,
+    parse,
+    pull,
+    push,
+    status,
+    webserver,
+    worker,
+)
 from .commands.user import user
-from .commands.util import deploy, init, status, webserver, worker
 from .commands.view import view
 from .exceptions import LocalModeException
 
