@@ -14,7 +14,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.schemas.saas.saas_config import ParamValue
 from fides.api.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,

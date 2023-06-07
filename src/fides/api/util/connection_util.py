@@ -123,18 +123,19 @@ def patch_connection_configs(
     logger.info("Starting bulk upsert for {} connection configuration(s)", len(configs))
 
     for config in configs:
+        # Retrieve the existing connection config from the database
+        existing_connection_config = ConnectionConfig.get_by(
+            db, field="key", value=config.key
+        )
+
         if config.connection_type == "saas":
             if config.secrets:
-                connection_config_check = ConnectionConfig.get_by(
-                    db, field="key", value=config.key
-                )
-
                 # This is here rather than with the get_connection_config_or_error because
                 # it will also throw an HTTPException if validation fails and we don't want
                 # to catch it in this case.
-                if connection_config_check:
+                if existing_connection_config:
                     config.secrets = validate_secrets(
-                        db, config.secrets, connection_config_check
+                        db, config.secrets, existing_connection_config
                     )
                 else:
                     if not config.saas_connector_type:
@@ -196,6 +197,16 @@ def patch_connection_configs(
         config_dict.pop("saas_connector_type", None)
         if system:
             config_dict["system_id"] = system.id
+
+        if existing_connection_config:
+            config_dict = {
+                key: value
+                for key, value in {
+                    **existing_connection_config.__dict__,
+                    **config.dict(),
+                }.items()
+                if isinstance(value, bool) or value
+            }
 
         try:
             connection_config = ConnectionConfig.create_or_update(db, data=config_dict)

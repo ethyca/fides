@@ -26,13 +26,14 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
-from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.oauth.roles import OWNER
 from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
     SaasConnectionTemplateValues,
 )
 from fides.api.schemas.dataset import DatasetConfigCtlDataset
+from fides.api.schemas.policy import ActionType, DrpAction
 from fides.api.util.connection_util import patch_connection_configs
 from fides.api.util.text import to_snake_case
 from fides.core.config import CONFIG
