@@ -11,7 +11,7 @@ const PRIVACY_NOTICE_ID_2 = "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae821";
 const PRIVACY_EXPERIENCE_ID = "pri_041acb07-c99b-4085-a435-c0d6f3a42b6f";
 const GEOLOCATION_API_URL = "https://www.example.com/location";
 const SETTINGS = {
-  IS_OVERLAY_DISABLED: false,
+  IS_OVERLAY_ENABLED: true,
   IS_GEOLOCATION_ENABLED: true,
   GEOLOCATION_API_URL,
 };

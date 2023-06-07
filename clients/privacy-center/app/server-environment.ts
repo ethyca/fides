@@ -255,7 +255,7 @@ export const loadPrivacyCenterEnvironment =
       DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG
         ? process.env.FIDES_PRIVACY_CENTER__DEBUG === "true"
         : false,
-      IS_OVERLAY_DISABLED: process.env.FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED
+      IS_OVERLAY_ENABLED: process.env.FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED
         ? process.env.FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED === "true"
         : false,
       IS_GEOLOCATION_ENABLED: process.env
