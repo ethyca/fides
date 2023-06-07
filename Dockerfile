@@ -1,7 +1,6 @@
 # If you update this, also update `DEFAULT_PYTHON_VERSION` in the GitHub workflow files
 ARG PYTHON_VERSION="3.10.11"
 
-
 #########################
 ## Compile Python Deps ##
 #########################
@@ -18,15 +17,21 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python Dependencies
-COPY dangerous-requirements.txt .
-RUN if [ $TARGETPLATFORM != linux/arm64 ] ; then pip install --user -U pip --no-cache-dir install -r dangerous-requirements.txt ; fi
+# Activate a Python venv
+RUN python3 -m venv /opt/fides
+ENV PATH="/opt/fides/bin:${PATH}"
 
-COPY dev-requirements.txt .
-RUN pip install --user -U pip --no-cache-dir install -r dev-requirements.txt
+# Install Python Dependencies
+RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools wheel
+
+COPY dangerous-requirements.txt .
+RUN if [ $TARGETPLATFORM != linux/arm64 ] ; then pip install --no-cache-dir install -r dangerous-requirements.txt ; fi
 
 COPY requirements.txt .
-RUN pip install --user -U pip --no-cache-dir install -r requirements.txt
+RUN pip install --no-cache-dir install -r requirements.txt
+
+COPY dev-requirements.txt .
+RUN pip install --no-cache-dir install -r dev-requirements.txt
 
 ##################
 ## Backend Base ##
@@ -35,8 +40,8 @@ FROM python:${PYTHON_VERSION}-slim-bullseye as backend
 ARG TARGETPLATFORM
 
 # Loads compiled requirements and adds the to the path
-COPY --from=compile_image /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+COPY --from=compile_image /opt/fides /opt/fides
+ENV PATH=/opt/fides/bin:$PATH
 
 # These are all required for MSSQL
 RUN : \
