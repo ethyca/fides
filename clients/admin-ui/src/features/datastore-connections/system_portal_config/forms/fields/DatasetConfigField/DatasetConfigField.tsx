@@ -1,7 +1,20 @@
 import { EditIcon } from "@chakra-ui/icons";
-import { Flex, IconButton, useDisclosure, FormControl, VStack } from "@fidesui/react";
-import { CustomSelect, Option, SelectProps, StringField, Label, SelectInput, ErrorMessage } from "common/form/inputs";
+import {
+  Flex,
+  FormControl,
+  IconButton,
+  useDisclosure,
+} from "@fidesui/react";
+import {
+  ErrorMessage,
+  Label,
+  Option,
+  SelectInput,
+  SelectProps,
+  StringField,
+} from "common/form/inputs";
 import { useAlert, useAPIHelper } from "common/hooks";
+import QuestionTooltip from "common/QuestionTooltip";
 import {
   useGetConnectionConfigDatasetConfigsQuery,
   usePatchDatasetConfigsMutation,
@@ -23,81 +36,82 @@ import {
 } from "~/types/api";
 
 import YamlEditorModal from "./YamlEditorModal";
-import QuestionTooltip from "common/QuestionTooltip";
 
 const fieldName = "dataset";
 
-
-
 type DatasetSelectProps = {
   isLoading: boolean;
-  onOpen: ()=>void;
-}
-
+  onOpen: () => void;
+};
 
 export const DatasetSelect = ({
-                               label,
-                               labelProps,
-                               tooltip,
-                               options,
-                               isDisabled,
-                               isRequired,
-                               isSearchable,
-                               isClearable,
-                               size = "sm",
-                               isMulti,
-                               singleValueBlock,
-                               onChange,
-                               isFormikOnChange,
-                                isLoading,
+  label,
+  labelProps,
+  tooltip,
+  options,
+  isDisabled,
+  isRequired,
+  isSearchable,
+  isClearable,
+  size = "sm",
+  isMulti,
+  singleValueBlock,
+  onChange,
+  isFormikOnChange,
+  isLoading,
   onOpen,
-                               ...props
-                             }: SelectProps & StringField & DatasetSelectProps) => {
+  ...props
+}: SelectProps & StringField & DatasetSelectProps) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
   return (
-    <FormControl display="flex" flexDirection="row" isInvalid={isInvalid} isRequired={isRequired}>
+    <FormControl
+      display="flex"
+      flexDirection="row"
+      isInvalid={isInvalid}
+      isRequired={isRequired}
+    >
       {/* <VStack align="flex-start" w="inherit"> */}
-        {label ? (
-          <Label htmlFor={props.id || props.name} {...labelProps}>
-            {label}
-          </Label>
-        ) : null}
-        <Flex alignItems="center" data-testid={`input-${field.name}`} width="100%">
-          <Flex flexDir="column" flexGrow={1} mr="2" width="100%">
-            <SelectInput
-              options={options}
-              fieldName={field.name}
-              size={size}
-              isSearchable={
-                isSearchable === undefined ? isMulti : isSearchable
-              }
-              isClearable={isClearable}
-              isMulti={isMulti}
-              isDisabled={isDisabled}
-              singleValueBlock={singleValueBlock}
-              menuPosition={props.menuPosition}
-              onChange={!isFormikOnChange ? onChange : undefined}
+      {label ? (
+        <Label htmlFor={props.id || props.name} {...labelProps}>
+          {label}
+        </Label>
+      ) : null}
+      <Flex
+        alignItems="center"
+        data-testid={`input-${field.name}`}
+        width="100%"
+      >
+        <Flex flexDir="column" flexGrow={1} mr="2" width="100%">
+          <SelectInput
+            options={options}
+            fieldName={field.name}
+            size={size}
+            isSearchable={isSearchable === undefined ? isMulti : isSearchable}
+            isClearable={isClearable}
+            isMulti={isMulti}
+            isDisabled={isDisabled}
+            singleValueBlock={singleValueBlock}
+            menuPosition={props.menuPosition}
+            onChange={!isFormikOnChange ? onChange : undefined}
+          />
 
-            />
-
-
-            <ErrorMessage
-              isInvalid={isInvalid}
-              message={meta.error}
-              fieldName={field.name}
-            />
-          </Flex>
-                   <IconButton
-              aria-label="edit-dataset-yaml"
-              icon={<EditIcon />}
-              onClick={onOpen}
-              size="sm"
-              variant="outline"
-              isDisabled={isLoading}
-            />
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <ErrorMessage
+            isInvalid={isInvalid}
+            message={meta.error}
+            fieldName={field.name}
+          />
         </Flex>
+        <IconButton
+          aria-label="edit-dataset-yaml"
+          icon={<EditIcon />}
+          onClick={onOpen}
+          size="sm"
+          variant="outline"
+          isDisabled={isLoading}
+        />
+        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+      </Flex>
       {/* </VStack> */}
     </FormControl>
   );
@@ -245,7 +259,7 @@ const DatasetConfigField: React.FC<Props> = ({ dropdownOptions }) => {
         labelProps={{
           fontWeight: "semibold",
           fontSize: "sm",
-          minWidth: "150px"
+          minWidth: "150px",
         }}
         name={fieldName}
         options={dropdownOptions}

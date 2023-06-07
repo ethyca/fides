@@ -32,7 +32,10 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
   };
 
   const closeIfComplete = () => {
-    if ((!deleteResult.isLoading && deleteResult.isSuccess) || (!deleteResult.isLoading && deleteResult.isUninitialized)) {
+    if (
+      (!deleteResult.isLoading && deleteResult.isSuccess) ||
+      (!deleteResult.isLoading && deleteResult.isUninitialized)
+    ) {
       onClose();
     }
   };
