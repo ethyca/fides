@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Optional
 import jinja2
 from jinja2 import Environment, FileSystemLoader
 
-from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
