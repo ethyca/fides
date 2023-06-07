@@ -122,8 +122,9 @@ describe("Consent banner", () => {
           });
       });
       it("does not render banner", () => {
-        cy.get("div#fides-banner").should("not.exist");
-        cy.contains("button", "Accept Test").should("not.exist");
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("div#fides-banner").should("not.exist");
+        });
       });
       it("does not render modal link", () => {
         cy.get("#fides-modal-link").should("not.be.visible");
@@ -813,8 +814,9 @@ describe("Consent banner", () => {
       });
 
       it("does not render banner", () => {
-        cy.get("div#fides-banner").should("not.exist");
-        cy.contains("button", "Accept Test").should("not.exist");
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("div#fides-banner").should("not.exist");
+        });
       });
 
       it("does not render modal link", () => {
@@ -832,7 +834,9 @@ describe("Consent banner", () => {
       });
 
       it("does not render banner", () => {
-        cy.get("div#fides-banner").should("not.exist");
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("div#fides-banner").should("not.exist");
+        });
       });
 
       it("does not render modal link", () => {
@@ -881,7 +885,9 @@ describe("Consent banner", () => {
       });
 
       it("does not render banner", () => {
-        cy.get("div#fides-banner").should("not.exist");
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("div#fides-banner").should("not.exist");
+        });
       });
 
       it("renders modal link", () => {
@@ -918,7 +924,9 @@ describe("Consent banner", () => {
       });
 
       it("does not render banner", () => {
-        cy.get("div#fides-banner").should("not.exist");
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("div#fides-banner").should("not.exist");
+        });
       });
 
       it("shows the modal link", () => {
