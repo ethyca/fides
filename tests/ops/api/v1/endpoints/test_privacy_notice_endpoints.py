@@ -5,27 +5,17 @@ from typing import Any, Dict, List
 from uuid import uuid4
 
 import pytest
-from fideslang import DataUse
 from sqlalchemy.orm import Session
-from starlette.exceptions import HTTPException
 from starlette.testclient import TestClient
 
 from fides.api.api.v1 import scope_registry as scopes
-from fides.api.api.v1.endpoints.privacy_notice_endpoints import (
-    validate_notice_data_uses,
-)
 from fides.api.api.v1.urn_registry import (
     PRIVACY_NOTICE,
     PRIVACY_NOTICE_BY_DATA_USE,
     PRIVACY_NOTICE_DETAIL,
     V1_URL_PREFIX,
 )
-from fides.api.ctl.sql_models import DataUse as sql_DataUse
-from fides.api.models.privacy_experience import (
-    BannerEnabled,
-    ComponentType,
-    PrivacyExperience,
-)
+from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
@@ -33,91 +23,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
 )
-from fides.api.schemas.privacy_notice import (
-    PrivacyNoticeCreation,
-    PrivacyNoticeResponse,
-)
-
-
-class TestValidateDataUses:
-    @pytest.fixture(scope="function")
-    def privacy_notice_request(self):
-        return PrivacyNoticeCreation(
-            name="sample privacy notice",
-            notice_key="sample_privacy_notice",
-            regions=[PrivacyNoticeRegion.us_ca],
-            consent_mechanism=ConsentMechanism.opt_in,
-            data_uses=["placeholder"],
-            enforcement_level=EnforcementLevel.system_wide,
-            displayed_in_overlay=True,
-        )
-
-    @pytest.fixture(scope="function")
-    def custom_data_use(self, db):
-        return sql_DataUse.create(
-            db=db,
-            data=DataUse(
-                fides_key="new_data_use",
-                organization_fides_key="default_organization",
-                name="New data use",
-                description="A test data use",
-                parent_key=None,
-                is_default=True,
-            ).dict(),
-        )
-
-    @pytest.mark.usefixtures("load_default_data_uses")
-    def test_validate_data_uses_invalid(
-        self, db, privacy_notice_request: PrivacyNoticeCreation
-    ):
-        privacy_notice_request.data_uses = ["invalid_data_use"]
-        with pytest.raises(HTTPException):
-            validate_notice_data_uses([privacy_notice_request], db)
-
-        privacy_notice_request.data_uses = ["marketing.advertising", "invalid_data_use"]
-        with pytest.raises(HTTPException):
-            validate_notice_data_uses([privacy_notice_request], db)
-
-        privacy_notice_request.data_uses = [
-            "marketing.advertising",
-            "marketing.advertising.invalid_data_use",
-        ]
-        with pytest.raises(HTTPException):
-            validate_notice_data_uses([privacy_notice_request], db)
-
-    @pytest.mark.usefixtures("load_default_data_uses")
-    def test_validate_data_uses_default_taxonomy(
-        self, db, privacy_notice_request: PrivacyNoticeCreation
-    ):
-        privacy_notice_request.data_uses = ["marketing.advertising"]
-        validate_notice_data_uses([privacy_notice_request], db)
-        privacy_notice_request.data_uses = ["marketing.advertising", "essential"]
-        validate_notice_data_uses([privacy_notice_request], db)
-        privacy_notice_request.data_uses = [
-            "marketing.advertising",
-            "essential",
-            "essential.service",
-        ]
-        validate_notice_data_uses([privacy_notice_request], db)
-
-    @pytest.mark.usefixtures("load_default_data_uses")
-    def test_validate_data_uses_custom_uses(
-        self,
-        db,
-        privacy_notice_request: PrivacyNoticeCreation,
-        custom_data_use: sql_DataUse,
-    ):
-        """
-        Ensure custom data uses added to the DB are considered valid
-        """
-
-        privacy_notice_request.data_uses = [custom_data_use.fides_key]
-        validate_notice_data_uses([privacy_notice_request], db)
-        privacy_notice_request.data_uses = [
-            "marketing.advertising",
-            custom_data_use.fides_key,
-        ]
-        validate_notice_data_uses([privacy_notice_request], db)
+from fides.api.schemas.privacy_notice import PrivacyNoticeResponse
 
 
 class TestGetPrivacyNotices:
@@ -696,7 +602,7 @@ class TestGetPrivacyNoticeDetail:
         assert data["id"] == privacy_notice.id
         assert data["name"] == privacy_notice.name
         assert data["description"] == privacy_notice.description
-        assert data["origin"] == privacy_notice.origin
+        assert data["origin"] is None
         assert data["created_at"] == privacy_notice.created_at.isoformat()
         assert data["updated_at"] == privacy_notice.updated_at.isoformat()
         for region in data["regions"]:
@@ -734,7 +640,6 @@ class TestGetPrivacyNoticeDetail:
                     "name": "test privacy notice 1",
                     "notice_key": "test_privacy_notice_1",
                     "description": maybe_dangerous_description,
-                    "origin": "privacy_notice_template_1",
                     "regions": [
                         PrivacyNoticeRegion.eu_be.value,
                         PrivacyNoticeRegion.us_ca.value,
@@ -1377,7 +1282,6 @@ class TestPostPrivacyNotices:
             "name": "test privacy notice 1",
             "notice_key": "test_privacy_notice_1",
             "description": "my test privacy notice",
-            "origin": "privacy_notice_template_1",
             "regions": [
                 PrivacyNoticeRegion.eu_be.value,
                 PrivacyNoticeRegion.us_ca.value,
@@ -1393,7 +1297,6 @@ class TestPostPrivacyNotices:
         return {
             "name": "My Test Privacy Notice",
             "description": "my test privacy notice",
-            "origin": "privacy_notice_template_1",
             "regions": [
                 PrivacyNoticeRegion.eu_be.value,
                 PrivacyNoticeRegion.us_ca.value,
@@ -1789,7 +1692,15 @@ class TestPostPrivacyNotices:
         overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
             db, PrivacyNoticeRegion.eu_be
         )
-        assert overlay_exp is not None
+        assert overlay_exp is not None  # Overlay Experience Created Automatically
+        assert (
+            overlay_exp.experience_config_id is not None
+        )  # And automatically linked to a default config
+        overlay_copy = (
+            overlay_exp.experience_config
+        )  # Overlay Experience linked to default overlay copy
+        assert overlay_copy.component == ComponentType.overlay
+        assert overlay_copy.is_default
         assert privacy_center_exp is None
 
         (
@@ -1797,10 +1708,7 @@ class TestPostPrivacyNotices:
             ca_privacy_center_exp,
         ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
 
-        overlay_exp.histories[0].delete(db)
         overlay_exp.delete(db)
-
-        ca_overlay_exp.histories[0].delete(db)
         ca_overlay_exp.delete(db)
 
     def test_post_privacy_notice_no_notice_key(
@@ -1862,10 +1770,7 @@ class TestPostPrivacyNotices:
         assert privacy_center_exp is None
 
         assert overlay_exp.component == ComponentType.overlay
-        assert overlay_exp.version == 1.0
-        assert overlay_exp.disabled is False
-        assert overlay_exp.experience_config_id is None
-        assert overlay_exp.experience_config_history_id is None
+        assert overlay_exp.experience_config_id is not None
 
         (
             ca_overlay_exp,
@@ -1875,12 +1780,8 @@ class TestPostPrivacyNotices:
         assert ca_privacy_center_exp is None
 
         assert ca_overlay_exp.component == ComponentType.overlay
-        assert ca_overlay_exp.version == 1.0
-        assert ca_overlay_exp.disabled is False
-        assert ca_overlay_exp.experience_config_id is None
-        assert ca_overlay_exp.experience_config_history_id is None
+        assert ca_overlay_exp.experience_config_id is not None
 
-        overlay_exp.histories[0].delete(db)
         overlay_exp.delete(db)
 
     def test_post_privacy_notice_duplicate_regions(
@@ -2700,10 +2601,8 @@ class TestPatchPrivacyNotices:
             db, PrivacyNoticeRegion.us_ca
         )
         assert overlay_exp.component == ComponentType.overlay
-        assert overlay_exp.version == 1.0
 
         assert privacy_center_exp.component == ComponentType.privacy_center
-        assert privacy_center_exp.version == 1.0
 
     def test_patch_multiple_privacy_notices(
         self,
@@ -2852,7 +2751,7 @@ class TestPatchPrivacyNotices:
         assert response_notice_2["name"] == db_notice_2.name
         assert response_notice_2["version"] == db_notice_2.version
         assert response_notice_2["description"] == db_notice_2.description
-        assert response_notice_2["origin"] == db_notice_2.origin
+        assert response_notice_2["origin"] is None
         assert response_notice_2["created_at"] == db_notice_2.created_at.isoformat()
         assert response_notice_2["updated_at"] == db_notice_2.updated_at.isoformat()
         assert response_notice_2["disabled"] == db_notice_2.disabled
@@ -2940,7 +2839,7 @@ class TestPatchPrivacyNotices:
         assert response_notice["name"] == db_notice.name
         assert response_notice["version"] == db_notice.version
         assert response_notice["description"] == db_notice.description
-        assert response_notice["origin"] == db_notice.origin
+        assert response_notice["origin"] is None
         assert response_notice["created_at"] == db_notice.created_at.isoformat()
         assert response_notice["updated_at"] == db_notice.updated_at.isoformat()
         assert response_notice["disabled"] == db_notice.disabled
@@ -3055,7 +2954,7 @@ class TestPatchPrivacyNotices:
         assert response_notice_2["name"] == db_notice.name
         assert response_notice_2["version"] == db_notice.version
         assert response_notice_2["description"] == db_notice.description
-        assert response_notice_2["origin"] == db_notice.origin
+        assert response_notice_2["origin"] is None
         assert response_notice_2["created_at"] == db_notice.created_at.isoformat()
         assert response_notice_2["updated_at"] == db_notice.updated_at.isoformat()
         assert response_notice_2["disabled"] == db_notice.disabled
