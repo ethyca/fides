@@ -70,7 +70,7 @@ class DatabaseSettings(FidesSettings):
         description="The database user with which to login to the application database.",
     )
     params: Dict = Field(
-        default_factory=dict,
+        default={},  # Can't use the default_factory since it breaks docs generation
         description="Additional connection parameters used when connecting to the applicaiton database.",
     )
 
