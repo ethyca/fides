@@ -149,7 +149,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             {item.type !== "integer" && (
               <Input
                 {...field}
-                isPassword={item.sensitive || false}
                 placeholder={getPlaceholder(item)}
                 autoComplete="off"
                 color="gray.700"
