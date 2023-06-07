@@ -108,7 +108,7 @@ describe("Consent banner", () => {
       beforeEach(() => {
         stubConfig({
           options: {
-            isOverlayDisabled: true,
+            isOverlayEnabled: false,
           },
         });
       });
@@ -135,7 +135,7 @@ describe("Consent banner", () => {
         stubConfig(
           {
             options: {
-              isOverlayDisabled: true,
+              isOverlayEnabled: false,
             },
             experience: OVERRIDE.EMPTY,
           },
@@ -165,7 +165,7 @@ describe("Consent banner", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         stubConfig({
           options: {
-            isOverlayDisabled: false,
+            isOverlayEnabled: true,
           },
         });
       });
@@ -342,7 +342,7 @@ describe("Consent banner", () => {
         // cookie values
         stubConfig({
           options: {
-            isOverlayDisabled: false,
+            isOverlayEnabled: true,
           },
         });
 
@@ -975,7 +975,7 @@ describe("Consent banner", () => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       stubConfig({
         options: {
-          isOverlayDisabled: false,
+          isOverlayEnabled: true,
         },
       });
     });

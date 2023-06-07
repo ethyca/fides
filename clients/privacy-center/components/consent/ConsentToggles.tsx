@@ -10,9 +10,9 @@ const ConsentToggles = ({
   storePreferences: (data: ConsentPreferences) => void;
 }) => {
   const settings = useSettings();
-  const { IS_OVERLAY_DISABLED } = settings;
+  const { IS_OVERLAY_ENABLED } = settings;
 
-  if (IS_OVERLAY_DISABLED) {
+  if (IS_OVERLAY_ENABLED) {
     return <ConfigDrivenConsent storePreferences={storePreferences} />;
   }
   return <NoticeDrivenConsent />;

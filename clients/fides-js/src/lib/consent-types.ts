@@ -18,8 +18,8 @@ export type FidesOptions = {
   // API URL for getting user geolocation
   geolocationApiUrl: string;
 
-  // Whether or not the banner should be globally disabled
-  isOverlayDisabled: boolean;
+  // Whether or not the banner should be globally enabled
+  isOverlayEnabled: boolean;
 
   // Whether user geolocation should be enabled. Requires geolocationApiUrl
   isGeolocationEnabled: boolean;

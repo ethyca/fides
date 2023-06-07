@@ -185,53 +185,59 @@ const init = async ({
     options.debug
   );
 
-  let shouldInitOverlay: boolean = !options.isOverlayDisabled;
+  let shouldInitOverlay: boolean = options.isOverlayEnabled;
+  let effectiveExperience: PrivacyExperience | undefined | null = experience;
+  let fidesRegionString: string | null = null;
 
-  if (!validateOptions(options)) {
-    debugLog(
-      options.debug,
-      "Invalid overlay options. Skipping overlay initialization.",
+  if (shouldInitOverlay) {
+    if (!validateOptions(options)) {
+      debugLog(
+        options.debug,
+        "Invalid overlay options. Skipping overlay initialization.",
+        options
+      );
+      shouldInitOverlay = false;
+    }
+
+    fidesRegionString = await retrieveEffectiveRegionString(
+      geolocation,
       options
     );
-    shouldInitOverlay = false;
-  }
 
-  const fidesRegionString = await retrieveEffectiveRegionString(
-    geolocation,
-    options
-  );
-  let effectiveExperience: PrivacyExperience | undefined | null = experience;
-
-  if (!fidesRegionString) {
-    debugLog(
-      options.debug,
-      `User location could not be obtained. Skipping overlay initialization.`
-    );
-    shouldInitOverlay = false;
-  } else if (!effectiveExperience) {
-    effectiveExperience = await fetchExperience(
-      fidesRegionString,
-      options.fidesApiUrl,
-      cookie.identity.fides_user_device_id,
-      options.debug
-    );
-  }
-
-  if (effectiveExperience && experienceIsValid(effectiveExperience, options)) {
-    // Overwrite cookie consent with experience-based consent values
-    cookie.consent = buildCookieConsentForExperiences(
-      effectiveExperience,
-      context,
-      options.debug
-    );
-
-    if (shouldInitOverlay) {
-      await initOverlay(<OverlayProps>{
-        experience: effectiveExperience,
+    if (!fidesRegionString) {
+      debugLog(
+        options.debug,
+        `User location could not be obtained. Skipping overlay initialization.`
+      );
+      shouldInitOverlay = false;
+    } else if (!effectiveExperience) {
+      effectiveExperience = await fetchExperience(
         fidesRegionString,
-        cookie,
-        options,
-      }).catch(() => {});
+        options.fidesApiUrl,
+        cookie.identity.fides_user_device_id,
+        options.debug
+      );
+    }
+
+    if (
+      effectiveExperience &&
+      experienceIsValid(effectiveExperience, options)
+    ) {
+      // Overwrite cookie consent with experience-based consent values
+      cookie.consent = buildCookieConsentForExperiences(
+        effectiveExperience,
+        context,
+        options.debug
+      );
+
+      if (shouldInitOverlay) {
+        await initOverlay(<OverlayProps>{
+          experience: effectiveExperience,
+          fidesRegionString,
+          cookie,
+          options,
+        }).catch(() => {});
+      }
     }
   }
 
@@ -250,12 +256,14 @@ const init = async ({
   dispatchFidesEvent("FidesInitialized", cookie);
   dispatchFidesEvent("FidesUpdated", cookie);
 
-  automaticallyApplyGPCPreferences(
-    cookie,
-    fidesRegionString,
-    options.fidesApiUrl,
-    effectiveExperience
-  );
+  if (shouldInitOverlay) {
+    automaticallyApplyGPCPreferences(
+      cookie,
+      fidesRegionString,
+      options.fidesApiUrl,
+      effectiveExperience
+    );
+  }
 };
 
 // The global Fides object; this is bound to window.Fides if available
@@ -265,7 +273,7 @@ _Fides = {
   geolocation: {},
   options: {
     debug: true,
-    isOverlayDisabled: true,
+    isOverlayEnabled: false,
     isGeolocationEnabled: false,
     geolocationApiUrl: "",
     overlayParentId: null,

@@ -52,5 +52,5 @@ export const useSettings = (): PrivacyCenterClientSettings => {
 };
 export const selectIsNoticeDriven = createSelector(
   selectSettings,
-  (settings) => settings.settings?.IS_OVERLAY_DISABLED === false
+  (settings) => settings.settings?.IS_OVERLAY_ENABLED === true
 );
