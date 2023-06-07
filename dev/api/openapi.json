@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.1b2.post0.dev1"
+    "version": "2.14.1b2.post0.dev2"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -3347,6 +3347,75 @@
             "OAuth2ClientCredentialsBearer": [
               "registry:create",
               "registry:update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/system/{fides_key}/connection/instantiate/{saas_connector_type}": {
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Instantiate Connection From Template",
+        "description": "Instantiates a SaaS connection from the available template and the template values.\nAssociates the newly instantiated connection with the provided system.",
+        "operationId": "instantiate_connection_from_template_api_v1_system__fides_key__connection_instantiate__saas_connector_type__post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Saas Connector Type",
+              "type": "string"
+            },
+            "name": "saas_connector_type",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaasConnectionTemplateValues"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaasConnectionTemplateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:instantiate"
             ]
           }
         ]
@@ -11355,7 +11424,6 @@
           "SaaS Configs"
         ],
         "summary": "Instantiate Connection From Template",
-        "description": "Creates a SaaS Connector and a SaaS Dataset from a template.\n\nLooks up the connector type in the SaaS connector registry and, if all required\nfields are provided, persists the associated connection config and dataset to the database.",
         "operationId": "instantiate_connection_from_template_api_v1_connection_instantiate__saas_connector_type__post",
         "parameters": [
           {
@@ -14010,6 +14078,12 @@
           "description": {
             "title": "Description",
             "type": "string"
+          },
+          "enabled_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionType"
+            }
           },
           "secrets": {
             "title": "Secrets",
