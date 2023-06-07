@@ -1,7 +1,7 @@
 """move system_dependencies to egress and remove
 
 Revision ID: 76c02f99eec1
-Revises: 317e6197c76a
+Revises: e798f37f0c26
 Create Date: 2023-05-10 17:59:14.536666
 
 """
@@ -16,7 +16,7 @@ from sqlalchemy.sql.elements import TextClause
 
 # revision identifiers, used by Alembic.
 revision = "76c02f99eec1"
-down_revision = "317e6197c76a"
+down_revision = "e798f37f0c26"
 branch_labels = None
 depends_on = None
 
