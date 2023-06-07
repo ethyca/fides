@@ -150,7 +150,7 @@ export const experienceIsValid = (
   if (
     !(
       effectiveExperience.privacy_notices &&
-      effectiveExperience.privacy_notices.length >= 0
+      effectiveExperience.privacy_notices.length > 0
     )
   ) {
     debugLog(
