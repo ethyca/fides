@@ -27,7 +27,7 @@ class TagType(Enum):
     BETA = "b"  # used for `main` branch
 
 
-def get_all_tags(repo):
+def get_all_tags(repo) -> List[str]:
     """
     Returns a list of all tags in the repo, sorted by committed date, latest first
     """
@@ -105,7 +105,7 @@ def tag(session: nox.Session, action: str) -> None:
         session.error(f"Invalid action: {action}")
 
 
-def next_release_increment(session: nox.Session, all_tags: List):
+def next_release_increment(session: nox.Session, all_tags: List) -> Version:
     """Helper to generate the next release 'increment' based on latest release tag found"""
 
     releases = sorted(  # sorted by Version - what we want!
