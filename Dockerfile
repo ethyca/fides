@@ -19,6 +19,8 @@ RUN apt-get update && \
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libssl-dev \
+    libffi-dev \
+    libxslt-dev \
     libkrb5-dev \
     unixodbc \
     unixodbc-dev \
