@@ -24,7 +24,8 @@ The types of changes are:
 - Add `identity` query param to the consent reporting API view [#3418](https://github.com/ethyca/fides/pull/3418)
 - Added the ability to use custom CAs with Redis via TLS [#3451](https://github.com/ethyca/fides/pull/3451)
 - Add default experience configs on startup [#3449](https://github.com/ethyca/fides/pull/3449)
-- Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401/files)
+- Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401)
+- Add ability for users to pass in additional parameters for application database connection [#3450](https://github.com/ethyca/fides/pull/3450)
 
 ### Fixed
 
