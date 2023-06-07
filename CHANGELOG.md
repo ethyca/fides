@@ -24,6 +24,7 @@ The types of changes are:
 - Add `identity` query param to the consent reporting API view [#3418](https://github.com/ethyca/fides/pull/3418)
 - Use `rollup-plugin-postcss` to bundle and optimize the `fides.js` components CSS [#3431](https://github.com/ethyca/fides/pull/3431)
 - Dispatch Fides.js lifecycle events on window (FidesInitialized, FidesUpdated) and cross-publish to Fides.gtm() integration [#3454](https://github.com/ethyca/fides/pull/3454)
+- Added the ability to use custom CAs with Redis via TLS [#3451](https://github.com/ethyca/fides/pull/3451)
 - Add default experience configs on startup [#3449](https://github.com/ethyca/fides/pull/3449)
 - Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401/files)
 
