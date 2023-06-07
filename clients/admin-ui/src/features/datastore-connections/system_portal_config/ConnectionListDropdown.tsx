@@ -208,7 +208,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
         }}
         {...menuButtonProps}
         data-testid="select-dropdown-btn"
-        width="300px"
+        width="272px"
         textAlign="left"
       >
         <Text isTruncated>{selectedText ?? label}</Text>
@@ -221,7 +221,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
           maxHeight="400px"
           overflow="hidden"
           data-testid="select-dropdown-list"
-          width="300px"
+          width="272px"
         >
           <Box px="8px" mt={2}>
             <InputGroup size="sm">
@@ -253,7 +253,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
             </Flex>
           )}
           {/* MenuItems are not rendered unless Menu is open */}
-          <Box overflowY="auto" maxHeight="300px">
+          <Box overflowY="auto" maxHeight="272px">
             {filteredListItems.map(([key, option]) => (
               <Tooltip
                 aria-label={option.toolTip}
