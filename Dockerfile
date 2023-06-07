@@ -9,6 +9,7 @@ FROM python:${PYTHON_VERSION}-slim-bullseye as compile_image
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     g++ \
+    git \
     gnupg \
     gcc \
     && apt-get clean \
@@ -34,8 +35,18 @@ RUN apt-get update && \
 COPY dev-requirements.txt .
 RUN pip install --user -U pip --no-cache-dir install -r dev-requirements.txt
 
+# Activate a Python venv
+RUN python3 -m venv /opt/fides
+ENV PATH="/opt/fides/bin:${PATH}"
+
+# Install Python Dependencies
+RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools wheel
+
 COPY requirements.txt .
-RUN pip install --user -U pip --no-cache-dir install -r requirements.txt
+RUN pip install --no-cache-dir install -r requirements.txt
+
+COPY dev-requirements.txt .
+RUN pip install --no-cache-dir install -r dev-requirements.txt
 
 ##################
 ## Backend Base ##
@@ -50,8 +61,8 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Loads compiled requirements and adds the to the path
-COPY --from=compile_image /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+COPY --from=compile_image /opt/fides /opt/fides
+ENV PATH=/opt/fides/bin:$PATH
 
 # General Application Setup ##
 COPY . /fides

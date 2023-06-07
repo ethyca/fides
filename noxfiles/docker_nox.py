@@ -2,15 +2,15 @@
 from typing import List, Tuple
 
 import nox
-
 from constants_nox import (
+    DEV_TAG_SUFFIX,
     IMAGE,
-    IMAGE_DEV,
-    IMAGE_LATEST,
     IMAGE_LOCAL,
     IMAGE_LOCAL_PC,
     IMAGE_LOCAL_UI,
+    PRERELEASE_TAG_SUFFIX,
     PRIVACY_CENTER_IMAGE,
+    RC_TAG_SUFFIX,
     SAMPLE_APP_IMAGE,
 )
 from git_nox import get_current_tag, recognized_tag
@@ -159,112 +159,30 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     session.run(*build_command, external=True)
 
 
-def push_prod(session: nox.Session) -> None:
-    """
-    Contains the logic for pushing the suite of 'prod' images.
-
-    Pushed Image Examples:
-      - ethyca/fides:2.0.0
-      - ethyca/fides:latest
-
-      - ethyca/fides-privacy-center:2.0.0
-      - ethyca/fides-privacy-center:latest
-
-      - ethyca/fides-sample-app:2.0.0
-      - ethyca/fides-sample-app:latest
-    """
-    fides_image_name = get_current_image()
-    privacy_center_image_name = f"{PRIVACY_CENTER_IMAGE}:{get_current_tag()}"
-    sample_app_image_name = f"{SAMPLE_APP_IMAGE}:{get_current_tag()}"
-
-    privacy_center_latest = f"{PRIVACY_CENTER_IMAGE}:latest"
-    sample_app_latest = f"{SAMPLE_APP_IMAGE}:latest"
-
+def push_fides_images(session: nox.Session, tag_suffixes: List[str]) -> None:
+    # Publish Fides
+    fides_tags = [f"{IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes]
     fides_buildx_command = generate_multiplatform_buildx_command(
-        [fides_image_name, IMAGE_LATEST], docker_build_target="prod"
+        image_tags=fides_tags, docker_build_target="prod"
     )
     session.run(*fides_buildx_command, external=True)
 
+    # Publish the Privacy Center
+    privacy_center_tags = [
+        f"{PRIVACY_CENTER_IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes
+    ]
     privacy_center_buildx_command = generate_multiplatform_buildx_command(
-        [privacy_center_image_name, privacy_center_latest],
+        image_tags=privacy_center_tags,
         docker_build_target="prod_pc",
     )
     session.run(*privacy_center_buildx_command, external=True)
 
+    # Publish the Sample App
+    sample_app_tags = [
+        f"{SAMPLE_APP_IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes
+    ]
     sample_app_buildx_command = generate_multiplatform_buildx_command(
-        [sample_app_image_name, sample_app_latest],
-        docker_build_target="prod",
-        dockerfile_path="clients/sample-app",
-    )
-    session.run(*sample_app_buildx_command, external=True)
-
-
-def push_dev(session: nox.Session) -> None:
-    """
-    Push the bleeding-edge `dev` images.
-
-    Pushed Image Examples:
-      - ethyca/fides:dev
-      - ethyca/fides-privacy-center:dev
-      - ethyca/fides-sample-app:dev
-    """
-    privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:dev"
-    sample_app_dev = f"{SAMPLE_APP_IMAGE}:dev"
-
-    fides_buildx_command = generate_multiplatform_buildx_command(
-        [IMAGE_DEV], docker_build_target="prod"
-    )
-    session.run(*fides_buildx_command, external=True)
-
-    privacy_center_buildx_command = generate_multiplatform_buildx_command(
-        [privacy_center_dev],
-        docker_build_target="prod_pc",
-    )
-    session.run(*privacy_center_buildx_command, external=True)
-
-    sample_app_buildx_command = generate_multiplatform_buildx_command(
-        [sample_app_dev],
-        docker_build_target="prod",
-        dockerfile_path="clients/sample-app",
-    )
-    session.run(*sample_app_buildx_command, external=True)
-
-
-def push_git_tag(session: nox.Session) -> None:
-    """
-    Push an image with the tag of our current commit.
-
-    If we have an existing git tag on the current commit, we push up
-    a set of images that's tagged specifically with this git tag.
-
-    This publishes images that correspond to commits that have been explicitly tagged,
-    e.g. RC builds, `beta` tags on `main`, `alpha` tags for feature branch builds.
-
-    Pushed Image Examples:
-    - ethyca/fides:{current_head_git_tag}
-    - ethyca/fides-privacy-center:{current_head_git_tag}
-    - ethyca/fides-sample-app:{current_head_git_tag}
-    """
-
-    existing_commit_tag = verify_git_tag(session)
-    custom_image_tag = f"{IMAGE}:{existing_commit_tag}"
-    privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:{existing_commit_tag}"
-    sample_app_dev = f"{SAMPLE_APP_IMAGE}:{existing_commit_tag}"
-
-    # Publish
-    fides_buildx_command = generate_multiplatform_buildx_command(
-        [custom_image_tag], docker_build_target="prod"
-    )
-    session.run(*fides_buildx_command, external=True)
-
-    privacy_center_buildx_command = generate_multiplatform_buildx_command(
-        [privacy_center_dev],
-        docker_build_target="prod_pc",
-    )
-    session.run(*privacy_center_buildx_command, external=True)
-
-    sample_app_buildx_command = generate_multiplatform_buildx_command(
-        [sample_app_dev],
+        image_tags=sample_app_tags,
         docker_build_target="prod",
         dockerfile_path="clients/sample-app",
     )
@@ -277,6 +195,8 @@ def push_git_tag(session: nox.Session) -> None:
     [
         nox.param("prod", id="prod"),
         nox.param("dev", id="dev"),
+        nox.param("rc", id="rc"),
+        nox.param("prerelease", id="prerelease"),
         nox.param("git-tag", id="git-tag"),
     ],
 )
@@ -289,8 +209,10 @@ def push(session: nox.Session, tag: str) -> None:
 
     Params:
 
-    prod - Tags images with the current version of the application
+    prod - Tags images with the current version of the application, and constant `latest` tag
     dev - Tags images with `dev`
+    prerelease - Tags images with `prerelease` - used for alpha and beta tags
+    rc - Tags images with `rc` - used for rc tags
     git-tag - Tags images with the git tag of the current commit, if it exists
 
     NOTE: This command also handles building images, including for multiple supported architectures.
@@ -306,14 +228,16 @@ def push(session: nox.Session, tag: str) -> None:
         "--bootstrap",
         "--use",
         external=True,
-        success_codes=[0, 1],
+        success_codes=[0, 1],  # Will fail if it already exists, but this is fine
     )
 
-    if tag == "dev":
-        push_dev(session=session)
+    # Use lambdas to force lazy evaluation
+    param_tag_map = {
+        "dev": lambda: [DEV_TAG_SUFFIX],
+        "prerelease": lambda: [PRERELEASE_TAG_SUFFIX],
+        "rc": lambda: [RC_TAG_SUFFIX],
+        "git-tag": lambda: [verify_git_tag(session)],
+        "prod": lambda: [get_current_tag(), "latest"],
+    }
 
-    if tag == "git-tag":
-        push_git_tag(session=session)
-
-    if tag == "prod":
-        push_prod(session=session)
+    push_fides_images(session=session, tag_suffixes=param_tag_map[tag]())

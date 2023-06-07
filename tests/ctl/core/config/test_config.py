@@ -7,6 +7,7 @@ from pydantic import ValidationError
 
 from fides.core.config import check_required_webserver_config_values, get_config
 from fides.core.config.database_settings import DatabaseSettings
+from fides.core.config.redis_settings import RedisSettings
 from fides.core.config.security_settings import SecuritySettings
 
 REQUIRED_ENV_VARS = {
@@ -391,3 +392,29 @@ def test_check_required_webserver_config_values_error(capfd) -> None:
 def test_check_required_webserver_config_values_success_from_path() -> None:
     config = get_config()
     assert check_required_webserver_config_values(config=config) is None
+
+
+class TestBuildingRedisURLs:
+    def test_generic(self) -> None:
+        redis_settings = RedisSettings()
+        assert redis_settings.connection_url == "redis://:testpassword@redis:6379/"
+
+    def test_configured(self) -> None:
+        redis_settings = RedisSettings(
+            db_index=1, host="myredis", port="6380", password="supersecret"
+        )
+        assert redis_settings.connection_url == "redis://:supersecret@myredis:6380/1"
+
+    def test_tls(self) -> None:
+        redis_settings = RedisSettings(ssl=True, ssl_cert_reqs="none")
+        assert (
+            redis_settings.connection_url
+            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=none"
+        )
+
+    def test_tls_custom_ca(self) -> None:
+        redis_settings = RedisSettings(ssl=True, ssl_ca_certs="/path/to/my/cert.crt")
+        assert (
+            redis_settings.connection_url
+            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=required&ssl_ca_certs=/path/to/my/cert.crt"
+        )

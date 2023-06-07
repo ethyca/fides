@@ -43,7 +43,7 @@ async def test_google_analytics_consent_request_task_old_workflow(
 
     privacy_request = PrivacyRequest(
         id=str(uuid4()),
-        consent_preferences=[{"data_use": "advertising", "opt_in": False}],
+        consent_preferences=[{"data_use": "marketing.advertising", "opt_in": False}],
     )
 
     identity = Identity(**{"ga_client_id": google_analytics_client_id})
@@ -103,7 +103,7 @@ async def test_google_analytics_consent_prepared_requests_old_workflow(
 
     privacy_request = PrivacyRequest(
         id=str(uuid4()),
-        consent_preferences=[{"data_use": "advertising", "opt_in": False}],
+        consent_preferences=[{"data_use": "marketing.advertising", "opt_in": False}],
     )
 
     identity = Identity(**{"ga_client_id": google_analytics_client_id})
@@ -150,7 +150,7 @@ async def test_google_analytics_no_ga_client_id_old_workflow(
 
     privacy_request = PrivacyRequest(
         id=str(uuid4()),
-        consent_preferences=[{"data_use": "advertising", "opt_in": False}],
+        consent_preferences=[{"data_use": "marketing.advertising", "opt_in": False}],
     )
     dataset_name = "google_analytics_instance"
 
