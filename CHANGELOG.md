@@ -40,6 +40,7 @@ The types of changes are:
 ### Changed
 
 - Enabled Privacy Experience beta flag [#3364](https://github.com/ethyca/fides/pull/3364)
+- Reorganize CLI Command Source Files [#3491](https://github.com/ethyca/fides/pull/3491)
 - Removed ExperienceConfig.delivery_mechanism constraint [#3387](https://github.com/ethyca/fides/pull/3387)
 - Updated privacy experience UI forms to reflect updated experience config fields [#3402](https://github.com/ethyca/fides/pull/3402)
 - Use a venv in the Dockerfile for installing Python deps [#3452](https://github.com/ethyca/fides/pull/3452)
