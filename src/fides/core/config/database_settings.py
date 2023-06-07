@@ -70,7 +70,7 @@ class DatabaseSettings(FidesSettings):
         description="The database user with which to login to the application database.",
     )
     params: Dict = Field(
-        default={},
+        default_factory=dict,
         description="Additional connection parameters used when connecting to the applicaiton database.",
     )
 
@@ -130,16 +130,17 @@ class DatabaseSettings(FidesSettings):
             return value
 
         db_name = values["test_db"] if get_test_mode() else values["db"]
+
         # Workaround https://github.com/MagicStack/asyncpg/issues/737
+        # Required due to the unique way in which Asyncpg handles SSL
         params = cast(Dict, deepcopy(values["params"]))
-        if "sslmode" in params.keys():
-            params["ssl"] = params["sslmode"]
-            del params["sslmode"]
+        if "sslmode" in params:
+            params["ssl"] = params.pop("sslmode")
         # This must be constructed in fides.api.ctl.database.session as part of the ssl context
         # ref: https://github.com/sqlalchemy/sqlalchemy/discussions/5975
-        if "sslrootcert" in params.keys():
-            del params["sslrootcert"]
+        params.pop("sslrootcert", None)
         # End workaround
+
         return str(
             PostgresDsn.build(
                 scheme="postgresql+asyncpg",
