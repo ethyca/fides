@@ -196,7 +196,7 @@ def test_hydrate_missing_resources(test_config: FidesConfig) -> None:
                 name="test_dc",
                 fides_key="test_dc",
                 description="test description",
-                system_dependencies=["key_3", "key_4"],
+                egress=[{"fides_key": "key_3"}, {"fides_key": "key_4"}],
                 system_type="test",
                 privacy_declarations=None,
             )

@@ -19,7 +19,6 @@
       "dataset_references": ["demo_users_dataset"]
     }
   ],
-  "system_dependencies": ["demo_marketing_system"],
   "joint_controller": { "name": "Sally Controller" },
   "third_country_transfers": ["USA", "CAN"],
   "administrating_department": "Engineering",

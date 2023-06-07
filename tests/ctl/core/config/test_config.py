@@ -210,6 +210,7 @@ def test_config_from_path() -> None:
     os.environ,
     {
         "FIDES__DATABASE__SERVER": "envserver",
+        "FIDES__DATABASE__PARAMS": '{"sslmode": "verify-full", "sslrootcert": "/etc/ssl/private/myca.crt"}',
         "FIDES__REDIS__HOST": "envhost",
         **REQUIRED_ENV_VARS,
     },
@@ -221,6 +222,10 @@ def test_overriding_config_from_env_vars() -> None:
     assert config.database.server == "envserver"
     assert config.redis.host == "envhost"
     assert config.security.app_encryption_key == "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+    assert config.database.params == {
+        "sslmode": "verify-full",
+        "sslrootcert": "/etc/ssl/private/myca.crt",
+    }
 
 
 def test_config_app_encryption_key_validation() -> None:
@@ -353,6 +358,40 @@ class TestBuildingDatabaseValues:
         )
         assert incorrect_value not in database_settings.async_database_uri
         assert correct_value in database_settings.async_database_uri
+
+    def test_builds_with_params(self) -> None:
+        """
+        Test that when params are passed, they are correctly
+        encoded as query parameters on the resulting database uris
+        """
+        os.environ["FIDES__TEST_MODE"] = "False"
+        database_settings = DatabaseSettings(
+            user="postgres",
+            password="fides",
+            server="fides-db",
+            port="5432",
+            db="database",
+            params={
+                "sslmode": "verify-full",
+                "sslrootcert": "/etc/ssl/private/myca.crt",
+            },
+        )
+        assert (
+            database_settings.async_database_uri
+            == "postgresql+asyncpg://postgres:fides@fides-db:5432/database?ssl=verify-full"
+            # Q: But why! Where did the sslrootcert parameter go?
+            # A: asyncpg cannot accept it, and an ssl context must be
+            #    passed to the create_async_engine function.
+            # Q: But wait! `ssl` is a different name than what we
+            #    passed in the parameters!
+            # A: That was more of a statement, but Jeopardy rules
+            #    aside, asyncpg has a different set of names
+            #    for these extremely standardized parameter names...
+        )
+        assert (
+            database_settings.sync_database_uri
+            == "postgresql+psycopg2://postgres:fides@fides-db:5432/database?sslmode=verify-full&sslrootcert=/etc/ssl/private/myca.crt"
+        )
 
 
 @pytest.mark.unit

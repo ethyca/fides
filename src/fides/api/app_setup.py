@@ -2,6 +2,7 @@
 Contains utility functions that set up the application webserver.
 """
 from logging import DEBUG
+from os.path import dirname, join
 from typing import List, Optional, Pattern, Union
 
 from fastapi import FastAPI
@@ -47,11 +48,15 @@ from fides.core.config import CONFIG
 VERSION = fides.__version__
 
 ROUTERS = [CTL_ROUTER, api_router]
-DEFAULT_PRIVACY_NOTICES_PATH = (
-    "/fides/data/privacy_notices/privacy_notice_templates.yml"
+DEFAULT_PRIVACY_NOTICES_PATH = join(
+    dirname(__file__),
+    "../data/privacy_notices",
+    "privacy_notice_templates.yml",
 )
-PRIVACY_EXPERIENCE_CONFIGS_PATH = (
-    "/fides/data/privacy_notices/privacy_experience_config_defaults.yml"
+PRIVACY_EXPERIENCE_CONFIGS_PATH = join(
+    dirname(__file__),
+    "../data/privacy_notices",
+    "privacy_experience_config_defaults.yml",
 )
 
 
