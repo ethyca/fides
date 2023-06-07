@@ -1,7 +1,6 @@
 import { Box, FormLabel, Stack } from "@fidesui/react";
 import { useFormikContext } from "formik";
 
-import { useAppSelector } from "~/app/hooks";
 import { YesNoOptions } from "~/features/common/constants";
 import { COUNTRY_OPTIONS } from "~/features/common/countries";
 import {
@@ -15,13 +14,11 @@ import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { DataResponsibilityTitle } from "~/types/api";
 
 import type { FormValues } from "./form";
-import { selectAllSystems } from "./system.slice";
 
 const dataResponsibilityOptions = enumToOptions(DataResponsibilityTitle);
 
 const DescribeSystemsFormExtension = ({ values }: { values: FormValues }) => {
   const { initialValues } = useFormikContext<FormValues>();
-  const systems = useAppSelector(selectAllSystems);
 
   return (
     <>

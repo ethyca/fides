@@ -56,12 +56,6 @@ const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
               source: system.id,
               target: egress_system,
             })),
-          ...system.dependencies
-            .filter((dependency) => datamapBySystem[dependency])
-            .map((dependency) => ({
-              source: system.id,
-              target: dependency,
-            })),
         ])
         .flatMap((link) => link)
         .forEach((link) => links.add(JSON.stringify(link)));
