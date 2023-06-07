@@ -26,7 +26,6 @@
     "system.data_protection_impact_assessment.link": "Link to Data Protection Impact Assessment",
     "system.fides_key": "System Fides Key",
     "dataset.fides_key": "Dataset Fides Key (if applicable)",
-    "system.system_dependencies": "Related cross-system dependencies",
     "system.description": "Description of the System"
   }
 ]

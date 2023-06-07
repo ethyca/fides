@@ -27,7 +27,6 @@ export const defaultInitialValues: FormValues = {
   data_responsibility_title: undefined,
   administrating_department: "",
   third_country_transfers: [],
-  system_dependencies: [],
   joint_controller: {
     name: "",
     email: "",
@@ -80,7 +79,6 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
     name: formValues.name,
     organization_fides_key: formValues.organization_fides_key,
     privacy_declarations: formValues.privacy_declarations,
-    system_dependencies: formValues.system_dependencies,
     system_type: formValues.system_type,
     tags: formValues.tags,
     third_country_transfers: formValues.third_country_transfers,

@@ -20,7 +20,6 @@
         "dataset_references": ["public"]
       }
     ],
-    "system_dependencies": null,
     "joint_controller": null,
     "third_country_transfers": null,
     "administrating_department": "Not defined",
@@ -63,7 +62,6 @@
         "ingress": null
       }
     ],
-    "system_dependencies": null,
     "joint_controller": null,
     "third_country_transfers": ["USA", "CAN"],
     "administrating_department": "Engineering",
@@ -104,7 +102,6 @@
         "ingress": null
       }
     ],
-    "system_dependencies": ["demo_analytics_system"],
     "joint_controller": null,
     "third_country_transfers": null,
     "administrating_department": "Marketing",
