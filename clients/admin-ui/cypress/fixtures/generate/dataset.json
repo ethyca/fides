@@ -919,14 +919,6 @@
               "fields": null
             },
             {
-              "name": "system_dependencies",
-              "description": "Fides Generated Description for Column: system_dependencies",
-              "data_categories": [],
-              "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-              "retention": null,
-              "fields": null
-            },
-            {
               "name": "system_type",
               "description": "Fides Generated Description for Column: system_type",
               "data_categories": [],
