@@ -9,10 +9,11 @@ from loguru import logger
 
 from fides.api.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.api.common_exceptions import PrivacyRequestNotFound
-from fides.api.models.policy import ActionType, Policy
+from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy

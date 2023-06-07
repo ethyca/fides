@@ -26,7 +26,11 @@ The types of changes are:
 - Dispatch Fides.js lifecycle events on window (FidesInitialized, FidesUpdated) and cross-publish to Fides.gtm() integration [#3454](https://github.com/ethyca/fides/pull/3454)
 - Added the ability to use custom CAs with Redis via TLS [#3451](https://github.com/ethyca/fides/pull/3451)
 - Add default experience configs on startup [#3449](https://github.com/ethyca/fides/pull/3449)
+- Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401)
+- Add ability for users to pass in additional parameters for application database connection [#3450](https://github.com/ethyca/fides/pull/3450)
 - Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401/files)
+- Add privacy centre button text customisations [#3432](https://github.com/ethyca/fides/pull/3432)
+- Add privacy centre favicon customisation [#3432](https://github.com/ethyca/fides/pull/3432)
 
 ### Fixed
 
@@ -44,6 +48,8 @@ The types of changes are:
 - Bump SlowAPI Version [#3456](https://github.com/ethyca/fides/pull/3456)
 - Bump Psycopg2-binary Version [#3473](https://github.com/ethyca/fides/pull/3473)
 - Reduced duplication between PrivacyExperience and PrivacyExperienceConfig [#3470](https://github.com/ethyca/fides/pull/3470)
+- Update privacy centre email and phone validation to allow for both to be blank [#3432](https://github.com/ethyca/fides/pull/3432)
+- Update `fideslang` to `1.4.1` to allow arbitrary nested metadata on `System`s and `Dataset`s `meta` property [#3463](https://github.com/ethyca/fides/pull/3463)
 
 ### Developer Experience
 

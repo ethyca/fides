@@ -63,7 +63,7 @@ from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import ActionType, CurrentStep, Policy
+from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -84,7 +84,7 @@ from fides.api.schemas.messaging.messaging import (
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
-from fides.api.schemas.policy import PolicyResponse
+from fides.api.schemas.policy import ActionType, PolicyResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.task import graph_task
 from fides.api.tasks import MESSAGING_QUEUE_NAME

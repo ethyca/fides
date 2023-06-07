@@ -168,6 +168,51 @@ class TestPatchConnections:
         config = ConnectionConfig.get_by(db, field="key", value=payload[0]["key"])
         assert config.secrets == payload[0]["secrets"]
 
+    def test_patch_connection_saas_with_secrets_exists_minimal_payload(
+        self, url, api_client, generate_auth_header, db, mailchimp_config
+    ):
+        payload = [
+            {
+                "key": f"mailchimp{uuid4()}",
+                "name": "My Mailchimp Test",
+                "description": "Mailchimp ConnectionConfig description",
+                "disabled": "true",
+                "connection_type": "saas",
+                "access": "read",
+            },
+        ]
+
+        ConnectionConfig.create(
+            db=db,
+            data={
+                "key": payload[0]["key"],
+                "name": payload[0]["name"],
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.write,
+                "secrets": {"domain": "test", "username": "test", "api_key": "test"},
+                "saas_config": mailchimp_config,
+                "description": "some description",
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        assert (
+            response.json()["succeeded"][0]["connection_type"]
+            == payload[0]["connection_type"]
+        )
+        assert (
+            response.json()["succeeded"][0]["description"] == payload[0]["description"]
+        )
+
+        config = ConnectionConfig.get_by(db, field="key", value=payload[0]["key"])
+        assert config.secrets == {
+            "domain": "test",
+            "username": "test",
+            "api_key": "test",
+        }
+
     def test_patch_connection_saas_with_secrets_new(
         self, url, api_client, generate_auth_header, db
     ):
@@ -590,6 +635,7 @@ class TestPatchConnections:
             "access": "write",
             "disabled": False,
             "description": None,
+            "enabled_actions": None,
         }
         assert response_body["failed"][1]["data"] == {
             "name": "My Mongo DB",
@@ -598,6 +644,7 @@ class TestPatchConnections:
             "access": "read",
             "disabled": False,
             "description": None,
+            "enabled_actions": None,
         }
 
     @mock.patch("fides.api.main.prepare_and_log_request")

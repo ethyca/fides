@@ -4,8 +4,8 @@ from typing import List, Optional
 from pydantic import EmailStr, validator
 
 from fides.api.custom_types import PhoneNumber
-from fides.api.models.policy import DrpAction
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.policy import DrpAction
 
 DRP_VERSION = "0.5"
 

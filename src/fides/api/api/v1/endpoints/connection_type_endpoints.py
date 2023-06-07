@@ -13,12 +13,12 @@ from fides.api.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
-from fides.api.models.policy import ActionType
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration.connection_config import (
     ConnectionSystemTypeMap,
     SystemType,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_type import (
     connection_type_secret_schema,
