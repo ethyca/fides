@@ -10,6 +10,7 @@ include src/fides/py.typed
 
 recursive-include src/fides/data *
 recursive-include src/fides/ui-build *
+recursive-include data/ *
 
 graft src/fides/api/email_templates/templates
 
