@@ -41,7 +41,7 @@ from fides.api.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
 
-# pylint: disable=too-many-nested-blocks,too-many-branches
+# pylint: disable=too-many-nested-blocks,too-many-branches,too-many-statements
 
 
 def requeue_requires_input_requests(db: Session) -> None:
