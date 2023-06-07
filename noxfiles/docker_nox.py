@@ -1,6 +1,9 @@
 """Contains the nox sessions for docker-related tasks."""
 import platform
 from typing import List, Tuple
+from multiprocessing import Pool
+from subprocess import run
+from functools import partial
 
 import nox
 from constants_nox import (
@@ -22,6 +25,7 @@ DOCKER_PLATFORM_MAP = {
     "x86_64": "linux/amd64",
 }
 DOCKER_PLATFORMS = "linux/amd64,linux/arm64"
+partial_run = partial(run, shell=True, check=True)
 
 
 def verify_git_tag(session: nox.Session) -> str:
@@ -184,15 +188,22 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     session.run(*build_command, external=True)
 
 
+def session_runner(command: Tuple[str, ...], session: nox.Session) -> None:
+    """Utility function for use with multiprocessing."""
+    session.run(*command, external=True)
+
+
 def push_fides_images(session: nox.Session, tag_suffixes: List[str]) -> None:
-    # Publish Fides
+    """
+    Build and publish each image to Dockerhub
+
+    Builds for multiple platforms and does so in parallel.
+    """
     fides_tags = [f"{IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes]
     fides_buildx_command = generate_multiplatform_buildx_command(
         image_tags=fides_tags, docker_build_target="prod"
     )
-    session.run(*fides_buildx_command, external=True)
 
-    # Publish the Privacy Center
     privacy_center_tags = [
         f"{PRIVACY_CENTER_IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes
     ]
@@ -200,9 +211,7 @@ def push_fides_images(session: nox.Session, tag_suffixes: List[str]) -> None:
         image_tags=privacy_center_tags,
         docker_build_target="prod_pc",
     )
-    session.run(*privacy_center_buildx_command, external=True)
 
-    # Publish the Sample App
     sample_app_tags = [
         f"{SAMPLE_APP_IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes
     ]
@@ -211,10 +220,17 @@ def push_fides_images(session: nox.Session, tag_suffixes: List[str]) -> None:
         docker_build_target="prod",
         dockerfile_path="clients/sample-app",
     )
-    session.run(*sample_app_buildx_command, external=True)
+
+    buildx_commands = [
+        fides_buildx_command,
+        privacy_center_buildx_command,
+        sample_app_buildx_command,
+    ]
+    number_of_processes = len(buildx_commands)
+    with Pool(number_of_processes) as process_pool:
+        process_pool.map(partial_run, buildx_commands)
 
 
-# Add Params for building each image
 @nox.session()
 @nox.parametrize(
     "tag",
