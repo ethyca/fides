@@ -48,10 +48,10 @@ VERSION = fides.__version__
 
 ROUTERS = [CTL_ROUTER, api_router]
 DEFAULT_PRIVACY_NOTICES_PATH = (
-    "/fides/data/privacy_notices/privacy_notice_templates.yml"
+    "src/fides/data/privacy_notices/privacy_notice_templates.yml"
 )
 PRIVACY_EXPERIENCE_CONFIGS_PATH = (
-    "/fides/data/privacy_notices/privacy_experience_config_defaults.yml"
+    "src/fides/data/privacy_notices/privacy_experience_config_defaults.yml"
 )
 
 
