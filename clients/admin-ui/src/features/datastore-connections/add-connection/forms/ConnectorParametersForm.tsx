@@ -35,7 +35,6 @@ import {
   SaasConnectorParametersFormFields,
 } from "../types";
 import { fillInDefaults } from "./helpers";
-import { TextInput } from "~/features/common/form/inputs";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
@@ -148,7 +147,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           {getFormLabel(key, item.title)}
           <VStack align="flex-start" w="inherit">
             {item.type !== "integer" && (
-              <TextInput
+              <Input
                 {...field}
                 isPassword={item.sensitive || false}
                 placeholder={getPlaceholder(item)}
