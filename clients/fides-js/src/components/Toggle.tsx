@@ -1,5 +1,4 @@
-/** @jsx createElement */
-import { createElement } from "react";
+import { h } from "preact";
 
 const Toggle = ({
   name,

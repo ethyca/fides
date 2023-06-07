@@ -2,13 +2,14 @@ import { h, FunctionComponent } from "preact";
 import { ButtonType, ExperienceConfig } from "../lib/consent-types";
 import Button from "./Button";
 import { useHasMounted } from "../lib/hooks";
+import CloseButton from "./CloseButton";
 
 interface BannerProps {
   experience: ExperienceConfig;
   onAcceptAll: () => void;
   onRejectAll: () => void;
   onManagePreferences: () => void;
-  managePreferencesLabel?: string;
+  onClose: () => void;
   bannerIsOpen: boolean;
 }
 
@@ -17,6 +18,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onAcceptAll,
   onRejectAll,
   onManagePreferences,
+  onClose,
   bannerIsOpen,
 }) => {
   const hasMounted = useHasMounted();
@@ -42,6 +44,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     >
       <div id="fides-banner">
         <div id="fides-banner-inner">
+          <CloseButton ariaLabel="Close banner" onClick={onClose} />
           <div id="fides-banner-title" className="fides-banner-title">
             {title}
           </div>

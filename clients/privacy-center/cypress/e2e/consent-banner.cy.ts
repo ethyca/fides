@@ -122,8 +122,9 @@ describe("Consent banner", () => {
           });
       });
       it("does not render banner", () => {
-        cy.get("div#fides-banner").should("not.exist");
-        cy.contains("button", "Accept Test").should("not.exist");
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("div#fides-banner").should("not.exist");
+        });
       });
       it("does not render modal link", () => {
         cy.get("#fides-modal-link").should("not.be.visible");
@@ -241,7 +242,7 @@ describe("Consent banner", () => {
       describe("modal", () => {
         it("should open modal when experience component = OVERLAY", () => {
           cy.contains("button", "Manage preferences").click();
-          cy.getByTestId("consent-modal");
+          cy.getByTestId("consent-modal").should("be.visible");
         });
 
         it("can toggle the notices", () => {
@@ -258,7 +259,7 @@ describe("Consent banner", () => {
 
           cy.getByTestId("Save test-btn").click();
           // Modal should close after saving
-          cy.getByTestId("consent-modal").should("not.exist");
+          cy.getByTestId("consent-modal").should("not.be.visible");
 
           // check that consent was sent to Fides API
           let generatedUserDeviceId: string;
@@ -813,8 +814,9 @@ describe("Consent banner", () => {
       });
 
       it("does not render banner", () => {
-        cy.get("div#fides-banner").should("not.exist");
-        cy.contains("button", "Accept Test").should("not.exist");
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("div#fides-banner").should("not.exist");
+        });
       });
 
       it("does not render modal link", () => {
@@ -832,8 +834,9 @@ describe("Consent banner", () => {
       });
 
       it("does not render banner", () => {
-        cy.get("div#fides-banner").should("not.exist");
-        cy.contains("button", "Accept Test").should("not.exist");
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("div#fides-banner").should("not.exist");
+        });
       });
 
       it("does not render modal link", () => {
@@ -882,8 +885,9 @@ describe("Consent banner", () => {
       });
 
       it("does not render banner", () => {
-        cy.get("div#fides-banner").should("not.exist");
-        cy.contains("button", "Accept Test").should("not.exist");
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("div#fides-banner").should("not.exist");
+        });
       });
 
       it("renders modal link", () => {
@@ -920,8 +924,9 @@ describe("Consent banner", () => {
       });
 
       it("does not render banner", () => {
-        cy.get("div#fides-banner").should("not.exist");
-        cy.contains("button", "Accept Test").should("not.exist");
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("div#fides-banner").should("not.exist");
+        });
       });
 
       it("shows the modal link", () => {
@@ -931,7 +936,7 @@ describe("Consent banner", () => {
       describe("modal link click", () => {
         it("should open modal", () => {
           cy.get("#fides-modal-link").should("be.visible").click();
-          cy.getByTestId("consent-modal");
+          cy.getByTestId("consent-modal").should("be.visible");
         });
       });
     });
@@ -947,11 +952,13 @@ describe("Consent banner", () => {
 
       it("closes banner and opens modal when modal link is clicked", () => {
         cy.get("div#fides-banner").should("be.visible");
-        cy.contains("button", "Accept Test").should("exist");
+        cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Accept Test").should("exist");
+        });
 
         cy.get("#fides-modal-link").click();
         cy.get("div#fides-banner").should("not.be.visible");
-        cy.getByTestId("consent-modal");
+        cy.getByTestId("consent-modal").should("be.visible");
       });
 
       it("opens modal even after modal has been previously opened and closed", () => {
@@ -965,7 +972,7 @@ describe("Consent banner", () => {
         cy.getByTestId("Save test-btn").click();
 
         cy.get("#fides-modal-link").click();
-        cy.getByTestId("consent-modal");
+        cy.getByTestId("consent-modal").should("be.visible");
       });
     });
   });
