@@ -165,7 +165,7 @@ declare global {
        * Warning: similar to loadConfigFixture, subsequent page loads will reset this setting
        * back to the defaults.
        *
-       * @example cy.overrideSettings({IS_OVERLAY_DISABLED: false})
+       * @example cy.overrideSettings({IS_OVERLAY_ENABLED: true})
        */
       overrideSettings(
         settings: Partial<PrivacyCenterClientSettings>

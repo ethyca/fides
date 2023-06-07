@@ -108,18 +108,15 @@ describe("Consent banner", () => {
       beforeEach(() => {
         stubConfig({
           options: {
-            isOverlayDisabled: true,
+            isOverlayEnabled: false,
           },
         });
       });
-      it("sets Fides.consent object with default consent based on privacy notices", () => {
-        cy.window()
-          .its("Fides")
-          .its("consent")
-          .should("eql", {
-            [PRIVACY_NOTICE_KEY_1]: false,
-            [PRIVACY_NOTICE_KEY_2]: false,
-          });
+      it("sets Fides.consent object with default consent based on legacy consent", () => {
+        cy.window().its("Fides").its("consent").should("eql", {
+          data_sales: true,
+          tracking: false,
+        });
       });
       it("does not render banner", () => {
         cy.waitUntilFidesInitialized().then(() => {
@@ -136,7 +133,7 @@ describe("Consent banner", () => {
         stubConfig(
           {
             options: {
-              isOverlayDisabled: true,
+              isOverlayEnabled: false,
             },
             experience: OVERRIDE.EMPTY,
           },
@@ -166,7 +163,7 @@ describe("Consent banner", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         stubConfig({
           options: {
-            isOverlayDisabled: false,
+            isOverlayEnabled: true,
           },
         });
       });
@@ -343,7 +340,7 @@ describe("Consent banner", () => {
         // cookie values
         stubConfig({
           options: {
-            isOverlayDisabled: false,
+            isOverlayEnabled: true,
           },
         });
 
@@ -982,7 +979,7 @@ describe("Consent banner", () => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       stubConfig({
         options: {
-          isOverlayDisabled: false,
+          isOverlayEnabled: true,
         },
       });
     });

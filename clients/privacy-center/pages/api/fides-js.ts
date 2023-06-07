@@ -76,7 +76,7 @@ export default async function handler(
       debug: environment.settings.DEBUG,
       geolocationApiUrl: environment.settings.GEOLOCATION_API_URL,
       isGeolocationEnabled: environment.settings.IS_GEOLOCATION_ENABLED,
-      isOverlayDisabled: environment.settings.IS_OVERLAY_DISABLED,
+      isOverlayEnabled: environment.settings.IS_OVERLAY_ENABLED,
       overlayParentId: environment.settings.OVERLAY_PARENT_ID,
       modalLinkId: environment.settings.MODAL_LINK_ID,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
