@@ -15,18 +15,16 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.14.0...main)
+
+## [Unreleased](https://github.com/ethyca/fides/compare/2.14.1...main)
 
 ### Added
 
 - Add Google Tag Manager and Privacy Center ENV vars to sample app [#2949](https://github.com/ethyca/fides/pull/2949)
 - Add `notice_key` field to Privacy Notice UI form [#3403](https://github.com/ethyca/fides/pull/3403)
-- Add `identity` query param to the consent reporting API view [#3418](https://github.com/ethyca/fides/pull/3418)
 - Added the ability to use custom CAs with Redis via TLS [#3451](https://github.com/ethyca/fides/pull/3451)
 - Add default experience configs on startup [#3449](https://github.com/ethyca/fides/pull/3449)
 - Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401/files)
-- Add privacy centre button text customisations [#3432](https://github.com/ethyca/fides/pull/3432)
-- Add privacy centre favicon customisation [#3432](https://github.com/ethyca/fides/pull/3432)
 
 ### Fixed
 
@@ -44,7 +42,6 @@ The types of changes are:
 - Bump SlowAPI Version [#3456](https://github.com/ethyca/fides/pull/3456)
 - Bump Psycopg2-binary Version [#3473](https://github.com/ethyca/fides/pull/3473)
 - Reduced duplication between PrivacyExperience and PrivacyExperienceConfig [#3470](https://github.com/ethyca/fides/pull/3470)
-- Update privacy centre email and phone validation to allow for both to be blank [#3432](https://github.com/ethyca/fides/pull/3432)
 
 ### Developer Experience
 
@@ -55,6 +52,21 @@ The types of changes are:
 ### Fixed
 
 - Flaky custom field Cypress test on systems page [#3408](https://github.com/ethyca/fides/pull/3408)
+
+
+## [2.14.1](https://github.com/ethyca/fides/compare/2.14.0...2.14.1)
+
+
+### Added
+
+- Add `identity` query param to the consent reporting API view [#3418](https://github.com/ethyca/fides/pull/3418)
+- Add privacy centre button text customisations [#3432](https://github.com/ethyca/fides/pull/3432)
+- Add privacy centre favicon customisation [#3432](https://github.com/ethyca/fides/pull/3432)
+
+### Changed
+
+- Update privacy centre email and phone validation to allow for both to be blank [#3432](https://github.com/ethyca/fides/pull/3432)
+
 
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
