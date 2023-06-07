@@ -27,6 +27,7 @@ export type Config = {
   server_url_development?: string;
   server_url_production?: string;
   logo_path: string;
+  favicon_path?: string;
   actions: PrivacyRequestOption[];
   includeConsent?: boolean;
   consent?: ConsentConfig;
@@ -45,9 +46,12 @@ export type ConsentConfig = {
   button: {
     description: string;
     description_subtext?: string[];
+    confirmButtonText?: string;
+    cancelButtonText?: string;
     icon_path: string;
     identity_inputs?: IdentityInputs;
     title: string;
+    modalTitle?: string;
   };
   page: {
     consentOptions: ConfigConsentOption[];
@@ -64,6 +68,8 @@ export type PrivacyRequestOption = {
   title: string;
   description: string;
   description_subtext?: string[];
+  confirmButtonText?: string;
+  cancelButtonText?: string;
   identity_inputs?: IdentityInputs;
 };
 
