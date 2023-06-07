@@ -214,6 +214,7 @@ def push_fides_images(session: nox.Session, tag_suffixes: List[str]) -> None:
     session.run(*sample_app_buildx_command, external=True)
 
 
+# Add Params for building each image
 @nox.session()
 @nox.parametrize(
     "tag",
