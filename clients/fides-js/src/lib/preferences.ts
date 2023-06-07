@@ -17,7 +17,7 @@ import { patchUserPreferenceToFidesServer } from "../services/fides/api";
  */
 export const updateConsentPreferences = ({
   consentPreferencesToSave,
-  experienceHistoryId,
+  experienceId,
   fidesApiUrl,
   consentMethod,
   userLocationString,
@@ -25,7 +25,7 @@ export const updateConsentPreferences = ({
   debug = false,
 }: {
   consentPreferencesToSave: Array<SaveConsentPreference>;
-  experienceHistoryId: string;
+  experienceId: string;
   fidesApiUrl: string;
   consentMethod: ConsentMethod;
   userLocationString?: string;
@@ -59,7 +59,7 @@ export const updateConsentPreferences = ({
   const privacyPreferenceCreate: PrivacyPreferencesRequest = {
     browser_identity: cookie.identity,
     preferences: fidesUserPreferences,
-    privacy_experience_history_id: experienceHistoryId,
+    privacy_experience_id: experienceId,
     user_geography: userLocationString,
     method: consentMethod,
   };

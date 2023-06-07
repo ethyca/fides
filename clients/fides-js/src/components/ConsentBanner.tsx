@@ -1,5 +1,4 @@
 import { h, FunctionComponent } from "preact";
-import { useState, useEffect } from "preact/hooks";
 import { ButtonType, ExperienceConfig } from "../lib/consent-types";
 import Button from "./Button";
 import { useHasMounted } from "../lib/hooks";
@@ -9,19 +8,19 @@ interface BannerProps {
   experience: ExperienceConfig;
   onAcceptAll: () => void;
   onRejectAll: () => void;
-  waitBeforeShow?: number;
-  managePreferencesLabel?: string;
-  onOpenModal: () => void;
+  onManagePreferences: () => void;
+  onClose: () => void;
+  bannerIsOpen: boolean;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
   experience,
   onAcceptAll,
   onRejectAll,
-  waitBeforeShow,
-  onOpenModal,
+  onManagePreferences,
+  onClose,
+  bannerIsOpen,
 }) => {
-  const [isShown, setIsShown] = useState(false);
   const hasMounted = useHasMounted();
   const {
     title = "Manage your consent",
@@ -32,18 +31,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
       privacyPreferencesLabel = "Manage preferences",
   } = experience;
 
-  useEffect(() => {
-    const delayBanner = setTimeout(() => {
-      setIsShown(true);
-    }, waitBeforeShow);
-    return () => clearTimeout(delayBanner);
-  }, [setIsShown, waitBeforeShow]);
-
-  const handleManagePreferencesClick = (): void => {
-    onOpenModal();
-    setIsShown(false);
-  };
-
   if (!hasMounted) {
     return null;
   }
@@ -52,17 +39,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     <div
       id="fides-banner-container"
       className={`fides-banner fides-banner-bottom ${
-        isShown ? "" : "fides-banner-hidden"
+        bannerIsOpen ? "" : "fides-banner-hidden"
       } `}
     >
       <div id="fides-banner">
         <div id="fides-banner-inner">
-          <CloseButton
-            ariaLabel="Close banner"
-            onClick={() => {
-              setIsShown(false);
-            }}
-          />
+          <CloseButton ariaLabel="Close banner" onClick={onClose} />
           <div id="fides-banner-title" className="fides-banner-title">
             {title}
           </div>
@@ -77,7 +59,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
               <Button
                 buttonType={ButtonType.TERTIARY}
                 label={privacyPreferencesLabel}
-                onClick={handleManagePreferencesClick}
+                onClick={onManagePreferences}
               />
             </span>
             <span className="fides-banner-buttons-right">
@@ -86,7 +68,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                 label={rejectButtonLabel}
                 onClick={() => {
                   onRejectAll();
-                  setIsShown(false);
                 }}
               />
               <Button
@@ -94,7 +75,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                 label={acceptButtonLabel}
                 onClick={() => {
                   onAcceptAll();
-                  setIsShown(false);
                 }}
               />
             </span>

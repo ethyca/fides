@@ -24,6 +24,7 @@ The types of changes are:
 - Add `identity` query param to the consent reporting API view [#3418](https://github.com/ethyca/fides/pull/3418)
 - Use `rollup-plugin-postcss` to bundle and optimize the `fides.js` components CSS [#3431](https://github.com/ethyca/fides/pull/3431)
 - Dispatch Fides.js lifecycle events on window (FidesInitialized, FidesUpdated) and cross-publish to Fides.gtm() integration [#3454](https://github.com/ethyca/fides/pull/3454)
+- Added the ability to use custom CAs with Redis via TLS [#3451](https://github.com/ethyca/fides/pull/3451)
 - Add default experience configs on startup [#3449](https://github.com/ethyca/fides/pull/3449)
 - Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401/files)
 
@@ -39,13 +40,16 @@ The types of changes are:
 - Enabled Privacy Experience beta flag [#3364](https://github.com/ethyca/fides/pull/3364)
 - Removed ExperienceConfig.delivery_mechanism constraint [#3387](https://github.com/ethyca/fides/pull/3387)
 - Updated privacy experience UI forms to reflect updated experience config fields [#3402](https://github.com/ethyca/fides/pull/3402)
+- Use a venv in the Dockerfile for installing Python deps [#3452](https://github.com/ethyca/fides/pull/3452)
 - Bump SlowAPI Version [#3456](https://github.com/ethyca/fides/pull/3456)
+- Bump Psycopg2-binary Version [#3473](https://github.com/ethyca/fides/pull/3473)
 - Reduced duplication between PrivacyExperience and PrivacyExperienceConfig [#3470](https://github.com/ethyca/fides/pull/3470)
 
 ### Developer Experience
 
 - Add ability to pass ENV vars to both privacy center and sample app during `fides deploy` via `.env` [#2949](https://github.com/ethyca/fides/pull/2949)
 - Handle an edge case when generating tags that finds them out of sequence [#3405](https://github.com/ethyca/fides/pull/3405)
+- Add support for pushing `prerelease` and `rc` tagged images to Dockerhub [#3474](https://github.com/ethyca/fides/pull/3474)
 
 ### Fixed
 

@@ -1,5 +1,3 @@
-export const FIDES_MODAL_LINK = "fides-modal-link";
-
 export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.
   consent?: LegacyConsentConfig;
@@ -29,6 +27,9 @@ export type FidesOptions = {
   // ID of the parent DOM element where the overlay should be inserted (default: "fides-overlay")
   overlayParentId: string | null;
 
+  // ID of the DOM element that should trigger the consent modal (default: "fides-modal-link"
+  modalLinkId: string | null;
+
   // URL for the Privacy Center, used to customize consent preferences. Required.
   privacyCenterUrl: string;
 
@@ -57,13 +58,10 @@ export class SaveConsentPreference {
 export type PrivacyExperience = {
   region: string; // intentionally using plain string instead of Enum, since BE is susceptible to change
   component?: ComponentType;
-  disabled?: boolean;
   experience_config?: ExperienceConfig;
   id: string;
   created_at: string;
   updated_at: string;
-  version: number;
-  privacy_experience_history_id: string;
   show_banner?: boolean;
   privacy_notices?: Array<PrivacyNotice>;
 };
@@ -174,7 +172,7 @@ export type PrivacyPreferencesRequest = {
   code?: string;
   preferences: Array<ConsentOptionCreate>;
   policy_key?: string; // Will use default consent policy if not supplied
-  privacy_experience_history_id?: string;
+  privacy_experience_id?: string;
   user_geography?: string;
   method?: ConsentMethod;
 };

@@ -43,6 +43,7 @@ export interface PrivacyCenterSettings {
   IS_GEOLOCATION_ENABLED: boolean; // whether we should use geolocation to drive privacy experience
   IS_OVERLAY_DISABLED: boolean; // whether we should render privacy-experience-driven components
   OVERLAY_PARENT_ID: string | null; // (optional) ID of the parent DOM element where the overlay should be inserted
+  MODAL_LINK_ID: string | null; // (optional) ID of the DOM element that should trigger the consent modal
   PRIVACY_CENTER_URL: string; // e.g. http://localhost:3000
 }
 
@@ -59,6 +60,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "IS_GEOLOCATION_ENABLED"
   | "IS_OVERLAY_DISABLED"
   | "OVERLAY_PARENT_ID"
+  | "MODAL_LINK_ID"
   | "PRIVACY_CENTER_URL"
 >;
 
@@ -264,6 +266,7 @@ export const loadPrivacyCenterEnvironment =
         process.env.FIDES_PRIVACY_CENTER__GEOLOCATION_API_URL || "",
       OVERLAY_PARENT_ID:
         process.env.FIDES_PRIVACY_CENTER__OVERLAY_PARENT_ID || null,
+      MODAL_LINK_ID: process.env.FIDES_PRIVACY_CENTER__MODAL_LINK_ID || null,
       PRIVACY_CENTER_URL:
         process.env.FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL ||
         "http://localhost:3000",
@@ -283,6 +286,7 @@ export const loadPrivacyCenterEnvironment =
       IS_GEOLOCATION_ENABLED: settings.IS_GEOLOCATION_ENABLED,
       GEOLOCATION_API_URL: settings.GEOLOCATION_API_URL,
       OVERLAY_PARENT_ID: settings.OVERLAY_PARENT_ID,
+      MODAL_LINK_ID: settings.MODAL_LINK_ID,
       PRIVACY_CENTER_URL: settings.PRIVACY_CENTER_URL,
     };
 

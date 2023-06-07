@@ -15,7 +15,7 @@ export type PrivacyPreferencesRequest = {
   code?: string;
   preferences: Array<ConsentOptionCreate>;
   policy_key?: string;
-  privacy_experience_history_id?: string;
+  privacy_experience_id?: string;
   user_geography?: PrivacyNoticeRegion;
   method?: ConsentMethod;
 };

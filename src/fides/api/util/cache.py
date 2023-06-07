@@ -171,6 +171,7 @@ def get_cache() -> FidesopsRedis:
             username=CONFIG.redis.user,
             password=CONFIG.redis.password,
             ssl=CONFIG.redis.ssl,
+            ssl_ca_certs=CONFIG.redis.ssl_ca_certs,
             ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
         )
         logger.debug("New Redis connection created.")

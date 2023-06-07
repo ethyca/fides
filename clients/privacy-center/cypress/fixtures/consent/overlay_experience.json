@@ -3,7 +3,6 @@
     {
       "region": "us_ca",
       "component": "overlay",
-      "disabled": false,
       "experience_config": {
         "accept_button_label": "Accept Test",
         "acknowledge_button_label": "Got it",
@@ -28,8 +27,6 @@
       "id": "pri_b9d1af04-5852-4499-bdfb-2778a6117fb8",
       "created_at": "2023-06-02T15:18:56.110785+00:00",
       "updated_at": "2023-06-02T16:40:37.340905+00:00",
-      "version": 2.0,
-      "privacy_experience_history_id": "pri_1255e8a0-9b39-42c2-80db-edc83fba44f8",
       "show_banner": true,
       "privacy_notices": [
         {

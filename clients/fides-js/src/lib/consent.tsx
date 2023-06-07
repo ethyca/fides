@@ -4,7 +4,6 @@ import { ComponentType } from "./consent-types";
 import { debugLog } from "./consent-utils";
 
 import Overlay, { OverlayProps } from "../components/Overlay";
-import { showModalLinkAndSetOnClick } from "./consent-links";
 
 /**
  * Initialize the Fides Consent overlay components.
@@ -20,6 +19,18 @@ export const initOverlay = async ({
   debugLog(options.debug, "Initializing Fides consent overlays...");
 
   async function renderFidesOverlay(): Promise<void> {
+    // Check if there are any notices within the experience that do not have a user preference
+    const noticesWithNoUserPreferenceExist: boolean = Boolean(
+      experience?.privacy_notices?.some(
+        (notice) => notice.current_preference == null
+      )
+    );
+    const modalLinkId = options.modalLinkId || "fides-modal-link";
+    const modalLinkEl = document.getElementById(modalLinkId);
+    // If we don't have new notices and modal link does not exist, don't render overlay
+    if (!noticesWithNoUserPreferenceExist && !modalLinkEl) {
+      return Promise.resolve();
+    }
     try {
       debugLog(
         options.debug,
@@ -41,21 +52,18 @@ export const initOverlay = async ({
       }
 
       if (experience.component === ComponentType.OVERLAY) {
-        if (experience.show_banner) {
-          // Render the Overlay to the DOM!
-          render(
-            <Overlay
-              options={options}
-              experience={experience}
-              cookie={cookie}
-              fidesRegionString={fidesRegionString}
-            />,
-            parentElem
-          );
-          debugLog(options.debug, "Fides overlay is now showing!");
-        } else {
-          showModalLinkAndSetOnClick(options.debug);
-        }
+        // Render the Overlay to the DOM!
+        render(
+          <Overlay
+            options={options}
+            experience={experience}
+            cookie={cookie}
+            fidesRegionString={fidesRegionString}
+            modalLinkEl={modalLinkEl}
+          />,
+          parentElem
+        );
+        debugLog(options.debug, "Fides overlay is now showing!");
       }
       return await Promise.resolve();
     } catch (e) {
