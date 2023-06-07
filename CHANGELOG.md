@@ -53,6 +53,10 @@ The types of changes are:
 
 - Flaky custom field Cypress test on systems page [#3408](https://github.com/ethyca/fides/pull/3408)
 
+### Removed
+
+- Removed the deprecated `system_dependencies` from `System` resources, migrating to `egress` [#3285](https://github.com/ethyca/fides/pull/3285)
+
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
 ### Added
