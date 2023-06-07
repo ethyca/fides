@@ -4,6 +4,7 @@
   "description_subtext": [],
   "addendum": [],
   "logo_path": "/logo.svg",
+  "favicon_path": "/favicon.ico",
   "actions": [
     {
       "policy_key": "default_access_policy",
@@ -13,7 +14,9 @@
       "description_subtext": [],
       "identity_inputs": {
         "email": "required"
-      }
+      },
+      "confirmButtonText": "Continue",
+      "cancelButtonText": "Cancel"
     },
     {
       "policy_key": "default_erasure_policy",
@@ -23,7 +26,9 @@
       "description_subtext": [],
       "identity_inputs": {
         "email": "required"
-      }
+      },
+      "confirmButtonText": "Continue",
+      "cancelButtonText": "Cancel"
     }
   ],
   "includeConsent": true,
@@ -37,7 +42,10 @@
       "identity_inputs": {
         "email": "optional"
       },
-      "title": "Manage your consent"
+      "title": "Manage your consent",
+      "modalTitle": "Manage your consent",
+      "confirmButtonText": "Continue",
+      "cancelButtonText": "Cancel"
     },
     "page": {
       "consentOptions": [

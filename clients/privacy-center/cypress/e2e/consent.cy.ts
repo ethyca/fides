@@ -3,6 +3,55 @@ import { GpcStatus } from "~/features/consent/types";
 import { ConsentPreferencesWithVerificationCode } from "~/types/api";
 import { API_URL } from "../support/constants";
 
+describe("Consent modal deeplink", () => {
+  beforeEach(() => {
+    cy.visit("/?showConsentModal=true");
+    cy.loadConfigFixture("config/config_consent.json").as("config");
+    cy.intercept("POST", `${API_URL}/consent-request`, {
+      body: {
+        consent_request_id: "consent-request-id",
+      },
+    }).as("postConsentRequest");
+    cy.intercept(
+      "POST",
+      `${API_URL}/consent-request/consent-request-id/verify`,
+      { fixture: "consent/verify" }
+    ).as("postConsentRequestVerify");
+  });
+
+  it("opens the consent modal", () => {
+    // This test does the same as below, without clicking the card
+    cy.getByTestId("consent-request-form").should("be.visible");
+    cy.getByTestId("consent-request-form").within(() => {
+      cy.get("input#email").type("test@example.com");
+      cy.get("button").contains("Continue").click();
+    });
+    cy.wait("@postConsentRequest");
+
+    cy.getByTestId("verification-form").within(() => {
+      cy.get("input").type("112358");
+      cy.get("button").contains("Submit code").click();
+    });
+    cy.wait("@postConsentRequestVerify");
+
+    cy.location("pathname").should("eq", "/consent");
+    cy.getByTestId("consent");
+  });
+
+  it("closes the modal and purges the query param", () => {
+    cy.getByTestId("consent-request-form").should("be.visible");
+
+    cy.getByTestId("consent-request-form").within(() => {
+      cy.get("input#email").type("test@example.com");
+      cy.get("button").contains("Cancel").click();
+    });
+
+    // assert the modal is closed and query_param removed
+    cy.url().should("not.contain", "showConsentModal=true");
+    cy.getByTestId("consent-request-form").should("not.exist");
+  });
+});
+
 describe("Consent settings", () => {
   beforeEach(() => {
     cy.visit("/");

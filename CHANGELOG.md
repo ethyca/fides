@@ -24,6 +24,12 @@ The types of changes are:
 ### Added
 
 - Add `identity` query param to the consent reporting API view [#3418](https://github.com/ethyca/fides/pull/3418)
+- Add privacy centre button text customisations [#3432](https://github.com/ethyca/fides/pull/3432)
+- Add privacy centre favicon customisation [#3432](https://github.com/ethyca/fides/pull/3432)
+
+### Changed
+
+- Update privacy centre email and phone validation to allow for both to be blank [#3432](https://github.com/ethyca/fides/pull/3432)
 
 
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
