@@ -42,7 +42,7 @@ import {
   DOCS_URL_IAM_POLICY,
 } from "./constants";
 import { isSystem } from "./helpers";
-import { useGenerateMutation } from "./scanner.slice";
+import { useGenerateMutation, useGenerateS3Mutation } from "./scanner.slice";
 import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
 
@@ -98,20 +98,35 @@ const AuthenticateAwsForm = () => {
     dispatch(changeStep(2));
   };
 
-  const [generate, { isLoading }] = useGenerateMutation();
+  const [generate, { isLoading: isGenerateLoading }] = useGenerateMutation();
+  const [generateS3, { isLoading: isGenerateS3Loading }] = useGenerateS3Mutation();
 
   const handleSubmit = async (values: FormValues) => {
     setScannerError(undefined);
 
-    const result = await generate({
-      organization_key: organizationKey,
-      generate: {
-        config: values,
-        // We set this to infrastructure because this can be used to scan General AWS or S3 buckets
-        target: infrastructure !== ValidTargets.AWSS3 && infrastructure !== ValidTargets.AWS ? ValidTargets.AWS : infrastructure,
-        type: GenerateTypes.SYSTEMS,
-      },
-    });
+    let result = {};
+
+    // Separating this from the general generate endpoint because this is using a Plus route
+    if(ValidTargets.AWSS3) {
+      result = await generateS3({
+        organization_key: organizationKey,
+        generate: {
+          config: values,
+          target: ValidTargets.AWSS3,
+          type: GenerateTypes.SYSTEMS,
+        },
+      });
+
+    } else {
+      result = await generate({
+        organization_key: organizationKey,
+        generate: {
+          config: values,
+          target: ValidTargets.AWS,
+          type: GenerateTypes.SYSTEMS,
+        },
+      });
+    }
 
     if (isErrorResult(result)) {
       handleError(result.error);
@@ -215,7 +230,7 @@ const AuthenticateAwsForm = () => {
                   type="submit"
                   variant="primary"
                   isDisabled={!dirty || !isValid}
-                  isLoading={isLoading}
+                  isLoading={isGenerateLoading || isGenerateS3Loading}
                   data-testid="submit-btn"
                 >
                   Save and Continue
