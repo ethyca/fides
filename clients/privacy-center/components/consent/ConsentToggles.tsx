@@ -13,9 +13,9 @@ const ConsentToggles = ({
   const { IS_OVERLAY_ENABLED } = settings;
 
   if (IS_OVERLAY_ENABLED) {
-    return <ConfigDrivenConsent storePreferences={storePreferences} />;
+    return <NoticeDrivenConsent />;
   }
-  return <NoticeDrivenConsent />;
+  return <ConfigDrivenConsent storePreferences={storePreferences} />;
 };
 
 export default ConsentToggles;
