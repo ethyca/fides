@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.0"
+    "version": "2.14.1"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -4642,6 +4642,15 @@
               "format": "date-time"
             },
             "name": "updated_gt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Identity",
+              "type": "string"
+            },
+            "name": "identity",
             "in": "query"
           },
           {
@@ -13622,6 +13631,7 @@
         "required": [
           "data_use",
           "opt_in",
+          "id",
           "identity",
           "created_at",
           "updated_at"
@@ -13649,6 +13659,10 @@
             "title": "Conflicts With Gpc",
             "type": "boolean",
             "default": false
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
           },
           "identity": {
             "$ref": "#/components/schemas/IdentityBase"
