@@ -174,8 +174,6 @@ export const experienceIsValid = (
     );
     return false;
   }
-  // Check if there are any notices within the experience that do not have a user preference
-  return effectiveExperience.privacy_notices.some(
-    (notice) => notice.current_preference == null
-  );
+
+  return true;
 };

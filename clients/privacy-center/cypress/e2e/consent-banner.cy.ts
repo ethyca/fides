@@ -543,7 +543,7 @@ describe("Consent banner", () => {
       });
       it("does not set user consent preference automatically", () => {
         // timeout means API call not made, which is expected
-        Cypress.on("fail", (error) => {
+        cy.on("fail", (error) => {
           if (error.message.indexOf("Timed out retrying") !== 0) {
             throw error;
           }
@@ -604,7 +604,7 @@ describe("Consent banner", () => {
 
       it("does not set user consent preference automatically", () => {
         // timeout means API call not made, which is expected
-        Cypress.on("fail", (error) => {
+        cy.on("fail", (error) => {
           if (error.message.indexOf("Timed out retrying") !== 0) {
             throw error;
           }
@@ -658,7 +658,7 @@ describe("Consent banner", () => {
         });
         cy.get("div#fides-banner").should("exist");
         cy.contains("button", "Accept Test").should("exist");
-        cy.get("div#fides-banner.fides-banner").within(() => {
+        cy.get("div#fides-banner").within(() => {
           cy.get(
             "div#fides-banner-description.fides-banner-description"
           ).contains(
@@ -687,7 +687,7 @@ describe("Consent banner", () => {
         cy.wait("@getGeolocation");
         cy.get("div#fides-banner").should("exist");
         cy.contains("button", "Accept Test").should("exist");
-        cy.get("div#fides-banner.fides-banner").within(() => {
+        cy.get("div#fides-banner").within(() => {
           cy.get(
             "div#fides-banner-description.fides-banner-description"
           ).contains(
@@ -721,7 +721,7 @@ describe("Consent banner", () => {
           });
           cy.get("div#fides-banner").should("exist");
           cy.contains("button", "Accept Test").should("exist");
-          cy.get("div#fides-banner.fides-banner").within(() => {
+          cy.get("div#fides-banner").within(() => {
             cy.get(
               "div#fides-banner-description.fides-banner-description"
             ).contains(
@@ -787,7 +787,7 @@ describe("Consent banner", () => {
         });
         cy.get("div#fides-banner").should("exist");
         cy.contains("button", "Accept Test").should("exist");
-        cy.get("div#fides-banner.fides-banner").within(() => {
+        cy.get("div#fides-banner").within(() => {
           cy.get(
             "div#fides-banner-description.fides-banner-description"
           ).contains(
@@ -892,7 +892,7 @@ describe("Consent banner", () => {
 
       it("does not set user consent preference automatically", () => {
         // timeout means API call not made, which is expected
-        Cypress.on("fail", (error) => {
+        cy.on("fail", (error) => {
           if (error.message.indexOf("Timed out retrying") !== 0) {
             throw error;
           }
@@ -946,12 +946,11 @@ describe("Consent banner", () => {
       });
 
       it("closes banner and opens modal when modal link is clicked", () => {
-        cy.get("div#fides-banner").should("exist");
+        cy.get("div#fides-banner").should("be.visible");
         cy.contains("button", "Accept Test").should("exist");
 
         cy.get("#fides-modal-link").click();
-
-        cy.get("div#fides-banner").should("not.exist");
+        cy.get("div#fides-banner").should("not.be.visible");
         cy.getByTestId("consent-modal");
       });
 
