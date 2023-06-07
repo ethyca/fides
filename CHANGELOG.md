@@ -47,6 +47,7 @@ The types of changes are:
 - Bump Psycopg2-binary Version [#3473](https://github.com/ethyca/fides/pull/3473)
 - Reduced duplication between PrivacyExperience and PrivacyExperienceConfig [#3470](https://github.com/ethyca/fides/pull/3470)
 - Update privacy centre email and phone validation to allow for both to be blank [#3432](https://github.com/ethyca/fides/pull/3432)
+- Moved connection configuration into the system portal [#3407](https://github.com/ethyca/fides/pull/3407)
 
 ### Developer Experience
 
