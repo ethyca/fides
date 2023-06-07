@@ -543,7 +543,7 @@ describe("Consent banner", () => {
       });
       it("does not set user consent preference automatically", () => {
         // timeout means API call not made, which is expected
-        Cypress.on("fail", (error) => {
+        cy.on("fail", (error) => {
           if (error.message.indexOf("Timed out retrying") !== 0) {
             throw error;
           }
@@ -604,7 +604,7 @@ describe("Consent banner", () => {
 
       it("does not set user consent preference automatically", () => {
         // timeout means API call not made, which is expected
-        Cypress.on("fail", (error) => {
+        cy.on("fail", (error) => {
           if (error.message.indexOf("Timed out retrying") !== 0) {
             throw error;
           }
@@ -892,7 +892,7 @@ describe("Consent banner", () => {
 
       it("does not set user consent preference automatically", () => {
         // timeout means API call not made, which is expected
-        Cypress.on("fail", (error) => {
+        cy.on("fail", (error) => {
           if (error.message.indexOf("Timed out retrying") !== 0) {
             throw error;
           }
