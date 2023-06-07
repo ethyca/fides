@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "c19bf07924ad86bda782404fe2265f56" # string
+analytics_id = "00257c77329b34de55fc0e29f9bcece2" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -83,6 +83,10 @@ task_engine_max_overflow = 50 # integer
 
 # The database user with which to login to the application database.
 user = "defaultuser" # string
+
+# Additional connection parameters used when connecting to the
+# applicaiton database.
+params = {} # object
 
 #---------------#
 #-- EXECUTION --#
@@ -202,8 +206,13 @@ ssl = false # boolean
 
 # If using TLS encryption, set this to 'required' if you wish to
 # enforce the Redis cache to provide a certificate. Note that not all
-# cache providers support this e.g. AWS Elasticache.
+# cache providers support this without setting ssl_ca_certs (e.g. AWS
+# Elasticache).
 ssl_cert_reqs = "required" # string
+
+# If using TLS encryption rooted with a custom Certificate Authority,
+# set this to the path of the CA certificate.
+ssl_ca_certs = "" # string
 
 # The user with which to login to the Redis cache.
 user = "" # string

@@ -1399,7 +1399,16 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">345</span>
 <span class="normal">346</span>
 <span class="normal">347</span>
-<span class="normal">348</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1417,7 +1426,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;c19bf07924ad86bda782404fe2265f56&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;00257c77329b34de55fc0e29f9bcece2&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1484,6 +1493,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># The database user with which to login to the application database.</span>
 <span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;defaultuser&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># Additional connection parameters used when connecting to the</span>
+<span class="c1"># applicaiton database.</span>
+<span class="n">params</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="c1"># object</span>
 
 <span class="c1">#---------------#</span>
 <span class="c1">#-- EXECUTION --#</span>
@@ -1603,8 +1616,13 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># If using TLS encryption, set this to &#39;required&#39; if you wish to</span>
 <span class="c1"># enforce the Redis cache to provide a certificate. Note that not all</span>
-<span class="c1"># cache providers support this e.g. AWS Elasticache.</span>
+<span class="c1"># cache providers support this without setting ssl_ca_certs (e.g. AWS</span>
+<span class="c1"># Elasticache).</span>
 <span class="n">ssl_cert_reqs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;required&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># If using TLS encryption rooted with a custom Certificate Authority,</span>
+<span class="c1"># set this to the path of the CA certificate.</span>
+<span class="n">ssl_ca_certs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># The user with which to login to the Redis cache.</span>
 <span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
