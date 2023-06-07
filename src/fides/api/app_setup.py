@@ -2,6 +2,7 @@
 Contains utility functions that set up the application webserver.
 """
 from logging import DEBUG
+from os.path import dirname, join
 from typing import List, Optional, Pattern, Union
 
 from fastapi import FastAPI
@@ -43,7 +44,6 @@ from fides.api.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_request_body_cli,
 )
 from fides.core.config import CONFIG
-from os.path import dirname, join
 
 VERSION = fides.__version__
 
