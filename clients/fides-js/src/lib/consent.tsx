@@ -1,7 +1,7 @@
 import { h, render } from "preact";
 
 import { ComponentType } from "./consent-types";
-import { debugLog } from "./consent-utils";
+import { debugLog, hasActionNeededNotices } from "./consent-utils";
 
 import Overlay, { OverlayProps } from "../components/Overlay";
 
@@ -20,11 +20,7 @@ export const initOverlay = async ({
 
   async function renderFidesOverlay(): Promise<void> {
     // Check if there are any notices within the experience that do not have a user preference
-    const noticesWithNoUserPreferenceExist: boolean = Boolean(
-      experience?.privacy_notices?.some(
-        (notice) => notice.current_preference == null
-      )
-    );
+    const noticesWithNoUserPreferenceExist = hasActionNeededNotices(experience);
     const modalLinkId = options.modalLinkId || "fides-modal-link";
     const modalLinkEl = document.getElementById(modalLinkId);
     // If we don't have new notices and modal link does not exist, don't render overlay

@@ -177,3 +177,13 @@ export const experienceIsValid = (
 
   return true;
 };
+
+/**
+ * Returns true if there are notices in the experience that require a user preference
+ */
+export const hasActionNeededNotices = (experience: PrivacyExperience) =>
+  Boolean(
+    experience?.privacy_notices?.some(
+      (notice) => notice.current_preference == null
+    )
+  );

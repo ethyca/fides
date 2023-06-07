@@ -1,5 +1,5 @@
 import { h, FunctionComponent } from "preact";
-import { useEffect, useState, useCallback } from "preact/hooks";
+import { useEffect, useState, useCallback, useMemo } from "preact/hooks";
 import {
   ConsentMethod,
   FidesOptions,
@@ -12,6 +12,7 @@ import ConsentBanner from "./ConsentBanner";
 import { updateConsentPreferences } from "../lib/preferences";
 import {
   debugLog,
+  hasActionNeededNotices,
   transformConsentToFidesUserPreference,
 } from "../lib/consent-utils";
 import { FidesCookie } from "../lib/cookie";
@@ -79,6 +80,11 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       debugLog(options.debug, "Modal link element not found.");
     }
   }, [modalLinkEl, options.debug, handleOpenModal]);
+
+  const showBanner = useMemo(
+    () => experience.show_banner && hasActionNeededNotices(experience),
+    [experience]
+  );
 
   if (!experience.experience_config) {
     debugLog(options.debug, "No experience config found");
@@ -164,7 +170,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
 
   return (
     <div id="fides-js-root">
-      {experience.show_banner ? (
+      {showBanner ? (
         <ConsentBanner
           experience={experience.experience_config}
           onAcceptAll={onAcceptAll}
