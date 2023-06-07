@@ -43,15 +43,20 @@ from fides.api.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_request_body_cli,
 )
 from fides.core.config import CONFIG
+from os.path import dirname, join
 
 VERSION = fides.__version__
 
 ROUTERS = [CTL_ROUTER, api_router]
-DEFAULT_PRIVACY_NOTICES_PATH = (
-    "/fides/data/privacy_notices/privacy_notice_templates.yml"
+DEFAULT_PRIVACY_NOTICES_PATH = join(
+    dirname(__file__),
+    "../data/privacy_notices",
+    "privacy_notice_templates.yml",
 )
-PRIVACY_EXPERIENCE_CONFIGS_PATH = (
-    "/fides/data/privacy_notices/privacy_experience_config_defaults.yml"
+PRIVACY_EXPERIENCE_CONFIGS_PATH = join(
+    dirname(__file__),
+    "../data/privacy_notices",
+    "privacy_experience_config_defaults.yml",
 )
 
 
