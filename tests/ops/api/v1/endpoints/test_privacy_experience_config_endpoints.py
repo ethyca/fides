@@ -663,26 +663,8 @@ class TestCreateExperienceConfig:
         experience = experience_config.experiences[0]
         assert experience.region == PrivacyNoticeRegion.us_ny
         assert experience.component == ComponentType.overlay
-        assert experience.disabled is False
-        assert experience.version == 1.0
         assert experience.experience_config_id == experience_config.id
-        assert experience.experience_config_history_id == experience_config_history.id
 
-        # Created Experience History
-        assert experience.histories.count() == 1
-        experience_history = experience.histories[0]
-        assert experience_history.region == PrivacyNoticeRegion.us_ny
-        assert experience_history.component == ComponentType.overlay
-        assert experience_history.disabled is False
-        assert experience_history.version == 1.0
-        assert experience_history.experience_config_id == experience_config.id
-        assert (
-            experience_history.experience_config_history_id
-            == experience_config_history.id
-        )
-        assert experience_history.privacy_experience_id == experience.id
-
-        experience_history.delete(db)
         experience.delete(db)
         experience_config_history.delete(db)
         experience_config.delete(db)
@@ -700,20 +682,16 @@ class TestCreateExperienceConfig:
         """
         Specifying a TX region to be used with the new ExperienceConfig can
         cause an existing TX PrivacyExperience to be linked to the current ExperienceConfig
-        with its version bumped
         """
 
         privacy_experience = PrivacyExperience.create(
             db,
             data={
-                "disabled": False,
                 "component": ComponentType.overlay,
                 "region": PrivacyNoticeRegion.us_tx,
             },
         )
 
-        assert privacy_experience.version == 1.0
-        assert privacy_experience.histories.count() == 1.0
         assert privacy_experience.experience_config_id is None
 
         auth_header = generate_auth_header(
@@ -773,7 +751,7 @@ class TestCreateExperienceConfig:
         )
         assert experience_config_history.experience_config_id == experience_config.id
 
-        # Updated Privacy Experience - TX Privacy Experience automatically linked, and bumped to 2.0
+        # Updated Privacy Experience - TX Privacy Experience automatically linked
         assert experience_config.experiences.count() == 1
         experience = experience_config.experiences[0]
         db.refresh(experience)
@@ -782,30 +760,11 @@ class TestCreateExperienceConfig:
         )  # Linked experience is the same Texas experience from above
         assert experience.region == PrivacyNoticeRegion.us_tx
         assert experience.component == ComponentType.overlay
-        assert experience.disabled is False
-        assert experience.version == 2.0
         assert experience.experience_config_id == experience_config.id
-        assert experience.experience_config_history_id == experience_config_history.id
-
-        # Created Experience History - new version of Privacy Experience created due to config being linked
-        assert experience.histories.count() == 2
-        experience_history = experience.histories[-1]
-        assert experience_history.region == PrivacyNoticeRegion.us_tx
-        assert experience_history.component == ComponentType.overlay
-        assert experience_history.disabled is False
-        assert experience_history.version == 2.0
-        assert experience_history.experience_config_id == experience_config.id
-        assert (
-            experience_history.experience_config_history_id
-            == experience_config_history.id
-        )
-        assert experience_history.privacy_experience_id == experience.id
 
         assert response.json()["linked_regions"] == ["us_tx"]
         assert response.json()["unlinked_regions"] == []
 
-        for history in experience.histories:
-            history.delete(db)
         experience.delete(db)
         experience_config_history.delete(db)
         experience_config.delete(db)
@@ -1138,8 +1097,6 @@ class TestUpdateExperienceConfig:
         assert response.json()["linked_regions"] == []
         assert response.json()["unlinked_regions"] == []
 
-        for history in privacy_experience_overlay.histories:
-            history.delete(db)
         privacy_experience_overlay.delete(db)
 
         for history in experience_config.histories:
@@ -1263,26 +1220,8 @@ class TestUpdateExperienceConfig:
         experience = overlay_experience_config.experiences[0]
         assert experience.region == PrivacyNoticeRegion.us_ny
         assert experience.component == ComponentType.overlay
-        assert experience.disabled is False
-        assert experience.version == 1.0
         assert experience.experience_config_id == overlay_experience_config.id
-        assert experience.experience_config_history_id == experience_config_history.id
 
-        # Created Experience History
-        assert experience.histories.count() == 1
-        experience_history = experience.histories[0]
-        assert experience_history.region == PrivacyNoticeRegion.us_ny
-        assert experience_history.component == ComponentType.overlay
-        assert experience_history.disabled is False
-        assert experience_history.version == 1.0
-        assert experience_history.experience_config_id == overlay_experience_config.id
-        assert (
-            experience_history.experience_config_history_id
-            == experience_config_history.id
-        )
-        assert experience_history.privacy_experience_id == experience.id
-
-        experience_history.delete(db)
         experience.delete(db)
 
         assert response.json()["linked_regions"] == ["us_ny"]
@@ -1300,20 +1239,16 @@ class TestUpdateExperienceConfig:
         Existing ExperienceConfig is updated to add TX.  A Texas Privacy Experience already exists.
 
         This should cause the existing Texas PrivacyExperience to be given a FK to the existing ExperienceConfig record
-        with its version bumped as its config has changed.
         """
 
         privacy_experience = PrivacyExperience.create(
             db,
             data={
-                "disabled": False,
                 "component": ComponentType.overlay,
                 "region": PrivacyNoticeRegion.us_tx,
             },
         )
 
-        assert privacy_experience.version == 1.0
-        assert privacy_experience.histories.count() == 1.0
         assert privacy_experience.experience_config_id is None
 
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
@@ -1358,7 +1293,7 @@ class TestUpdateExperienceConfig:
             == overlay_experience_config.id
         )
 
-        # Updated Privacy Experience - TX Privacy Experience automatically linked, and bumped to 2.0
+        # Updated Privacy Experience - TX Privacy Experience automatically linked
         assert overlay_experience_config.experiences.count() == 1
         experience = overlay_experience_config.experiences[0]
         db.refresh(experience)
@@ -1367,30 +1302,11 @@ class TestUpdateExperienceConfig:
         )  # Linked experience is the same Texas experience from above
         assert experience.region == PrivacyNoticeRegion.us_tx
         assert experience.component == ComponentType.overlay
-        assert experience.disabled is False
-        assert experience.version == 2.0
         assert experience.experience_config_id == overlay_experience_config.id
-        assert experience.experience_config_history_id == experience_config_history.id
-
-        # Created Experience History - new version of Privacy Experience created due to config being linked
-        assert experience.histories.count() == 2
-        experience_history = experience.histories[-1]
-        assert experience_history.region == PrivacyNoticeRegion.us_tx
-        assert experience_history.component == ComponentType.overlay
-        assert experience_history.disabled is False
-        assert experience_history.version == 2.0
-        assert experience_history.experience_config_id == overlay_experience_config.id
-        assert (
-            experience_history.experience_config_history_id
-            == experience_config_history.id
-        )
-        assert experience_history.privacy_experience_id == experience.id
 
         assert response.json()["linked_regions"] == ["us_tx"]
         assert response.json()["unlinked_regions"] == []
 
-        for history in experience.histories:
-            history.delete(db)
         experience.delete(db)
 
     def test_update_experience_config_experience_also_updated(
@@ -1412,14 +1328,11 @@ class TestUpdateExperienceConfig:
         privacy_experience = PrivacyExperience.create(
             db,
             data={
-                "disabled": False,
                 "component": ComponentType.overlay,
                 "region": PrivacyNoticeRegion.us_tx,
             },
         )
 
-        assert privacy_experience.version == 1.0
-        assert privacy_experience.histories.count() == 1.0
         assert privacy_experience.experience_config_id is None
 
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
@@ -1464,7 +1377,7 @@ class TestUpdateExperienceConfig:
             == overlay_experience_config.id
         )
 
-        # Updated Privacy Experience - TX Privacy Experience automatically linked, and bumped to 2.0
+        # Updated Privacy Experience - TX Privacy Experience automatically linked
         assert overlay_experience_config.experiences.count() == 1
         experience = overlay_experience_config.experiences[0]
         db.refresh(experience)
@@ -1473,32 +1386,11 @@ class TestUpdateExperienceConfig:
         )  # Linked experience is the same Texas experience from above
         assert experience.region == PrivacyNoticeRegion.us_tx
         assert experience.component == ComponentType.overlay
-        assert (
-            experience.disabled is True
-        ), "Experience disabled because it was linked to a disabled config"
-        assert experience.version == 2.0
         assert experience.experience_config_id == overlay_experience_config.id
-        assert experience.experience_config_history_id == experience_config_history.id
-
-        # Created Experience History - new version of Privacy Experience created due to config being linked
-        assert experience.histories.count() == 2
-        experience_history = experience.histories[-1]
-        assert experience_history.region == PrivacyNoticeRegion.us_tx
-        assert experience_history.component == ComponentType.overlay
-        assert experience_history.disabled is True
-        assert experience_history.version == 2.0
-        assert experience_history.experience_config_id == overlay_experience_config.id
-        assert (
-            experience_history.experience_config_history_id
-            == experience_config_history.id
-        )
-        assert experience_history.privacy_experience_id == experience.id
 
         assert response.json()["linked_regions"] == ["us_tx"]
         assert response.json()["unlinked_regions"] == []
 
-        for history in experience.histories:
-            history.delete(db)
         experience.delete(db)
 
     def test_update_experience_config_to_remove_region(
@@ -1516,16 +1408,12 @@ class TestUpdateExperienceConfig:
         privacy_experience = PrivacyExperience.create(
             db,
             data={
-                "disabled": False,
                 "component": ComponentType.overlay,
                 "region": PrivacyNoticeRegion.us_tx,
                 "experience_config_id": overlay_experience_config.id,
-                "experience_config_history_id": overlay_experience_config.experience_config_history_id,
             },
         )
 
-        assert privacy_experience.version == 1.0
-        assert privacy_experience.histories.count() == 1.0
         assert privacy_experience.experience_config_id == overlay_experience_config.id
 
         db.refresh(overlay_experience_config)
@@ -1560,35 +1448,13 @@ class TestUpdateExperienceConfig:
             == overlay_experience_config.id
         )
 
-        # Updated Privacy Experience - TX Privacy Experience automatically *unlinked*, and bumped to 2.0
+        # Updated Privacy Experience - TX Privacy Experience automatically *unlinked*
         assert overlay_experience_config.experiences.count() == 0
         db.refresh(privacy_experience)
 
-        assert privacy_experience.version == 2.0
         assert (
             privacy_experience.experience_config_id
             == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
         )  # Default overlay experience config linked instead
-        assert privacy_experience.experience_config_history_id is not None
-        assert (
-            privacy_experience.experience_config_history_id
-            != privacy_experience.experience_config_id
-        )  # Sanity check
 
-        # Created Experience History - new version of Privacy Experience created due to config being *unlinked*
-        assert privacy_experience.histories.count() == 2
-        experience_history = privacy_experience.histories[-1]
-        assert experience_history.region == PrivacyNoticeRegion.us_tx
-        assert experience_history.component == ComponentType.overlay
-        assert experience_history.disabled is False
-        assert experience_history.version == 2.0
-        assert (
-            experience_history.experience_config_id
-            == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
-        )  # Default overlay experience config linked instead
-        assert experience_history.experience_config_history_id is not None
-        assert experience_history.privacy_experience_id == privacy_experience.id
-
-        for history in privacy_experience.histories:
-            history.delete(db)
         privacy_experience.delete(db)
