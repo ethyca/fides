@@ -47,6 +47,7 @@ The types of changes are:
 - Bump Psycopg2-binary Version [#3473](https://github.com/ethyca/fides/pull/3473)
 - Reduced duplication between PrivacyExperience and PrivacyExperienceConfig [#3470](https://github.com/ethyca/fides/pull/3470)
 - Update privacy centre email and phone validation to allow for both to be blank [#3432](https://github.com/ethyca/fides/pull/3432)
+- Update `fideslang` to `1.4.1` to allow arbitrary nested metadata on `System`s and `Dataset`s `meta` property [#3463](https://github.com/ethyca/fides/pull/3463)
 
 ### Developer Experience
 
