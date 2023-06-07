@@ -95,7 +95,7 @@ class DsrReportBuilder:
         self.add_file(
             f"/{dataset_name}/index.html",
             self.populate_template(
-                "templates/dataset_index.html.jinja",
+                "templates/dataset_index.html",
                 dataset_name,
                 None,
                 collection_links,
@@ -112,7 +112,7 @@ class DsrReportBuilder:
             self.add_file(
                 f"/{dataset_name}/{collection_name}/{index}.html",
                 self.populate_template(
-                    "templates/item.html.jinja",
+                    "templates/item.html",
                     f"{collection_name} (item #{index})",
                     None,
                     item,
@@ -124,7 +124,7 @@ class DsrReportBuilder:
         self.add_file(
             f"/{dataset_name}/{collection_name}/index.html",
             self.populate_template(
-                "templates/collection_index.html.jinja",
+                "templates/collection_index.html",
                 collection_name,
                 None,
                 detail_links,
@@ -140,7 +140,7 @@ class DsrReportBuilder:
             # all the css for the pages is in main.css
             self.add_file(
                 "/main.css",
-                self.populate_template("templates/main.css.jinja"),
+                self.populate_template("templates/main.css"),
             )
             self.add_file(
                 "/back.svg",
@@ -163,7 +163,7 @@ class DsrReportBuilder:
             self.add_file(
                 "/index.html",
                 self.populate_template(
-                    "templates/index.html.jinja", "DSR Report", None, self.main_links
+                    "templates/index.html", "DSR Report", None, self.main_links
                 ),
             )
         finally:
