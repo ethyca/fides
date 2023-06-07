@@ -30,12 +30,12 @@ def verify_git_tag(session: nox.Session) -> str:
     """
     existing_commit_tag = get_current_tag(existing=True)
     if existing_commit_tag is None:
-        session.error(
+        session.skip(
             "Did not find an existing git tag on the current commit, not pushing git-tag images"
         )
 
     if not recognized_tag(existing_commit_tag):
-        session.error(
+        session.skip(
             f"Existing git tag {existing_commit_tag} is not a recognized tag, not pushing git-tag images"
         )
 
