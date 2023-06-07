@@ -1,10 +1,5 @@
 import { EditIcon } from "@chakra-ui/icons";
-import {
-  Flex,
-  FormControl,
-  IconButton,
-  useDisclosure,
-} from "@fidesui/react";
+import { Flex, FormControl, IconButton, useDisclosure } from "@fidesui/react";
 import {
   ErrorMessage,
   Label,
