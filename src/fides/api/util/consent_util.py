@@ -493,7 +493,7 @@ def load_default_notices_on_startup(
     logger.info(
         "Loading default privacy notice templates from {}", notice_yaml_file_path
     )
-    with open(load_file(notice_yaml_file_path), "r", encoding="utf-8") as file:
+    with open(load_file([notice_yaml_file_path]), "r", encoding="utf-8") as file:
         notices = yaml.safe_load(file).get("privacy_notices", [])
 
         template_schemas: List[PrivacyNoticeWithId] = []
@@ -542,7 +542,7 @@ def load_default_experience_configs_on_startup(
     logger.info(
         "Loading default privacy experience configs from {}", notice_yaml_file_path
     )
-    with open(load_file(notice_yaml_file_path), "r", encoding="utf-8") as file:
+    with open(load_file([notice_yaml_file_path]), "r", encoding="utf-8") as file:
         experience_configs = yaml.safe_load(file).get("privacy_experience_configs", [])
 
         for experience_config_data in experience_configs:
