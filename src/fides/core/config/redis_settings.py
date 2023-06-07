@@ -55,8 +55,8 @@ class RedisSettings(FidesSettings):
         default="required",
         description="If using TLS encryption, set this to 'required' if you wish to enforce the Redis cache to provide a certificate. Note that not all cache providers support this without setting ssl_ca_certs (e.g. AWS Elasticache).",
     )
-    ssl_ca_certs: Optional[str] = Field(
-        default=None,
+    ssl_ca_certs: str = Field(
+        default="",
         description="If using TLS encryption rooted with a custom Certificate Authority, set this to the path of the CA certificate.",
     )
     user: str = Field(
