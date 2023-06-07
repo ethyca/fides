@@ -1,5 +1,5 @@
 from typing import Dict, Optional
-from urllib.parse import quote_plus
+from urllib.parse import quote, quote_plus, urlencode
 
 from pydantic import Field, validator
 
@@ -53,7 +53,11 @@ class RedisSettings(FidesSettings):
     )
     ssl_cert_reqs: Optional[str] = Field(
         default="required",
-        description="If using TLS encryption, set this to 'required' if you wish to enforce the Redis cache to provide a certificate. Note that not all cache providers support this e.g. AWS Elasticache.",
+        description="If using TLS encryption, set this to 'required' if you wish to enforce the Redis cache to provide a certificate. Note that not all cache providers support this without setting ssl_ca_certs (e.g. AWS Elasticache).",
+    )
+    ssl_ca_certs: str = Field(
+        default="",
+        description="If using TLS encryption rooted with a custom Certificate Authority, set this to the path of the CA certificate.",
     )
     user: str = Field(
         default="", description="The user with which to login to the Redis cache."
@@ -79,7 +83,7 @@ class RedisSettings(FidesSettings):
             return v
 
         connection_protocol = "redis"
-        params = ""
+        params_str = ""
         use_tls = values.get("ssl", False)
 
         # These vars are intentionally fetched with `or ""` as the default to account
@@ -92,7 +96,10 @@ class RedisSettings(FidesSettings):
             # If using TLS update the connection URL format
             connection_protocol = "rediss"
             cert_reqs = values.get("ssl_cert_reqs", "none")
-            params = f"?ssl_cert_reqs={quote_plus(cert_reqs)}"
+            params = {"ssl_cert_reqs": quote_plus(cert_reqs)}
+            if ssl_ca_certs := values.get("ssl_ca_certs", ""):
+                params["ssl_ca_certs"] = quote(ssl_ca_certs, safe="/")
+            params_str = "?" + urlencode(params, quote_via=quote, safe="/")
 
         # Configure a basic auth prefix if either user or password is provided, e.g.
         # redis://<user>:<password>@<host>
@@ -100,7 +107,7 @@ class RedisSettings(FidesSettings):
         if password or user:
             auth_prefix = f"{quote_plus(user)}:{quote_plus(password)}@"
 
-        connection_url = f"{connection_protocol}://{auth_prefix}{values.get('host', '')}:{values.get('port', '')}/{db_index}{params}"
+        connection_url = f"{connection_protocol}://{auth_prefix}{values.get('host', '')}:{values.get('port', '')}/{db_index}{params_str}"
         return connection_url
 
     class Config:

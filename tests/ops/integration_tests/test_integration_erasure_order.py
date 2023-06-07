@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import TraversalNode
-from fides.api.models.policy import ActionType, Policy
+from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient

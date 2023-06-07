@@ -11,8 +11,8 @@ from fides.api.graph.graph_differences import (
     find_graph_differences_summary,
     format_graph_for_caching,
 )
-from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
 from fides.core.config import CONFIG

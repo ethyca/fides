@@ -5,11 +5,11 @@ from fideslang.validation import FidesKey
 from pydantic import Field, conlist
 
 from fides.api.custom_types import SafeStr
-from fides.api.models.policy import ActionType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion, UserConsentPreference
 from fides.api.models.privacy_preference import ConsentMethod, RequestOrigin
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.redis_cache import Identity
 
@@ -28,7 +28,7 @@ class PrivacyPreferencesRequest(FidesSchema):
     code: Optional[SafeStr]
     preferences: conlist(ConsentOptionCreate, max_items=50)  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
-    privacy_experience_history_id: Optional[SafeStr]
+    privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[PrivacyNoticeRegion]
     method: Optional[ConsentMethod]
 
@@ -99,8 +99,8 @@ class ConsentReportingSchema(FidesSchema):
     experience_config_history_id: Optional[str] = Field(
         title="The historical config for the experience that the user was presented - contains the experience language"
     )
-    privacy_experience_history_id: Optional[str] = Field(
-        title="The historical id of the experience that the user was presented - contains the experience type, region, and delivery mechanism"
+    privacy_experience_id: Optional[str] = Field(
+        title="The id of the experience that the user was presented - contains the experience type and region"
     )
     truncated_ip_address: Optional[str] = Field(title="Truncated ip address")
     method: Optional[ConsentMethod] = Field(title="Method of consent preference")
