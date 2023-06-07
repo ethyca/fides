@@ -18,8 +18,9 @@ from fides.api.graph.config import (
     MaskingOverride,
 )
 from fides.api.graph.traversal import TraversalNode
-from fides.api.models.policy import ActionType, Policy, Rule
+from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import ManualAction, PrivacyRequest
+from fides.api.schemas.policy import ActionType
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,

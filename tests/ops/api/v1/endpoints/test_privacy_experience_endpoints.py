@@ -56,10 +56,8 @@ class TestGetPrivacyExperiences:
         assert len(data["items"]) == 1
         resp = data["items"][0]
 
-        assert resp["disabled"] is True
         assert resp["component"] == "privacy_center"
         assert resp["region"] == "us_co"
-        assert resp["version"] == 1.0
         assert resp["show_banner"] is False
         # Assert experience config is nested
         experience_config = resp["experience_config"]
@@ -74,10 +72,6 @@ class TestGetPrivacyExperiences:
             experience_config["experience_config_history_id"]
             == privacy_experience_privacy_center.experience_config.experience_config_history_id
         )
-        assert (
-            resp["privacy_experience_history_id"]
-            == privacy_experience_privacy_center.privacy_experience_history_id
-        )
         assert len(resp["privacy_notices"]) == 1
         assert resp["privacy_notices"][0]["id"] == privacy_notice.id
         assert resp["privacy_notices"][0]["consent_mechanism"] == "opt_in"
@@ -91,6 +85,7 @@ class TestGetPrivacyExperiences:
         url,
         privacy_experience_privacy_center,
         privacy_experience_overlay,
+        db,
     ):
         resp = api_client.get(
             url,
@@ -114,6 +109,16 @@ class TestGetPrivacyExperiences:
         assert privacy_experience_privacy_center.id not in {
             exp["id"] for exp in data["items"]
         }
+
+        privacy_experience_overlay.unlink_experience_config(db)
+        resp = api_client.get(
+            url + "?show_disabled=False",
+        )
+        data = resp.json()
+        assert (
+            data["total"] == 0
+        ), "Experience config was removed from experience so it is considered 'disabled' by default"
+        assert len(data["items"]) == 0
 
     def test_get_privacy_experiences_region_filter(
         self,
