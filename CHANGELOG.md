@@ -25,6 +25,7 @@ The types of changes are:
 
 - Add `identity` query param to the consent reporting API view [#3418](https://github.com/ethyca/fides/pull/3418)
 
+
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
 ### Added
