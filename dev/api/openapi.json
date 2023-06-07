@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.1b2.post0.dev4"
+    "version": "2.14.1b2.post0.dev5"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -14657,10 +14657,7 @@
           "meta": {
             "title": "Meta",
             "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "An optional object that provides additional information about the Dataset. You can structure the object however you like. It can be a simple set of `key: value` properties or a deeply nested hierarchy of objects. How you use the object is up to you: Fides ignores it."
+            "description": "An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects."
           },
           "data_categories": {
             "title": "Data Categories",
@@ -20269,10 +20266,7 @@
           "meta": {
             "title": "Meta",
             "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "An optional property to store any extra information for a system. Not used by fidesctl."
+            "description": "An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects."
           },
           "fidesctl_meta": {
             "title": "Fidesctl Meta",
@@ -20428,10 +20422,7 @@
           "meta": {
             "title": "Meta",
             "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "An optional property to store any extra information for a system. Not used by fidesctl."
+            "description": "An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects."
           },
           "fidesctl_meta": {
             "title": "Fidesctl Meta",
