@@ -369,11 +369,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                 )}
               </Field>
             ) : null}
-            {[SystemType.SAAS, SystemType.DATABASE].indexOf(
-              connectionOption.type
-            ) > -1 && !isCreatingConnectionConfig ? (
-              <DatasetConfigField dropdownOptions={datasetDropdownOptions} />
-            ) : null}
             {/* Dynamic connector secret fields */}
 
             {connectionOption.type !== SystemType.MANUAL && secretsSchema
@@ -385,6 +380,11 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   return getFormField(key, item);
                 })
               : null}
+            {[SystemType.SAAS, SystemType.DATABASE].indexOf(
+              connectionOption.type
+            ) > -1 && !isCreatingConnectionConfig ? (
+              <DatasetConfigField dropdownOptions={datasetDropdownOptions} />
+            ) : null}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
                 colorScheme="gray.700"
