@@ -85,6 +85,7 @@ const initialState: DatastoreConnectionParams = {
   search: "",
   page: 1,
   size: 25,
+  orphaned_from_system: true,
 };
 
 export const datastoreConnectionSlice = createSlice({
