@@ -113,7 +113,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
           color="white"
           colorScheme="primary"
         >
-          Link unlinked connector
+          Link connector
         </Button>
       </>
 
