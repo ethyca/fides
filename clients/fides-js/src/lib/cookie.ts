@@ -98,7 +98,7 @@ export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
     fides_meta: {
       version: "0.9.0",
       createdAt: now.toISOString(),
-      updatedAt: ""
+      updatedAt: "",
     },
   };
 };
@@ -194,6 +194,7 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
   // Record the last update time for the cookie
   const now = new Date();
   const updatedAt = now.toISOString();
+  // eslint-disable-next-line no-param-reassign
   cookie.fides_meta.updatedAt = updatedAt;
 
   // Write the cookie to the root domain

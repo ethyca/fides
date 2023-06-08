@@ -1,8 +1,9 @@
-import LegacyConsentConfig, {
+import {
   ComponentType,
   CONSENT_COOKIE_NAME,
   ConsentMethod,
   FidesCookie,
+  LegacyConsentConfig,
 } from "fides-js";
 import {
   ConsentMechanism,
@@ -323,7 +324,8 @@ describe("Consent banner", () => {
 
       it("overwrites privacy notices that no longer exist", () => {
         const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
-        const now = "2023-04-28T12:00:00.000Z";
+        const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+        const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
         const legacyNotices = {
           data_sales: false,
           tracking: false,
@@ -331,7 +333,11 @@ describe("Consent banner", () => {
         };
         const originalCookie = {
           identity: { fides_user_device_id: uuid },
-          fides_meta: { version: "0.9.0", createdAt: now },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: CREATED_DATE,
+            updatedAt: UPDATED_DATE,
+          },
           consent: legacyNotices,
         };
         cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
@@ -1115,6 +1121,274 @@ describe("Consent banner", () => {
             },
           },
         });
+    });
+  });
+  describe("when listening for fides.js events with existing cookie", () => {
+    describe("when overlay is enabled and legacy notices exist", () => {
+      beforeEach(() => {
+        const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+        const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+        const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+        const legacyNotices = {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        };
+        const originalCookie = {
+          identity: { fides_user_device_id: uuid },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: CREATED_DATE,
+            updatedAt: UPDATED_DATE,
+          },
+          consent: legacyNotices,
+        };
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
+
+        // we need to visit the page after the cookie exists, so the Fides.consent obj is initialized with the original
+        // cookie values
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+          },
+        });
+      });
+      // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
+      // register listeners for these window events
+      it("first event reflects legacy consent from cookie, second event reflects new experiences consent", () => {
+        // There is a brief period of time when Fides.consent is set to the legacy values, but this
+        // test asserts the new values have been set
+        cy.window()
+          .its("Fides")
+          .its("consent")
+          .should("eql", {
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: false,
+          });
+        cy.get("@FidesInitialized")
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              data_sales: false,
+              tracking: false,
+              analytics: true,
+            },
+          });
+        cy.get("@FidesUpdated")
+          .should("have.been.calledTwice")
+          .its("firstCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              data_sales: false,
+              tracking: false,
+              analytics: true,
+            },
+          })
+          .its("secondCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: false,
+              [PRIVACY_NOTICE_KEY_2]: false,
+            },
+          });
+      });
+    });
+    describe("when overlay is enabled and legacy notices do not exist", () => {
+      beforeEach(() => {
+        const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+        const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+        const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+        const legacyNotices = {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        };
+        const originalCookie = {
+          identity: { fides_user_device_id: uuid },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: CREATED_DATE,
+            updatedAt: UPDATED_DATE,
+          },
+          consent: legacyNotices,
+        };
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
+
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+          },
+          consent: { options: [] },
+        });
+      });
+      it("first event reflects legacy cookie consent, second event reflects new experiences consent", () => {
+        cy.window()
+          .its("Fides")
+          .its("consent")
+          .should("eql", {
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: false,
+          });
+        cy.get("@FidesInitialized")
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              data_sales: false,
+              tracking: false,
+              analytics: true,
+            },
+          });
+        cy.get("@FidesUpdated")
+          .should("have.been.calledTwice")
+          .its("secondCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              data_sales: false,
+              tracking: false,
+              analytics: true,
+            },
+          })
+          .its("secondCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: false,
+              [PRIVACY_NOTICE_KEY_2]: false,
+            },
+          });
+      });
+    });
+    describe("when overlay is disabled and legacy notices do not exist", () => {
+      beforeEach(() => {
+        const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+        const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+        const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+        const legacyNotices = {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        };
+        const originalCookie = {
+          identity: { fides_user_device_id: uuid },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: CREATED_DATE,
+            updatedAt: UPDATED_DATE,
+          },
+          consent: legacyNotices,
+        };
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
+
+        stubConfig({
+          options: {
+            isOverlayEnabled: false,
+          },
+          consent: { options: [] },
+        });
+      });
+      // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
+      // register listeners for these window events
+      it("all events should reflect existing legacy cookie values", () => {
+        cy.window().its("Fides").its("consent").should("eql", {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        });
+        cy.get("@FidesInitialized")
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              data_sales: false,
+              tracking: false,
+              analytics: true,
+            },
+          });
+        cy.get("@FidesUpdated")
+          .should("have.been.calledTwice")
+          .its("firstCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              data_sales: false,
+              tracking: false,
+              analytics: true,
+            },
+          })
+          .its("secondCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              data_sales: false,
+              tracking: false,
+              analytics: true,
+            },
+          });
+      });
+    });
+    describe("when overlay is disabled and legacy notices exist", () => {
+      beforeEach(() => {
+        const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+        const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+        const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+        const legacyNotices = {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        };
+        const originalCookie = {
+          identity: { fides_user_device_id: uuid },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: CREATED_DATE,
+            updatedAt: UPDATED_DATE,
+          },
+          consent: legacyNotices,
+        };
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
+
+        stubConfig({
+          options: {
+            isOverlayEnabled: false,
+          },
+        });
+      });
+      // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
+      // register listeners for these window events
+      it("all events should reflect legacy consent from cookie", () => {
+        cy.window().its("Fides").its("consent").should("eql", {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        });
+        cy.get("@FidesInitialized")
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              data_sales: false,
+              tracking: false,
+              analytics: true,
+            },
+          });
+        cy.get("@FidesUpdated")
+          .should("have.been.calledTwice")
+          .its("firstCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              data_sales: false,
+              tracking: false,
+              analytics: true,
+            },
+          })
+          .its("secondCall.args.0.detail")
+          .should("deep.equal", {
+            consent: {
+              data_sales: false,
+              tracking: false,
+              analytics: true,
+            },
+          });
+      });
     });
   });
 });

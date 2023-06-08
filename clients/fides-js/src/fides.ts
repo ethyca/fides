@@ -188,9 +188,17 @@ const init = async ({
 
   // If saved preferences are detected, immediately initialize from local cache,
   // and then continue geolocating, etc.
-  if (!isNewFidesCookie(cookie)) {
-    // TODO: initialize window.Fides
-    // TODO: dispatch FidesInitialized & FidesUpdated
+  const hasExistingCookie = !isNewFidesCookie(cookie);
+  if (hasExistingCookie) {
+    _Fides.consent = cookie.consent;
+    _Fides.fides_meta = cookie.fides_meta;
+    _Fides.identity = cookie.identity;
+    _Fides.experience = experience;
+    _Fides.geolocation = geolocation;
+    _Fides.options = options;
+    _Fides.initialized = true;
+    dispatchFidesEvent("FidesInitialized", cookie);
+    dispatchFidesEvent("FidesUpdated", cookie);
   }
 
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
@@ -258,12 +266,13 @@ const init = async ({
   _Fides.options = options;
   _Fides.initialized = true;
 
-  // TODO: if we did an "early-init" above, don't publish the FidesInitialized event a second time
-
   // Dispatch the "FidesInitialized" event to update listeners with the initial
-  // state. For convenience, also dispatch the "FidesUpdated" event; this allows
+  // state. Skip if we already initialized due to an existing cookie.
+  // For convenience, also dispatch the "FidesUpdated" event; this allows
   // listeners to ignore the initialization event if they prefer
-  dispatchFidesEvent("FidesInitialized", cookie);
+  if (!hasExistingCookie) {
+    dispatchFidesEvent("FidesInitialized", cookie);
+  }
   dispatchFidesEvent("FidesUpdated", cookie);
 
   if (shouldInitOverlay) {

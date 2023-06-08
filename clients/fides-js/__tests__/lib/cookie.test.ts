@@ -91,7 +91,11 @@ describe("getOrMakeFidesCookie", () => {
       const V090_COOKIE = JSON.stringify({
         consent: SAVED_CONSENT,
         identity: { fides_user_device_id: SAVED_UUID },
-        fides_meta: { createdAt: CREATED_DATE, updatedAt: UPDATED_DATE, version: "0.9.0" },
+        fides_meta: {
+          createdAt: CREATED_DATE,
+          updatedAt: UPDATED_DATE,
+          version: "0.9.0",
+        },
       });
       beforeEach(() => mockGetCookie.mockReturnValue(V090_COOKIE));
 
@@ -256,7 +260,11 @@ describe("isNewFidesCookie", () => {
     const V090_COOKIE = JSON.stringify({
       consent: SAVED_CONSENT,
       identity: { fides_user_device_id: SAVED_UUID },
-      fides_meta: { createdAt: CREATED_DATE, updatedAt: UPDATED_DATE, version: "0.9.0" },
+      fides_meta: {
+        createdAt: CREATED_DATE,
+        updatedAt: UPDATED_DATE,
+        version: "0.9.0",
+      },
     });
     beforeEach(() => mockGetCookie.mockReturnValue(V090_COOKIE));
 
