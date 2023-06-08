@@ -89,6 +89,7 @@ export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
     fides_meta: {
       version: "0.9.0",
       createdAt: now.toISOString(),
+      updatedAt: ""
     },
   };
 };
@@ -181,6 +182,12 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
     return;
   }
 
+  // Record the last update time for the cookie
+  const now = new Date();
+  const updatedAt = now.toISOString();
+  cookie.fides_meta.updatedAt = updatedAt;
+
+  // Write the cookie to the root domain
   const rootDomain = window.location.hostname.split(".").slice(-2).join(".");
 
   setCookie(
