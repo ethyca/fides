@@ -3,6 +3,7 @@ import {
   CookieKeyConsent,
   FidesCookie,
   getOrMakeFidesCookie,
+  isNewFidesCookie,
   makeConsentDefaultsLegacy,
   makeFidesCookie,
   saveFidesCookie,
@@ -237,6 +238,33 @@ describe("makeConsentDefaultsLegacy", () => {
         default_true_with_gpc_false: false,
         default_false_with_gpc_true: true,
       });
+    });
+  });
+});
+
+describe("isNewFidesCookie", () => {
+  it("returns true for new cookies", () => {
+    const newCookie: FidesCookie = getOrMakeFidesCookie();
+    expect(isNewFidesCookie(newCookie)).toBeTruthy();
+  });
+
+  describe("when a saved cookie exists", () => {
+    const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+    const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+    const SAVED_UUID = "8a46c3ee-d6c3-4518-9b6c-074528b7bfd0";
+    const SAVED_CONSENT = { data_sales: false, performance: true };
+    const V090_COOKIE = JSON.stringify({
+      consent: SAVED_CONSENT,
+      identity: { fides_user_device_id: SAVED_UUID },
+      fides_meta: { createdAt: CREATED_DATE, updatedAt: UPDATED_DATE, version: "0.9.0" },
+    });
+    beforeEach(() => mockGetCookie.mockReturnValue(V090_COOKIE));
+
+    it("returns false for saved cookies", () => {
+      const savedCookie: FidesCookie = getOrMakeFidesCookie();
+      expect(savedCookie.fides_meta.createdAt).toEqual(CREATED_DATE);
+      expect(savedCookie.fides_meta.updatedAt).toEqual(UPDATED_DATE);
+      expect(isNewFidesCookie(savedCookie)).toBeFalsy();
     });
   });
 });

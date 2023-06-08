@@ -76,6 +76,15 @@ const CODEC: Types.CookieCodecConfig<string, string> = {
 export const generateFidesUserDeviceId = (): string => uuidv4();
 
 /**
+ * Determine whether or not the given cookie is "new" (ie. has never been saved
+ * to the browser).
+ */
+export const isNewFidesCookie = (cookie: FidesCookie): boolean => {
+  const isSaved = Boolean(cookie.fides_meta?.updatedAt);
+  return !isSaved;
+};
+
+/**
  * Generate a new Fides cookie with default values for the current user.
  */
 export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
