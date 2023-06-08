@@ -34,8 +34,7 @@ def adobe_sign_secrets(saas_config) -> Dict[str, Any]:
         "client_id": pydash.get(saas_config, "adobe_sign.client_id") or secrets["client_id"],
         "client_secret": pydash.get(saas_config, "adobe_sign.client_secret") or secrets["client_secret"],
         "redirect_uri": pydash.get(saas_config, "adobe_sign.redirect_uri") or secrets["redirect_uri"],
-        "scope": pydash.get(saas_config, "adobe_sign.scope") or secrets["scope"],
-        "access_token": pydash.get(saas_config, "adobe_sign.access_token") or secrets["access_token"]
+        "scope": pydash.get(saas_config, "adobe_sign.scope") or secrets["scope"]
         # add the rest of your secrets here
     }
 
@@ -46,10 +45,6 @@ def adobe_sign_identity_email(saas_config) -> str:
         pydash.get(saas_config, "adobe_sign.identity_email") or secrets["identity_email"]
     )
 
-
-@pytest.fixture
-def adobe_sign_erasure_identity_email() -> str:
-    return generate_random_email()
 
 @pytest.fixture
 def adobe_sign_config() -> Dict[str, Any]:
@@ -113,6 +108,10 @@ def adobe_sign_dataset_config(
     yield dataset
     dataset.delete(db=db)
     ctl_dataset.delete(db=db)
+
+@pytest.fixture
+def adobe_sign_erasure_identity_email() -> str:
+    return generate_random_email()
 
 # class AdobeSignClient:
 #     def __init__(self, secrets: Dict[str, Any]):
