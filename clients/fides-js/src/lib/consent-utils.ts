@@ -49,7 +49,8 @@ export const constructFidesRegionString = (
   if (geoLocation.country && geoLocation.region) {
     return `${geoLocation.country.toLowerCase()}_${geoLocation.region.toLowerCase()}`;
   }
-  // todo: return geoLocation.country when BE supports filtering by just country
+  // DEFER: return geoLocation.country when BE supports filtering by just country
+  // see https://github.com/ethyca/fides/issues/3300
   debugLog(
     debug,
     "cannot construct user location from provided geoLocation params..."
@@ -104,7 +105,6 @@ export const validateOptions = (options: FidesOptions): boolean => {
   if (typeof options !== "object") {
     return false;
   }
-  // todo- more validation here?
 
   if (!options.fidesApiUrl) {
     debugLog(options.debug, "Invalid options: fidesApiUrl is required!");
