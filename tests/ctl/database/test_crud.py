@@ -359,7 +359,7 @@ async def test_get_custom_fields_filtered(
     )
 
 
-async def test_get_resource_with_custom_field(db, async_session):
+async def test_get_resource_with_custom_field(db, async_session_temp):
     system_data = {
         "name": "my system",
         "registry_id": "1",
@@ -367,7 +367,7 @@ async def test_get_resource_with_custom_field(db, async_session):
         "fides_key": str(uuid4()),
     }
 
-    system = await create_resource(sql_models.System, system_data, async_session)
+    system = await create_resource(sql_models.System, system_data, async_session_temp)
 
     custom_definition_data = {
         "name": "test1",
@@ -402,7 +402,7 @@ async def test_get_resource_with_custom_field(db, async_session):
     )
 
     result = await get_resource_with_custom_fields(
-        sql_models.System, system.fides_key, async_session
+        sql_models.System, system.fides_key, async_session_temp
     )
 
     assert result["name"] == system.name
@@ -410,7 +410,7 @@ async def test_get_resource_with_custom_field(db, async_session):
     assert result[custom_field_definition.name] == "Test value 1, Test value 2"
 
 
-async def test_get_resource_with_custom_field_no_custom_field(async_session):
+async def test_get_resource_with_custom_field_no_custom_field(async_session_temp):
     system_data = {
         "name": "my system",
         "registry_id": "1",
@@ -418,9 +418,9 @@ async def test_get_resource_with_custom_field_no_custom_field(async_session):
         "fides_key": str(uuid4()),
     }
 
-    system = await create_resource(sql_models.System, system_data, async_session)
+    system = await create_resource(sql_models.System, system_data, async_session_temp)
     result = await get_resource_with_custom_fields(
-        sql_models.System, system.fides_key, async_session
+        sql_models.System, system.fides_key, async_session_temp
     )
 
     assert result["name"] == system.name

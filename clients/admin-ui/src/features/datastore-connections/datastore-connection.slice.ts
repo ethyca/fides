@@ -3,6 +3,7 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { baseApi } from "~/features/common/api.slice";
 import {
   BulkPutDataset,
+  ConnectionConfigurationResponse,
   Page_DatasetConfigSchema_,
   SystemType,
 } from "~/types/api";
@@ -15,7 +16,6 @@ import {
   CreateAccessManualWebhookResponse,
   CreateSaasConnectionConfigRequest,
   CreateSaasConnectionConfigResponse,
-  DatastoreConnection,
   DatastoreConnectionParams,
   DatastoreConnectionRequest,
   DatastoreConnectionResponse,
@@ -86,6 +86,11 @@ const initialState: DatastoreConnectionParams = {
   page: 1,
   size: 25,
   orphaned_from_system: true,
+};
+
+export type CreateSaasConnectionConfig = {
+  connectionConfig: CreateSaasConnectionConfigRequest;
+  systemFidesKey: string;
 };
 
 export const datastoreConnectionSlice = createSlice({
@@ -180,22 +185,43 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
     }),
     createSassConnectionConfig: build.mutation<
       CreateSaasConnectionConfigResponse,
+      CreateSaasConnectionConfig
+    >({
+      query: (params) => {
+        const url = `/system/${params.systemFidesKey}/${CONNECTION_ROUTE}/instantiate/${params.connectionConfig.saas_connector_type}`;
+
+        return {
+          url,
+          method: "POST",
+          body: { ...params.connectionConfig },
+        };
+      },
+      // Creating a connection config also creates a dataset behind the scenes
+      invalidatesTags: () => ["Datastore Connection", "Datasets", "System"],
+    }),
+
+    createUnlinkedSassConnectionConfig: build.mutation<
+      CreateSaasConnectionConfigResponse,
       CreateSaasConnectionConfigRequest
     >({
-      query: (params) => ({
-        url: `${CONNECTION_ROUTE}/instantiate/${params.saas_connector_type}`,
-        method: "POST",
-        body: { ...params },
-      }),
+      query: (params) => {
+        const url = `${CONNECTION_ROUTE}/instantiate/${params.saas_connector_type}`;
+
+        return {
+          url,
+          method: "POST",
+          body: { ...params },
+        };
+      },
       // Creating a connection config also creates a dataset behind the scenes
-      invalidatesTags: ["Datastore Connection", "Datasets"],
+      invalidatesTags: () => ["Datastore Connection", "Datasets", "System"],
     }),
     deleteDatastoreConnection: build.mutation({
       query: (id) => ({
         url: `${CONNECTION_ROUTE}/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: () => ["Datastore Connection"],
+      invalidatesTags: () => ["Datastore Connection", "System"],
     }),
     getAccessManualHook: build.query<GetAccessManualWebhookResponse, string>({
       query: (key) => ({
@@ -221,7 +247,10 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Datastore Connection"],
     }),
-    getDatastoreConnectionByKey: build.query<DatastoreConnection, string>({
+    getDatastoreConnectionByKey: build.query<
+      ConnectionConfigurationResponse,
+      string
+    >({
       query: (key) => ({
         url: `${CONNECTION_ROUTE}/${key}`,
       }),
@@ -230,7 +259,10 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       ],
       keepUnusedDataFor: 1,
     }),
-    getDatasetConfigs: build.query<Page_DatasetConfigSchema_, string>({
+    getConnectionConfigDatasetConfigs: build.query<
+      Page_DatasetConfigSchema_,
+      string
+    >({
       query: (key) => ({
         url: `${CONNECTION_ROUTE}/${key}/datasetconfig`,
       }),
@@ -338,10 +370,11 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
 export const {
   useCreateAccessManualWebhookMutation,
   useCreateSassConnectionConfigMutation,
+  useCreateUnlinkedSassConnectionConfigMutation,
   useGetAccessManualHookQuery,
   useGetAllEnabledAccessManualHooksQuery,
   useGetAllDatastoreConnectionsQuery,
-  useGetDatasetConfigsQuery,
+  useGetConnectionConfigDatasetConfigsQuery,
   useGetDatastoreConnectionByKeyQuery,
   useDeleteDatastoreConnectionMutation,
   useLazyGetDatastoreConnectionStatusQuery,

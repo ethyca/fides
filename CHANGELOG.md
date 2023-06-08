@@ -15,7 +15,8 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.14.0...main)
+
+## [Unreleased](https://github.com/ethyca/fides/compare/2.14.1...main)
 
 ### Added
 - Privacy center can now render its consent values based on Privacy Notices and Privacy Experiences [#3411](https://github.com/ethyca/fides/pull/3411)
@@ -29,8 +30,6 @@ The types of changes are:
 - Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401)
 - Add ability for users to pass in additional parameters for application database connection [#3450](https://github.com/ethyca/fides/pull/3450)
 - Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401/files)
-- Add privacy centre button text customisations [#3432](https://github.com/ethyca/fides/pull/3432)
-- Add privacy centre favicon customisation [#3432](https://github.com/ethyca/fides/pull/3432)
 - Add ability for `fides-js` to make API calls to Fides [#3411](https://github.com/ethyca/fides/pull/3411)
 - `fides-js` banner is now responsive across different viewport widths [#3411](https://github.com/ethyca/fides/pull/3411)
 - Add ability to close `fides-js` banner and modal via a button or ESC [#3411](https://github.com/ethyca/fides/pull/3411)
@@ -55,6 +54,7 @@ The types of changes are:
 - Bump Psycopg2-binary Version [#3473](https://github.com/ethyca/fides/pull/3473)
 - Reduced duplication between PrivacyExperience and PrivacyExperienceConfig [#3470](https://github.com/ethyca/fides/pull/3470)
 - Update privacy centre email and phone validation to allow for both to be blank [#3432](https://github.com/ethyca/fides/pull/3432)
+- Moved connection configuration into the system portal [#3407](https://github.com/ethyca/fides/pull/3407)
 - Update `fideslang` to `1.4.1` to allow arbitrary nested metadata on `System`s and `Dataset`s `meta` property [#3463](https://github.com/ethyca/fides/pull/3463)
 
 ### Developer Experience
@@ -71,6 +71,20 @@ The types of changes are:
 ### Removed
 
 - Removed the deprecated `system_dependencies` from `System` resources, migrating to `egress` [#3285](https://github.com/ethyca/fides/pull/3285)
+
+
+## [2.14.1](https://github.com/ethyca/fides/compare/2.14.0...2.14.1)
+
+### Added
+
+- Add `identity` query param to the consent reporting API view [#3418](https://github.com/ethyca/fides/pull/3418)
+- Add privacy centre button text customisations [#3432](https://github.com/ethyca/fides/pull/3432)
+- Add privacy centre favicon customisation [#3432](https://github.com/ethyca/fides/pull/3432)
+
+### Changed
+
+- Update privacy centre email and phone validation to allow for both to be blank [#3432](https://github.com/ethyca/fides/pull/3432)
+
 
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
