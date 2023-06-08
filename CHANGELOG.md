@@ -42,6 +42,8 @@ The types of changes are:
 - Fix overlay rendering issue by finding/creating a dedicated parent element for Preact [#3397](https://github.com/ethyca/fides/pull/3397)
 - Fix the sample app privacy center link to be configurable [#3409](https://github.com/ethyca/fides/pull/3409)
 - Fix CLI output showing a version warning for Snowflake [#3434](https://github.com/ethyca/fides/pull/3434)
+- Flaky custom field Cypress test on systems page [#3408](https://github.com/ethyca/fides/pull/3408)
+- Fix NextJS errors & warnings for Cookie House sample app [#3411](https://github.com/ethyca/fides/pull/3411)
 
 ### Changed
 
@@ -62,11 +64,6 @@ The types of changes are:
 - Add ability to pass ENV vars to both privacy center and sample app during `fides deploy` via `.env` [#2949](https://github.com/ethyca/fides/pull/2949)
 - Handle an edge case when generating tags that finds them out of sequence [#3405](https://github.com/ethyca/fides/pull/3405)
 - Add support for pushing `prerelease` and `rc` tagged images to Dockerhub [#3474](https://github.com/ethyca/fides/pull/3474)
-
-### Fixed
-
-- Flaky custom field Cypress test on systems page [#3408](https://github.com/ethyca/fides/pull/3408)
-- Fix NextJS errors & warnings for Cookie House sample app [#3411](https://github.com/ethyca/fides/pull/3411)
 
 ### Removed
 
