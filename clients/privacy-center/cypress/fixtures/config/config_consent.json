@@ -55,6 +55,9 @@
         }
       ],
       "description": "Test your consent preferences, including defaults, cookie keys, and GPC signals.",
+      "description_subtext": [
+        "When you use our services, you're trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control."
+      ],
       "policy_key": "default_consent_policy",
       "title": "Manage your consent"
     }

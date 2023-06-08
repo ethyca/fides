@@ -203,26 +203,35 @@ describe("Consent settings", () => {
       cy.visit("/consent");
       cy.getByTestId("consent");
       cy.loadConfigFixture("config/config_consent.json").as("config");
+      cy.overrideSettings({ IS_OVERLAY_DISABLED: true });
+    });
+
+    it("populates its header and description from config", () => {
+      cy.getByTestId("consent-heading").contains("Manage your consent");
+      cy.getByTestId("consent-description").contains(
+        "Test your consent preferences"
+      );
+      cy.getByTestId("consent-description").contains("When you use our");
     });
 
     it("lets the user update their consent", () => {
       cy.getByTestId("consent");
 
-      cy.getByTestId(`consent-item-card-advertising.first_party`).within(() => {
+      cy.getByTestId(`consent-item-advertising.first_party`).within(() => {
         cy.contains("Test advertising.first_party");
         cy.getRadio().should("not.be.checked");
       });
-      cy.getByTestId(`consent-item-card-improve`).within(() => {
+      cy.getByTestId(`consent-item-improve`).within(() => {
         cy.getRadio().should("be.checked");
       });
 
       // Without GPC, this defaults to true.
-      cy.getByTestId(`consent-item-card-collect.gpc`).within(() => {
+      cy.getByTestId(`consent-item-collect.gpc`).within(() => {
         cy.getRadio().should("be.checked");
       });
 
       // Consent to an item that was opted-out.
-      cy.getByTestId(`consent-item-card-advertising`).within(() => {
+      cy.getByTestId(`consent-item-advertising`).within(() => {
         cy.getRadio().should("not.be.checked").check({ force: true });
       });
       cy.getByTestId("save-btn").click();
@@ -263,9 +272,6 @@ describe("Consent settings", () => {
 
       cy.setCookie("_ga", gaCookieValue);
       cy.setCookie("ljt_readerID", sovrnCookieValue);
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-
       cy.getByTestId("save-btn").click();
 
       cy.wait("@patchConsentPreferences").then((interception) => {
@@ -278,30 +284,32 @@ describe("Consent settings", () => {
 
     it("reflects their choices using fides.js", () => {
       // Opt-out of items default to opt-in.
-      cy.getByTestId(`consent-item-card-advertising`).within(() => {
+      cy.getByTestId(`consent-item-advertising`).within(() => {
         cy.getRadio("false").check({ force: true });
       });
-      cy.getByTestId(`consent-item-card-improve`).within(() => {
+      cy.getByTestId(`consent-item-improve`).within(() => {
         cy.getRadio("false").check({ force: true });
       });
       cy.getByTestId("save-btn").click();
 
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
-      cy.window().then((win) => {
-        // Now all of the cookie keys should be populated.
-        expect(win).to.have.nested.property("Fides.consent").that.eql({
-          data_sales: false,
-          tracking: false,
-          analytics: true,
-          gpc_test: true,
-        });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
+        cy.window().then((win) => {
+          // Now all of the cookie keys should be populated.
+          expect(win).to.have.nested.property("Fides.consent").that.eql({
+            data_sales: false,
+            tracking: false,
+            analytics: true,
+            gpc_test: true,
+          });
 
-        // GTM configuration
-        expect(win)
-          .to.have.nested.property("dataLayer")
-          .that.eql([
-            {
+          // GTM configuration
+          expect(win)
+            .to.have.nested.property("dataLayer[0]")
+            .that.eql({
+              event: "FidesInitialized",
               Fides: {
                 consent: {
                   data_sales: false,
@@ -310,16 +318,16 @@ describe("Consent settings", () => {
                   gpc_test: true,
                 },
               },
-            },
-          ]);
+            });
 
-        // Meta Pixel configuration
-        expect(win)
-          .to.have.nested.property("fbq.queue")
-          .that.eql([
-            ["consent", "revoke"],
-            ["dataProcessingOptions", ["LDU"], 1, 1000],
-          ]);
+          // Meta Pixel configuration
+          expect(win)
+            .to.have.nested.property("fbq.queue")
+            .that.eql([
+              ["consent", "revoke"],
+              ["dataProcessingOptions", ["LDU"], 1, 1000],
+            ]);
+        });
       });
     });
 
@@ -328,11 +336,12 @@ describe("Consent settings", () => {
         cy.visit("/consent?globalPrivacyControl=true");
         cy.getByTestId("consent");
         cy.loadConfigFixture("config/config_consent.json").as("config");
+        cy.overrideSettings({ IS_OVERLAY_DISABLED: true });
       });
 
       it("applies the GPC defaults", () => {
         cy.getByTestId("gpc-banner");
-        cy.getByTestId(`consent-item-card-collect.gpc`).within(() => {
+        cy.getByTestId(`consent-item-collect.gpc`).within(() => {
           cy.contains("GPC test");
           cy.getRadio().should("not.be.checked");
           cy.getByTestId("gpc-badge").should("contain", GpcStatus.APPLIED);
@@ -355,7 +364,7 @@ describe("Consent settings", () => {
 
       it("lets the user consent to override GPC", () => {
         cy.getByTestId("gpc-banner");
-        cy.getByTestId(`consent-item-card-collect.gpc`).within(() => {
+        cy.getByTestId(`consent-item-collect.gpc`).within(() => {
           cy.contains("GPC test");
           cy.getRadio().should("not.be.checked").check({ force: true });
           cy.getByTestId("gpc-badge").should("contain", GpcStatus.OVERRIDDEN);
@@ -381,19 +390,21 @@ describe("Consent settings", () => {
     it("reflects the defaults from config.json", () => {
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
-      cy.window().then((win) => {
-        // Before visiting the privacy center the consent object only has the default choices.
-        expect(win).to.have.nested.property("Fides.consent").that.eql({
-          data_sales: true,
-          tracking: true,
-          analytics: true,
-        });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
+        cy.window().then((win) => {
+          // Before visiting the privacy center the consent object only has the default choices.
+          expect(win).to.have.nested.property("Fides.consent").that.eql({
+            data_sales: true,
+            tracking: true,
+            analytics: true,
+          });
 
-        // GTM configuration
-        expect(win)
-          .to.have.nested.property("dataLayer")
-          .that.eql([
-            {
+          // GTM configuration
+          expect(win)
+            .to.have.nested.property("dataLayer[0]")
+            .that.eql({
+              event: "FidesInitialized",
               Fides: {
                 consent: {
                   data_sales: true,
@@ -401,16 +412,16 @@ describe("Consent settings", () => {
                   analytics: true,
                 },
               },
-            },
-          ]);
+            });
 
-        // Meta Pixel configuration
-        expect(win)
-          .to.have.nested.property("fbq.queue")
-          .that.eql([
-            ["consent", "grant"],
-            ["dataProcessingOptions", []],
-          ]);
+          // Meta Pixel configuration
+          expect(win)
+            .to.have.nested.property("fbq.queue")
+            .that.eql([
+              ["consent", "grant"],
+              ["dataProcessingOptions", []],
+            ]);
+        });
       });
     });
 
@@ -418,11 +429,14 @@ describe("Consent settings", () => {
       it("uses the globalPrivacyControl default", () => {
         cy.visit("/fides-js-demo.html?globalPrivacyControl=true");
         cy.get("#consent-json");
-        cy.window().then((win) => {
-          expect(win).to.have.nested.property("Fides.consent").that.eql({
-            data_sales: false,
-            tracking: false,
-            analytics: true,
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
+          cy.window().then((win) => {
+            expect(win).to.have.nested.property("Fides.consent").that.eql({
+              data_sales: false,
+              tracking: false,
+              analytics: true,
+            });
           });
         });
       });

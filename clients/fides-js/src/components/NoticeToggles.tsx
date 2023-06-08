@@ -1,5 +1,4 @@
-/** @jsx createElement */
-import { createElement } from "react";
+import { h } from "preact";
 
 import { PrivacyNotice } from "../lib/consent-types";
 import Toggle from "./Toggle";
@@ -13,7 +12,7 @@ const NoticeToggle = ({
 }: {
   notice: PrivacyNotice;
   checked: boolean;
-  onToggle: (noticeId: PrivacyNotice["id"]) => void;
+  onToggle: (noticeKey: PrivacyNotice["notice_key"]) => void;
 }) => {
   const {
     isOpen,
@@ -21,7 +20,7 @@ const NoticeToggle = ({
     getDisclosureProps,
     onToggle: toggleDescription,
   } = useDisclosure({
-    id: notice.id,
+    id: notice.notice_key,
   });
 
   const handleKeyDown = (event: KeyboardEvent) => {
@@ -33,63 +32,57 @@ const NoticeToggle = ({
   return (
     <div
       className={
-        isOpen ? "notice-toggle notice-toggle-expanded" : "notice-toggle"
+        isOpen
+          ? "fides-notice-toggle fides-notice-toggle-expanded"
+          : "fides-notice-toggle"
       }
     >
-      <div key={notice.id} className="notice-toggle-title">
+      <div key={notice.notice_key} className="fides-notice-toggle-title">
         <span
           role="button"
           tabIndex={0}
           onKeyDown={handleKeyDown}
-          // eslint-disable-next-line react/jsx-props-no-spreading
           {...getButtonProps()}
-          className="notice-toggle-trigger"
+          className="fides-notice-toggle-trigger"
         >
           {notice.name}
         </span>
         <Toggle
           name={notice.name || ""}
-          id={notice.id}
+          id={notice.notice_key}
           checked={checked}
           onChange={onToggle}
         />
       </div>
-      {/* eslint-disable-next-line react/jsx-props-no-spreading */}
       <p {...getDisclosureProps()}>{notice.description}</p>
     </div>
   );
 };
 
-/**
- * A React component (not Preact!!) to render notices and their toggles
- *
- * We use React instead of Preact so that this component can be shared with
- * the Privacy Center React app.
- */
 const NoticeToggles = ({
   notices,
-  enabledNoticeIds,
+  enabledNoticeKeys,
   onChange,
 }: {
   notices: PrivacyNotice[];
-  enabledNoticeIds: Array<PrivacyNotice["id"]>;
-  onChange: (ids: Array<PrivacyNotice["id"]>) => void;
+  enabledNoticeKeys: Array<PrivacyNotice["notice_key"]>;
+  onChange: (keys: Array<PrivacyNotice["notice_key"]>) => void;
 }) => {
-  const handleToggle = (noticeId: PrivacyNotice["id"]) => {
+  const handleToggle = (noticeKey: PrivacyNotice["notice_key"]) => {
     // Add the notice to list of enabled notices
-    if (enabledNoticeIds.indexOf(noticeId) === -1) {
-      onChange([...enabledNoticeIds, noticeId]);
+    if (enabledNoticeKeys.indexOf(noticeKey) === -1) {
+      onChange([...enabledNoticeKeys, noticeKey]);
     }
     // Remove the notice from the list of enabled notices
     else {
-      onChange(enabledNoticeIds.filter((n) => n !== noticeId));
+      onChange(enabledNoticeKeys.filter((n) => n !== noticeKey));
     }
   };
 
   return (
     <div>
       {notices.map((notice, idx) => {
-        const checked = enabledNoticeIds.indexOf(notice.id) !== -1;
+        const checked = enabledNoticeKeys.indexOf(notice.notice_key) !== -1;
         const isLast = idx === notices.length - 1;
         return (
           <div>

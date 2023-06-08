@@ -19,14 +19,22 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.14.1...main)
 
 ### Added
-
+- Privacy center can now render its consent values based on Privacy Notices and Privacy Experiences [#3411](https://github.com/ethyca/fides/pull/3411)
 - Add Google Tag Manager and Privacy Center ENV vars to sample app [#2949](https://github.com/ethyca/fides/pull/2949)
 - Add `notice_key` field to Privacy Notice UI form [#3403](https://github.com/ethyca/fides/pull/3403)
+- Add `identity` query param to the consent reporting API view [#3418](https://github.com/ethyca/fides/pull/3418)
+- Use `rollup-plugin-postcss` to bundle and optimize the `fides.js` components CSS [#3411](https://github.com/ethyca/fides/pull/3411)
+- Dispatch Fides.js lifecycle events on window (FidesInitialized, FidesUpdated) and cross-publish to Fides.gtm() integration [#3411](https://github.com/ethyca/fides/pull/3411)
 - Added the ability to use custom CAs with Redis via TLS [#3451](https://github.com/ethyca/fides/pull/3451)
 - Add default experience configs on startup [#3449](https://github.com/ethyca/fides/pull/3449)
 - Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401)
 - Add ability for users to pass in additional parameters for application database connection [#3450](https://github.com/ethyca/fides/pull/3450)
 - Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401/files)
+- Add ability for `fides-js` to make API calls to Fides [#3411](https://github.com/ethyca/fides/pull/3411)
+- `fides-js` banner is now responsive across different viewport widths [#3411](https://github.com/ethyca/fides/pull/3411)
+- Add ability to close `fides-js` banner and modal via a button or ESC [#3411](https://github.com/ethyca/fides/pull/3411)
+- Add ability to open the `fides-js` modal from a link on the host site [#3411](https://github.com/ethyca/fides/pull/3411)
+- GPC preferences are automatically applied via `fides-js` [#3411](https://github.com/ethyca/fides/pull/3411)
 
 ### Fixed
 
@@ -34,6 +42,8 @@ The types of changes are:
 - Fix overlay rendering issue by finding/creating a dedicated parent element for Preact [#3397](https://github.com/ethyca/fides/pull/3397)
 - Fix the sample app privacy center link to be configurable [#3409](https://github.com/ethyca/fides/pull/3409)
 - Fix CLI output showing a version warning for Snowflake [#3434](https://github.com/ethyca/fides/pull/3434)
+- Flaky custom field Cypress test on systems page [#3408](https://github.com/ethyca/fides/pull/3408)
+- Fix NextJS errors & warnings for Cookie House sample app [#3411](https://github.com/ethyca/fides/pull/3411)
 
 ### Changed
 
@@ -54,10 +64,6 @@ The types of changes are:
 - Add ability to pass ENV vars to both privacy center and sample app during `fides deploy` via `.env` [#2949](https://github.com/ethyca/fides/pull/2949)
 - Handle an edge case when generating tags that finds them out of sequence [#3405](https://github.com/ethyca/fides/pull/3405)
 - Add support for pushing `prerelease` and `rc` tagged images to Dockerhub [#3474](https://github.com/ethyca/fides/pull/3474)
-
-### Fixed
-
-- Flaky custom field Cypress test on systems page [#3408](https://github.com/ethyca/fides/pull/3408)
 
 ### Removed
 

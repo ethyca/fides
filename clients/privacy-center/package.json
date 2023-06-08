@@ -12,6 +12,7 @@
     "format:ci": "prettier --check .",
     "test": "jest --watchAll",
     "test:ci": "tsc --noEmit && jest",
+    "clean": "rm -rf .turbo node_modules",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "cy:start": "export NODE_ENV=test && npm run build && npm run start",

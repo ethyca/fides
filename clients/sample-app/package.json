@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "clean": "rm -rf node_modules",
     "dev": "next dev",
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
