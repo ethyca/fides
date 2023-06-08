@@ -151,14 +151,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "fides-external-dns-staging",
-        "pl-elastic-es-master",
-        "fides-redis",
-        "kube-dns",
-        "pl-elastic-es-http",
-        "datadog-cluster-agent"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -195,7 +187,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["fides-redis"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -233,7 +224,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["fidesctl-postgres"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -263,7 +253,6 @@
         { "fides_key": "hydra", "type": "system", "data_categories": null }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -295,7 +284,6 @@
         { "fides_key": "postgres", "type": "system", "data_categories": null }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["postgres"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -406,23 +394,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "vzmgr-service",
-        "api-service",
-        "fides-external-dns-staging",
-        "datadog-agent",
-        "cloud-proxy-service",
-        "kratos",
-        "vizier-cloud-connector-svc",
-        "fidesctl-000-fidesctl",
-        "hydra",
-        "elastic-webhook-server",
-        "aws-load-balancer-webhook-service",
-        "fidesctl-demo",
-        "scriptmgr-service",
-        "fidesops-plus-000-fidesops-plus",
-        "datadog-cluster-agent"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -484,7 +455,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["api-service", "elastic-webhook-server"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -538,7 +508,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",

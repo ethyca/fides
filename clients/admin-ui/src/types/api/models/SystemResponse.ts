@@ -74,10 +74,6 @@ export type SystemResponse = {
    */
   privacy_declarations: Array<PrivacyDeclarationResponse>;
   /**
-   * A list of fides keys to model dependencies.
-   */
-  system_dependencies?: Array<string>;
-  /**
    *
    * The contact details information model.
    *
