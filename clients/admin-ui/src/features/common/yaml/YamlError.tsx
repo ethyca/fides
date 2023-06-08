@@ -1,6 +1,5 @@
 import {
   Box,
-  Divider,
   ErrorWarningIcon,
   Heading,
   HStack,
@@ -18,9 +17,8 @@ type YamlErrorProps = {
 
 const YamlError: React.FC<YamlErrorProps> = ({ isEmptyState, yamlError }) => (
   <SlideFade in>
-    <Box w="fit-content">
-      <Divider color="gray.100" />
-      <HStack mt="16px">
+    <Box w="fit-content" bg="white" p={3} borderRadius={3}>
+      <HStack>
         <Heading as="h5" color="gray.700" size="xs">
           YAML
         </Heading>
