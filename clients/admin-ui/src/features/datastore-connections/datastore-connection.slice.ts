@@ -73,7 +73,7 @@ function mapFiltersToSearchParams({
     queryString += queryString ? `&disabled=${value}` : `disabled=${value}`;
   }
 
-  if (orphaned_from_system) {
+  if (typeof orphaned_from_system !== "undefined") {
     queryString += queryString
       ? `&orphaned_from_system=${orphaned_from_system}`
       : `orphaned_from_system=${orphaned_from_system}`;
@@ -85,6 +85,7 @@ const initialState: DatastoreConnectionParams = {
   search: "",
   page: 1,
   size: 25,
+  orphaned_from_system: true,
 };
 
 export type CreateSaasConnectionConfig = {
@@ -136,6 +137,11 @@ export const datastoreConnectionSlice = createSlice({
       page: initialState.page,
       size: action.payload,
     }),
+    setOrphanedFromSystem: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      page: initialState.page,
+      orphaned_from_system: action.payload,
+    }),
   },
 });
 
@@ -147,6 +153,7 @@ export const {
   setSystemType,
   setTestingStatus,
   setDisabledStatus,
+  setOrphanedFromSystem,
 } = datastoreConnectionSlice.actions;
 export const selectDatastoreConnectionFilters = (
   state: RootState
