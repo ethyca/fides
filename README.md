@@ -91,6 +91,8 @@ Join the conversation on:
 
 We welcome and encourage all types of contributions and improvements!  Please see our [contribution guide](https://docs.ethyca.com/fides/community/overview) to opening issues for bugs, new features, and security or experience enhancements.
 
+For a quickstart guide on developing features into Fides, please navigate to [the Fides Quickstart](https://ethyca.github.io/fides/dev/development/quickstart/)
+
 Read about the [Fides community](https://docs.ethyca.com/fides/community/hints_tips) or dive into the [contributor guides](https://docs.ethyca.com/fides/community/development/overview) for information about contributions, documentation, code style, testing and more. Ethyca is committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://docs.ethyca.com/fides/community/code_of_conduct).
 
 ## :balance_scale: License
