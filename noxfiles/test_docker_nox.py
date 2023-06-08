@@ -2,10 +2,10 @@ from unittest import mock
 
 import pytest
 
-from docker_nox import generate_multiplatform_buildx_command, push
+from docker_nox import generate_multiplatform_buildx_command, get_buildx_commands
 
 
-class TestBuildxPrivacyCenter:
+class TestGenerateMultiplatformBuilxCommand:
     def test_single_tag(self) -> None:
         actual_result = generate_multiplatform_buildx_command(["foo"], "prod")
         expected_result = (
@@ -60,13 +60,15 @@ class TestBuildxPrivacyCenter:
         )
         assert actual_result == expected_result
 
+
+class TestGetBuildxCommands:
     @pytest.mark.parametrize(
         "tag,expected_commands",
         [
             (
                 "dev",
                 [
-                    mock.call.run(
+                    (
                         "docker",
                         "buildx",
                         "build",
@@ -77,9 +79,8 @@ class TestBuildxPrivacyCenter:
                         ".",
                         "--tag",
                         "ethyca/fides:dev",
-                        external=True,
                     ),
-                    mock.call.run(
+                    (
                         "docker",
                         "buildx",
                         "build",
@@ -90,9 +91,8 @@ class TestBuildxPrivacyCenter:
                         ".",
                         "--tag",
                         "ethyca/fides-privacy-center:dev",
-                        external=True,
                     ),
-                    mock.call.run(
+                    (
                         "docker",
                         "buildx",
                         "build",
@@ -103,14 +103,13 @@ class TestBuildxPrivacyCenter:
                         "clients/sample-app",
                         "--tag",
                         "ethyca/fides-sample-app:dev",
-                        external=True,
                     ),
                 ],
             ),
             (
                 "prerelease",
                 [
-                    mock.call.run(
+                    (
                         "docker",
                         "buildx",
                         "build",
@@ -121,9 +120,8 @@ class TestBuildxPrivacyCenter:
                         ".",
                         "--tag",
                         "ethyca/fides:prerelease",
-                        external=True,
                     ),
-                    mock.call.run(
+                    (
                         "docker",
                         "buildx",
                         "build",
@@ -134,9 +132,8 @@ class TestBuildxPrivacyCenter:
                         ".",
                         "--tag",
                         "ethyca/fides-privacy-center:prerelease",
-                        external=True,
                     ),
-                    mock.call.run(
+                    (
                         "docker",
                         "buildx",
                         "build",
@@ -147,14 +144,13 @@ class TestBuildxPrivacyCenter:
                         "clients/sample-app",
                         "--tag",
                         "ethyca/fides-sample-app:prerelease",
-                        external=True,
                     ),
                 ],
             ),
             (
                 "rc",
                 [
-                    mock.call.run(
+                    (
                         "docker",
                         "buildx",
                         "build",
@@ -165,9 +161,8 @@ class TestBuildxPrivacyCenter:
                         ".",
                         "--tag",
                         "ethyca/fides:rc",
-                        external=True,
                     ),
-                    mock.call.run(
+                    (
                         "docker",
                         "buildx",
                         "build",
@@ -178,9 +173,8 @@ class TestBuildxPrivacyCenter:
                         ".",
                         "--tag",
                         "ethyca/fides-privacy-center:rc",
-                        external=True,
                     ),
-                    mock.call.run(
+                    (
                         "docker",
                         "buildx",
                         "build",
@@ -191,119 +185,119 @@ class TestBuildxPrivacyCenter:
                         "clients/sample-app",
                         "--tag",
                         "ethyca/fides-sample-app:rc",
-                        external=True,
-                    ),
-                ],
-            ),
-            (
-                "git-tag",
-                [
-                    mock.call.run(
-                        "docker",
-                        "buildx",
-                        "build",
-                        "--push",
-                        "--target=prod",
-                        "--platform",
-                        "linux/amd64,linux/arm64",
-                        ".",
-                        "--tag",
-                        "ethyca/fides:2.9.0a4",
-                        external=True,
-                    ),
-                    mock.call.run(
-                        "docker",
-                        "buildx",
-                        "build",
-                        "--push",
-                        "--target=prod_pc",
-                        "--platform",
-                        "linux/amd64,linux/arm64",
-                        ".",
-                        "--tag",
-                        "ethyca/fides-privacy-center:2.9.0a4",
-                        external=True,
-                    ),
-                    mock.call.run(
-                        "docker",
-                        "buildx",
-                        "build",
-                        "--push",
-                        "--target=prod",
-                        "--platform",
-                        "linux/amd64,linux/arm64",
-                        "clients/sample-app",
-                        "--tag",
-                        "ethyca/fides-sample-app:2.9.0a4",
-                        external=True,
-                    ),
-                ],
-            ),
-            (
-                "prod",
-                [
-                    mock.call.run(
-                        "docker",
-                        "buildx",
-                        "build",
-                        "--push",
-                        "--target=prod",
-                        "--platform",
-                        "linux/amd64,linux/arm64",
-                        ".",
-                        "--tag",
-                        "ethyca/fides:2.9.0",
-                        "--tag",
-                        "ethyca/fides:latest",
-                        external=True,
-                    ),
-                    mock.call.run(
-                        "docker",
-                        "buildx",
-                        "build",
-                        "--push",
-                        "--target=prod_pc",
-                        "--platform",
-                        "linux/amd64,linux/arm64",
-                        ".",
-                        "--tag",
-                        "ethyca/fides-privacy-center:2.9.0",
-                        "--tag",
-                        "ethyca/fides-privacy-center:latest",
-                        external=True,
-                    ),
-                    mock.call.run(
-                        "docker",
-                        "buildx",
-                        "build",
-                        "--push",
-                        "--target=prod",
-                        "--platform",
-                        "linux/amd64,linux/arm64",
-                        "clients/sample-app",
-                        "--tag",
-                        "ethyca/fides-sample-app:2.9.0",
-                        "--tag",
-                        "ethyca/fides-sample-app:latest",
-                        external=True,
                     ),
                 ],
             ),
         ],
     )
-    @mock.patch("docker_nox.get_current_tag")
-    @mock.patch("docker_nox.verify_git_tag")
-    @mock.patch("nox.Session.run")
-    def test_nox_push(
+    def test_standard_tags(
         self,
-        mock_session_run: mock.MagicMock,
-        mock_verify_git_tag: mock.MagicMock,
-        mock_get_current_tag: mock.MagicMock,
         tag,
         expected_commands,
     ):
+        buildx_commands = get_buildx_commands(tag)
+
+        assert buildx_commands == expected_commands
+
+    @mock.patch("docker_nox.verify_git_tag")
+    def test_git_tag_valid(
+        self,
+        mock_verify_git_tag,
+    ):
+        expected_result = [
+            (
+                "docker",
+                "buildx",
+                "build",
+                "--push",
+                "--target=prod",
+                "--platform",
+                "linux/amd64,linux/arm64",
+                ".",
+                "--tag",
+                "ethyca/fides:2.9.0a4",
+            ),
+            (
+                "docker",
+                "buildx",
+                "build",
+                "--push",
+                "--target=prod_pc",
+                "--platform",
+                "linux/amd64,linux/arm64",
+                ".",
+                "--tag",
+                "ethyca/fides-privacy-center:2.9.0a4",
+            ),
+            (
+                "docker",
+                "buildx",
+                "build",
+                "--push",
+                "--target=prod",
+                "--platform",
+                "linux/amd64,linux/arm64",
+                "clients/sample-app",
+                "--tag",
+                "ethyca/fides-sample-app:2.9.0a4",
+            ),
+        ]
         mock_verify_git_tag.return_value = "2.9.0a4"
+        buildx_commands = get_buildx_commands(mock_verify_git_tag)
+        assert buildx_commands == expected_result
+
+    @mock.patch("docker_nox.get_current_tag")
+    def test_standard_tags(
+        self,
+        mock_get_current_tag,
+    ):
+        expected_result = (
+            [
+                (
+                    "docker",
+                    "buildx",
+                    "build",
+                    "--push",
+                    "--target=prod",
+                    "--platform",
+                    "linux/amd64,linux/arm64",
+                    ".",
+                    "--tag",
+                    "ethyca/fides:2.9.0",
+                    "--tag",
+                    "ethyca/fides:latest",
+                ),
+                (
+                    "docker",
+                    "buildx",
+                    "build",
+                    "--push",
+                    "--target=prod_pc",
+                    "--platform",
+                    "linux/amd64,linux/arm64",
+                    ".",
+                    "--tag",
+                    "ethyca/fides-privacy-center:2.9.0",
+                    "--tag",
+                    "ethyca/fides-privacy-center:latest",
+                ),
+                (
+                    "docker",
+                    "buildx",
+                    "build",
+                    "--push",
+                    "--target=prod",
+                    "--platform",
+                    "linux/amd64,linux/arm64",
+                    "clients/sample-app",
+                    "--tag",
+                    "ethyca/fides-sample-app:2.9.0",
+                    "--tag",
+                    "ethyca/fides-sample-app:latest",
+                ),
+            ],
+        )
         mock_get_current_tag.return_value = "2.9.0"
-        push(mock_session_run, tag)
-        # first call to session.run is a separate call we're not evaluating here
-        assert mock_session_run.mock_calls[1:] == expected_commands
+        buildx_commands = get_buildx_commands(tag)
+
+        assert buildx_commands == expected_result

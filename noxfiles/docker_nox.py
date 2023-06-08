@@ -1,6 +1,6 @@
 """Contains the nox sessions for docker-related tasks."""
 import platform
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Callable
 from multiprocessing import Pool
 from subprocess import run
 from functools import partial
@@ -193,11 +193,9 @@ def session_runner(command: Tuple[str, ...], session: nox.Session) -> None:
     session.run(*command, external=True)
 
 
-def push_fides_images(session: nox.Session, tag_suffixes: List[str]) -> None:
+def get_buildx_commands(tag_suffixes: List[str]) -> List[Tuple[str, ...]]:
     """
     Build and publish each image to Dockerhub
-
-    Builds for multiple platforms and does so in parallel.
     """
     fides_tags = [f"{IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes]
     fides_buildx_command = generate_multiplatform_buildx_command(
@@ -226,9 +224,7 @@ def push_fides_images(session: nox.Session, tag_suffixes: List[str]) -> None:
         privacy_center_buildx_command,
         sample_app_buildx_command,
     ]
-    number_of_processes = len(buildx_commands)
-    with Pool(number_of_processes) as process_pool:
-        process_pool.map(partial_run, buildx_commands)
+    return buildx_commands
 
 
 @nox.session()
@@ -274,7 +270,7 @@ def push(session: nox.Session, tag: str) -> None:
     )
 
     # Use lambdas to force lazy evaluation
-    param_tag_map = {
+    param_tag_map: Dict[str, Callable] = {
         "dev": lambda: [DEV_TAG_SUFFIX],
         "prerelease": lambda: [PRERELEASE_TAG_SUFFIX],
         "rc": lambda: [RC_TAG_SUFFIX],
@@ -282,4 +278,10 @@ def push(session: nox.Session, tag: str) -> None:
         "prod": lambda: [get_current_tag(), "latest"],
     }
 
-    push_fides_images(session=session, tag_suffixes=param_tag_map[tag]())
+    # Get the list of Tupled commands to run
+    buildx_commands = get_buildx_commands(tag_suffixes=param_tag_map[tag]())
+
+    # Parallel build the various images
+    number_of_processes = len(buildx_commands)
+    with Pool(number_of_processes) as process_pool:
+        process_pool.map(partial_run, buildx_commands)
