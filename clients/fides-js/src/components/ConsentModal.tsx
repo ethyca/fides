@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import { h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { Attributes } from "../lib/a11y-dialog";

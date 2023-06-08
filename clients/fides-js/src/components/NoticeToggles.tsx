@@ -40,7 +40,6 @@ const NoticeToggle = ({
           role="button"
           tabIndex={0}
           onKeyDown={handleKeyDown}
-          // eslint-disable-next-line react/jsx-props-no-spreading
           {...getButtonProps()}
           className="notice-toggle-trigger"
         >
@@ -53,7 +52,6 @@ const NoticeToggle = ({
           onChange={onToggle}
         />
       </div>
-      {/* eslint-disable-next-line react/jsx-props-no-spreading */}
       <p {...getDisclosureProps()}>{notice.description}</p>
     </div>
   );

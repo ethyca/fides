@@ -1,4 +1,3 @@
-/* eslint-disable react/require-default-props */
 import { h } from "preact";
 
 const CloseButton = ({
