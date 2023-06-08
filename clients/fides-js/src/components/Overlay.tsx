@@ -20,6 +20,7 @@ import { FidesCookie } from "../lib/cookie";
 import "./fides.css";
 import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
+import { useHasMounted } from "../lib/hooks";
 
 export interface OverlayProps {
   options: FidesOptions;
@@ -36,6 +37,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   cookie,
   modalLinkEl,
 }) => {
+  const hasMounted = useHasMounted();
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
@@ -86,86 +88,78 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     [experience]
   );
 
+  const privacyNotices = useMemo(
+    () => experience.privacy_notices ?? [],
+    [experience.privacy_notices]
+  );
+
+  const handleUpdatePreferences = useCallback(
+    ({
+      noticeKeyToConsent,
+    }: {
+      noticeKeyToConsent: (noticeKey: string) => boolean;
+    }) => {
+      const consentPreferencesToSave = privacyNotices.map((notice) => {
+        const consent = noticeKeyToConsent(notice.notice_key);
+        const userPreference = transformConsentToFidesUserPreference(
+          consent,
+          notice.consent_mechanism
+        );
+        return new SaveConsentPreference(
+          notice.notice_key,
+          notice.privacy_notice_history_id,
+          userPreference
+        );
+      });
+      updateConsentPreferences({
+        consentPreferencesToSave,
+        experienceId: experience.id,
+        fidesApiUrl: options.fidesApiUrl,
+        consentMethod: ConsentMethod.button,
+        userLocationString: fidesRegionString,
+        cookie,
+      });
+    },
+    [
+      privacyNotices,
+      cookie,
+      fidesRegionString,
+      experience.id,
+      options.fidesApiUrl,
+    ]
+  );
+
+  if (!hasMounted) {
+    return null;
+  }
+
   if (!experience.experience_config) {
     debugLog(options.debug, "No experience config found");
     return null;
   }
 
-  const privacyNotices = experience.privacy_notices ?? [];
-
   const onAcceptAll = () => {
-    const consentPreferencesToSave: Array<SaveConsentPreference> = [];
-    privacyNotices.forEach((notice) => {
-      consentPreferencesToSave.push(
-        new SaveConsentPreference(
-          notice.notice_key,
-          notice.privacy_notice_history_id,
-          transformConsentToFidesUserPreference(true, notice.consent_mechanism)
-        )
-      );
-    });
-    updateConsentPreferences({
-      consentPreferencesToSave,
-      experienceId: experience.id,
-      fidesApiUrl: options.fidesApiUrl,
-      consentMethod: ConsentMethod.button,
-      userLocationString: fidesRegionString,
-      cookie,
-    });
+    handleUpdatePreferences({ noticeKeyToConsent: () => true });
     setBannerIsOpen(false);
   };
 
   const onRejectAll = () => {
-    const consentPreferencesToSave: Array<SaveConsentPreference> = [];
-    privacyNotices.forEach((notice) => {
-      consentPreferencesToSave.push(
-        new SaveConsentPreference(
-          notice.notice_key,
-          notice.privacy_notice_history_id,
-          transformConsentToFidesUserPreference(false, notice.consent_mechanism)
-        )
-      );
-    });
-    updateConsentPreferences({
-      consentPreferencesToSave,
-      experienceId: experience.id,
-      fidesApiUrl: options.fidesApiUrl,
-      consentMethod: ConsentMethod.button,
-      userLocationString: fidesRegionString,
-      cookie,
-    });
-    setBannerIsOpen(false);
-  };
-
-  const handleManagePreferencesClick = (): void => {
-    handleOpenModal();
+    handleUpdatePreferences({ noticeKeyToConsent: () => false });
     setBannerIsOpen(false);
   };
 
   const onSavePreferences = (
     enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>
   ) => {
-    const consentPreferencesToSave: Array<SaveConsentPreference> = [];
-    privacyNotices.forEach((notice) => {
-      consentPreferencesToSave.push(
-        new SaveConsentPreference(
-          notice.notice_key,
-          notice.privacy_notice_history_id,
-          transformConsentToFidesUserPreference(
-            enabledPrivacyNoticeKeys.includes(notice.notice_key),
-            notice.consent_mechanism
-          )
-        )
-      );
+    handleUpdatePreferences({
+      noticeKeyToConsent: (noticeKey) =>
+        enabledPrivacyNoticeKeys.includes(noticeKey),
     });
-    updateConsentPreferences({
-      consentPreferencesToSave,
-      experienceId: experience.id,
-      fidesApiUrl: options.fidesApiUrl,
-      consentMethod: ConsentMethod.button,
-      userLocationString: fidesRegionString,
-      cookie,
-    });
+  };
+
+  const handleManagePreferencesClick = (): void => {
+    handleOpenModal();
+    setBannerIsOpen(false);
   };
 
   return (

@@ -31,6 +31,11 @@ The types of changes are:
 - Load default privacy notices on startup [#3401](https://github.com/ethyca/fides/pull/3401/files)
 - Add privacy centre button text customisations [#3432](https://github.com/ethyca/fides/pull/3432)
 - Add privacy centre favicon customisation [#3432](https://github.com/ethyca/fides/pull/3432)
+- Add ability for `fides-js` to make API calls to Fides [#3361](https://github.com/ethyca/fides/pull/3361)
+- `fides-js` banner is now responsive across different viewport widths [#3444](https://github.com/ethyca/fides/issues/3444)
+- Add ability to close `fides-js` banner and modal via a button or ESC [#3480](https://github.com/ethyca/fides/pull/3480)
+- Add ability to open the `fides-js` modal from a link on the host site [#3467](https://github.com/ethyca/fides/pull/3467)
+- GPC preferences are automatically applied via `fides-js` [#3420](https://github.com/ethyca/fides/pull/3420)
 
 ### Fixed
 
@@ -79,7 +84,6 @@ The types of changes are:
 - Add ability for `fides-js` to fetch its own geolocation [#3356](https://github.com/ethyca/fides/pull/3356)
 - Add ability to select different locations in the "Cookie House" sample app [#3362](https://github.com/ethyca/fides/pull/3362)
 - Added optional logging of resource changes on the server [#3331](https://github.com/ethyca/fides/pull/3331)
-- Add ability for `fides-js` to make API calls to Fides [#3361](https://github.com/ethyca/fides/pull/3361)
 
 ### Fixed
 
