@@ -209,16 +209,6 @@ def patch_connection_configs(
         if system:
             config_dict["system_id"] = system.id
 
-        if existing_connection_config:
-            config_dict = {
-                key: value
-                for key, value in {
-                    **existing_connection_config.__dict__,
-                    **config.dict(),
-                }.items()
-                if isinstance(value, bool) or value
-            }
-
         try:
             connection_config = ConnectionConfig.create_or_update(db, data=config_dict)
             created_or_updated.append(
