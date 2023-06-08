@@ -33,6 +33,7 @@ import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
+// DEFER(fides#3505): Use the fides-js version of this function
 const resolveConsentValue = (
   notice: PrivacyNoticeResponseWithUserPreferences,
   context: ConsentContext
