@@ -2,7 +2,15 @@ from unittest import mock
 
 import pytest
 
-from docker_nox import generate_multiplatform_buildx_command, get_buildx_commands
+from docker_nox import (
+    generate_multiplatform_buildx_command,
+    get_buildx_commands,
+)
+from constants_nox import (
+    DEV_TAG_SUFFIX,
+    PRERELEASE_TAG_SUFFIX,
+    RC_TAG_SUFFIX,
+)
 
 
 class TestGenerateMultiplatformBuilxCommand:
@@ -66,7 +74,7 @@ class TestGetBuildxCommands:
         "tag,expected_commands",
         [
             (
-                "dev",
+                DEV_TAG_SUFFIX,
                 [
                     (
                         "docker",
@@ -107,7 +115,7 @@ class TestGetBuildxCommands:
                 ],
             ),
             (
-                "prerelease",
+                PRERELEASE_TAG_SUFFIX,
                 [
                     (
                         "docker",
@@ -148,7 +156,7 @@ class TestGetBuildxCommands:
                 ],
             ),
             (
-                "rc",
+                RC_TAG_SUFFIX,
                 [
                     (
                         "docker",
@@ -194,16 +202,14 @@ class TestGetBuildxCommands:
         self,
         tag,
         expected_commands,
-    ):
-        buildx_commands = get_buildx_commands(tag)
+    ) -> None:
+        buildx_commands = get_buildx_commands([tag])
 
         assert buildx_commands == expected_commands
 
-    @mock.patch("docker_nox.verify_git_tag")
-    def test_git_tag_valid(
+    def test_git_tag_tag(
         self,
-        mock_verify_git_tag,
-    ):
+    ) -> None:
         expected_result = [
             (
                 "docker",
@@ -242,62 +248,55 @@ class TestGetBuildxCommands:
                 "ethyca/fides-sample-app:2.9.0a4",
             ),
         ]
-        mock_verify_git_tag.return_value = "2.9.0a4"
-        buildx_commands = get_buildx_commands(mock_verify_git_tag)
+        buildx_commands = get_buildx_commands(["2.9.0a4"])
         assert buildx_commands == expected_result
 
-    @mock.patch("docker_nox.get_current_tag")
-    def test_standard_tags(
+    def test_prod_tag(
         self,
-        mock_get_current_tag,
-    ):
-        expected_result = (
-            [
-                (
-                    "docker",
-                    "buildx",
-                    "build",
-                    "--push",
-                    "--target=prod",
-                    "--platform",
-                    "linux/amd64,linux/arm64",
-                    ".",
-                    "--tag",
-                    "ethyca/fides:2.9.0",
-                    "--tag",
-                    "ethyca/fides:latest",
-                ),
-                (
-                    "docker",
-                    "buildx",
-                    "build",
-                    "--push",
-                    "--target=prod_pc",
-                    "--platform",
-                    "linux/amd64,linux/arm64",
-                    ".",
-                    "--tag",
-                    "ethyca/fides-privacy-center:2.9.0",
-                    "--tag",
-                    "ethyca/fides-privacy-center:latest",
-                ),
-                (
-                    "docker",
-                    "buildx",
-                    "build",
-                    "--push",
-                    "--target=prod",
-                    "--platform",
-                    "linux/amd64,linux/arm64",
-                    "clients/sample-app",
-                    "--tag",
-                    "ethyca/fides-sample-app:2.9.0",
-                    "--tag",
-                    "ethyca/fides-sample-app:latest",
-                ),
-            ],
-        )
-        mock_get_current_tag.return_value = "2.9.0"
-        buildx_commands = get_buildx_commands(tag)
-
+    ) -> None:
+        expected_result = [
+            (
+                "docker",
+                "buildx",
+                "build",
+                "--push",
+                "--target=prod",
+                "--platform",
+                "linux/amd64,linux/arm64",
+                ".",
+                "--tag",
+                "ethyca/fides:2.9.0",
+                "--tag",
+                "ethyca/fides:latest",
+            ),
+            (
+                "docker",
+                "buildx",
+                "build",
+                "--push",
+                "--target=prod_pc",
+                "--platform",
+                "linux/amd64,linux/arm64",
+                ".",
+                "--tag",
+                "ethyca/fides-privacy-center:2.9.0",
+                "--tag",
+                "ethyca/fides-privacy-center:latest",
+            ),
+            (
+                "docker",
+                "buildx",
+                "build",
+                "--push",
+                "--target=prod",
+                "--platform",
+                "linux/amd64,linux/arm64",
+                "clients/sample-app",
+                "--tag",
+                "ethyca/fides-sample-app:2.9.0",
+                "--tag",
+                "ethyca/fides-sample-app:latest",
+            ),
+        ]
+        buildx_commands = get_buildx_commands(["2.9.0", "latest"])
         assert buildx_commands == expected_result
