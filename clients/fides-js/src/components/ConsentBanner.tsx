@@ -1,7 +1,6 @@
 import { h, FunctionComponent } from "preact";
 import { ButtonType, ExperienceConfig } from "../lib/consent-types";
 import Button from "./Button";
-import { useHasMounted } from "../lib/hooks";
 import CloseButton from "./CloseButton";
 
 interface BannerProps {
@@ -21,7 +20,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onClose,
   bannerIsOpen,
 }) => {
-  const hasMounted = useHasMounted();
   const {
     title = "Manage your consent",
     description = "This website processes your data respectfully, so we require your consent to use cookies.",
@@ -30,10 +28,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     privacy_preferences_link_label:
       privacyPreferencesLabel = "Manage preferences",
   } = experience;
-
-  if (!hasMounted) {
-    return null;
-  }
 
   return (
     <div

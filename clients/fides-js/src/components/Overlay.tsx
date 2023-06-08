@@ -20,6 +20,7 @@ import { FidesCookie } from "../lib/cookie";
 import "./fides.css";
 import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
+import { useHasMounted } from "../lib/hooks";
 
 export interface OverlayProps {
   options: FidesOptions;
@@ -36,6 +37,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   cookie,
   modalLinkEl,
 }) => {
+  const hasMounted = useHasMounted();
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
@@ -85,6 +87,10 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     () => experience.show_banner && hasActionNeededNotices(experience),
     [experience]
   );
+
+  if (!hasMounted) {
+    return null;
+  }
 
   if (!experience.experience_config) {
     debugLog(options.debug, "No experience config found");
