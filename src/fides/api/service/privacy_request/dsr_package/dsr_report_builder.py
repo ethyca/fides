@@ -71,7 +71,9 @@ class DsrReportBuilder:
             "request": self.request_data,
         }
         report_data.update(self.template_data)
-        template = self.template_loader.get_template(template_path)
+        template = self.template_loader.from_string(
+            Path(os.path.join(DSR_DIRECTORY, template_path)).read_text(encoding="utf-8")
+        )
         return template.render(report_data)
 
     def add_file(self, filename: str, contents: str) -> None:
