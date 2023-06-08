@@ -126,24 +126,3 @@ export const getGpcStatusFromNotice = ({
 
   return GpcStatus.OVERRIDDEN;
 };
-
-/**
- * Convert a user consent preference into true/false
- */
-export const transformUserPreferenceToBoolean = (
-  preference: UserConsentPreference | undefined
-) => {
-  if (!preference) {
-    return false;
-  }
-  if (preference === UserConsentPreference.OPT_OUT) {
-    return false;
-  }
-  if (preference === UserConsentPreference.OPT_IN) {
-    return true;
-  }
-  if (preference === UserConsentPreference.ACKNOWLEDGE) {
-    return true;
-  }
-  return false;
-};
