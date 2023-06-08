@@ -1183,7 +1183,7 @@ describe("Consent banner", () => {
               tracking: false,
               analytics: true,
             },
-          })
+          });
         cy.get("@FidesUpdated")
           .its("secondCall.args.0.detail")
           .should("deep.equal", {
@@ -1248,7 +1248,7 @@ describe("Consent banner", () => {
               tracking: false,
               analytics: true,
             },
-          })
+          });
         cy.get("@FidesUpdated")
           .its("secondCall.args.0.detail")
           .should("deep.equal", {
@@ -1313,7 +1313,7 @@ describe("Consent banner", () => {
               tracking: false,
               analytics: true,
             },
-          })
+          });
         cy.get("@FidesUpdated")
           .its("secondCall.args.0.detail")
           .should("deep.equal", {
@@ -1378,7 +1378,7 @@ describe("Consent banner", () => {
               tracking: false,
               analytics: true,
             },
-          })
+          });
         cy.get("@FidesUpdated")
           .its("secondCall.args.0.detail")
           .should("deep.equal", {
