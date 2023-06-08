@@ -68,6 +68,41 @@ async def test_kustomer_access_request_task_with_email(
 @pytest.mark.integration_saas
 @pytest.mark.integration_kustomer
 @pytest.mark.asyncio
+async def test_kustomer_access_request_task_with_non_existent_email(
+    db,
+    policy,
+    kustomer_connection_config,
+    kustomer_dataset_config,
+    kustomer_non_existent_identity_email,
+) -> None:
+    """Access request that returns a 404 but succeeds"""
+
+    privacy_request = PrivacyRequest(
+        id=f"test_kustomer_access_request_task_{random.randint(0, 1000)}"
+    )
+    identity = Identity(**{"email": kustomer_non_existent_identity_email})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = kustomer_connection_config.get_saas_config().fides_key
+    merged_graph = kustomer_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    v = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [kustomer_connection_config],
+        {"email": kustomer_non_existent_identity_email},
+        db,
+    )
+
+    # verify the request succeeded but no information was returned
+    assert len(v[f"{dataset_name}:customer"]) == 0
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_kustomer
+@pytest.mark.asyncio
 async def test_kustomer_access_request_task_with_phone_number(
     db,
     policy,
