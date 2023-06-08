@@ -1242,7 +1242,7 @@ describe("Consent banner", () => {
           });
         cy.get("@FidesUpdated")
           .should("have.been.calledTwice")
-          .its("secondCall.args.0.detail")
+          .its("firstCall.args.0.detail")
           .should("deep.equal", {
             consent: {
               data_sales: false,
