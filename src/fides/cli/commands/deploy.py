@@ -1,4 +1,4 @@
-"""Contains all of the Utility-type CLI commands for fides."""
+"""Contains all of the deploy group of CLI commands for fides."""
 from os import environ
 from subprocess import CalledProcessError
 from typing import Optional

@@ -1,4 +1,4 @@
-"""Contains all of the CRUD-type CLI commands for fides."""
+"""Contains all of the ungrouped CLI commands for fides."""
 from datetime import datetime, timezone
 from typing import Optional
 
