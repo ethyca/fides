@@ -42,6 +42,7 @@ The types of changes are:
 ### Changed
 
 - Enabled Privacy Experience beta flag [#3364](https://github.com/ethyca/fides/pull/3364)
+- Reorganize CLI Command Source Files [#3491](https://github.com/ethyca/fides/pull/3491)
 - Removed ExperienceConfig.delivery_mechanism constraint [#3387](https://github.com/ethyca/fides/pull/3387)
 - Updated privacy experience UI forms to reflect updated experience config fields [#3402](https://github.com/ethyca/fides/pull/3402)
 - Use a venv in the Dockerfile for installing Python deps [#3452](https://github.com/ethyca/fides/pull/3452)
@@ -61,6 +62,10 @@ The types of changes are:
 
 - Flaky custom field Cypress test on systems page [#3408](https://github.com/ethyca/fides/pull/3408)
 - Fix NextJS errors & warnings for Cookie House sample app [#3447](https://github.com/ethyca/fides/pull/3447)
+
+### Removed
+
+- Removed the deprecated `system_dependencies` from `System` resources, migrating to `egress` [#3285](https://github.com/ethyca/fides/pull/3285)
 
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
