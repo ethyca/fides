@@ -1108,9 +1108,6 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: enabled_actions
-      data_categories: [system.operations]
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: system_id
       description: 'The identifier of the system to locate this data within'
       data_categories: [system.operations]
