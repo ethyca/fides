@@ -9,10 +9,7 @@ import {
   LegacyConsentConfig,
   ConsentConfig,
 } from "~/types/config";
-import {
-  PrivacyNoticeResponseWithUserPreferences,
-  UserConsentPreference,
-} from "~/types/api";
+import { PrivacyNoticeResponseWithUserPreferences } from "~/types/api";
 import { FidesKeyToConsent, GpcStatus } from "./types";
 
 /**
