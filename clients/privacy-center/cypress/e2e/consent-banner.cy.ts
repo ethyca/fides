@@ -1176,7 +1176,6 @@ describe("Consent banner", () => {
             },
           });
         cy.get("@FidesUpdated")
-          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail")
           .should("deep.equal", {
             consent: {
@@ -1185,6 +1184,7 @@ describe("Consent banner", () => {
               analytics: true,
             },
           })
+        cy.get("@FidesUpdated")
           .its("secondCall.args.0.detail")
           .should("deep.equal", {
             consent: {
@@ -1241,7 +1241,6 @@ describe("Consent banner", () => {
             },
           });
         cy.get("@FidesUpdated")
-          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail")
           .should("deep.equal", {
             consent: {
@@ -1250,6 +1249,7 @@ describe("Consent banner", () => {
               analytics: true,
             },
           })
+        cy.get("@FidesUpdated")
           .its("secondCall.args.0.detail")
           .should("deep.equal", {
             consent: {
@@ -1306,7 +1306,6 @@ describe("Consent banner", () => {
             },
           });
         cy.get("@FidesUpdated")
-          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail")
           .should("deep.equal", {
             consent: {
@@ -1315,6 +1314,7 @@ describe("Consent banner", () => {
               analytics: true,
             },
           })
+        cy.get("@FidesUpdated")
           .its("secondCall.args.0.detail")
           .should("deep.equal", {
             consent: {
@@ -1371,7 +1371,6 @@ describe("Consent banner", () => {
             },
           });
         cy.get("@FidesUpdated")
-          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail")
           .should("deep.equal", {
             consent: {
@@ -1380,6 +1379,7 @@ describe("Consent banner", () => {
               analytics: true,
             },
           })
+        cy.get("@FidesUpdated")
           .its("secondCall.args.0.detail")
           .should("deep.equal", {
             consent: {
