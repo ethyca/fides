@@ -1,5 +1,3 @@
-from unittest import mock
-
 import pytest
 
 from docker_nox import (
@@ -71,10 +69,10 @@ class TestGenerateMultiplatformBuilxCommand:
 
 class TestGetBuildxCommands:
     @pytest.mark.parametrize(
-        "tag,expected_commands",
+        "tags,expected_commands",
         [
             (
-                DEV_TAG_SUFFIX,
+                [DEV_TAG_SUFFIX],
                 [
                     (
                         "docker",
@@ -115,7 +113,7 @@ class TestGetBuildxCommands:
                 ],
             ),
             (
-                PRERELEASE_TAG_SUFFIX,
+                [PRERELEASE_TAG_SUFFIX],
                 [
                     (
                         "docker",
@@ -156,7 +154,7 @@ class TestGetBuildxCommands:
                 ],
             ),
             (
-                RC_TAG_SUFFIX,
+                [RC_TAG_SUFFIX],
                 [
                     (
                         "docker",
@@ -196,107 +194,101 @@ class TestGetBuildxCommands:
                     ),
                 ],
             ),
+            (
+                ["2.9.0a4"],
+                [
+                    (
+                        "docker",
+                        "buildx",
+                        "build",
+                        "--push",
+                        "--target=prod",
+                        "--platform",
+                        "linux/amd64,linux/arm64",
+                        ".",
+                        "--tag",
+                        "ethyca/fides:2.9.0a4",
+                    ),
+                    (
+                        "docker",
+                        "buildx",
+                        "build",
+                        "--push",
+                        "--target=prod_pc",
+                        "--platform",
+                        "linux/amd64,linux/arm64",
+                        ".",
+                        "--tag",
+                        "ethyca/fides-privacy-center:2.9.0a4",
+                    ),
+                    (
+                        "docker",
+                        "buildx",
+                        "build",
+                        "--push",
+                        "--target=prod",
+                        "--platform",
+                        "linux/amd64,linux/arm64",
+                        "clients/sample-app",
+                        "--tag",
+                        "ethyca/fides-sample-app:2.9.0a4",
+                    ),
+                ],
+            ),
+            (
+                ["2.9.0", "latest"],
+                [
+                    (
+                        "docker",
+                        "buildx",
+                        "build",
+                        "--push",
+                        "--target=prod",
+                        "--platform",
+                        "linux/amd64,linux/arm64",
+                        ".",
+                        "--tag",
+                        "ethyca/fides:2.9.0",
+                        "--tag",
+                        "ethyca/fides:latest",
+                    ),
+                    (
+                        "docker",
+                        "buildx",
+                        "build",
+                        "--push",
+                        "--target=prod_pc",
+                        "--platform",
+                        "linux/amd64,linux/arm64",
+                        ".",
+                        "--tag",
+                        "ethyca/fides-privacy-center:2.9.0",
+                        "--tag",
+                        "ethyca/fides-privacy-center:latest",
+                    ),
+                    (
+                        "docker",
+                        "buildx",
+                        "build",
+                        "--push",
+                        "--target=prod",
+                        "--platform",
+                        "linux/amd64,linux/arm64",
+                        "clients/sample-app",
+                        "--tag",
+                        "ethyca/fides-sample-app:2.9.0",
+                        "--tag",
+                        "ethyca/fides-sample-app:latest",
+                    ),
+                ],
+            ),
         ],
     )
-    def test_standard_tags(
+    def test_tags(
         self,
-        tag,
+        tags,
         expected_commands,
     ) -> None:
-        buildx_commands = get_buildx_commands([tag])
+        buildx_commands = get_buildx_commands(tags)
 
         assert buildx_commands == expected_commands
-
-    def test_git_tag_tag(
-        self,
-    ) -> None:
-        expected_result = [
-            (
-                "docker",
-                "buildx",
-                "build",
-                "--push",
-                "--target=prod",
-                "--platform",
-                "linux/amd64,linux/arm64",
-                ".",
-                "--tag",
-                "ethyca/fides:2.9.0a4",
-            ),
-            (
-                "docker",
-                "buildx",
-                "build",
-                "--push",
-                "--target=prod_pc",
-                "--platform",
-                "linux/amd64,linux/arm64",
-                ".",
-                "--tag",
-                "ethyca/fides-privacy-center:2.9.0a4",
-            ),
-            (
-                "docker",
-                "buildx",
-                "build",
-                "--push",
-                "--target=prod",
-                "--platform",
-                "linux/amd64,linux/arm64",
-                "clients/sample-app",
-                "--tag",
-                "ethyca/fides-sample-app:2.9.0a4",
-            ),
-        ]
-        buildx_commands = get_buildx_commands(["2.9.0a4"])
-        assert buildx_commands == expected_result
-
-    def test_prod_tag(
-        self,
-    ) -> None:
-        expected_result = [
-            (
-                "docker",
-                "buildx",
-                "build",
-                "--push",
-                "--target=prod",
-                "--platform",
-                "linux/amd64,linux/arm64",
-                ".",
-                "--tag",
-                "ethyca/fides:2.9.0",
-                "--tag",
-                "ethyca/fides:latest",
-            ),
-            (
-                "docker",
-                "buildx",
-                "build",
-                "--push",
-                "--target=prod_pc",
-                "--platform",
-                "linux/amd64,linux/arm64",
-                ".",
-                "--tag",
-                "ethyca/fides-privacy-center:2.9.0",
-                "--tag",
-                "ethyca/fides-privacy-center:latest",
-            ),
-            (
-                "docker",
-                "buildx",
-                "build",
-                "--push",
-                "--target=prod",
-                "--platform",
-                "linux/amd64,linux/arm64",
-                "clients/sample-app",
-                "--tag",
-                "ethyca/fides-sample-app:2.9.0",
-                "--tag",
-                "ethyca/fides-sample-app:latest",
-            ),
-        ]
-        buildx_commands = get_buildx_commands(["2.9.0", "latest"])
-        assert buildx_commands == expected_result
