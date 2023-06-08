@@ -215,7 +215,7 @@ button.fides-banner-button.fides-banner-button-tertiary {
 }
 
 /** Modal */
-div.modal-content {
+div.fides-modal-content {
   font-family: var(--fides-overlay-font-family);
   font-size: var(--fides-overlay-font-size-body);
   color: var(--fides-overlay-body-font-color);
@@ -234,8 +234,8 @@ div.modal-content {
   transform: translate(-50%, -50%);
 }
 
-.modal-container,
-.modal-overlay {
+.fides-modal-container,
+.fides-modal-overlay {
   position: fixed;
   top: 0;
   right: 0;
@@ -243,16 +243,16 @@ div.modal-content {
   left: 0;
 }
 
-.modal-container {
+.fides-modal-container {
   z-index: 2;
   display: flex;
 }
 
-.modal-container[aria-hidden="true"] {
+.fides-modal-container[aria-hidden="true"] {
   display: none;
 }
 
-div#fides-modal .modal-header {
+div#fides-modal .fides-modal-header {
   text-align: center;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
@@ -261,11 +261,11 @@ div#fides-modal .modal-header {
   color: var(--fides-overlay-title-font-color);
 }
 
-div#fides-modal .modal-description {
+div#fides-modal .fides-modal-description {
   margin: 1em 0 1em 0;
 }
 
-div#fides-modal .modal-button-group {
+div#fides-modal .fides-modal-button-group {
   display: flex;
 }
 
@@ -283,11 +283,11 @@ div#fides-modal .modal-button-group {
   background: var(--fides-overlay-hover-color);
 }
 
-.modal-notices {
+.fides-modal-notices {
   margin-bottom: 1em;
 }
 
-.modal-privacy-policy {
+.fides-modal-privacy-policy {
   display: block;
   text-align: center;
   margin-top: 1.5em;
@@ -297,12 +297,12 @@ div#fides-modal .modal-button-group {
 /** Toggle, adapted from https://kittygiraudel.com/2021/04/05/an-accessible-toggle/ */
 
 @media (prefers-reduced-motion: reduce) {
-  .toggle-display {
+  .fides-toggle-display {
     transition-duration: 0ms;
   }
 }
 
-.toggle {
+.fides-toggle {
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
@@ -310,7 +310,7 @@ div#fides-modal .modal-button-group {
   gap: 1ch;
 }
 
-.toggle .toggle-input {
+.fides-toggle .fides-toggle-input {
   position: absolute;
   opacity: 0;
   width: 100%;
@@ -319,7 +319,7 @@ div#fides-modal .modal-button-group {
   cursor: pointer;
 }
 
-.toggle .toggle-display {
+.fides-toggle .fides-toggle-display {
   --offset: 0.1em;
   --diameter: 1em;
 
@@ -337,7 +337,7 @@ div#fides-modal .modal-button-group {
   transition: 250ms;
 }
 
-.toggle .toggle-display::before {
+.fides-toggle .fides-toggle-display::before {
   content: "";
 
   width: var(--diameter);
@@ -357,37 +357,39 @@ div#fides-modal .modal-button-group {
 }
 
 /* Checked/unchecked states */
-.toggle .toggle-input:checked + .toggle-display {
+.fides-toggle .fides-toggle-input:checked + .fides-toggle-display {
   background-color: var(--fides-overlay-primary-active-color);
 }
-.toggle .toggle-input:checked + .toggle-display::before {
+.fides-toggle .fides-toggle-input:checked + .fides-toggle-display::before {
   transform: translate(100%, -50%);
 }
 
 /* Disabled state */
-.toggle .toggle-input:disabled {
+.fides-toggle .fides-toggle-input:disabled {
   cursor: not-allowed;
 }
-.toggle .toggle-input:disabled + .toggle-display {
+.fides-toggle .fides-toggle-input:disabled + .fides-toggle-display {
   background-color: var(--fides-overlay-disabled-color);
 }
-.toggle .toggle-input:disabled:checked + .toggle-display {
+.fides-toggle .fides-toggle-input:disabled:checked + .fides-toggle-display {
   background-color: var(--fides-overlay-primary-active-disabled-color);
 }
 
 /* Focus ring when using keyboard */
-.toggle .toggle-input:focus + .toggle-display {
+.fides-toggle .fides-toggle-input:focus + .fides-toggle-display {
   /* Firefox only has Highlight, not -webkit-focus-ring-color */
   outline: 1px auto Highlight;
   outline: 1px auto -webkit-focus-ring-color;
 }
-.toggle .toggle-input:focus:not(:focus-visible) + .toggle-display {
+.fides-toggle
+  .fides-toggle-input:focus:not(:focus-visible)
+  + .fides-toggle-display {
   outline: 0;
 }
 
 /* Divider */
 
-.divider {
+.fides-divider {
   border-width: 0px 0px 1px;
   border-color: var(--fides-overlay-row-divider-color);
   margin: 0;
@@ -395,32 +397,32 @@ div#fides-modal .modal-button-group {
 
 /* Disclosure */
 
-.disclosure-hidden {
+.fides-disclosure-hidden {
   visibility: hidden;
   height: 0px;
   margin-top: 0px;
   margin-bottom: 0px;
 }
 
-.notice-toggle .notice-toggle-title {
+.fides-notice-toggle .fides-notice-toggle-title {
   padding: 0.5em;
   display: flex;
   justify-content: space-between;
 }
 
-.notice-toggle .notice-toggle-trigger {
+.fides-notice-toggle .fides-notice-toggle-trigger {
   width: 100%;
 }
 
-.notice-toggle .notice-toggle-title:hover {
+.fides-notice-toggle .fides-notice-toggle-title:hover {
   cursor: pointer;
   background-color: var(--fides-overlay-row-hover-color);
 }
 
-.notice-toggle .disclosure-visible {
+.fides-notice-toggle .disclosure-visible {
   padding-left: 0.5em;
 }
 
-.notice-toggle-expanded {
+.fides-notice-toggle-expanded {
   background-color: var(--fides-overlay-row-hover-color);
 }

@@ -58,24 +58,39 @@ const ConsentModal = ({
 
   return (
     // @ts-ignore A11yDialog ref obj type isn't quite the same
-    <div data-testid="consent-modal" {...container} className="modal-container">
-      <div {...overlay} className="modal-overlay" />
-      <div data-testid="modal-content" {...dialog} className="modal-content">
+    <div
+      data-testid="consent-modal"
+      {...container}
+      className="fides-modal-container"
+    >
+      <div {...overlay} className="fides-modal-overlay" />
+      <div
+        data-testid="fides-modal-content"
+        {...dialog}
+        className="fides-modal-content"
+      >
         <CloseButton ariaLabel="Close modal" onClick={closeButton.onClick} />
-        <h1 data-testid="modal-header" {...title} className="modal-header">
+        <h1
+          data-testid="fides-modal-header"
+          {...title}
+          className="fides-modal-header"
+        >
           {experience.title}
         </h1>
-        <p data-testid="modal-description" className="modal-description">
+        <p
+          data-testid="fides-modal-description"
+          className="fides-modal-description"
+        >
           {experience.description}
         </p>
-        <div className="modal-notices">
+        <div className="fides-modal-notices">
           <NoticeToggles
             notices={notices}
             enabledNoticeKeys={enabledNoticeKeys}
             onChange={setEnabledNoticeKeys}
           />
         </div>
-        <div className="modal-button-group">
+        <div className="fides-modal-button-group">
           <Button
             label={experience.save_button_label}
             buttonType={ButtonType.SECONDARY}
@@ -98,7 +113,7 @@ const ConsentModal = ({
             href={experience.privacy_policy_url}
             rel="noopener noreferrer"
             target="_blank"
-            className="modal-privacy-policy"
+            className="fides-modal-privacy-policy"
           >
             {experience.privacy_policy_link_label}
           </a>
