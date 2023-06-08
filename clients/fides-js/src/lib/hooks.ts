@@ -42,7 +42,7 @@ export const useDisclosure = ({ id }: { id: string }) => {
 
   const getDisclosureProps = () => ({
     id,
-    className: isOpen ? "disclosure-visible" : "disclosure-hidden",
+    className: isOpen ? "fides-disclosure-visible" : "fides-disclosure-hidden",
   });
 
   return {

@@ -26,7 +26,6 @@
     "system.data_protection_impact_assessment.link": "Link to Data Protection Impact Assessment",
     "system.fides_key": "System Fides Key",
     "dataset.fides_key": "Dataset Fides Key (if applicable)",
-    "system.system_dependencies": "Related cross-system dependencies",
     "system.description": "Description of the System"
   },
   {
@@ -56,7 +55,6 @@
     "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
     "system.fides_key": "demo_analytics_system",
     "dataset.fides_key": "demo_users_dataset",
-    "system.system_dependencies": "",
     "system.description": "A system used for analyzing customer behaviour."
   },
   {
@@ -86,7 +84,6 @@
     "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
     "system.fides_key": "demo_analytics_system",
     "dataset.fides_key": "demo_users_dataset",
-    "system.system_dependencies": "",
     "system.description": "A system used for analyzing customer behaviour."
   },
   {
@@ -116,7 +113,6 @@
     "system.data_protection_impact_assessment.link": "N/A",
     "system.fides_key": "demo_marketing_system",
     "dataset.fides_key": "N/A",
-    "system.system_dependencies": "demo_analytics_system",
     "system.description": "Collect data about our users for marketing."
   },
   {
@@ -146,7 +142,6 @@
     "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
     "system.fides_key": "demo_analytics_system",
     "dataset.fides_key": "demo_users_dataset",
-    "system.system_dependencies": "",
     "system.description": "A system used for analyzing customer behaviour."
   },
   {
@@ -176,7 +171,6 @@
     "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
     "system.fides_key": "demo_analytics_system",
     "dataset.fides_key": "demo_users_dataset",
-    "system.system_dependencies": "",
     "system.description": "A system used for analyzing customer behaviour."
   },
   {
@@ -206,7 +200,6 @@
     "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
     "system.fides_key": "demo_analytics_system",
     "dataset.fides_key": "demo_users_dataset",
-    "system.system_dependencies": "",
     "system.description": "A system used for analyzing customer behaviour."
   },
   {
@@ -236,7 +229,6 @@
     "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
     "system.fides_key": "demo_analytics_system",
     "dataset.fides_key": "demo_users_dataset",
-    "system.system_dependencies": "",
     "system.description": "A system used for analyzing customer behaviour."
   },
   {
@@ -266,7 +258,6 @@
     "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
     "system.fides_key": "demo_analytics_system",
     "dataset.fides_key": "demo_users_dataset",
-    "system.system_dependencies": "",
     "system.description": "A system used for analyzing customer behaviour."
   }
 ]
