@@ -57,6 +57,7 @@ import {
   makeConsentDefaultsLegacy,
   buildCookieConsentForExperiences,
   FidesCookie,
+  isNewFidesCookie,
 } from "./lib/cookie";
 import {
   PrivacyExperience,
@@ -185,6 +186,13 @@ const init = async ({
     options.debug
   );
 
+  // If saved preferences are detected, immediately initialize from local cache,
+  // and then continue geolocating, etc.
+  if (!isNewFidesCookie(cookie)) {
+    // TODO: initialize window.Fides
+    // TODO: dispatch FidesInitialized & FidesUpdated
+  }
+
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
   let effectiveExperience: PrivacyExperience | undefined | null = experience;
   let fidesRegionString: string | null = null;
@@ -249,6 +257,8 @@ const init = async ({
   _Fides.geolocation = geolocation;
   _Fides.options = options;
   _Fides.initialized = true;
+
+  // TODO: if we did an "early-init" above, don't publish the FidesInitialized event a second time
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial
   // state. For convenience, also dispatch the "FidesUpdated" event; this allows
