@@ -16,7 +16,10 @@ The types of changes are:
 - `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.14.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.15.0...main)
+
+
+## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
 
 ### Added
 - Privacy center can now render its consent values based on Privacy Notices and Privacy Experiences [#3411](https://github.com/ethyca/fides/pull/3411)
