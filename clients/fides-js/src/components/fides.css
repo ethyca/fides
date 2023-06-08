@@ -54,6 +54,8 @@
 div#fides-overlay {
   font-family: var(--fides-overlay-font-family);
   font-size: var(--fides-overlay-font-size-body);
+  z-index: 1000;
+  position: fixed;
 
   /* CSS reset values, adapted from https://www.joshwcomeau.com/css/custom-css-reset/ */
   line-height: calc(1em + 0.4rem);
