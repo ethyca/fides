@@ -1,9 +1,8 @@
 """Contains the nox sessions for docker-related tasks."""
 import platform
-from typing import List, Tuple, Dict, Callable
 from multiprocessing import Pool
 from subprocess import run
-from functools import partial
+from typing import Callable, Dict, List, Tuple
 
 import nox
 from constants_nox import (
@@ -25,7 +24,11 @@ DOCKER_PLATFORM_MAP = {
     "x86_64": "linux/amd64",
 }
 DOCKER_PLATFORMS = "linux/amd64,linux/arm64"
-partial_run = partial(run, shell=True, check=True)
+
+
+def runner(args):
+    args_str = " ".join(args)
+    run(args_str, shell=True, check=True)
 
 
 def verify_git_tag(session: nox.Session) -> str:
@@ -188,11 +191,6 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     session.run(*build_command, external=True)
 
 
-def session_runner(command: Tuple[str, ...], session: nox.Session) -> None:
-    """Utility function for use with multiprocessing."""
-    session.run(*command, external=True)
-
-
 def get_buildx_commands(tag_suffixes: List[str]) -> List[Tuple[str, ...]]:
     """
     Build and publish each image to Dockerhub
@@ -284,4 +282,4 @@ def push(session: nox.Session, tag: str) -> None:
     # Parallel build the various images
     number_of_processes = len(buildx_commands)
     with Pool(number_of_processes) as process_pool:
-        process_pool.map(partial_run, buildx_commands)
+        process_pool.map(runner, buildx_commands)
