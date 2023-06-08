@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.1b2.post0.dev11"
+    "version": "2.14.1b2.post0.dev12"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -20505,6 +20505,15 @@
             "default": {
               "is_required": false
             }
+          },
+          "connection_configs": {
+            "title": "Connection Configs",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionConfigurationResponse"
+              }
+            ],
+            "description": "\n    Describes the returned schema for a ConnectionConfiguration.\n\n    Do *NOT* add \"secrets\" to this schema.\n    "
           }
         },
         "description": "Extension of base pydantic model to include `privacy_declarations.id` fields in responses"
