@@ -3,7 +3,7 @@ saas_config:
   name: Kustomer
   type: kustomer
   description: A sample schema representing the Kustomer connector for Fides
-  version: 0.1.0
+  version: 0.1.1
 
   connector_params:
     - name: domain
