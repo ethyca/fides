@@ -1,7 +1,7 @@
 import { h, render } from "preact";
 
 import { ComponentType } from "./consent-types";
-import { debugLog, hasActionNeededNotices } from "./consent-utils";
+import { debugLog } from "./consent-utils";
 
 import Overlay, { OverlayProps } from "../components/Overlay";
 

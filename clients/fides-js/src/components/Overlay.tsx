@@ -69,8 +69,8 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       const modalLinkEl = document.getElementById(modalLinkId);
       if (modalLinkEl) {
         debugLog(
-            options.debug,
-            "Modal link element found, updating it to show and trigger modal on click."
+          options.debug,
+          "Modal link element found, updating it to show and trigger modal on click."
         );
         // Update modal link to trigger modal on click
         const modalLink = modalLinkEl;
