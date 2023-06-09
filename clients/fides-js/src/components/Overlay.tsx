@@ -39,6 +39,18 @@ const Overlay: FunctionComponent<OverlayProps> = ({
 }) => {
   const hasMounted = useHasMounted();
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
+
+  const initialEnabledNoticeKeys = useMemo(
+    () =>
+      Object.keys(window.Fides.consent).filter(
+        (key) => window.Fides.consent[key]
+      ),
+    []
+  );
+  const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
+    Array<PrivacyNotice["notice_key"]>
+  >(initialEnabledNoticeKeys);
+
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "dialog",
@@ -94,15 +106,10 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   );
 
   const handleUpdatePreferences = useCallback(
-    ({
-      noticeKeyToConsent,
-    }: {
-      noticeKeyToConsent: (noticeKey: string) => boolean;
-    }) => {
+    (enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>) => {
       const consentPreferencesToSave = privacyNotices.map((notice) => {
-        const consent = noticeKeyToConsent(notice.notice_key);
         const userPreference = transformConsentToFidesUserPreference(
-          consent,
+          enabledPrivacyNoticeKeys.includes(notice.notice_key),
           notice.consent_mechanism
         );
         return new SaveConsentPreference(
@@ -119,6 +126,8 @@ const Overlay: FunctionComponent<OverlayProps> = ({
         userLocationString: fidesRegionString,
         cookie,
       });
+      // Make sure our draft state also updates
+      setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
     },
     [
       privacyNotices,
@@ -129,6 +138,18 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     ]
   );
 
+  const handleManagePreferencesClick = (): void => {
+    handleOpenModal();
+    setBannerIsOpen(false);
+  };
+
+  const handleAcceptAll = () => {
+    handleUpdatePreferences(privacyNotices.map((n) => n.notice_key));
+  };
+  const handleRejectAll = () => {
+    handleUpdatePreferences([]);
+  };
+
   if (!hasMounted) {
     return null;
   }
@@ -138,37 +159,13 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     return null;
   }
 
-  const onAcceptAll = () => {
-    handleUpdatePreferences({ noticeKeyToConsent: () => true });
-    setBannerIsOpen(false);
-  };
-
-  const onRejectAll = () => {
-    handleUpdatePreferences({ noticeKeyToConsent: () => false });
-    setBannerIsOpen(false);
-  };
-
-  const onSavePreferences = (
-    enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>
-  ) => {
-    handleUpdatePreferences({
-      noticeKeyToConsent: (noticeKey) =>
-        enabledPrivacyNoticeKeys.includes(noticeKey),
-    });
-  };
-
-  const handleManagePreferencesClick = (): void => {
-    handleOpenModal();
-    setBannerIsOpen(false);
-  };
-
   return (
     <div id="fides-js-root">
       {showBanner ? (
         <ConsentBanner
           experience={experience.experience_config}
-          onAcceptAll={onAcceptAll}
-          onRejectAll={onRejectAll}
+          onAcceptAll={handleAcceptAll}
+          onRejectAll={handleRejectAll}
           onManagePreferences={handleManagePreferencesClick}
           bannerIsOpen={bannerIsOpen}
           onClose={() => {
@@ -179,11 +176,13 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       <ConsentModal
         attributes={attributes}
         experience={experience.experience_config}
+        enabledNoticeKeys={draftEnabledNoticeKeys}
+        onChange={setDraftEnabledNoticeKeys}
         notices={privacyNotices}
         onClose={handleCloseModal}
-        onAcceptAll={onAcceptAll}
-        onRejectAll={onRejectAll}
-        onSave={onSavePreferences}
+        onAcceptAll={handleAcceptAll}
+        onRejectAll={handleRejectAll}
+        onSave={handleUpdatePreferences}
       />
     </div>
   );
