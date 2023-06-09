@@ -44,7 +44,7 @@ export const initOverlay = async ({
         // Create our own parent element and append to body
         parentElem = document.createElement("div");
         parentElem.id = overlayParentId;
-        document.body.appendChild(parentElem);
+        document.body.prepend(parentElem);
       }
 
       if (experience.component === ComponentType.OVERLAY) {
