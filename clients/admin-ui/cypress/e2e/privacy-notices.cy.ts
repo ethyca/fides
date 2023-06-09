@@ -7,8 +7,8 @@ import {
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
-const DATA_SALES_NOTICE_ID = "pri_afd25287-cce4-487a-a6b4-b7647b068990";
-const ESSENTIAL_NOTICE_ID = "pri_e76cbe20-6ffa-46b4-9a91-b1ae3412dd49";
+const DATA_SALES_NOTICE_ID = "pri_132bb3ba-fa1e-4a3f-9f06-c19e3fee49da";
+const ESSENTIAL_NOTICE_ID = "pri_a92477b0-5157-4608-acdc-39283a442f29";
 
 describe("Privacy notices", () => {
   beforeEach(() => {
@@ -122,7 +122,7 @@ describe("Privacy notices", () => {
 
     it("can click a row to go to the notice page", () => {
       cy.intercept("GET", "/api/v1/privacy-notice/pri*", {
-        fixture: "privacy-notices/notice_only.json",
+        fixture: "privacy-notices/notice.json",
       }).as("getNoticeDetail");
       cy.getByTestId("row-Essential").click();
       cy.wait("@getNoticeDetail");
@@ -187,7 +187,7 @@ describe("Privacy notices", () => {
     it("should render an existing privacy notice", () => {
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/${ESSENTIAL_NOTICE_ID}`);
       cy.wait("@getNoticeDetail");
-      cy.fixture("privacy-notices/notice_only.json").then((notice) => {
+      cy.fixture("privacy-notices/notice.json").then((notice) => {
         // details section
         cy.getByTestId("input-name").should("have.value", notice.name);
         cy.getByTestId("input-description").should(
@@ -231,11 +231,17 @@ describe("Privacy notices", () => {
       cy.wait("@getNoticeDetail");
       const newName = "new name";
       cy.getByTestId("input-name").clear().type(newName);
+      // should not reflect the new name since this is the edit form
+      cy.getByTestId("input-notice_key").should("have.value", "essential");
+      // but we can still update it
+      const newKey = "custom_key";
+      cy.getByTestId("input-notice_key").clear().type(newKey);
 
       cy.getByTestId("save-btn").click();
       cy.wait("@patchNotices").then((interception) => {
         const { body } = interception.request;
         expect(body[0].name).to.eql(newName);
+        expect(body[0].notice_key).to.eql(newKey);
       });
       cy.wait("@getNoticeDetail");
     });
@@ -282,6 +288,7 @@ describe("Privacy notices", () => {
         displayed_in_privacy_center: true,
         displayed_in_api: false,
         displayed_in_overlay: true,
+        notice_key: "my_notice",
       };
 
       // details section
@@ -307,6 +314,24 @@ describe("Privacy notices", () => {
         expect(body[0]).to.eql(notice);
       });
       cy.wait("@getNotices");
+    });
+
+    it("should dynamically create a notice key", () => {
+      cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
+      cy.getByTestId("new-privacy-notice-page");
+      const expected = [
+        { name: "Sales", key: "sales" },
+        { name: "Data Sales", key: "data_sales" },
+        { name: "Data Sales and stuff", key: "data_sales_and_stuff" },
+        { name: "Data Sales!!!!", key: "data_sales" },
+      ];
+      expected.forEach(({ name, key }) => {
+        cy.getByTestId("input-name").clear().type(name);
+        cy.getByTestId("input-notice_key").should("have.value", key);
+      });
+
+      // can still edit the notice key field to be something else
+      cy.getByTestId("input-notice_key").clear().type("custom_key");
     });
   });
 });

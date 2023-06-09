@@ -42,6 +42,7 @@ import {
   transformPrivacyNoticeResponseToCreation,
   ValidationSchema,
 } from "./form";
+import NoticeKeyField from "./NoticeKeyField";
 import {
   usePatchPrivacyNoticesMutation,
   usePostPrivacyNoticeMutation,
@@ -140,6 +141,7 @@ const PrivacyNoticeForm = ({
                   isMulti
                   isRequired
                 />
+                <NoticeKeyField isEditing={isEditing} />
                 <Box>
                   <Text fontSize="sm" fontWeight="medium" mb={2}>
                     Configure the user experience for how this notice is

@@ -1,0 +1,27 @@
+privacy_experience_configs:
+- id: pri-7ae3-f06b-4096-970f-0bbbdef-over
+  accept_button_label: Opt in to all
+  acknowledge_button_label: OK
+  banner_enabled: enabled_where_required
+  component: overlay
+  description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
+  disabled: false
+  is_default: true
+  privacy_policy_link_label: Privacy Policy
+  privacy_policy_url: null
+  privacy_preferences_link_label: Manage preferences
+  reject_button_label: Opt out of all
+  save_button_label: Save
+  title: Manage your consent preferences
+
+- id: pri-097a-d00d-40b6-a08f-f8e50def-pri
+  accept_button_label: Opt in to all
+  acknowledge_button_label: OK
+  component: privacy_center
+  description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
+  disabled: false
+  is_default: true
+  privacy_policy_link_label: Privacy Policy
+  reject_button_label: Opt out of all
+  save_button_label: Save
+  title: Manage your consent preferences

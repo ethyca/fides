@@ -8,10 +8,11 @@ import PurchaseModal from "../PurchaseModal";
 import css from "./style.module.scss";
 
 interface Props {
+  privacyCenterUrl: string;
   products: Product[];
 }
 
-const Home = ({ products }: Props) => {
+const Home = ({ privacyCenterUrl, products }: Props) => {
   const [productInPurchase, setProductInPurchase] = useState<Product | null>(
     null
   );
@@ -62,9 +63,14 @@ const Home = ({ products }: Props) => {
       </main>
       <footer className={css.footer}>
         <div>
-          <a href="http://localhost:3001">
-            Do not sell or share my personal information
+          <a href={privacyCenterUrl}>
+            Privacy Center
           </a>
+        </div>
+        <div>
+          <button type="button" className={css.modalLink} id="fides-modal-link">
+            Manage Preferences
+          </button>
         </div>
         <div className={css.select}>
           <GeolocationSelect menuPlacement="top" />

@@ -36,8 +36,9 @@ from fides.api.graph.graph import DatasetGraph, Edge, Node
 from fides.api.graph.graph_differences import format_graph_for_caching
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
-from fides.api.models.policy import ActionType, Policy
+from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequest
+from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match

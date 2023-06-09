@@ -3,10 +3,11 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import Extra, root_validator, validator
+from pydantic import Extra, Field, root_validator, validator
 
+from fides.api.api.v1.endpoints.utils import human_friendly_list
 from fides.api.custom_types import SafeStr
-from fides.api.models.privacy_experience import ComponentType, DeliveryMechanism
+from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_notice import PrivacyNoticeResponseWithUserPreferences
@@ -16,20 +17,59 @@ class ExperienceConfigSchema(FidesSchema):
     """
     Base for ExperienceConfig API objects.  Here all fields are optional since
     Pydantic allows subclasses to be more strict but not less strict
+
+    Note component is intentionally not included in the base class. This can be specified when creating an ExperienceConfig
+    but cannot be updated later.
     """
 
-    acknowledgement_button_label: Optional[SafeStr]
-    banner_title: Optional[SafeStr]
-    banner_description: Optional[SafeStr]
-    component: Optional[ComponentType]
-    component_title: Optional[SafeStr]
-    component_description: Optional[SafeStr]
-    confirmation_button_label: Optional[SafeStr]
-    delivery_mechanism: Optional[DeliveryMechanism]
-    disabled: Optional[bool] = False
-    is_default: Optional[bool] = False
-    link_label: Optional[SafeStr]
-    reject_button_label: Optional[SafeStr]
+    accept_button_label: Optional[SafeStr] = Field(
+        description="Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'"
+    )
+    acknowledge_button_label: Optional[SafeStr] = Field(
+        description="Overlay 'Acknowledge button label for notice only banner'"
+    )
+    banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
+    description: Optional[SafeStr] = Field(
+        description="Overlay 'Banner Description' or Privacy Center 'Description'"
+    )
+    disabled: Optional[bool] = Field(
+        default=False, description="Whether the given ExperienceConfig is disabled"
+    )
+    is_default: Optional[bool] = Field(
+        default=False,
+        description="Whether the given ExperienceConfig is a global default",
+    )
+    privacy_policy_link_label: Optional[SafeStr] = Field(
+        description="Overlay and Privacy Center 'Privacy policy link label'"
+    )
+    privacy_policy_url: Optional[SafeStr] = Field(
+        description="Overlay and Privacy Center 'Privacy policy URl'"
+    )
+    privacy_preferences_link_label: Optional[SafeStr] = Field(
+        description="Overlay 'Privacy preferences link label'"
+    )
+    regions: Optional[List[PrivacyNoticeRegion]] = Field(
+        description="Regions using this ExperienceConfig"
+    )
+    reject_button_label: Optional[SafeStr] = Field(
+        description="Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'"
+    )
+    save_button_label: Optional[SafeStr] = Field(
+        description="Overlay 'Privacy preferences 'Save' button label"
+    )
+    title: Optional[SafeStr] = Field(
+        description="Overlay 'Banner title' or Privacy Center 'title'"
+    )
+
+    @validator("regions")
+    @classmethod
+    def validate_regions(
+        cls, regions: List[PrivacyNoticeRegion]
+    ) -> List[PrivacyNoticeRegion]:
+        """Assert regions aren't duplicated."""
+        if regions and len(regions) != len(set(regions)):
+            raise ValueError("Duplicate regions found.")
+        return regions
 
 
 class ExperienceConfigCreate(ExperienceConfigSchema):
@@ -39,75 +79,49 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
     It also establishes some fields _required_ for creation
     """
 
+    accept_button_label: SafeStr
     component: ComponentType
-    delivery_mechanism: DeliveryMechanism
-    regions: List[PrivacyNoticeRegion]
-    component_title: SafeStr
-
-    @validator("regions")
-    @classmethod
-    def validate_regions(
-        cls, regions: List[PrivacyNoticeRegion]
-    ) -> List[PrivacyNoticeRegion]:
-        """Assert regions aren't duplicated."""
-        if len(regions) != len(set(regions)):
-            raise ValueError("Duplicate regions found.")
-        return regions
+    description: SafeStr
+    reject_button_label: SafeStr
+    save_button_label: SafeStr
+    title: SafeStr
 
     @root_validator
     def validate_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate minimum set of required fields exist given the type of component and/or delivery_mechanism"""
+        """Validate minimum set of required fields exist given the type of component"""
         component: Optional[ComponentType] = values.get("component")
-        delivery_mechanism: Optional[DeliveryMechanism] = values.get(
-            "delivery_mechanism"
-        )
-
-        if delivery_mechanism == DeliveryMechanism.link and not values.get(
-            "link_label"
-        ):
-            raise ValueError(
-                "Link label required when the delivery mechanism is of type link."
-            )
 
         if component == ComponentType.overlay:
-            if delivery_mechanism == DeliveryMechanism.banner:
-                required_banner_fields = [
-                    "acknowledgement_button_label",
-                    "banner_title",
-                    "confirmation_button_label",
-                    "reject_button_label",
-                ]
-                for field in required_banner_fields:
-                    if not values.get(field):
-                        raise ValueError(
-                            f"The following fields are required when defining a banner: {required_banner_fields}."
-                        )
-
-        if component == ComponentType.privacy_center:
-            if delivery_mechanism != DeliveryMechanism.link:
-                raise ValueError(
-                    "Privacy center experiences can only be delivered via a link."
-                )
+            # Overlays have a few additional required fields beyond the privacy center
+            required_overlay_fields = [
+                "acknowledge_button_label",
+                "banner_enabled",
+                "privacy_preferences_link_label",
+            ]
+            for field in required_overlay_fields:
+                if not values.get(field):
+                    raise ValueError(
+                        f"The following additional fields are required when defining an overlay: {human_friendly_list(required_overlay_fields)}."
+                    )
 
         return values
 
 
 class ExperienceConfigUpdate(ExperienceConfigSchema):
     """
-    Updating ExperienceConfig - requires regions to be patched specifically
+    Updating ExperienceConfig. Note that component cannot be updated once its created
     """
 
-    regions: List[PrivacyNoticeRegion]
+    class Config:
+        """Forbid extra values - specifically we don't want component to be updated here."""
 
-    @validator("regions")
-    @classmethod
-    def validate_regions(
-        cls, regions: List[PrivacyNoticeRegion]
-    ) -> List[PrivacyNoticeRegion]:
-        """Assert regions aren't duplicated."""
-        if len(regions) != len(set(regions)):
-            raise ValueError("Duplicate regions found.")
-        return regions
+        extra = Extra.forbid
+
+
+class ExperienceConfigCreateWithId(ExperienceConfigCreate):
+    """Schema for creating out-of-the-box experience configs"""
+
+    id: str
 
 
 class ExperienceConfigSchemaWithId(ExperienceConfigSchema):
@@ -118,6 +132,7 @@ class ExperienceConfigSchemaWithId(ExperienceConfigSchema):
     """
 
     id: str
+    component: ComponentType
     experience_config_history_id: str
     version: float
 
@@ -138,7 +153,6 @@ class ExperienceConfigCreateOrUpdateResponse(FidesSchema):
     experience_config: ExperienceConfigResponse
     linked_regions: List[PrivacyNoticeRegion]
     unlinked_regions: List[PrivacyNoticeRegion]
-    skipped_regions: List[PrivacyNoticeRegion]
 
 
 class PrivacyExperience(FidesSchema):
@@ -147,10 +161,8 @@ class PrivacyExperience(FidesSchema):
     Pydantic allows subclasses to be more strict but not less strict
     """
 
-    disabled: Optional[bool] = False
-    component: Optional[ComponentType]
-    delivery_mechanism: Optional[DeliveryMechanism]
     region: PrivacyNoticeRegion
+    component: Optional[ComponentType]
     experience_config: Optional[ExperienceConfigSchemaWithId]
 
     class Config:
@@ -177,7 +189,6 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
 
     created_at: datetime
     updated_at: datetime
-    version: float
-    privacy_experience_history_id: str
+    show_banner: Optional[bool]
     privacy_notices: Optional[List[PrivacyNoticeResponseWithUserPreferences]]
     experience_config: Optional[ExperienceConfigResponse]

@@ -100,6 +100,7 @@ The commands will need to be run inside a shell on your Docker containers, which
 In the `/src/fides/api/ctl` directory:
 
 - Migrate your database to the latest state: `alembic upgrade head`
+- Merge heads (for when you have conflicting heads from a merge/rebase): `alembic merge heads`
 - Get revision id of previous migration: `alembic current`
 - Automatically generate a new migration: `alembic revision --autogenerate -m "<a message describing your changes>"`
 - Create a new migration file to manually fill out: `alembic revision -m "<a message describing your changes>"`

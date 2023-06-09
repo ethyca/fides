@@ -135,7 +135,6 @@ describe("System management page", () => {
               tags: [],
               privacy_declarations: [],
               third_country_transfers: [],
-              system_dependencies: [],
             });
           });
 
@@ -414,7 +413,6 @@ describe("System management page", () => {
           fidesctl_meta: fidesctlMeta,
           meta,
           registry_id: registryid,
-          system_dependencies: systemDependencies,
           ...edited
         } = body;
         expect(edited).to.eql({

@@ -1,5 +1,4 @@
-/** @jsx createElement */
-import { createElement } from "react";
+import { h } from "preact";
 
 const Toggle = ({
   name,
@@ -10,12 +9,12 @@ const Toggle = ({
   name: string;
   id: string;
   checked: boolean;
-  onChange: (noticeId: string) => void;
+  onChange: (noticeKey: string) => void;
 }) => {
   const labelId = `toggle-${id}`;
   return (
     <label
-      className="toggle"
+      className="fides-toggle"
       htmlFor={name}
       data-testid={`toggle-${name}`}
       id={labelId}
@@ -23,7 +22,7 @@ const Toggle = ({
       <input
         type="checkbox"
         name={name}
-        className="toggle-input"
+        className="fides-toggle-input"
         onChange={() => {
           onChange(id);
         }}
@@ -32,7 +31,7 @@ const Toggle = ({
         aria-labelledby={labelId}
       />
       {/* Mark as `hidden` so it will fall back to a regular checkbox if CSS is not available */}
-      <span className="toggle-display" hidden />
+      <span className="fides-toggle-display" hidden />
     </label>
   );
 };

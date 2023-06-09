@@ -9,7 +9,7 @@ from fides.api.models.connectionconfig import (
     ConnectionTestStatus,
     ConnectionType,
 )
-from fides.api.models.policy import ActionType, Rule
+from fides.api.models.policy import Rule
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -24,6 +24,7 @@ from fides.api.schemas.messaging.messaging import (
     ErasureRequestBodyParams,
     MessagingActionType,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.base_email_connector import (
     BaseEmailConnector,
@@ -35,7 +36,10 @@ from fides.core.config import get_config
 
 CONFIG = get_config()
 
-ERASURE_EMAIL_CONNECTOR_TYPES = [ConnectionType.attentive]
+ERASURE_EMAIL_CONNECTOR_TYPES = [
+    ConnectionType.generic_erasure_email,
+    ConnectionType.attentive,
+]
 
 
 class GenericErasureEmailConnector(BaseEmailConnector):

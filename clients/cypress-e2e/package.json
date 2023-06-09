@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "clean": "rm -rf node_modules",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "format": "prettier --write .",

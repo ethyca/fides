@@ -24,6 +24,16 @@ class TestGitNox:
         [
             ("main", ["2.9.0"], "2.9.1b0"),
             ("main", ["2.9.1", "2.9.0"], "2.9.2b0"),
+            (
+                "main",
+                ["2.9.0", "2.9.1"],
+                "2.9.2b0",
+            ),  # releases _could_ be "out of order" chronological order, for e.g. hotfixes
+            (
+                "main",
+                ["2.9.0", "2.10.0"],
+                "2.10.1b0",
+            ),  # out of order releases with version >= 10 to ensure numerical sort
             ("some-test-feature-branch", ["2.9.1"], "2.9.2a0"),
             ("some-test-feature-branch", ["2.9.1", "2.9.0"], "2.9.2a0"),
             (
@@ -31,6 +41,16 @@ class TestGitNox:
                 ["2.9.3a0", "2.9.2"],
                 "2.9.3a1",
             ),  # our repo happens to already have a 2.9.3a0 tag, let's use it for testing here
+            (
+                "some-other-feature",
+                ["2.14.1a0", "2.14.1a1", "2.14.0"],
+                "2.14.1a2",
+            ),  # unsorted tags
+            (
+                "some-other-feature",
+                ["2.14.1a9", "2.14.1a10", "2.14.0"],
+                "2.14.1a11",
+            ),  # unsorted tags with current increment = 10 to ensure we're doing a numeric sort
             ("release-2.9.0", [], "2.9.0rc0"),
             ("release-2.9.0", ["2.9.0rc1"], "2.9.0rc2"),
             (

@@ -2,6 +2,7 @@ name: Backend Code Checks
 
 on:
   pull_request:
+    # This only ignores paths if there are _no_ commits on the branch that touch other files
     paths-ignore:
       - "**.md"
       - "clients/**"
@@ -161,7 +162,7 @@ jobs:
           - "lib"
 
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
     continue-on-error: true
     steps:
       - name: Download container

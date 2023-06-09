@@ -9,7 +9,6 @@ from fides.api.models.connectionconfig import (
     ConnectionTestStatus,
     ConnectionType,
 )
-from fides.api.models.policy import ActionType
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
@@ -31,6 +30,7 @@ from fides.api.schemas.messaging.messaging import (
     ConsentPreferencesByUser,
     MessagingActionType,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
@@ -51,7 +51,10 @@ from fides.core.config import get_config
 
 CONFIG = get_config()
 
-CONSENT_EMAIL_CONNECTOR_TYPES = [ConnectionType.sovrn]
+CONSENT_EMAIL_CONNECTOR_TYPES = [
+    ConnectionType.generic_consent_email,
+    ConnectionType.sovrn,
+]
 
 
 class GenericConsentEmailConnector(BaseEmailConnector):
@@ -95,7 +98,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                     ConsentPreferencesByUser(
                         identities=self.identities_for_test_email,
                         consent_preferences=[  # TODO slated for deprecation
-                            Consent(data_use="advertising", opt_in=False),
+                            Consent(data_use="marketing.advertising", opt_in=False),
                             Consent(data_use="improve", opt_in=True),
                         ],
                         privacy_preferences=[
@@ -108,7 +111,9 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                                     id="test_1",
                                     privacy_notice_id="12345",
                                     consent_mechanism=ConsentMechanism.opt_in,
-                                    data_uses=["advertising.first_party.personalized"],
+                                    data_uses=[
+                                        "marketing.advertising.first_party.targeted"
+                                    ],
                                     enforcement_level=EnforcementLevel.system_wide,
                                     version=1.0,
                                     displayed_in_overlay=True,

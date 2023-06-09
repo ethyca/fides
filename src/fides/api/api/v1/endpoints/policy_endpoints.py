@@ -30,11 +30,12 @@ from fides.api.common_exceptions import (
 )
 from fides.api.ctl.sql_models import DataCategory  # type: ignore
 from fides.api.models.client import ClientDetail
-from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.storage import StorageConfig
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas import policy as schemas
 from fides.api.schemas.api import BulkUpdateFailed
+from fides.api.schemas.policy import ActionType
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
 

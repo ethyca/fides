@@ -19,6 +19,7 @@ from sqlalchemy.orm import sessionmaker
 from toml import load as load_toml
 
 from fides.api.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.app_setup import PRIVACY_EXPERIENCE_CONFIGS_PATH
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -40,6 +41,7 @@ from fides.api.oauth.roles import (
 )
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.util.cache import get_cache
+from fides.api.util.consent_util import load_default_experience_configs_on_startup
 from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
@@ -79,6 +81,43 @@ def test_client():
 @pytest.fixture(scope="session")
 @pytest.mark.asyncio
 async def async_session(test_client):
+    assert CONFIG.test_mode
+    assert requests.post == test_client.post
+
+    create_citext_extension(sync_engine)
+
+    async_engine = create_async_engine(
+        CONFIG.database.async_database_uri,
+        echo=False,
+    )
+
+    session_maker = sessionmaker(
+        async_engine, class_=AsyncSession, expire_on_commit=False
+    )
+
+    async with session_maker() as session:
+        yield session
+        session.close()
+        async_engine.dispose()
+
+
+
+
+# TODO: THIS IS A HACKY WORKAROUND.
+# This is specific for this test: test_get_resource_with_custom_field
+# this was added to account for weird error that only happens during a
+# long testing session. Something causes a config/schema change with
+# the DB. Giving the test a dedicated session fixes the issue and
+# matches how runtime works.
+# It does look like there MAY be a small bug that is unlikely to ever
+# occur during runtime. What surfaced the "benign" failure is the
+# `connection_configs` relationship on the `System` model. We are
+# unsure of which upstream test causes the error.
+# https://github.com/MagicStack/asyncpg/blob/2f20bae772d71122e64f424cc4124e2ebdd46a58/asyncpg/exceptions/_base.py#L120-L124
+# <class 'asyncpg.exceptions.InvalidCachedStatementError'>: cached statement plan is invalid due to a database schema or configuration change (SQLAlchemy asyncpg dialect will now invalidate all prepared caches in response to this exception)
+@pytest.fixture(scope="function")
+@pytest.mark.asyncio
+async def async_session_temp(test_client):
     assert CONFIG.test_mode
     assert requests.post == test_client.post
 
@@ -356,7 +395,7 @@ def resources_dict():
         "policy_rule": models.PolicyRule(
             name="Test Policy",
             data_categories=models.PrivacyRule(matches="NONE", values=[]),
-            data_uses=models.PrivacyRule(matches="NONE", values=["provide.service"]),
+            data_uses=models.PrivacyRule(matches="NONE", values=["essential.service"]),
             data_subjects=models.PrivacyRule(matches="ANY", values=[]),
             data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
         ),
@@ -378,13 +417,12 @@ def resources_dict():
                 models.PrivacyDeclaration(
                     name="declaration-name",
                     data_categories=[],
-                    data_use="provide",
+                    data_use="essential",
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
                 )
             ],
-            system_dependencies=[],
         ),
     }
     yield resources_dict
@@ -988,7 +1026,7 @@ def system(db: Session) -> System:
             "name": "Collect data for marketing",
             "system_id": system.id,
             "data_categories": ["user.device.cookie_id"],
-            "data_use": "advertising",
+            "data_use": "marketing.advertising",
             "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
@@ -1088,7 +1126,7 @@ def system_provide_service(db: Session) -> System:
             "name": "The source service, system, or product being provided to the user",
             "system_id": system_provide_service.id,
             "data_categories": ["user.device.cookie_id"],
-            "data_use": "provide.service",
+            "data_use": "essential.service",
             "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
@@ -1125,7 +1163,7 @@ def system_provide_service_operations_support_optimization(db: Session) -> Syste
             "name": "Optimize and improve support operations in order to provide the service",
             "system_id": system_provide_service_operations_support_optimization.id,
             "data_categories": ["user.device.cookie_id"],
-            "data_use": "provide.service.operations.support.optimization",
+            "data_use": "essential.service.operations.support.optimization",
             "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
@@ -1160,3 +1198,14 @@ def load_default_data_uses(db):
         # loaded, in which case the create will throw an error. so we first check existence.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
             DataUse.create(db=db, data=data_use.dict())
+
+
+@pytest.fixture(scope="function", autouse=True)
+def load_default_privacy_experience_configs(db):
+    """Ops tests drop db data, so for now, load these back in if they don't exist"""
+    if not PrivacyExperienceConfig.get_default_config(
+        db, ComponentType.overlay
+    ) or not PrivacyExperienceConfig.get_default_config(
+        db, ComponentType.privacy_center
+    ):
+        load_default_experience_configs_on_startup(db, PRIVACY_EXPERIENCE_CONFIGS_PATH)

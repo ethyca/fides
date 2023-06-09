@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional, Type
 
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -16,6 +16,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.db.base_class import Base, FidesBase, JSONTypeOverride, get_key_from_data
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.core.config import CONFIG
 
@@ -30,7 +31,7 @@ class ConnectionTestStatus(enum.Enum):
 
 class ConnectionType(enum.Enum):
     """
-    Supported types to which we can connect fidesops.
+    Supported types to which we can connect Fides.
     """
 
     postgres = "postgres"
@@ -50,6 +51,8 @@ class ConnectionType(enum.Enum):
     manual_webhook = "manual_webhook"  # Run before the traversal
     timescale = "timescale"
     fides = "fides"
+    generic_erasure_email = "generic_erasure_email"  # Run after the traversal
+    generic_consent_email = "generic_consent_email"  # Run after the traversal
 
     @property
     def human_readable(self) -> str:
@@ -61,6 +64,8 @@ class ConnectionType(enum.Enum):
             ConnectionType.bigquery.value: "BigQuery",
             ConnectionType.dynamodb.value: "DynamoDB",
             ConnectionType.fides.value: "Fides Connector",
+            ConnectionType.generic_consent_email.value: "Generic Consent Email",
+            ConnectionType.generic_erasure_email.value: "Generic Erasure Email",
             ConnectionType.https.value: "Policy Webhook",
             ConnectionType.manual.value: "Manual Connector",
             ConnectionType.manual_webhook.value: "Manual Process",
@@ -142,7 +147,12 @@ class ConnectionConfig(Base):
         uselist=False,
     )
 
-    system = relationship(System)
+    system = relationship(System, back_populates="connection_configs", uselist=False)
+
+    # Identifies the privacy actions needed from this connection by the associated system.
+    enabled_actions = Column(
+        ARRAY(Enum(ActionType, native_enum=False)), unique=False, nullable=True
+    )
 
     @property
     def system_key(self) -> str:

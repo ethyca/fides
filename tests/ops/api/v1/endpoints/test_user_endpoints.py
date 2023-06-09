@@ -875,7 +875,7 @@ class TestUserLogin:
             "password": str_to_b64_str("idonotknowmypassword"),
         }
         response = api_client.post(url, headers={}, json=body)
-        assert response.status_code == HTTP_404_NOT_FOUND
+        assert response.status_code == HTTP_403_FORBIDDEN
 
     def test_bad_login(self, url, user, api_client):
         body = {
@@ -1435,7 +1435,7 @@ class TestUpdateSystemsManagedByUser:
                 "name": "Collect data for marketing",
                 "system_id": second_system.id,
                 "data_categories": ["user.device.cookie_id"],
-                "data_use": "advertising",
+                "data_use": "marketing.advertising",
                 "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "dataset_references": None,

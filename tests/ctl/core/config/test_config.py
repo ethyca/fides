@@ -7,6 +7,7 @@ from pydantic import ValidationError
 
 from fides.core.config import check_required_webserver_config_values, get_config
 from fides.core.config.database_settings import DatabaseSettings
+from fides.core.config.redis_settings import RedisSettings
 from fides.core.config.security_settings import SecuritySettings
 
 REQUIRED_ENV_VARS = {
@@ -209,6 +210,7 @@ def test_config_from_path() -> None:
     os.environ,
     {
         "FIDES__DATABASE__SERVER": "envserver",
+        "FIDES__DATABASE__PARAMS": '{"sslmode": "verify-full", "sslrootcert": "/etc/ssl/private/myca.crt"}',
         "FIDES__REDIS__HOST": "envhost",
         **REQUIRED_ENV_VARS,
     },
@@ -220,6 +222,10 @@ def test_overriding_config_from_env_vars() -> None:
     assert config.database.server == "envserver"
     assert config.redis.host == "envhost"
     assert config.security.app_encryption_key == "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+    assert config.database.params == {
+        "sslmode": "verify-full",
+        "sslrootcert": "/etc/ssl/private/myca.crt",
+    }
 
 
 def test_config_app_encryption_key_validation() -> None:
@@ -353,6 +359,40 @@ class TestBuildingDatabaseValues:
         assert incorrect_value not in database_settings.async_database_uri
         assert correct_value in database_settings.async_database_uri
 
+    def test_builds_with_params(self) -> None:
+        """
+        Test that when params are passed, they are correctly
+        encoded as query parameters on the resulting database uris
+        """
+        os.environ["FIDES__TEST_MODE"] = "False"
+        database_settings = DatabaseSettings(
+            user="postgres",
+            password="fides",
+            server="fides-db",
+            port="5432",
+            db="database",
+            params={
+                "sslmode": "verify-full",
+                "sslrootcert": "/etc/ssl/private/myca.crt",
+            },
+        )
+        assert (
+            database_settings.async_database_uri
+            == "postgresql+asyncpg://postgres:fides@fides-db:5432/database?ssl=verify-full"
+            # Q: But why! Where did the sslrootcert parameter go?
+            # A: asyncpg cannot accept it, and an ssl context must be
+            #    passed to the create_async_engine function.
+            # Q: But wait! `ssl` is a different name than what we
+            #    passed in the parameters!
+            # A: That was more of a statement, but Jeopardy rules
+            #    aside, asyncpg has a different set of names
+            #    for these extremely standardized parameter names...
+        )
+        assert (
+            database_settings.sync_database_uri
+            == "postgresql+psycopg2://postgres:fides@fides-db:5432/database?sslmode=verify-full&sslrootcert=/etc/ssl/private/myca.crt"
+        )
+
 
 @pytest.mark.unit
 def test_check_required_webserver_config_values_success(test_config_path: str) -> None:
@@ -391,3 +431,29 @@ def test_check_required_webserver_config_values_error(capfd) -> None:
 def test_check_required_webserver_config_values_success_from_path() -> None:
     config = get_config()
     assert check_required_webserver_config_values(config=config) is None
+
+
+class TestBuildingRedisURLs:
+    def test_generic(self) -> None:
+        redis_settings = RedisSettings()
+        assert redis_settings.connection_url == "redis://:testpassword@redis:6379/"
+
+    def test_configured(self) -> None:
+        redis_settings = RedisSettings(
+            db_index=1, host="myredis", port="6380", password="supersecret"
+        )
+        assert redis_settings.connection_url == "redis://:supersecret@myredis:6380/1"
+
+    def test_tls(self) -> None:
+        redis_settings = RedisSettings(ssl=True, ssl_cert_reqs="none")
+        assert (
+            redis_settings.connection_url
+            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=none"
+        )
+
+    def test_tls_custom_ca(self) -> None:
+        redis_settings = RedisSettings(ssl=True, ssl_ca_certs="/path/to/my/cert.crt")
+        assert (
+            redis_settings.connection_url
+            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=required&ssl_ca_certs=/path/to/my/cert.crt"
+        )
