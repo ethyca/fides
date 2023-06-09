@@ -76,7 +76,7 @@ div#fides-banner-container {
   z-index: 1;
   width: 100%;
   transform: translateY(0%);
-  transition: transform 1s;
+  transition: transform 1s, visibility 1s;
   display: flex;
   justify-content: center;
   visibility: visible;
