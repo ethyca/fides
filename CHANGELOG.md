@@ -18,6 +18,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.15.0...main)
 
+### Changed
+
+- Change the level of common logging messages in the Privacy Center [#3516](https://github.com/ethyca/fides/pull/3516)
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
 
