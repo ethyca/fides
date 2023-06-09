@@ -47,6 +47,7 @@ The types of changes are:
 - Fix CLI output showing a version warning for Snowflake [#3434](https://github.com/ethyca/fides/pull/3434)
 - Flaky custom field Cypress test on systems page [#3408](https://github.com/ethyca/fides/pull/3408)
 - Fix NextJS errors & warnings for Cookie House sample app [#3411](https://github.com/ethyca/fides/pull/3411)
+- Fix bug where `fides-js` toggles were not reflecting changes from rejecting or accepting all notices [#3522](https://github.com/ethyca/fides/pull/3522)
 
 ### Changed
 
