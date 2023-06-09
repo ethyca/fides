@@ -1,6 +1,7 @@
 import { h, FunctionComponent } from "preact";
 import { useEffect, useState, useCallback, useMemo } from "preact/hooks";
 import {
+  ConsentMechanism,
   ConsentMethod,
   FidesOptions,
   PrivacyExperience,
@@ -165,6 +166,10 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     return null;
   }
 
+  const isAllNoticeOnly = privacyNotices.every(
+    (n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY
+  );
+
   return (
     <div id="fides-js-root">
       {showBanner ? (
@@ -177,6 +182,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
           onClose={() => {
             setBannerIsOpen(false);
           }}
+          showAcknowledge={isAllNoticeOnly}
         />
       ) : null}
       <ConsentModal

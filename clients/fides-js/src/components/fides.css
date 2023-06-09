@@ -166,6 +166,10 @@ span.fides-banner-buttons-right {
   float: right;
 }
 
+span#fides-acknowledge-button .fides-banner-button {
+  min-width: 168px;
+}
+
 button.fides-banner-button {
   font-size: var(--fides-overlay-font-size-buttons);
   display: inline-block;

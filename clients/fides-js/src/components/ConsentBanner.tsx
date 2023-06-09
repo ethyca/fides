@@ -1,4 +1,4 @@
-import { h, FunctionComponent } from "preact";
+import { h, FunctionComponent, Fragment } from "preact";
 import { ButtonType, ExperienceConfig } from "../lib/consent-types";
 import Button from "./Button";
 import CloseButton from "./CloseButton";
@@ -10,6 +10,8 @@ interface BannerProps {
   onManagePreferences: () => void;
   onClose: () => void;
   bannerIsOpen: boolean;
+  /** Shows acknowledge button instead of Accept all/ Reject all */
+  showAcknowledge: boolean;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
@@ -19,6 +21,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onManagePreferences,
   onClose,
   bannerIsOpen,
+  showAcknowledge,
 }) => {
   const {
     title = "Manage your consent",
@@ -27,6 +30,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     reject_button_label: rejectButtonLabel = "Reject All",
     privacy_preferences_link_label:
       privacyPreferencesLabel = "Manage preferences",
+    acknowledge_button_label: acknowledgeButtonLabel = "Ok",
   } = experience;
 
   const handleRejectAll = () => {
@@ -59,25 +63,40 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
             {description}
           </div>
           <div id="fides-banner-buttons" className="fides-banner-buttons">
-            <span className="fides-banner-buttons-left">
-              <Button
-                buttonType={ButtonType.TERTIARY}
-                label={privacyPreferencesLabel}
-                onClick={onManagePreferences}
-              />
-            </span>
-            <span className="fides-banner-buttons-right">
-              <Button
-                buttonType={ButtonType.PRIMARY}
-                label={rejectButtonLabel}
-                onClick={handleRejectAll}
-              />
-              <Button
-                buttonType={ButtonType.PRIMARY}
-                label={acceptButtonLabel}
-                onClick={handleAcceptAll}
-              />
-            </span>
+            {showAcknowledge ? (
+              <span
+                id="fides-acknowledge-button"
+                className="fides-banner-buttons-right"
+              >
+                <Button
+                  buttonType={ButtonType.PRIMARY}
+                  label={acknowledgeButtonLabel}
+                  onClick={onAcceptAll}
+                />
+              </span>
+            ) : (
+              <>
+                <span className="fides-banner-buttons-left">
+                  <Button
+                    buttonType={ButtonType.TERTIARY}
+                    label={privacyPreferencesLabel}
+                    onClick={onManagePreferences}
+                  />
+                </span>
+                <span className="fides-banner-buttons-right">
+                  <Button
+                    buttonType={ButtonType.PRIMARY}
+                    label={rejectButtonLabel}
+                    onClick={handleRejectAll}
+                  />
+                  <Button
+                    buttonType={ButtonType.PRIMARY}
+                    label={acceptButtonLabel}
+                    onClick={handleAcceptAll}
+                  />
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>
