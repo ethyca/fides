@@ -77,6 +77,15 @@ jobs:
         if: steps.check-rc-tag.outputs.match == 'true'
         run: nox -s "push(rc)"
 
+      # if an RC git tag, also notify Fidesinfra to trigger a redeploy of rc env, to pick up our newly published images
+      - name: Send Repository Dispatch Event (RC redeploy)
+        if: steps.check-rc-tag.outputs.match == 'true'
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          event-type: trigger-fidesinfra-deploy-fides-rc
+          repository: ethyca/fidesinfra
+          token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
+
       # if an alpha or beta git tag, then we run the prerelease job to publish images with an ":prerelease" tag
       - name: Push Fides prerelease Tags
         if: steps.check-alpha-tag.outputs.match == 'true' || steps.check-beta-tag.outputs.match == 'true'
