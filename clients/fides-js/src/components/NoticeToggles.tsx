@@ -83,10 +83,7 @@ const NoticeToggles = ({
   return (
     <div>
       {notices.map((notice, idx) => {
-        const checked =
-          notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
-            ? true
-            : enabledNoticeKeys.indexOf(notice.notice_key) !== -1;
+        const checked = enabledNoticeKeys.indexOf(notice.notice_key) !== -1;
         const isLast = idx === notices.length - 1;
         return (
           <div>
