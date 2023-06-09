@@ -18,6 +18,7 @@ import {
 import { getGpcStatusFromNotice } from "~/features/consent/helpers";
 
 import {
+  ConsentMechanism,
   ConsentMethod,
   ConsentOptionCreate,
   PrivacyNoticeResponseWithUserPreferences,
@@ -111,6 +112,7 @@ const NoticeDrivenConsent = () => {
         url: undefined,
         value,
         gpcStatus,
+        disabled: notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
       };
     });
   }, [consentContext, experience, draftPreferences]);
@@ -175,7 +177,8 @@ const NoticeDrivenConsent = () => {
   return (
     <Stack spacing={6} paddingX={12}>
       {items.map((item, index) => {
-        const { id, highlight, url, name, description, historyId } = item;
+        const { id, highlight, url, name, description, historyId, disabled } =
+          item;
         const handleChange = (value: boolean) => {
           const pref = value
             ? UserConsentPreference.OPT_IN
@@ -197,6 +200,7 @@ const NoticeDrivenConsent = () => {
               value={item.value}
               gpcStatus={item.gpcStatus}
               onChange={handleChange}
+              disabled={disabled}
             />
           </React.Fragment>
         );
