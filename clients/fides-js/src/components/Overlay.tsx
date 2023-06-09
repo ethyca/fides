@@ -35,6 +35,8 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   fidesRegionString,
   cookie,
 }) => {
+  const delayBannerMilliseconds = 100;
+  const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
   const { instance, attributes } = useA11yDialog({
@@ -58,7 +60,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   useEffect(() => {
     const delayBanner = setTimeout(() => {
       setBannerIsOpen(true);
-    }, 100);
+    }, delayBannerMilliseconds);
     return () => clearTimeout(delayBanner);
   }, [setBannerIsOpen]);
 
@@ -83,7 +85,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       } else {
         debugLog(options.debug, "Modal link element not found.");
       }
-    }, 200);
+    }, delayModalLinkMilliseconds);
     return () => clearTimeout(delayModalLinkBinding);
   }, [options.modalLinkId, options.debug, handleOpenModal]);
 
