@@ -40,7 +40,7 @@ from fides.api.db.system import (
     upsert_system,
     validate_privacy_declarations,
 )
-from fides.api.schemas.systemort SystemResponse
+from fides.api.schemas.system import SystemResponse
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.utils.api_router import APIRouter
 from fides.api.models.connectionconfig import ConnectionConfig
