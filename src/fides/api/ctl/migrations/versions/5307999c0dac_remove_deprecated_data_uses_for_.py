@@ -24,6 +24,8 @@ def upgrade() -> None:
     bind: Connection = op.get_bind()
     bind.execute(text("DELETE FROM ctl_data_uses WHERE is_default = TRUE;"))
 
+    # This leaves the data uses empty, but the step to seed them back comes _after_ these migrations
+
 
 def downgrade() -> None:
     pass
