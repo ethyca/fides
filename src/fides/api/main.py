@@ -25,8 +25,8 @@ from fides.api.app_setup import (
     log_startup,
     run_database_startup,
 )
-from fides.api.ctl.routes.util import API_PREFIX
-from fides.api.ctl.ui import (
+from fides.api.api.v1.endpoints.util import API_PREFIX
+from fides.api.ui import (
     get_admin_index_as_response,
     get_path_to_admin_ui_file,
     get_ui_file_map,

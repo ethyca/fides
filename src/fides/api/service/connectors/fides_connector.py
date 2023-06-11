@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional, Set
 
 from loguru import logger as log
 
-from fides.api.ctl.utils.errors import FidesError
+from fides.api.utils.errors import FidesError
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import (
     ConnectionConfig,

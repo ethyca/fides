@@ -11,8 +11,8 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField
 from py._path.local import LocalPath
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.database.crud import get_resource
-from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.db.crud import get_resource
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,

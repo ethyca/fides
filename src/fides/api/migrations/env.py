@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from fides.api.ctl.utils.logger import setup as setup_fidesapi_logger
+from fides.api.utils.logger import setup as setup_fidesapi_logger
 from fides.core.config import CONFIG
 
 # this is the Alembic Config object, which provides
@@ -24,7 +24,7 @@ setup_fidesapi_logger(
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from fides.api.ctl.sql_models import Base
+from fides.api.models.sql_models import Base
 
 target_metadata = Base.metadata
 

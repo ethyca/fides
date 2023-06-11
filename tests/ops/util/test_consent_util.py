@@ -9,7 +9,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from starlette.exceptions import HTTPException
 
 from fides.api.app_setup import DEFAULT_PRIVACY_NOTICES_PATH
-from fides.api.ctl.sql_models import DataUse as sql_DataUse
+from fides.api.models.sql_models import DataUse as sql_DataUse
 from fides.api.models.privacy_experience import (
     BannerEnabled,
     ComponentType,

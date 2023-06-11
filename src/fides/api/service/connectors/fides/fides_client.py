@@ -7,7 +7,7 @@ from httpx import AsyncClient, Client, HTTPStatusError, Request, RequestError, T
 from loguru import logger
 
 from fides.api.api.v1 import urn_registry as urls
-from fides.api.ctl.utils.errors import FidesError
+from fides.api.utils.errors import FidesError
 from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.privacy_request import (
     PrivacyRequestCreate,

@@ -9,7 +9,7 @@ from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.api.v1.endpoints.utils import transform_fields
 from fides.api.common_exceptions import ValidationError
-from fides.api.ctl.sql_models import DataUse, System  # type: ignore[attr-defined]
+from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-defined]
 from fides.api.custom_types import SafeStr
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_experience import (

@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, Generator, List
 import pytest
 from requests import Session
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.db import session
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import (

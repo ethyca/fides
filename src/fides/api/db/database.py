@@ -12,9 +12,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists
 from sqlalchemy_utils.types.encrypted.encrypted_type import InvalidCiphertextError
 
-from fides.api.ctl.database.seed import load_default_resources, load_samples
-from fides.api.ctl.database.session import async_session
-from fides.api.ctl.utils.errors import get_full_exception_name
+from fides.api.db.seed import load_default_resources, load_samples
+from fides.api.db.ctl_session import async_session
+from fides.api.utils.errors import get_full_exception_name
 from fides.api.db.base import Base  # type: ignore[attr-defined]
 from fides.core.utils import get_db_engine
 

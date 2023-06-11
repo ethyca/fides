@@ -9,8 +9,8 @@ from fideslang import DEFAULT_TAXONOMY, DataCategory, Organization
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from fides.api.ctl.database import samples, seed
-from fides.api.ctl.sql_models import Dataset, PolicyCtl, System
+from fides.api.db import samples, seed
+from fides.api.models.sql_models import Dataset, PolicyCtl, System
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_user import FidesUser

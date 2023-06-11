@@ -20,7 +20,7 @@ from fides.api.api.v1 import scope_registry
 from fides.api.api.v1 import urn_registry as urls
 from fides.api.api.v1.endpoints.utils import transform_fields
 from fides.api.common_exceptions import ValidationError
-from fides.api.ctl.sql_models import DataUse, System  # type: ignore
+from fides.api.models.sql_models import DataUse, System  # type: ignore
 from fides.api.models.privacy_experience import (
     upsert_privacy_experiences_after_notice_update,
 )

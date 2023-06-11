@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import SystemManagerException
-from fides.api.ctl.sql_models import System
+from fides.api.models.sql_models import System
 from fides.api.models.fides_user import FidesUser
 
 

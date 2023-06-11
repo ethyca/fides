@@ -28,7 +28,7 @@ from fides.api.common_exceptions import (
     RuleTargetValidationError,
     RuleValidationError,
 )
-from fides.api.ctl.sql_models import DataCategory  # type: ignore
+from fides.api.models.sql_models import DataCategory  # type: ignore
 from fides.api.models.client import ClientDetail
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.storage import StorageConfig

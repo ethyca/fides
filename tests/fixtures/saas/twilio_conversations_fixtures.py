@@ -8,7 +8,7 @@ from sqlalchemy_utils.functions import create_database, database_exists, drop_da
 from starlette.status import HTTP_204_NO_CONTENT
 
 from fides.api.cryptography import cryptographic_util
-from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.db import session
 from fides.api.models.connectionconfig import (
     AccessLevel,

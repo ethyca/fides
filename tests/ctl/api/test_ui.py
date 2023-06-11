@@ -9,7 +9,7 @@ import pytest
 import requests
 from starlette.testclient import TestClient
 
-from fides.api.ctl.ui import (
+from fides.api.ui import (
     generate_route_file_map,
     match_route,
     path_is_in_ui_directory,
