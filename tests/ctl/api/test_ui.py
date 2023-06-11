@@ -9,11 +9,7 @@ import pytest
 import requests
 from starlette.testclient import TestClient
 
-from fides.api.ui import (
-    generate_route_file_map,
-    match_route,
-    path_is_in_ui_directory,
-)
+from fides.api.ui import generate_route_file_map, match_route, path_is_in_ui_directory
 
 # Path segments of temporary files whose routes are tested.
 STATIC_FILES = (

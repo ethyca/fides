@@ -14,8 +14,8 @@ from sqlalchemy.orm import Session, relationship
 from sqlalchemy.util import hybridproperty
 
 from fides.api.common_exceptions import ValidationError
-from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.db.base_class import Base, FidesBase
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
 class UserConsentPreference(Enum):

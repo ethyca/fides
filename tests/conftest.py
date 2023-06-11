@@ -28,9 +28,9 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SYSTEMS,
 )
 from fides.api.db.ctl_session import sync_engine
-from fides.api.models.sql_models import DataUse, PrivacyDeclaration
 from fides.api.main import app
 from fides.api.models.privacy_request import generate_request_callback_jwe
+from fides.api.models.sql_models import DataUse, PrivacyDeclaration
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import (
     APPROVER,

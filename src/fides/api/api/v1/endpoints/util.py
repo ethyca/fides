@@ -15,12 +15,12 @@ from fides.api.api.v1.scope_registry import (
     REGISTRY,
     SYSTEM,
 )
+from fides.api.db.base import Base  # type: ignore[attr-defined]
 from fides.api.db.crud import get_resource, list_resource
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     models_with_default_field,
 )
 from fides.api.utils import errors
-from fides.api.db.base import Base  # type: ignore[attr-defined]
 
 API_PREFIX = "/api/v1"
 

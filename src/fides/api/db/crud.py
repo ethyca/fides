@@ -15,13 +15,13 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from fides.api.db.base import Base  # type: ignore[attr-defined]
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     CustomField,
     CustomFieldDefinition,
     ResourceTypes,
 )
 from fides.api.utils import errors
-from fides.api.db.base import Base  # type: ignore[attr-defined]
 
 
 # CRUD Functions

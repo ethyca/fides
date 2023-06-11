@@ -40,10 +40,8 @@ from fides.api.db.system import (
     upsert_system,
     validate_privacy_declarations,
 )
-from fides.api.schemas.system import SystemResponse
-from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.utils.api_router import APIRouter
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.oauth.utils import verify_oauth_client, verify_oauth_client_prod
 from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
@@ -52,11 +50,13 @@ from fides.api.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateResponse,
     SaasConnectionTemplateValues,
 )
+from fides.api.schemas.system import SystemResponse
 from fides.api.util.connection_util import patch_connection_configs
 from fides.api.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
+from fides.api.utils.api_router import APIRouter
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
 SYSTEM_CONNECTIONS_ROUTER = APIRouter(

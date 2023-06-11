@@ -20,6 +20,8 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
+from fides.api.api.v1.endpoints import health
+from fides.api.api.v1.endpoints.util import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
 from fides.api.api.v1.scope_registry import (
     CREATE,
     DELETE,
@@ -36,11 +38,9 @@ from fides.api.api.v1.scope_registry import (
 )
 from fides.api.api.v1.urn_registry import V1_URL_PREFIX
 from fides.api.db.crud import get_resource
-from fides.api.api.v1.endpoints import health
-from fides.api.api.v1.endpoints.util import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
-from fides.api.schemas.system import PrivacyDeclarationResponse
 from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
 from fides.api.oauth.roles import OWNER, VIEWER
+from fides.api.schemas.system import PrivacyDeclarationResponse
 from fides.core import api as _api
 from fides.core.config import FidesConfig, get_config
 

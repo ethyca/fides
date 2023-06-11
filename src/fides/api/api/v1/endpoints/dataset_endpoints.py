@@ -42,7 +42,6 @@ from fides.api.common_exceptions import (
     TraversalError,
     ValidationError,
 )
-from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -50,6 +49,9 @@ from fides.api.models.datasetconfig import (
     DatasetConfig,
     convert_dataset_to_graph,
     to_graph_field,
+)
+from fides.api.models.sql_models import (
+    Dataset as CtlDataset,  # type: ignore[attr-defined]
 )
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed

@@ -6,7 +6,6 @@ import pytest
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fides.api.models import sql_models
 from fides.api.db.crud import (
     create_resource,
     delete_resource,
@@ -14,6 +13,7 @@ from fides.api.db.crud import (
     get_resource_with_custom_fields,
     list_resource,
 )
+from fides.api.models import sql_models
 from fides.api.utils.errors import QueryError
 from fides.core import api as _api
 from fides.core.config import FidesConfig

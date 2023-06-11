@@ -20,11 +20,11 @@ from fides.api.api.v1 import scope_registry
 from fides.api.api.v1 import urn_registry as urls
 from fides.api.api.v1.endpoints.utils import transform_fields
 from fides.api.common_exceptions import ValidationError
-from fides.api.models.sql_models import DataUse, System  # type: ignore
 from fides.api.models.privacy_experience import (
     upsert_privacy_experiences_after_notice_update,
 )
 from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
+from fides.api.models.sql_models import DataUse, System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas import privacy_notice as schemas
 from fides.api.util.api_router import APIRouter

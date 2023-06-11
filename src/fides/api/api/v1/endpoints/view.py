@@ -9,8 +9,8 @@ from fides.api.api.v1 import scope_registry
 from fides.api.db.crud import list_resource
 from fides.api.db.ctl_session import get_async_db
 from fides.api.models.sql_models import Evaluation  # type: ignore[attr-defined]
-from fides.api.utils.api_router import APIRouter
 from fides.api.oauth.utils import verify_oauth_client_prod
+from fides.api.utils.api_router import APIRouter
 
 router = APIRouter(
     tags=["View"],

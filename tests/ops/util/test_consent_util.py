@@ -9,7 +9,6 @@ from sqlalchemy.orm.attributes import flag_modified
 from starlette.exceptions import HTTPException
 
 from fides.api.app_setup import DEFAULT_PRIVACY_NOTICES_PATH
-from fides.api.models.sql_models import DataUse as sql_DataUse
 from fides.api.models.privacy_experience import (
     BannerEnabled,
     ComponentType,
@@ -22,6 +21,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeTemplate,
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.sql_models import DataUse as sql_DataUse
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.util.consent_util import (
     add_complete_system_status_for_consent_reporting,

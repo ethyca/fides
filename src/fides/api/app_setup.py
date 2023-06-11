@@ -15,15 +15,13 @@ from starlette.middleware.cors import CORSMiddleware
 
 import fides
 from fides.api.api.deps import get_api_session
+from fides.api.api.v1 import CTL_ROUTER
 from fides.api.api.v1.api import api_router
 from fides.api.api.v1.endpoints.utils import fides_limiter
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
 from fides.api.db.database import configure_db
 from fides.api.db.seed import create_or_update_parent_user
-from fides.api.api.v1 import CTL_ROUTER
-from fides.api.utils.errors import FidesError
-from fides.api.utils.logger import setup as setup_logging
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.oauth.utils import get_root_client, verify_oauth_client_prod
 from fides.api.service.connectors.saas.connector_registry_service import (
@@ -43,6 +41,8 @@ from fides.api.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
+from fides.api.utils.errors import FidesError
+from fides.api.utils.logger import setup as setup_logging
 from fides.core.config import CONFIG
 
 VERSION = fides.__version__
