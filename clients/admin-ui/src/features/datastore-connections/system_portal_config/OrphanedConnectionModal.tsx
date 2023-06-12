@@ -9,7 +9,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Spacer,
   Stack,
   Text,
   useDisclosure,
@@ -103,8 +102,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
 
   return (
     <>
-      <>
-        <Button
+      <Button
           loadingText="Deleting"
           onClick={onOpen}
           size="sm"
@@ -114,7 +112,6 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
         >
           Link connector
         </Button>
-      </>
 
       <Modal isCentered isOpen={isOpen} size="lg" onClose={closeIfComplete}>
         <ModalOverlay />

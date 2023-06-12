@@ -71,12 +71,10 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
         />
         <Spacer />
         {!connectionConfig && orphanedConnectionConfigs.length > 0 ? (
-          <>
-            <OrphanedConnectionModal
-              connectionConfigs={orphanedConnectionConfigs}
-              systemFidesKey={systemFidesKey}
-            />
-          </>
+          <OrphanedConnectionModal
+            connectionConfigs={orphanedConnectionConfigs}
+            systemFidesKey={systemFidesKey}
+          />
         ) : null}
         <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
           <Button
