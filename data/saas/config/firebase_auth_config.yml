@@ -14,13 +14,11 @@ saas_config:
       label: Project ID
     - name: private_key_id
       label: Private Key ID
-      sensitive: True
     - name: private_key
       sensitive: True
     - name: client_email
     - name: client_id
       label: Client ID
-      sensitive: True
     - name: auth_uri
       label: Auth URI
       default_value: https://accounts.google.com/o/oauth2/auth

@@ -8,7 +8,6 @@ saas_config:
   connector_params:
     - name: domain
     - name: client_id
-      sensitive: True
     - name: client_secret
       sensitive: True
 

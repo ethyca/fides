@@ -10,7 +10,6 @@ saas_config:
       default_value: amplitude.com
     - name: api_key
       label: API Key
-      sensitive: True
     - name: secret_key
       sensitive: True
 

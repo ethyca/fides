@@ -12,7 +12,7 @@ class FidesConnectorSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to a remote Fides"""
 
     uri: str
-    username: str = Field(sensitive=True)
+    username: str
     password: str = Field(sensitive=True)
     polling_timeout: Optional[int] = None
     polling_interval: Optional[int] = None

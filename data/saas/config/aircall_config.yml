@@ -10,7 +10,6 @@ saas_config:
       default_value: api.aircall.io
     - name: api_id
       label: API ID
-      sensitive: True
     - name: api_token
       label: API Token
       sensitive: True

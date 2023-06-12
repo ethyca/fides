@@ -12,13 +12,13 @@ class DynamoDBSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to an Amazon DynamoDB cluster"""
 
     region_name: str
+    aws_access_key_id: str = Field(title="AWS Access Key ID")
     aws_secret_access_key: str = Field(title="AWS Secret Access Key", sensitive=True)
-    aws_access_key_id: str = Field(title="AWS Access Key ID", sensitive=True)
 
     _required_components: List[str] = [
         "region_name",
-        "aws_secret_access_key",
         "aws_access_key_id",
+        "aws_secret_access_key",
     ]
 
 

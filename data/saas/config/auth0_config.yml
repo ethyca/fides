@@ -9,7 +9,6 @@ saas_config:
     - name: domain
     - name: client_id
       label: Client ID
-      sensitive: True
     - name: client_secret
       sensitive: True
 

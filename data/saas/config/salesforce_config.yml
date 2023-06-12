@@ -10,7 +10,6 @@ saas_config:
       description: yourdomain.my.salesforce.com
     - name: client_id
       label: Client ID
-      sensitive: True
     - name: client_secret
       sensitive: True
     - name: redirect_uri

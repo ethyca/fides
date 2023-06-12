@@ -15,7 +15,6 @@ saas_config:
       description: e.g. ***@AdobeOrg
     - name: client_id
       label: Client ID
-      sensitive: True
     - name: client_secret
       sensitive: True
     - name: technical_account_id

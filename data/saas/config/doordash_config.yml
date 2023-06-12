@@ -10,10 +10,8 @@ saas_config:
       default_value: openapi.doordash.com
     - name: developer_id
       label: Developer ID
-      sensitive: True
     - name: key_id
       label: Key ID
-      sensitive: True
     - name: signing_secret
       sensitive: True
 

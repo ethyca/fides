@@ -12,7 +12,6 @@ saas_config:
       description: The email of the Outreach user to associate with each automated compliance request (data_protection_request)
     - name: client_id
       label: Client ID
-      sensitive: True
     - name: client_secret
       sensitive: True
     - name: redirect_uri
