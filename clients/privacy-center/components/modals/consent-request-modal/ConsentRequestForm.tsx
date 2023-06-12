@@ -202,7 +202,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
   return (
     <>
       <ModalHeader pt={6} pb={0}>
-        {config.consent?.button.modalTitle || config.consent?.button.title}
+        {config.consent?.button.title}
       </ModalHeader>
       <chakra.form onSubmit={handleSubmit} data-testid="consent-request-form">
         <ModalBody>

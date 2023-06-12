@@ -20,6 +20,7 @@ The types of changes are:
 
 ### Fixed
 - Remove the `fides-js` banner from tab order when it is hidden and move the overlay components to the top of the tab order. [#3510](https://github.com/ethyca/fides/pull/3510)
+- Remove privacy center `consent.button.modalTitle` option [#3530](https://github.com/ethyca/fides/pull/3530)
 
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
