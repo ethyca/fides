@@ -51,7 +51,6 @@ export type ConsentConfig = {
     icon_path: string;
     identity_inputs?: IdentityInputs;
     title: string;
-    modalTitle?: string;
   };
   page: {
     consentOptions: ConfigConsentOption[];
