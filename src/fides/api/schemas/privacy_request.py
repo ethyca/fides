@@ -7,6 +7,7 @@ from pydantic import Field, validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
+from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLogStatus,
@@ -14,7 +15,6 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.policy import ActionType
 from fides.api.schemas.policy import PolicyResponse as PolicySchema
 from fides.api.schemas.redis_cache import Identity, IdentityBase
 from fides.api.schemas.user import PrivacyRequestReviewer
@@ -65,7 +65,7 @@ class ConsentReport(Consent):
     """Schema for reporting Consent requests."""
 
     id: str
-    identity: IdentityBase
+    identity: Identity
     created_at: datetime
     updated_at: datetime
 
