@@ -1,16 +1,12 @@
 import {
-  ConsentMechanism,
+  ConsentMethod,
   ConsentOptionCreate,
-  PrivacyNotice,
-  PrivacyPreferencesCreateWithCode,
-  UserConsentPreference,
+  PrivacyPreferencesRequest,
+  SaveConsentPreference,
 } from "./consent-types";
-import { debugLog } from "./consent-utils";
-import {
-  CookieKeyConsent,
-  getOrMakeFidesCookie,
-  saveFidesCookie,
-} from "./cookie";
+import { debugLog, transformUserPreferenceToBoolean } from "./consent-utils";
+import { CookieKeyConsent, FidesCookie, saveFidesCookie } from "./cookie";
+import { dispatchFidesEvent } from "./events";
 import { patchUserPreferenceToFidesServer } from "../services/fides/api";
 
 /**
@@ -20,58 +16,68 @@ import { patchUserPreferenceToFidesServer } from "../services/fides/api";
  * 3. Save preferences to the `fides_consent` cookie in the browser
  */
 export const updateConsentPreferences = ({
-  privacyNotices,
-  enabledPrivacyNoticeIds,
+  consentPreferencesToSave,
+  experienceId,
+  fidesApiUrl,
+  consentMethod,
+  userLocationString,
+  cookie,
   debug = false,
 }: {
-  privacyNotices: PrivacyNotice[];
-  enabledPrivacyNoticeIds: Array<PrivacyNotice["id"]>;
+  consentPreferencesToSave: Array<SaveConsentPreference>;
+  experienceId: string;
+  fidesApiUrl: string;
+  consentMethod: ConsentMethod;
+  userLocationString?: string;
+  cookie: FidesCookie;
   debug?: boolean;
 }) => {
-  const cookie = getOrMakeFidesCookie();
-
   // Derive the CookieKeyConsent object from privacy notices
   const noticeMap = new Map<string, boolean>(
-    privacyNotices.map((notice) => [
-      // DEFER(fides#3281): use notice key
-      notice.id,
-      enabledPrivacyNoticeIds.includes(notice.id),
+    consentPreferencesToSave.map(({ noticeKey, consentPreference }) => [
+      noticeKey,
+      transformUserPreferenceToBoolean(consentPreference),
     ])
   );
   const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeMap);
 
   // Derive the Fides user preferences array from privacy notices
   const fidesUserPreferences: Array<ConsentOptionCreate> = [];
-  privacyNotices.forEach((notice) => {
-    let consentPreference;
-    if (enabledPrivacyNoticeIds.includes(notice.id)) {
-      if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
-        consentPreference = UserConsentPreference.ACKNOWLEDGE;
-      } else {
-        consentPreference = UserConsentPreference.OPT_IN;
-      }
-    } else {
-      consentPreference = UserConsentPreference.OPT_OUT;
-    }
+  consentPreferencesToSave.forEach(({ noticeHistoryId, consentPreference }) => {
     fidesUserPreferences.push({
-      privacy_notice_history_id: notice.privacy_notice_history_id,
+      privacy_notice_history_id: noticeHistoryId,
       preference: consentPreference,
     });
   });
 
-  // 1. DEFER: Save preferences to Fides API
+  // Update the cookie object
+  // eslint-disable-next-line no-param-reassign
+  cookie.consent = consentCookieKey;
+
+  // 1. Save preferences to Fides API
   debugLog(debug, "Saving preferences to Fides API");
-  const privacyPreferenceCreate: PrivacyPreferencesCreateWithCode = {
+  const privacyPreferenceCreate: PrivacyPreferencesRequest = {
     browser_identity: cookie.identity,
     preferences: fidesUserPreferences,
+    privacy_experience_id: experienceId,
+    user_geography: userLocationString,
+    method: consentMethod,
   };
-  patchUserPreferenceToFidesServer(privacyPreferenceCreate, debug);
+  patchUserPreferenceToFidesServer(
+    privacyPreferenceCreate,
+    fidesApiUrl,
+    cookie.identity.fides_user_device_id,
+    debug
+  );
 
   // 2. Update the window.Fides.consent object
   debugLog(debug, "Updating window.Fides");
-  window.Fides.consent = consentCookieKey;
+  window.Fides.consent = cookie.consent;
 
   // 3. Save preferences to the cookie
   debugLog(debug, "Saving preferences to cookie");
-  saveFidesCookie({ ...cookie, consent: consentCookieKey });
+  saveFidesCookie(cookie);
+
+  // 4. Dispatch a "FidesUpdated" event
+  dispatchFidesEvent("FidesUpdated", cookie);
 };

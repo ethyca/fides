@@ -1696,13 +1696,11 @@ class TestPostPrivacyNotices:
         assert (
             overlay_exp.experience_config_id is not None
         )  # And automatically linked to a default config
-        assert overlay_exp.experience_config_history_id is not None
         overlay_copy = (
             overlay_exp.experience_config
         )  # Overlay Experience linked to default overlay copy
         assert overlay_copy.component == ComponentType.overlay
         assert overlay_copy.is_default
-
         assert privacy_center_exp is None
 
         (
@@ -1710,10 +1708,7 @@ class TestPostPrivacyNotices:
             ca_privacy_center_exp,
         ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
 
-        overlay_exp.histories[0].delete(db)
         overlay_exp.delete(db)
-
-        ca_overlay_exp.histories[0].delete(db)
         ca_overlay_exp.delete(db)
 
     def test_post_privacy_notice_no_notice_key(
@@ -1775,10 +1770,7 @@ class TestPostPrivacyNotices:
         assert privacy_center_exp is None
 
         assert overlay_exp.component == ComponentType.overlay
-        assert overlay_exp.version == 1.0
-        assert overlay_exp.disabled is False
         assert overlay_exp.experience_config_id is not None
-        assert overlay_exp.experience_config_history_id is not None
 
         (
             ca_overlay_exp,
@@ -1788,12 +1780,8 @@ class TestPostPrivacyNotices:
         assert ca_privacy_center_exp is None
 
         assert ca_overlay_exp.component == ComponentType.overlay
-        assert ca_overlay_exp.version == 1.0
-        assert ca_overlay_exp.disabled is False
         assert ca_overlay_exp.experience_config_id is not None
-        assert ca_overlay_exp.experience_config_history_id is not None
 
-        overlay_exp.histories[0].delete(db)
         overlay_exp.delete(db)
 
     def test_post_privacy_notice_duplicate_regions(
@@ -2613,10 +2601,8 @@ class TestPatchPrivacyNotices:
             db, PrivacyNoticeRegion.us_ca
         )
         assert overlay_exp.component == ComponentType.overlay
-        assert overlay_exp.version == 1.0
 
         assert privacy_center_exp.component == ComponentType.privacy_center
-        assert privacy_center_exp.version == 1.0
 
     def test_patch_multiple_privacy_notices(
         self,

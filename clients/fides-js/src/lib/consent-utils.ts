@@ -1,5 +1,9 @@
 import {
+  ComponentType,
+  ConsentMechanism,
   FidesOptions,
+  PrivacyExperience,
+  UserConsentPreference,
   UserGeolocation,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "./consent-types";
@@ -24,14 +28,14 @@ export const debugLog = (
  * Returns null if geolocation cannot be constructed by provided params, e.g. us_ca
  */
 export const constructFidesRegionString = (
-  geoLocation?: UserGeolocation,
+  geoLocation?: UserGeolocation | null,
   debug: boolean = false
 ): string | null => {
   debugLog(debug, "constructing geolocation...");
   if (!geoLocation) {
     debugLog(
       debug,
-      "cannot construct user location since geoLocation is undefined"
+      "cannot construct user location since geoLocation is undefined or null"
     );
     return null;
   }
@@ -45,9 +49,8 @@ export const constructFidesRegionString = (
   if (geoLocation.country && geoLocation.region) {
     return `${geoLocation.country.toLowerCase()}_${geoLocation.region.toLowerCase()}`;
   }
-  if (geoLocation.country) {
-    return geoLocation.country.toLowerCase();
-  }
+  // DEFER: return geoLocation.country when BE supports filtering by just country
+  // see https://github.com/ethyca/fides/issues/3300
   debugLog(
     debug,
     "cannot construct user location from provided geoLocation params..."
@@ -56,33 +59,131 @@ export const constructFidesRegionString = (
 };
 
 /**
- * Validate the fides global config options
+ * Convert a user consent preference into true/false
+ */
+export const transformUserPreferenceToBoolean = (
+  preference: UserConsentPreference | undefined
+) => {
+  if (!preference) {
+    return false;
+  }
+  if (preference === UserConsentPreference.OPT_OUT) {
+    return false;
+  }
+  if (preference === UserConsentPreference.OPT_IN) {
+    return true;
+  }
+  return preference === UserConsentPreference.ACKNOWLEDGE;
+};
+
+/**
+ * Convert a true/false consent to Fides user consent preference
+ */
+export const transformConsentToFidesUserPreference = (
+  consented: boolean,
+  consentMechanism?: ConsentMechanism
+): UserConsentPreference => {
+  if (consented) {
+    if (consentMechanism === ConsentMechanism.NOTICE_ONLY) {
+      return UserConsentPreference.ACKNOWLEDGE;
+    }
+    return UserConsentPreference.OPT_IN;
+  }
+  return UserConsentPreference.OPT_OUT;
+};
+
+/**
+ * Validate the fides global config options. If invalid, we cannot make API calls to Fides or link to the Privacy Center.
  */
 export const validateOptions = (options: FidesOptions): boolean => {
   // Check if options is an invalid type
-  if (options === undefined || typeof options !== "object") {
+  debugLog(
+    options.debug,
+    "Validating Fides consent overlay options...",
+    options
+  );
+  if (typeof options !== "object") {
     return false;
   }
-  // todo- more validation here?
+
+  if (!options.fidesApiUrl) {
+    debugLog(options.debug, "Invalid options: fidesApiUrl is required!");
+    return false;
+  }
 
   if (!options.privacyCenterUrl) {
     debugLog(options.debug, "Invalid options: privacyCenterUrl is required!");
     return false;
   }
 
-  if (options.privacyCenterUrl) {
-    try {
-      // eslint-disable-next-line no-new
-      new URL(options.privacyCenterUrl);
-    } catch (e) {
-      debugLog(
-        options.debug,
-        "Invalid options: privacyCenterUrl is an invalid URL!",
-        options.privacyCenterUrl
-      );
-      return false;
-    }
+  try {
+    // eslint-disable-next-line no-new
+    new URL(options.privacyCenterUrl);
+    // eslint-disable-next-line no-new
+    new URL(options.fidesApiUrl);
+  } catch (e) {
+    debugLog(
+      options.debug,
+      "Invalid options: privacyCenterUrl or fidesApiUrl is an invalid URL!",
+      options.privacyCenterUrl
+    );
+    return false;
   }
 
   return true;
 };
+
+/**
+ * Determines whether experience is valid and relevant notices exist within the experience
+ */
+export const experienceIsValid = (
+  effectiveExperience: PrivacyExperience | undefined | null,
+  options: FidesOptions
+): boolean => {
+  if (!effectiveExperience) {
+    debugLog(
+      options.debug,
+      `No relevant experience found. Skipping overlay initialization.`
+    );
+    return false;
+  }
+  if (
+    !(
+      effectiveExperience.privacy_notices &&
+      effectiveExperience.privacy_notices.length > 0
+    )
+  ) {
+    debugLog(
+      options.debug,
+      `No relevant notices in the privacy experience. Skipping overlay initialization.`,
+      effectiveExperience
+    );
+    return false;
+  }
+  if (effectiveExperience.component !== ComponentType.OVERLAY) {
+    debugLog(
+      options.debug,
+      "No experience found with overlay component. Skipping overlay initialization."
+    );
+    return false;
+  }
+  if (!effectiveExperience.experience_config) {
+    debugLog(
+      options.debug,
+      "No experience config found with for experience. Skipping overlay initialization."
+    );
+    return false;
+  }
+
+  return true;
+};
+
+/**
+ * Returns true if there are notices in the experience that require a user preference
+ */
+export const hasActionNeededNotices = (experience: PrivacyExperience) =>
+  Boolean(
+    experience?.privacy_notices?.some(
+      (notice) => notice.current_preference == null
+    )
+  );

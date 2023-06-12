@@ -167,7 +167,11 @@ SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
 SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{saas_connector_type}"
 REGISTER_CONNECTOR_TEMPLATE = "/connector_template/register"
 
+# System Connections
 SYSTEM_CONNECTIONS = "/system/{fides_key}/connection"
+INSTANTIATE_SYSTEM_CONNECTION = (
+    "/system/{fides_key}/connection/instantiate/{saas_connector_type}"
+)
 
 # User URLs
 USERS = "/user"

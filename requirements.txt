@@ -12,7 +12,7 @@ expandvars==0.9.0
 fastapi[all]==0.89.1
 fastapi-caching[redis]==0.3.0
 fastapi-pagination[sqlalchemy]~= 0.10.0
-fideslang==1.4
+fideslang==1.4.1
 fideslog==1.2.10
 firebase-admin==5.3.0
 GitPython==3.1.31
@@ -29,7 +29,7 @@ pandas==1.4.3
 passlib[bcrypt]==1.7.4
 plotly==5.13.1
 pyarrow==6.0.0
-psycopg2-binary==2.9.5
+psycopg2-binary==2.9.6
 pydantic<1.10.2
 pydash==6.0.2
 PyJWT==2.4.0
@@ -41,7 +41,7 @@ redis==3.5.3
 RestrictedPython==6.0.0
 rich-click==1.6.1
 sendgrid==6.9.7
-slowapi==0.1.7
+slowapi==0.1.8
 snowflake-sqlalchemy==1.4.3
 sqlalchemy[asyncio]==1.4.27
 sqlalchemy-citext==1.8.0

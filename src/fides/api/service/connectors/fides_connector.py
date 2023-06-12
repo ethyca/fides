@@ -9,11 +9,12 @@ from fides.api.models.connectionconfig import (
     ConnectionTestStatus,
     ConnectionType,
 )
-from fides.api.models.policy import ActionType, Policy
+from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.connection_configuration.connection_secrets_fides import (
     FidesConnectorSchema,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.fides.fides_client import FidesClient

@@ -12,33 +12,39 @@ import {
   ExternalLinkIcon,
 } from "@fidesui/react";
 
-import { ConfigConsentOption } from "~/types/config";
-import { useAppDispatch } from "~/app/hooks";
-import { changeConsent } from "~/features/consent/consent.slice";
 import { GpcStatus } from "~/features/consent/types";
 import { GpcBadge, GpcInfo } from "~/features/consent/GpcMessages";
 
-type ConsentItemProps = {
-  option: ConfigConsentOption;
+export type ConsentItemProps = {
+  id: string;
+  name: string;
+  description: string;
+  highlight?: boolean;
+  url?: string;
   value: boolean;
   gpcStatus: GpcStatus;
+  onChange: (value: boolean) => void;
 };
 
-const ConsentItemCard = ({ option, value, gpcStatus }: ConsentItemProps) => {
-  const { name, description, highlight, url, fidesDataUseKey } = option;
-
-  const dispatch = useAppDispatch();
-
+const ConsentItem = ({
+  id,
+  name,
+  description,
+  highlight,
+  url,
+  value,
+  gpcStatus,
+  onChange,
+}: ConsentItemProps) => {
   const handleRadioChange = (radioValue: string) => {
-    dispatch(changeConsent({ option, value: radioValue === "true" }));
+    onChange(radioValue === "true");
   };
 
   return (
     <Box
       backgroundColor={highlight ? "gray.100" : undefined}
       borderRadius="md"
-      data-testid={`consent-item-card-${fidesDataUseKey}`}
-      paddingX={12}
+      data-testid={`consent-item-${id}`}
       paddingY={3}
       width="full"
       lineHeight={5}
@@ -54,24 +60,25 @@ const ConsentItemCard = ({ option, value, gpcStatus }: ConsentItemProps) => {
 
         <GpcInfo status={gpcStatus} />
 
-        <HStack spacing={10}>
+        <HStack spacing={10} justifyContent="space-between">
           <Stack>
             <Text fontSize="sm" fontWeight="medium" color="gray.600" mb="2px">
               {description}
             </Text>
-
-            <Link href={url} isExternal>
-              <HStack>
-                <Text
-                  fontSize="sm"
-                  fontWeight="medium"
-                  color="complimentary.500"
-                >
-                  Find out more about this consent
-                </Text>
-                <ExternalLinkIcon mx="2px" color="complimentary.500" />
-              </HStack>
-            </Link>
+            {url ? (
+              <Link href={url} isExternal>
+                <HStack>
+                  <Text
+                    fontSize="sm"
+                    fontWeight="medium"
+                    color="complimentary.500"
+                  >
+                    Find out more about this consent
+                  </Text>
+                  <ExternalLinkIcon mx="2px" color="complimentary.500" />
+                </HStack>
+              </Link>
+            ) : null}
           </Stack>
 
           <Box>
@@ -95,4 +102,4 @@ const ConsentItemCard = ({ option, value, gpcStatus }: ConsentItemProps) => {
   );
 };
 
-export default ConsentItemCard;
+export default ConsentItem;

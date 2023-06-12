@@ -18,7 +18,6 @@ from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
     PrivacyExperienceConfigHistory,
-    PrivacyExperienceHistory,
 )
 from fides.api.models.privacy_notice import (
     PrivacyNotice,

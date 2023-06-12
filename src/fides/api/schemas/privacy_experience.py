@@ -163,7 +163,6 @@ class PrivacyExperience(FidesSchema):
 
     region: PrivacyNoticeRegion
     component: Optional[ComponentType]
-    disabled: Optional[bool] = False
     experience_config: Optional[ExperienceConfigSchemaWithId]
 
     class Config:
@@ -190,8 +189,6 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
 
     created_at: datetime
     updated_at: datetime
-    version: float
-    privacy_experience_history_id: str
     show_banner: Optional[bool]
     privacy_notices: Optional[List[PrivacyNoticeResponseWithUserPreferences]]
     experience_config: Optional[ExperienceConfigResponse]
