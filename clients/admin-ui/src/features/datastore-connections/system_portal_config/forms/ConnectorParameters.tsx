@@ -2,7 +2,7 @@ import { Box, SlideFade } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
-import TestConnection from "datastore-connections/add-connection/TestConnection";
+import TestConnection from "~/features/datastore-connections/system_portal_config/TestConnection"
 import {
   CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
@@ -375,7 +375,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       {response && (
         <SlideFade in>
           <Box mt="16px" maxW="528px" w="fit-content">
-            <TestConnection response={response} />
+            <TestConnection response={response} connectionOption={connectionOption}/>
           </Box>
         </SlideFade>
       )}
