@@ -144,21 +144,6 @@ type ConnectorParametersProps = {
   connectionConfig?: ConnectionConfigurationResponse;
 };
 
-/**
- * We do not support advanced settings in the UI yet, but the backend requires at least
- * a payload that looks like it. We stuff one into handleSubmit for now
- * See fides#2458
- */
-const STUBBED_ADVANCED_SETTINGS = {
-  advanced_settings: {
-    identity_types: {
-      email: false,
-      phone_number: false,
-      cookie_ids: [],
-    },
-  },
-};
-
 export const useConnectorForm = ({
   secretsSchema,
   systemFidesKey,
@@ -253,10 +238,7 @@ export const useConnectorForm = ({
         }
 
         if (connectionOption.type !== SystemType.MANUAL) {
-          const secretsPayload =
-            connectionOption.type === SystemType.EMAIL
-              ? { ...values, ...STUBBED_ADVANCED_SETTINGS }
-              : values;
+          const secretsPayload = values;
 
           await upsertConnectionConfigSecrets(
             secretsPayload,
