@@ -154,7 +154,11 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     handleUpdatePreferences(privacyNotices.map((n) => n.notice_key));
   };
   const handleRejectAll = () => {
-    handleUpdatePreferences([]);
+    handleUpdatePreferences(
+      privacyNotices
+        .filter((n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY)
+        .map((n) => n.notice_key)
+    );
   };
 
   if (!hasMounted) {
@@ -171,7 +175,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   );
 
   return (
-    <div id="fides-js-root">
+    <div>
       {showBanner ? (
         <ConsentBanner
           experience={experience.experience_config}
