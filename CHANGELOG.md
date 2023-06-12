@@ -18,6 +18,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.15.0...main)
 
+### Fixed
+- Fix race condition with consent modal link rendering [#3521](https://github.com/ethyca/fides/pull/3521)
+
 
 ### Fixed
 - Remove the `fides-js` banner from tab order when it is hidden and move the overlay components to the top of the tab order. [#3510](https://github.com/ethyca/fides/pull/3510)
