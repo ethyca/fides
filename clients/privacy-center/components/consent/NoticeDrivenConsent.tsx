@@ -130,10 +130,21 @@ const NoticeDrivenConsent = () => {
 
     const preferences: ConsentOptionCreate[] = Object.entries(
       draftPreferences
-    ).map(([key, value]) => ({
-      privacy_notice_history_id: key,
-      preference: value ?? UserConsentPreference.OPT_OUT,
-    }));
+    ).map(([key, value]) => {
+      const notice = experience?.privacy_notices?.find(
+        (n) => n.privacy_notice_history_id === key
+      );
+      if (notice?.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
+        return {
+          privacy_notice_history_id: key,
+          preference: UserConsentPreference.ACKNOWLEDGE,
+        };
+      }
+      return {
+        privacy_notice_history_id: key,
+        preference: value ?? UserConsentPreference.OPT_OUT,
+      };
+    });
 
     const payload: PrivacyPreferencesRequest = {
       browser_identity: identities,
