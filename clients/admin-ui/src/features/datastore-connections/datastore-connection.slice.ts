@@ -188,7 +188,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       CreateSaasConnectionConfig
     >({
       query: (params) => {
-        const url = `/system/${params.systemFidesKey}/${CONNECTION_ROUTE}/instantiate/${params.connectionConfig.saas_connector_type}`;
+        const url = `/system/${params.systemFidesKey}${CONNECTION_ROUTE}/instantiate/${params.connectionConfig.saas_connector_type}`;
 
         return {
           url,
