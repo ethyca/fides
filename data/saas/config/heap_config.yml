@@ -1,0 +1,56 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Heap
+  type: heap
+  description: A sample schema representing the Heap connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: heapanalytics.com
+    - name: app_id
+    - name: api_key
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <app_id>
+        password: <api_key>
+
+  test_request:
+    method: POST
+    path: /api/public/v0/auth_token
+
+  endpoints:
+    - name: auth_token
+      requests:
+        read:
+          method: POST
+          path: /api/public/v0/auth_token
+          param_values:
+            - name: email
+              identity: email
+    - name: user
+      requests:
+        delete:
+          method: POST
+          path: /api/public/v0/user_deletion
+          client_config:
+            protocol: https
+            host: <domain>
+            authentication:
+              strategy: bearer
+              configuration:
+                token: <auth_token_access_token>
+          body: |
+            { 
+              "users": [{ 
+                  "identity": "<email>" 
+              }] 
+            }
+          param_values:
+            - name: email
+              identity: email

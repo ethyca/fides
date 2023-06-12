@@ -1,0 +1,33 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: heap
+    description: A sample dataset representing the Heap connector for Fides
+    collections:
+      - name: auth_token
+        fields:
+          - name: access_token
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: expires_in
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: token_type
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: user
+        fields:
+          - name: status
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: deletion_request_location
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: deletion_request_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
