@@ -65,22 +65,19 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
       <Flex py={5}>
         <ConnectionListDropdown
           list={dropDownOptions}
-          label="Connection Type"
+          label="Connection type"
           selectedValue={selectedConnectionOption}
           onChange={setSelectedConnectionOption}
         />
-
+        <Spacer />
         {!connectionConfig && orphanedConnectionConfigs.length > 0 ? (
           <>
-            <Spacer />
-
             <OrphanedConnectionModal
               connectionConfigs={orphanedConnectionConfigs}
               systemFidesKey={systemFidesKey}
             />
           </>
         ) : null}
-        <Spacer />
         <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
           <Button
             colorScheme="primary"
@@ -89,6 +86,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
             data-testid="upload-btn"
             size="sm"
             onClick={uploadTemplateModal.onOpen}
+            marginLeft={2}
           >
             Upload connector
           </Button>

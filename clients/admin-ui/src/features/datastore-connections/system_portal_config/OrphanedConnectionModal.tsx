@@ -104,7 +104,6 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
   return (
     <>
       <>
-        <Spacer />
         <Button
           loadingText="Deleting"
           onClick={onOpen}
