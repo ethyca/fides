@@ -16,7 +16,7 @@ export const fillInDefaults = (
     if (schema.type === "integer") {
       filledInValues[name] = schema.default ? Number(schema.default) : 0;
     } else {
-      filledInValues[name] = schema.default ?? "";
+      filledInValues[name] = schema.default ?? null;
     }
   });
   return filledInValues;
