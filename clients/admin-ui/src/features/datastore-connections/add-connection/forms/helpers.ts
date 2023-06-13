@@ -1,7 +1,7 @@
 import { ConnectionTypeSecretSchemaReponse } from "~/features/connection-type/types";
 
 /**
- * Fill in default values based off of a schema
+ * Fill in default values based off of a schema. Use schema defaults if they exist, otherwise use passed-in defaults
  */
 export const fillInDefaults = (
   defaultValues: Record<string, any>,
@@ -14,9 +14,13 @@ export const fillInDefaults = (
     const [name, schema] = key;
 
     if (schema.type === "integer") {
-      filledInValues[name] = schema.default ? Number(schema.default) : 0;
+      const defaultValue = schema.default
+        ? Number(schema.default)
+        : defaultValues[name];
+      filledInValues[name] = defaultValue || 0;
     } else {
-      filledInValues[name] = schema.default ?? null;
+      const defaultValue = schema.default ?? defaultValues[name];
+      filledInValues[name] = defaultValue ?? null;
     }
   });
   return filledInValues;

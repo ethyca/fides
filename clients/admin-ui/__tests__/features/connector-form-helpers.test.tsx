@@ -31,12 +31,14 @@ describe("connector form helpers", () => {
           default: "default",
         },
         instance_key: { ...baseSchema, title: "instance_key" },
+        an_optional_secret: { type: "string", title: "an_optional_secret" },
       };
       const schema = { ...baseResponse, properties };
       expect(fillInDefaults(baseDefaultValues, schema)).toEqual({
         description: "default",
         name: "",
         instance_key: "",
+        an_optional_secret: null,
       });
     });
 
@@ -47,6 +49,7 @@ describe("connector form helpers", () => {
           ...baseSchema,
           title: "description",
           default: "default",
+          an_optional_secret: { type: "integer", title: "an_optional_secret" },
         },
         instance_key: { ...baseSchema, title: "instance_key" },
         port: { title: "port", default: "8080", type: "integer" },
@@ -57,6 +60,7 @@ describe("connector form helpers", () => {
         description: "default",
         name: "",
         instance_key: "",
+        an_optional_secret: 0,
         port: 8080,
       });
     });
