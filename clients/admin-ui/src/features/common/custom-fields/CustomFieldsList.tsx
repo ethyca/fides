@@ -26,7 +26,7 @@ export const CustomFieldsList = ({
     resourceType,
   });
 
-  if (!isEnabled) {
+  if (!isEnabled || sortedCustomFieldDefinitionIds.length == 0) {
     return null;
   }
 
