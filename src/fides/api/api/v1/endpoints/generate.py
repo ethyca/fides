@@ -11,7 +11,7 @@ from pydantic import BaseModel, root_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.api.v1 import scope_registry
-from fides.api.api.v1.endpoints.utils import API_PREFIX
+from fides.api.api.v1.endpoints import API_PREFIX
 from fides.api.db.crud import get_resource
 from fides.api.db.ctl_session import get_async_db
 from fides.api.models.sql_models import sql_model_map  # type: ignore[attr-defined]

@@ -14,11 +14,6 @@ from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 
 import fides
-from fides.api.analytics import (
-    accessed_through_local_host,
-    in_docker_container,
-    send_analytics_event,
-)
 from fides.api.api.v1.endpoints.utils import API_PREFIX
 from fides.api.app_setup import (
     check_redis,
@@ -105,6 +100,12 @@ async def prepare_and_log_request(
     """
     Prepares and sends analytics event provided the user is not opted out of analytics.
     """
+    # Avoid circular imports
+    from fides.api.analytics import (
+        accessed_through_local_host,
+        in_docker_container,
+        send_analytics_event,
+    )
 
     # this check prevents AnalyticsEvent from being called with invalid endpoint during unit tests
     if CONFIG.user.analytics_opt_out:
@@ -218,6 +219,9 @@ async def setup_server() -> None:
     initiate_scheduled_batch_email_send()
 
     logger.debug("Sending startup analytics events...")
+    # Avoid circular imports
+    from fides.api.analytics import in_docker_container, send_analytics_event
+
     await send_analytics_event(
         AnalyticsEvent(
             docker=in_docker_container(),

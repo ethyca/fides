@@ -4,8 +4,8 @@ from typing import Dict
 from fastapi import Security
 
 from fides.api.api.v1 import scope_registry
-from fides.api.api.v1.endpoints.utils import API_PREFIX
-from fides.api.db import database
+from fides.api.api.v1.endpoints import API_PREFIX
+from fides.api.db.database import configure_db, reset_db
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.util import errors
 from fides.api.util.api_router import APIRouter
@@ -39,10 +39,10 @@ async def db_action(action: DBActions) -> Dict:
                 "unable to reset fides database outside of dev_mode."
             )
 
-        database.reset_db(CONFIG.database.sync_database_uri)
+        reset_db(CONFIG.database.sync_database_uri)
         action_text = "reset"
 
-    await database.configure_db(CONFIG.database.sync_database_uri)
+    await configure_db(CONFIG.database.sync_database_uri)
 
     return {
         "data": {
