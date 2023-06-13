@@ -103,15 +103,15 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
   return (
     <>
       <Button
-          loadingText="Deleting"
-          onClick={onOpen}
-          size="sm"
-          variant="solid"
-          color="white"
-          colorScheme="primary"
-        >
-          Link connector
-        </Button>
+        loadingText="Deleting"
+        onClick={onOpen}
+        size="sm"
+        variant="solid"
+        color="white"
+        colorScheme="primary"
+      >
+        Link connector
+      </Button>
 
       <Modal isCentered isOpen={isOpen} size="lg" onClose={closeIfComplete}>
         <ModalOverlay />
