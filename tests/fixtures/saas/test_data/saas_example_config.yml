@@ -71,6 +71,7 @@ saas_config:
       requests:
         read:
           - method: GET
+            ignore_errors: [401, 403, 404]
             path: /3.0/search-members
             query_params:
               - name: query

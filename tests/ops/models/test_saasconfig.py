@@ -23,6 +23,16 @@ def test_saas_configs(saas_example_config) -> None:
 
 
 @pytest.mark.unit_saas
+def test_saas_config_ignore_errors(saas_example_config) -> None:
+    """Test that _should_ignore_errors ignores the correct errors."""
+    SaaSConfig(**saas_example_config)
+    assert SaaSConfig._should_ignore_errors(status_code=400, ignore_errors=True)
+    assert not SaaSConfig._should_ignore_errors(status_code=400, ignore_errors=False)
+    assert SaaSConfig._should_ignore_errors(status_code=400, ignore_errors=[400])
+    assert not SaaSConfig._should_ignore_errors(status_code=400, ignore_errors=[401])
+
+
+@pytest.mark.unit_saas
 def test_saas_request_without_method_or_path():
     with pytest.raises(ValidationError) as exc:
         SaaSRequest(path="/test")
