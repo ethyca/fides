@@ -7,6 +7,7 @@ from pydantic import Field, validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
+from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLogStatus,
@@ -14,7 +15,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.policy import ActionType, PolicyResponse as PolicySchema
+from fides.api.schemas.policy import PolicyResponse as PolicySchema
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.user import PrivacyRequestReviewer
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
