@@ -49,8 +49,8 @@ describe("connector form helpers", () => {
           ...baseSchema,
           title: "description",
           default: "default",
-          an_optional_secret: { type: "integer", title: "an_optional_secret" },
         },
+        an_optional_secret: { type: "integer", title: "an_optional_secret" },
         instance_key: { ...baseSchema, title: "instance_key" },
         port: { title: "port", default: "8080", type: "integer" },
       };
