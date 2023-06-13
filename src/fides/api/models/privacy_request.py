@@ -887,9 +887,9 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         )
         return hashed_value
 
-    def as_identity_schema(self) -> IdentityBase:
+    def as_identity_schema(self) -> Identity:
         """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
-        identity = IdentityBase()
+        identity = Identity()
         if any(
             [
                 not self.field_name,

@@ -135,7 +135,7 @@ export const useConnectionListDropDown = ({
 };
 
 const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
-  disabled = false,
+  disabled,
   hasClear = true,
   label,
   list,
