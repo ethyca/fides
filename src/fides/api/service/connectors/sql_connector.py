@@ -53,6 +53,9 @@ from fides.core.config import get_config
 
 CONFIG = get_config()
 
+sshtunnel.SSH_TIMEOUT = 10.0
+sshtunnel.TUNNEL_TIMEOUT = 10.0
+
 
 class SQLConnector(BaseConnector[Engine]):
     """A SQL connector represents an abstract connector to any datastore that can be
