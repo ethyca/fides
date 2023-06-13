@@ -1,4 +1,4 @@
-import { h } from "preact";
+import { h, Fragment } from "preact";
 import { Attributes } from "../lib/a11y-dialog";
 import Button from "./Button";
 import {
@@ -21,6 +21,7 @@ const ConsentModal = ({
   onSave,
   onRejectAll,
   onAcceptAll,
+  shouldAcknowledge,
 }: {
   attributes: Attributes;
   experience: ExperienceConfig;
@@ -31,6 +32,7 @@ const ConsentModal = ({
   onSave: (enabledNoticeKeys: NoticeKeys) => void;
   onRejectAll: () => void;
   onAcceptAll: () => void;
+  shouldAcknowledge: boolean;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
 
@@ -83,22 +85,33 @@ const ConsentModal = ({
             onChange={onChange}
           />
         </div>
+
         <div className="fides-modal-button-group">
-          <Button
-            label={experience.save_button_label}
-            buttonType={ButtonType.SECONDARY}
-            onClick={handleSave}
-          />
-          <Button
-            label={experience.reject_button_label}
-            buttonType={ButtonType.PRIMARY}
-            onClick={handleRejectAll}
-          />
-          <Button
-            label={experience.accept_button_label}
-            buttonType={ButtonType.PRIMARY}
-            onClick={handleAcceptAll}
-          />
+          {shouldAcknowledge ? (
+            <Button
+              label={experience.acknowledge_button_label}
+              buttonType={ButtonType.PRIMARY}
+              onClick={onAcceptAll}
+            />
+          ) : (
+            <>
+              <Button
+                label={experience.save_button_label}
+                buttonType={ButtonType.SECONDARY}
+                onClick={handleSave}
+              />
+              <Button
+                label={experience.reject_button_label}
+                buttonType={ButtonType.PRIMARY}
+                onClick={handleRejectAll}
+              />
+              <Button
+                label={experience.accept_button_label}
+                buttonType={ButtonType.PRIMARY}
+                onClick={handleAcceptAll}
+              />
+            </>
+          )}
         </div>
         {experience.privacy_policy_link_label &&
         experience.privacy_policy_url ? (

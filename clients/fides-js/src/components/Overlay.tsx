@@ -199,6 +199,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
         onAcceptAll={handleAcceptAll}
         onRejectAll={handleRejectAll}
         onSave={handleUpdatePreferences}
+        shouldAcknowledge={isAllNoticeOnly}
       />
     </div>
   );
