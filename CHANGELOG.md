@@ -22,11 +22,11 @@ The types of changes are:
 - Fix race condition with consent modal link rendering [#3521](https://github.com/ethyca/fides/pull/3521)
 - Remove the `fides-js` banner from tab order when it is hidden and move the overlay components to the top of the tab order. [#3510](https://github.com/ethyca/fides/pull/3510)
 - Disable connector dropdown in integration tab on save [#3552](https://github.com/ethyca/fides/pull/3552)
+- Handles an edge case for non-existent identities with the Kustomer API [#3513](https://github.com/ethyca/fides/pull/3513)
 
 ### Developer Experience
 
 - Optimize GitHub workflows used for docker image publishing [#3526](https://github.com/ethyca/fides/pull/3526)
-
 
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
