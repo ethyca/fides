@@ -162,22 +162,26 @@ class AuthenticatedClient:
         ]
         return rate_limit_requests
 
-    def _should_ignore_error(self, status_code: int) -> bool:
+    def _should_ignore_error(
+        self,
+        status_code: int,
+        errors_to_ignore: Optional[Union[bool, List[int]]] = False,
+    ) -> bool:
         """Should an error of `status_code` be ignored?"""
-        if self.ignore_errors is False:
-            # `ignore_errors` is a bool and explicitly set to False so Fides should not
+        if errors_to_ignore is False:
+            # `errors_to_ignore` is a bool and explicitly set to False so Fides should not
             # ignore any errors
             return False
 
-        if self.ignore_errors is True:
-            # `ignore_errors` is a bool and explicitly set to True so Fides should ignore
+        if errors_to_ignore is True:
+            # `errors_to_ignore` is a bool and explicitly set to True so Fides should ignore
             # all errors
             return True
 
-        if isinstance(self.ignore_errors, list):
-            # `ignore_errors` is a list of status codes so Fides should ignore the error
+        if isinstance(errors_to_ignore, list):
+            # `errors_to_ignore` is a list of status codes so Fides should ignore the error
             # if the status code is within the list
-            return status_code in self.ignore_errors
+            return status_code in errors_to_ignore
 
     @retry_send(retry_count=3, backoff_factor=1.0)  # pylint: disable=E1124
     def send(
@@ -187,7 +191,10 @@ class AuthenticatedClient:
     ) -> Response:
         """
         Builds and executes an authenticated request.
-        Optionally ignores non-200 responses if ignore_errors is set to True
+        Optionally ignores:
+          - all non-2xx/3xx responses if ignore_errors is set to True
+          - no non-2xx/3xx repsones if ignore_errors is set to False
+          - specific non-2xx/3xx responses if ignore_errors is set to a list of status codes
         """
         rate_limit_requests = self.build_rate_limit_requests()
         RateLimiter().limit(rate_limit_requests)
@@ -202,7 +209,10 @@ class AuthenticatedClient:
         )  # Dev mode only
 
         if not response.ok:
-            if self._should_ignore_error(response.status_code):
+            if self._should_ignore_error(
+                status_code=response.status_code,
+                errors_to_ignore=ignore_errors,
+            ):
                 logger.info(
                     "Ignoring errors on response with status code {} as configured.",
                     response.status_code,
