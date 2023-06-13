@@ -41,7 +41,7 @@ from fides.api.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
 
-# pylint: disable=too-many-nested-blocks,too-many-branches
+# pylint: disable=too-many-nested-blocks,too-many-branches,too-many-statements
 
 
 def requeue_requires_input_requests(db: Session) -> None:
@@ -195,8 +195,6 @@ def patch_connection_configs(
         orig_data = config.dict().copy()
         config_dict = config.dict()
         config_dict.pop("saas_connector_type", None)
-        if system:
-            config_dict["system_id"] = system.id
 
         if existing_connection_config:
             config_dict = {
@@ -207,6 +205,9 @@ def patch_connection_configs(
                 }.items()
                 if isinstance(value, bool) or value
             }
+
+        if system:
+            config_dict["system_id"] = system.id
 
         try:
             connection_config = ConnectionConfig.create_or_update(db, data=config_dict)

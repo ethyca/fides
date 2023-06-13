@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-sync-scripts */
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Script from "next/script";
@@ -63,30 +62,37 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
     <>
       <Head>
         <title>Cookie House</title>
-        <meta
-          name="description"
-          content="Sample Project used within Fides (github.com/ethyca/fides)"
-        />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-        {/* Insert the fides.js script */}
-        <script src={fidesScriptTagUrl} />
       </Head>
-      {/* Insert the GTM script, if a container ID was provided */}
-      <Script id="google-tag-manager" strategy="afterInteractive">
-        {`
-          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','${gtmContainerId}');
-        `}
-        {`
-          if (window.Fides) {
-            window.Fides.gtm();
+      {/**
+      Insert the fides.js script and run the GTM integration once ready
+      DEFER: using "beforeInteractive" here triggers a lint warning from NextJS
+      as it should only be used in the _document.tsx file. This still works and
+      ensures that fides.js fires earlier than other scripts, but isn't a best
+      practice.
+      */}
+      <Script
+        id="fides-js"
+        strategy="beforeInteractive"
+        src={fidesScriptTagUrl}
+        onReady={() => {
+          // Enable the GTM integration, if GTM is configured
+          if (gtmContainerId) {
+            (window as any).Fides.gtm();
           }
-        `}
-      </Script>
+        }}
+      />
+      {/* Insert the GTM script, if a container ID was provided */}
+      {gtmContainerId ? (
+        <Script id="google-tag-manager" strategy="afterInteractive">
+          {`
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','${gtmContainerId}');
+          `}
+        </Script>
+      ) : null}
       <Home privacyCenterUrl={privacyCenterUrl} products={products} />
     </>
   );

@@ -82,6 +82,8 @@ type MetaOptions = {
 /**
  * Call Fides.meta to configure Meta Pixel tracking.
  *
+ * DEFER: Update this integration to support async Fides events
+ *
  * @example
  * Fides.meta({
  *   consent: Fides.consent.data_sales,

@@ -101,6 +101,43 @@ async def async_session(test_client):
         async_engine.dispose()
 
 
+
+
+# TODO: THIS IS A HACKY WORKAROUND.
+# This is specific for this test: test_get_resource_with_custom_field
+# this was added to account for weird error that only happens during a
+# long testing session. Something causes a config/schema change with
+# the DB. Giving the test a dedicated session fixes the issue and
+# matches how runtime works.
+# It does look like there MAY be a small bug that is unlikely to ever
+# occur during runtime. What surfaced the "benign" failure is the
+# `connection_configs` relationship on the `System` model. We are
+# unsure of which upstream test causes the error.
+# https://github.com/MagicStack/asyncpg/blob/2f20bae772d71122e64f424cc4124e2ebdd46a58/asyncpg/exceptions/_base.py#L120-L124
+# <class 'asyncpg.exceptions.InvalidCachedStatementError'>: cached statement plan is invalid due to a database schema or configuration change (SQLAlchemy asyncpg dialect will now invalidate all prepared caches in response to this exception)
+@pytest.fixture(scope="function")
+@pytest.mark.asyncio
+async def async_session_temp(test_client):
+    assert CONFIG.test_mode
+    assert requests.post == test_client.post
+
+    create_citext_extension(sync_engine)
+
+    async_engine = create_async_engine(
+        CONFIG.database.async_database_uri,
+        echo=False,
+    )
+
+    session_maker = sessionmaker(
+        async_engine, class_=AsyncSession, expire_on_commit=False
+    )
+
+    async with session_maker() as session:
+        yield session
+        session.close()
+        async_engine.dispose()
+
+
 @pytest.fixture(scope="session")
 def api_client():
     """Return a client used to make API requests"""

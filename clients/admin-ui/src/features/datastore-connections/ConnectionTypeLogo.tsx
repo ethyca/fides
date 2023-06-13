@@ -1,21 +1,21 @@
 import { Image, ImageProps } from "@fidesui/react";
 import React from "react";
 
-import { ConnectionSystemTypeMap, ConnectionType } from "~/types/api";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  ConnectionType,
+} from "~/types/api";
 
 import {
   CONNECTION_TYPE_LOGO_MAP,
   CONNECTOR_LOGOS_PATH,
   FALLBACK_CONNECTOR_LOGOS_PATH,
 } from "./constants";
-import {
-  DatastoreConnection,
-  isConnectionSystemTypeMap,
-  isDatastoreConnection,
-} from "./types";
+import { isConnectionSystemTypeMap, isDatastoreConnection } from "./types";
 
 type ConnectionTypeLogoProps = {
-  data: string | DatastoreConnection | ConnectionSystemTypeMap;
+  data: string | ConnectionConfigurationResponse | ConnectionSystemTypeMap;
 };
 
 const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps & ImageProps> = ({

@@ -14,6 +14,7 @@ import ConnectionsEmptyState from "./ConnectionsEmptyState";
 import ConnectionHeading from "./ConnectionsHeader";
 import {
   selectDatastoreConnectionFilters,
+  setOrphanedFromSystem,
   useGetAllDatastoreConnectionsQuery,
 } from "./datastore-connection.slice";
 import { DatastoreConnectionParams } from "./types";
@@ -49,6 +50,10 @@ const ConnectionsContainer: React.FC = () => {
   const hasData = datastoreConnectionsData!?.items?.length > 0;
 
   useEffect(() => {
+    dispatch(setOrphanedFromSystem(true));
+  }, [dispatch]);
+
+  useEffect(() => {
     mounted.current = true;
     if (connectionOptions.length === 0 && connectionTypesData?.items) {
       dispatch(setConnectionOptions(connectionTypesData.items));
@@ -61,7 +66,7 @@ const ConnectionsContainer: React.FC = () => {
 
   return (
     <>
-      <ConnectionHeading hasConnections={hasData} />
+      <ConnectionHeading />
       {mounted.current && <ConnectionFilters />}
       {(isFetching || isLoading) && (
         <Center>
