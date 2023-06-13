@@ -69,7 +69,7 @@ def test_match_route(
 
 
 @pytest.mark.unit
-@mock.patch("fides.api.ctl.ui.get_path_to_admin_ui_file")
+@mock.patch("fides.api.ui.get_path_to_admin_ui_file")
 @pytest.mark.parametrize(
     "route, expected",
     [
