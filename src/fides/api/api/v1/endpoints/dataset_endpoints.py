@@ -596,8 +596,16 @@ def get_ctl_datasets(
     )
     filters = []
     if only_unlinked_datasets:
-        subquery = select([DatasetConfig.ctl_dataset_id])
-        filters.append(not_(CtlDataset.id.in_(subquery)))
+        unlinked_subquery = select([DatasetConfig.ctl_dataset_id])
+        filters.append(not_(CtlDataset.id.in_(unlinked_subquery)))
+
+    if remove_saas_datasets:
+        saas_subquery = (
+            select([ConnectionConfig.saas_config["fides_key"].astext])
+            .select_from(ConnectionConfig)
+            .where(ConnectionConfig.saas_config.is_not(None))
+        )
+        filters.append(not_(CtlDataset.fides_key.in_(saas_subquery)))
 
     conditions = []
 
