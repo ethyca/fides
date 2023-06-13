@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.2b0.post0.dev7"
+    "version": "2.14.2b0.post0.dev8"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -13744,7 +13744,7 @@
             "type": "string"
           },
           "identity": {
-            "$ref": "#/components/schemas/IdentityBase"
+            "$ref": "#/components/schemas/Identity"
           },
           "created_at": {
             "title": "Created At",
@@ -15988,23 +15988,6 @@
         },
         "additionalProperties": false,
         "description": "Some PII grouping pertaining to a human"
-      },
-      "IdentityBase": {
-        "title": "IdentityBase",
-        "type": "object",
-        "properties": {
-          "phone_number": {
-            "title": "Phone Number",
-            "type": "string"
-          },
-          "email": {
-            "title": "Email",
-            "type": "string",
-            "format": "email"
-          }
-        },
-        "additionalProperties": false,
-        "description": "The minimum fields required to represent an identity."
       },
       "IdentityTypes": {
         "title": "IdentityTypes",
