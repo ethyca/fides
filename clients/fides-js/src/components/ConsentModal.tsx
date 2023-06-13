@@ -1,5 +1,4 @@
 import { h } from "preact";
-import { useMemo, useState } from "preact/hooks";
 import { Attributes } from "../lib/a11y-dialog";
 import Button from "./Button";
 import {
@@ -10,36 +9,30 @@ import {
 import NoticeToggles from "./NoticeToggles";
 import CloseButton from "./CloseButton";
 
+type NoticeKeys = Array<PrivacyNotice["notice_key"]>;
+
 const ConsentModal = ({
   attributes,
   experience,
   notices,
+  enabledNoticeKeys,
+  onChange,
   onClose,
   onSave,
-  onAcceptAll,
   onRejectAll,
+  onAcceptAll,
 }: {
   attributes: Attributes;
   experience: ExperienceConfig;
   notices: PrivacyNotice[];
+  enabledNoticeKeys: NoticeKeys;
   onClose: () => void;
-  onSave: (enabledNoticeKeys: Array<PrivacyNotice["notice_key"]>) => void;
-  onAcceptAll: () => void;
+  onChange: (enabledNoticeKeys: NoticeKeys) => void;
+  onSave: (enabledNoticeKeys: NoticeKeys) => void;
   onRejectAll: () => void;
+  onAcceptAll: () => void;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
-
-  const initialEnabledNoticeKeys = useMemo(
-    () =>
-      Object.keys(window.Fides.consent).filter(
-        (key) => window.Fides.consent[key]
-      ),
-    []
-  );
-
-  const [enabledNoticeKeys, setEnabledNoticeKeys] = useState<
-    Array<PrivacyNotice["notice_key"]>
-  >(initialEnabledNoticeKeys);
 
   const handleSave = () => {
     onSave(enabledNoticeKeys);
@@ -87,7 +80,7 @@ const ConsentModal = ({
           <NoticeToggles
             notices={notices}
             enabledNoticeKeys={enabledNoticeKeys}
-            onChange={setEnabledNoticeKeys}
+            onChange={onChange}
           />
         </div>
         <div className="fides-modal-button-group">
