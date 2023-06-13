@@ -19,7 +19,10 @@ from sqlalchemy.exc import InternalError, OperationalError
 from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
 
-from fides.api.common_exceptions import ConnectionException
+from fides.api.common_exceptions import (
+    ConnectionException,
+    SSHTunnelConfigNotFoundException,
+)
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
@@ -190,21 +193,25 @@ class SQLConnector(BaseConnector[Engine]):
 
     def create_ssh_tunnel(self, host: Optional[str], port: Optional[int]) -> None:
         """Creates an SSH Tunnel to forward ports as configured."""
-        if CONFIG.security.bastion_server_ssh_pkey:
-            with io.BytesIO(
-                CONFIG.security.bastion_server_ssh_pkey.encode("utf8")
-            ) as binary_file:
-                with io.TextIOWrapper(binary_file, encoding="utf8") as file_obj:
-                    pkey = paramiko.RSAKey.from_private_key(file_obj=file_obj)
-            self.ssh_server = sshtunnel.SSHTunnelForwarder(
-                (CONFIG.security.bastion_server_host),
-                ssh_username=CONFIG.security.bastion_server_ssh_username,
-                ssh_pkey=pkey,
-                remote_bind_address=(
-                    host,
-                    port,
-                ),
+        if not CONFIG.security.bastion_server_ssh_pkey:
+            raise SSHTunnelConfigNotFoundException(
+                "Fides is configured to use an SSH tunnel without config provided."
             )
+
+        with io.BytesIO(
+            CONFIG.security.bastion_server_ssh_pkey.encode("utf8")
+        ) as binary_file:
+            with io.TextIOWrapper(binary_file, encoding="utf8") as file_obj:
+                pkey = paramiko.RSAKey.from_private_key(file_obj=file_obj)
+        self.ssh_server = sshtunnel.SSHTunnelForwarder(
+            (CONFIG.security.bastion_server_host),
+            ssh_username=CONFIG.security.bastion_server_ssh_username,
+            ssh_pkey=pkey,
+            remote_bind_address=(
+                host,
+                port,
+            ),
+        )
 
 
 class PostgreSQLConnector(SQLConnector):
