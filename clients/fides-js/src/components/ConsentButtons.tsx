@@ -60,7 +60,7 @@ const ConsentButtons = ({
   }
 
   return (
-    <div id="fides-banner-buttons" className="fides-banner-buttons">
+    <div id="fides-button-group">
       {onManagePreferencesClick ? (
         <div>
           <Button
