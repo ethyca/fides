@@ -54,6 +54,8 @@
 div#fides-overlay {
   font-family: var(--fides-overlay-font-family);
   font-size: var(--fides-overlay-font-size-body);
+  z-index: 1000;
+  position: fixed;
 
   /* CSS reset values, adapted from https://www.joshwcomeau.com/css/custom-css-reset/ */
   line-height: calc(1em + 0.4rem);
@@ -74,9 +76,10 @@ div#fides-banner-container {
   z-index: 1;
   width: 100%;
   transform: translateY(0%);
-  transition: transform 1s;
+  transition: transform 1s, visibility 1s;
   display: flex;
   justify-content: center;
+  visibility: visible;
 }
 
 div#fides-banner {
@@ -105,6 +108,7 @@ div#fides-banner-container.fides-banner-bottom {
 
 div#fides-banner-container.fides-banner-bottom.fides-banner-hidden {
   transform: translateY(150%);
+  visibility: hidden;
 }
 
 div#fides-banner-container.fides-banner-top {
@@ -114,6 +118,7 @@ div#fides-banner-container.fides-banner-top {
 
 div#fides-banner-container.fides-banner-top.fides-banner-hidden {
   transform: translateY(-150%);
+  visibility: hidden;
 }
 
 /* Responsive banner */

@@ -322,6 +322,32 @@ describe("Consent banner", () => {
         });
       });
 
+      it("can persist state between modal and banner", () => {
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Accept Test").click();
+        });
+        // Now check that the change persisted by opening the modal
+        cy.get("[id='fides-modal-link']").click();
+        cy.getByTestId("toggle-Test privacy notice").within(() => {
+          cy.get("input").should("have.attr", "checked");
+        });
+        cy.getByTestId("toggle-Essential").within(() => {
+          cy.get("input").should("have.attr", "checked");
+        });
+        // Now reject all
+        cy.getByTestId("fides-modal-content").within(() => {
+          cy.get("button").contains("Reject Test").click();
+        });
+        // Check the modal again
+        cy.get("[id='fides-modal-link']").click();
+        cy.getByTestId("toggle-Test privacy notice").within(() => {
+          cy.get("input").should("not.have.attr", "checked");
+        });
+        cy.getByTestId("toggle-Essential").within(() => {
+          cy.get("input").should("not.have.attr", "checked");
+        });
+      });
+
       it("overwrites privacy notices that no longer exist", () => {
         const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
         const CREATED_DATE = "2022-12-24T12:00:00.000Z";
