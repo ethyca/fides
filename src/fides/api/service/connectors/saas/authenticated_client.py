@@ -183,6 +183,8 @@ class AuthenticatedClient:
             # if the status code is within the list
             return status_code in errors_to_ignore
 
+        return False
+
     @retry_send(retry_count=3, backoff_factor=1.0)  # pylint: disable=E1124
     def send(
         self,
