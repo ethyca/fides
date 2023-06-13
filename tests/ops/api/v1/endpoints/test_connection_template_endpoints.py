@@ -763,18 +763,14 @@ class TestGetConnectionSecretSchema:
             "properties": {
                 "url": {"title": "URL", "sensitive": True, "type": "string"},
                 "region_name": {"title": "Region Name", "type": "string"},
+                "aws_access_key_id": {"title": "AWS Access Key ID", "type": "string"},
                 "aws_secret_access_key": {
                     "title": "AWS Secret Access Key",
                     "sensitive": True,
                     "type": "string",
                 },
-                "aws_access_key_id": {
-                    "title": "AWS Access Key ID",
-                    "sensitive": True,
-                    "type": "string",
-                },
             },
-            "required": ["region_name", "aws_secret_access_key", "aws_access_key_id"],
+            "required": ["region_name", "aws_access_key_id", "aws_secret_access_key"],
             "additionalProperties": False,
         }
 
