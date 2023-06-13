@@ -68,6 +68,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           label="Connection Type"
           selectedValue={selectedConnectionOption}
           onChange={setSelectedConnectionOption}
+          disabled={connectionConfig !== null}
         />
 
         {!connectionConfig && orphanedConnectionConfigs.length > 0 ? (
