@@ -41,12 +41,15 @@ saas_config:
           query_params:
             - name: email
               value: <email>
+            - name: limit
+              value: '1'
           data_path: data
           pagination:
             strategy: offset
             configuration:
               incremental_param: limit
               increment_by: 1
+              limit: 1
           param_values:
             - name: accept_header
               connector_param: accept_header
@@ -59,7 +62,9 @@ saas_config:
             - name: Accept
               value: <accept_header>
           body: |
-            <masked_object_fields>
+            {
+              <masked_object_fields>
+            }
           param_values:
             - name: accounts_id
               references:
@@ -86,17 +91,19 @@ saas_config:
               connector_param: accept_header
         update:
           method: PUT
-          path: /accounts/<accounts_id>/billing_info
+          path: /accounts/<billing_info_account_id>/billing_info
           headers:
             - name: Accept
               value: <accept_header>
           body: |
-            <masked_object_fields>
+            {
+              <masked_object_fields>
+            }
           param_values:
-            - name: accounts_id
+            - name: billing_info_account_id
               references:
                 - dataset: <instance_fides_key>
-                  field: accounts.id
+                  field: billing_info.account_id
                   direction: from
             - name: accept_header
               connector_param: accept_header
@@ -119,17 +126,19 @@ saas_config:
               connector_param: accept_header
         update:
           method: PUT
-          path: /accounts/<accounts_id>/shipping_addresses/<shipping_address_id>
+          path: /accounts/<shipping_address_account_id>/shipping_addresses/<shipping_address_id>
           headers:
             - name: Accept
               value: <accept_header>
           body: |
-            <masked_object_fields>
+            {
+              <masked_object_fields>
+            }
           param_values:
-            - name: accounts_id
+            - name: shipping_address_account_id
               references:
                 - dataset: <instance_fides_key>
-                  field: accounts.id
+                  field: shipping_address.account_id
                   direction: from
             - name: shipping_address_id
               references:

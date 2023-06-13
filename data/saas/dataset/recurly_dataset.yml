@@ -6,6 +6,37 @@ dataset:
       - name: accounts
         fields:
           - name: address
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: street1
+                data_categories: [user.contact.address.street]
+                fidesops_meta:
+                  data_type: string
+              - name: street2
+                data_categories: [user.contact.address.street]
+                fidesops_meta:
+                  data_type: string
+              - name: city
+                data_categories: [user.contact.address.city]
+                fidesops_meta:
+                  data_type: string
+              - name: region
+                data_categories: [user.contact.address.state]
+                fidesops_meta:
+                  data_type: string
+              - name: postal_code
+                data_categories: [user.contact.address.postal_code]
+                fidesops_meta:
+                  data_type: string
+              - name: country
+                data_categories: [user.contact.address.country]
+                fidesops_meta:
+                  data_type: string
+              - name: phone
+                data_categories: [user.contact.phone_number]
+                fidesops_meta:
+                  data_type: string
           - name: bill_to
             data_categories: [system.operations]
             fidesops_meta:
@@ -48,31 +79,31 @@ dataset:
                   data_type: object
                 fields:
                   - name: street1
-                    data_categories: [system.operations]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: street2
-                    data_categories: [system.operations]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: city
-                    data_categories: [system.operations]
+                    data_categories: [user.contact.address.city]
                     fidesops_meta:
                       data_type: string
                   - name: region
-                    data_categories: [system.operations]
+                    data_categories: [user.contact.address.state]
                     fidesops_meta:
                       data_type: string
                   - name: postal_code
-                    data_categories: [system.operations]
+                    data_categories: [user.contact.address.postal_code]
                     fidesops_meta:
                       data_type: string
                   - name: country
-                    data_categories: [system.operations]
+                    data_categories: [user.contact.address.country]
                     fidesops_meta:
                       data_type: string
                   - name: phone
-                    data_categories: [system.operations]
+                    data_categories: [user.contact.phone_number]
                     fidesops_meta:
                       data_type: string
               - name: vat_number
@@ -125,11 +156,17 @@ dataset:
                   - name: ip
                   - name: country
           - name: cc_emails
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
           - name: code
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: company
+            data_categories: [user.location]
+            fidesops_meta:
+              data_type: string
           - name: created_at
             data_categories: [system.operations]
             fidesops_meta:
@@ -138,12 +175,15 @@ dataset:
           - name: deleted_at
           - name: dunning_campaign_id
           - name: email
-            data_categories: [system.operations]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: exemption_certificate
           - name: external_accounts
           - name: first_name
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
           - name: has_active_subscription
             data_categories: [system.operations]
             fidesops_meta:
@@ -169,10 +209,14 @@ dataset:
             fidesops_meta:
               data_type: boolean
           - name: id
-            data_categories: [system.operations]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: last_name
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
           - name: object
             data_categories: [system.operations]
             fidesops_meta:
@@ -203,35 +247,35 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: company
-                data_categories: [system.operations]
+                data_categories: [user.location]
                 fidesops_meta:
                   data_type: string
               - name: phone
-                data_categories: [system.operations]
+                data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string
               - name: street1
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: street2
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: city
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.city]
                 fidesops_meta:
                   data_type: string
               - name: region
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
               - name: postal_code
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.postal_code]
                 fidesops_meta:
                   data_type: string
               - name: country
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
               - name: nickname
@@ -239,7 +283,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: email
-                data_categories: [system.operations]
+                data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
               - name: vat_number
@@ -275,7 +319,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: username
-            data_categories: [system.operations]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: vat_number
@@ -284,15 +328,16 @@ dataset:
       - name: billing_info
         fields:
           - name: id
-            data_categories: [system.operations]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: object
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: account_id
-            data_categories: [system.operations]
+            data_categories: [ystem.operations]
             fidesops_meta:
               data_type: string
           - name: primary_payment_method
@@ -304,11 +349,11 @@ dataset:
             fidesops_meta:
               data_type: boolean
           - name: first_name
-            data_categories: [system.operations]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: last_name
-            data_categories: [system.operations]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: company
@@ -400,51 +445,51 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: first_name
-            data_categories: [system.operations]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: last_name
-            data_categories: [system.operations]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: company
-            data_categories: [system.operations]
+            data_categories: [user.location]
             fidesops_meta:
               data_type: string
           - name: phone
-            data_categories: [system.operations]
+            data_categories: [user.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: street1
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: street2
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: city
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
           - name: region
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
           - name: postal_code
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
           - name: country
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
           - name: nickname
-            data_categories: [system.operations]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: email
-            data_categories: [system.operations]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: vat_number
@@ -452,11 +497,12 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: id
-            data_categories: [system.operations]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: account_id
-            data_categories: [system.operations]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
           - name: created_at
