@@ -159,7 +159,7 @@ describe("Consent banner", () => {
   });
 
   describe("when user has no saved consent cookie", () => {
-    describe("when banner is not disabled", () => {
+    describe("when overlay is enabled", () => {
       beforeEach(() => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         stubConfig({
