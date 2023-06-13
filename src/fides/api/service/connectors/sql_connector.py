@@ -193,20 +193,21 @@ class SQLConnector(BaseConnector[Engine]):
 
     def create_ssh_tunnel(self, host: Optional[str], port: Optional[int]) -> None:
         """Creates an SSH Tunnel to forward ports as configured."""
-        if not CONFIG.security.bastion_server_ssh_pkey:
+        if not CONFIG.security.bastion_server_ssh_private_key:
             raise SSHTunnelConfigNotFoundException(
                 "Fides is configured to use an SSH tunnel without config provided."
             )
 
         with io.BytesIO(
-            CONFIG.security.bastion_server_ssh_pkey.encode("utf8")
+            CONFIG.security.bastion_server_ssh_private_key.encode("utf8")
         ) as binary_file:
             with io.TextIOWrapper(binary_file, encoding="utf8") as file_obj:
-                pkey = paramiko.RSAKey.from_private_key(file_obj=file_obj)
+                private_key = paramiko.RSAKey.from_private_key(file_obj=file_obj)
+
         self.ssh_server = sshtunnel.SSHTunnelForwarder(
             (CONFIG.security.bastion_server_host),
             ssh_username=CONFIG.security.bastion_server_ssh_username,
-            ssh_pkey=pkey,
+            ssh_pkey=private_key,
             remote_bind_address=(
                 host,
                 port,
@@ -254,7 +255,7 @@ class PostgreSQLConnector(SQLConnector):
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
         config = self.secrets_schema(**self.configuration.secrets or {})
-        if config.ssh_required and CONFIG.security.bastion_server_ssh_pkey:
+        if config.ssh_required and CONFIG.security.bastion_server_ssh_private_key:
             self.create_ssh_tunnel(host=config.host, port=config.port)
             self.ssh_server.start()
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
@@ -366,7 +367,7 @@ class RedshiftConnector(SQLConnector):
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
         config = self.secrets_schema(**self.configuration.secrets or {})
-        if config.ssh_required and CONFIG.security.bastion_server_ssh_pkey:
+        if config.ssh_required and CONFIG.security.bastion_server_ssh_private_key:
             self.create_ssh_tunnel(host=config.host, port=config.port)
             self.ssh_server.start()
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)

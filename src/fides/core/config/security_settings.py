@@ -134,7 +134,7 @@ class SecuritySettings(FidesSettings):
         default=None,
         description="An optional field to store the username used to access the bastion server",
     )
-    bastion_server_ssh_pkey: Optional[str] = Field(
+    bastion_server_ssh_private_key: Optional[str] = Field(
         default=None,
         description="An optional field to store the key used to SSH into the bastion server.",
     )
