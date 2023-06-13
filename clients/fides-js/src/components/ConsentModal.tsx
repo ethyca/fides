@@ -21,7 +21,7 @@ const ConsentModal = ({
   onSave,
   onRejectAll,
   onAcceptAll,
-  shouldAcknowledge,
+  isAcknowledgeOnly,
 }: {
   attributes: Attributes;
   experience: ExperienceConfig;
@@ -32,7 +32,8 @@ const ConsentModal = ({
   onSave: (enabledNoticeKeys: NoticeKeys) => void;
   onRejectAll: () => void;
   onAcceptAll: () => void;
-  shouldAcknowledge: boolean;
+  /** Shows acknowledge button instead of Accept all/ Reject all */
+  isAcknowledgeOnly: boolean;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
 
@@ -87,7 +88,7 @@ const ConsentModal = ({
         </div>
 
         <div className="fides-modal-button-group">
-          {shouldAcknowledge ? (
+          {isAcknowledgeOnly ? (
             <Button
               label={experience.acknowledge_button_label}
               buttonType={ButtonType.PRIMARY}

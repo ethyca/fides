@@ -11,7 +11,7 @@ interface BannerProps {
   onClose: () => void;
   bannerIsOpen: boolean;
   /** Shows acknowledge button instead of Accept all/ Reject all */
-  showAcknowledge: boolean;
+  isAcknowledgeOnly: boolean;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
@@ -21,7 +21,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onManagePreferences,
   onClose,
   bannerIsOpen,
-  showAcknowledge,
+  isAcknowledgeOnly,
 }) => {
   const {
     title = "Manage your consent",
@@ -63,7 +63,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
             {description}
           </div>
           <div id="fides-banner-buttons" className="fides-banner-buttons">
-            {showAcknowledge ? (
+            {isAcknowledgeOnly ? (
               <span
                 id="fides-acknowledge-button"
                 className="fides-banner-buttons-right"

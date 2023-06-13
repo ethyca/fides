@@ -481,6 +481,16 @@ describe("Consent banner", () => {
     });
 
     describe("when there are only notice-only notices", () => {
+      const expected = [
+        {
+          privacy_notice_history_id: "one",
+          preference: "acknowledge",
+        },
+        {
+          privacy_notice_history_id: "two",
+          preference: "acknowledge",
+        },
+      ];
       beforeEach(() => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         stubConfig({
@@ -504,24 +514,25 @@ describe("Consent banner", () => {
         });
       });
 
-      it("renders an acknowledge button", () => {
+      it("renders an acknowledge button in the banner", () => {
         cy.get("div#fides-banner").within(() => {
           cy.get("button").contains("OK");
           cy.get("button").contains("Accept Test").should("not.exist");
           cy.get("button").contains("OK").click();
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { body } = interception.request;
-            const expected = [
-              {
-                privacy_notice_history_id: "one",
-                preference: "acknowledge",
-              },
-              {
-                privacy_notice_history_id: "two",
-                preference: "acknowledge",
-              },
-            ];
+            expect(body.preferences).to.eql(expected);
+          });
+        });
+      });
 
+      it("renders an acknowledge button in the modal", () => {
+        cy.get("#fides-modal-link").click();
+        cy.getByTestId("consent-modal").within(() => {
+          cy.get("button").contains("Accept Test").should("not.exist");
+          cy.get("button").contains("OK").click();
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            const { body } = interception.request;
             expect(body.preferences).to.eql(expected);
           });
         });

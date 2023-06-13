@@ -186,7 +186,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
           onClose={() => {
             setBannerIsOpen(false);
           }}
-          showAcknowledge={isAllNoticeOnly}
+          isAcknowledgeOnly={isAllNoticeOnly}
         />
       ) : null}
       <ConsentModal
@@ -199,7 +199,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
         onAcceptAll={handleAcceptAll}
         onRejectAll={handleRejectAll}
         onSave={handleUpdatePreferences}
-        shouldAcknowledge={isAllNoticeOnly}
+        isAcknowledgeOnly={isAllNoticeOnly}
       />
     </div>
   );
