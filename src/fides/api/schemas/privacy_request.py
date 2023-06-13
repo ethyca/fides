@@ -7,7 +7,6 @@ from pydantic import Field, validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
-from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLogStatus,
