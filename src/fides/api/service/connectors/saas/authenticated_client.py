@@ -162,11 +162,28 @@ class AuthenticatedClient:
         ]
         return rate_limit_requests
 
+    def _should_ignore_error(self, status_code: int) -> bool:
+        """Should an error of `status_code` be ignored?"""
+        if self.ignore_errors is False:
+            # `ignore_errors` is a bool and explicitly set to False so Fides should not
+            # ignore any errors
+            return False
+
+        if self.ignore_errors is True:
+            # `ignore_errors` is a bool and explicitly set to True so Fides should ignore
+            # all errors
+            return True
+
+        if isinstance(self.ignore_errors, list):
+            # `ignore_errors` is a list of status codes so Fides should ignore the error
+            # if the status code is within the list
+            return status_code in self.ignore_errors
+
     @retry_send(retry_count=3, backoff_factor=1.0)  # pylint: disable=E1124
     def send(
         self,
         request_params: SaaSRequestParams,
-        ignore_errors: Optional[bool] = False,
+        ignore_errors: Optional[Union[bool, List[int]]] = False,
     ) -> Response:
         """
         Builds and executes an authenticated request.
@@ -185,7 +202,7 @@ class AuthenticatedClient:
         )  # Dev mode only
 
         if not response.ok:
-            if ignore_errors:
+            if self._should_ignore_error(response.status_code):
                 logger.info(
                     "Ignoring errors on response with status code {} as configured.",
                     response.status_code,
