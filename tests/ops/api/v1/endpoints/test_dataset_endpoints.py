@@ -24,7 +24,7 @@ from fides.api.api.v1.urn_registry import (
     DATASET_CONFIGS,
     DATASET_VALIDATE,
     DATASETCONFIG_BY_KEY,
-    DATASETS,
+    CONNECTION_DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
@@ -884,7 +884,7 @@ class TestPutDatasetConfigs:
 class TestPutDatasets:
     @pytest.fixture
     def datasets_url(self, connection_config) -> str:
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": connection_config.key}
         return path.format(**path_params)
 
@@ -910,7 +910,7 @@ class TestPutDatasets:
     def test_patch_datasets_invalid_connection_key(
         self, example_datasets: List, api_client: TestClient, generate_auth_header
     ) -> None:
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": "nonexistent_key"}
         datasets_url = path.format(**path_params)
 
@@ -1202,7 +1202,7 @@ class TestPutDatasets:
         db: Session,
         generate_auth_header,
     ):
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {
             "connection_key": saas_example_connection_config_without_saas_config.key
         }
@@ -1232,7 +1232,7 @@ class TestPutDatasets:
         db: Session,
         generate_auth_header,
     ):
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": saas_example_connection_config.key}
         datasets_url = path.format(**path_params)
 
@@ -1271,7 +1271,7 @@ class TestPutDatasets:
         db: Session,
         generate_auth_header,
     ):
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": saas_example_connection_config.key}
         datasets_url = path.format(**path_params)
 
@@ -1304,7 +1304,7 @@ class TestPutDatasets:
         db: Session,
         generate_auth_header,
     ):
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": saas_example_connection_config.key}
         datasets_url = path.format(**path_params)
 
@@ -1502,7 +1502,7 @@ class TestPutYamlDatasets:
 class TestGetDatasets:
     @pytest.fixture
     def datasets_url(self, connection_config) -> str:
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": connection_config.key}
         return path.format(**path_params)
 
@@ -1516,7 +1516,7 @@ class TestGetDatasets:
         self, dataset_config, datasets_url, api_client: TestClient, generate_auth_header
     ) -> None:
         auth_header = generate_auth_header(scopes=[DATASET_READ])
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": "nonexistent_key"}
         datasets_url = path.format(**path_params)
 

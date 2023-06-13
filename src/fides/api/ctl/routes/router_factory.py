@@ -171,6 +171,13 @@ def list_router_factory(fides_model: FidesModelType, model_type: str) -> APIRout
     ) -> List:
         """Get a list of all of the resources of this type."""
         sql_model = sql_model_map[model_type]
+        print(f"*******")
+        print(f"*******")
+        print(f"*******")
+        print(f"calling the generic list: {model_type}")
+        print(f"*******")
+        print(f"*******")
+
         return await list_resource(sql_model, db)
 
     return router

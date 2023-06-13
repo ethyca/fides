@@ -11,6 +11,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import conlist
+from sqlalchemy import and_, not_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -29,6 +30,7 @@ from fides.api.api.v1.scope_registry import (
     DATASET_READ,
 )
 from fides.api.api.v1.urn_registry import (
+    CONNECTION_DATASETS,
     DATASET_BY_KEY,
     DATASET_CONFIGS,
     DATASET_VALIDATE,
@@ -234,7 +236,7 @@ def patch_dataset_configs(
 
 
 @router.patch(
-    DATASETS,
+    CONNECTION_DATASETS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
     status_code=HTTP_200_OK,
     response_model=BulkPutDataset,
@@ -417,7 +419,7 @@ def _validate_saas_dataset(
 
 
 @router.get(
-    DATASETS,
+    CONNECTION_DATASETS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
     response_model=Page[Dataset],
 )
@@ -573,3 +575,39 @@ def delete_dataset(
         "Deleting dataset '{}' for connection '{}'", fides_key, connection_config.key
     )
     dataset_config.delete(db)
+
+
+@router.get(
+    f"{DATASETS}/filter/test",
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=List[Dataset],
+)
+def get_ctl_datasets(
+    db: Session = Depends(deps.get_db),
+    remove_saas_datasets: bool = True,
+    only_unlinked_datasets: bool = False,
+) -> List[Dataset]:
+    """
+    Returns all CTL datasets .
+    """
+
+    logger.info(
+        f"Finding all datasets {remove_saas_datasets=} {only_unlinked_datasets=}"
+    )
+    filters = []
+    if only_unlinked_datasets:
+        subquery = select([DatasetConfig.ctl_dataset_id])
+        filters.append(not_(CtlDataset.id.in_(subquery)))
+
+    conditions = []
+
+    if len(filters) > 0:
+        if len(filters) == 1:
+            conditions.append(filters[0])
+        else:
+            conditions.append(and_(*filters))
+
+    query = db.query(CtlDataset).filter(*conditions).order_by(CtlDataset.name.desc())
+    datasets = query.all()
+
+    return datasets
