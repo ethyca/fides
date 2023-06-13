@@ -212,7 +212,7 @@ privacy_notices:
   data_uses:
     - marketing.advertising.first_party.targeted
     - marketing.advertising.third_party.targeted
-  enforcement_level: system_wide
+  enforcement_level: frontend
   disabled: False
   has_gpc_flag: True
   displayed_in_privacy_center: True

@@ -53,10 +53,10 @@ interface CustomInputProps {
 // we can pass in `undefined` as a value from our object as opposed to having to transform
 // it just for the form. Therefore, we have our form components do the work of transforming
 // if the value they receive is undefined.
-type StringField = FieldHookConfig<string | undefined>;
+export type StringField = FieldHookConfig<string | undefined>;
 type StringArrayField = FieldHookConfig<string[] | undefined>;
 
-const Label = ({
+export const Label = ({
   children,
   ...labelProps
 }: {
@@ -106,7 +106,7 @@ const TextInput = ({
   );
 };
 
-const ErrorMessage = ({
+export const ErrorMessage = ({
   isInvalid,
   message,
   fieldName,
@@ -129,7 +129,7 @@ export interface Option {
   value: string;
   label: string;
 }
-interface SelectProps {
+export interface SelectProps {
   label?: string;
   labelProps?: FormLabelProps;
   tooltip?: string;
@@ -149,7 +149,7 @@ interface SelectProps {
   singleValueBlock?: boolean;
   isFormikOnChange?: boolean;
 }
-const SelectInput = ({
+export const SelectInput = ({
   options,
   fieldName,
   size,
@@ -182,10 +182,11 @@ const SelectInput = ({
     );
   };
   const handleChangeSingle = (newValue: SingleValue<Option>) => {
+    // console.log()
     if (newValue) {
-      field.onChange(fieldName)(newValue.value);
+      setFieldValue(fieldName, newValue.value);
     } else if (isClearable) {
-      field.onChange(fieldName)("");
+      setFieldValue(fieldName, "");
     }
   };
 

@@ -1,99 +1,85 @@
 import { h, FunctionComponent } from "preact";
-import { useState, useEffect } from "preact/hooks";
 import { ButtonType, ExperienceConfig } from "../lib/consent-types";
 import Button from "./Button";
-import "../lib/overlay.module.css";
-import { useHasMounted } from "../lib/hooks";
+import CloseButton from "./CloseButton";
 
 interface BannerProps {
   experience: ExperienceConfig;
   onAcceptAll: () => void;
   onRejectAll: () => void;
-  waitBeforeShow?: number;
-  managePreferencesLabel?: string;
-  onOpenModal: () => void;
+  onManagePreferences: () => void;
+  onClose: () => void;
+  bannerIsOpen: boolean;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
   experience,
   onAcceptAll,
   onRejectAll,
-  waitBeforeShow,
-  managePreferencesLabel = "Manage preferences",
-  onOpenModal,
+  onManagePreferences,
+  onClose,
+  bannerIsOpen,
 }) => {
-  const [isShown, setIsShown] = useState(false);
-  const hasMounted = useHasMounted();
   const {
-    banner_title: bannerTitle = "Manage your consent",
-    banner_description:
-      bannerDescription = "This website processes your data respectfully, so we require your consent to use cookies.",
-    confirmation_button_label: confirmationButtonLabel = "Accept All",
+    title = "Manage your consent",
+    description = "This website processes your data respectfully, so we require your consent to use cookies.",
+    accept_button_label: acceptButtonLabel = "Accept All",
     reject_button_label: rejectButtonLabel = "Reject All",
+    privacy_preferences_link_label:
+      privacyPreferencesLabel = "Manage preferences",
   } = experience;
 
-  useEffect(() => {
-    const delayBanner = setTimeout(() => {
-      setIsShown(true);
-    }, waitBeforeShow);
-    return () => clearTimeout(delayBanner);
-  }, [setIsShown, waitBeforeShow]);
-
-  const handleManagePreferencesClick = (): void => {
-    onOpenModal();
-    setIsShown(false);
+  const handleRejectAll = () => {
+    onRejectAll();
+    onClose();
   };
 
-  if (!hasMounted) {
-    return null;
-  }
+  const handleAcceptAll = () => {
+    onAcceptAll();
+    onClose();
+  };
 
   return (
     <div
-      id="fides-consent-banner"
-      className={`fides-consent-banner fides-consent-banner-bottom ${
-        isShown ? "" : "fides-consent-banner-hidden"
+      id="fides-banner-container"
+      className={`fides-banner fides-banner-bottom ${
+        bannerIsOpen ? "" : "fides-banner-hidden"
       } `}
     >
-      <div>
-        <div
-          id="fides-consent-banner-title"
-          className="fides-consent-banner-title"
-        >
-          {bannerTitle || ""}
+      <div id="fides-banner">
+        <div id="fides-banner-inner">
+          <CloseButton ariaLabel="Close banner" onClick={onClose} />
+          <div id="fides-banner-title" className="fides-banner-title">
+            {title}
+          </div>
+          <div
+            id="fides-banner-description"
+            className="fides-banner-description"
+          >
+            {description}
+          </div>
+          <div id="fides-banner-buttons" className="fides-banner-buttons">
+            <span className="fides-banner-buttons-left">
+              <Button
+                buttonType={ButtonType.TERTIARY}
+                label={privacyPreferencesLabel}
+                onClick={onManagePreferences}
+              />
+            </span>
+            <span className="fides-banner-buttons-right">
+              <Button
+                buttonType={ButtonType.PRIMARY}
+                label={rejectButtonLabel}
+                onClick={handleRejectAll}
+              />
+              <Button
+                buttonType={ButtonType.PRIMARY}
+                label={acceptButtonLabel}
+                onClick={handleAcceptAll}
+              />
+            </span>
+          </div>
         </div>
-        <div
-          id="fides-consent-banner-description"
-          className="fides-consent-banner-description"
-        >
-          {bannerDescription || ""}
-        </div>
-      </div>
-      <div
-        id="fides-consent-banner-buttons"
-        className="fides-consent-banner-buttons"
-      >
-        <Button
-          buttonType={ButtonType.SECONDARY}
-          label={managePreferencesLabel}
-          onClick={handleManagePreferencesClick}
-        />
-        <Button
-          buttonType={ButtonType.PRIMARY}
-          label={rejectButtonLabel}
-          onClick={() => {
-            onRejectAll();
-            setIsShown(false);
-          }}
-        />
-        <Button
-          buttonType={ButtonType.PRIMARY}
-          label={confirmationButtonLabel}
-          onClick={() => {
-            onAcceptAll();
-            setIsShown(false);
-          }}
-        />
       </div>
     </div>
   );

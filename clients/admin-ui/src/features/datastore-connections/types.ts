@@ -1,4 +1,5 @@
 import {
+  ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   ConnectionType,
   DatasetConfigCtlDataset,
@@ -6,7 +7,6 @@ import {
 } from "~/types/api";
 
 import {
-  AccessLevel,
   ConnectionTestStatus,
   DisabledStatus,
   TestingStatus,
@@ -132,7 +132,7 @@ export type DatastoreConnectionRequest = {
 };
 
 export type DatastoreConnectionResponse = {
-  succeeded: DatastoreConnection[];
+  succeeded: ConnectionConfigurationResponse[];
   failed: [
     {
       message: string;
@@ -141,22 +141,10 @@ export type DatastoreConnectionResponse = {
   ];
 };
 
-export type DatastoreConnection = {
-  name: string;
-  key: string;
-  description?: string;
-  disabled: boolean;
-  connection_type: ConnectionType;
-  access: AccessLevel;
-  created_at: string;
-  updated_at?: string;
-  last_test_timestamp: string;
-  last_test_succeeded: boolean;
-  saas_config?: SaasConfig;
-};
-
-export const isDatastoreConnection = (obj: any): obj is DatastoreConnection =>
-  (obj as DatastoreConnection).connection_type !== undefined;
+export const isDatastoreConnection = (
+  obj: any
+): obj is ConnectionConfigurationResponse =>
+  (obj as ConnectionConfigurationResponse).connection_type !== undefined;
 
 export const isConnectionSystemTypeMap = (
   obj: any
@@ -169,12 +157,13 @@ export type DatastoreConnectionParams = {
   test_status?: TestingStatus;
   system_type?: SystemType;
   disabled_status?: DisabledStatus;
+  orphaned_from_system?: boolean;
   page: number;
   size: number;
 };
 
 export type DatastoreConnectionsResponse = {
-  items: DatastoreConnection[];
+  items: ConnectionConfigurationResponse[];
   total: number;
   page: number;
   size: number;
@@ -199,20 +188,6 @@ export type DatastoreConnectionStatus = {
   failure_reason?: string;
 };
 
-export type DatastoreConnectionUpdate = {
-  name: string;
-  key: string;
-  disabled: boolean;
-  connection_type: ConnectionType;
-  access: AccessLevel;
-};
-
-export type SaasConfig = {
-  fides_key: string;
-  name: string;
-  type: string;
-};
-
 export type CreateSaasConnectionConfigRequest = {
   name: string;
   description: string;
@@ -224,7 +199,7 @@ export type CreateSaasConnectionConfigRequest = {
 };
 
 export type CreateSaasConnectionConfigResponse = {
-  connection: DatastoreConnection;
+  connection: ConnectionConfigurationResponse;
   dataset: {
     fides_key: string;
   };

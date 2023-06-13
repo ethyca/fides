@@ -1,5 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
-import { useCallback } from "react";
+import { useEffect, useState, useCallback } from "preact/hooks";
 
 /**
  * Hook which tracks if the app has mounted yet.
@@ -43,7 +42,7 @@ export const useDisclosure = ({ id }: { id: string }) => {
 
   const getDisclosureProps = () => ({
     id,
-    className: isOpen ? "disclosure-visible" : "disclosure-hidden",
+    className: isOpen ? "fides-disclosure-visible" : "fides-disclosure-hidden",
   });
 
   return {

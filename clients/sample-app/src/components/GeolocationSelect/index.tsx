@@ -50,15 +50,20 @@ const GeolocationSelect = ({ menuPlacement }: GeolocationSelectProps) => {
     (option) => option.value === geolocation
   );
 
-  // Whenever the user selects geolocation option, reload the page and change the URL query param to suit
-  // e.g. select "New York" -> navigate to http://localhost:3000?geolocation=US-NY
+  // Whenever the user selects geolocation option, change the URL query param to suit
+  // (e.g. select "New York" -> navigate to http://localhost:3000?geolocation=US-NY)
+  // Then, after updating the URL, force a page reload to run the fides.js script again, etc.
   const onGeolocationSelect = (option: SingleValue<GeolocationOption>) => {
     if (!option) {
       router.query = {};
-      router.push({ pathname: router.pathname, query: {} });
+      router
+        .push({ pathname: router.pathname, query: {} })
+        .then(() => router.reload());
     } else {
       const { value } = option;
-      router.push({ pathname: router.pathname, query: { geolocation: value } });
+      router
+        .push({ pathname: router.pathname, query: { geolocation: value } })
+        .then(() => router.reload());
     }
   };
 
