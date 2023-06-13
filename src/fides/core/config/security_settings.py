@@ -138,6 +138,14 @@ class SecuritySettings(FidesSettings):
         default=None,
         description="An optional field to store the key used to SSH into the bastion server.",
     )
+    bastion_server_ssh_timeout: float = Field(
+        default=0.1,
+        description="The timeout in seconds for the transport socket (``socket.settimeout``)",
+    )
+    bastion_server_ssh_tunnel_timeout: float = Field(
+        default=10,
+        description="The timeout in seconds for tunnel connection (open_channel timeout)",
+    )
 
     @validator("app_encryption_key")
     @classmethod

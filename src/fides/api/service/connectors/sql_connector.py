@@ -56,8 +56,8 @@ from fides.core.config import get_config
 
 CONFIG = get_config()
 
-sshtunnel.SSH_TIMEOUT = 10.0
-sshtunnel.TUNNEL_TIMEOUT = 10.0
+sshtunnel.SSH_TIMEOUT = CONFIG.security.bastion_server_ssh_timeout
+sshtunnel.TUNNEL_TIMEOUT = CONFIG.security.bastion_server_ssh_tunnel_timeout
 
 
 class SQLConnector(BaseConnector[Engine]):
