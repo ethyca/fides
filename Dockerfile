@@ -70,8 +70,6 @@ RUN if [ "$TARGETPLATFORM" != "linux/arm64" ] ; \
     && rm -rf /var/lib/apt/lists/* ; \
     fi
 
-
-
 # General Application Setup ##
 COPY . /fides
 WORKDIR /fides

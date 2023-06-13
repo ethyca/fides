@@ -29,6 +29,16 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
       privacyPreferencesLabel = "Manage preferences",
   } = experience;
 
+  const handleRejectAll = () => {
+    onRejectAll();
+    onClose();
+  };
+
+  const handleAcceptAll = () => {
+    onAcceptAll();
+    onClose();
+  };
+
   return (
     <div
       id="fides-banner-container"
@@ -60,16 +70,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
               <Button
                 buttonType={ButtonType.PRIMARY}
                 label={rejectButtonLabel}
-                onClick={() => {
-                  onRejectAll();
-                }}
+                onClick={handleRejectAll}
               />
               <Button
                 buttonType={ButtonType.PRIMARY}
                 label={acceptButtonLabel}
-                onClick={() => {
-                  onAcceptAll();
-                }}
+                onClick={handleAcceptAll}
               />
             </span>
           </div>

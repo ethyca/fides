@@ -27,7 +27,6 @@ export interface OverlayProps {
   experience: PrivacyExperience;
   cookie: FidesCookie;
   fidesRegionString: string;
-  modalLinkEl?: HTMLElement | null;
 }
 
 const Overlay: FunctionComponent<OverlayProps> = ({
@@ -35,10 +34,23 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   options,
   fidesRegionString,
   cookie,
-  modalLinkEl,
 }) => {
+  const delayBannerMilliseconds = 100;
+  const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
+
+  const initialEnabledNoticeKeys = useMemo(
+    () =>
+      Object.keys(window.Fides.consent).filter(
+        (key) => window.Fides.consent[key]
+      ),
+    []
+  );
+  const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
+    Array<PrivacyNotice["notice_key"]>
+  >(initialEnabledNoticeKeys);
+
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "dialog",
@@ -60,28 +72,34 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   useEffect(() => {
     const delayBanner = setTimeout(() => {
       setBannerIsOpen(true);
-    }, 100);
+    }, delayBannerMilliseconds);
     return () => clearTimeout(delayBanner);
   }, [setBannerIsOpen]);
 
   useEffect(() => {
-    if (modalLinkEl) {
-      debugLog(
-        options.debug,
-        "Modal link element found, updating it to show and trigger modal on click."
-      );
-      // Update modal link to trigger modal on click
-      const modalLink = modalLinkEl;
-      modalLink.onclick = () => {
-        handleOpenModal();
-        setBannerIsOpen(false);
-      };
-      // Update to show the pre-existing modal link in the DOM
-      modalLink.classList.add("fides-modal-link-shown");
-    } else {
-      debugLog(options.debug, "Modal link element not found.");
-    }
-  }, [modalLinkEl, options.debug, handleOpenModal]);
+    // use a delay to ensure that link exists in the DOM
+    const delayModalLinkBinding = setTimeout(() => {
+      const modalLinkId = options.modalLinkId || "fides-modal-link";
+      const modalLinkEl = document.getElementById(modalLinkId);
+      if (modalLinkEl) {
+        debugLog(
+          options.debug,
+          "Modal link element found, updating it to show and trigger modal on click."
+        );
+        // Update modal link to trigger modal on click
+        const modalLink = modalLinkEl;
+        modalLink.onclick = () => {
+          handleOpenModal();
+          setBannerIsOpen(false);
+        };
+        // Update to show the pre-existing modal link in the DOM
+        modalLink.classList.add("fides-modal-link-shown");
+      } else {
+        debugLog(options.debug, "Modal link element not found.");
+      }
+    }, delayModalLinkMilliseconds);
+    return () => clearTimeout(delayModalLinkBinding);
+  }, [options.modalLinkId, options.debug, handleOpenModal]);
 
   const showBanner = useMemo(
     () => experience.show_banner && hasActionNeededNotices(experience),
@@ -94,15 +112,10 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   );
 
   const handleUpdatePreferences = useCallback(
-    ({
-      noticeKeyToConsent,
-    }: {
-      noticeKeyToConsent: (noticeKey: string) => boolean;
-    }) => {
+    (enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>) => {
       const consentPreferencesToSave = privacyNotices.map((notice) => {
-        const consent = noticeKeyToConsent(notice.notice_key);
         const userPreference = transformConsentToFidesUserPreference(
-          consent,
+          enabledPrivacyNoticeKeys.includes(notice.notice_key),
           notice.consent_mechanism
         );
         return new SaveConsentPreference(
@@ -119,6 +132,8 @@ const Overlay: FunctionComponent<OverlayProps> = ({
         userLocationString: fidesRegionString,
         cookie,
       });
+      // Make sure our draft state also updates
+      setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
     },
     [
       privacyNotices,
@@ -129,6 +144,18 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     ]
   );
 
+  const handleManagePreferencesClick = (): void => {
+    handleOpenModal();
+    setBannerIsOpen(false);
+  };
+
+  const handleAcceptAll = () => {
+    handleUpdatePreferences(privacyNotices.map((n) => n.notice_key));
+  };
+  const handleRejectAll = () => {
+    handleUpdatePreferences([]);
+  };
+
   if (!hasMounted) {
     return null;
   }
@@ -138,37 +165,13 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     return null;
   }
 
-  const onAcceptAll = () => {
-    handleUpdatePreferences({ noticeKeyToConsent: () => true });
-    setBannerIsOpen(false);
-  };
-
-  const onRejectAll = () => {
-    handleUpdatePreferences({ noticeKeyToConsent: () => false });
-    setBannerIsOpen(false);
-  };
-
-  const onSavePreferences = (
-    enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>
-  ) => {
-    handleUpdatePreferences({
-      noticeKeyToConsent: (noticeKey) =>
-        enabledPrivacyNoticeKeys.includes(noticeKey),
-    });
-  };
-
-  const handleManagePreferencesClick = (): void => {
-    handleOpenModal();
-    setBannerIsOpen(false);
-  };
-
   return (
     <div id="fides-js-root">
       {showBanner ? (
         <ConsentBanner
           experience={experience.experience_config}
-          onAcceptAll={onAcceptAll}
-          onRejectAll={onRejectAll}
+          onAcceptAll={handleAcceptAll}
+          onRejectAll={handleRejectAll}
           onManagePreferences={handleManagePreferencesClick}
           bannerIsOpen={bannerIsOpen}
           onClose={() => {
@@ -179,11 +182,13 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       <ConsentModal
         attributes={attributes}
         experience={experience.experience_config}
+        enabledNoticeKeys={draftEnabledNoticeKeys}
+        onChange={setDraftEnabledNoticeKeys}
         notices={privacyNotices}
         onClose={handleCloseModal}
-        onAcceptAll={onAcceptAll}
-        onRejectAll={onRejectAll}
-        onSave={onSavePreferences}
+        onAcceptAll={handleAcceptAll}
+        onRejectAll={handleRejectAll}
+        onSave={handleUpdatePreferences}
       />
     </div>
   );
