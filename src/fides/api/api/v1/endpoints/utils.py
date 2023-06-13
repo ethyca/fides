@@ -1,14 +1,49 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from fastapi import HTTPException
+from fideslang import FidesModelType
 from slowapi import Limiter
 from slowapi.util import get_remote_address  # type: ignore
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_400_BAD_REQUEST
 
+from fides.api.api.v1.scope_registry import (
+    CTL_DATASET,
+    CTL_POLICY,
+    DATA_CATEGORY,
+    DATA_QUALIFIER,
+    DATA_SUBJECT,
+    DATA_USE,
+    EVALUATION,
+    ORGANIZATION,
+    REGISTRY,
+    SYSTEM,
+)
+from fides.api.db.base_class import Base
+from fides.api.db.crud import get_resource, list_resource
+from fides.api.models.sql_models import models_with_default_field
+from fides.api.util import errors
 from fides.core.config import CONFIG
+
+API_PREFIX = "/api/v1"
+# Map the ctl model type to the scope prefix.
+# Policies and datasets have ctl-* prefixes to
+# avoid overlapping with ops scopes of same name
+CLI_SCOPE_PREFIX_MAPPING: Dict[str, str] = {
+    "data_category": DATA_CATEGORY,
+    "data_qualifier": DATA_QUALIFIER,
+    "data_subject": DATA_SUBJECT,
+    "data_use": DATA_USE,
+    "dataset": CTL_DATASET,
+    "evaluation": EVALUATION,
+    "organization": ORGANIZATION,
+    "policy": CTL_POLICY,
+    "registry": REGISTRY,
+    "system": SYSTEM,
+}
 
 # Used for rate limiting with Slow API
 # Decorate individual routes to deviate from the default rate limits
@@ -19,6 +54,62 @@ fides_limiter = Limiter(
     key_func=get_remote_address,
     retry_after="http-date",
 )
+
+
+async def forbid_if_editing_is_default(
+    sql_model: Base,
+    fides_key: str,
+    payload: FidesModelType,
+    async_session: AsyncSession,
+) -> None:
+    """
+    Raise a forbidden error if the user is trying modify the `is_default` field
+    """
+    if sql_model in models_with_default_field:
+        resource = await get_resource(sql_model, fides_key, async_session)
+        if resource.is_default != payload.is_default:
+            raise errors.ForbiddenError(sql_model.__name__, fides_key)
+
+
+async def forbid_if_default(
+    sql_model: Base, fides_key: str, async_session: AsyncSession
+) -> None:
+    """
+    Raise a forbidden error if the user is trying to operate on a resource
+    with `is_default=True`
+    """
+    if sql_model in models_with_default_field:
+        resource = await get_resource(sql_model, fides_key, async_session)
+        if resource.is_default:
+            raise errors.ForbiddenError(sql_model.__name__, fides_key)
+
+
+async def forbid_if_editing_any_is_default(
+    sql_model: Base, resources: List[Dict], async_session: AsyncSession
+) -> None:
+    """
+    Raise a forbidden error if any of the existing resources' `is_default`
+    field is being modified, or if there is a new resource with `is_default=True`
+    """
+    if sql_model in models_with_default_field:
+        fides_keys = [resource["fides_key"] for resource in resources]
+        existing_resources = {
+            r.fides_key: r
+            for r in await list_resource(sql_model, async_session)
+            if r.fides_key in fides_keys
+        }
+        for resource in resources:
+            if existing_resources.get(resource["fides_key"]) is None:
+                # new resource is being upserted
+                if resource["is_default"]:
+                    raise errors.ForbiddenError(
+                        sql_model.__name__, resource["fides_key"]
+                    )
+            elif (
+                resource["is_default"]
+                != existing_resources[resource["fides_key"]].is_default
+            ):
+                raise errors.ForbiddenError(sql_model.__name__, resource["fides_key"])
 
 
 def validate_start_and_end_filters(

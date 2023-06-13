@@ -21,7 +21,7 @@ from starlette.status import (
 from starlette.testclient import TestClient
 
 from fides.api.api.v1.endpoints import health
-from fides.api.api.v1.endpoints.util import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
+from fides.api.api.v1.endpoints.utils import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
 from fides.api.api.v1.scope_registry import (
     CREATE,
     DELETE,

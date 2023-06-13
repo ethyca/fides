@@ -51,12 +51,12 @@ from fides.api.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateValues,
 )
 from fides.api.schemas.system import SystemResponse
+from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import patch_connection_configs
 from fides.api.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
-from fides.api.utils.api_router import APIRouter
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
 SYSTEM_CONNECTIONS_ROUTER = APIRouter(

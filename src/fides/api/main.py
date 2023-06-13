@@ -19,7 +19,7 @@ from fides.api.analytics import (
     in_docker_container,
     send_analytics_event,
 )
-from fides.api.api.v1.endpoints.util import API_PREFIX
+from fides.api.api.v1.endpoints.utils import API_PREFIX
 from fides.api.app_setup import (
     check_redis,
     create_fides_app,

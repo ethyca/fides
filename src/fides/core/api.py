@@ -3,7 +3,7 @@ from typing import Dict, List
 
 import requests
 
-from fides.api.api.v1.endpoints.util import API_PREFIX
+from fides.api.api.v1.endpoints.utils import API_PREFIX
 
 
 def generate_resource_url(

@@ -34,8 +34,8 @@ from fides.api.schemas.connection_configuration.connection_config import (
 from fides.api.schemas.dataset import DatasetConfigCtlDataset
 from fides.api.schemas.policy import ActionType, DrpAction
 from fides.api.util.connection_util import patch_connection_configs
+from fides.api.util.errors import AlreadyExistsError, QueryError
 from fides.api.util.text import to_snake_case
-from fides.api.utils.errors import AlreadyExistsError, QueryError
 from fides.core.config import CONFIG
 
 from .crud import create_resource, get_resource, list_resource, upsert_resources

@@ -16,7 +16,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     PrivacyDeclaration,
     System,
 )
-from fides.api.utils.errors import NotFoundError
+from fides.api.util.errors import NotFoundError
 
 
 def privacy_declaration_logical_id(

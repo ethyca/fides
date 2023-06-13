@@ -19,7 +19,7 @@ from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.fides.fides_client import FidesClient
 from fides.api.service.connectors.query_config import QueryConfig
 from fides.api.util.collection_util import Row
-from fides.api.utils.errors import FidesError
+from fides.api.util.errors import FidesError
 
 DEFAULT_POLLING_TIMEOUT: int = 1800
 DEFAULT_POLLING_INTERVAL: int = 30

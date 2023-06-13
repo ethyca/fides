@@ -21,7 +21,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     CustomFieldDefinition,
     ResourceTypes,
 )
-from fides.api.utils import errors
+from fides.api.util import errors
 
 
 # CRUD Functions

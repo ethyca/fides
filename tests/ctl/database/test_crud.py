@@ -14,7 +14,7 @@ from fides.api.db.crud import (
     list_resource,
 )
 from fides.api.models import sql_models
-from fides.api.utils.errors import QueryError
+from fides.api.util.errors import QueryError
 from fides.core import api as _api
 from fides.core.config import FidesConfig
 from tests.ctl.types import FixtureRequest
