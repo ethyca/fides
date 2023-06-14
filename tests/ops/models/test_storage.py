@@ -273,12 +273,14 @@ class TestStorageConfigModel:
 
         # No exceptions should be raised for valid local destination
         assert StorageDestination(
+            name="Local destination",
             type=StorageType.local.value,
             format=ResponseFormat.json.value,
             details={StorageDetails.NAMING.value: FileNaming.request_id.value},
         )
 
         assert StorageDestination(
+            name="Local destination",
             type=StorageType.local.value,
             format=ResponseFormat.html.value,
             details={StorageDetails.NAMING.value: FileNaming.request_id.value},
@@ -287,6 +289,7 @@ class TestStorageConfigModel:
         # Expect ValueError for invalid local destination
         with pytest.raises(ValueError) as e:
             StorageDestination(
+                name="Local destination",
                 type=StorageType.local.value,
                 format=ResponseFormat.csv.value,
                 details={StorageDetails.NAMING.value: FileNaming.request_id.value},
