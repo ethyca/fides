@@ -315,7 +315,7 @@ def test_uploader_local_dsr_package(
                 "orderId": "23456",
                 "phone": "234523454",
                 "address": "123 mains st",
-                "birthday": "1995-01-01T00:00:00",
+                "birthday": datetime(1995, 1, 1),
                 "city": "Plainville",
             }
         ],
@@ -433,19 +433,19 @@ class TestWriteToInMemoryBuffer:
 
         zipfile = ZipFile(buff)
         assert zipfile.namelist() == [
-            "dsr-report/main.css",
-            "dsr-report/back.svg",
-            "dsr-report/mongo/address/1.html",
-            "dsr-report/mongo/address/2.html",
-            "dsr-report/mongo/address/index.html",
-            "dsr-report/mongo/foobar/1.html",
-            "dsr-report/mongo/foobar/index.html",
-            "dsr-report/mongo/index.html",
-            "dsr-report/mysql/customer/1.html",
-            "dsr-report/mysql/customer/2.html",
-            "dsr-report/mysql/customer/index.html",
-            "dsr-report/mysql/index.html",
-            "dsr-report/index.html",
+            "main.css",
+            "back.svg",
+            "mongo/address/1.html",
+            "mongo/address/2.html",
+            "mongo/address/index.html",
+            "mongo/foobar/1.html",
+            "mongo/foobar/index.html",
+            "mongo/index.html",
+            "mysql/customer/1.html",
+            "mysql/customer/2.html",
+            "mysql/customer/index.html",
+            "mysql/index.html",
+            "index.html",
         ]
 
     def test_not_implemented(self, data, privacy_request):

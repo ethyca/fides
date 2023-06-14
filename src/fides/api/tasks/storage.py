@@ -4,14 +4,12 @@ import json
 import os
 import secrets
 import zipfile
-from datetime import datetime
 from io import BytesIO
 from typing import Any, Dict, Union
 
 import pandas as pd
 from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
-from bson import ObjectId
 from loguru import logger
 
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
@@ -29,6 +27,7 @@ from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )
 from fides.api.util.storage_authenticator import get_s3_session
+from fides.api.util.storage_util import storage_json_encoder
 from fides.core.config import CONFIG
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
@@ -72,7 +71,7 @@ def write_to_in_memory_buffer(
     logger.info("Writing data to in-memory buffer")
 
     if resp_format == ResponseFormat.json.value:
-        json_str = json.dumps(data, indent=2, default=_handle_json_encoding)
+        json_str = json.dumps(data, indent=2, default=storage_json_encoder)
         return BytesIO(
             encrypt_access_request_results(json_str, privacy_request.id).encode(
                 CONFIG.security.encoding
@@ -99,7 +98,6 @@ def write_to_in_memory_buffer(
 
     if resp_format == ResponseFormat.html.value:
         return DsrReportBuilder(
-            folder_name="dsr-report",
             privacy_request=privacy_request,
             dsr_data=data,
         ).generate()
@@ -166,15 +164,6 @@ def upload_to_s3(  # pylint: disable=R0913
         raise e
     except ParamValidationError as e:
         raise ValueError(f"The parameters you provided are incorrect: {e}")
-
-
-def _handle_json_encoding(field: Any) -> Union[str, Dict[str, str]]:
-    """Specify str format for datetime objects"""
-    if isinstance(field, datetime):
-        return field.strftime("%Y-%m-%dT%H:%M:%S")
-    if isinstance(field, ObjectId):
-        return {"$oid": str(field)}
-    return field
 
 
 def upload_to_local(

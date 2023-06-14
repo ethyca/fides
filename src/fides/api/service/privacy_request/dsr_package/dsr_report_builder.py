@@ -12,15 +12,19 @@ from jinja2 import Environment, FileSystemLoader
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
+from fides.api.util.storage_util import storage_json_encoder
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
+
+TEXT_COLOR = "#4A5568"
+HEADER_COLOR = "#F7FAFC"
+BORDER_COLOR = "#E2E8F0"
 
 
 # pylint: disable=too-many-instance-attributes
 class DsrReportBuilder:
     def __init__(
         self,
-        folder_name: str,
         privacy_request: PrivacyRequest,
         dsr_data: Dict[str, Any],
     ):
@@ -30,7 +34,6 @@ class DsrReportBuilder:
         """
 
         # zip file variables
-        self.folder_name = folder_name
         self.baos = BytesIO()
 
         # we close this in the finally block of generate()
@@ -39,16 +42,16 @@ class DsrReportBuilder:
 
         # Jinja template environment initialization
         def pretty_print(value: str, indent: int = 4) -> str:
-            return json.dumps(value, indent=indent)
+            return json.dumps(value, indent=indent, default=storage_json_encoder)
 
         jinja2.filters.FILTERS["pretty_print"] = pretty_print
         self.template_loader = Environment(loader=FileSystemLoader(DSR_DIRECTORY))
 
         # to pass in custom colors in the future
         self.template_data: Dict[str, Any] = {
-            "text_color": "#4A5568",
-            "header_color": "#F7FAFC",
-            "border_color": "#E2E8F0",
+            "text_color": TEXT_COLOR,
+            "header_color": HEADER_COLOR,
+            "border_color": BORDER_COLOR,
         }
         self.main_links: Dict[str, Any] = {}  # used to track the generated pages
 
@@ -56,7 +59,7 @@ class DsrReportBuilder:
         self.request_data = _map_privacy_request(privacy_request)
         self.dsr_data = dsr_data
 
-    def populate_template(
+    def _populate_template(
         self,
         template_path: str,
         heading: Optional[str] = None,
@@ -71,17 +74,15 @@ class DsrReportBuilder:
             "request": self.request_data,
         }
         report_data.update(self.template_data)
-        template = self.template_loader.from_string(
-            Path(os.path.join(DSR_DIRECTORY, template_path)).read_text(encoding="utf-8")
-        )
+        template = self.template_loader.get_template(template_path)
         return template.render(report_data)
 
-    def add_file(self, filename: str, contents: str) -> None:
+    def _add_file(self, filename: str, contents: str) -> None:
         """Helper to add a file to the zip archive"""
         if filename and contents:
-            self.out.writestr(f"{self.folder_name}{filename}", contents.encode("utf-8"))
+            self.out.writestr(f"{filename}", contents.encode("utf-8"))
 
-    def add_dataset(self, dataset_name: str, collections: Dict[str, Any]) -> None:
+    def _add_dataset(self, dataset_name: str, collections: Dict[str, Any]) -> None:
         """
         Generates a page for each collection in the dataset and an index page for the dataset.
         Tracks the generated links to build a root level index after each collection has been processed.
@@ -90,31 +91,31 @@ class DsrReportBuilder:
         collection_links = {}
         for collection_name, rows in collections.items():
             collection_url = f"{collection_name}/index.html"
-            self.add_collection(rows, dataset_name, collection_name)
+            self._add_collection(rows, dataset_name, collection_name)
             collection_links[collection_name] = collection_url
 
         # generate dataset index page
-        self.add_file(
+        self._add_file(
             f"/{dataset_name}/index.html",
-            self.populate_template(
-                "./templates/dataset_index.html",
+            self._populate_template(
+                "templates/dataset_index.html",
                 dataset_name,
                 None,
                 collection_links,
             ),
         )
 
-    def add_collection(
+    def _add_collection(
         self, rows: List[Dict[str, Any]], dataset_name: str, collection_name: str
     ) -> None:
         # track links to detail pages
         detail_links = {}
         for index, item in enumerate(rows, 1):
             detail_url = f"{index}.html"
-            self.add_file(
+            self._add_file(
                 f"/{dataset_name}/{collection_name}/{index}.html",
-                self.populate_template(
-                    "./templates/item.html",
+                self._populate_template(
+                    "templates/item.html",
                     f"{collection_name} (item #{index})",
                     None,
                     item,
@@ -123,10 +124,10 @@ class DsrReportBuilder:
             detail_links[f"item #{index}"] = detail_url
 
         # generate detail index page
-        self.add_file(
+        self._add_file(
             f"/{dataset_name}/{collection_name}/index.html",
-            self.populate_template(
-                "./templates/collection_index.html",
+            self._populate_template(
+                "templates/collection_index.html",
                 collection_name,
                 None,
                 detail_links,
@@ -140,13 +141,13 @@ class DsrReportBuilder:
         """
         try:
             # all the css for the pages is in main.css
-            self.add_file(
+            self._add_file(
                 "/main.css",
-                self.populate_template("./templates/main.css"),
+                self._populate_template("templates/main.css"),
             )
-            self.add_file(
+            self._add_file(
                 "/back.svg",
-                Path(os.path.join(DSR_DIRECTORY, "./assets/back.svg")).read_text(
+                Path(os.path.join(DSR_DIRECTORY, "assets/back.svg")).read_text(
                     encoding="utf-8"
                 ),
             )
@@ -158,14 +159,14 @@ class DsrReportBuilder:
                 datasets[dataset_name][collection_name].extend(rows)
 
             for dataset_name, collections in datasets.items():
-                self.add_dataset(dataset_name, collections)
+                self._add_dataset(dataset_name, collections)
                 self.main_links[dataset_name] = f"{dataset_name}/index.html"
 
             # create the main index once all the datasets have been added
-            self.add_file(
+            self._add_file(
                 "/index.html",
-                self.populate_template(
-                    "./templates/index.html", "DSR Report", None, self.main_links
+                self._populate_template(
+                    "templates/index.html", "DSR Report", None, self.main_links
                 ),
             )
         finally:

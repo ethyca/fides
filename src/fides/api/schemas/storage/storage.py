@@ -175,20 +175,21 @@ class StorageDestinationBase(BaseModel):
 
     @root_validator
     @classmethod
-    def json_validator(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    def format_validator(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
         Custom validation to ensure that local destination formats are valid.
         """
-        json_only_destinations = [StorageType.local.value]
+        restricted_destinations = [StorageType.local.value]
         storage_type = values.get("type")
         response_format = values.get("format")
         if (
-            storage_type in json_only_destinations
+            storage_type in restricted_destinations
             and response_format
-            and response_format != ResponseFormat.json.value
+            and response_format
+            not in [ResponseFormat.json.value, ResponseFormat.html.value]
         ):
             raise ValueError(
-                "Only JSON upload format is supported for local storage destinations."
+                "Only JSON or HTML upload format are supported for local storage destinations."
             )
 
         return values
