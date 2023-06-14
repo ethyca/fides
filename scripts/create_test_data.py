@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from sqlalchemy import orm
 
-from fides.api.ctl.database.database import init_db
+from fides.api.database.database import init_db
 from fides.api.db.session import get_db_session
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail

@@ -191,7 +191,7 @@ def check_container_startup(session: nox.Session) -> None:
     session.run(*healthcheck_logs_command, external=True)
     session.log(f"{log_dashes} Startup Logs {log_dashes}")
     session.run(*startup_logs_command, external=True)
-    
+
     if throw_error:
         session.error("Container startup failed")
 

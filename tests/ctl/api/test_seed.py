@@ -534,7 +534,7 @@ class TestLoadSamples:
         needs to parse everything from this directory:
         - src/fides/data/sample_project/sample_resources/*.yml
 
-        See src/fides/api/ctl/database/samples.py for details.
+        See src/fides/api/database/samples.py for details.
 
         Sorry for the trouble, but we want to ensure there isn't a subtle bug
         sneaking into our sample project code!
@@ -566,7 +566,7 @@ class TestLoadSamples:
         needs to parse everything from this directory:
         - src/fides/data/sample_project/sample_connections/*.yml
 
-        See src/fides/api/ctl/database/samples.py for details.
+        See src/fides/api/database/samples.py for details.
 
         Sorry for the trouble, but we want to ensure there isn't a subtle bug
         sneaking into our sample project code!
