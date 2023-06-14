@@ -22,9 +22,9 @@ from fides.api.api.v1.scope_registry import (
     REGISTRY,
     SYSTEM,
 )
-from fides.api.db.base_class import Base  # type: ignore[attr-defined]
+from fides.api.db.base import Base  # type: ignore[attr-defined]
 from fides.api.db.crud import get_resource, list_resource
-from fides.api.models.sql_models import models_with_default_field
+from fides.api.models.sql_models import models_with_default_field  # type: ignore[attr-defined]
 from fides.api.util import errors
 from fides.core.config import CONFIG
 
