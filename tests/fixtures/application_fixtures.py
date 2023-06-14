@@ -2129,6 +2129,41 @@ def privacy_preference_history(
 
 
 @pytest.fixture(scope="function")
+def anonymous_consent_records(
+    db,
+    fides_user_provided_identity_and_consent_request,
+):
+    (
+        provided_identity,
+        consent_request,
+    ) = fides_user_provided_identity_and_consent_request
+    consent_request.cache_identity_verification_code("abcdefg")
+
+    consent_data = [
+        {
+            "data_use": "email",
+            "data_use_description": None,
+            "opt_in": True,
+        },
+        {
+            "data_use": "location",
+            "data_use_description": "Location data",
+            "opt_in": False,
+        },
+    ]
+
+    records = []
+    for data in deepcopy(consent_data):
+        data["provided_identity_id"] = provided_identity.id
+        records.append(Consent.create(db, data=data))
+
+    yield records
+
+    for record in records:
+        record.delete(db)
+
+
+@pytest.fixture(scope="function")
 def consent_records(
     db,
     provided_identity_and_consent_request,

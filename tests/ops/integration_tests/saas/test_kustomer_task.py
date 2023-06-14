@@ -68,6 +68,41 @@ async def test_kustomer_access_request_task_with_email(
 @pytest.mark.integration_saas
 @pytest.mark.integration_kustomer
 @pytest.mark.asyncio
+async def test_kustomer_access_request_task_with_non_existent_email(
+    db,
+    policy,
+    kustomer_connection_config,
+    kustomer_dataset_config,
+    kustomer_non_existent_identity_email,
+) -> None:
+    """Access request that returns a 404 but succeeds"""
+
+    privacy_request = PrivacyRequest(
+        id=f"test_kustomer_access_request_task_{random.randint(0, 1000)}"
+    )
+    identity = Identity(**{"email": kustomer_non_existent_identity_email})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = kustomer_connection_config.get_saas_config().fides_key
+    merged_graph = kustomer_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    v = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [kustomer_connection_config],
+        {"email": kustomer_non_existent_identity_email},
+        db,
+    )
+
+    # verify the request succeeded but no information was returned
+    assert len(v[f"{dataset_name}:customer"]) == 0
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_kustomer
+@pytest.mark.asyncio
 async def test_kustomer_access_request_task_with_phone_number(
     db,
     policy,
@@ -175,5 +210,47 @@ async def test_kustomer_erasure_request_task(
     )
 
     assert response.status_code == 404
+
+    CONFIG.execution.masking_strict = masking_strict
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_kustomer
+@pytest.mark.asyncio
+async def test_kustomer_erasure_request_task_non_existent_email(
+    db,
+    policy,
+    erasure_policy_string_rewrite,
+    kustomer_connection_config,
+    kustomer_dataset_config,
+    kustomer_non_existent_identity_email,
+    kustomer_create_erasure_data,
+) -> None:
+    """Full erasure request based on the Kustomer SaaS config"""
+
+    masking_strict = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = False  # Allow Delete
+
+    privacy_request = PrivacyRequest(
+        id=f"test_kustomer_erasure_request_task_non_existent_email{random.randint(0, 1000)}"
+    )
+    identity = Identity(**{"email": kustomer_non_existent_identity_email})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = kustomer_connection_config.get_saas_config().fides_key
+    merged_graph = kustomer_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    x = await graph_task.run_erasure(
+        privacy_request,
+        erasure_policy_string_rewrite,
+        graph,
+        [kustomer_connection_config],
+        {"email": kustomer_non_existent_identity_email},
+        get_cached_data_for_erasures(privacy_request.id),
+        db,
+    )
+
+    assert x == {f"{dataset_name}:customer": 0}
 
     CONFIG.execution.masking_strict = masking_strict

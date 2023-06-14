@@ -38,6 +38,12 @@ def kustomer_identity_email(saas_config):
 
 
 @pytest.fixture(scope="session")
+def kustomer_non_existent_identity_email(saas_config):
+    email_not_in_kustomer = "not_in_kustomer@example.com"
+    return email_not_in_kustomer
+
+
+@pytest.fixture(scope="session")
 def kustomer_identity_phone_number(saas_config):
     return (
         pydash.get(saas_config, "kustomer.identity_phone_number")
