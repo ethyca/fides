@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.2b0.post0.dev12"
+    "version": "2.14.2b0.post0.dev13"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -17799,6 +17799,11 @@
           "port": {
             "title": "Port",
             "type": "integer"
+          },
+          "ssh_required": {
+            "title": "Ssh Required",
+            "type": "boolean",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -19104,6 +19109,11 @@
           "db_schema": {
             "title": "Db Schema",
             "type": "string"
+          },
+          "ssh_required": {
+            "title": "Ssh Required",
+            "type": "boolean",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -20593,6 +20603,11 @@
           "port": {
             "title": "Port",
             "type": "integer"
+          },
+          "ssh_required": {
+            "title": "Ssh Required",
+            "type": "boolean",
+            "default": false
           }
         },
         "additionalProperties": false,

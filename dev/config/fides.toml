@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "85749053a74ed25a5be8ffe5067538e3" # string
+analytics_id = "c158840b6c66687bbbf8830f6d69ed23" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -324,6 +324,24 @@ allow_custom_connector_functions = false # boolean
 # Either enables the collection of audit log resource data or bypasses
 # the middleware
 enable_audit_log_resource_middleware = false # boolean
+
+# An optional field to store the bastion server host
+bastion_server_host = "" # string
+
+# An optional field to store the username used to access the bastion
+# server
+bastion_server_ssh_username = "" # string
+
+# An optional field to store the key used to SSH into the bastion
+# server.
+bastion_server_ssh_private_key = "" # string
+
+# The timeout in seconds for the transport socket
+# (``socket.settimeout``)
+bastion_server_ssh_timeout = 0.1 # number
+
+# The timeout in seconds for tunnel connection (open_channel timeout)
+bastion_server_ssh_tunnel_timeout = 10 # number
 
 #----------#
 #-- USER --#

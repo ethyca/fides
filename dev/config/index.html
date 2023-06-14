@@ -1408,7 +1408,25 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">354</span>
 <span class="normal">355</span>
 <span class="normal">356</span>
-<span class="normal">357</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1426,7 +1444,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;85749053a74ed25a5be8ffe5067538e3&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;c158840b6c66687bbbf8830f6d69ed23&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1734,6 +1752,24 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># Either enables the collection of audit log resource data or bypasses</span>
 <span class="c1"># the middleware</span>
 <span class="n">enable_audit_log_resource_middleware</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># An optional field to store the bastion server host</span>
+<span class="n">bastion_server_host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># An optional field to store the username used to access the bastion</span>
+<span class="c1"># server</span>
+<span class="n">bastion_server_ssh_username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># An optional field to store the key used to SSH into the bastion</span>
+<span class="c1"># server.</span>
+<span class="n">bastion_server_ssh_private_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># The timeout in seconds for the transport socket</span>
+<span class="c1"># (``socket.settimeout``)</span>
+<span class="n">bastion_server_ssh_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.1</span><span class="w"> </span><span class="c1"># number</span>
+
+<span class="c1"># The timeout in seconds for tunnel connection (open_channel timeout)</span>
+<span class="n">bastion_server_ssh_tunnel_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="c1"># number</span>
 
 <span class="c1">#----------#</span>
 <span class="c1">#-- USER --#</span>
