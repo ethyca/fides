@@ -1,5 +1,5 @@
 import { ConsentContext } from "./consent-context";
-import { ConsentValue, UserConsentPreference } from "./consent-types";
+import { ConsentValue, PrivacyNotice } from "./consent-types";
 import { transformUserPreferenceToBoolean } from "./consent-utils";
 
 export const resolveLegacyConsentValue = (
@@ -22,18 +22,17 @@ export const resolveLegacyConsentValue = (
 };
 
 export const resolveConsentValue = (
-  value: UserConsentPreference,
-  context: ConsentContext,
-  current_preference?: UserConsentPreference | null,
-  has_gpc_flag?: boolean
+  notice: PrivacyNotice,
+  context: ConsentContext
 ): boolean => {
-  if (current_preference) {
-    return transformUserPreferenceToBoolean(current_preference);
+  if (notice.current_preference) {
+    return transformUserPreferenceToBoolean(notice.current_preference);
   }
-  const gpcEnabled = !!has_gpc_flag && context.globalPrivacyControl === true;
+  const gpcEnabled =
+    !!notice.has_gpc_flag && context.globalPrivacyControl === true;
   if (gpcEnabled) {
     return false;
   }
 
-  return transformUserPreferenceToBoolean(value);
+  return transformUserPreferenceToBoolean(notice.default_preference);
 };

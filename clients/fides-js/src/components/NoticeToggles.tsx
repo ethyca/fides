@@ -1,6 +1,6 @@
 import { h } from "preact";
 
-import { PrivacyNotice } from "../lib/consent-types";
+import { ConsentMechanism, PrivacyNotice } from "../lib/consent-types";
 import Toggle from "./Toggle";
 import Divider from "./Divider";
 import { useDisclosure } from "../lib/hooks";
@@ -52,6 +52,7 @@ const NoticeToggle = ({
           id={notice.notice_key}
           checked={checked}
           onChange={onToggle}
+          disabled={notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY}
         />
       </div>
       <p {...getDisclosureProps()}>{notice.description}</p>
