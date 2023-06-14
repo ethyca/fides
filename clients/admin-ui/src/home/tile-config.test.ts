@@ -85,9 +85,7 @@ describe("configureTiles", () => {
           ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
         ],
       });
-      expect(tiles.map((t) => t.name)).toEqual([
-        "Review privacy requests",
-      ]);
+      expect(tiles.map((t) => t.name)).toEqual(["Review privacy requests"]);
     });
   });
 });

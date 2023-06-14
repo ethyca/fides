@@ -6,7 +6,6 @@ const ALL_TILES = [
   "View data map",
   "Add systems",
   "View systems",
-  "Configure privacy requests",
   "Review privacy requests",
 ];
 
