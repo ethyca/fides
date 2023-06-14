@@ -380,8 +380,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   return getFormField(key, item);
                 })
               : null}
-            { SystemType.DATABASE === connectionOption.type
-             && !isCreatingConnectionConfig ? (
+            {SystemType.DATABASE === connectionOption.type &&
+            !isCreatingConnectionConfig ? (
               <DatasetConfigField dropdownOptions={datasetDropdownOptions} />
             ) : null}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
