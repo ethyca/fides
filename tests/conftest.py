@@ -101,8 +101,6 @@ async def async_session(test_client):
         async_engine.dispose()
 
 
-
-
 # TODO: THIS IS A HACKY WORKAROUND.
 # This is specific for this test: test_get_resource_with_custom_field
 # this was added to account for weird error that only happens during a
@@ -413,6 +411,7 @@ def resources_dict():
             system_type="SYSTEM",
             name="Test System",
             description="Test Policy",
+            cookies=[],
             privacy_declarations=[
                 models.PrivacyDeclaration(
                     name="declaration-name",
@@ -421,6 +420,7 @@ def resources_dict():
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
+                    cookies=[],
                 )
             ],
         ),

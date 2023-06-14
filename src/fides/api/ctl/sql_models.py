@@ -346,6 +346,10 @@ class System(Base, FidesBase):
         lazy="selectin",
     )
 
+    cookies = relationship(
+        "Cookies", back_populates="system", lazy="selectin", uselist=True, viewonly=True
+    )
+
     @classmethod
     def get_data_uses(
         cls: Type[System], systems: List[System], include_parents: bool = True
@@ -392,6 +396,9 @@ class PrivacyDeclaration(Base):
         index=True,
     )
     system = relationship(System, back_populates="privacy_declarations")
+    cookies = relationship(
+        "Cookies", back_populates="privacy_declaration", lazy="joined", uselist=True
+    )
 
     @classmethod
     def create(
@@ -596,3 +603,41 @@ class AuditLogResource(Base):
     request_type = Column(String, nullable=True)
     fides_keys = Column(ARRAY(String), nullable=True)
     extra_data = Column(JSON, nullable=True)
+
+
+class Cookies(Base):
+    """
+    Stores cookies.  Cookies have a FK to system and privacy declaration. If a privacy declaration is deleted,
+    the cookie can still remain linked to the system but unassociated with a data use.
+    """
+
+    name = Column(String, index=True, nullable=False)
+    system_id = Column(
+        String, ForeignKey(System.id_field_path, ondelete="CASCADE"), index=True
+    )
+    privacy_declaration_id = Column(
+        String,
+        ForeignKey(PrivacyDeclaration.id_field_path, ondelete="SET NULL"),
+        index=True,
+    )
+
+    system = relationship(
+        "System",
+        back_populates="cookies",
+        cascade="all,delete",
+        uselist=False,
+        lazy="selectin",
+    )
+
+    privacy_declaration = relationship(
+        "PrivacyDeclaration",
+        back_populates="cookies",
+        uselist=False,
+        lazy="joined",
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "name", "privacy_declaration_id", name="_cookie_name_privacy_declaration_uc"
+        ),
+    )

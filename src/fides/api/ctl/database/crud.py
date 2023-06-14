@@ -113,7 +113,7 @@ async def get_resource(
     raise_not_found: bool = True,
 ) -> Base:
     """
-    Get a resource from the databse by its FidesKey.
+    Get a resource from the database by its FidesKey.
 
     Returns a SQLAlchemy model of that resource.
     """
