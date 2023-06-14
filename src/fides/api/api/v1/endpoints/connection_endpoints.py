@@ -218,12 +218,8 @@ def delete_connection(
     connection_config = get_connection_config_or_error(db, connection_key)
     connection_type = connection_config.connection_type
     logger.info("Deleting connection config with key '{}'.", connection_key)
-    logger.info("Deleting- saas_config: '{}'.", connection_config.saas_config)
     if connection_config.saas_config:
         saas_dataset_fides_key = connection_config.saas_config.get("fides_key")
-        logger.info(
-            f"Iniside saas_config deletion block. The fides key is {saas_dataset_fides_key}"
-        )
 
         dataset_config = db.query(DatasetConfig).filter(
             DatasetConfig.connection_config_id == connection_config.id
