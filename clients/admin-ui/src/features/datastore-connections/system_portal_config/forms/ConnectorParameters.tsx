@@ -1,7 +1,7 @@
-import { Box, SlideFade } from "@fidesui/react";
-import { useAPIHelper } from "common/hooks";
-import { useAlert } from "common/hooks/useAlert";
-import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
+import {Box, SlideFade} from "@fidesui/react";
+import {useAPIHelper} from "common/hooks";
+import {useAlert} from "common/hooks/useAlert";
+import {ConnectionTypeSecretSchemaReponse} from "connection-type/types";
 import {
   CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
@@ -9,18 +9,20 @@ import {
   useGetConnectionConfigDatasetConfigsQuery,
   useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
-import { useDatasetConfigField } from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
+import {
+  useDatasetConfigField
+} from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
   CreateSaasConnectionConfigRequest,
   CreateSaasConnectionConfigResponse,
   DatastoreConnectionSecretsRequest,
   DatastoreConnectionSecretsResponse,
 } from "datastore-connections/types";
-import { useState } from "react";
+import {useState} from "react";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
-import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
+import {useAppDispatch, useAppSelector} from "~/app/hooks";
+import {useGetConnectionTypeSecretSchemaQuery} from "~/features/connection-type";
+import {formatKey} from "~/features/datastore-connections/system_portal_config/helpers";
 import TestConnection from "~/features/datastore-connections/system_portal_config/TestConnection";
 import {
   selectActiveSystem,
@@ -37,7 +39,7 @@ import {
   SystemType,
 } from "~/types/api";
 
-import { ConnectionConfigFormValues } from "../types";
+import {ConnectionConfigFormValues} from "../types";
 import ConnectorParametersForm from "./ConnectorParametersForm";
 
 /**
@@ -260,7 +262,7 @@ export const useConnectorForm = ({
         values.dataset = res;
       }
 
-      if (connectionConfig && values.dataset) {
+      if (connectionConfig && values.dataset && connectionOption.type === SystemType.DATABASE) {
         await patchConnectionDatasetConfig(values, connectionConfig.key);
       }
 
