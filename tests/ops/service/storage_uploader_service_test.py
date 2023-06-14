@@ -433,19 +433,19 @@ class TestWriteToInMemoryBuffer:
 
         zipfile = ZipFile(buff)
         assert zipfile.namelist() == [
-            "main.css",
-            "back.svg",
-            "mongo/address/1.html",
-            "mongo/address/2.html",
-            "mongo/address/index.html",
-            "mongo/foobar/1.html",
-            "mongo/foobar/index.html",
-            "mongo/index.html",
-            "mysql/customer/1.html",
-            "mysql/customer/2.html",
-            "mysql/customer/index.html",
-            "mysql/index.html",
-            "index.html",
+            "/main.css",
+            "/back.svg",
+            "/mongo/address/1.html",
+            "/mongo/address/2.html",
+            "/mongo/address/index.html",
+            "/mongo/foobar/1.html",
+            "/mongo/foobar/index.html",
+            "/mongo/index.html",
+            "/mysql/customer/1.html",
+            "/mysql/customer/2.html",
+            "/mysql/customer/index.html",
+            "/mysql/index.html",
+            "/index.html",
         ]
 
     def test_not_implemented(self, data, privacy_request):
