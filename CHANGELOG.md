@@ -19,7 +19,9 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.15.0...main)
 
 ### Added
+
 - Included optional env vars to have postgres or Redshift connected via bastion host [#3374](https://github.com/ethyca/fides/pull/3374/)
+- Support for acknowledge button for notice-only Privacy Notices and to disable toggling them off [#3546](https://github.com/ethyca/fides/pull/3546)
 
 ### Fixed
 
