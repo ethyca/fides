@@ -29,7 +29,7 @@ from fides.api.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionException
-from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ctl.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionTestStatus,
@@ -218,9 +218,12 @@ def delete_connection(
     connection_config = get_connection_config_or_error(db, connection_key)
     connection_type = connection_config.connection_type
     logger.info("Deleting connection config with key '{}'.", connection_key)
-
+    logger.info("Deleting- saas_config: '{}'.", connection_config.saas_config)
     if connection_config.saas_config:
         saas_dataset_fides_key = connection_config.saas_config.get("fides_key")
+        logger.info(
+            f"Iniside saas_config deletion block. The fides key is {saas_dataset_fides_key}"
+        )
 
         dataset_config = db.query(DatasetConfig).filter(
             DatasetConfig.connection_config_id == connection_config.id
@@ -228,12 +231,13 @@ def delete_connection(
         dataset_config.delete(synchronize_session="evaluate")
 
         if saas_dataset_fides_key:
+            logger.info("Deleting saas dataset with key '{}'.", saas_dataset_fides_key)
             saas_dataset = (
                 db.query(CtlDataset)
                 .filter(CtlDataset.fides_key == saas_dataset_fides_key)
                 .first()
             )
-            saas_dataset.delete(db)
+            saas_dataset.delete(db)  # type: ignore[union-attr]
 
     connection_config.delete(db)
 

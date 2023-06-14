@@ -16,6 +16,7 @@ from fides.api.api.v1.scope_registry import (
     CONNECTION_READ,
     STORAGE_DELETE,
 )
+from fides.api.ctl.sql_models import Dataset
 from fides.api.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
@@ -23,10 +24,12 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
 from tests.fixtures.application_fixtures import integration_secrets
+from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
 page_size = Params().size
 
@@ -1261,6 +1264,39 @@ class TestDeleteConnection:
         assert (
             privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
         )
+
+    def test_delete_saas_connection_config(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ) -> None:
+        secrets = {
+            "domain": "test_sendgrid_domain",
+            "api_key": "test_sendgrid_api_key",
+        }
+        connection_config, dataset_config = instantiate_connector(
+            db,
+            "sendgrid",
+            "sendgrid_connection_config_secondary",
+            "secondary_sendgrid_instance",
+            "Sendgrid ConnectionConfig description",
+            secrets,
+        )
+        dataset = dataset_config.ctl_dataset
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
+        resp = api_client.delete(
+            f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}", headers=auth_header
+        )
+        assert resp.status_code == 204
+        assert (
+            db.query(ConnectionConfig).filter_by(key=connection_config.key).first()
+            is None
+        )
+        assert db.query(DatasetConfig).filter_by(id=dataset_config.id).first() is None
+        assert db.query(Dataset).filter_by(id=dataset.id).first() is None
 
 
 class TestPutConnectionConfigSecrets:

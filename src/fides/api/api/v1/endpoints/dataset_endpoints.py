@@ -602,8 +602,8 @@ def get_ctl_datasets(
     if remove_saas_datasets:
         saas_subquery = (
             select([ConnectionConfig.saas_config["fides_key"].astext])
-            .select_from(ConnectionConfig)
-            .where(ConnectionConfig.saas_config.is_not(None))
+            .select_from(ConnectionConfig)  # type: ignore[arg-type]
+            .where(ConnectionConfig.saas_config.is_not(None))  # type: ignore[attr-defined]
         )
         filters.append(not_(CtlDataset.fides_key.in_(saas_subquery)))
 
