@@ -662,6 +662,13 @@ You're not viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#publishing-the-release" class="md-nav__link">
+    Publishing the release
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1012,6 +1019,13 @@ You're not viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#publishing-the-release" class="md-nav__link">
+    Publishing the release
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1278,6 +1292,7 @@ git<span class="w"> </span>pull
 <ul>
 <li>[ ] Quickstart works: <code>nox -s quickstart</code> (verify you can complete the interactive prompts from the command-line)</li>
 <li>[ ] Test environment works: <code>nox -s "fides_env(test)"</code> (verify the admin UI on localhost:8080, privacy center on localhost:3001, CLI and webserver)</li>
+<li>[ ] Have Roger run a QATouch automation run</li>
 </ul>
 <p>Next, run the following checks via the test environment:</p>
 <h4 id="api">API</h4>
@@ -1311,6 +1326,15 @@ git<span class="w"> </span>pull
 <ul>
 <li>[ ] Verify that the CHANGELOG is formatted correctly and clean up verbiage where needed</li>
 <li>[ ] Verify that the CHANGELOG is representative of the actual changes</li>
+</ul>
+<p>:warning: Note that any updates that need to be made to the CHANGELOG should <strong>not</strong> be commited directly to the release branch.
+Instead, they should be committed on a branch off of <code>main</code> and then PR'd and merged into <code>main</code>, before being cherry-picked
+over to the release branch. This ensures that the CHANGELOG stays consistent between the release branch and <code>main</code>.</p>
+<h4 id="publishing-the-release">Publishing the release</h4>
+<p>When publishing the release, be sure to include the following sections in the release description:</p>
+<ul>
+<li>[ ] <code>## Release Pull Request</code> section that includes a link back to the release PR (i.e., this one!) for tracking purposes</li>
+<li>[ ] <code>## QA Touch Test Run</code> section that includes a link to the QATouch test run (QA team should provide this)</li>
 </ul>
 <h3 id="post-release-steps">Post-Release Steps</h3>
 <ul>
