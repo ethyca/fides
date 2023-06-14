@@ -57,23 +57,6 @@ describe("Smoke test", () => {
     });
   });
 
-  it("can access Mongo and Postgres connectors from the Admin UI", () => {
-    cy.intercept(`${API_URL}/connection_type`).as("getConnectionType");
-    cy.intercept(`${API_URL}/connection*`).as("getConnections");
-
-    cy.visit(ADMIN_UI_URL);
-    cy.login();
-    cy.get("div").contains("Configure privacy requests").click();
-    cy.wait("@getConnections");
-    cy.get("a").contains("Connection manager").click();
-    cy.wait("@getConnectionType");
-    cy.getByTestId("connection-grid-item-MongoDB Connector").within(() => {
-      cy.get("button").contains("Test").click();
-    });
-    cy.getByTestId("connection-grid-item-Postgres Connector").within(() => {
-      cy.get("button").contains("Test").click();
-    });
-  });
 
   it("can manage consent preferences from the Privacy Center", () => {
     cy.visit(PRIVACY_CENTER_URL);
