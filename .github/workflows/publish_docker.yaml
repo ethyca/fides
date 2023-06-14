@@ -33,33 +33,33 @@ jobs:
         id: check-prod-tag
         run: |
           if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo ::set-output name=match::true
+            echo match=true >> $GITHUB_OUTPUT
           else
-              echo ::set-output name=match::false
+            echo match=false >> $GITHUB_OUTPUT
           fi
       - name: Check RC Tag
         id: check-rc-tag
         run: |
           if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+rc[0-9]+$ ]]; then
-              echo ::set-output name=match::true
+            echo match=true >> $GITHUB_OUTPUT
           else
-              echo ::set-output name=match::false
+            echo match=false >> $GITHUB_OUTPUT
           fi
       - name: Check alpha Tag
         id: check-alpha-tag
         run: |
           if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+a[0-9]+$ ]]; then
-              echo ::set-output name=match::true
+            echo match=true >> $GITHUB_OUTPUT
           else
-              echo ::set-output name=match::false
+            echo match=false >> $GITHUB_OUTPUT
           fi
       - name: Check beta Tag
         id: check-beta-tag
         run: |
           if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+b[0-9]+$ ]]; then
-              echo ::set-output name=match::true
+            echo match=true >> $GITHUB_OUTPUT
           else
-              echo ::set-output name=match::false
+            echo match=false >> $GITHUB_OUTPUT
           fi
 
       # if neither prod, rc, beta or alpha git tag, then push images with the ":dev" tag
