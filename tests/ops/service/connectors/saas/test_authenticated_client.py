@@ -103,7 +103,10 @@ class TestAuthenticatedClient:
         assert send.call_count == 1
 
     @pytest.mark.unit_saas
-    def test_client_ignores_errors(test_authenticated_client):
+    def test_client_ignores_errors(
+        self,
+        test_authenticated_client,
+    ):
         """Test that _should_ignore_errors ignores the correct errors."""
         assert test_authenticated_client._should_ignore_errors(
             status_code=400,
