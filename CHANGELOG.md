@@ -19,9 +19,12 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.15.0...main)
 
 ### Added
+
+- Included optional env vars to have postgres or Redshift connected via bastion host [#3374](https://github.com/ethyca/fides/pull/3374/)
 - Support for acknowledge button for notice-only Privacy Notices and to disable toggling them off [#3546](https://github.com/ethyca/fides/pull/3546)
 
 ### Fixed
+
 - Fix race condition with consent modal link rendering [#3521](https://github.com/ethyca/fides/pull/3521)
 - Remove the `fides-js` banner from tab order when it is hidden and move the overlay components to the top of the tab order. [#3510](https://github.com/ethyca/fides/pull/3510)
 - Disable connector dropdown in integration tab on save [#3552](https://github.com/ethyca/fides/pull/3552)
