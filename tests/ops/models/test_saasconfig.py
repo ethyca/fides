@@ -23,16 +23,6 @@ def test_saas_configs(saas_example_config) -> None:
 
 
 @pytest.mark.unit_saas
-def test_saas_config_ignore_errors(saas_example_config) -> None:
-    """Test that _should_ignore_errors ignores the correct errors."""
-    SaaSConfig(**saas_example_config)
-    assert SaaSConfig._should_ignore_errors(status_code=400, ignore_errors=True)
-    assert not SaaSConfig._should_ignore_errors(status_code=400, ignore_errors=False)
-    assert SaaSConfig._should_ignore_errors(status_code=400, ignore_errors=[400])
-    assert not SaaSConfig._should_ignore_errors(status_code=400, ignore_errors=[401])
-
-
-@pytest.mark.unit_saas
 def test_saas_request_without_method_or_path():
     with pytest.raises(ValidationError) as exc:
         SaaSRequest(path="/test")
@@ -198,6 +188,14 @@ def test_saas_config_ignore_errors_param(saas_example_config: Dict[str, Dict]):
     # Not specified on member read endpoint - defaults to False
     for read_request in member_endpoint.requests.read:
         assert not read_request.ignore_errors
+
+    tickets_endpoint = next(
+        end for end in saas_config.endpoints if end.name == "tickets"
+    )
+    assert tickets_endpoint.requests.read[0].ignore_errors
+    assert 401 in tickets_endpoint.requests.read[0].ignore_errors
+    assert 403 in tickets_endpoint.requests.read[0].ignore_errors
+    assert 404 in tickets_endpoint.requests.read[0].ignore_errors
 
 
 @pytest.mark.unit_saas

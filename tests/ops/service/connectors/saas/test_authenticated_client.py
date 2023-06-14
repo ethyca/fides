@@ -102,6 +102,26 @@ class TestAuthenticatedClient:
             test_authenticated_client.send(test_saas_request)
         assert send.call_count == 1
 
+    @pytest.mark.unit_saas
+    def test_client_ignores_errors(test_authenticated_client):
+        """Test that _should_ignore_errors ignores the correct errors."""
+        assert test_authenticated_client._should_ignore_errors(
+            status_code=400,
+            ignore_errors=True,
+        )
+        assert not test_authenticated_client._should_ignore_errors(
+            status_code=400,
+            ignore_errors=False,
+        )
+        assert test_authenticated_client._should_ignore_errors(
+            status_code=400,
+            ignore_errors=[400],
+        )
+        assert not test_authenticated_client._should_ignore_errors(
+            status_code=400,
+            ignore_errors=[401],
+        )
+
 
 @pytest.mark.unit_saas
 class TestRetryAfterHeaderParsing:
