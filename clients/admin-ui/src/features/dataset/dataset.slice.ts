@@ -33,8 +33,14 @@ const datasetApi = baseApi.injectEndpoints({
       query: () => ({ url: `dataset/` }),
       providesTags: () => ["Datasets"],
     }),
-    getAllFilteredDatasets: build.query<Dataset[], {onlyUnlinkedDatasets:boolean}>({
-      query: ({onlyUnlinkedDatasets}) => ({ url: `/filter/dataset`, params: {only_unlinked_datasets: onlyUnlinkedDatasets} }),
+    getAllFilteredDatasets: build.query<
+      Dataset[],
+      { onlyUnlinkedDatasets: boolean }
+    >({
+      query: ({ onlyUnlinkedDatasets }) => ({
+        url: `/filter/dataset`,
+        params: { only_unlinked_datasets: onlyUnlinkedDatasets },
+      }),
       providesTags: () => ["Datasets"],
     }),
     getDatasetByKey: build.query<Dataset, string>({
