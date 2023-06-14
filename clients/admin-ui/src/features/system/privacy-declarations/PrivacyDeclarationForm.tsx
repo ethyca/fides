@@ -23,7 +23,11 @@ import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import ConfirmationModal from "~/features/common/ConfirmationModal";
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import {
+  CustomCreatableSelect,
+  CustomSelect,
+  CustomTextInput,
+} from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import {
   DataCategory,
@@ -163,6 +167,14 @@ export const PrivacyDeclarationFormComponents = ({
         tooltip="Whose data are you processing? This could be customers, employees or any other type of user in your system."
         isMulti
         variant="stacked"
+      />
+      <CustomCreatableSelect
+        name="cookies"
+        label="Cookies"
+        options={[]}
+        isMulti
+        variant="stacked"
+        isClearable={false}
       />
       {allDatasets ? (
         <CustomSelect
