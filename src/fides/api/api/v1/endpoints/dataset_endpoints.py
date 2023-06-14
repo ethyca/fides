@@ -578,7 +578,7 @@ def delete_dataset(
 
 
 @router.get(
-    f"{DATASETS}/filter/test",
+    f"/filter{DATASETS}",
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
     response_model=List[Dataset],
 )

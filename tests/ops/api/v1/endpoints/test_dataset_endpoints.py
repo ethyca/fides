@@ -18,6 +18,7 @@ from fides.api.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
+    CTL_DATASET_READ,
 )
 from fides.api.api.v1.urn_registry import (
     DATASET_BY_KEY,
@@ -27,6 +28,7 @@ from fides.api.api.v1.urn_registry import (
     CONNECTION_DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
+    DATASETS,
 )
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
@@ -1499,7 +1501,7 @@ class TestPutYamlDatasets:
         assert len(response_body["failed"]) == 0
 
 
-class TestGetDatasets:
+class TestGetConnectionDatasets:
     @pytest.fixture
     def datasets_url(self, connection_config) -> str:
         path = V1_URL_PREFIX + CONNECTION_DATASETS
@@ -1588,7 +1590,7 @@ class TestGetDatasetConfigs:
         assert response_body["size"] == Params().size
 
 
-def get_dataset_url(
+def get_connection_dataset_url(
     connection_config: Optional[ConnectionConfig] = None,
     dataset_config: Optional[DatasetConfig] = None,
 ) -> str:
@@ -1604,11 +1606,78 @@ def get_dataset_url(
     return path.format(**path_params)
 
 
-class TestGetDataset:
+@pytest.mark.asyncio
+class TestGetCtlDatasetFilter:
+    @pytest.fixture
+    def url(self) -> str:
+        return V1_URL_PREFIX + "/filter" + DATASETS
+
+    def test_get_dataset_not_authenticated(self, url, api_client) -> None:
+        response = api_client.get(url, headers={})
+        assert response.status_code == 401
+
+    def test_get_dataset_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CTL_DATASET_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_only_unlinked_datasets(
+        self, generate_auth_header, api_client, url, unlinked_dataset, linked_dataset
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        unlinked_url = f"{url}?only_unlinked_datasets=True"
+        response = api_client.get(unlinked_url, headers=auth_header)
+        print(unlinked_url)
+        assert response.status_code == 200
+        print([d["fides_key"] for d in response.json()])
+        assert len(response.json()) == 1
+        assert response.json()[0]["fides_key"] == unlinked_dataset.fides_key
+
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert len(response.json()) == 2
+
+    def test_saas_dataset_filter(
+        self,
+        generate_auth_header,
+        api_client,
+        url,
+        secondary_sendgrid_instance,
+        linked_dataset,
+        unlinked_dataset,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        saas_fides_key = secondary_sendgrid_instance[1].fides_key
+        # Should filter out saas datasets by default
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert len(response.json()) == 2
+        assert saas_fides_key not in [d["fides_key"] for d in response.json()]
+
+        # Should filter out saas datasets if remove_saas_datasets is True
+        response = api_client.get(
+            f"{url}?remove_saas_datasets=True", headers=auth_header
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 2
+        assert saas_fides_key not in [d["fides_key"] for d in response.json()]
+
+        # Should include saas datasets if remove_saas_datasets is False
+        response = api_client.get(
+            f"{url}?remove_saas_datasets=False", headers=auth_header
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 3
+        assert saas_fides_key in [d["fides_key"] for d in response.json()]
+
+
+class TestGetConnectionDataset:
     def test_get_dataset_not_authenticated(
         self, dataset_config, connection_config, api_client
     ) -> None:
-        dataset_url = get_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         response = api_client.get(dataset_url, headers={})
         assert response.status_code == 401
 
@@ -1619,7 +1688,7 @@ class TestGetDataset:
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 403
@@ -1631,7 +1700,7 @@ class TestGetDataset:
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_dataset_url(connection_config, None)
+        dataset_url = get_connection_dataset_url(connection_config, None)
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 404
@@ -1643,7 +1712,7 @@ class TestGetDataset:
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_dataset_url(None, dataset_config)
+        dataset_url = get_connection_dataset_url(None, dataset_config)
         dataset_url.replace(connection_config.key, "nonexistent_key")
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(dataset_url, headers=auth_header)
@@ -1656,7 +1725,7 @@ class TestGetDataset:
         api_client: TestClient,
         generate_auth_header,
     ):
-        dataset_url = get_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 200
@@ -1752,7 +1821,7 @@ class TestDeleteDataset:
     def test_delete_dataset_not_authenticated(
         self, dataset_config, connection_config, api_client
     ) -> None:
-        dataset_url = get_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         response = api_client.delete(dataset_url, headers={})
         assert response.status_code == 401
 
@@ -1763,7 +1832,7 @@ class TestDeleteDataset:
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.delete(dataset_url, headers=auth_header)
         assert response.status_code == 403
@@ -1775,7 +1844,7 @@ class TestDeleteDataset:
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_dataset_url(connection_config, None)
+        dataset_url = get_connection_dataset_url(connection_config, None)
         auth_header = generate_auth_header(scopes=[DATASET_DELETE])
         response = api_client.delete(dataset_url, headers=auth_header)
         assert response.status_code == 404
@@ -1787,7 +1856,7 @@ class TestDeleteDataset:
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_dataset_url(None, dataset_config)
+        dataset_url = get_connection_dataset_url(None, dataset_config)
         auth_header = generate_auth_header(scopes=[DATASET_DELETE])
         response = api_client.delete(dataset_url, headers=auth_header)
         assert response.status_code == 404
@@ -1811,7 +1880,7 @@ class TestDeleteDataset:
             },
         )
 
-        dataset_url = get_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         auth_header = generate_auth_header(scopes=[DATASET_DELETE])
         response = api_client.delete(dataset_url, headers=auth_header)
         assert response.status_code == 204
