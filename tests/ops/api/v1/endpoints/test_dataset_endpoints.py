@@ -1672,6 +1672,32 @@ class TestGetCtlDatasetFilter:
         assert len(response.json()) == 3
         assert saas_fides_key in [d["fides_key"] for d in response.json()]
 
+    def test_unlinked_and_no_saas_datasets(
+        self,
+        generate_auth_header,
+        api_client,
+        url,
+        unlinked_dataset,
+        secondary_sendgrid_instance,
+        linked_dataset,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(
+            f"{url}?only_unlinked_datasets=True", headers=auth_header
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json()[0]["fides_key"] == unlinked_dataset.fides_key
+
+        # It should still return one with saas datasets being included because they're linked
+        response = api_client.get(
+            f"{url}?only_unlinked_datasets=True&remove_saas_datasets=False",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json()[0]["fides_key"] == unlinked_dataset.fides_key
+
 
 class TestGetConnectionDataset:
     def test_get_dataset_not_authenticated(
