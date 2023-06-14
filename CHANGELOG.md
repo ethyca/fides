@@ -18,6 +18,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.14.2...main)
 
+### Added
+
+- Included optional env vars to have postgres or Redshift connected via bastion host [#3374](https://github.com/ethyca/fides/pull/3374/)
 
 ## [2.14.2](https://github.com/ethyca/fides/compare/2.14.1...2.14.2)
 
