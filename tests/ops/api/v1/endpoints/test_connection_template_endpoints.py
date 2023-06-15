@@ -881,6 +881,11 @@ class TestGetConnectionSecretSchema:
                 "db_schema": {"title": "DB Schema", "type": "string"},
                 "host": {"title": "Host", "type": "string"},
                 "port": {"title": "Port", "type": "integer"},
+                "ssh_required": {
+                    "title": "SSH Required",
+                    "default": False,
+                    "type": "boolean",
+                },
             },
             "additionalProperties": False,
         }
@@ -904,6 +909,11 @@ class TestGetConnectionSecretSchema:
                 "user": {"title": "User", "type": "string"},
                 "password": {"title": "Password", "sensitive": True, "type": "string"},
                 "db_schema": {"title": "DB Schema", "type": "string"},
+                "ssh_required": {
+                    "title": "SSH Required",
+                    "default": False,
+                    "type": "boolean",
+                },
             },
             "additionalProperties": False,
         }
