@@ -1,7 +1,11 @@
 """Contains the nox sessions for docker-related tasks."""
 from typing import List, Tuple
+from multiprocessing import Pool
+from subprocess import run
+from typing import Callable, Dict, List, Tuple
 
 import nox
+
 from constants_nox import (
     DEV_TAG_SUFFIX,
     IMAGE,
@@ -18,18 +22,23 @@ from git_nox import get_current_tag, recognized_tag
 DOCKER_PLATFORMS = "linux/amd64,linux/arm64"
 
 
+def runner(args):
+    args_str = " ".join(args)
+    run(args_str, shell=True, check=True)
+
+
 def verify_git_tag(session: nox.Session) -> str:
     """
     Get the git tag for HEAD and validate it before using it.
     """
     existing_commit_tag = get_current_tag(existing=True)
     if existing_commit_tag is None:
-        session.error(
+        session.skip(
             "Did not find an existing git tag on the current commit, not pushing git-tag images"
         )
 
     if not recognized_tag(existing_commit_tag):
-        session.error(
+        session.skip(
             f"Existing git tag {existing_commit_tag} is not a recognized tag, not pushing git-tag images"
         )
 
@@ -159,15 +168,15 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     session.run(*build_command, external=True)
 
 
-def push_fides_images(session: nox.Session, tag_suffixes: List[str]) -> None:
-    # Publish Fides
+def get_buildx_commands(tag_suffixes: List[str]) -> List[Tuple[str, ...]]:
+    """
+    Build and publish each image to Dockerhub
+    """
     fides_tags = [f"{IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes]
     fides_buildx_command = generate_multiplatform_buildx_command(
         image_tags=fides_tags, docker_build_target="prod"
     )
-    session.run(*fides_buildx_command, external=True)
 
-    # Publish the Privacy Center
     privacy_center_tags = [
         f"{PRIVACY_CENTER_IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes
     ]
@@ -175,9 +184,7 @@ def push_fides_images(session: nox.Session, tag_suffixes: List[str]) -> None:
         image_tags=privacy_center_tags,
         docker_build_target="prod_pc",
     )
-    session.run(*privacy_center_buildx_command, external=True)
 
-    # Publish the Sample App
     sample_app_tags = [
         f"{SAMPLE_APP_IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes
     ]
@@ -186,7 +193,13 @@ def push_fides_images(session: nox.Session, tag_suffixes: List[str]) -> None:
         docker_build_target="prod",
         dockerfile_path="clients/sample-app",
     )
-    session.run(*sample_app_buildx_command, external=True)
+
+    buildx_commands = [
+        fides_buildx_command,
+        privacy_center_buildx_command,
+        sample_app_buildx_command,
+    ]
+    return buildx_commands
 
 
 @nox.session()
@@ -232,7 +245,7 @@ def push(session: nox.Session, tag: str) -> None:
     )
 
     # Use lambdas to force lazy evaluation
-    param_tag_map = {
+    param_tag_map: Dict[str, Callable] = {
         "dev": lambda: [DEV_TAG_SUFFIX],
         "prerelease": lambda: [PRERELEASE_TAG_SUFFIX],
         "rc": lambda: [RC_TAG_SUFFIX],
@@ -240,4 +253,10 @@ def push(session: nox.Session, tag: str) -> None:
         "prod": lambda: [get_current_tag(), "latest"],
     }
 
-    push_fides_images(session=session, tag_suffixes=param_tag_map[tag]())
+    # Get the list of Tupled commands to run
+    buildx_commands = get_buildx_commands(tag_suffixes=param_tag_map[tag]())
+
+    # Parallel build the various images
+    number_of_processes = len(buildx_commands)
+    with Pool(number_of_processes) as process_pool:
+        process_pool.map(runner, buildx_commands)

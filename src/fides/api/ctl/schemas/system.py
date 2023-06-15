@@ -1,7 +1,11 @@
-from typing import List
+from typing import List, Optional
 
 from fideslang.models import PrivacyDeclaration, System
 from pydantic import Field
+
+from fides.api.schemas.connection_configuration.connection_config import (
+    ConnectionConfigurationResponse,
+)
 
 
 class PrivacyDeclarationResponse(PrivacyDeclaration):
@@ -17,4 +21,8 @@ class SystemResponse(System):
 
     privacy_declarations: List[PrivacyDeclarationResponse] = Field(
         description=PrivacyDeclarationResponse.__doc__,
+    )
+
+    connection_configs: Optional[ConnectionConfigurationResponse] = Field(
+        description=ConnectionConfigurationResponse.__doc__,
     )

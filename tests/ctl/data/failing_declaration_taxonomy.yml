@@ -11,7 +11,6 @@ system:
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         data_subjects:
           - customer
-    system_dependencies: []
 
 policy:
   - fides_key: primary_privacy_policy

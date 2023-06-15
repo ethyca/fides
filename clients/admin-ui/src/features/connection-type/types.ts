@@ -1,7 +1,10 @@
 import { AddConnectionStep } from "datastore-connections/add-connection/types";
-import { DatastoreConnection } from "datastore-connections/types";
 
-import { ConnectionSystemTypeMap, SystemType } from "~/types/api";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  SystemType,
+} from "~/types/api";
 
 export type ConnectionTypeParams = {
   search: string;
@@ -33,7 +36,7 @@ export type ConnectionTypeSecretSchemaReponse = {
 };
 
 export type ConnectionTypeState = ConnectionTypeParams & {
-  connection?: DatastoreConnection;
+  connection?: ConnectionConfigurationResponse;
   connectionOption?: ConnectionSystemTypeMap;
   connectionOptions: ConnectionSystemTypeMap[];
   step: AddConnectionStep;

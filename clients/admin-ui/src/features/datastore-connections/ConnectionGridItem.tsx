@@ -5,12 +5,12 @@ import React, { useMemo } from "react";
 import { useAppSelector } from "~/app/hooks";
 import ConnectedCircle from "~/features/common/ConnectedCircle";
 import { selectConnectionTypeState } from "~/features/connection-type";
+import { ConnectionConfigurationResponse } from "~/types/api";
 
 import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import ConnectionTypeLogo from "./ConnectionTypeLogo";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
-import { DatastoreConnection } from "./types";
 
 type TestDataProps = {
   succeeded?: boolean;
@@ -18,7 +18,7 @@ type TestDataProps = {
 };
 
 const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
-  const date = formatDate(timestamp);
+  const date = timestamp ? formatDate(timestamp) : "";
   const testText = timestamp
     ? `Last tested on ${date}`
     : "This connection has not been tested yet";
@@ -40,7 +40,7 @@ const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
 };
 
 type ConnectionGridItemProps = {
-  connectionData: DatastoreConnection;
+  connectionData: ConnectionConfigurationResponse;
 };
 
 const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
@@ -81,10 +81,10 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
           {connectionData.name}
         </Text>
         <Spacer />
-        <ConnectionStatusBadge disabled={connectionData.disabled} />
+        <ConnectionStatusBadge disabled={!!connectionData.disabled} />
         <ConnectionMenu
           connection_key={connectionData.key}
-          disabled={connectionData.disabled}
+          disabled={!!connectionData.disabled}
           name={connectionData.name}
           connection_type={connectionData.connection_type}
           access_type={connectionData.access}
@@ -101,7 +101,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
       <Flex mt="0px" justifyContent="center" alignItems="center">
         <TestData
           succeeded={connectionData.last_test_succeeded}
-          timestamp={connectionData.last_test_timestamp}
+          timestamp={connectionData.last_test_timestamp || ""}
         />
         <Spacer />
         <Button

@@ -69,6 +69,7 @@ class TestPostgresConnectionPutSecretsAPI:
             "password": None,
             "url": None,
             "db_schema": None,
+            "ssh_required": False,
         }
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is False
@@ -114,6 +115,7 @@ class TestPostgresConnectionPutSecretsAPI:
             "password": "postgres",
             "url": None,
             "db_schema": None,
+            "ssh_required": False,
         }
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is True
@@ -155,6 +157,7 @@ class TestPostgresConnectionPutSecretsAPI:
             "password": None,
             "url": payload["url"],
             "db_schema": None,
+            "ssh_required": False,
         }
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is True

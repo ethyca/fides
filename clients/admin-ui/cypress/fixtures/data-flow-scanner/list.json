@@ -37,7 +37,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -151,17 +150,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "pl-nats",
-        "cloud-proxy-service",
-        "pl-elastic-es-http",
-        "profile-service",
-        "config-manager-service",
-        "vzmgr-service",
-        "artifact-tracker-service",
-        "auth-service",
-        "plugin-service"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -240,14 +228,6 @@
         { "fides_key": "kube-dns", "type": "system", "data_categories": null }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "pl-elastic-es-transport",
-        "fides-redis",
-        "fides-external-dns-staging",
-        "pl-elastic-es-http",
-        "datadog-cluster-agent",
-        "kube-dns"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -285,7 +265,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["fidesctl-postgres"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -369,13 +348,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "vzconn-service",
-        "vizier-metadata-svc",
-        "vizier-cloud-connector-svc",
-        "kelvin-service",
-        "vizier-query-broker-svc"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -414,7 +386,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["vzmgr-service"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -452,7 +423,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["api-service"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -479,7 +449,6 @@
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "system_dependencies": [],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -533,12 +502,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "pl-nats",
-        "postgres",
-        "vzmgr-service",
-        "plugin-service"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -614,7 +577,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["kratos", "vzmgr-service", "plugin-service"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -660,7 +622,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["datadog-agent", "fidesops-demo"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -686,7 +647,6 @@
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "system_dependencies": [],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -729,7 +689,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["datadog-agent"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -791,7 +750,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["api-service", "elastic-webhook-server"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -854,12 +812,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "api-service",
-        "postgres",
-        "auth-service",
-        "project-manager-service"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -909,11 +861,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "pl-nats",
-        "vizier-cloud-connector-svc",
-        "vizier-query-broker-svc"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -970,7 +917,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["pl-elastic-es-transport", "pl-elastic-es-http"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -996,7 +942,6 @@
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "system_dependencies": [],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1024,7 +969,6 @@
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "system_dependencies": [],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1082,11 +1026,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "fides-redis",
-        "demo-db-demo-data",
-        "fidesops-postgres"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1129,7 +1068,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["datadog-agent"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1180,11 +1118,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "pl-nats",
-        "vizier-metadata-svc",
-        "vizier-query-broker-svc"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1211,7 +1144,6 @@
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "system_dependencies": [],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1247,7 +1179,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["fidesctl-demo"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1309,11 +1240,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "api-service",
-        "vzmgr-service",
-        "artifact-tracker-service"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1352,7 +1278,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["pl-nats", "vizier-query-broker-svc"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1384,7 +1309,6 @@
         { "fides_key": "kratos", "type": "system", "data_categories": null }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["postgres"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1469,14 +1393,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "api-service",
-        "vzconn-service",
-        "cron-script-service",
-        "postgres",
-        "config-manager-service",
-        "artifact-tracker-service"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1534,12 +1450,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "api-service",
-        "postgres",
-        "config-manager-service",
-        "vzmgr-service"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1592,7 +1502,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["api-service", "postgres", "profile-service"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1630,7 +1539,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["postgres", "profile-service"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1661,7 +1569,6 @@
         { "fides_key": "hydra", "type": "system", "data_categories": null }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["postgres"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1688,7 +1595,6 @@
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "system_dependencies": [],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1757,12 +1663,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "pl-nats",
-        "vizier-metadata-svc",
-        "vizier-cloud-connector-svc",
-        "kelvin-service"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1878,24 +1778,6 @@
         { "fides_key": "kube-dns", "type": "system", "data_categories": null }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [
-        "api-service",
-        "datadog-agent",
-        "fidesctl-demo",
-        "cloud-proxy-service",
-        "scriptmgr-service",
-        "fides-external-dns-staging",
-        "elastic-webhook-server",
-        "aws-load-balancer-webhook-service",
-        "fidesops-demo",
-        "datadog-cluster-agent",
-        "vizier-cloud-connector-svc",
-        "fidesops-plus-000-fidesops-plus",
-        "kratos",
-        "vzmgr-service",
-        "hydra",
-        "fidesctl-000-fidesctl"
-      ],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1949,7 +1831,6 @@
         { "fides_key": "postgres", "type": "system", "data_categories": null }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["api-service", "cron-script-service", "postgres"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -1975,7 +1856,6 @@
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "system_dependencies": [],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -2012,7 +1892,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": [],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -2048,7 +1927,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["fidesops-demo"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -2074,7 +1952,6 @@
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "system_dependencies": [],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -2121,7 +1998,6 @@
         }
       ],
       "privacy_declarations": [],
-      "system_dependencies": ["fidesops-demo", "kube-dns"],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",
@@ -2147,7 +2023,6 @@
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "system_dependencies": [],
       "joint_controller": null,
       "third_country_transfers": null,
       "administrating_department": "Not defined",

@@ -9,7 +9,6 @@ from fides.api.models.connectionconfig import (
     ConnectionTestStatus,
     ConnectionType,
 )
-from fides.api.models.policy import ActionType
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
@@ -31,6 +30,7 @@ from fides.api.schemas.messaging.messaging import (
     ConsentPreferencesByUser,
     MessagingActionType,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent

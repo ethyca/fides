@@ -1,18 +1,10 @@
-"""Contains all of the Utility-type CLI commands for fides."""
-from datetime import datetime, timezone
+"""Contains all of the deploy group of CLI commands for fides."""
 from os import environ
 from subprocess import CalledProcessError
 from typing import Optional
 
 import rich_click as click
 
-import fides
-from fides.cli.utils import (
-    FIDES_ASCII_ART,
-    check_server,
-    send_init_analytics,
-    with_analytics,
-)
 from fides.common.utils import print_divider
 from fides.core.config.create import create_and_update_config_file
 from fides.core.deploy import (
@@ -25,79 +17,6 @@ from fides.core.deploy import (
     teardown_application,
 )
 from fides.core.utils import echo_green
-
-
-@click.command()
-@click.pass_context
-@click.argument("fides_dir", default=".", type=click.Path(exists=True))
-@click.option(
-    "--opt-in", is_flag=True, help="Automatically opt-in to anonymous usage analytics."
-)
-def init(ctx: click.Context, fides_dir: str, opt_in: bool) -> None:
-    """
-    Initializes a Fides instance by creating the default directory and
-    configuration file if not present.
-    """
-
-    executed_at = datetime.now(timezone.utc)
-    config = ctx.obj["CONFIG"]
-
-    click.echo(FIDES_ASCII_ART)
-    click.echo("Initializing fides...")
-
-    config, config_path = create_and_update_config_file(
-        config, fides_dir, opt_in=opt_in
-    )
-
-    print_divider()
-
-    send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
-    echo_green("fides initialization complete.")
-
-
-@click.command()
-@click.pass_context
-@with_analytics
-def status(ctx: click.Context) -> None:
-    """
-    Check Fides server availability.
-    """
-    config = ctx.obj["CONFIG"]
-    cli_version = fides.__version__
-    server_url = config.cli.server_url
-    click.echo("Getting server status...")
-    check_server(
-        cli_version=cli_version,
-        server_url=server_url,
-    )
-
-
-@click.command()
-@click.pass_context
-@click.option("--port", "-p", type=int, default=8080)
-def webserver(ctx: click.Context, port: int = 8080) -> None:
-    """
-    Start the Fides webserver.
-
-    _Requires Redis and Postgres to be configured and running_
-    """
-    # This has to be here to avoid a circular dependency
-    from fides.api.main import start_webserver
-
-    start_webserver(port=port)
-
-
-@click.command()
-@click.pass_context
-@with_analytics
-def worker(ctx: click.Context) -> None:
-    """
-    Start a Celery worker for the Fides webserver.
-    """
-    # This has to be here to avoid a circular dependency
-    from fides.api.worker import start_worker
-
-    start_worker()
 
 
 # NOTE: This behaves similarly to 'init' in that it is excluded from analytics

@@ -168,6 +168,51 @@ class TestPatchConnections:
         config = ConnectionConfig.get_by(db, field="key", value=payload[0]["key"])
         assert config.secrets == payload[0]["secrets"]
 
+    def test_patch_connection_saas_with_secrets_exists_minimal_payload(
+        self, url, api_client, generate_auth_header, db, mailchimp_config
+    ):
+        payload = [
+            {
+                "key": f"mailchimp{uuid4()}",
+                "name": "My Mailchimp Test",
+                "description": "Mailchimp ConnectionConfig description",
+                "disabled": "true",
+                "connection_type": "saas",
+                "access": "read",
+            },
+        ]
+
+        ConnectionConfig.create(
+            db=db,
+            data={
+                "key": payload[0]["key"],
+                "name": payload[0]["name"],
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.write,
+                "secrets": {"domain": "test", "username": "test", "api_key": "test"},
+                "saas_config": mailchimp_config,
+                "description": "some description",
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        assert (
+            response.json()["succeeded"][0]["connection_type"]
+            == payload[0]["connection_type"]
+        )
+        assert (
+            response.json()["succeeded"][0]["description"] == payload[0]["description"]
+        )
+
+        config = ConnectionConfig.get_by(db, field="key", value=payload[0]["key"])
+        assert config.secrets == {
+            "domain": "test",
+            "username": "test",
+            "api_key": "test",
+        }
+
     def test_patch_connection_saas_with_secrets_new(
         self, url, api_client, generate_auth_header, db
     ):
@@ -590,6 +635,7 @@ class TestPatchConnections:
             "access": "write",
             "disabled": False,
             "description": None,
+            "enabled_actions": None,
         }
         assert response_body["failed"][1]["data"] == {
             "name": "My Mongo DB",
@@ -598,6 +644,7 @@ class TestPatchConnections:
             "access": "read",
             "disabled": False,
             "description": None,
+            "enabled_actions": None,
         }
 
     @mock.patch("fides.api.main.prepare_and_log_request")
@@ -1294,7 +1341,11 @@ class TestPutConnectionConfigSecrets:
     ) -> None:
         """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = {"host": "localhost", "port": "1234", "dbname": "my_test_db"}
+        payload = {
+            "host": "localhost",
+            "port": "1234",
+            "dbname": "my_test_db",
+        }
         resp = api_client.put(
             url + "?verify=False",
             headers=auth_header,
@@ -1314,6 +1365,7 @@ class TestPutConnectionConfigSecrets:
             "password": None,
             "url": None,
             "db_schema": None,
+            "ssh_required": False,
         }
 
         payload = {"url": "postgresql://test_user:test_pass@localhost:1234/my_test_db"}
@@ -1336,6 +1388,7 @@ class TestPutConnectionConfigSecrets:
             "password": None,
             "url": payload["url"],
             "db_schema": None,
+            "ssh_required": False,
         }
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
@@ -1430,6 +1483,7 @@ class TestPutConnectionConfigSecrets:
             "user": "awsuser",
             "password": "test_password",
             "db_schema": "test",
+            "ssh_required": False,
         }
         resp = api_client.put(
             url + "?verify=False",
@@ -1450,6 +1504,7 @@ class TestPutConnectionConfigSecrets:
             "password": "test_password",
             "db_schema": "test",
             "url": None,
+            "ssh_required": False,
         }
         assert redshift_connection_config.last_test_timestamp is None
         assert redshift_connection_config.last_test_succeeded is None

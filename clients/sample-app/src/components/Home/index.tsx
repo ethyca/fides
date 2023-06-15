@@ -64,8 +64,13 @@ const Home = ({ privacyCenterUrl, products }: Props) => {
       <footer className={css.footer}>
         <div>
           <a href={privacyCenterUrl}>
-            Do not sell or share my personal information
+            Privacy Center
           </a>
+        </div>
+        <div>
+          <button type="button" className={css.modalLink} id="fides-modal-link">
+            Manage Preferences
+          </button>
         </div>
         <div className={css.select}>
           <GeolocationSelect menuPlacement="top" />
