@@ -1,5 +1,4 @@
 """Contains the nox sessions for docker-related tasks."""
-from typing import List, Tuple
 from multiprocessing import Pool
 from subprocess import run
 from typing import Callable, Dict, List, Tuple
