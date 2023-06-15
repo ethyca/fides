@@ -12,7 +12,7 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to a MySQL Database"""
 
     username: Optional[str] = None
-    password: Optional[str] = Field(sensitive=True)
+    password: Optional[str] = Field(None, sensitive=True)
     dbname: Optional[str] = Field(None, title="DB Name")
     host: Optional[
         str

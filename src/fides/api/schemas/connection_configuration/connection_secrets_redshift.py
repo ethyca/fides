@@ -15,7 +15,7 @@ class RedshiftSchema(ConnectionConfigSecretsSchema):
     port: Optional[int] = None
     database: Optional[str] = None
     user: Optional[str] = None
-    password: Optional[str] = Field(sensitive=True)
+    password: Optional[str] = Field(None, sensitive=True)
     db_schema: Optional[str] = Field(None, title="DB Schema")
     ssh_required: bool = Field(False, title="SSH Required")
 

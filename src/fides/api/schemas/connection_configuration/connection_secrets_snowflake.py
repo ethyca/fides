@@ -12,7 +12,7 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to Snowflake"""
 
     user_login_name: Optional[str] = None
-    password: Optional[str] = Field(sensitive=True)
+    password: Optional[str] = Field(None, sensitive=True)
     account_identifier: Optional[
         str
     ] = None  # Do not include the snowflakecomputing.com domain name as part of your account identifier.

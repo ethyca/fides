@@ -17,7 +17,7 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
     """
 
     username: Optional[str] = None
-    password: Optional[str] = Field(sensitive=True)
+    password: Optional[str] = Field(None, sensitive=True)
     host: Optional[str] = None
     port: Optional[int] = None
     dbname: Optional[str] = Field(None, title="DB Name")
