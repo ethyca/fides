@@ -102,7 +102,7 @@ class SaaSRequest(BaseModel):
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
     grouped_inputs: Optional[List[str]] = []
-    ignore_errors: Optional[bool] = False
+    ignore_errors: Optional[Union[bool, List[int]]] = False
     rate_limit_config: Optional[RateLimitConfig]
     skip_missing_param_values: Optional[
         bool
