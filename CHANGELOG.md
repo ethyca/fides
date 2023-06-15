@@ -26,7 +26,6 @@ The types of changes are:
 ### Fixed
 
 - Fix race condition with consent modal link rendering [#3521](https://github.com/ethyca/fides/pull/3521)
-- Remove the `fides-js` banner from tab order when it is hidden and move the overlay components to the top of the tab order. [#3510](https://github.com/ethyca/fides/pull/3510)
 - Hide custom fields section when there are no custom fields created [#3554](https://github.com/ethyca/fides/pull/3554)
 - Disable connector dropdown in integration tab on save [#3552](https://github.com/ethyca/fides/pull/3552)
 - Handles an edge case for non-existent identities with the Kustomer API [#3513](https://github.com/ethyca/fides/pull/3513)
@@ -56,6 +55,7 @@ The types of changes are:
 - Add ability to close `fides-js` banner and modal via a button or ESC [#3411](https://github.com/ethyca/fides/pull/3411)
 - Add ability to open the `fides-js` modal from a link on the host site [#3411](https://github.com/ethyca/fides/pull/3411)
 - GPC preferences are automatically applied via `fides-js` [#3411](https://github.com/ethyca/fides/pull/3411)
+- Add new dataset route that has additinonal filters [#3558](https://github.com/ethyca/fides/pull/3558)
 
 ### Fixed
 
@@ -66,6 +66,7 @@ The types of changes are:
 - Flaky custom field Cypress test on systems page [#3408](https://github.com/ethyca/fides/pull/3408)
 - Fix NextJS errors & warnings for Cookie House sample app [#3411](https://github.com/ethyca/fides/pull/3411)
 - Fix bug where `fides-js` toggles were not reflecting changes from rejecting or accepting all notices [#3522](https://github.com/ethyca/fides/pull/3522)
+- Remove the `fides-js` banner from tab order when it is hidden and move the overlay components to the top of the tab order. [#3510](https://github.com/ethyca/fides/pull/3510)
 
 ### Changed
 
