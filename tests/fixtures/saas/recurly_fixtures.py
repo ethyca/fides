@@ -176,8 +176,6 @@ def recurly_erasure_data(
     yield account_id
 
 
-
-
 @pytest.fixture
 def recurly_runner(
     db,
