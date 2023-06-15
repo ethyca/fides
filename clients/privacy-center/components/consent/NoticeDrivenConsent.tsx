@@ -5,6 +5,7 @@ import {
   CookieKeyConsent,
   getConsentContext,
   getOrMakeFidesCookie,
+  removeCookiesFromBrowser,
   saveFidesCookie,
   transformUserPreferenceToBoolean,
 } from "fides-js";
@@ -121,6 +122,12 @@ const NoticeDrivenConsent = () => {
     router.push("/");
   };
 
+  /**
+   * When saving, we need to:
+   * 1. Send PATCH to Fides backend
+   * 2. Save to cookie and window object
+   * 3. Delete any cookies that have been opted out of
+   */
   const handleSave = async () => {
     const browserIdentities = inspectForBrowserIdentities();
     const deviceIdentity = { fides_user_device_id: fidesUserDeviceId };
@@ -155,6 +162,7 @@ const NoticeDrivenConsent = () => {
       code: verificationCode,
     };
 
+    // 1. Send PATCH to Fides backend
     const result = await updatePrivacyPreferencesMutationTrigger({
       id: consentRequestId,
       body: payload,
@@ -167,6 +175,8 @@ const NoticeDrivenConsent = () => {
       });
       return;
     }
+
+    // 2. Save the cookie and window obj on success
     const noticeKeyMap = new Map<string, boolean>(
       result.data.map((preference) => [
         preference.privacy_notice_history.notice_key || "",
@@ -174,14 +184,22 @@ const NoticeDrivenConsent = () => {
       ])
     );
     const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeKeyMap);
+    window.Fides.consent = consentCookieKey;
+    const updatedCookie = { ...cookie, consent: consentCookieKey };
+    saveFidesCookie(updatedCookie);
     toast({
       title: "Your consent preferences have been saved",
       ...SuccessToastOptions,
     });
-    // Save the cookie and window obj on success
-    window.Fides.consent = consentCookieKey;
-    const updatedCookie = { ...cookie, consent: consentCookieKey };
-    saveFidesCookie(updatedCookie);
+
+    // 3. Delete any cookies that have been opted out of
+    result.data
+      .filter(
+        (preference) => preference.preference === UserConsentPreference.OPT_OUT
+      )
+      .forEach((preference) => {
+        removeCookiesFromBrowser(preference.privacy_notice_history.cookies);
+      });
     router.push("/");
   };
 
