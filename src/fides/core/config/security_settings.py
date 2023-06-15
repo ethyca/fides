@@ -127,6 +127,26 @@ class SecuritySettings(FidesSettings):
         description="Either enables the collection of audit log resource data or bypasses the middleware",
     )
 
+    bastion_server_host: Optional[str] = Field(
+        default=None, description="An optional field to store the bastion server host"
+    )
+    bastion_server_ssh_username: Optional[str] = Field(
+        default=None,
+        description="An optional field to store the username used to access the bastion server",
+    )
+    bastion_server_ssh_private_key: Optional[str] = Field(
+        default=None,
+        description="An optional field to store the key used to SSH into the bastion server.",
+    )
+    bastion_server_ssh_timeout: float = Field(
+        default=0.1,
+        description="The timeout in seconds for the transport socket (``socket.settimeout``)",
+    )
+    bastion_server_ssh_tunnel_timeout: float = Field(
+        default=10,
+        description="The timeout in seconds for tunnel connection (open_channel timeout)",
+    )
+
     @validator("app_encryption_key")
     @classmethod
     def validate_encryption_key_length(
