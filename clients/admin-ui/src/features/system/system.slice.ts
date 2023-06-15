@@ -2,7 +2,11 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import { System } from "~/types/api";
+import {
+  BulkPutConnectionConfiguration,
+  ConnectionConfigurationResponse,
+  System,
+} from "~/types/api";
 
 interface SystemDeleteResponse {
   message: string;
@@ -33,7 +37,7 @@ const systemApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: () => ["Datamap", "System"],
+      invalidatesTags: () => ["Datamap", "System", "Datastore Connection"],
     }),
     deleteSystem: build.mutation<SystemDeleteResponse, string>({
       query: (key) => ({
@@ -41,7 +45,7 @@ const systemApi = baseApi.injectEndpoints({
         params: { resource_type: "system" },
         method: "DELETE",
       }),
-      invalidatesTags: ["System"],
+      invalidatesTags: ["System", "Datastore Connection"],
     }),
     upsertSystems: build.mutation<UpsertResponse, System[]>({
       query: (systems) => ({
@@ -49,7 +53,7 @@ const systemApi = baseApi.injectEndpoints({
         method: "POST",
         body: systems,
       }),
-      invalidatesTags: ["Datamap", "System"],
+      invalidatesTags: ["Datamap", "System", "Datastore Connection"],
     }),
     updateSystem: build.mutation<
       System,
@@ -61,7 +65,39 @@ const systemApi = baseApi.injectEndpoints({
         method: "PUT",
         body: patch,
       }),
-      invalidatesTags: ["Datamap", "System", "PrivacyNotices"],
+      invalidatesTags: [
+        "Datamap",
+        "System",
+        "Privacy Notices",
+        "Datastore Connection",
+      ],
+    }),
+    patchSystemConnectionConfigs: build.mutation<
+      BulkPutConnectionConfiguration,
+      {
+        systemFidesKey: string;
+        connectionConfigs: Omit<
+          ConnectionConfigurationResponse,
+          "created_at"
+        >[];
+      }
+    >({
+      query: ({ systemFidesKey, connectionConfigs }) => ({
+        url: `/system/${systemFidesKey}/connection`,
+        method: "PATCH",
+        body: connectionConfigs,
+      }),
+      invalidatesTags: ["Datamap", "System", "Datastore Connection"],
+    }),
+
+    getSystemConnectionConfigs: build.query<
+      ConnectionConfigurationResponse[],
+      string
+    >({
+      query: (systemFidesKey) => ({
+        url: `/system/${systemFidesKey}/connection`,
+      }),
+      providesTags: ["Datamap", "System", "Datastore Connection"],
     }),
   }),
 });
@@ -73,6 +109,8 @@ export const {
   useUpdateSystemMutation,
   useDeleteSystemMutation,
   useUpsertSystemsMutation,
+  usePatchSystemConnectionConfigsMutation,
+  useGetSystemConnectionConfigsQuery,
 } = systemApi;
 
 export interface State {
@@ -129,8 +167,8 @@ export const selectActiveClassifySystemFidesKey = createSelector(
 
 const emptySelectAllSystems: System[] = [];
 export const selectAllSystems = createSelector(
-  systemApi.endpoints.getAllSystems.select(),
-  ({ data }) => data || emptySelectAllSystems
+  [(RootState) => RootState, systemApi.endpoints.getAllSystems.select()],
+  (RootState, { data }) => data || emptySelectAllSystems
 );
 
 export const selectActiveClassifySystem = createSelector(

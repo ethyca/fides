@@ -146,6 +146,7 @@ export const CustomFieldModal = ({
   }
 
   const transformedCustomField = transformCustomField(customField, allowList);
+  const isEditing = !!transformedCustomField;
   const initialValues = transformedCustomField || initialValuesTemplate;
 
   const handleDropdownChange = (value: FieldTypes) => {
@@ -276,6 +277,7 @@ export const CustomFieldModal = ({
           >
             {(props) => (
               <CustomFieldForm
+                isEditing={isEditing}
                 validationSchema={validationSchema}
                 isLoading={isLoading}
                 onClose={onClose}

@@ -53,11 +53,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
       {
         title: "Consent",
-        // For now, we don't have a full Consent page, so just use the privacy notice route
-        path: routes.PRIVACY_NOTICES_ROUTE,
+        path: routes.CONSENT_ROUTE,
         requiresFlag: "privacyNotices",
         requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+        scopes: [
+          ScopeRegistryEnum.PRIVACY_NOTICE_READ,
+          ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ,
+        ],
         routes: [
           {
             title: "Privacy notices",
@@ -65,6 +67,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
             requiresFlag: "privacyNotices",
             requiresPlus: true,
             scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+          },
+          {
+            title: "Privacy experience",
+            path: routes.PRIVACY_EXPERIENCE_ROUTE,
+            requiresFlag: "privacyExperience",
+            requiresPlus: true,
+            scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
           },
         ],
       },

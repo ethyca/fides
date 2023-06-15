@@ -7,16 +7,17 @@ from redis.exceptions import ResponseError
 from sqlalchemy.orm import Session
 
 import fides
+from fides.api.api.deps import get_db
+from fides.api.common_exceptions import RedisConnectionError
 from fides.api.ctl.database.database import DatabaseHealth, get_db_health
 from fides.api.ctl.utils.api_router import APIRouter
-from fides.api.ops.api.deps import get_db
-from fides.api.ops.common_exceptions import RedisConnectionError
-from fides.api.ops.tasks import celery_app, get_worker_ids
-from fides.api.ops.util.cache import get_cache
-from fides.api.ops.util.logger import Pii
+from fides.api.tasks import celery_app, get_worker_ids
+from fides.api.util.cache import get_cache
+from fides.api.util.logger import Pii
 from fides.core.config import CONFIG
 
 CacheHealth = Literal["healthy", "unhealthy", "no cache configured"]
+HEALTH_ROUTER = APIRouter(tags=["Health"])
 
 
 class CoreHealthCheck(BaseModel):
@@ -28,9 +29,6 @@ class CoreHealthCheck(BaseModel):
     cache: CacheHealth
     workers_enabled: bool
     workers: List[Optional[str]]
-
-
-router = APIRouter(tags=["Health"])
 
 
 def get_cache_health() -> str:
@@ -46,7 +44,7 @@ def get_cache_health() -> str:
         return "unhealthy"
 
 
-@router.get(
+@HEALTH_ROUTER.get(
     "/health",
     response_model=CoreHealthCheck,
     responses={

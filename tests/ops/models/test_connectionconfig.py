@@ -1,14 +1,15 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ops.models.connectionconfig import (
+from fides.api.db.base_class import KeyOrNameAlreadyExists, KeyValidationError
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.schemas.saas.saas_config import SaaSConfig
-from fides.api.ops.util.text import to_snake_case
-from fides.lib.db.base_class import KeyOrNameAlreadyExists, KeyValidationError
+from fides.api.schemas.policy import ActionType
+from fides.api.schemas.saas.saas_config import SaaSConfig
+from fides.api.util.text import to_snake_case
 
 
 class TestConnectionConfigModel:
@@ -155,3 +156,16 @@ class TestConnectionConfigModel:
         connection_config.save(db)
 
         assert connection_config.system_key == system.fides_key
+
+    def test_enabled_actions(self, db, connection_config):
+        connection_config.enabled_actions = [
+            ActionType.access,
+            ActionType.erasure,
+            ActionType.consent,
+        ]
+        connection_config.save(db)
+        assert connection_config.enabled_actions == [
+            ActionType.access,
+            ActionType.erasure,
+            ActionType.consent,
+        ]

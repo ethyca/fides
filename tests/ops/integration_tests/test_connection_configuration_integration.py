@@ -6,29 +6,27 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     STORAGE_READ,
 )
-from fides.api.ops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
-from fides.api.ops.common_exceptions import ConnectionException
-from fides.api.ops.models.connectionconfig import ConnectionTestStatus
-from fides.api.ops.service.connectors import (
+from fides.api.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
+from fides.api.common_exceptions import ConnectionException
+from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import ConnectionTestStatus
+from fides.api.service.connectors import (
     MongoDBConnector,
     PostgreSQLConnector,
     SaaSConnector,
     get_connector,
 )
-from fides.api.ops.service.connectors.saas.authenticated_client import (
-    AuthenticatedClient,
-)
-from fides.api.ops.service.connectors.sql_connector import (
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.api.service.connectors.sql_connector import (
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MySQLConnector,
 )
-from fides.lib.models.client import ClientDetail
 
 
 @pytest.mark.integration_postgres
@@ -71,6 +69,7 @@ class TestPostgresConnectionPutSecretsAPI:
             "password": None,
             "url": None,
             "db_schema": None,
+            "ssh_required": False,
         }
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is False
@@ -116,6 +115,7 @@ class TestPostgresConnectionPutSecretsAPI:
             "password": "postgres",
             "url": None,
             "db_schema": None,
+            "ssh_required": False,
         }
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is True
@@ -157,6 +157,7 @@ class TestPostgresConnectionPutSecretsAPI:
             "password": None,
             "url": payload["url"],
             "db_schema": None,
+            "ssh_required": False,
         }
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is True

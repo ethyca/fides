@@ -1,7 +1,7 @@
+import { Flex, Heading, Text, Stack, useToast } from "@fidesui/react";
 import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
-import Head from "next/head";
-import { Flex, Heading, Text, Stack, Image, useToast } from "@fidesui/react";
+import { useRouter } from "next/router";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
 
 import {
@@ -12,12 +12,14 @@ import {
   useConsentRequestModal,
   ConsentRequestModal,
 } from "~/components/modals/consent-request-modal/ConsentRequestModal";
-import { config } from "~/constants";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import PrivacyCard from "~/components/PrivacyCard";
-import ConsentCard from "~/components/ConsentCard";
+import ConsentCard from "~/components/consent/ConsentCard";
+import { useConfig } from "~/features/common/config.slice";
 
 const Home: NextPage = () => {
+  const router = useRouter();
+  const config = useConfig();
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
   const toast = useToast();
@@ -34,7 +36,7 @@ const Home: NextPage = () => {
   } = usePrivacyRequestModal();
 
   const {
-    isOpen: isConsentModalOpen,
+    isOpen: isConsentModalOpenConst,
     onOpen: onConsentModalOpen,
     onClose: onConsentModalClose,
     currentView: currentConsentModalView,
@@ -43,7 +45,7 @@ const Home: NextPage = () => {
     setConsentRequestId,
     successHandler: consentModalSuccessHandler,
   } = useConsentRequestModal();
-
+  let isConsentModalOpen = isConsentModalOpenConst;
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
 
   useEffect(() => {
@@ -89,116 +91,94 @@ const Home: NextPage = () => {
         onOpen={onConsentModalOpen}
       />
     );
+    if (router.query?.showConsentModal === "true") {
+      // manually override whether to show the consent modal given
+      // the query param `showConsentModal`
+      isConsentModalOpen = true;
+    }
   }
 
   return (
-    <div>
-      <Head>
-        <title>Privacy Center</title>
-        <meta name="description" content="Privacy Center" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <main data-testid="home">
+      <Stack align="center" py={["6", "16"]} px={5} spacing={14}>
+        <Stack align="center" spacing={3}>
+          <Heading
+            fontSize={["3xl", "4xl"]}
+            color="gray.600"
+            fontWeight="semibold"
+            textAlign="center"
+            data-testid="heading"
+          >
+            {config.title}
+          </Heading>
 
-      <header>
-        <Flex
-          bg="gray.100"
-          minHeight={14}
-          p={1}
-          width="100%"
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Image
-            src={config.logo_path}
-            margin="8px"
-            height="68px"
-            alt="Logo"
-            data-testid="logo"
-          />
-        </Flex>
-      </header>
+          <Text
+            fontSize={["small", "medium"]}
+            fontWeight="medium"
+            maxWidth={624}
+            textAlign="center"
+            color="gray.600"
+            data-testid="description"
+          >
+            {config.description}
+          </Text>
 
-      <main data-testid="home">
-        <Stack align="center" py={["6", "16"]} px={5} spacing={14}>
-          <Stack align="center" spacing={3}>
-            <Heading
-              fontSize={["3xl", "4xl"]}
-              color="gray.600"
-              fontWeight="semibold"
-              textAlign="center"
-              data-testid="heading"
-            >
-              {config.title}
-            </Heading>
-
+          {config.description_subtext?.map((paragraph, index) => (
             <Text
               fontSize={["small", "medium"]}
               fontWeight="medium"
               maxWidth={624}
               textAlign="center"
               color="gray.600"
-              data-testid="description"
-            >
-              {config.description}
-            </Text>
-
-            {config.description_subtext?.map((paragraph, index) => (
-              <Text
-                fontSize={["small", "medium"]}
-                fontWeight="medium"
-                maxWidth={624}
-                textAlign="center"
-                color="gray.600"
-                data-testid={`description-${index}`}
-                // eslint-disable-next-line react/no-array-index-key
-                key={`description-${index}`}
-              >
-                {paragraph}
-              </Text>
-            ))}
-          </Stack>
-          <Flex m={-2} flexDirection={["column", "column", "row"]}>
-            {content}
-          </Flex>
-
-          {config.addendum?.map((paragraph, index) => (
-            <Text
-              fontSize={["small", "medium"]}
-              fontWeight="medium"
-              maxWidth={624}
-              color="gray.600"
-              data-testid={`addendum-${index}`}
+              data-testid={`description-${index}`}
               // eslint-disable-next-line react/no-array-index-key
-              key={`addendum-${index}`}
+              key={`description-${index}`}
             >
               {paragraph}
             </Text>
           ))}
         </Stack>
-        <PrivacyRequestModal
-          isOpen={isPrivacyModalOpen}
-          onClose={onPrivacyModalClose}
-          openAction={openAction}
-          currentView={currentPrivacyModalView}
-          setCurrentView={setCurrentPrivacyModalView}
-          privacyRequestId={privacyRequestId}
-          setPrivacyRequestId={setPrivacyRequestId}
-          isVerificationRequired={isVerificationRequired}
-          successHandler={privacyModalSuccessHandler}
-        />
+        <Flex m={-2} flexDirection={["column", "column", "row"]}>
+          {content}
+        </Flex>
 
-        <ConsentRequestModal
-          isOpen={isConsentModalOpen}
-          onClose={onConsentModalClose}
-          currentView={currentConsentModalView}
-          setCurrentView={setCurrentConsentModalView}
-          consentRequestId={consentRequestId}
-          setConsentRequestId={setConsentRequestId}
-          isVerificationRequired={isVerificationRequired}
-          successHandler={consentModalSuccessHandler}
-        />
-      </main>
-    </div>
+        {config.addendum?.map((paragraph, index) => (
+          <Text
+            fontSize={["small", "medium"]}
+            fontWeight="medium"
+            maxWidth={624}
+            color="gray.600"
+            data-testid={`addendum-${index}`}
+            // eslint-disable-next-line react/no-array-index-key
+            key={`addendum-${index}`}
+          >
+            {paragraph}
+          </Text>
+        ))}
+      </Stack>
+      <PrivacyRequestModal
+        isOpen={isPrivacyModalOpen}
+        onClose={onPrivacyModalClose}
+        openAction={openAction}
+        currentView={currentPrivacyModalView}
+        setCurrentView={setCurrentPrivacyModalView}
+        privacyRequestId={privacyRequestId}
+        setPrivacyRequestId={setPrivacyRequestId}
+        isVerificationRequired={isVerificationRequired}
+        successHandler={privacyModalSuccessHandler}
+      />
+
+      <ConsentRequestModal
+        isOpen={isConsentModalOpen}
+        onClose={onConsentModalClose}
+        currentView={currentConsentModalView}
+        setCurrentView={setCurrentConsentModalView}
+        consentRequestId={consentRequestId}
+        setConsentRequestId={setConsentRequestId}
+        isVerificationRequired={isVerificationRequired}
+        successHandler={consentModalSuccessHandler}
+      />
+    </main>
   );
 };
 

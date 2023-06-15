@@ -3,7 +3,7 @@ saas_config:
   name: Kustomer
   type: kustomer
   description: A sample schema representing the Kustomer connector for Fides
-  version: 0.1.0
+  version: 0.1.1
 
   connector_params:
     - name: domain
@@ -35,12 +35,14 @@ saas_config:
               - name: email
                 identity: email
             data_path: data
+            ignore_errors: true
           - method: GET
             path: /v1/customers/phone=<phone_number>
             param_values:
               - name: phone_number
                 identity: phone_number
             data_path: data
+            ignore_errors: true
         delete:
           method: DELETE
           path: /v1/customers/<customer_id>

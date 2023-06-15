@@ -1,6 +1,6 @@
 import pytest
 
-from fides.api.ops.models.policy import Policy
+from fides.api.models.policy import Policy
 from tests.fixtures.saas.yotpo_reviews_fixtures import YotpoReviewsTestClient
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence

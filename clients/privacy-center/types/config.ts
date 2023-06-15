@@ -1,9 +1,22 @@
-import { ConsentValue } from "fides-consent";
+import { ConsentValue } from "fides-js";
 
 export type IdentityInputs = {
   name?: string;
   email?: string;
   phone?: string;
+};
+
+export type LegacyConfig = {
+  title: string;
+  description: string;
+  description_subtext?: string[];
+  addendum?: string[];
+  server_url_development?: string;
+  server_url_production?: string;
+  logo_path: string;
+  actions: PrivacyRequestOption[];
+  includeConsent?: boolean;
+  consent?: LegacyConsentConfig | ConsentConfig;
 };
 
 export type Config = {
@@ -14,25 +27,13 @@ export type Config = {
   server_url_development?: string;
   server_url_production?: string;
   logo_path: string;
+  favicon_path?: string;
   actions: PrivacyRequestOption[];
   includeConsent?: boolean;
-  consent?: V1Consent | V2Consent;
+  consent?: ConsentConfig;
 };
 
-export type V2Config = {
-  title: string;
-  description: string;
-  description_subtext?: string[];
-  addendum?: string[];
-  server_url_development?: string;
-  server_url_production?: string;
-  logo_path: string;
-  actions: PrivacyRequestOption[];
-  includeConsent?: boolean;
-  consent?: V2Consent;
-};
-
-export type V1Consent = {
+export type LegacyConsentConfig = {
   icon_path: string;
   title: string;
   description: string;
@@ -41,13 +42,16 @@ export type V1Consent = {
   consentOptions: ConfigConsentOption[];
 };
 
-export type V2Consent = {
+export type ConsentConfig = {
   button: {
     description: string;
     description_subtext?: string[];
+    confirmButtonText?: string;
+    cancelButtonText?: string;
     icon_path: string;
     identity_inputs?: IdentityInputs;
     title: string;
+    modalTitle?: string;
   };
   page: {
     consentOptions: ConfigConsentOption[];
@@ -64,6 +68,8 @@ export type PrivacyRequestOption = {
   title: string;
   description: string;
   description_subtext?: string[];
+  confirmButtonText?: string;
+  cancelButtonText?: string;
   identity_inputs?: IdentityInputs;
 };
 

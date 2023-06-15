@@ -156,21 +156,22 @@ const selectDataset = (state: RootState) => state.dataset;
 const emptyDatasets: Dataset[] = [];
 export const selectAllDatasets: (state: RootState) => Dataset[] =
   createSelector(
-    datasetApi.endpoints.getAllDatasets.select(),
-    ({ data }) => data ?? emptyDatasets
+    [(RootState) => RootState, datasetApi.endpoints.getAllDatasets.select()],
+    (RootState, { data }) => data ?? emptyDatasets
   );
 
 export const selectActiveDatasetFidesKey = createSelector(
   selectDataset,
   (state) => state.activeDatasetFidesKey
 );
-export const selectActiveDataset = createSelector(
-  [(RootState) => RootState, selectActiveDatasetFidesKey],
-  (RootState, fidesKey) =>
-    fidesKey !== undefined
-      ? datasetApi.endpoints.getDatasetByKey.select(fidesKey)(RootState)?.data
-      : undefined
-);
+export const selectActiveDataset: (state: RootState) => Dataset | undefined =
+  createSelector(
+    [(RootState) => RootState, selectActiveDatasetFidesKey],
+    (RootState, fidesKey) =>
+      fidesKey !== undefined
+        ? datasetApi.endpoints.getDatasetByKey.select(fidesKey)(RootState)?.data
+        : undefined
+  );
 
 export const selectActiveCollections = createSelector(
   selectActiveDataset,

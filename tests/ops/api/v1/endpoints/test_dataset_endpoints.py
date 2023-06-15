@@ -14,22 +14,24 @@ from sqlalchemy.orm import Session, make_transient
 from sqlalchemy.orm.attributes import flag_modified
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
+    CTL_DATASET_READ,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_CONFIGS,
     DATASET_VALIDATE,
     DATASETCONFIG_BY_KEY,
-    DATASETS,
+    CONNECTION_DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
+    DATASETS,
 )
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
 
 
 def _reject_key(dict: Dict, key: str) -> Dict:
@@ -60,6 +62,8 @@ def test_example_datasets(example_datasets):
     assert len(example_datasets[7]["collections"]) == 11
     assert example_datasets[9]["fides_key"] == "email_dataset"
     assert len(example_datasets[9]["collections"]) == 3
+    assert example_datasets[11]["fides_key"] == "dynamodb_example_test_dataset"
+    assert len(example_datasets[11]["collections"]) == 4
 
 
 class TestValidateDataset:
@@ -830,7 +834,7 @@ class TestPutDatasetConfigs:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch("fides.api.ops.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch("fides.api.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_dataset_configs_failed_response(
         self,
         mock_create: Mock,
@@ -882,7 +886,7 @@ class TestPutDatasetConfigs:
 class TestPutDatasets:
     @pytest.fixture
     def datasets_url(self, connection_config) -> str:
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": connection_config.key}
         return path.format(**path_params)
 
@@ -908,7 +912,7 @@ class TestPutDatasets:
     def test_patch_datasets_invalid_connection_key(
         self, example_datasets: List, api_client: TestClient, generate_auth_header
     ) -> None:
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": "nonexistent_key"}
         datasets_url = path.format(**path_params)
 
@@ -949,7 +953,7 @@ class TestPutDatasets:
         )
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 11
+        assert len(response_body["succeeded"]) == 12
         assert len(response_body["failed"]) == 0
 
         # Confirm that postgres dataset matches the values we provided
@@ -1092,7 +1096,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 11
+        assert len(response_body["succeeded"]) == 12
         assert len(response_body["failed"]) == 0
 
         # test postgres
@@ -1200,7 +1204,7 @@ class TestPutDatasets:
         db: Session,
         generate_auth_header,
     ):
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {
             "connection_key": saas_example_connection_config_without_saas_config.key
         }
@@ -1230,7 +1234,7 @@ class TestPutDatasets:
         db: Session,
         generate_auth_header,
     ):
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": saas_example_connection_config.key}
         datasets_url = path.format(**path_params)
 
@@ -1269,7 +1273,7 @@ class TestPutDatasets:
         db: Session,
         generate_auth_header,
     ):
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": saas_example_connection_config.key}
         datasets_url = path.format(**path_params)
 
@@ -1302,7 +1306,7 @@ class TestPutDatasets:
         db: Session,
         generate_auth_header,
     ):
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": saas_example_connection_config.key}
         datasets_url = path.format(**path_params)
 
@@ -1324,9 +1328,7 @@ class TestPutDatasets:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch(
-        "fides.api.ops.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset"
-    )
+    @mock.patch("fides.api.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset")
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
@@ -1343,7 +1345,7 @@ class TestPutDatasets:
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 11
+        assert len(response_body["failed"]) == 12
 
         for failed_response in response_body["failed"]:
             assert "Dataset create/update failed" in failed_response["message"]
@@ -1420,9 +1422,7 @@ class TestPutYamlDatasets:
         )
         assert response.status_code == 400
 
-    @mock.patch(
-        "fides.api.ops.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset"
-    )
+    @mock.patch("fides.api.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset")
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
@@ -1501,10 +1501,10 @@ class TestPutYamlDatasets:
         assert len(response_body["failed"]) == 0
 
 
-class TestGetDatasets:
+class TestGetConnectionDatasets:
     @pytest.fixture
     def datasets_url(self, connection_config) -> str:
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": connection_config.key}
         return path.format(**path_params)
 
@@ -1518,7 +1518,7 @@ class TestGetDatasets:
         self, dataset_config, datasets_url, api_client: TestClient, generate_auth_header
     ) -> None:
         auth_header = generate_auth_header(scopes=[DATASET_READ])
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": "nonexistent_key"}
         datasets_url = path.format(**path_params)
 
@@ -1590,7 +1590,7 @@ class TestGetDatasetConfigs:
         assert response_body["size"] == Params().size
 
 
-def get_dataset_url(
+def get_connection_dataset_url(
     connection_config: Optional[ConnectionConfig] = None,
     dataset_config: Optional[DatasetConfig] = None,
 ) -> str:
@@ -1606,11 +1606,104 @@ def get_dataset_url(
     return path.format(**path_params)
 
 
-class TestGetDataset:
+@pytest.mark.asyncio
+class TestGetCtlDatasetFilter:
+    @pytest.fixture
+    def url(self) -> str:
+        return V1_URL_PREFIX + "/filter" + DATASETS
+
+    def test_get_dataset_not_authenticated(self, url, api_client) -> None:
+        response = api_client.get(url, headers={})
+        assert response.status_code == 401
+
+    def test_get_dataset_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CTL_DATASET_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_only_unlinked_datasets(
+        self, generate_auth_header, api_client, url, unlinked_dataset, linked_dataset
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        unlinked_url = f"{url}?only_unlinked_datasets=True"
+        response = api_client.get(unlinked_url, headers=auth_header)
+        print(unlinked_url)
+        assert response.status_code == 200
+        print([dataset["fides_key"] for dataset in response.json()])
+        assert len(response.json()) == 1
+        assert response.json()[0]["fides_key"] == unlinked_dataset.fides_key
+
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert len(response.json()) == 2
+
+    def test_saas_dataset_filter(
+        self,
+        generate_auth_header,
+        api_client,
+        url,
+        secondary_sendgrid_instance,
+        linked_dataset,
+        unlinked_dataset,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        saas_fides_key = secondary_sendgrid_instance[1].fides_key
+        # Should filter out saas datasets by default
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert len(response.json()) == 2
+        assert saas_fides_key not in [d["fides_key"] for d in response.json()]
+
+        # Should filter out saas datasets if remove_saas_datasets is True
+        response = api_client.get(
+            f"{url}?remove_saas_datasets=True", headers=auth_header
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 2
+        assert saas_fides_key not in [d["fides_key"] for d in response.json()]
+
+        # Should include saas datasets if remove_saas_datasets is False
+        response = api_client.get(
+            f"{url}?remove_saas_datasets=False", headers=auth_header
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 3
+        assert saas_fides_key in [d["fides_key"] for d in response.json()]
+
+    def test_unlinked_and_no_saas_datasets(
+        self,
+        generate_auth_header,
+        api_client,
+        url,
+        unlinked_dataset,
+        secondary_sendgrid_instance,
+        linked_dataset,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(
+            f"{url}?only_unlinked_datasets=True", headers=auth_header
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json()[0]["fides_key"] == unlinked_dataset.fides_key
+
+        # It should still return one with saas datasets being included because they're linked
+        response = api_client.get(
+            f"{url}?only_unlinked_datasets=True&remove_saas_datasets=False",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json()[0]["fides_key"] == unlinked_dataset.fides_key
+
+
+class TestGetConnectionDataset:
     def test_get_dataset_not_authenticated(
         self, dataset_config, connection_config, api_client
     ) -> None:
-        dataset_url = get_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         response = api_client.get(dataset_url, headers={})
         assert response.status_code == 401
 
@@ -1621,7 +1714,7 @@ class TestGetDataset:
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 403
@@ -1633,7 +1726,7 @@ class TestGetDataset:
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_dataset_url(connection_config, None)
+        dataset_url = get_connection_dataset_url(connection_config, None)
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 404
@@ -1645,7 +1738,7 @@ class TestGetDataset:
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_dataset_url(None, dataset_config)
+        dataset_url = get_connection_dataset_url(None, dataset_config)
         dataset_url.replace(connection_config.key, "nonexistent_key")
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(dataset_url, headers=auth_header)
@@ -1658,7 +1751,7 @@ class TestGetDataset:
         api_client: TestClient,
         generate_auth_header,
     ):
-        dataset_url = get_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 200
@@ -1754,7 +1847,7 @@ class TestDeleteDataset:
     def test_delete_dataset_not_authenticated(
         self, dataset_config, connection_config, api_client
     ) -> None:
-        dataset_url = get_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         response = api_client.delete(dataset_url, headers={})
         assert response.status_code == 401
 
@@ -1765,7 +1858,7 @@ class TestDeleteDataset:
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.delete(dataset_url, headers=auth_header)
         assert response.status_code == 403
@@ -1777,7 +1870,7 @@ class TestDeleteDataset:
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_dataset_url(connection_config, None)
+        dataset_url = get_connection_dataset_url(connection_config, None)
         auth_header = generate_auth_header(scopes=[DATASET_DELETE])
         response = api_client.delete(dataset_url, headers=auth_header)
         assert response.status_code == 404
@@ -1789,7 +1882,7 @@ class TestDeleteDataset:
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_dataset_url(None, dataset_config)
+        dataset_url = get_connection_dataset_url(None, dataset_config)
         auth_header = generate_auth_header(scopes=[DATASET_DELETE])
         response = api_client.delete(dataset_url, headers=auth_header)
         assert response.status_code == 404
@@ -1813,7 +1906,7 @@ class TestDeleteDataset:
             },
         )
 
-        dataset_url = get_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         auth_header = generate_auth_header(scopes=[DATASET_DELETE])
         response = api_client.delete(dataset_url, headers=auth_header)
         assert response.status_code == 204

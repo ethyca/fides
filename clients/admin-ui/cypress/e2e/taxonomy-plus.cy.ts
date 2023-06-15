@@ -41,7 +41,6 @@ describe("Taxonomy management with Plus features", () => {
       cy.getByTestId("tab-Create custom lists").click();
     });
 
-
     it("can create a list", () => {
       const listValues = ["such", "metadata", "so", "custom"];
 
@@ -100,7 +99,6 @@ describe("Taxonomy management with Plus features", () => {
 
       cy.wait("@getAllowLists");
     });
-
 
     it("can create a single-select custom field", () => {
       cy.getByTestId("create-custom-fields-form").within(() => {

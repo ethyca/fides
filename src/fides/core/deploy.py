@@ -1,15 +1,17 @@
+import re
 import sys
 import webbrowser
 from functools import partial
 from os import environ, getcwd, makedirs
 from os.path import dirname, exists, join
-from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, run
+from subprocess import PIPE, CalledProcessError, run
 from typing import List
 
 from click import echo
 
 import fides
 from fides.cli.utils import FIDES_ASCII_ART
+from fides.core.exceptions import DockerCheckException
 from fides.core.utils import echo_green, echo_red
 
 FIDES_DEPLOY_UPLOADS_DIR = getcwd() + "/fides_uploads/"
@@ -64,38 +66,55 @@ def compare_semvers(version_a: List[int], version_b: List[int]) -> bool:
     return True
 
 
-def check_docker_version() -> bool:
-    """Verify the Docker version."""
-    try:
-        run("docker info", stdout=DEVNULL, stderr=STDOUT, check=True, shell=True)
-        raw = run("docker --version", stdout=PIPE, check=True, shell=True)
-    except CalledProcessError:
-        raise SystemExit(
-            "Error: Could not determine Docker version from 'docker' commands. Please ensure that Docker is running and try again."
+def check_docker_version(
+    required_docker_version: str = REQUIRED_DOCKER_VERSION,
+) -> bool:
+    """
+    Verify the Docker versions for both the client and the server.
+
+    Params:
+        required_docker_version: str = "20.10.10"
+    """
+
+    for version in ["Client", "Server"]:
+        try:
+            raw_version = run(
+                "docker version --format '{{.Replaceme.Version}}'".replace(
+                    "Replaceme", version
+                ),
+                stdout=PIPE,
+                check=True,
+                shell=True,
+            )
+        except CalledProcessError:
+            raise DockerCheckException(
+                "Could not determine Docker version from 'docker' commands. Please ensure that Docker is installed and running and try again."
+            )
+        stripped_version = (
+            raw_version.stdout.decode("utf-8").rstrip("\n").replace("'", "").strip()
         )
+        version_match = re.match(r"((\d+\.)+\d+)", stripped_version)
+        if (
+            not version_match
+        ):  # if this is empty, we could not find a version # matching the regex
+            raise DockerCheckException(
+                f"Could not parse your Docker version (v{stripped_version})!"
+            )
+        parsed_version = version_match.group(
+            0
+        )  # extract the version # from the regex match
 
-    parsed = raw.stdout.decode("utf-8").rstrip("\n")
-    # We need to handle multiple possible version formats here
-    # Docker version 20.10.17, build 100c701
-    # Docker version 20.10.18+azure-1, build b40c2f6
-    docker_version = parsed.split("version ")[-1].split(",")[0].split("+")[0]
+        split_docker_version = convert_semver_to_list(parsed_version)
+        split_required_docker_version = convert_semver_to_list(required_docker_version)
 
-    split_docker_version = convert_semver_to_list(docker_version)
-    split_required_docker_version = convert_semver_to_list(REQUIRED_DOCKER_VERSION)
-
-    if len(split_docker_version) != 3:
-        raise SystemExit(
-            "Error: Docker version format is invalid, expecting semver format. Please upgrade to a more recent version and try again"
+        version_is_valid = compare_semvers(
+            split_docker_version, split_required_docker_version
         )
-
-    version_is_valid = compare_semvers(
-        split_docker_version, split_required_docker_version
-    )
-    if not version_is_valid:
-        raise SystemExit(
-            f"Error: Your Docker version (v{docker_version}) is not compatible, please update to at least version {REQUIRED_DOCKER_VERSION}!"
-        )
-    return version_is_valid
+        if not version_is_valid:
+            raise DockerCheckException(
+                f"Your Docker version (v{parsed_version}) is not compatible, please update to at least version v{REQUIRED_DOCKER_VERSION}!"
+            )
+    return True
 
 
 def check_virtualenv() -> bool:

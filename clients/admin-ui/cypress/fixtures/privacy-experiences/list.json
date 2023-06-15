@@ -1,0 +1,49 @@
+{
+  "items": [
+    {
+      "accept_button_label": "Accept all",
+      "acknowledge_button_label": "Ok",
+      "banner_enabled": "always_enabled",
+      "description": "This is an overlay experience config",
+      "disabled": false,
+      "is_default": true,
+      "privacy_policy_link_label": "Privacy policy",
+      "privacy_policy_url": "example.com/privacy",
+      "privacy_preferences_link_label": "Manage preferences",
+      "reject_button_label": "Reject all",
+      "save_button_label": "Save",
+      "title": "Disabled experience config",
+      "id": "pri_0338d055-f91b-4a17-ad4e-600c61551199",
+      "component": "overlay",
+      "experience_config_history_id": "pri_50a8563a-c3fe-4861-9320-9c0f014276a1",
+      "version": 3.0,
+      "created_at": "2023-05-30T23:42:10.300484+00:00",
+      "updated_at": "2023-05-31T00:28:24.694384+00:00",
+      "regions": []
+    },
+    {
+      "accept_button_label": "sounds good",
+      "acknowledge_button_label": "ok",
+      "banner_enabled": "always_disabled",
+      "description": "This is a disabled privacy center config",
+      "disabled": true,
+      "is_default": false,
+      "privacy_policy_link_label": "Privacy policy",
+      "privacy_policy_url": "example.com/privacy",
+      "privacy_preferences_link_label": "Manage preferences",
+      "reject_button_label": "nah",
+      "save_button_label": "Save",
+      "title": "Privacy center",
+      "id": "pri_8fd9d334-e625-4365-ba25-9c368f0b1231",
+      "component": "privacy_center",
+      "experience_config_history_id": "pri_1f7b5b4d-227e-423a-9865-48adbc5de53b",
+      "version": 2.0,
+      "created_at": "2023-05-30T23:40:11.459287+00:00",
+      "updated_at": "2023-05-31T00:39:29.906976+00:00",
+      "regions": ["us_ca"]
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "size": 50
+}

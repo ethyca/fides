@@ -3,6 +3,7 @@ from functools import partial
 from typing import Callable, Dict
 
 import nox
+
 from constants_nox import (
     CONTAINER_NAME,
     IMAGE_NAME,
@@ -11,7 +12,7 @@ from constants_nox import (
     START_APP,
     WITH_TEST_CONFIG,
 )
-from test_setup_nox import pytest_ctl, pytest_lib, pytest_nox, pytest_ops
+from setup_tests_nox import pytest_ctl, pytest_lib, pytest_nox, pytest_ops
 from utils_nox import install_requirements
 
 
@@ -74,7 +75,7 @@ def mypy(session: nox.Session) -> None:
 def pylint(session: nox.Session) -> None:
     """Run the 'pylint' code linter."""
     install_requirements(session)
-    command = ("pylint", "src", "noxfiles", "noxfile.py")
+    command = ("pylint", "src", "noxfiles", "noxfile.py", "--jobs", "0")
     session.run(*command)
 
 

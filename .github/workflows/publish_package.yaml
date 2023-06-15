@@ -27,13 +27,13 @@ jobs:
 
       - name: Install node modules
         run: |
-          cd clients/admin-ui
+          cd clients
           npm install
 
       - name: Build and export frontend files
         run: |
-          cd clients/admin-ui
-          npm run prod-export
+          cd clients
+          npm run prod-export-admin-ui
 
       - name: Install Twine and wheel
         run: pip install twine wheel
@@ -48,30 +48,71 @@ jobs:
       - name: Build the wheel
         run: python setup.py bdist_wheel
 
-      # If the tag matches either a release tag or a beta tag, allow publishing to PyPi, e.g.:
-      #   2.10.0 --> match (production release tag)
-      #   2.10.0b1 --> match (beta release tag, used on main)
-      #   2.10.0.a0 --> no match (alpha tag, used on feature branches)
-      #   2.10.0.dev0 --> no match (arbitrary development tag)
+
       - name: Check Prod Tag
-        id: check-tag
+        id: check-prod-tag
         run: |
-          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+(b[0-9]*)?$ ]]; then
-              echo ::set-output name=match::true
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "match=true" >> $GITHUB_OUTPUT
+          else
+            echo "match=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Check RC Tag
+        id: check-rc-tag
+        run: |
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+rc[0-9]+$ ]]; then
+            echo "match=true" >> $GITHUB_OUTPUT
+          else
+            echo "match=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Check alpha Tag
+        id: check-alpha-tag
+        run: |
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+a[0-9]+$ ]]; then
+            echo "match=true" >> $GITHUB_OUTPUT
+          else
+            echo "match=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Check beta Tag
+        id: check-beta-tag
+        run: |
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+b[0-9]+$ ]]; then
+            echo "match=true" >> $GITHUB_OUTPUT
+          else
+            echo "match=false" >> $GITHUB_OUTPUT
           fi
 
-      # We don't upload to Test PyPI if it is a real release
+      # Prod and 'beta' tags go to PyPI; 'rc', 'alpha', all other tags and untagged commits go to TestPyPI
+      #   2.10.0 (prod tag, official release commit) --> PyPI
+      #   2.10.0b1 (beta tag, used on main) --> PyPI
+      #   2.10.0.a0 (alpha tag, used on feature branches) --> TestPyPI
+      #   2.10.0.rc0 (rc tag, used on release branches before release is cut) --> TestPyPI
+      #   2.10.0.dev0 (no match, arbitrary dev tag) --> TestPyPI
+      #   no tag, just a vanilla commit/merge pushed to `main` --> TestPyPI
+
+      # Upload to TestPyPI if it is not a release (prod) or beta tag
       - name: Upload to test pypi
-        if: steps.check-tag.outputs.match != 'true'
+        if: steps.check-prod-tag.outputs.match == 'false' && steps.check-beta-tag.outputs.match == 'false'
         run: twine upload --repository testpypi dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
 
-
+      # If the tag matches either a release tag or a beta tag, allow publishing to PyPi, e.g.:
       - name: Upload to pypi
-        if: steps.check-tag.outputs.match == 'true'
+        if: steps.check-prod-tag.outputs.match == 'true' || steps.check-beta-tag.outputs.match == 'true'
         run: twine upload dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+
+      # Notify Fidesplus about a feature (non-prod) tag to trigger an integrated build on an alpha tag
+      - name: Send Repository Dispatch Event
+        # only run on an alpha tag
+        if: steps.check-alpha-tag.outputs.match == 'true'
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          client-payload: '{"tag": "${{ github.ref_name }}"}'
+          event-type: new-fides-feature-tag
+          repository: ethyca/fidesplus
+          token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}

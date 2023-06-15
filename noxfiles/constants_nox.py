@@ -32,12 +32,17 @@ IMAGE_NAME = "fides"
 IMAGE = f"{REGISTRY}/{IMAGE_NAME}"
 IMAGE_LOCAL = f"{IMAGE}:local"
 IMAGE_LOCAL_UI = f"{IMAGE}:local-ui"
-IMAGE_DEV = f"{IMAGE}:dev"
-IMAGE_LATEST = f"{IMAGE}:latest"
+IMAGE_LOCAL_PC = f"{IMAGE}:local-pc"
 
 # Image names for the secondary apps
 PRIVACY_CENTER_IMAGE = f"{REGISTRY}/fides-privacy-center"
 SAMPLE_APP_IMAGE = f"{REGISTRY}/fides-sample-app"
+
+# Constant tag suffixes for published images
+DEV_TAG_SUFFIX = "dev"
+PRERELEASE_TAG_SUFFIX = "prerelease"
+RC_TAG_SUFFIX = "rc"
+LATEST_TAG_SUFFIX = "latest"
 
 # Image names for 3rd party apps
 CYPRESS_IMAGE = "cypress/included:12.8.1"

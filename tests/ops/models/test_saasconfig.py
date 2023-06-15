@@ -4,10 +4,10 @@ import pytest
 from fideslang import FidesDatasetReference
 from pydantic import ValidationError
 
-from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
-from fides.api.ops.graph.config import CollectionAddress, FieldAddress
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.schemas.saas.saas_config import (
+from fides.api.common_exceptions import ValidationError as FidesopsValidationError
+from fides.api.graph.config import CollectionAddress, FieldAddress
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.schemas.saas.saas_config import (
     ConnectorParam,
     Endpoint,
     ParamValue,
@@ -188,6 +188,14 @@ def test_saas_config_ignore_errors_param(saas_example_config: Dict[str, Dict]):
     # Not specified on member read endpoint - defaults to False
     for read_request in member_endpoint.requests.read:
         assert not read_request.ignore_errors
+
+    tickets_endpoint = next(
+        end for end in saas_config.endpoints if end.name == "tickets"
+    )
+    assert tickets_endpoint.requests.read[0].ignore_errors
+    assert 401 in tickets_endpoint.requests.read[0].ignore_errors
+    assert 403 in tickets_endpoint.requests.read[0].ignore_errors
+    assert 404 in tickets_endpoint.requests.read[0].ignore_errors
 
 
 @pytest.mark.unit_saas

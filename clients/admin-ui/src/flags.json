@@ -23,5 +23,17 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "privacyExperience": {
+    "description": "Page to configure consent privacy experiences",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "standaloneConnections": {
+    "description": "Allow the creation of standalone connections for testing",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }

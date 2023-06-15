@@ -4,9 +4,8 @@ import re
 from enum import Enum
 from typing import List, Optional
 
-from packaging.version import Version
-
 import nox
+from packaging.version import Version
 
 RELEASE_BRANCH_REGEX = r"release-(([0-9]+\.)+[0-9]+)"
 RELEASE_TAG_REGEX = r"(([0-9]+\.)+[0-9]+)"
@@ -15,10 +14,6 @@ GENERIC_TAG_REGEX = r"{tag_type}([0-9]+)$"
 
 INITIAL_TAG_INCREMENT = 0
 TAG_INCREMENT = 1
-
-# posarg options for `tag`
-ONLY_TAG = "only_tag"
-PUSH = "push"
 
 
 class TagType(Enum):
@@ -31,7 +26,7 @@ class TagType(Enum):
     BETA = "b"  # used for `main` branch
 
 
-def get_all_tags(repo):
+def get_all_tags(repo) -> List[str]:
     """
     Returns a list of all tags in the repo, sorted by committed date, latest first
     """
@@ -68,48 +63,61 @@ def get_current_tag(
 
 
 @nox.session()
-def tag(session: nox.Session) -> str:
+@nox.parametrize(
+    "action",
+    [
+        nox.param("dry", id="dry"),
+        nox.param("push", id="push"),
+    ],
+)
+def tag(session: nox.Session, action: str) -> None:
     """
-    Generates, applies and pushes a git tag to the current HEAD commit,
-    based on the currently checked out branch and existing tags in the repo.
+    Generates and optionally applies and pushes a git tag for the current HEAD commit.
+
+    Programmatically generates new tags based on the currently checked out
+    branch and existing tags in the repo.
 
     Positional Arguments:
-    - (default) = don't actually apply the tag or push, just show the tag that will be generated
-    - only_tag = generate and apply the a tag locally to the current commit, but don't push the tag
-    - push = generate, apply and push a tag
+        N/A
+
+    Parameters:
+        - tag(dry) = Show the tag that would be applied.
+        - tag(push) = Tag the current commit and push it. NOTE: This will trigger a new CI job to publish the tag.
     """
     from git.repo import Repo
 
-    posargs_set = set(session.posargs)
     repo = Repo()
     all_tags = get_all_tags(repo)
 
-    generated_tag = generate_tag(
-        session, repo.active_branch.name, all_tags
-    )  # generate a tag based on the current repo state
+    # generate a tag based on the current repo state
+    generated_tag = generate_tag(session, repo.active_branch.name, all_tags)
 
-    # if no args are passed, it's a dry run
-    if ONLY_TAG not in posargs_set and PUSH not in posargs_set:
+    if action == "dry":
         session.log(f"Dry-run -- would generate tag: {generated_tag}")
-        return
 
-    session.log(f"Tagging current HEAD commit with tag: {generated_tag}")
-    repo.create_tag(generated_tag)
-
-    if PUSH in posargs_set and ONLY_TAG not in posargs_set:
-        # push the tag if we've been told to
+    elif action == "push":
+        repo.create_tag(generated_tag)
         session.log(f"Pushing tag {generated_tag} to remote (origin)")
         repo.remotes.origin.push(generated_tag)
 
+    else:
+        session.error(f"Invalid action: {action}")
 
-def next_release_increment(session: nox.Session, all_tags: List):
+
+def next_release_increment(session: nox.Session, all_tags: List) -> Version:
     """Helper to generate the next release 'increment' based on latest release tag found"""
-    latest_release = next(
-        tag.name for tag in all_tags if re.fullmatch(RELEASE_TAG_REGEX, tag.name)
+
+    releases = sorted(  # sorted by Version - what we want!
+        (
+            Version(tag.name)
+            for tag in all_tags
+            if re.fullmatch(RELEASE_TAG_REGEX, tag.name)
+        ),
+        reverse=True,
     )
+    latest_release = releases[0]
     if not latest_release:  # this would be bad...
         session.error("Could not identify the latest release!")
-    latest_release = Version(latest_release)
     return Version(
         f"{latest_release.major}.{latest_release.minor}.{latest_release.micro + 1}"
     )
@@ -137,20 +145,30 @@ def increment_tag(
     version_branch_tag_pattern = VERSION_TAG_REGEX.format(
         version=version_number, tag_type=tag_type.value
     )
+
     # find our latest existing tag for this version/type
-    latest_tag = next(
+    sorted_tag_matches = sorted(
         (
             re.fullmatch(version_branch_tag_pattern, tag.name)
             for tag in all_tags
             if re.fullmatch(version_branch_tag_pattern, tag.name)
         ),
-        None,
+        key=lambda match: int(
+            match.group(1)
+        ),  # numeric (not alphabetical) sort of the tag increment
+        reverse=True,
     )
-    if latest_tag:  # if we have an existing tag for this version/type, increment it
+
+    latest_tag_match = sorted_tag_matches[0] if sorted_tag_matches else None
+    if (
+        latest_tag_match
+    ):  # if we have an existing tag for this version/type, increment it
         session.log(
-            f"Found existing {tag_type.name.lower()} tag {latest_tag.group(0)}, incrementing it"
+            f"Found existing {tag_type.name.lower()} tag {latest_tag_match.group(0)}, incrementing it"
         )
-        tag_increment = int(latest_tag.group(1)) + TAG_INCREMENT  # increment the tag
+        tag_increment = (
+            int(latest_tag_match.group(1)) + TAG_INCREMENT
+        )  # increment the tag
         return f"{version_number}{tag_type.value}{tag_increment}"
         # return the full {version_number}{tag_type}{increment}
 

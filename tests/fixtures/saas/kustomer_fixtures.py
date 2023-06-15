@@ -5,18 +5,18 @@ import pytest
 import requests
 from sqlalchemy.orm import Session
 
+from fides.api.cryptography import cryptographic_util
 from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.util.saas_util import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.lib.cryptography import cryptographic_util
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("kustomer")
@@ -35,6 +35,12 @@ def kustomer_identity_email(saas_config):
     return (
         pydash.get(saas_config, "kustomer.identity_email") or secrets["identity_email"]
     )
+
+
+@pytest.fixture(scope="session")
+def kustomer_non_existent_identity_email(saas_config):
+    email_not_in_kustomer = "not_in_kustomer@example.com"
+    return email_not_in_kustomer
 
 
 @pytest.fixture(scope="session")

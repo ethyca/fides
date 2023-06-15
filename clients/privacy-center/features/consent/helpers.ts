@@ -1,18 +1,23 @@
 import {
   ConsentContext,
   CookieKeyConsent,
-  resolveConsentValue,
-} from "fides-consent";
+  resolveLegacyConsentValue,
+} from "fides-js";
 
-import { ConfigConsentOption, V1Consent, V2Consent } from "~/types/config";
+import {
+  ConfigConsentOption,
+  LegacyConsentConfig,
+  ConsentConfig,
+} from "~/types/config";
+import { PrivacyNoticeResponseWithUserPreferences } from "~/types/api";
 import { FidesKeyToConsent, GpcStatus } from "./types";
 
 /**
  * Ascertain whether a consentConfig is V1 or V2 based upon the presence of a `button` key
  */
 export function isV1ConsentConfig(
-  consentConfig: V1Consent | V2Consent | undefined
-): consentConfig is V1Consent {
+  consentConfig: LegacyConsentConfig | ConsentConfig | undefined
+): consentConfig is LegacyConsentConfig {
   return (
     typeof consentConfig === "object" &&
     consentConfig != null &&
@@ -28,8 +33,8 @@ export function isV1ConsentConfig(
 export const translateV1ConfigToV2 = ({
   v1ConsentConfig,
 }: {
-  v1ConsentConfig: V1Consent;
-}): V2Consent => ({
+  v1ConsentConfig: LegacyConsentConfig;
+}): ConsentConfig => ({
   button: {
     icon_path: v1ConsentConfig.icon_path,
     description: v1ConsentConfig.description,
@@ -56,7 +61,10 @@ export const makeCookieKeyConsent = ({
 }): CookieKeyConsent => {
   const cookieKeyConsent: CookieKeyConsent = {};
   consentOptions.forEach((option) => {
-    const defaultValue = resolveConsentValue(option.default, consentContext);
+    const defaultValue = resolveLegacyConsentValue(
+      option.default,
+      consentContext
+    );
     const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
 
     option.cookieKeys?.forEach((cookieKey) => {
@@ -89,6 +97,27 @@ export const getGpcStatus = ({
   }
 
   if (value === consentOption.default.globalPrivacyControl) {
+    return GpcStatus.APPLIED;
+  }
+
+  return GpcStatus.OVERRIDDEN;
+};
+
+export const getGpcStatusFromNotice = ({
+  value,
+  notice,
+  consentContext,
+}: {
+  value: boolean;
+  notice: PrivacyNoticeResponseWithUserPreferences;
+  consentContext: ConsentContext;
+}) => {
+  // If GPC is not enabled, it won't be applied at all.
+  if (!consentContext.globalPrivacyControl || !notice.has_gpc_flag) {
+    return GpcStatus.NONE;
+  }
+
+  if (!value) {
     return GpcStatus.APPLIED;
   }
 

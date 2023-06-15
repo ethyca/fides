@@ -6,25 +6,26 @@ from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
+from sqlalchemy.sql import text
 
+from fides.common.utils import echo_green, echo_red
+from fides.connectors.aws import (
+    create_dynamodb_dataset,
+    describe_dynamo_tables,
+    get_aws_client,
+    get_dynamo_tables,
+)
 from fides.connectors.bigquery import get_bigquery_engine
-from fides.connectors.models import BigQueryConfig
+from fides.connectors.models import AWSConfig, BigQueryConfig
 from fides.core.api_helpers import list_server_resources
 from fides.core.parse import parse
-
-from .utils import (
-    check_fides_key,
-    echo_green,
-    echo_red,
-    generate_unique_fides_key,
-    get_db_engine,
-)
+from fides.core.utils import check_fides_key, generate_unique_fides_key, get_db_engine
 
 SCHEMA_EXCLUSION = {
     "postgresql": ["information_schema"],
     "mysql": ["mysql", "performance_schema", "sys", "information_schema"],
     "mssql": ["INFORMATION_SCHEMA", "guest", "sys"],
-    "snowflake": ["information_schema"],
+    "snowflake": ["INFORMATION_SCHEMA"],
     "redshift": ["information_schema"],
 }
 
@@ -65,16 +66,19 @@ def get_db_schemas(
     """
     Extract the schema, table and column names from a database given a sqlalchemy engine
     """
-    inspector = sqlalchemy.inspect(engine)
-    db_schemas: Dict[str, Dict[str, List]] = {}
-    for schema in inspector.get_schema_names():
-        if include_dataset_schema(schema=schema, database_type=engine.dialect.name):
-            db_schemas[schema] = {}
-            for table in inspector.get_table_names(schema=schema):
-                db_schemas[schema][table] = [
-                    column["name"]
-                    for column in inspector.get_columns(table, schema=schema)
-                ]
+    if engine.dialect.name != "snowflake":
+        inspector = sqlalchemy.inspect(engine)
+        db_schemas: Dict[str, Dict[str, List]] = {}
+        for schema in inspector.get_schema_names():
+            if include_dataset_schema(schema=schema, database_type=engine.dialect.name):
+                db_schemas[schema] = {}
+                for table in inspector.get_table_names(schema=schema):
+                    db_schemas[schema][table] = [
+                        column["name"]
+                        for column in inspector.get_columns(table, schema=schema)
+                    ]
+    else:
+        db_schemas = get_snowflake_schemas(engine=engine)
     return db_schemas
 
 
@@ -356,3 +360,53 @@ def generate_bigquery_datasets(bigquery_config: BigQueryConfig) -> List[Dataset]
         for dataset in bigquery_datasets
     ]
     return unique_bigquery_datasets
+
+
+def generate_dynamo_db_datasets(aws_config: Optional[AWSConfig]) -> Dataset:
+    """
+    Given an AWS config, extract all DynamoDB tables/fields and generate corresponding datasets.
+    """
+    client = get_aws_client(service="dynamodb", aws_config=aws_config)
+    dynamo_tables = get_dynamo_tables(client)
+    described_dynamo_tables = describe_dynamo_tables(client, dynamo_tables)
+    dynamo_dataset = create_dynamodb_dataset(described_dynamo_tables)
+    return dynamo_dataset
+
+
+def get_snowflake_schemas(
+    engine: Engine,
+) -> Dict[str, Dict[str, List[str]]]:
+    """
+    Returns Datasets that match the case-sensitivity that may be
+    required by Snowflake. Iterates through each schema.table.column
+    the logged in user has access to.
+
+    This is currently required because of the inferred casing of Snowflake,
+    which defaults to upper-case. Anything else must be double-quoted, however
+    `snowflake-sqlalchemy` does not account for this in a flexible manner in
+    it's implementation of the `inspect()` method, forcing everything to what
+    is deemed to be normalized (i.e. lower-case).
+
+    The following code maintains casing as defined in Snowflake which combines
+    well with our DSR implementation in always using double-quoted query syntax.
+
+    It may be worthwhile for us to invest some time in resolving the core issue
+    and being able to fall back to using the connector.
+
+    Reference: https://github.com/snowflakedb/snowflake-sqlalchemy/issues/157
+    """
+    schema_cursor = engine.execute(text("SHOW SCHEMAS"))
+    db_schemas = [row[1] for row in schema_cursor]
+    metadata: Dict[str, Dict[str, List]] = {}
+    for schema in db_schemas:
+        if include_dataset_schema(schema=schema, database_type=engine.dialect.name):
+            metadata[schema] = {}
+            table_cursor = engine.execute(text(f'SHOW TABLES IN "{schema}"'))
+            db_tables = [row[1] for row in table_cursor]
+            for table in db_tables:
+                column_cursor = engine.execute(
+                    text(f'SHOW COLUMNS IN "{schema}"."{table}"')
+                )
+                columns = [row[2] for row in column_cursor]
+                metadata[schema][table] = columns
+    return metadata

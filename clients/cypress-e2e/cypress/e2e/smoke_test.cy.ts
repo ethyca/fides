@@ -63,8 +63,7 @@ describe("Smoke test", () => {
 
     cy.visit(ADMIN_UI_URL);
     cy.login();
-    cy.get("div").contains("Configure privacy requests").click();
-    cy.wait("@getConnections");
+    cy.get("a").contains("Privacy requests").click();
     cy.get("a").contains("Connection manager").click();
     cy.wait("@getConnectionType");
     cy.getByTestId("connection-grid-item-MongoDB Connector").within(() => {
@@ -88,24 +87,26 @@ describe("Smoke test", () => {
     //  - Data Sales or Sharing => true
     //  - Email Marketing => true
     //  - Product Analytics => true
-    cy.getByTestId(`consent-item-card-advertising`).within(() => {
+    cy.getByTestId(`consent-item-marketing.advertising`).within(() => {
       cy.contains("Data Sales or Sharing");
       cy.getRadio("true").should("be.checked");
       cy.getRadio("false").should("not.be.checked");
     });
-    cy.getByTestId(`consent-item-card-advertising.first_party`).within(() => {
-      cy.contains("Email Marketing");
-      cy.getRadio("true").should("be.checked");
-      cy.getRadio("false").should("not.be.checked");
-    });
-    cy.getByTestId(`consent-item-card-improve`).within(() => {
+    cy.getByTestId(`consent-item-marketing.advertising.first_party`).within(
+      () => {
+        cy.contains("Email Marketing");
+        cy.getRadio("true").should("be.checked");
+        cy.getRadio("false").should("not.be.checked");
+      }
+    );
+    cy.getByTestId(`consent-item-improve`).within(() => {
       cy.contains("Product Analytics");
       cy.getRadio("true").should("be.checked");
       cy.getRadio("false").should("not.be.checked");
     });
 
     // Opt-out of data sales / sharing
-    cy.getByTestId(`consent-item-card-advertising`).within(() => {
+    cy.getByTestId(`consent-item-marketing.advertising`).within(() => {
       cy.getRadio("false").check({ force: true });
     });
     cy.contains("Save").click();
@@ -119,7 +120,7 @@ describe("Smoke test", () => {
       cy.get("input#email").type("jenny@example.com");
       cy.get("button").contains("Continue").click();
     });
-    cy.getByTestId(`consent-item-card-advertising`).within(() => {
+    cy.getByTestId(`consent-item-marketing.advertising`).within(() => {
       cy.getRadio("true").should("not.be.checked");
       cy.getRadio("false").should("be.checked");
     });
@@ -131,13 +132,20 @@ describe("Smoke test", () => {
       cy.getCookie("fides_consent").should("exist");
       cy.window().then((win) => {
         cy.wrap(win).should("to.have.property", "Fides");
-        cy.wrap(win).should("to.have.nested.property", "Fides.fides_meta.version").should("eql", "0.9.0");
-        cy.wrap(win).should("to.have.nested.property", "Fides.consent").should("eql", {
-          data_sales: false,
-          tracking: true,
-          analytics: true,
-        });
-        cy.wrap(win).should("to.have.nested.property", "Fides.identity.fides_user_device_id");
+        cy.wrap(win)
+          .should("to.have.nested.property", "Fides.fides_meta.version")
+          .should("eql", "0.9.0");
+        cy.wrap(win)
+          .should("to.have.nested.property", "Fides.consent")
+          .should("eql", {
+            data_sales: false,
+            tracking: true,
+            analytics: true,
+          });
+        cy.wrap(win).should(
+          "to.have.nested.property",
+          "Fides.identity.fides_user_device_id"
+        );
       });
     });
   });
