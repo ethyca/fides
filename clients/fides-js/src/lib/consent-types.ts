@@ -40,17 +40,10 @@ export type FidesOptions = {
 export class SaveConsentPreference {
   consentPreference: UserConsentPreference;
 
-  noticeHistoryId: string;
+  notice: PrivacyNotice;
 
-  noticeKey: string;
-
-  constructor(
-    noticeKey: string,
-    noticeHistoryId: string,
-    consentPreference: UserConsentPreference
-  ) {
-    this.noticeKey = noticeKey;
-    this.noticeHistoryId = noticeHistoryId;
+  constructor(notice: PrivacyNotice, consentPreference: UserConsentPreference) {
+    this.notice = notice;
     this.consentPreference = consentPreference;
   }
 }
