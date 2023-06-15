@@ -105,7 +105,7 @@ const ChooseConnection: React.FC = () => {
             borderRadius="md"
             name="search"
             onChange={debounceHandleSearchChange}
-            placeholder="Search Integrations"
+            placeholder="Search integrations"
             size="sm"
             type="search"
           />

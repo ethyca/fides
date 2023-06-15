@@ -8,6 +8,7 @@ import { API_URL } from "../support/constants";
 const VERIFICATION_CODE = "112358";
 const PRIVACY_NOTICE_ID_1 = "pri_b4360591-3cc7-400d-a5ff-a9f095ab3061";
 const PRIVACY_NOTICE_ID_2 = "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae821";
+const PRIVACY_NOTICE_ID_3 = "pri_4bed96d0-b9e3-4596-a807-26b783836375";
 const PRIVACY_EXPERIENCE_ID = "pri_041acb07-c99b-4085-a435-c0d6f3a42b6f";
 const GEOLOCATION_API_URL = "https://www.example.com/location";
 const SETTINGS = {
@@ -86,6 +87,9 @@ describe("Privacy notice driven consent", () => {
       cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
         cy.getRadio().should("be.checked");
       });
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
+        cy.getRadio().should("be.checked").should("be.disabled");
+      });
 
       // Opt in to the opt in notice
       cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
@@ -102,7 +106,7 @@ describe("Privacy notice driven consent", () => {
         expect(id).to.eql(PRIVACY_EXPERIENCE_ID);
         expect(
           preferences.map((p: ConsentOptionCreate) => p.preference)
-        ).to.eql(["opt_in", "opt_in"]);
+        ).to.eql(["opt_in", "opt_in", "acknowledge"]);
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
             const cookie = JSON.parse(
@@ -186,7 +190,7 @@ describe("Privacy notice driven consent", () => {
         const { preferences } = body;
         expect(
           preferences.map((p: ConsentOptionCreate) => p.preference)
-        ).to.eql(["opt_in", "opt_in"]);
+        ).to.eql(["opt_in", "opt_in", "acknowledge"]);
       });
     });
   });
