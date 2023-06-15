@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from pydantic import Field
+
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
@@ -11,7 +13,7 @@ class FidesConnectorSchema(ConnectionConfigSecretsSchema):
 
     uri: str
     username: str
-    password: str
+    password: str = Field(sensitive=True)
     polling_timeout: Optional[int] = None
     polling_interval: Optional[int] = None
 
