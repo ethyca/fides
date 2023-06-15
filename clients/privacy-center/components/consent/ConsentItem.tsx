@@ -24,6 +24,7 @@ export type ConsentItemProps = {
   value: boolean;
   gpcStatus: GpcStatus;
   onChange: (value: boolean) => void;
+  disabled?: boolean;
 };
 
 const ConsentItem = ({
@@ -35,6 +36,7 @@ const ConsentItem = ({
   value,
   gpcStatus,
   onChange,
+  disabled,
 }: ConsentItemProps) => {
   const handleRadioChange = (radioValue: string) => {
     onChange(radioValue === "true");
@@ -85,6 +87,7 @@ const ConsentItem = ({
             <RadioGroup
               value={value ? "true" : "false"}
               onChange={handleRadioChange}
+              isDisabled={disabled}
             >
               <Stack direction="row">
                 <Radio value="true" colorScheme="whatsapp">

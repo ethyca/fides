@@ -189,6 +189,14 @@ def test_saas_config_ignore_errors_param(saas_example_config: Dict[str, Dict]):
     for read_request in member_endpoint.requests.read:
         assert not read_request.ignore_errors
 
+    tickets_endpoint = next(
+        end for end in saas_config.endpoints if end.name == "tickets"
+    )
+    assert tickets_endpoint.requests.read[0].ignore_errors
+    assert 401 in tickets_endpoint.requests.read[0].ignore_errors
+    assert 403 in tickets_endpoint.requests.read[0].ignore_errors
+    assert 404 in tickets_endpoint.requests.read[0].ignore_errors
+
 
 @pytest.mark.unit_saas
 class TestConnectorParam:
