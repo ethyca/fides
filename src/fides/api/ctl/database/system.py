@@ -7,11 +7,9 @@ from fastapi import HTTPException
 from fideslang.models import Cookies as CookieSchema
 from fideslang.models import System as SystemSchema
 from loguru import logger as log
-from sqlalchemy import and_, delete, select, update
-from sqlalchemy.dialects.postgresql import Insert
+from sqlalchemy import and_, delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import Select
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.ctl.database.crud import create_resource, get_resource, update_resource
@@ -130,6 +128,7 @@ async def upsert_privacy_declarations(
                 # otherwise, create a new declaration record
                 declaration = PrivacyDeclaration.create(db, data=data)
 
+            # Upsert cookies for the given privacy declaration
             await upsert_cookies(db, cookies, declaration, system)
 
         # delete any existing privacy declarations that have not been "matched" in the request
@@ -143,19 +142,22 @@ async def upsert_cookies(
     privacy_declaration: PrivacyDeclaration,
     system: System,
 ) -> None:
-    """Upsert cookies for the given privacy declaration"""
+    """Upsert cookies for the given privacy declaration: retrieve cookies by name/system/privacy declaration
+    Remove any existing cookies that aren't specified here.
+    """
     cookie_list: List[CookieSchema] = cookies or []
     for cookie_data in cookie_list:
-        query: Select = select(Cookies).where(
-            and_(
-                Cookies.name == cookie_data["name"],
-                Cookies.system_id == system.id,
-                Cookies.privacy_declaration_id == privacy_declaration.id,
+        # Check if cookie exists for this name/system/privacy declaration
+        result = await async_session.execute(
+            select(Cookies).where(
+                and_(
+                    Cookies.name == cookie_data["name"],
+                    Cookies.system_id == system.id,
+                    Cookies.privacy_declaration_id == privacy_declaration.id,
+                )
             )
         )
-        result = await async_session.execute(query)
         row: Optional[Cookies] = result.scalars().first()
-
         if row:
             await async_session.execute(
                 update(Cookies).where(Cookies.id == row.id).values(cookie_data)
@@ -163,29 +165,36 @@ async def upsert_cookies(
 
         else:
             await async_session.execute(
-                Insert(Cookies).values(
+                insert(Cookies).values(
                     {
-                        "name": cookie_data["name"],
-                        "path": cookie_data["path"],
-                        "domain": cookie_data["domain"],
+                        "name": cookie_data.get("name"),
+                        "path": cookie_data.get("path"),
+                        "domain": cookie_data.get("domain"),
                         "privacy_declaration_id": privacy_declaration.id,
                         "system_id": system.id,
                     }
                 )
             )
 
-    missing_cookies_query: Select = select(Cookies).where(
-        and_(
-            Cookies.name.notin_([cookie["name"] for cookie in cookie_list]),
-            Cookies.system_id == system.id,
-            Cookies.privacy_declaration_id == privacy_declaration.id,
+    # Select cookies which are currently on the privacy declaration but not included in this request
+    delete_result = await async_session.execute(
+        select(Cookies).where(
+            and_(
+                Cookies.name.notin_([cookie["name"] for cookie in cookie_list]),
+                Cookies.system_id == system.id,
+                Cookies.privacy_declaration_id == privacy_declaration.id,
+            )
         )
     )
-    delete_result = await async_session.execute(missing_cookies_query)
-    rows: List = delete_result.scalars().unique().all()
 
-    stmt = delete(Cookies).where(Cookies.id.in_([cookie.id for cookie in rows]))
-    await async_session.execute(stmt)
+    # Remove those cookies altogether
+    await async_session.execute(
+        delete(Cookies).where(
+            Cookies.id.in_(
+                [cookie.id for cookie in delete_result.scalars().unique().all()]
+            )
+        )
+    )
 
 
 async def update_system(resource: SystemSchema, db: AsyncSession) -> Dict:

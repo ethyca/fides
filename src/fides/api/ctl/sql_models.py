@@ -612,17 +612,18 @@ class Cookies(Base):
     """
 
     name = Column(String, index=True, nullable=False)
-    path = Column(String, index=True)
-    domain = Column(String, index=True)
+    path = Column(String)
+    domain = Column(String)
 
     system_id = Column(
         String, ForeignKey(System.id_field_path, ondelete="CASCADE"), index=True
-    )
+    )  # If system is deleted, remove the associated cookies.
+
     privacy_declaration_id = Column(
         String,
         ForeignKey(PrivacyDeclaration.id_field_path, ondelete="SET NULL"),
         index=True,
-    )
+    )  # If privacy declaration is deleted, just set to null and still keep this connected to the system.
 
     system = relationship(
         "System",
@@ -636,7 +637,7 @@ class Cookies(Base):
         "PrivacyDeclaration",
         back_populates="cookies",
         uselist=False,
-        lazy="joined",
+        lazy="joined",  # Joined is intentional, instead of selectin
     )
 
     __table_args__ = (
