@@ -77,19 +77,13 @@ saas_config:
           method: GET
           path: /v3/surveys/<survey_id>/collectors
           data_path: data
-          postprocessors:
-            - strategy: filter
-              configuration:
-                field: type
-                value:
-                  identity: email
           param_values:
             - name: survey_id
               references:
                 - dataset: <instance_fides_key>
                   field: surveys.id
                   direction: from
-    - name: survey_response
+    - name: survey_responses
       requests:
         read:
           method: GET
@@ -114,10 +108,10 @@ saas_config:
             - name: survey_response_collector_id
               references:
                 - dataset: <instance_fides_key>
-                  field: survey_response.collector_id
+                  field: survey_responses.collector_id
                   direction: from
             - name: survey_response_id
               references:
                 - dataset: <instance_fides_key>
-                  field: survey_response.id
+                  field: survey_responses.id
                   direction: from

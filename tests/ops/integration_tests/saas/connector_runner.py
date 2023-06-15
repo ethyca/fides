@@ -107,7 +107,9 @@ class ConnectorRunner:
         )
         # verify we returned at least one row for each collection in the dataset
         for collection in self.dataset["collections"]:
-            assert len(access_results[f"{fides_key}:{collection['name']}"])
+            assert len(
+                access_results[f"{fides_key}:{collection['name']}"]
+            ), f"No rows returned for collection '{collection['name']}'"
         return access_results
 
     async def strict_erasure_request(
@@ -193,7 +195,9 @@ class ConnectorRunner:
 
         # verify we returned at least one row for each collection in the dataset
         for collection in self.dataset["collections"]:
-            assert len(access_results[f"{fides_key}:{collection['name']}"])
+            assert len(
+                access_results[f"{fides_key}:{collection['name']}"]
+            ), f"No rows returned for collection '{collection['name']}'"
 
         erasure_results = await graph_task.run_erasure(
             privacy_request,

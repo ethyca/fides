@@ -30,47 +30,22 @@ dataset:
               data_type: string
       - name: surveys
         fields:
-          - name: data
-            fidesops_meta:
-              data_type: 'object[]'
-            fields:
-              - name: id
-                data_categories: [system.operations]
-                fidesops_meta:
-                  primary_key: True
-                  data_type: string
-              - name: title
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: nickname
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: href
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-          - name: per_page
+          - name: id
             data_categories: [system.operations]
             fidesops_meta:
-              data_type: integer
-          - name: page
+              data_type: string
+          - name: title
             data_categories: [system.operations]
             fidesops_meta:
-              data_type: integer
-          - name: total
+              data_type: string
+          - name: nickname
             data_categories: [system.operations]
             fidesops_meta:
-              data_type: integer
-          - name: links
+              data_type: string
+          - name: href
+            data_categories: [system.operations]
             fidesops_meta:
-              data_type: object
-            fields:
-              - name: self
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
+              data_type: string
       - name: collectors
         fields:
           - name: name
@@ -80,7 +55,6 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
-              primary_key: True
               data_type: string
           - name: href
             data_categories: [system.operations]
@@ -98,7 +72,7 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: boolean
-      - name: survey_response
+      - name: survey_responses
         fields:
           - name: id
             data_categories: [system.operations]
@@ -195,7 +169,7 @@ dataset:
               data_type: string
           - name: pages
             fidesops_meta:
-              data_type: 'object[]'
+              data_type: "object[]"
             fields:
               - name: id
                 data_categories: [system.operations]
@@ -203,7 +177,7 @@ dataset:
                   data_type: string
               - name: questions
                 fidesops_meta:
-                  data_type: 'object[]'
+                  data_type: "object[]"
                 fields:
                   - name: id
                     data_categories: [system.operations]
@@ -211,7 +185,7 @@ dataset:
                       data_type: string
                   - name: answers
                     fidesops_meta:
-                      data_type: 'object[]'
+                      data_type: "object[]"
                     fields:
                       - name: choice_id
                         data_categories: [system.operations]
