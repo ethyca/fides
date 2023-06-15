@@ -87,6 +87,7 @@ describe("Privacy notice driven consent", () => {
       cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
         cy.getRadio().should("be.checked");
       });
+      // Notice only, so should be checked and disabled
       cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
         cy.getRadio().should("be.checked").should("be.disabled");
       });
@@ -107,6 +108,7 @@ describe("Privacy notice driven consent", () => {
         expect(
           preferences.map((p: ConsentOptionCreate) => p.preference)
         ).to.eql(["opt_in", "opt_in", "acknowledge"]);
+        // Should update the cookie
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
             const cookie = JSON.parse(
@@ -118,6 +120,7 @@ describe("Privacy notice driven consent", () => {
             const expectedConsent = { data_sales: true, advertising: true };
             const { consent } = cookie;
             expect(consent).to.eql(expectedConsent);
+            // Should update the window object
             cy.window().then((win) => {
               expect(win.Fides.consent).to.eql(expectedConsent);
             });
@@ -191,6 +194,63 @@ describe("Privacy notice driven consent", () => {
         expect(
           preferences.map((p: ConsentOptionCreate) => p.preference)
         ).to.eql(["opt_in", "opt_in", "acknowledge"]);
+      });
+    });
+  });
+
+  it("can delete cookies for notices that have been opted out of", () => {
+    cy.fixture("consent/privacy_preferences.json").then((savedPreferences) => {
+      const newPreferences = [...savedPreferences];
+      newPreferences[1].preference = "opt_out";
+      cy.intercept(
+        "PATCH",
+        `${API_URL}/consent-request/consent-request-id/privacy-preferences*`,
+        {
+          body: newPreferences,
+        }
+      ).as("patchOptedOutPrivacyPreference");
+    });
+    cy.visit("/consent");
+    cy.getByTestId("consent");
+    cy.overrideSettings(SETTINGS);
+
+    // First seed the browser with the cookies that are listed in the notices
+    cy.fixture("consent/experience.json").then((data) => {
+      const notices: PrivacyNoticeResponseWithUserPreferences[] =
+        data.items[0].privacy_notices;
+      // @ts-ignore for now
+      const allCookies = notices.map((notice) => notice.cookies).flat();
+      allCookies.forEach((cookie) => {
+        cy.setCookie(cookie.name, "value", {
+          path: cookie.path ?? "/",
+          domain: cookie.domain ?? undefined,
+        });
+      });
+      cy.getAllCookies().then((cookies) => {
+        expect(
+          cookies.filter((c) => c.name !== CONSENT_COOKIE_NAME).length
+        ).to.eql(allCookies.length);
+      });
+
+      // Opt out of the opt-out notice
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
+        cy.getRadio().should("be.checked").check({ force: true });
+      });
+      cy.getByTestId("save-btn").click();
+
+      cy.wait("@patchOptedOutPrivacyPreference").then(() => {
+        // The first notice's cookies should still be around
+        // But there should be none of the second cookie's
+        cy.getAllCookies().then((cookies) => {
+          const filteredCookies = cookies.filter(
+            (c) => c.name !== CONSENT_COOKIE_NAME
+          );
+          expect(filteredCookies.length).to.eql(1);
+          expect(filteredCookies[0]).to.have.property(
+            "name",
+            notices[0].cookies[0].name
+          );
+        });
       });
     });
   });

@@ -19,7 +19,8 @@
       "displayed_in_api": false,
       "id": "pri_371e6355-9327-4294-8b42-c0db5bf53cb0",
       "version": 1.0,
-      "privacy_notice_id": "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae821"
+      "privacy_notice_id": "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae821",
+      "cookies": [{ "name": "sales", "path": null, "domain": null }]
     },
     "privacy_preference_history_id": "pri_e1f47400-f285-438e-8cf2-fabec67787be"
   },
@@ -43,7 +44,11 @@
       "displayed_in_api": false,
       "id": "pri_07ace6f0-211d-4822-8f02-b9573b19b8d6",
       "version": 3.0,
-      "privacy_notice_id": "pri_b4360591-3cc7-400d-a5ff-a9f095ab3061"
+      "privacy_notice_id": "pri_b4360591-3cc7-400d-a5ff-a9f095ab3061",
+      "cookies": [
+        { "name": "_ga", "path": null, "domain": null },
+        { "name": "advertisingCookie", "path": null, "domain": null }
+      ]
     },
     "privacy_preference_history_id": "pri_9c496ef2-0953-48d5-975d-8ee29b7d723a"
   }
