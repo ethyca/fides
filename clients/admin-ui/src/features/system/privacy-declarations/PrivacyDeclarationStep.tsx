@@ -48,6 +48,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
           system={system}
           onSave={onSave}
           includeCustomFields
+          includeCookies
           {...dataProps}
         />
       )}

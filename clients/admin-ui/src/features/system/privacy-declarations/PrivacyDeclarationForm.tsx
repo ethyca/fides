@@ -104,10 +104,12 @@ export const PrivacyDeclarationFormComponents = ({
   allDatasets,
   onDelete,
   privacyDeclarationId,
+  includeCookies,
   includeCustomFields,
 }: DataProps &
   Pick<Props, "onDelete"> & {
     privacyDeclarationId?: string;
+    includeCookies?: boolean;
     includeCustomFields?: boolean;
   }) => {
   const { dirty, isSubmitting, isValid, initialValues } =
@@ -173,14 +175,16 @@ export const PrivacyDeclarationFormComponents = ({
         isMulti
         variant="stacked"
       />
-      <CustomCreatableSelect
-        name="cookies"
-        label="Cookies"
-        options={[]}
-        isMulti
-        variant="stacked"
-        isClearable={false}
-      />
+      {includeCookies ? (
+        <CustomCreatableSelect
+          name="cookies"
+          label="Cookies"
+          options={[]}
+          isMulti
+          variant="stacked"
+          isClearable={false}
+        />
+      ) : null}
       {allDatasets ? (
         <CustomSelect
           name="dataset_references"
@@ -347,6 +351,7 @@ interface Props {
   initialValues?: PrivacyDeclarationWithId;
   privacyDeclarationId?: string;
   includeCustomFields?: boolean;
+  includeCookies?: boolean;
 }
 
 export const PrivacyDeclarationForm = ({
