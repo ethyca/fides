@@ -15,7 +15,7 @@ import DatasetsTable from "~/features/dataset/DatasetTable";
 
 const DataSets: NextPage = () => {
   const { isLoading } = useGetAllFilteredDatasetsQuery({
-    onlyUnlinkedDatasets: false
+    onlyUnlinkedDatasets: false,
   });
 
   return (
