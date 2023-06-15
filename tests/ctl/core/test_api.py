@@ -449,7 +449,13 @@ class TestSystemCreate:
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
-                    cookies=[{"name": "essential_cookie"}],
+                    cookies=[
+                        {
+                            "name": "essential_cookie",
+                            "path": "/",
+                            "domain": "example.com",
+                        }
+                    ],
                 ),
                 models.PrivacyDeclaration(
                     name="declaration-name-2",
@@ -553,10 +559,10 @@ class TestSystemCreate:
         assert result.status_code == HTTP_201_CREATED
         assert result.json()["name"] == "Test System"
         assert result.json()["cookies"] == [
-            {"name": "essential_cookie", "path": None, "domain": None}
+            {"name": "essential_cookie", "path": "/", "domain": "example.com"}
         ]
         assert result.json()["privacy_declarations"][0]["cookies"] == [
-            {"name": "essential_cookie", "path": None, "domain": None}
+            {"name": "essential_cookie", "path": "/", "domain": "example.com"}
         ]
         assert result.json()["privacy_declarations"][1]["cookies"] == []
         assert len(result.json()["privacy_declarations"]) == 2
@@ -764,7 +770,10 @@ class TestSystemUpdate:
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
-                    cookies=[{"name": "my_cookie"}, {"name": "my_other_cookie"}],
+                    cookies=[
+                        {"name": "my_cookie", "domain": "example.com"},
+                        {"name": "my_other_cookie"},
+                    ],
                 )
             ],
         )
@@ -1150,7 +1159,7 @@ class TestSystemUpdate:
         assert result.status_code == HTTP_200_OK
         assert result.json()["name"] == self.updated_system_name
         assert result.json()["cookies"] == [
-            {"name": "my_cookie", "path": None, "domain": None},
+            {"name": "my_cookie", "path": None, "domain": "example.com"},
             {"name": "my_other_cookie", "path": None, "domain": None},
             {"name": "test_cookie", "path": "/", "domain": None},
         ]

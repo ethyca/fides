@@ -166,6 +166,8 @@ async def upsert_cookies(
                 Insert(Cookies).values(
                     {
                         "name": cookie_data["name"],
+                        "path": cookie_data["path"],
+                        "domain": cookie_data["domain"],
                         "privacy_declaration_id": privacy_declaration.id,
                         "system_id": system.id,
                     }
@@ -204,7 +206,6 @@ async def update_system(resource: SystemSchema, db: AsyncSession) -> Dict:
     delattr(
         resource, "privacy_declarations"
     )  # remove the attribute on the system since we've already updated declarations
-    delattr(resource, "cookies")  # remove the cookies attribute
 
     # perform any updates on the system resource itself
     updated_system = await update_resource(System, resource.dict(), db)
@@ -228,8 +229,6 @@ async def create_system(
 
     # remove the attribute on the system update since the declarations will be created separately
     delattr(resource, "privacy_declarations")
-    # Removing cookies attribute; they can't be set on the system directly
-    delattr(resource, "cookies")
 
     # create the system resource using generic creation
     # the system must be created before the privacy declarations so that it can be referenced
