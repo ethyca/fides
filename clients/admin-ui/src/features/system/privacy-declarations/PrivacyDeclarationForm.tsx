@@ -80,10 +80,15 @@ const transformPrivacyDeclarationToHaveId = (
   };
 };
 
-export const transformPrivacyDeclarationsToHaveId = (
+export const transformPrivacyDeclarationsForForm = (
   privacyDeclarations: PrivacyDeclaration[]
 ): PrivacyDeclarationWithId[] =>
-  privacyDeclarations.map(transformPrivacyDeclarationToHaveId);
+  privacyDeclarations
+    .map(transformPrivacyDeclarationToHaveId)
+    .map((declaration) => ({
+      ...declaration,
+      cookies: declaration.cookies.map((cookie) => cookie.name),
+    }));
 
 export interface DataProps {
   allDataCategories: DataCategory[];

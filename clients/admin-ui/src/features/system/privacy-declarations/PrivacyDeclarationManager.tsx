@@ -20,7 +20,7 @@ import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 import {
   DataProps,
   PrivacyDeclarationForm,
-  transformPrivacyDeclarationsToHaveId,
+  transformPrivacyDeclarationsForForm,
 } from "./PrivacyDeclarationForm";
 import { PrivacyDeclarationWithId } from "./types";
 
@@ -59,7 +59,7 @@ const PrivacyDeclarationManager = ({
   >(undefined);
 
   const accordionDeclarations = useMemo(() => {
-    const declarations = transformPrivacyDeclarationsToHaveId(
+    const declarations = transformPrivacyDeclarationsForForm(
       system.privacy_declarations
     );
     if (!newDeclaration) {
@@ -173,7 +173,7 @@ const PrivacyDeclarationManager = ({
   const handleDelete = async (
     declarationToDelete: PrivacyDeclarationWithId
   ) => {
-    const updatedDeclarations = transformPrivacyDeclarationsToHaveId(
+    const updatedDeclarations = transformPrivacyDeclarationsForForm(
       system.privacy_declarations
     ).filter((dec) => dec.id !== declarationToDelete.id);
     return handleSave(updatedDeclarations, true);
