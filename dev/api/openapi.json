@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.2b0.post0.dev19"
+    "version": "2.14.2b0.post0.dev20"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -5521,6 +5521,71 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DatasetConfigSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/filter/dataset": {
+      "get": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Get Ctl Datasets",
+        "description": "Returns all CTL datasets .",
+        "operationId": "get_ctl_datasets_api_v1_filter_dataset_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Remove Saas Datasets",
+              "type": "boolean",
+              "default": true
+            },
+            "name": "remove_saas_datasets",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Only Unlinked Datasets",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "only_unlinked_datasets",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Ctl Datasets Api V1 Filter Dataset Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Dataset"
+                  }
                 }
               }
             }
