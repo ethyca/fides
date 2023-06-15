@@ -1631,7 +1631,7 @@ class TestGetCtlDatasetFilter:
         response = api_client.get(unlinked_url, headers=auth_header)
         print(unlinked_url)
         assert response.status_code == 200
-        print([d["fides_key"] for d in response.json()])
+        print([dataset["fides_key"] for dataset in response.json()])
         assert len(response.json()) == 1
         assert response.json()[0]["fides_key"] == unlinked_dataset.fides_key
 
