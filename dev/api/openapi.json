@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.2b0.post0.dev17"
+    "version": "2.14.2b0.post0.dev18"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -19582,7 +19582,17 @@
           },
           "ignore_errors": {
             "title": "Ignore Errors",
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            ],
             "default": false
           },
           "rate_limit_config": {
