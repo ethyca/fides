@@ -9,7 +9,6 @@ from fideslang.models import System as SystemSchema
 from loguru import logger as log
 from sqlalchemy import and_, delete, select, update
 from sqlalchemy.dialects.postgresql import Insert
-from sqlalchemy.engine import ChunkedIteratorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import Select
@@ -154,7 +153,7 @@ async def upsert_cookies(
                 Cookies.privacy_declaration_id == privacy_declaration.id,
             )
         )
-        result: ChunkedIteratorResult = await async_session.execute(query)
+        result = await async_session.execute(query)
         row: Optional[Cookies] = result.scalars().first()
 
         if row:
@@ -180,9 +179,7 @@ async def upsert_cookies(
             Cookies.privacy_declaration_id == privacy_declaration.id,
         )
     )
-    delete_result: ChunkedIteratorResult = await async_session.execute(
-        missing_cookies_query
-    )
+    delete_result = await async_session.execute(missing_cookies_query)
     rows: List = delete_result.scalars().unique().all()
 
     stmt = delete(Cookies).where(Cookies.id.in_([cookie.id for cookie in rows]))

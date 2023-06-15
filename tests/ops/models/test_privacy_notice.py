@@ -1,8 +1,10 @@
 import pytest
+from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ValidationError
+from fides.api.ctl.sql_models import Cookies
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     PrivacyNotice,
@@ -696,6 +698,69 @@ class TestPrivacyNoticeModel:
                 new_privacy_notices=new_privacy_notices,
                 existing_privacy_notices=existing_privacy_notices,
             )
+
+    @pytest.mark.parametrize(
+        "privacy_notice_data_use,declaration_cookies,expected_cookies,description",
+        [
+            (
+                ["marketing.advertising", "third_party_sharing"],
+                [{"name": "test_cookie"}],
+                [CookieSchema(name="test_cookie")],
+                "Data uses overlap exactly",
+            ),
+            (
+                ["marketing.advertising.first_party", "third_party_sharing"],
+                [{"name": "test_cookie"}],
+                [],
+                "Privacy notice use more specific than system's.  Too big a leap to assume system should be adjusted here.",
+            ),
+            (
+                ["marketing", "third_party_sharing"],
+                [{"name": "test_cookie"}],
+                [CookieSchema(name="test_cookie")],
+                "Privacy notice use more general than system's, so system's data use is under the scope of the notice",
+            ),
+            (
+                ["marketing.advertising", "third_party_sharing"],
+                [{"name": "test_cookie"}, {"name": "another_cookie"}],
+                [CookieSchema(name="test_cookie"), CookieSchema(name="another_cookie")],
+                "Test multiple cookies",
+            ),
+            (["marketing.advertising"], [], [], "No cookies returns an empty set"),
+        ],
+    )
+    def test_relevant_cookies(
+        self,
+        privacy_notice_data_use,
+        declaration_cookies,
+        expected_cookies,
+        description,
+        privacy_notice,
+        db,
+        system,
+    ):
+        """Test different combinations of data uses and cookies between the Privacy Notice and the Privacy Declaration"""
+        db.query(Cookies).delete()
+        privacy_notice.data_uses = privacy_notice_data_use
+        privacy_notice.save(db)
+
+        privacy_declaration = system.privacy_declarations[0]
+        assert privacy_declaration.data_use == "marketing.advertising"
+
+        for cookie in declaration_cookies:
+            Cookies.create(
+                db,
+                data={
+                    "name": cookie["name"],
+                    "privacy_declaration_id": privacy_declaration.id,
+                    "system_id": system.id,
+                },
+                check_name=False,
+            )
+
+        assert [
+            CookieSchema.from_orm(cookie) for cookie in privacy_notice.cookies
+        ] == expected_cookies, description
 
     def test_calculate_relevant_systems(
         self,

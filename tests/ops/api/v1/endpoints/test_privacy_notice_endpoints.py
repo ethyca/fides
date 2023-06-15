@@ -5,6 +5,7 @@ from typing import Any, Dict, List
 from uuid import uuid4
 
 import pytest
+from fideslang.models import Cookies as CookieSchema
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -86,6 +87,7 @@ class TestGetPrivacyNotices:
             assert "id" in notice_detail
             assert "created_at" in notice_detail
             assert "updated_at" in notice_detail
+            assert "name" in notice_detail
             assert "name" in notice_detail
             assert "description" in notice_detail
             assert "regions" in notice_detail
@@ -756,6 +758,9 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=[
+                                CookieSchema(name="test_cookie", path="/", domain=None)
+                            ],
                         )
                     ],
                 },
@@ -825,6 +830,9 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=[
+                                CookieSchema(name="test_cookie", path="/", domain=None)
+                            ],
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -845,6 +853,9 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=[
+                                CookieSchema(name="test_cookie", path="/", domain=None)
+                            ],
                         ),
                     ],
                 },
@@ -912,6 +923,9 @@ class TestGetPrivacyNoticesByDataUse:
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
                             displayed_in_overlay=True,
+                            cookies=[
+                                CookieSchema(name="test_cookie", path="/", domain=None)
+                            ],
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -930,6 +944,9 @@ class TestGetPrivacyNoticesByDataUse:
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
                             displayed_in_overlay=True,
+                            cookies=[
+                                CookieSchema(name="test_cookie", path="/", domain=None)
+                            ],
                         ),
                     ],
                     "third_party_sharing": [
@@ -951,6 +968,9 @@ class TestGetPrivacyNoticesByDataUse:
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
                             displayed_in_overlay=True,
+                            cookies=[
+                                CookieSchema(name="test_cookie", path="/", domain=None)
+                            ],
                         ),
                     ],
                 },
@@ -1020,6 +1040,9 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=[
+                                CookieSchema(name="test_cookie", path="/", domain=None)
+                            ],
                         ),
                     ],
                     "third_party_sharing": [],
@@ -1154,6 +1177,9 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=[
+                                CookieSchema(name="test_cookie", path="/", domain=None)
+                            ],
                         )
                     ],
                     "essential.service.operations.support.optimization": [
@@ -1178,6 +1204,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=[],
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-3",
@@ -1198,6 +1225,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=[],
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -1218,6 +1246,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            cookies=[],
                         ),
                     ],
                 },

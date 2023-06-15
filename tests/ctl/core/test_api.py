@@ -552,9 +552,11 @@ class TestSystemCreate:
 
         assert result.status_code == HTTP_201_CREATED
         assert result.json()["name"] == "Test System"
-        assert result.json()["cookies"] == [{"name": "essential_cookie"}]
+        assert result.json()["cookies"] == [
+            {"name": "essential_cookie", "path": None, "domain": None}
+        ]
         assert result.json()["privacy_declarations"][0]["cookies"] == [
-            {"name": "essential_cookie"}
+            {"name": "essential_cookie", "path": None, "domain": None}
         ]
         assert result.json()["privacy_declarations"][1]["cookies"] == []
         assert len(result.json()["privacy_declarations"]) == 2
@@ -1148,13 +1150,16 @@ class TestSystemUpdate:
         assert result.status_code == HTTP_200_OK
         assert result.json()["name"] == self.updated_system_name
         assert result.json()["cookies"] == [
-            {"name": "my_cookie"},
-            {"name": "my_other_cookie"},
+            {"name": "my_cookie", "path": None, "domain": None},
+            {"name": "my_other_cookie", "path": None, "domain": None},
+            {"name": "test_cookie", "path": "/", "domain": None},
         ]
 
         db.refresh(system)
         assert system.name == self.updated_system_name
-        assert len(system.cookies) == 2
+        assert (
+            len(system.cookies) == 3
+        )  # Two from the current privacy declaration, one from the previous privacy declaration that was deleted, but still linked to the system
         assert len(system.privacy_declarations[0].cookies) == 2
 
     @pytest.mark.parametrize(

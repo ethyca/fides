@@ -28,7 +28,7 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SYSTEMS,
 )
 from fides.api.ctl.database.session import sync_engine
-from fides.api.ctl.sql_models import DataUse, PrivacyDeclaration
+from fides.api.ctl.sql_models import Cookies, DataUse, PrivacyDeclaration
 from fides.api.main import app
 from fides.api.models.privacy_request import generate_request_callback_jwe
 from fides.api.oauth.jwt import generate_jwe
@@ -1020,7 +1020,7 @@ def system(db: Session) -> System:
         },
     )
 
-    PrivacyDeclaration.create(
+    privacy_declaration = PrivacyDeclaration.create(
         db=db,
         data={
             "name": "Collect data for marketing",
@@ -1033,6 +1033,17 @@ def system(db: Session) -> System:
             "egress": None,
             "ingress": None,
         },
+    )
+
+    Cookies.create(
+        db=db,
+        data={
+            "name": "test_cookie",
+            "path": "/",
+            "privacy_declaration_id": privacy_declaration.id,
+            "system_id": system.id,
+        },
+        check_name=False,
     )
 
     db.refresh(system)
