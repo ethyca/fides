@@ -55,6 +55,7 @@ The types of changes are:
 - Add ability to close `fides-js` banner and modal via a button or ESC [#3411](https://github.com/ethyca/fides/pull/3411)
 - Add ability to open the `fides-js` modal from a link on the host site [#3411](https://github.com/ethyca/fides/pull/3411)
 - GPC preferences are automatically applied via `fides-js` [#3411](https://github.com/ethyca/fides/pull/3411)
+- Add new dataset route that has additinonal filters [#3558](https://github.com/ethyca/fides/pull/3558)
 
 ### Fixed
 
