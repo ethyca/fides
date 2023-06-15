@@ -24,6 +24,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.models.storage import StorageConfig
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.storage.storage import (
     FileNaming,
@@ -81,7 +82,7 @@ def _create_dsr_policy(
                     StorageDetails.BUCKET.value: "test_bucket",
                 },
                 "key": f"storage_config_for_{policy_key}",
-                "format": ResponseFormat.json,
+                "format": ResponseFormat.html,
             },
         )
         data = {

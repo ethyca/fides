@@ -1,5 +1,7 @@
-from typing import Union
+from datetime import datetime
+from typing import Any, Dict, Union
 
+from bson import ObjectId
 from pydantic import ValidationError
 
 from fides.api.schemas.storage.storage import (
@@ -42,3 +44,12 @@ def get_schema_for_secrets(
         # so this exception is cast into a `ValueError`.
         errors = [f"{err['msg']} {str(err['loc'])}" for err in exc.errors()]
         raise ValueError(errors)
+
+
+def storage_json_encoder(field: Any) -> Union[str, Dict[str, str]]:
+    """Specify str format for datetime objects"""
+    if isinstance(field, datetime):
+        return field.strftime("%Y-%m-%dT%H:%M:%S")
+    if isinstance(field, ObjectId):
+        return {"$oid": str(field)}
+    return field
