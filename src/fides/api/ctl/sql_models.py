@@ -612,6 +612,9 @@ class Cookies(Base):
     """
 
     name = Column(String, index=True, nullable=False)
+    path = Column(String, index=True)
+    domain = Column(String, index=True)
+
     system_id = Column(
         String, ForeignKey(System.id_field_path, ondelete="CASCADE"), index=True
     )

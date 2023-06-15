@@ -438,6 +438,37 @@ class TestUpsertCookies:
         assert new_cookie.privacy_declaration_id == privacy_declaration.id
 
     async def test_update_cookies(self, test_cookie_system, async_session_temp):
+        """Test cookie exists but path has changed"""
+        """Test specified cookies already exist on given privacy declaration, so no change required"""
+
+        new_cookies = [{"name": "strawberry", "path": "/"}]
+        privacy_declaration = test_cookie_system.privacy_declarations[1]
+        existing_cookie = test_cookie_system.privacy_declarations[1].cookies[0]
+        assert existing_cookie.name == "strawberry"
+
+        await upsert_cookies(
+            async_session_temp,
+            new_cookies,
+            privacy_declaration,
+            test_cookie_system,
+        )
+        await async_session_temp.refresh(test_cookie_system)
+        assert len(test_cookie_system.cookies) == 1
+        assert test_cookie_system.cookies[0].name == "strawberry"
+        assert test_cookie_system.cookies[0].path == "/"
+
+        assert len(privacy_declaration.cookies) == 1
+        assert privacy_declaration.cookies[0].name == "strawberry"
+        assert privacy_declaration.cookies[0].path == "/"
+
+        new_cookie = privacy_declaration.cookies[0]
+        assert new_cookie.created_at is not None
+        assert new_cookie.updated_at is not None
+        assert new_cookie.name == "strawberry"
+        assert new_cookie.system_id == test_cookie_system.id
+        assert new_cookie.privacy_declaration_id == privacy_declaration.id
+
+    async def test_remove_cookies(self, test_cookie_system, async_session_temp):
         """Test cookie list is missing a cookie currently on the privacy declaration so add the new
         cookie and we remove the existing one"""
 

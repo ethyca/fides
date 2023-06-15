@@ -33,6 +33,8 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("name", sa.String(), nullable=False),
+        sa.Column("domain", sa.String(), nullable=True),
+        sa.Column("path", sa.String(), nullable=True),
         sa.Column("system_id", sa.String(), nullable=True),
         sa.Column("privacy_declaration_id", sa.String(), nullable=True),
         sa.ForeignKeyConstraint(

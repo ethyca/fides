@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from fideslang.models import Cookies as CookieSchema
 from fideslang.models import System as SystemSchema
 from loguru import logger as log
-from sqlalchemy import and_, delete, select
+from sqlalchemy import and_, delete, select, update
 from sqlalchemy.dialects.postgresql import Insert
 from sqlalchemy.engine import ChunkedIteratorResult
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -157,15 +157,21 @@ async def upsert_cookies(
         result: ChunkedIteratorResult = await async_session.execute(query)
         row: Optional[Cookies] = result.scalars().first()
 
-        if not row:
-            stmt: Insert = Insert(Cookies).values(
-                {
-                    "name": cookie_data["name"],
-                    "privacy_declaration_id": privacy_declaration.id,
-                    "system_id": system.id,
-                }
+        if row:
+            await async_session.execute(
+                update(Cookies).where(Cookies.id == row.id).values(cookie_data)
             )
-            await async_session.execute(stmt)
+
+        else:
+            await async_session.execute(
+                Insert(Cookies).values(
+                    {
+                        "name": cookie_data["name"],
+                        "privacy_declaration_id": privacy_declaration.id,
+                        "system_id": system.id,
+                    }
+                )
+            )
 
     missing_cookies_query: Select = select(Cookies).where(
         and_(
