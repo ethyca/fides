@@ -9,14 +9,7 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 class TestHeapConnector:
     def test_connection(self, heap_runner: ConnectorRunner):
         heap_runner.test_connection()
-
-    # async def test_access_request(
-    #     self, heap_runner: ConnectorRunner, policy, heap_identity_email: str
-    # ):
-    #     access_results = await heap_runner.access_request(
-    #         access_policy=policy, identities={"email": heap_identity_email}
-    #     )
-
+    
     async def test_non_strict_erasure_request(
         self,
         heap_runner: ConnectorRunner,
@@ -27,7 +20,6 @@ class TestHeapConnector:
         heap_client,
     ):
         
-        #player_id = heap_erasure_data
         (
             access_results,
             erasure_results,
@@ -42,6 +34,4 @@ class TestHeapConnector:
             "heap_instance:user": 1
         }
 
-        # poll_for_existence(
-        #     heap_client.get_device, (player_id,), existence_desired=False
-        # )
+       
