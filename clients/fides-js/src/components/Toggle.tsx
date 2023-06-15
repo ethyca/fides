@@ -5,11 +5,13 @@ const Toggle = ({
   id,
   checked,
   onChange,
+  disabled,
 }: {
   name: string;
   id: string;
   checked: boolean;
   onChange: (noticeKey: string) => void;
+  disabled?: boolean;
 }) => {
   const labelId = `toggle-${id}`;
   return (
@@ -29,6 +31,7 @@ const Toggle = ({
         defaultChecked={checked}
         role="switch"
         aria-labelledby={labelId}
+        disabled={disabled}
       />
       {/* Mark as `hidden` so it will fall back to a regular checkbox if CSS is not available */}
       <span className="fides-toggle-display" hidden />

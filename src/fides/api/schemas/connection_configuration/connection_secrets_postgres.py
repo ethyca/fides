@@ -19,6 +19,7 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
         str
     ] = None  # Either the entire "url" *OR* the "host" should be supplied.
     port: Optional[int] = None
+    ssh_required: bool = False
 
     _required_components: List[str] = ["host"]
 
