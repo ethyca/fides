@@ -60,8 +60,8 @@ def test_authenticated_client(
 
 
 @pytest.mark.unit_saas
-@mock.patch.object(Session, "send")
 class TestAuthenticatedClient:
+    @mock.patch.object(Session, "send")
     def test_client_returns_ok_response(
         self, send, test_authenticated_client, test_saas_request
     ):
@@ -71,6 +71,7 @@ class TestAuthenticatedClient:
         returned_response = test_authenticated_client.send(test_saas_request)
         assert returned_response == test_response
 
+    @mock.patch.object(Session, "send")
     def test_client_retries_429_and_throws(
         self, send, test_authenticated_client, test_saas_request
     ):
@@ -81,6 +82,7 @@ class TestAuthenticatedClient:
             test_authenticated_client.send(test_saas_request)
         assert send.call_count == 4
 
+    @mock.patch.object(Session, "send")
     def test_client_retries_429_with_success(
         self, send, test_authenticated_client, test_saas_request
     ):
@@ -93,6 +95,7 @@ class TestAuthenticatedClient:
         returned_response == test_response_2
         assert send.call_count == 2
 
+    @mock.patch.object(Session, "send")
     def test_client_does_not_retry_connection_error(
         self, send, test_authenticated_client, test_saas_request
     ):
@@ -102,27 +105,26 @@ class TestAuthenticatedClient:
             test_authenticated_client.send(test_saas_request)
         assert send.call_count == 1
 
-    @pytest.mark.unit_saas
     def test_client_ignores_errors(
         self,
         test_authenticated_client,
     ):
         """Test that _should_ignore_errors ignores the correct errors."""
-        assert test_authenticated_client._should_ignore_errors(
+        assert test_authenticated_client._should_ignore_error(
             status_code=400,
-            ignore_errors=True,
+            errors_to_ignore=True,
         )
-        assert not test_authenticated_client._should_ignore_errors(
+        assert not test_authenticated_client._should_ignore_error(
             status_code=400,
-            ignore_errors=False,
+            errors_to_ignore=False,
         )
-        assert test_authenticated_client._should_ignore_errors(
+        assert test_authenticated_client._should_ignore_error(
             status_code=400,
-            ignore_errors=[400],
+            errors_to_ignore=[400],
         )
-        assert not test_authenticated_client._should_ignore_errors(
+        assert not test_authenticated_client._should_ignore_error(
             status_code=400,
-            ignore_errors=[401],
+            errors_to_ignore=[401],
         )
 
 
