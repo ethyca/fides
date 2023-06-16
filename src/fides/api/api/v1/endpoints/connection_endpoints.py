@@ -29,7 +29,7 @@ from fides.api.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionException
-from fides.api.ctl.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
+from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionTestStatus,
