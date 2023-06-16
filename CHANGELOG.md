@@ -22,6 +22,7 @@ The types of changes are:
 - Included optional env vars to have postgres or Redshift connected via bastion host [#3374](https://github.com/ethyca/fides/pull/3374/)
 - Support for acknowledge button for notice-only Privacy Notices and to disable toggling them off [#3546](https://github.com/ethyca/fides/pull/3546)
 - HTML format for privacy request storage destinations [#3427](https://github.com/ethyca/fides/pull/3427)
+- New Cookies Table for storing cookies associated with systems and privacy declarations [#3572](https://github.com/ethyca/fides/pull/3572)
 
 ### Changed
 
