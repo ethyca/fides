@@ -15,7 +15,6 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.15.0...main)
 
 ### Added
@@ -23,6 +22,10 @@ The types of changes are:
 - Included optional env vars to have postgres or Redshift connected via bastion host [#3374](https://github.com/ethyca/fides/pull/3374/)
 - Support for acknowledge button for notice-only Privacy Notices and to disable toggling them off [#3546](https://github.com/ethyca/fides/pull/3546)
 - HTML format for privacy request storage destinations [#3427](https://github.com/ethyca/fides/pull/3427)
+
+### Changed
+
+- Removed `pyodbc` in favor of `pymssql` for handling SQL Server connections [#3435](https://github.com/ethyca/fides/pull/3435)
 
 ### Fixed
 
@@ -35,7 +38,6 @@ The types of changes are:
 ### Developer Experience
 
 - Optimize GitHub workflows used for docker image publishing [#3526](https://github.com/ethyca/fides/pull/3526)
-
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
 

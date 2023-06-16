@@ -827,7 +827,7 @@ class TestGetConnectionSecretSchema:
         )
         assert resp.json() == {
             "title": "MicrosoftSQLServerSchema",
-            "description": "Schema to validate the secrets needed to connect to a MS SQL Database\n\nconnection string takes the format:\nmssql+pyodbc://[username]:[password]@[host]:[port]/[dbname]?driver=ODBC+Driver+17+for+SQL+Server",
+            "description": "Schema to validate the secrets needed to connect to a MS SQL Database\n\nconnection string takes the format:\nmssql+pymssql://[username]:[password]@[host]:[port]/[dbname]",
             "type": "object",
             "properties": {
                 "url": {"title": "URL", "sensitive": True, "type": "string"},
