@@ -27,7 +27,7 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
-from fides.api.sql_models import Dataset
+from fides.api.models.sql_models import Dataset
 from tests.fixtures.application_fixtures import integration_secrets
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
