@@ -3,7 +3,7 @@ saas_config:
   name: Jira
   type: jira
   description: A sample schema representing the Jira connector for Fides
-  version: 0.1.0
+  version: 0.1.1
 
   connector_params:
     - name: domain
@@ -11,6 +11,7 @@ saas_config:
       description: This is an admin email that corresponds with the given API key.
     - name: api_key
       label: API Key
+      sensitive: True
 
   client_config:
     protocol: https

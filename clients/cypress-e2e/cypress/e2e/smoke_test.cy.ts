@@ -30,11 +30,13 @@ describe("Smoke test", () => {
       cy.login();
       cy.get("div").contains("Review privacy requests").click();
       let numCompletedRequests = 0;
+      let mostRecentPrivacyRequestId: string;
       cy.wait("@getRequests").then((interception) => {
         const { items } = interception.response.body;
         numCompletedRequests = items.filter(
           (i) => i.status === "complete"
         ).length;
+        mostRecentPrivacyRequestId = Cypress._.maxBy(items, "created_at").id;
       });
 
       cy.getByTestId("privacy-request-row-pending")
@@ -53,6 +55,7 @@ describe("Smoke test", () => {
       // Make sure there is one more completed request than originally
       cy.getByTestId("privacy-request-row-complete").then((rows) => {
         expect(rows.length).to.eql(numCompletedRequests + 1);
+        cy.readFile(`../../fides_uploads/${mostRecentPrivacyRequestId}.zip`);
       });
     });
   });
@@ -63,8 +66,7 @@ describe("Smoke test", () => {
 
     cy.visit(ADMIN_UI_URL);
     cy.login();
-    cy.get("div").contains("Configure privacy requests").click();
-    cy.wait("@getConnections");
+    cy.get("a").contains("Privacy requests").click();
     cy.get("a").contains("Connection manager").click();
     cy.wait("@getConnectionType");
     cy.getByTestId("connection-grid-item-MongoDB Connector").within(() => {

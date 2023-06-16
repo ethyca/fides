@@ -3,12 +3,14 @@ saas_config:
   name: Mailchimp
   type: mailchimp
   description: A sample schema representing the Mailchimp connector for Fides
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
     - name: username
     - name: api_key
+      label: API Key
+      sensitive: True
 
   client_config:
     protocol: https

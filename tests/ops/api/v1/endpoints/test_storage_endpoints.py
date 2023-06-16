@@ -102,10 +102,12 @@ class TestUploadData:
         assert 201 == response.status_code
         mock_post_upload_data.assert_called_with(
             mock.ANY,
-            request_id=privacy_request.id,
+            privacy_request=mock.ANY,
             data=payload.get("data"),
             storage_key=payload.get("storage_key"),
         )
+        call_kwargs = mock_post_upload_data.call_args.kwargs
+        assert call_kwargs["privacy_request"].id == privacy_request.id
         assert response_body == DataUpload(location=expected_location)
 
 
