@@ -12,14 +12,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from fides.api.ctl.database.crud import create_resource, get_resource, update_resource
-from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
+from fides.api.db.crud import create_resource, get_resource, update_resource
+from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
     DataUse,
     PrivacyDeclaration,
     System,
 )
-from fides.api.ctl.utils.errors import NotFoundError
+from fides.api.util.errors import NotFoundError
 
 
 def privacy_declaration_logical_id(

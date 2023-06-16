@@ -10,14 +10,11 @@ from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 from sqlalchemy import delete
 
-from fides.api.api.v1.scope_registry import SYSTEM_DELETE
-from fides.api.ctl.database.crud import create_resource
-from fides.api.ctl.database.system import create_system, upsert_cookies
-from fides.api.ctl.sql_models import Cookies, PrivacyDeclaration
-from fides.api.ctl.sql_models import System as sql_System
+from fides.api.db.system import create_system, upsert_cookies
+from fides.api.models.sql_models import PrivacyDeclaration
+from fides.api.models.sql_models import System as sql_System
 from fides.connectors.models import OktaConfig
 from fides.core import api
-from fides.core import api as _api
 from fides.core import system as _system
 from fides.core.config import FidesConfig
 

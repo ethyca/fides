@@ -4,7 +4,6 @@ from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ValidationError
-from fides.api.ctl.sql_models import Cookies
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     PrivacyNotice,
@@ -14,6 +13,7 @@ from fides.api.models.privacy_notice import (
     check_conflicting_data_uses,
     new_data_use_conflicts_with_existing_use,
 )
+from fides.api.models.sql_models import Cookies
 
 
 class TestPrivacyNoticeModel:

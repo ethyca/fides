@@ -14,24 +14,12 @@ from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 
 import fides
-from fides.api.analytics import (
-    accessed_through_local_host,
-    in_docker_container,
-    send_analytics_event,
-)
+from fides.api.api.v1.endpoints.utils import API_PREFIX
 from fides.api.app_setup import (
     check_redis,
     create_fides_app,
     log_startup,
     run_database_startup,
-)
-from fides.api.ctl.routes.util import API_PREFIX
-from fides.api.ctl.ui import (
-    get_admin_index_as_response,
-    get_path_to_admin_ui_file,
-    get_ui_file_map,
-    match_route,
-    path_is_in_ui_directory,
 )
 from fides.api.middleware import handle_audit_log_resource
 from fides.api.schemas.analytics import Event, ExtraData
@@ -41,6 +29,13 @@ from fides.api.service.privacy_request.email_batch_service import (
     initiate_scheduled_batch_email_send,
 )
 from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.api.ui import (
+    get_admin_index_as_response,
+    get_path_to_admin_ui_file,
+    get_ui_file_map,
+    match_route,
+    path_is_in_ui_directory,
+)
 from fides.api.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.core.config import CONFIG, check_required_webserver_config_values
@@ -105,6 +100,12 @@ async def prepare_and_log_request(
     """
     Prepares and sends analytics event provided the user is not opted out of analytics.
     """
+    # Avoid circular imports
+    from fides.api.analytics import (
+        accessed_through_local_host,
+        in_docker_container,
+        send_analytics_event,
+    )
 
     # this check prevents AnalyticsEvent from being called with invalid endpoint during unit tests
     if CONFIG.user.analytics_opt_out:
@@ -218,6 +219,9 @@ async def setup_server() -> None:
     initiate_scheduled_batch_email_send()
 
     logger.debug("Sending startup analytics events...")
+    # Avoid circular imports
+    from fides.api.analytics import in_docker_container, send_analytics_event
+
     await send_analytics_event(
         AnalyticsEvent(
             docker=in_docker_container(),

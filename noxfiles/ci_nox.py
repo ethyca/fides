@@ -3,6 +3,7 @@ from functools import partial
 from typing import Callable, Dict
 
 import nox
+from nox.command import CommandFailed
 
 from constants_nox import (
     CONTAINER_NAME,
@@ -153,6 +154,49 @@ def fides_db_scan(session: nox.Session) -> None:
 
 
 @nox.session()
+def check_container_startup(session: nox.Session) -> None:
+    """
+    Start the containers in `wait` mode. If container startup fails, show logs.
+    """
+    throw_error = False
+    start_command = (
+        "docker",
+        "compose",
+        "up",
+        "--wait",
+        IMAGE_NAME,
+    )
+    healthcheck_logs_command = (
+        "docker",
+        "inspect",
+        "--format",
+        '"{{json .State.Health }}"',
+        IMAGE_NAME,
+    )
+    startup_logs_command = (
+        "docker",
+        "logs",
+        "--tail",
+        "50",
+        IMAGE_NAME,
+    )
+    try:
+        session.run(*start_command, external=True)
+    except CommandFailed:
+        throw_error = True
+
+    # We want to see the logs regardless of pass/failure, just in case
+    log_dashes = "*" * 20
+    session.log(f"{log_dashes} Healthcheck Logs {log_dashes}")
+    session.run(*healthcheck_logs_command, external=True)
+    session.log(f"{log_dashes} Startup Logs {log_dashes}")
+    session.run(*startup_logs_command, external=True)
+
+    if throw_error:
+        session.error("Container startup failed")
+
+
+@nox.session()
 def minimal_config_startup(session: nox.Session) -> None:
     """
     Check that the server can start successfully with a minimal
@@ -167,7 +211,6 @@ def minimal_config_startup(session: nox.Session) -> None:
         compose_file,
         "up",
         "--wait",
-        "-d",
         IMAGE_NAME,
     )
     session.run(*start_command, external=True)
