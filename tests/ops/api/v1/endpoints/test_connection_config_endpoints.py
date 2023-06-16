@@ -16,7 +16,6 @@ from fides.api.api.v1.scope_registry import (
     CONNECTION_READ,
     STORAGE_DELETE,
 )
-from fides.api.ctl.sql_models import Dataset
 from fides.api.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
