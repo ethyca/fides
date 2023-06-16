@@ -3,13 +3,13 @@ import NextLink from "next/link";
 
 import { useAppDispatch } from "~/app/hooks";
 import { setActiveSystem } from "~/features/system";
-import { System } from "~/types/api";
+import { System, SystemResponse } from "~/types/api";
 
 import { usePrivacyDeclarationData } from "./hooks";
 import PrivacyDeclarationManager from "./PrivacyDeclarationManager";
 
 interface Props {
-  system: System;
+  system: SystemResponse;
 }
 
 const PrivacyDeclarationStep = ({ system }: Props) => {

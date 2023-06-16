@@ -172,6 +172,8 @@ describe("System management page", () => {
               data_categories: declaration.data_categories,
               data_subjects: declaration.data_subjects,
               dataset_references: ["demo_users_dataset_2"],
+              cookies: [],
+              id: "",
             });
           });
         });

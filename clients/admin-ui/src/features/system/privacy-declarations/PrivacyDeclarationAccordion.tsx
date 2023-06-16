@@ -9,6 +9,7 @@ import {
 import { Form, Formik } from "formik";
 
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+import { PrivacyDeclarationResponse } from "~/types/api";
 
 import {
   DataProps,
@@ -16,17 +17,16 @@ import {
   usePrivacyDeclarationForm,
   ValidationSchema,
 } from "./PrivacyDeclarationForm";
-import { PrivacyDeclarationWithId } from "./types";
 
 interface AccordionProps extends DataProps {
-  privacyDeclarations: PrivacyDeclarationWithId[];
+  privacyDeclarations: PrivacyDeclarationResponse[];
   onEdit: (
-    oldDeclaration: PrivacyDeclarationWithId,
-    newDeclaration: PrivacyDeclarationWithId
-  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
+    oldDeclaration: PrivacyDeclarationResponse,
+    newDeclaration: PrivacyDeclarationResponse
+  ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   onDelete: (
-    declaration: PrivacyDeclarationWithId
-  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
+    declaration: PrivacyDeclarationResponse
+  ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   includeCustomFields?: boolean;
   includeCookies?: boolean;
 }
@@ -38,11 +38,11 @@ const PrivacyDeclarationAccordionItem = ({
   includeCustomFields,
   includeCookies,
   ...dataProps
-}: { privacyDeclaration: PrivacyDeclarationWithId } & Omit<
+}: { privacyDeclaration: PrivacyDeclarationResponse } & Omit<
   AccordionProps,
   "privacyDeclarations"
 >) => {
-  const handleEdit = (values: PrivacyDeclarationWithId) =>
+  const handleEdit = (values: PrivacyDeclarationResponse) =>
     onEdit(privacyDeclaration, values);
 
   const { initialValues, renderHeader, handleSubmit } =
