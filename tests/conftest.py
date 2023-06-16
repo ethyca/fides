@@ -27,10 +27,10 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
-from fides.api.ctl.database.session import sync_engine
-from fides.api.ctl.sql_models import DataUse, PrivacyDeclaration
+from fides.api.db.ctl_session import sync_engine
 from fides.api.main import app
 from fides.api.models.privacy_request import generate_request_callback_jwe
+from fides.api.models.sql_models import DataUse, PrivacyDeclaration
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import (
     APPROVER,
@@ -99,8 +99,6 @@ async def async_session(test_client):
         yield session
         session.close()
         async_engine.dispose()
-
-
 
 
 # TODO: THIS IS A HACKY WORKAROUND.

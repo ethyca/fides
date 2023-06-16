@@ -10,11 +10,13 @@ import type { NextPage } from "next";
 import NextLink from "next/link";
 
 import Layout from "~/features/common/Layout";
-import { useGetAllDatasetsQuery } from "~/features/dataset/dataset.slice";
+import { useGetAllFilteredDatasetsQuery } from "~/features/dataset/dataset.slice";
 import DatasetsTable from "~/features/dataset/DatasetTable";
 
 const DataSets: NextPage = () => {
-  const { isLoading } = useGetAllDatasetsQuery();
+  const { isLoading } = useGetAllFilteredDatasetsQuery({
+    onlyUnlinkedDatasets: false,
+  });
 
   return (
     <Layout title="Datasets">

@@ -1,14 +1,7 @@
 import pytest
 
-from docker_nox import (
-    generate_multiplatform_buildx_command,
-    get_buildx_commands,
-)
-from constants_nox import (
-    DEV_TAG_SUFFIX,
-    PRERELEASE_TAG_SUFFIX,
-    RC_TAG_SUFFIX,
-)
+from constants_nox import DEV_TAG_SUFFIX, PRERELEASE_TAG_SUFFIX, RC_TAG_SUFFIX
+from docker_nox import generate_multiplatform_buildx_command, get_buildx_commands
 
 
 class TestGenerateMultiplatformBuilxCommand:

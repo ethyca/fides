@@ -136,7 +136,7 @@ class DatabaseSettings(FidesSettings):
         params = cast(Dict, deepcopy(values["params"]))
         if "sslmode" in params:
             params["ssl"] = params.pop("sslmode")
-        # This must be constructed in fides.api.ctl.database.session as part of the ssl context
+        # This must be constructed in fides.api.db.session as part of the ssl context
         # ref: https://github.com/sqlalchemy/sqlalchemy/discussions/5975
         params.pop("sslrootcert", None)
         # End workaround

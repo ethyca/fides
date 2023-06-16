@@ -2,7 +2,6 @@ import { Box, SlideFade } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
-import TestConnection from "datastore-connections/add-connection/TestConnection";
 import {
   CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
@@ -22,6 +21,7 @@ import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
+import TestConnection from "~/features/datastore-connections/system_portal_config/TestConnection";
 import {
   selectActiveSystem,
   setActiveSystem,
@@ -144,21 +144,6 @@ type ConnectorParametersProps = {
   connectionConfig?: ConnectionConfigurationResponse;
 };
 
-/**
- * We do not support advanced settings in the UI yet, but the backend requires at least
- * a payload that looks like it. We stuff one into handleSubmit for now
- * See fides#2458
- */
-const STUBBED_ADVANCED_SETTINGS = {
-  advanced_settings: {
-    identity_types: {
-      email: false,
-      phone_number: false,
-      cookie_ids: [],
-    },
-  },
-};
-
 export const useConnectorForm = ({
   secretsSchema,
   systemFidesKey,
@@ -253,10 +238,7 @@ export const useConnectorForm = ({
         }
 
         if (connectionOption.type !== SystemType.MANUAL) {
-          const secretsPayload =
-            connectionOption.type === SystemType.EMAIL
-              ? { ...values, ...STUBBED_ADVANCED_SETTINGS }
-              : values;
+          const secretsPayload = values;
 
           await upsertConnectionConfigSecrets(
             secretsPayload,
@@ -278,7 +260,11 @@ export const useConnectorForm = ({
         values.dataset = res;
       }
 
-      if (connectionConfig && values.dataset) {
+      if (
+        connectionConfig &&
+        values.dataset &&
+        connectionOption.type === SystemType.DATABASE
+      ) {
         await patchConnectionDatasetConfig(values, connectionConfig.key);
       }
 
@@ -375,7 +361,10 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       {response && (
         <SlideFade in>
           <Box mt="16px" maxW="528px" w="fit-content">
-            <TestConnection response={response} />
+            <TestConnection
+              response={response}
+              connectionOption={connectionOption}
+            />
           </Box>
         </SlideFade>
       )}

@@ -21,13 +21,13 @@ import "./fides.css";
 import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
+import ConsentButtons from "./ConsentButtons";
 
 export interface OverlayProps {
   options: FidesOptions;
   experience: PrivacyExperience;
   cookie: FidesCookie;
   fidesRegionString: string;
-  modalLinkEl?: HTMLElement | null;
 }
 
 const Overlay: FunctionComponent<OverlayProps> = ({
@@ -35,18 +35,17 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   options,
   fidesRegionString,
   cookie,
-  modalLinkEl,
 }) => {
+  const delayBannerMilliseconds = 100;
+  const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
 
   const initialEnabledNoticeKeys = useMemo(
-    () =>
-      Object.keys(window.Fides.consent).filter(
-        (key) => window.Fides.consent[key]
-      ),
-    []
+    () => Object.keys(cookie.consent).filter((key) => cookie.consent[key]),
+    [cookie.consent]
   );
+
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<PrivacyNotice["notice_key"]>
   >(initialEnabledNoticeKeys);
@@ -72,28 +71,34 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   useEffect(() => {
     const delayBanner = setTimeout(() => {
       setBannerIsOpen(true);
-    }, 100);
+    }, delayBannerMilliseconds);
     return () => clearTimeout(delayBanner);
   }, [setBannerIsOpen]);
 
   useEffect(() => {
-    if (modalLinkEl) {
-      debugLog(
-        options.debug,
-        "Modal link element found, updating it to show and trigger modal on click."
-      );
-      // Update modal link to trigger modal on click
-      const modalLink = modalLinkEl;
-      modalLink.onclick = () => {
-        handleOpenModal();
-        setBannerIsOpen(false);
-      };
-      // Update to show the pre-existing modal link in the DOM
-      modalLink.classList.add("fides-modal-link-shown");
-    } else {
-      debugLog(options.debug, "Modal link element not found.");
-    }
-  }, [modalLinkEl, options.debug, handleOpenModal]);
+    // use a delay to ensure that link exists in the DOM
+    const delayModalLinkBinding = setTimeout(() => {
+      const modalLinkId = options.modalLinkId || "fides-modal-link";
+      const modalLinkEl = document.getElementById(modalLinkId);
+      if (modalLinkEl) {
+        debugLog(
+          options.debug,
+          "Modal link element found, updating it to show and trigger modal on click."
+        );
+        // Update modal link to trigger modal on click
+        const modalLink = modalLinkEl;
+        modalLink.onclick = () => {
+          handleOpenModal();
+          setBannerIsOpen(false);
+        };
+        // Update to show the pre-existing modal link in the DOM
+        modalLink.classList.add("fides-modal-link-shown");
+      } else {
+        debugLog(options.debug, "Modal link element not found.");
+      }
+    }, delayModalLinkMilliseconds);
+    return () => clearTimeout(delayModalLinkBinding);
+  }, [options.modalLinkId, options.debug, handleOpenModal]);
 
   const showBanner = useMemo(
     () => experience.show_banner && hasActionNeededNotices(experience),
@@ -143,13 +148,6 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     setBannerIsOpen(false);
   };
 
-  const handleAcceptAll = () => {
-    handleUpdatePreferences(privacyNotices.map((n) => n.notice_key));
-  };
-  const handleRejectAll = () => {
-    handleUpdatePreferences([]);
-  };
-
   if (!hasMounted) {
     return null;
   }
@@ -160,17 +158,25 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   }
 
   return (
-    <div id="fides-js-root">
+    <div>
       {showBanner ? (
         <ConsentBanner
           experience={experience.experience_config}
-          onAcceptAll={handleAcceptAll}
-          onRejectAll={handleRejectAll}
-          onManagePreferences={handleManagePreferencesClick}
           bannerIsOpen={bannerIsOpen}
           onClose={() => {
             setBannerIsOpen(false);
           }}
+          buttonGroup={
+            <ConsentButtons
+              experience={experience}
+              onManagePreferencesClick={handleManagePreferencesClick}
+              enabledKeys={draftEnabledNoticeKeys}
+              onSave={(keys) => {
+                handleUpdatePreferences(keys);
+                setBannerIsOpen(false);
+              }}
+            />
+          }
         />
       ) : null}
       <ConsentModal
@@ -180,9 +186,17 @@ const Overlay: FunctionComponent<OverlayProps> = ({
         onChange={setDraftEnabledNoticeKeys}
         notices={privacyNotices}
         onClose={handleCloseModal}
-        onAcceptAll={handleAcceptAll}
-        onRejectAll={handleRejectAll}
-        onSave={handleUpdatePreferences}
+        buttonGroup={
+          <ConsentButtons
+            experience={experience}
+            enabledKeys={draftEnabledNoticeKeys}
+            isInModal
+            onSave={(keys) => {
+              handleUpdatePreferences(keys);
+              handleCloseModal();
+            }}
+          />
+        }
       />
     </div>
   );

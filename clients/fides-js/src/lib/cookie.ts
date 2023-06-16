@@ -230,16 +230,9 @@ export const buildCookieConsentForExperiences = (
   if (!experience.privacy_notices) {
     return cookieConsent;
   }
-  experience.privacy_notices.forEach(
-    ({ notice_key, current_preference, default_preference, has_gpc_flag }) => {
-      cookieConsent[notice_key] = resolveConsentValue(
-        default_preference,
-        context,
-        current_preference,
-        has_gpc_flag
-      );
-    }
-  );
+  experience.privacy_notices.forEach((notice) => {
+    cookieConsent[notice.notice_key] = resolveConsentValue(notice, context);
+  });
   debugLog(debug, `Returning cookie consent for experiences.`, cookieConsent);
   return cookieConsent;
 };

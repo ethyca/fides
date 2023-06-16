@@ -32,7 +32,7 @@ from fides.api.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
 )
 from fides.api.api.v1.urn_registry import (
-    DATASETS,
+    CONNECTION_DATASETS,
     PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
@@ -1733,7 +1733,7 @@ class TestRequestPreview:
         mongo_connection_config,
         connection_config,
     ) -> None:
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": mongo_connection_config.key}
         datasets_url = path.format(**path_params)
 

@@ -109,8 +109,37 @@ jobs:
   #################
   ## Misc Checks ##
   #################
-  Misc-Tests:
+  Check-Container-Startup:
     needs: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run test suite
+        run: nox -s check_container_startup
+
+  Misc-Tests:
+    needs: Check-Container-Startup
     strategy:
       matrix:
         test_selection:
@@ -151,7 +180,7 @@ jobs:
   ## Safe Tests ##
   ################
   Safe-Tests:
-    needs: Build
+    needs: Check-Container-Startup
     strategy:
       matrix:
         python_version: ["3.8.16", "3.9.16", "3.10.11"]
@@ -201,7 +230,7 @@ jobs:
   # NOTE: Matrixes aren't used here due to the danger of race conditions for external resources
 
   Pytest-Ctl-External:
-    needs: Build
+    needs: Check-Container-Startup
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
@@ -241,7 +270,7 @@ jobs:
           DYNAMODB_ACCESS_KEY: ${{ secrets.DYNAMODB_ACCESS_KEY }}
 
   External-Datastores:
-    needs: Build
+    needs: Check-Container-Startup
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
@@ -280,7 +309,7 @@ jobs:
         run: nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:
-    needs: Build
+    needs: Check-Container-Startup
     runs-on: ubuntu-latest
     timeout-minutes: 30
     # In PRs run with the "unsafe" label, or run on a "push" event to main

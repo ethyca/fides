@@ -188,7 +188,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       CreateSaasConnectionConfig
     >({
       query: (params) => {
-        const url = `/system/${params.systemFidesKey}/${CONNECTION_ROUTE}/instantiate/${params.connectionConfig.saas_connector_type}`;
+        const url = `/system/${params.systemFidesKey}${CONNECTION_ROUTE}/instantiate/${params.connectionConfig.saas_connector_type}`;
 
         return {
           url,
@@ -332,7 +332,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: params.dataset_pairs,
       }),
-      invalidatesTags: () => ["Datastore Connection"],
+      invalidatesTags: () => ["Datastore Connection", "Datasets"],
     }),
     patchDatastoreConnection: build.mutation<
       DatastoreConnectionResponse,
@@ -343,7 +343,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: [params],
       }),
-      invalidatesTags: () => ["Datastore Connection"],
+      invalidatesTags: () => ["Datastore Connection", "Datasets"],
     }),
     patchDatastoreConnections: build.mutation({
       query: ({ key, name, disabled, connection_type, access }) => ({
@@ -351,7 +351,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: [{ key, name, disabled, connection_type, access }],
       }),
-      invalidatesTags: () => ["Datastore Connection"],
+      invalidatesTags: () => ["Datastore Connection", "Datasets"],
     }),
     updateDatastoreConnectionSecrets: build.mutation<
       DatastoreConnectionSecretsResponse,
