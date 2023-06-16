@@ -17,7 +17,7 @@ from fides.api.models.audit_log import AuditLog
 from fides.api.models.system_manager import SystemManager  # type: ignore[unused-import]
 
 if TYPE_CHECKING:
-    from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
+    from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
 class FidesUser(Base):

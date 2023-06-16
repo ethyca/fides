@@ -104,7 +104,7 @@ def upload_data(
     logger.info("Starting storage upload for request id: {}", request_id)
     try:
         data_location: str = upload(
-            db, request_id=request_id, data=data, storage_key=storage_key
+            db, privacy_request=privacy_request, data=data, storage_key=storage_key
         )
     except StorageUploadError as e:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))

@@ -36,9 +36,9 @@ from fides.api.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.common_exceptions import FidesopsException, KeyOrNameAlreadyExists
-from fides.api.ctl.sql_models import System  # type: ignore
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateResponse,

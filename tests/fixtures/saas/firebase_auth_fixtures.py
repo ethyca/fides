@@ -26,7 +26,7 @@ from fides.api.util.saas_util import (
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("firebase_auth")
-from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.models.sql_models import Dataset as CtlDataset
 
 
 @pytest.fixture

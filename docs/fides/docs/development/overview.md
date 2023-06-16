@@ -30,7 +30,6 @@ The primary requirements for contributing to Fides are `Docker` and `Python`. Th
         * CPUs: 4
         * Memory:8GB
         * Disk Limit: 200GB
-    2. There are known issues around connecting to MSSQL for Apple M1 users. M1 users that wish to install `pyodbc` locally, please reference the workaround [here](https://github.com/mkleehammer/pyodbc/issues/846).
 
 Now that those are installed, the final step is to install the Python dev requirements for the Fides project. We recommend doing this in a virtual environment or using [pipx](https://pypa.github.io/pipx/), but specific details are outside the scope of this guide.
 

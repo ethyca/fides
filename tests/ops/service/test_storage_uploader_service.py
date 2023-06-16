@@ -30,7 +30,6 @@ from fides.api.tasks.storage import (
     write_to_in_memory_buffer,
 )
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
-    decrypt,
     decrypt_combined_nonce_and_message,
 )
 from fides.core.config import CONFIG
@@ -38,7 +37,7 @@ from fides.core.config import CONFIG
 
 @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_success_secrets_auth(
-    mock_upload_to_s3: Mock, db: Session, privacy_request
+    mock_upload_to_s3: Mock, db: Session, privacy_request: PrivacyRequest
 ) -> None:
     request_id = privacy_request.id
 
@@ -66,7 +65,7 @@ def test_uploader_s3_success_secrets_auth(
 
     upload(
         db=db,
-        request_id=request_id,
+        privacy_request=privacy_request,
         data=upload_data,
         storage_key=mock_config["key"],
     )
@@ -77,14 +76,14 @@ def test_uploader_s3_success_secrets_auth(
         mock_config["details"][StorageDetails.BUCKET.value],
         f"{request_id}.json",
         "json",
-        request_id,
+        privacy_request,
         S3AuthMethod.SECRET_KEYS.value,
     )
 
     storage_config.delete(db)
 
 
-def test_write_to_in_memory_buffer_handles_bson():
+def test_write_to_in_memory_buffer_handles_bson(privacy_request: PrivacyRequest):
     OBJECT_ID_STR = "5b4a61b1326bd9777aa61c19"
     data = {
         "collection:users": [
@@ -135,7 +134,7 @@ def test_write_to_in_memory_buffer_handles_bson():
     bytesio = write_to_in_memory_buffer(
         resp_format="json",
         data=data,
-        request_id="pri-test-request",
+        privacy_request=privacy_request,
     )
     assert bytesio is not None
     data = json.loads(bytesio.read())
@@ -147,7 +146,7 @@ def test_write_to_in_memory_buffer_handles_bson():
 
 @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_success_automatic_auth(
-    mock_upload_to_s3: Mock, db: Session, privacy_request
+    mock_upload_to_s3: Mock, db: Session, privacy_request: PrivacyRequest
 ) -> None:
     request_id = privacy_request.id
 
@@ -171,7 +170,7 @@ def test_uploader_s3_success_automatic_auth(
 
     upload(
         db=db,
-        request_id=request_id,
+        privacy_request=privacy_request,
         data=upload_data,
         storage_key=mock_config["key"],
     )
@@ -182,7 +181,7 @@ def test_uploader_s3_success_automatic_auth(
         mock_config["details"][StorageDetails.BUCKET.value],
         f"{request_id}.json",
         "json",
-        request_id,
+        privacy_request,
         S3AuthMethod.AUTOMATIC.value,
     )
 
@@ -190,7 +189,9 @@ def test_uploader_s3_success_automatic_auth(
 
 
 @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
-def test_uploader_s3_invalid_file_naming(mock_upload_to_s3: Mock, db: Session) -> None:
+def test_uploader_s3_invalid_file_naming(
+    mock_upload_to_s3: Mock, db: Session, privacy_request: PrivacyRequest
+) -> None:
     request_id = "214513r"
 
     mock_config = {
@@ -214,7 +215,7 @@ def test_uploader_s3_invalid_file_naming(mock_upload_to_s3: Mock, db: Session) -
     with pytest.raises(ValueError):
         upload(
             db=db,
-            request_id=request_id,
+            privacy_request=privacy_request,
             data=upload_data,
             storage_key=mock_config["key"],
         )
@@ -224,22 +225,27 @@ def test_uploader_s3_invalid_file_naming(mock_upload_to_s3: Mock, db: Session) -
 
 
 @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
-def test_uploader_no_config(mock_upload_to_s3: Mock, db: Session) -> None:
-    request_id = "214513r"
+def test_uploader_no_config(
+    mock_upload_to_s3: Mock, db: Session, privacy_request: PrivacyRequest
+) -> None:
+    request_id = privacy_request.id
     storage_key = "s3_key"
 
     upload_data = {"phone": "1231231234"}
 
     with pytest.raises(StorageUploadError):
-        upload(db=db, request_id=request_id, data=upload_data, storage_key=storage_key)
+        upload(
+            db=db,
+            privacy_request=privacy_request,
+            data=upload_data,
+            storage_key=storage_key,
+        )
 
     mock_upload_to_s3.assert_not_called()
 
 
-def test_uploader_local_success(
-    db: Session,
-) -> None:
-    request_id = "qlieunxr"
+def test_uploader_local_success(db: Session, privacy_request: PrivacyRequest) -> None:
+    request_id = privacy_request.id
 
     mock_config = {
         "name": "test dest",
@@ -276,7 +282,7 @@ def test_uploader_local_success(
 
     upload(
         db=db,
-        request_id=request_id,
+        privacy_request=privacy_request,
         data=upload_data,
         storage_key=mock_config["key"],
     )
@@ -284,6 +290,47 @@ def test_uploader_local_success(
         d = json.load(f)
         assert d == resulting_uploaded_data
     os.remove(f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{request_id}.json")
+    config.delete(db)
+
+
+def test_uploader_local_dsr_package(
+    db: Session, privacy_request: PrivacyRequest
+) -> None:
+    mock_config = {
+        "name": "test dest",
+        "key": "test_dest_local",
+        "type": StorageType.local.value,
+        "details": {
+            StorageDetails.NAMING.value: FileNaming.request_id.value,
+        },
+        "secrets": None,
+        "format": ResponseFormat.html.value,
+    }
+    config = StorageConfig.create(db, data=mock_config)
+
+    upload_data = {
+        "mysql:users": [{"name": "Hannah Testing"}],
+        "mongo:orders": [
+            {
+                "orderId": "23456",
+                "phone": "234523454",
+                "address": "123 mains st",
+                "birthday": datetime(1995, 1, 1),
+                "city": "Plainville",
+            }
+        ],
+    }
+
+    upload(
+        db=db,
+        privacy_request=privacy_request,
+        data=upload_data,
+        storage_key=mock_config["key"],
+    )
+
+    dsr_report_path = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{privacy_request.id}.zip"
+    assert os.path.isfile(dsr_report_path)
+    os.remove(dsr_report_path)
     config.delete(db)
 
 
@@ -309,13 +356,13 @@ class TestWriteToInMemoryBuffer:
             "mongo:foobar": [{"_id": 1, "customer": {"x": 1, "y": [1, 2]}}],
         }
 
-    def test_json_data(self, data):
-        buff = write_to_in_memory_buffer("json", data, "test_request_id")
+    def test_json_data(self, data, privacy_request):
+        buff = write_to_in_memory_buffer("json", data, privacy_request)
         assert isinstance(buff, BytesIO)
         assert json.load(buff) == data
 
-    def test_csv_format(self, data):
-        buff = write_to_in_memory_buffer("csv", data, "test_request_id")
+    def test_csv_format(self, data, privacy_request):
+        buff = write_to_in_memory_buffer("csv", data, privacy_request)
         assert isinstance(buff, BytesIO)
 
         zipfile = ZipFile(buff)
@@ -380,14 +427,35 @@ class TestWriteToInMemoryBuffer:
                 "[1, 2]",
             ]
 
-    def test_not_implemented(self, data):
+    def test_html_format(self, data, privacy_request):
+        buff = write_to_in_memory_buffer("html", data, privacy_request)
+        assert isinstance(buff, BytesIO)
+
+        zipfile = ZipFile(buff)
+        assert zipfile.namelist() == [
+            "/main.css",
+            "/back.svg",
+            "/mongo/address/1.html",
+            "/mongo/address/2.html",
+            "/mongo/address/index.html",
+            "/mongo/foobar/1.html",
+            "/mongo/foobar/index.html",
+            "/mongo/index.html",
+            "/mysql/customer/1.html",
+            "/mysql/customer/2.html",
+            "/mysql/customer/index.html",
+            "/mysql/index.html",
+            "/index.html",
+        ]
+
+    def test_not_implemented(self, data, privacy_request):
         with pytest.raises(NotImplementedError):
-            write_to_in_memory_buffer("not-a-valid-format", data, "test_request_id")
+            write_to_in_memory_buffer("not-a-valid-format", data, privacy_request)
 
     def test_encrypted_json(self, data, privacy_request_with_encryption_keys):
         original_data = data
         buff = write_to_in_memory_buffer(
-            "json", data, privacy_request_with_encryption_keys.id
+            "json", data, privacy_request_with_encryption_keys
         )
         assert isinstance(buff, BytesIO)
         encrypted = buff.read()
@@ -399,7 +467,7 @@ class TestWriteToInMemoryBuffer:
 
     def test_encrypted_csv(self, data, privacy_request_with_encryption_keys):
         buff = write_to_in_memory_buffer(
-            "csv", data, privacy_request_with_encryption_keys.id
+            "csv", data, privacy_request_with_encryption_keys
         )
         assert isinstance(buff, BytesIO)
 
@@ -453,3 +521,4 @@ class TestEncryptResultsPackage:
 def test_get_extension():
     assert get_extension(ResponseFormat.json) == "json"
     assert get_extension(ResponseFormat.csv) == "zip"
+    assert get_extension(ResponseFormat.html) == "zip"

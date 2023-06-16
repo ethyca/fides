@@ -15,12 +15,14 @@ from sqlalchemy.orm.attributes import flag_modified
 from starlette.testclient import TestClient
 
 from fides.api.api.v1.scope_registry import (
+    CTL_DATASET_READ,
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
     CTL_DATASET_READ,
 )
 from fides.api.api.v1.urn_registry import (
+    CONNECTION_DATASETS,
     DATASET_BY_KEY,
     DATASET_CONFIGS,
     DATASET_VALIDATE,
@@ -1631,7 +1633,7 @@ class TestGetCtlDatasetFilter:
         response = api_client.get(unlinked_url, headers=auth_header)
         print(unlinked_url)
         assert response.status_code == 200
-        print([d["fides_key"] for d in response.json()])
+        print([dataset["fides_key"] for dataset in response.json()])
         assert len(response.json()) == 1
         assert response.json()[0]["fides_key"] == unlinked_dataset.fides_key
 
