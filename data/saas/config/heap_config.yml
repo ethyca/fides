@@ -9,13 +9,15 @@ saas_config:
     - name: domain
       default_value: heapanalytics.com
     - name: app_id
+      label: APP ID
     - name: api_key
+      label: API Key
 
   client_config:
     protocol: https
     host: <domain>
     authentication:
-      strategy: basic
+      strategy: heap
       configuration:
         username: <app_id>
         password: <api_key>
@@ -23,33 +25,26 @@ saas_config:
   test_request:
     method: POST
     path: /api/public/v0/auth_token
+    client_config:
+      protocol: https
+      host: <domain>
+      authentication:
+        strategy: basic
+        configuration:
+          username: <app_id>
+          password: <api_key>
 
   endpoints:
-    - name: auth_token
-      requests:
-        read:
-          method: POST
-          path: /api/public/v0/auth_token
-          param_values:
-            - name: email
-              identity: email
     - name: user
       requests:
         delete:
           method: POST
           path: /api/public/v0/user_deletion
-          client_config:
-            protocol: https
-            host: <domain>
-            authentication:
-              strategy: bearer
-              configuration:
-                token: <auth_token_access_token>
           body: |
-            { 
-              "users": [{ 
-                  "identity": "<email>" 
-              }] 
+            {
+              "users": [{
+                "identity": "<email>"
+              }]
             }
           param_values:
             - name: email
