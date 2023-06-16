@@ -8,7 +8,7 @@ import {
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
 import {
-  selectAllDatasets,
+  selectAllFilteredDatasets,
   useGetAllFilteredDatasetsQuery,
 } from "~/features/dataset";
 import {
@@ -42,7 +42,7 @@ export const usePrivacyDeclarationData = ({
   const allDataCategories = useAppSelector(selectDataCategories);
   const allDataSubjects = useAppSelector(selectDataSubjects);
   const allDataUses = useAppSelector(selectDataUses);
-  const allDatasets = useAppSelector(selectAllDatasets);
+  const allDatasets = useAppSelector(selectAllFilteredDatasets);
 
   const isLoading =
     isLoadingDataCategories ||

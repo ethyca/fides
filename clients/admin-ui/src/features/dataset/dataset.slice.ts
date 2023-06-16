@@ -171,6 +171,11 @@ export const selectAllDatasets: (state: RootState) => Dataset[] =
     (RootState, { data }) => data ?? emptyDatasets
   );
 
+export const selectAllFilteredDatasets: (state: RootState) => Dataset[] =
+  createSelector(
+    [(RootState) => RootState, datasetApi.endpoints.getAllFilteredDatasets.select({onlyUnlinkedDatasets: false})],
+    (RootState, { data }) => data ?? emptyDatasets
+  );
 export const selectActiveDatasetFidesKey = createSelector(
   selectDataset,
   (state) => state.activeDatasetFidesKey
