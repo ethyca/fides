@@ -9,9 +9,9 @@ from sqlalchemy.orm import Session
 import fides
 from fides.api.api.deps import get_db
 from fides.api.common_exceptions import RedisConnectionError
-from fides.api.ctl.database.database import DatabaseHealth, get_db_health
-from fides.api.ctl.utils.api_router import APIRouter
+from fides.api.db.database import DatabaseHealth, get_db_health
 from fides.api.tasks import celery_app, get_worker_ids
+from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache
 from fides.api.util.logger import Pii
 from fides.core.config import CONFIG
