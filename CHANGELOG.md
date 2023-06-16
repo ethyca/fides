@@ -60,6 +60,7 @@ The types of changes are:
 - GPC preferences are automatically applied via `fides-js` [#3411](https://github.com/ethyca/fides/pull/3411)
 - Add new dataset route that has additional filters [#3558](https://github.com/ethyca/fides/pull/3558)
 - Update dataset dropdown to use new api filter [#3565](https://github.com/ethyca/fides/pull/3565)
+- Filter out saas datasets from the rest of the UI [#3568](https://github.com/ethyca/fides/pull/3568)
 
 ### Fixed
 

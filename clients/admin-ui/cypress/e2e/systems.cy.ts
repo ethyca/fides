@@ -1,4 +1,5 @@
 import {
+  stubDatasetCrud,
   stubPlus,
   stubSystemCrud,
   stubTaxonomyEntities,
@@ -67,9 +68,7 @@ describe("System management page", () => {
       beforeEach(() => {
         stubTaxonomyEntities();
         stubSystemCrud();
-        cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-          "getDatasets"
-        );
+        stubDatasetCrud();
         cy.intercept("GET", "/api/v1/connection_type*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
@@ -145,7 +144,7 @@ describe("System management page", () => {
             "@getDataCategories",
             "@getDataSubjects",
             "@getDataUses",
-            "@getDatasets",
+            "@getFilteredDatasets",
           ]);
           cy.getByTestId("new-declaration-form");
           const declaration = system.privacy_declarations[0];
