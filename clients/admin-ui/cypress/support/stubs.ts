@@ -69,6 +69,9 @@ export const stubDatasetCrud = () => {
   cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
     "getDatasets"
   );
+  cy.intercept("GET", "/api/v1/filter/dataset?only_unlinked_datasets=false", { fixture: "datasets.json" }).as(
+    "getFilteredDatasets"
+  );
   cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
     "getDataset"
   );
