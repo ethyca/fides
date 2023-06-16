@@ -72,6 +72,7 @@ The types of changes are:
 - Fix NextJS errors & warnings for Cookie House sample app [#3411](https://github.com/ethyca/fides/pull/3411)
 - Fix bug where `fides-js` toggles were not reflecting changes from rejecting or accepting all notices [#3522](https://github.com/ethyca/fides/pull/3522)
 - Remove the `fides-js` banner from tab order when it is hidden and move the overlay components to the top of the tab order. [#3510](https://github.com/ethyca/fides/pull/3510)
+- Fix bug where `fides-js` toggle states did not always initialize properly [#3597](https://github.com/ethyca/fides/pull/3597)
 
 ### Changed
 
@@ -87,6 +88,7 @@ The types of changes are:
 - Moved connection configuration into the system portal [#3407](https://github.com/ethyca/fides/pull/3407)
 - Update `fideslang` to `1.4.1` to allow arbitrary nested metadata on `System`s and `Dataset`s `meta` property [#3463](https://github.com/ethyca/fides/pull/3463)
 - Remove form validation to allow both email & phone inputs for consent requests [#3529](https://github.com/ethyca/fides/pull/3529)
+- Removed dataset dropdown from saas connector configuration [#3563](https://github.com/ethyca/fides/pull/3563)
 
 ### Developer Experience
 
