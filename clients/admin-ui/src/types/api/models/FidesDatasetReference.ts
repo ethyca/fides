@@ -2,18 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { EdgeDirection } from "./EdgeDirection";
+
 /**
  * Reference to a field from another Collection
  */
 export type FidesDatasetReference = {
   dataset: string;
   field: string;
-  direction?: FidesDatasetReference.direction;
+  direction?: EdgeDirection;
 };
-
-export namespace FidesDatasetReference {
-  export enum direction {
-    FROM = "from",
-    TO = "to",
-  }
-}

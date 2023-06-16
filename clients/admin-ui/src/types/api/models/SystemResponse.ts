@@ -4,6 +4,7 @@
 
 import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationResponse";
 import type { ContactDetails } from "./ContactDetails";
+import type { Cookies } from "./Cookies";
 import type { DataFlow } from "./DataFlow";
 import type { DataProtectionImpactAssessment } from "./DataProtectionImpactAssessment";
 import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
@@ -36,9 +37,9 @@ export type SystemResponse = {
    */
   registry_id?: number;
   /**
-   * An optional property to store any extra information for a system. Not used by fidesctl.
+   * An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects.
    */
-  meta?: Record<string, string>;
+  meta?: any;
   /**
    *
    * The SystemMetadata resource model.
@@ -114,4 +115,5 @@ export type SystemResponse = {
    *
    */
   connection_configs?: ConnectionConfigurationResponse;
+  cookies?: Array<Cookies>;
 };
