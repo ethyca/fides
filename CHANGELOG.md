@@ -539,6 +539,7 @@ The types of changes are:
   - This PR contains a migration that deletes duplicate users and keeps the oldest original account.
 - Update Logos for shipped connectors [#2464](https://github.com/ethyca/fides/pull/2587)
 - Search field on privacy request page isn't working [#2270](https://github.com/ethyca/fides/pull/2595)
+- Fix connection dropdown in integration table to not be disabled add system creation [#3589](https://github.com/ethyca/fides/pull/3589)
 
 ### Developer Experience
 
