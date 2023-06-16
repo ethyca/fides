@@ -106,6 +106,7 @@ class SaaSSchemaFactory:
                     title=connector_param.label,
                     description=connector_param.description,
                     default=connector_param.default_value,
+                    sensitive=connector_param.sensitive,
                 )
                 if connector_param.default_value
                 else (
@@ -113,6 +114,7 @@ class SaaSSchemaFactory:
                     FieldInfo(
                         title=connector_param.label,
                         description=connector_param.description,
+                        sensitive=connector_param.sensitive,
                     ),
                 )
             )

@@ -27,22 +27,21 @@ from fides.api.api.v1.urn_registry import (
     SYSTEM_CONNECTIONS,
     V1_URL_PREFIX,
 )
-from fides.api.ctl.database.crud import (
+from fides.api.db.crud import (
     get_resource,
     get_resource_with_custom_fields,
     list_resource,
 )
-from fides.api.ctl.database.session import get_async_db
-from fides.api.ctl.database.system import (
+from fides.api.db.ctl_session import get_async_db
+from fides.api.db.system import (
     create_system,
     get_system,
     update_system,
     upsert_system,
     validate_privacy_declarations,
 )
-from fides.api.ctl.schemas.system import SystemResponse
-from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.oauth.utils import verify_oauth_client, verify_oauth_client_prod
 from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
@@ -51,6 +50,7 @@ from fides.api.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateResponse,
     SaasConnectionTemplateValues,
 )
+from fides.api.schemas.system import SystemResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import patch_connection_configs
 from fides.api.util.system_manager_oauth_util import (

@@ -3,11 +3,12 @@ saas_config:
   name: Vend
   type: vend
   description: A sample schema representing the Vend connector for Fides
-  version: 0.1.0
+  version: 0.1.1
 
   connector_params:
     - name: domain
     - name: token
+      sensitive: True
 
   client_config:
     protocol: https

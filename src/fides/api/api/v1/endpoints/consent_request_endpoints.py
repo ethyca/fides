@@ -40,7 +40,7 @@ from fides.api.common_exceptions import (
     IdentityVerificationException,
     MessageDispatchException,
 )
-from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
+from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.messaging import get_messaging_method
 from fides.api.models.privacy_request import (
     Consent,
