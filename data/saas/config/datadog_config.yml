@@ -3,13 +3,16 @@ saas_config:
   name: Datadog
   type: datadog
   description: A sample schema representing the Datadog connector for Fides
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
       default_value: api.datadoghq.com
     - name: api_key
+      label: API Key
+      sensitive: True
     - name: app_key
+      sensitive: True
 
   client_config:
     protocol: https

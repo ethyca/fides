@@ -139,7 +139,7 @@ def _create_local_default_storage(db: Session) -> StorageConfig:
             "name": default_storage_config_name(StorageType.local.value),
             "type": StorageType.local,
             "is_default": True,
-            "format": ResponseFormat.json,
+            "format": ResponseFormat.html,
             "details": {"naming": "request_id"},
         },
     )

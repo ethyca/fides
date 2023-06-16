@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from pydantic import Field
+
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
@@ -10,8 +12,8 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to a MySQL Database"""
 
     username: Optional[str] = None
-    password: Optional[str] = None
-    dbname: Optional[str] = None
+    password: Optional[str] = Field(None, sensitive=True)
+    dbname: Optional[str] = Field(None, title="DB Name")
     host: Optional[
         str
     ] = None  # Either the entire "url" *OR* the "host" should be supplied.
