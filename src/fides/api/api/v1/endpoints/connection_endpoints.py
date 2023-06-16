@@ -34,6 +34,7 @@ from fides.api.models.connectionconfig import (
     ConnectionTestStatus,
     ConnectionType,
 )
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -47,6 +48,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
 from fides.api.service.connectors import get_connector
+from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     patch_connection_configs,
@@ -216,6 +218,23 @@ def delete_connection(
     connection_config = get_connection_config_or_error(db, connection_key)
     connection_type = connection_config.connection_type
     logger.info("Deleting connection config with key '{}'.", connection_key)
+    if connection_config.saas_config:
+        saas_dataset_fides_key = connection_config.saas_config.get("fides_key")
+
+        dataset_config = db.query(DatasetConfig).filter(
+            DatasetConfig.connection_config_id == connection_config.id
+        )
+        dataset_config.delete(synchronize_session="evaluate")
+
+        if saas_dataset_fides_key:
+            logger.info("Deleting saas dataset with key '{}'.", saas_dataset_fides_key)
+            saas_dataset = (
+                db.query(CtlDataset)
+                .filter(CtlDataset.fides_key == saas_dataset_fides_key)
+                .first()
+            )
+            saas_dataset.delete(db)  # type: ignore[union-attr]
+
     connection_config.delete(db)
 
     # Access Manual Webhooks are cascade deleted if their ConnectionConfig is deleted,

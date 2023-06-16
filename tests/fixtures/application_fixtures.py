@@ -15,9 +15,6 @@ from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
 from fides.api.common_exceptions import SystemManagerException
-from fides.api.ctl.sql_models import DataCategory as DataCategoryDbModel
-from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ctl.sql_models import System
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
@@ -59,6 +56,9 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.models.registration import UserRegistration
+from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
+from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.models.sql_models import System
 from fides.api.models.storage import (
     ResponseFormat,
     StorageConfig,
@@ -1669,6 +1669,86 @@ def ctl_dataset(db: Session, example_datasets):
     db.add(dataset)
     db.commit()
     yield dataset
+    dataset.delete(db)
+
+
+@pytest.fixture(scope="function")
+def unlinked_dataset(db: Session):
+    ds = Dataset(
+        fides_key="unlinked_dataset",
+        organization_fides_key="default_organization",
+        name="Unlinked Dataset",
+        description="Example dataset created in test fixtures",
+        data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        retention="No retention or erasure policy",
+        collections=[
+            {
+                "name": "subscriptions",
+                "fields": [
+                    {
+                        "name": "id",
+                        "data_categories": ["system.operations"],
+                    },
+                    {
+                        "name": "email",
+                        "data_categories": ["user.contact.email"],
+                        "fidesops_meta": {
+                            "identity": "email",
+                        },
+                    },
+                ],
+            },
+        ],
+    )
+    dataset = CtlDataset(**ds.dict())
+    db.add(dataset)
+    db.commit()
+    yield dataset
+    dataset.delete(db)
+
+
+@pytest.fixture(scope="function")
+def linked_dataset(db: Session, connection_config: ConnectionConfig) -> Generator:
+    ds = Dataset(
+        fides_key="linked_dataset",
+        organization_fides_key="default_organization",
+        name="Linked Dataset",
+        description="Example dataset created in test fixtures",
+        data_qualifier="aggregated.anonymized.linked_pseudonymized.pseudonymized.identified",
+        retention="No retention or erasure policy",
+        collections=[
+            {
+                "name": "subscriptions",
+                "fields": [
+                    {
+                        "name": "id",
+                        "data_categories": ["system.operations"],
+                    },
+                    {
+                        "name": "email",
+                        "data_categories": ["user.contact.email"],
+                        "fidesops_meta": {
+                            "identity": "email",
+                        },
+                    },
+                ],
+            },
+        ],
+    )
+    dataset = CtlDataset(**ds.dict())
+    db.add(dataset)
+    db.commit()
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "fides_key": "postgres_example_subscriptions_dataset",
+            "ctl_dataset_id": dataset.id,
+        },
+    )
+
+    yield dataset
+    dataset_config.delete(db)
     dataset.delete(db)
 
 

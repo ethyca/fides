@@ -21,7 +21,7 @@ export interface DetailStringError {
 }
 
 /**
- * Source: https://github.com/ethyca/fides/blob/main/src/fidesctl/api/ctl/utils/errors.py#L4
+ * Source: https://github.com/ethyca/fides/blob/main/src/fidesctl/api/util/errors.py#L4
  */
 interface ErrorDetails {
   detail: {

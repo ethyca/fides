@@ -60,14 +60,6 @@ describe("configureTiles", () => {
       expect(tiles.map((t) => t.name)).toEqual(["Add systems"]);
     });
 
-    it("conditionally shows configure privacy requests", () => {
-      const tiles = configureTiles({
-        config: MODULE_CARD_ITEMS,
-        userScopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
-      });
-      expect(tiles.map((t) => t.name)).toEqual(["Configure privacy requests"]);
-    });
-
     it("conditionally shows view datamap", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
@@ -93,10 +85,7 @@ describe("configureTiles", () => {
           ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
         ],
       });
-      expect(tiles.map((t) => t.name)).toEqual([
-        "Configure privacy requests",
-        "Review privacy requests",
-      ]);
+      expect(tiles.map((t) => t.name)).toEqual(["Review privacy requests"]);
     });
   });
 });
