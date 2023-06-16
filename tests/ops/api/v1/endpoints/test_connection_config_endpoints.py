@@ -16,7 +16,6 @@ from fides.api.api.v1.scope_registry import (
     CONNECTION_READ,
     STORAGE_DELETE,
 )
-from fides.api.ctl.sql_models import Dataset
 from fides.api.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
@@ -28,6 +27,7 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
+from fides.api.sql_models import Dataset
 from tests.fixtures.application_fixtures import integration_secrets
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
