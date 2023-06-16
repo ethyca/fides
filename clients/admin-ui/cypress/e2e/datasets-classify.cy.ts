@@ -38,7 +38,7 @@ describe("Datasets with Fides Classify", () => {
 
     it("Can render the 'Status' column and classification status badges in the dataset table when plus features are enabled", () => {
       cy.visit("/dataset");
-      cy.wait("@getDatasets");
+      cy.wait("@getFilteredDatasets");
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-row-demo_users_dataset_4");
 
@@ -82,7 +82,7 @@ describe("Datasets with Fides Classify", () => {
       });
 
       // The dataset query should be re-fetched.
-      cy.wait("@getDatasets");
+      cy.wait("@getFilteredDatasets");
 
       cy.url().should("match", /dataset$/);
 
@@ -97,7 +97,7 @@ describe("Datasets with Fides Classify", () => {
   describe("List of datasets with classifications", () => {
     it("Shows the each dataset's classify status", () => {
       cy.visit("/dataset");
-      cy.wait("@getDatasets");
+      cy.wait("@getFilteredDatasets");
       cy.wait("@getClassifyList");
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-status-demo_users_dataset_2").contains(
