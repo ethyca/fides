@@ -41,12 +41,10 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
 
   const initialEnabledNoticeKeys = useMemo(
-    () =>
-      Object.keys(window.Fides.consent).filter(
-        (key) => window.Fides.consent[key]
-      ),
-    []
+    () => Object.keys(cookie.consent).filter((key) => cookie.consent[key]),
+    [cookie.consent]
   );
+
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<PrivacyNotice["notice_key"]>
   >(initialEnabledNoticeKeys);

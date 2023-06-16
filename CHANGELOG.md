@@ -50,6 +50,7 @@ The types of changes are:
 - Remove the `fides-js` banner from tab order when it is hidden and move the overlay components to the top of the tab order. [#3510](https://github.com/ethyca/fides/pull/3510)
 - Fix bug where `fides-js` toggles were not reflecting changes from rejecting or accepting all notices [#3522](https://github.com/ethyca/fides/pull/3522)
 - Disable connector dropdown in integration tab on save [#3552](https://github.com/ethyca/fides/pull/3552)
+- Fix bug where `fides-js` toggle states did not always initialize properly [#3597](https://github.com/ethyca/fides/pull/3597)
 
 ### Changed
 
