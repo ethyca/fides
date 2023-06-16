@@ -4,17 +4,18 @@ from typing import Generator, List
 from uuid import uuid4
 
 import pytest
-from fideslang.models import Cookies as CookieSchema
 from fideslang.models import PrivacyDeclaration as PrivacyDeclarationSchema
 from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 from sqlalchemy import delete
 
 from fides.api.db.system import create_system, upsert_cookies
-from fides.api.models.sql_models import PrivacyDeclaration
+from fides.api.models.sql_models import Cookies, PrivacyDeclaration
 from fides.api.models.sql_models import System as sql_System
+from fides.api.oauth.roles import OWNER
 from fides.connectors.models import OktaConfig
 from fides.core import api
+from fides.core import api as _api
 from fides.core import system as _system
 from fides.core.config import FidesConfig
 
@@ -343,7 +344,11 @@ def test_scan_system_okta_fail(tmpdir: LocalPath, test_config: FidesConfig) -> N
 class TestUpsertCookies:
     @pytest.fixture()
     async def test_cookie_system(
-        self, async_session_temp, generate_auth_header, test_config
+        self,
+        async_session_temp,
+        generate_auth_header,
+        test_config,
+        generate_role_header,
     ):
         resource = System(
             fides_key=str(uuid4()),
@@ -366,13 +371,25 @@ class TestUpsertCookies:
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
-                    cookies=[{"name": "strawberry"}],
                 ),
             ],
         )
 
         system = await create_system(resource, async_session_temp)
-        return system
+
+        Cookies.create(
+            db=db,
+            data={
+                "name": "strawberry",
+                "path": "/",
+                "privacy_declaration_id": system.privacy_declarations[1].id,
+                "system_id": system.id,
+            },
+            check_name=False,
+        )
+        await async_session_temp.refresh(system)
+        yield system
+        delete(sql_System).where(sql_System.id == system.id)
 
     async def test_new_cookies(self, test_cookie_system, async_session_temp):
         """Test adding a new cookie to a privacy declaration.  The other privacy declaration on the
@@ -406,7 +423,6 @@ class TestUpsertCookies:
 
     async def test_no_change_to_cookies(self, test_cookie_system, async_session_temp):
         """Test specified cookies already exist on given privacy declaration, so no change required"""
-
         new_cookies = [{"name": "strawberry"}]
         privacy_declaration = test_cookie_system.privacy_declarations[1]
         existing_cookie = test_cookie_system.privacy_declarations[1].cookies[0]
@@ -502,7 +518,7 @@ class TestUpsertCookies:
         """Test if a privacy declaration is deleted, its cookie is still linked to the system"""
 
         privacy_declaration = test_cookie_system.privacy_declarations[1]
-        existing_cookie = test_cookie_system.privacy_declarations[1].cookies[0]
+        existing_cookie = privacy_declaration.cookies[0]
 
         assert existing_cookie.privacy_declaration_id == privacy_declaration.id
         assert existing_cookie.system_id == test_cookie_system.id
