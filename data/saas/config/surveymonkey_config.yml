@@ -62,6 +62,7 @@ saas_config:
           query_params:
             - name: page
               value: 1
+          data_path: data
           param_values:
             - name: placeholder
               identity: email
@@ -70,12 +71,14 @@ saas_config:
             configuration:
               incremental_param: page
               increment_by: 1
-          data_path: data
     - name: collectors
       requests:
         read:
           method: GET
           path: /v3/surveys/<survey_id>/collectors
+          query_params:
+            - name: page
+              value: 1
           data_path: data
           param_values:
             - name: survey_id
@@ -83,6 +86,11 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: surveys.id
                   direction: from
+          pagination:
+            strategy: offset
+            configuration:
+              incremental_param: page
+              increment_by: 1
     - name: survey_responses
       requests:
         read:
@@ -91,6 +99,8 @@ saas_config:
           query_params:
             - name: email
               value: <email>
+            - name: page
+              value: 1
           data_path: data
           param_values:
             - name: collectors_id
@@ -100,6 +110,11 @@ saas_config:
                   direction: from
             - name: email
               identity: email
+          pagination:
+            strategy: offset
+            configuration:
+              incremental_param: page
+              increment_by: 1
         delete:
           method: DELETE
           path: /v3/collectors/<survey_response_collector_id>/responses/<survey_response_id>
