@@ -39,6 +39,7 @@ import {
 import DeleteConnectionModal from "../DeleteConnectionModal";
 import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
+import DisableConnectionModal from "../../DisableConnectionModal";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
@@ -255,6 +256,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     };
   }, [onTestConnectionClick, result]);
 
+  const isDisabledConnection = connectionConfig?.disabled || false;
+
   return (
     <Formik
       enableReinitialize
@@ -418,6 +421,16 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               >
                 Save
               </Button>
+              {connectionConfig ? (
+                <DisableConnectionModal
+                  connection_key={connectionConfig?.key}
+                  disabled={isDisabledConnection}
+                  connection_type={connectionConfig?.connection_type}
+                  access_type={connectionConfig?.access}
+                  name={connectionConfig?.name}
+                  isSwitch={true}
+              />
+              ) : null}
               {connectionConfig ? (
                 <DeleteConnectionModal
                   connectionKey={connectionConfig.key}
