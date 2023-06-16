@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.2b0.post0.dev20"
+    "version": "2.14.2b0.post0.dev22"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -13088,15 +13088,22 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "dataset": {
             "title": "Dataset",
             "type": "string"
           },
           "keyfile_creds": {
-            "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds"
+            "title": "Keyfile Creds",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds"
+              }
+            ],
+            "sensitive": true
           }
         },
         "additionalProperties": false,
@@ -13647,6 +13654,11 @@
           "description": {
             "title": "Description",
             "type": "string"
+          },
+          "sensitive": {
+            "title": "Sensitive",
+            "type": "boolean",
+            "default": false
           }
         },
         "description": "Used to define the required parameters for the connector (user and constants)"
@@ -15129,26 +15141,28 @@
         "title": "DynamoDBDocsSchema",
         "required": [
           "region_name",
-          "aws_secret_access_key",
-          "aws_access_key_id"
+          "aws_access_key_id",
+          "aws_secret_access_key"
         ],
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "region_name": {
             "title": "Region Name",
             "type": "string"
           },
-          "aws_secret_access_key": {
-            "title": "Aws Secret Access Key",
+          "aws_access_key_id": {
+            "title": "AWS Access Key ID",
             "type": "string"
           },
-          "aws_access_key_id": {
-            "title": "Aws Access Key Id",
-            "type": "string"
+          "aws_secret_access_key": {
+            "title": "AWS Secret Access Key",
+            "type": "string",
+            "sensitive": true
           }
         },
         "additionalProperties": false,
@@ -15790,8 +15804,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "uri": {
             "title": "Uri",
@@ -15803,7 +15818,8 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "polling_timeout": {
             "title": "Polling Timeout",
@@ -16120,8 +16136,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "username": {
             "title": "Username",
@@ -16129,7 +16146,8 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "host": {
             "title": "Host",
@@ -16140,7 +16158,7 @@
             "type": "integer"
           },
           "dbname": {
-            "title": "Dbname",
+            "title": "DB Name",
             "type": "string"
           }
         },
@@ -16231,8 +16249,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "username": {
             "title": "Username",
@@ -16240,10 +16259,11 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "dbname": {
-            "title": "Dbname",
+            "title": "DB Name",
             "type": "string"
           },
           "host": {
@@ -16662,8 +16682,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "username": {
             "title": "Username",
@@ -16671,7 +16692,8 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "host": {
             "title": "Host",
@@ -16682,7 +16704,7 @@
             "type": "integer"
           },
           "defaultauthdb": {
-            "title": "Defaultauthdb",
+            "title": "Default Auth DB",
             "type": "string"
           }
         },
@@ -16694,8 +16716,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "username": {
             "title": "Username",
@@ -16703,10 +16726,11 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "dbname": {
-            "title": "Dbname",
+            "title": "DB Name",
             "type": "string"
           },
           "host": {
@@ -17838,8 +17862,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "username": {
             "title": "Username",
@@ -17847,14 +17872,15 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "dbname": {
-            "title": "Dbname",
+            "title": "DB Name",
             "type": "string"
           },
           "db_schema": {
-            "title": "Db Schema",
+            "title": "DB Schema",
             "type": "string"
           },
           "host": {
@@ -17866,7 +17892,7 @@
             "type": "integer"
           },
           "ssh_required": {
-            "title": "Ssh Required",
+            "title": "SSH Required",
             "type": "boolean",
             "default": false
           }
@@ -19148,8 +19174,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "host": {
             "title": "Host",
@@ -19169,14 +19196,15 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "db_schema": {
-            "title": "Db Schema",
+            "title": "DB Schema",
             "type": "string"
           },
           "ssh_required": {
-            "title": "Ssh Required",
+            "title": "SSH Required",
             "type": "boolean",
             "default": false
           }
@@ -19287,7 +19315,8 @@
         "title": "ResponseFormat",
         "enum": [
           "json",
-          "csv"
+          "csv",
+          "html"
         ],
         "description": "Response formats"
       },
@@ -19934,8 +19963,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "user_login_name": {
             "title": "User Login Name",
@@ -19943,7 +19973,8 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "account_identifier": {
             "title": "Account Identifier",
@@ -20652,8 +20683,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "username": {
             "title": "Username",
@@ -20661,14 +20693,15 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "dbname": {
-            "title": "Dbname",
+            "title": "DB Name",
             "type": "string"
           },
           "db_schema": {
-            "title": "Db Schema",
+            "title": "DB Schema",
             "type": "string"
           },
           "host": {
@@ -20680,7 +20713,7 @@
             "type": "integer"
           },
           "ssh_required": {
-            "title": "Ssh Required",
+            "title": "SSH Required",
             "type": "boolean",
             "default": false
           }
@@ -21189,16 +21222,17 @@
             "type": "string"
           },
           "project_id": {
-            "title": "Project Id",
+            "title": "Project ID",
             "type": "string"
           },
           "private_key_id": {
-            "title": "Private Key Id",
+            "title": "Private Key ID",
             "type": "string"
           },
           "private_key": {
             "title": "Private Key",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "client_email": {
             "title": "Client Email",
@@ -21206,23 +21240,23 @@
             "format": "email"
           },
           "client_id": {
-            "title": "Client Id",
+            "title": "Client ID",
             "type": "string"
           },
           "auth_uri": {
-            "title": "Auth Uri",
+            "title": "Auth URI",
             "type": "string"
           },
           "token_uri": {
-            "title": "Token Uri",
+            "title": "Token URI",
             "type": "string"
           },
           "auth_provider_x509_cert_url": {
-            "title": "Auth Provider X509 Cert Url",
+            "title": "Auth Provider X509 Cert URL",
             "type": "string"
           },
           "client_x509_cert_url": {
-            "title": "Client X509 Cert Url",
+            "title": "Client X509 Cert URL",
             "type": "string"
           }
         },
