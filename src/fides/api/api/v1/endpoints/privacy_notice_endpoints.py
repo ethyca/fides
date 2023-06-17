@@ -2,9 +2,8 @@ from html import unescape
 from typing import Dict, List, Optional, Set, Tuple
 
 from fastapi import Depends, Request, Security
-from fastapi_pagination import Page, Params
+from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
-from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from pydantic import conlist
 from sqlalchemy.orm import Query, Session
@@ -91,15 +90,19 @@ def get_privacy_notice_list(
     )
     should_unescape = request.headers.get("unescape-safestr")
     privacy_notices = notice_query.order_by(PrivacyNotice.created_at.desc())
-    paginated = paginate(privacy_notices, params=params)
-    if should_unescape:
-        paginated.items = [  # type: ignore[attr-defined]
+    return paginate(
+        [
             transform_fields(
-                transformation=unescape, model=item, fields=PRIVACY_NOTICE_ESCAPE_FIELDS
+                transformation=unescape,
+                model=notice,
+                fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
             )
-            for item in paginated.items  # type: ignore[attr-defined]
-        ]
-    return paginated
+            if should_unescape
+            else notice
+            for notice in privacy_notices
+        ],
+        params=params,
+    )
 
 
 @router.get(
@@ -219,7 +222,14 @@ def create_privacy_notices(
     except (ValueError, ValidationError) as e:
         raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
-    return created_privacy_notices
+    return [
+        transform_fields(
+            transformation=unescape,
+            model=notice,
+            fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
+        )
+        for notice in created_privacy_notices
+    ]
 
 
 @router.patch(
@@ -267,4 +277,11 @@ def update_privacy_notices(
         db, affected_regions=list(affected_regions)
     )
 
-    return notices
+    return [
+        transform_fields(
+            transformation=unescape,
+            model=notice,
+            fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
+        )
+        for notice in notices
+    ]

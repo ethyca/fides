@@ -1,4 +1,5 @@
 import uuid
+from html import unescape
 from typing import List, Optional
 
 from fastapi import Depends, HTTPException, Request, Response
@@ -15,7 +16,7 @@ from starlette.status import (
 
 from fides.api.api import deps
 from fides.api.api.v1 import urn_registry as urls
-from fides.api.api.v1.endpoints.utils import fides_limiter
+from fides.api.api.v1.endpoints.utils import fides_limiter, transform_fields
 from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
@@ -25,7 +26,11 @@ from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
 from fides.api.util.api_router import APIRouter
-from fides.api.util.consent_util import get_fides_user_device_id_provided_identity
+from fides.api.util.consent_util import (
+    PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
+    PRIVACY_NOTICE_ESCAPE_FIELDS,
+    get_fides_user_device_id_provided_identity,
+)
 from fides.core.config import CONFIG
 
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
@@ -117,6 +122,7 @@ def privacy_experience_list(
         )
 
     results: List[PrivacyExperience] = []
+    should_unescape = request.headers.get("unescape-safestr")
     for privacy_experience in experience_query.order_by(
         PrivacyExperience.created_at.desc()
     ):
@@ -125,6 +131,22 @@ def privacy_experience_list(
         ] = privacy_experience.get_related_privacy_notices(
             db, show_disabled, fides_user_provided_identity
         )
+        if should_unescape:
+            # Unescape both the experience config and the embedded privacy notices
+            privacy_experience.experience_config = transform_fields(
+                transformation=unescape,
+                model=privacy_experience.experience_config,
+                fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
+            )
+
+            privacy_notices = [
+                transform_fields(
+                    transformation=unescape,
+                    model=notice,
+                    fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
+                )
+                for notice in privacy_notices
+            ]
         # Temporarily save privacy notices on the privacy experience object
         privacy_experience.privacy_notices = privacy_notices
         # Temporarily save "show_banner" on the privacy experience object
