@@ -35,7 +35,9 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
+from fides.api.models.sql_models import (  # type: ignore[attr-defined]
+    Dataset as CtlDataset,
+)
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.schemas.connection_configuration.connection_config import (

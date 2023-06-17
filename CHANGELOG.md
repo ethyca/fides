@@ -58,7 +58,9 @@ The types of changes are:
 - Add ability to close `fides-js` banner and modal via a button or ESC [#3411](https://github.com/ethyca/fides/pull/3411)
 - Add ability to open the `fides-js` modal from a link on the host site [#3411](https://github.com/ethyca/fides/pull/3411)
 - GPC preferences are automatically applied via `fides-js` [#3411](https://github.com/ethyca/fides/pull/3411)
-- Add new dataset route that has additinonal filters [#3558](https://github.com/ethyca/fides/pull/3558)
+- Add new dataset route that has additional filters [#3558](https://github.com/ethyca/fides/pull/3558)
+- Update dataset dropdown to use new api filter [#3565](https://github.com/ethyca/fides/pull/3565)
+- Filter out saas datasets from the rest of the UI [#3568](https://github.com/ethyca/fides/pull/3568)
 
 ### Fixed
 
@@ -86,6 +88,7 @@ The types of changes are:
 - Moved connection configuration into the system portal [#3407](https://github.com/ethyca/fides/pull/3407)
 - Update `fideslang` to `1.4.1` to allow arbitrary nested metadata on `System`s and `Dataset`s `meta` property [#3463](https://github.com/ethyca/fides/pull/3463)
 - Remove form validation to allow both email & phone inputs for consent requests [#3529](https://github.com/ethyca/fides/pull/3529)
+- Removed dataset dropdown from saas connector configuration [#3563](https://github.com/ethyca/fides/pull/3563)
 
 ### Developer Experience
 

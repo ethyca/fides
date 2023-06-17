@@ -7,7 +7,10 @@ import {
   selectDataUses,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
-import { selectAllDatasets, useGetAllDatasetsQuery } from "~/features/dataset";
+import {
+  selectAllFilteredDatasets,
+  useGetAllFilteredDatasetsQuery,
+} from "~/features/dataset";
 import {
   selectDataCategories,
   useGetAllDataCategoriesQuery,
@@ -27,14 +30,19 @@ export const usePrivacyDeclarationData = ({
   const { isLoading: isLoadingDataCategories } = useGetAllDataCategoriesQuery();
   const { isLoading: isLoadingDataSubjects } = useGetAllDataSubjectsQuery();
   const { isLoading: isLoadingDataUses } = useGetAllDataUsesQuery();
-  const { isLoading: isLoadingDatasets } = useGetAllDatasetsQuery(undefined, {
-    skip: !includeDatasets,
-  });
+  const { isLoading: isLoadingDatasets } = useGetAllFilteredDatasetsQuery(
+    {
+      onlyUnlinkedDatasets: false,
+    },
+    {
+      skip: !includeDatasets,
+    }
+  );
 
   const allDataCategories = useAppSelector(selectDataCategories);
   const allDataSubjects = useAppSelector(selectDataSubjects);
   const allDataUses = useAppSelector(selectDataUses);
-  const allDatasets = useAppSelector(selectAllDatasets);
+  const allDatasets = useAppSelector(selectAllFilteredDatasets);
 
   const isLoading =
     isLoadingDataCategories ||
