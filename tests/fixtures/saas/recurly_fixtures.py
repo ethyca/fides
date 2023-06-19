@@ -71,7 +71,6 @@ class RecurlyClient:
                 "preferred_time_zone": "America/Los_Angeles"
                 },
         )
-        # return response.json()["id"]
         return account_response
     
     def create_billing_info(self,account_id) -> str:
@@ -94,7 +93,6 @@ class RecurlyClient:
                 "number": "4111 1111 1111 1111"
             },
         )
-        # return response.json()["id"]
         return billing_response
     
     def create_shipping_address(self, account_id) -> str:
@@ -118,7 +116,6 @@ class RecurlyClient:
                 "country": "in"
             },
         )
-        # return response.json()["id"]
         return shipping_response
 
     def get_accounts(self, email: str):
@@ -160,12 +157,6 @@ def recurly_erasure_data(
     recurly_erasure_identity_email: str,
 ) -> Generator:
     account_response = recurly_client.create_accounts(recurly_erasure_identity_email)
-    # error_message = f"customer with email {recurly_erasure_identity_email} could not be created in Recharge"
-    # poll_for_existence(
-    #     recurly_client.get_customer,
-    #     (recurly_erasure_identity_email,),
-    #     error_message=error_message,
-    # )
     account_id = account_response.json()["id"]
 
     billing_response = recurly_client.create_billing_info(account_id)
