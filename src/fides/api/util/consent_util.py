@@ -53,6 +53,7 @@ PRIVACY_EXPERIENCE_ESCAPE_FIELDS = [
     "save_button_label",
     "title",
 ]
+UNESCAPE_SAFESTR_HEADER = "unescape-safestr"
 
 
 def filter_privacy_preferences_for_propagation(

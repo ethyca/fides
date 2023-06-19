@@ -29,6 +29,7 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
     PRIVACY_NOTICE_ESCAPE_FIELDS,
+    UNESCAPE_SAFESTR_HEADER,
     get_fides_user_device_id_provided_identity,
 )
 from fides.core.config import CONFIG
@@ -122,7 +123,7 @@ def privacy_experience_list(
         )
 
     results: List[PrivacyExperience] = []
-    should_unescape = request.headers.get("unescape-safestr")
+    should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
     for privacy_experience in experience_query.order_by(
         PrivacyExperience.created_at.desc()
     ):

@@ -35,7 +35,10 @@ from fides.api.schemas.privacy_experience import (
     ExperienceConfigUpdate,
 )
 from fides.api.util.api_router import APIRouter
-from fides.api.util.consent_util import PRIVACY_EXPERIENCE_ESCAPE_FIELDS
+from fides.api.util.consent_util import (
+    PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
+    UNESCAPE_SAFESTR_HEADER,
+)
 
 router = APIRouter(tags=["Privacy Experience Config"], prefix=urls.V1_URL_PREFIX)
 
@@ -80,7 +83,7 @@ def experience_config_list(
     Returns a list of PrivacyExperienceConfig resources.  These resources have common titles, descriptions, and
     labels that can be shared between multiple experiences.
     """
-    should_unescape = request.headers.get("unescape-safestr")
+    should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
     privacy_experience_config_query: Query = db.query(PrivacyExperienceConfig)
 
     if component:
@@ -208,7 +211,7 @@ def experience_config_detail(
     Returns a PrivacyExperienceConfig.
     """
     logger.info("Retrieving experience config with id '{}'.", experience_config_id)
-    should_unescape = request.headers.get("unescape-safestr")
+    should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
 
     experience_config = get_experience_config_or_error(db, experience_config_id)
     if should_unescape:

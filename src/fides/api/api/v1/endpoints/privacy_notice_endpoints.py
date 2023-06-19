@@ -29,6 +29,7 @@ from fides.api.schemas import privacy_notice as schemas
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     PRIVACY_NOTICE_ESCAPE_FIELDS,
+    UNESCAPE_SAFESTR_HEADER,
     create_privacy_notices_util,
     ensure_unique_ids,
     prepare_privacy_notice_patches,
@@ -88,7 +89,7 @@ def get_privacy_notice_list(
         systems_applicable=systems_applicable,
         region=region,
     )
-    should_unescape = request.headers.get("unescape-safestr")
+    should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
     privacy_notices = notice_query.order_by(PrivacyNotice.created_at.desc())
     return paginate(
         [
@@ -187,7 +188,7 @@ def get_privacy_notice(
     """
     Return a single PrivacyNotice
     """
-    should_unescape = request.headers.get("unescape-safestr")
+    should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
     notice = get_privacy_notice_or_error(db, privacy_notice_id)
     if should_unescape:
         notice = transform_fields(
