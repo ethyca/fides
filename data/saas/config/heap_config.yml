@@ -9,7 +9,7 @@ saas_config:
     - name: domain
       default_value: heapanalytics.com
     - name: app_id
-      label: APP ID
+      label: App ID
     - name: api_key
       label: API Key
 
