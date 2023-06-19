@@ -86,7 +86,6 @@ export const updateConsentPreferences = ({
         preference.consentPreference === UserConsentPreference.OPT_OUT
     )
     .forEach((preference) => {
-      // TODO: update notice type to have cookies
       removeCookiesFromBrowser(preference.notice.cookies);
     });
 

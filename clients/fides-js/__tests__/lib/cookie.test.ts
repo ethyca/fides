@@ -2,7 +2,6 @@ import * as uuid from "uuid";
 
 import { CookieAttributes } from "typescript-cookie/dist/types";
 import {
-  Cookie,
   CookieKeyConsent,
   FidesCookie,
   getOrMakeFidesCookie,
@@ -13,7 +12,7 @@ import {
   saveFidesCookie,
 } from "../../src/lib/cookie";
 import type { ConsentContext } from "../../src/lib/consent-context";
-import { LegacyConsentConfig } from "~/lib/consent-types";
+import { Cookies, LegacyConsentConfig } from "../../src/lib/consent-types";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
@@ -311,7 +310,7 @@ describe("removeCookiesFromBrowser", () => {
       cookies,
       expectedAttributes,
     }: {
-      cookies: Cookie[];
+      cookies: Cookies[];
       expectedAttributes: CookieAttributes[];
     }) => {
       removeCookiesFromBrowser(cookies);

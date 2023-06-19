@@ -6,7 +6,11 @@ import {
   resolveConsentValue,
   resolveLegacyConsentValue,
 } from "./consent-value";
-import { LegacyConsentConfig, PrivacyExperience } from "./consent-types";
+import {
+  Cookies,
+  LegacyConsentConfig,
+  PrivacyExperience,
+} from "./consent-types";
 import { debugLog } from "./consent-utils";
 
 /**
@@ -274,17 +278,10 @@ export const makeConsentDefaultsLegacy = (
   return defaults;
 };
 
-// TODO: replace with type from the backend
-export interface Cookie {
-  name: string;
-  path?: string;
-  domain?: string;
-}
-
 /**
  * Given a list of cookies, deletes them from the browser
  */
-export const removeCookiesFromBrowser = (cookies: Cookie[]) => {
+export const removeCookiesFromBrowser = (cookies: Cookies[]) => {
   cookies.forEach((cookie) => {
     removeCookie(cookie.name, {
       path: cookie.path ?? "/",
