@@ -33,9 +33,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-defined]
 from fides.api.schemas.privacy_experience import (
-    ExperienceConfigCreate,
     ExperienceConfigCreateWithId,
-    ExperienceConfigUpdate,
 )
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.schemas.redis_cache import Identity
@@ -580,3 +578,5 @@ def create_default_experience_config(
             data=experience_config_schema.dict(exclude_unset=True),
             check_name=False,
         )
+
+    return None
