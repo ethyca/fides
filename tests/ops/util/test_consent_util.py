@@ -27,11 +27,11 @@ from fides.api.util.consent_util import (
     add_complete_system_status_for_consent_reporting,
     add_errored_system_status_for_consent_reporting,
     cache_initial_status_and_identities_for_consent_reporting,
+    create_default_experience_config,
     create_privacy_notices_util,
     get_fides_user_device_id_provided_identity,
     load_default_notices_on_startup,
     should_opt_in_to_service,
-    upsert_default_experience_config,
     upsert_privacy_notice_templates_util,
     validate_notice_data_uses,
 )
@@ -1005,10 +1005,9 @@ class TestUpsertDefaultExperienceConfig:
         }
 
     def test_create_default_experience_config(self, db, default_overlay_config_data):
-        created, experience_config = upsert_default_experience_config(
+        experience_config = create_default_experience_config(
             db, default_overlay_config_data
         )
-        assert created
 
         assert experience_config.accept_button_label == "A"
         assert experience_config.acknowledge_button_label == "B"
@@ -1057,18 +1056,19 @@ class TestUpsertDefaultExperienceConfig:
         db.delete(history)
         db.delete(experience_config)
 
-    def test_update_default_experience_config_no_change(
+    def test_create_default_experience_config_config_already_exists_no_change(
         self, db, default_overlay_config_data
     ):
-        created, experience_config = upsert_default_experience_config(
+        """Experience config is not changed in any way"""
+        experience_config = create_default_experience_config(
             db, default_overlay_config_data
         )
-        assert created
+        assert experience_config is not None
 
-        created, experience_config = upsert_default_experience_config(
-            db, default_overlay_config_data
-        )
-        assert not created
+        resp = create_default_experience_config(db, default_overlay_config_data)
+        assert resp is None
+
+        db.refresh(experience_config)
 
         # Nothing changed so we don't want to update the version
         assert experience_config.version == 1.0
@@ -1077,36 +1077,34 @@ class TestUpsertDefaultExperienceConfig:
         db.delete(experience_config.histories[0])
         db.delete(experience_config)
 
-    def test_update_default_experience_config(self, db, default_overlay_config_data):
-        created, experience_config = upsert_default_experience_config(
+    def test_default_experience_config_data_has_changed(
+        self, db, default_overlay_config_data
+    ):
+        """Even though data has changed, we don't update existing experience config"""
+        experience_config = create_default_experience_config(
             db, default_overlay_config_data
         )
-        assert created
+        assert experience_config is not None
 
         default_overlay_config_data["privacy_policy_url"] = "example.com/privacy_policy"
 
-        created, experience_config = upsert_default_experience_config(
-            db, default_overlay_config_data
-        )
-        assert not created
+        resp = create_default_experience_config(db, default_overlay_config_data)
+        assert resp is None
 
-        # Data has changed so we want to update the version
-        assert experience_config.version == 2.0
-        assert experience_config.privacy_policy_url == "example.com/privacy_policy"
-        assert experience_config.histories.count() == 2
+        db.refresh(experience_config)
+
+        # Data has changed but we didn't update existing config
+        assert experience_config.version == 1.0
+        assert experience_config.privacy_policy_url != "example.com/privacy_policy"
+        assert experience_config.histories.count() == 1
 
         assert experience_config.experience_config_history_id is not None
         assert experience_config.experience_config_history_id != "test_id"
-        history = experience_config.histories[1]
+        history = experience_config.histories[0]
 
-        assert history.version == 2.0
-        assert experience_config.privacy_policy_url == "example.com/privacy_policy"
+        assert history.version == 1.0
+        assert experience_config.privacy_policy_url != "example.com/privacy_policy"
 
-        old_history = experience_config.histories[0]
-        assert old_history.version == 1.0
-        assert old_history.privacy_policy_url == "F"
-
-        old_history.delete(db)
         history.delete(db)
         experience_config.delete(db)
 
@@ -1116,7 +1114,7 @@ class TestUpsertDefaultExperienceConfig:
         default_overlay_config_data["is_default"] = False
 
         with pytest.raises(Exception):
-            upsert_default_experience_config(db, default_overlay_config_data)
+            create_default_experience_config(db, default_overlay_config_data)
 
     def test_create_default_experience_config_validation_error(
         self, db, default_overlay_config_data
@@ -1126,34 +1124,7 @@ class TestUpsertDefaultExperienceConfig:
         ] = None  # Marking required field as None
 
         with pytest.raises(ValueError) as exc:
-            upsert_default_experience_config(db, default_overlay_config_data)
-
-        assert (
-            str(exc.value.args[0][0].exc)
-            == "The following additional fields are required when defining an overlay: acknowledge_button_label, banner_enabled, and privacy_preferences_link_label."
-        )
-
-    def test_update_default_experience_config_validation_error(
-        self, db, default_overlay_config_data
-    ):
-        created, experience_config = upsert_default_experience_config(
-            db, default_overlay_config_data
-        )
-        assert created
-
-        default_overlay_config_data["privacy_policy_url"] = "example.com/privacy_policy"
-
-        created, experience_config = upsert_default_experience_config(
-            db, default_overlay_config_data
-        )
-        assert not created
-
-        default_overlay_config_data[
-            "privacy_preferences_link_label"
-        ] = None  # Marking required field as None
-
-        with pytest.raises(ValueError) as exc:
-            upsert_default_experience_config(db, default_overlay_config_data)
+            create_default_experience_config(db, default_overlay_config_data)
 
         assert (
             str(exc.value.args[0][0].exc)
