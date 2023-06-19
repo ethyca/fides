@@ -32,14 +32,24 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-defined]
-from fides.api.schemas.privacy_experience import (
-    ExperienceConfigCreateWithId,
-)
+from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.schemas.redis_cache import Identity
 from fides.core.config.helpers import load_file
 
 PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "description", "internal_description"]
+PRIVACY_EXPERIENCE_ESCAPE_FIELDS = [
+    "accept_button_label",
+    "acknowledge_button_label",
+    "description",
+    "privacy_policy_link_label",
+    "privacy_policy_url",
+    "privacy_preferences_link_label",
+    "reject_button_label",
+    "save_button_label",
+    "title",
+]
+UNESCAPE_SAFESTR_HEADER = "unescape-safestr"
 
 
 def filter_privacy_preferences_for_propagation(
@@ -315,7 +325,7 @@ def create_privacy_notices_util(
             # should_escape flag is for when we're creating a notice
             # from a template. The content was already escaped in the
             # template - we don't want to escape twice.
-            privacy_notice = transform_fields(  # type: ignore
+            privacy_notice = transform_fields(
                 transformation=escape,
                 model=privacy_notice,
                 fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
@@ -392,7 +402,7 @@ def prepare_privacy_notice_patches(
             transformation=escape,
             model=update_data,
             fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
-        )  # type: ignore
+        )
         if update_data.id not in existing_notices:
             if not allow_create:
                 raise HTTPException(
@@ -559,8 +569,10 @@ def create_default_experience_config(
         experience_config_data.copy()
     )  # Avoids unexpected behavior on update in testing
 
-    experience_config_schema: ExperienceConfigCreateWithId = (
-        ExperienceConfigCreateWithId(**experience_config_data)
+    experience_config_schema = transform_fields(
+        transformation=escape,
+        model=(ExperienceConfigCreateWithId(**experience_config_data)),
+        fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
     )
     if not experience_config_schema.is_default:
         raise Exception("This method is for created default experience configs.")

@@ -137,9 +137,7 @@ def validate_start_and_end_filters(
             )
 
 
-def transform_fields(
-    transformation: Callable, model: object, fields: List[str]
-) -> object:
+def transform_fields(transformation: Callable, model: Base, fields: List[str]) -> Base:
     """
     Takes a callable and returns a transformed object.
     """

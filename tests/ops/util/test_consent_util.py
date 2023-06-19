@@ -559,6 +559,10 @@ class TestLoadDefaultNotices:
             unescape(notice.internal_description)
             == "This is a contrived template for testing.  This field's for internal testing!"
         )
+        assert (
+            notice.internal_description
+            == "This is a contrived template for testing.  This field&#x27;s for internal testing!"
+        )  # Stored escaped
         assert notice.regions == [PrivacyNoticeRegion.us_ak]
         assert notice.consent_mechanism == ConsentMechanism.opt_in
         assert notice.enforcement_level == EnforcementLevel.system_wide
@@ -997,7 +1001,7 @@ class TestUpsertDefaultExperienceConfig:
             "is_default": True,
             "id": "test_id",
             "privacy_preferences_link_label": "D",
-            "privacy_policy_link_label": "E",
+            "privacy_policy_link_label": "E's label",
             "privacy_policy_url": "F",
             "reject_button_label": "G",
             "save_button_label": "H",
@@ -1019,7 +1023,9 @@ class TestUpsertDefaultExperienceConfig:
         assert experience_config.is_default is True
         assert experience_config.id == "test_id"
         assert experience_config.privacy_preferences_link_label == "D"
-        assert experience_config.privacy_policy_link_label == "E"
+        assert (
+            experience_config.privacy_policy_link_label == "E&#x27;s label"
+        )  # Escaped
         assert experience_config.privacy_policy_url == "F"
         assert experience_config.regions == []
         assert experience_config.reject_button_label == "G"
@@ -1045,7 +1051,7 @@ class TestUpsertDefaultExperienceConfig:
         assert history.is_default is True
         assert history.id != "test_id"
         assert history.privacy_preferences_link_label == "D"
-        assert history.privacy_policy_link_label == "E"
+        assert history.privacy_policy_link_label == "E&#x27;s label"
         assert history.privacy_policy_url == "F"
         assert history.reject_button_label == "G"
         assert history.save_button_label == "H"
