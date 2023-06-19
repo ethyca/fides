@@ -63,25 +63,6 @@ const defaultInitialValues: FormValues = {
   cookies: [],
 };
 
-// const transformPrivacyDeclarationToHaveId = (
-//   privacyDeclaration: PrivacyDeclarationResponse
-// ) => {
-//   const { id, name, data_use: dataUse } = privacyDeclaration;
-//   let declarationId: string | undefined = id;
-//   if (!declarationId) {
-//     declarationId = name ? `${dataUse} - ${name}` : dataUse;
-//   }
-//   return {
-//     ...privacyDeclaration,
-//     id: declarationId,
-//   };
-// };
-
-// export const transformPrivacyDeclarationsToHaveId = (
-//   privacyDeclarations: PrivacyDeclarationResponse[]
-// ): PrivacyDeclarationResponse[] =>
-//   privacyDeclarations.map(transformPrivacyDeclarationToHaveId);
-
 const transformFormValueToDeclaration = (values: FormValues) => {
   const { customFieldValues, ...declaration } = values;
 
