@@ -3,12 +3,14 @@ saas_config:
   name: Rollbar
   type: rollbar
   description: A sample schema representing the Rollbar connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: domain
     - name: read_access_token
+      sensitive: True
     - name: write_access_token
+      sensitive: True
     - name: page_limit
       default_value: 100
       description: The maximum number of pages to return from Rollbar's "instances" endpoint

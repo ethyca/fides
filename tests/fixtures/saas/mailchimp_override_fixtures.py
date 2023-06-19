@@ -4,7 +4,6 @@ from typing import Any, Dict, Generator
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.db import session
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -12,6 +11,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors.saas_connector import SaaSConnector

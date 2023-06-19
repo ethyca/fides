@@ -15,13 +15,17 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.15.0...main)
 
 ### Added
 
 - Included optional env vars to have postgres or Redshift connected via bastion host [#3374](https://github.com/ethyca/fides/pull/3374/)
 - Support for acknowledge button for notice-only Privacy Notices and to disable toggling them off [#3546](https://github.com/ethyca/fides/pull/3546)
+- HTML format for privacy request storage destinations [#3427](https://github.com/ethyca/fides/pull/3427)
+
+### Changed
+
+- Removed `pyodbc` in favor of `pymssql` for handling SQL Server connections [#3435](https://github.com/ethyca/fides/pull/3435)
 
 ### Fixed
 
@@ -34,7 +38,6 @@ The types of changes are:
 ### Developer Experience
 
 - Optimize GitHub workflows used for docker image publishing [#3526](https://github.com/ethyca/fides/pull/3526)
-
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
 
@@ -55,7 +58,9 @@ The types of changes are:
 - Add ability to close `fides-js` banner and modal via a button or ESC [#3411](https://github.com/ethyca/fides/pull/3411)
 - Add ability to open the `fides-js` modal from a link on the host site [#3411](https://github.com/ethyca/fides/pull/3411)
 - GPC preferences are automatically applied via `fides-js` [#3411](https://github.com/ethyca/fides/pull/3411)
-- Add new dataset route that has additinonal filters [#3558](https://github.com/ethyca/fides/pull/3558)
+- Add new dataset route that has additional filters [#3558](https://github.com/ethyca/fides/pull/3558)
+- Update dataset dropdown to use new api filter [#3565](https://github.com/ethyca/fides/pull/3565)
+- Filter out saas datasets from the rest of the UI [#3568](https://github.com/ethyca/fides/pull/3568)
 
 ### Fixed
 
@@ -67,6 +72,7 @@ The types of changes are:
 - Fix NextJS errors & warnings for Cookie House sample app [#3411](https://github.com/ethyca/fides/pull/3411)
 - Fix bug where `fides-js` toggles were not reflecting changes from rejecting or accepting all notices [#3522](https://github.com/ethyca/fides/pull/3522)
 - Remove the `fides-js` banner from tab order when it is hidden and move the overlay components to the top of the tab order. [#3510](https://github.com/ethyca/fides/pull/3510)
+- Fix bug where `fides-js` toggle states did not always initialize properly [#3597](https://github.com/ethyca/fides/pull/3597)
 
 ### Changed
 
@@ -82,6 +88,7 @@ The types of changes are:
 - Moved connection configuration into the system portal [#3407](https://github.com/ethyca/fides/pull/3407)
 - Update `fideslang` to `1.4.1` to allow arbitrary nested metadata on `System`s and `Dataset`s `meta` property [#3463](https://github.com/ethyca/fides/pull/3463)
 - Remove form validation to allow both email & phone inputs for consent requests [#3529](https://github.com/ethyca/fides/pull/3529)
+- Removed dataset dropdown from saas connector configuration [#3563](https://github.com/ethyca/fides/pull/3563)
 
 ### Developer Experience
 

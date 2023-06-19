@@ -9,6 +9,8 @@ saas_config:
     - name: domain
       default_value: api.kustomerapp.com
     - name: api_key
+      label: API Key
+      sensitive: True
 
   client_config:
     protocol: https

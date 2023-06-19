@@ -3,16 +3,18 @@ saas_config:
   name: Unbounce
   type: unbounce
   description: A sample schema representing the Unbounce connector for Fides
-  version: 0.1.0
+  version: 0.1.1
 
   connector_params:
     - name: domain
       default_value: api.unbounce.com
     - name: client_id
       label: Client ID
+      sensitive: True
     - name: client_secret
+      sensitive: True
     - name: redirect_uri
-      lable: Redirect URI
+      label: Redirect URI
 
   client_config:
     protocol: https

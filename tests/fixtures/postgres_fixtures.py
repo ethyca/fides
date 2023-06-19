@@ -5,7 +5,6 @@ import pytest
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import drop_database
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -19,6 +18,7 @@ from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
 )
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.service.connectors import PostgreSQLConnector
 from fides.core.config import CONFIG
 from tests.ops.test_helpers.db_utils import seed_postgres_data

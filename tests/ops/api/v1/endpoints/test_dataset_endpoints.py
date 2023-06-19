@@ -15,12 +15,14 @@ from sqlalchemy.orm.attributes import flag_modified
 from starlette.testclient import TestClient
 
 from fides.api.api.v1.scope_registry import (
+    CTL_DATASET_READ,
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
     CTL_DATASET_READ,
 )
 from fides.api.api.v1.urn_registry import (
+    CONNECTION_DATASETS,
     DATASET_BY_KEY,
     DATASET_CONFIGS,
     DATASET_VALIDATE,

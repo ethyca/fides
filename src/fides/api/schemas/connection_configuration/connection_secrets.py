@@ -4,6 +4,7 @@ import abc
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Extra, root_validator
+from pydantic.fields import Field
 
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.schemas import Msg
@@ -12,7 +13,9 @@ from fides.api.schemas import Msg
 class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
     """Abstract Base Schema for updating Connection Configuration Secrets"""
 
-    url: Optional[str] = None  # User can always specify the URL directly
+    url: Optional[str] = Field(
+        None, title="URL", sensitive=True
+    )  # User can always specify the URL directly
 
     _required_components: List[str]
 
