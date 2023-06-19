@@ -134,24 +134,32 @@ const NoticeDrivenConsent = () => {
     const identities = browserIdentities
       ? { ...deviceIdentity, ...browserIdentities }
       : deviceIdentity;
+    const notices = experience?.privacy_notices ?? [];
 
-    const preferences: ConsentOptionCreate[] = Object.entries(
-      draftPreferences
-    ).map(([key, value]) => {
-      const notice = experience?.privacy_notices?.find(
-        (n) => n.privacy_notice_history_id === key
-      );
-      if (notice?.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
+    // Reconnect preferences to notices
+    const noticePreferences = Object.entries(draftPreferences).map(
+      ([historyKey, preference]) => {
+        const notice = notices.find(
+          (n) => n.privacy_notice_history_id === historyKey
+        );
+        return { historyKey, preference, notice };
+      }
+    );
+
+    const preferences: ConsentOptionCreate[] = noticePreferences.map(
+      ({ historyKey, preference, notice }) => {
+        if (notice?.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
+          return {
+            privacy_notice_history_id: historyKey,
+            preference: UserConsentPreference.ACKNOWLEDGE,
+          };
+        }
         return {
-          privacy_notice_history_id: key,
-          preference: UserConsentPreference.ACKNOWLEDGE,
+          privacy_notice_history_id: historyKey,
+          preference: preference ?? UserConsentPreference.OPT_OUT,
         };
       }
-      return {
-        privacy_notice_history_id: key,
-        preference: value ?? UserConsentPreference.OPT_OUT,
-      };
-    });
+    );
 
     const payload: PrivacyPreferencesRequest = {
       browser_identity: identities,
@@ -193,13 +201,14 @@ const NoticeDrivenConsent = () => {
     });
 
     // 3. Delete any cookies that have been opted out of
-    result.data
-      .filter(
-        (preference) => preference.preference === UserConsentPreference.OPT_OUT
-      )
-      .forEach((preference) => {
-        removeCookiesFromBrowser(preference.privacy_notice_history.cookies);
-      });
+    noticePreferences.forEach((noticePreference) => {
+      if (
+        noticePreference.preference === UserConsentPreference.OPT_OUT &&
+        noticePreference.notice
+      ) {
+        removeCookiesFromBrowser(noticePreference.notice.cookies);
+      }
+    });
     router.push("/");
   };
 
