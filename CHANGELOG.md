@@ -34,6 +34,7 @@ The types of changes are:
 - Disable connector dropdown in integration tab on save [#3552](https://github.com/ethyca/fides/pull/3552)
 - Handles an edge case for non-existent identities with the Kustomer API [#3513](https://github.com/ethyca/fides/pull/3513)
 - remove the configure privacy request tile from the home screen [#3555](https://github.com/ethyca/fides/pull/3555)
+- Updated Privacy Experience Safe Strings Serialization [#3600](https://github.com/ethyca/fides/pull/3600/)
 
 ### Developer Experience
 
