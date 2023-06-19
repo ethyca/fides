@@ -492,7 +492,7 @@ class TestCreatePrivacyNoticeUtils:
             notice_key="test_notice",
             description="test description",
             internal_description="internal description",
-            regions=["eu_it"],
+            regions=["it"],
             consent_mechanism="opt_out",
             data_uses=["train_ai_system"],
             enforcement_level=EnforcementLevel.not_applicable,
@@ -500,7 +500,7 @@ class TestCreatePrivacyNoticeUtils:
         )
 
         privacy_notices, affected_regions = create_privacy_notices_util(db, [schema])
-        assert affected_regions == {PrivacyNoticeRegion.eu_it}
+        assert affected_regions == {PrivacyNoticeRegion.it}
 
         assert len(privacy_notices) == 1
         notice = privacy_notices[0]
@@ -508,7 +508,7 @@ class TestCreatePrivacyNoticeUtils:
         assert notice.notice_key == "test_notice"
         assert notice.description == "test description"
         assert notice.internal_description == "internal description"
-        assert notice.regions == [PrivacyNoticeRegion.eu_it]
+        assert notice.regions == [PrivacyNoticeRegion.it]
         assert notice.consent_mechanism == ConsentMechanism.opt_out
         assert notice.enforcement_level == EnforcementLevel.not_applicable
         assert notice.disabled is False
@@ -524,7 +524,7 @@ class TestCreatePrivacyNoticeUtils:
         assert history.notice_key == "test_notice"
         assert history.description == "test description"
         assert history.internal_description == "internal description"
-        assert history.regions == [PrivacyNoticeRegion.eu_it]
+        assert history.regions == [PrivacyNoticeRegion.it]
         assert history.consent_mechanism == ConsentMechanism.opt_out
         assert history.enforcement_level == EnforcementLevel.not_applicable
         assert history.disabled is False
@@ -796,7 +796,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     PrivacyNoticeWithId(
                         id="test_id_1",
                         name="A",
-                        regions=["eu_it"],
+                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["essential"],
                         enforcement_level=EnforcementLevel.system_wide,
@@ -805,7 +805,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     PrivacyNoticeWithId(
                         id="test_id_1",
                         name="A",
-                        regions=["eu_it"],
+                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_out,
                         data_uses=["essential"],
                         enforcement_level=EnforcementLevel.frontend,
@@ -829,7 +829,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         id="test_id_1",
                         notice_key="a",
                         name="A",
-                        regions=["eu_it"],
+                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["essential"],
                         enforcement_level=EnforcementLevel.system_wide,
@@ -839,7 +839,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         id="test_id_2",
                         notice_key="b",
                         name="B",
-                        regions=["eu_it"],
+                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["essential.service"],
                         enforcement_level=EnforcementLevel.frontend,
@@ -851,7 +851,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert exc._excinfo[1].status_code == 422
         assert (
             exc._excinfo[1].detail
-            == "Privacy Notice 'A' has already assigned data use 'essential' to region 'eu_it'"
+            == "Privacy Notice 'A' has already assigned data use 'essential' to region 'it'"
         )
 
     def test_bad_data_uses(self, db, load_default_data_uses):
@@ -864,7 +864,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         id="test_id_1",
                         name="A",
                         notice_key="a",
-                        regions=["eu_it"],
+                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["bad use"],
                         enforcement_level=EnforcementLevel.system_wide,
@@ -884,7 +884,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     id="test_id_1",
                     notice_key="a",
                     name="A",
-                    regions=["eu_it"],
+                    regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_in,
                     data_uses=["essential"],
                     enforcement_level=EnforcementLevel.system_wide,
@@ -894,7 +894,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     id="test_id_2",
                     notice_key="b",
                     name="B",
-                    regions=["eu_it"],
+                    regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_in,
                     data_uses=["improve"],
                     enforcement_level=EnforcementLevel.frontend,
@@ -911,14 +911,14 @@ class TestUpsertPrivacyNoticeTemplates:
 
         assert first_template.id == "test_id_1"
         assert first_template.name == "A"
-        assert first_template.regions == [PrivacyNoticeRegion.eu_it]
+        assert first_template.regions == [PrivacyNoticeRegion.it]
         assert first_template.consent_mechanism == ConsentMechanism.opt_in
         assert first_template.data_uses == ["essential"]
         assert first_template.enforcement_level == EnforcementLevel.system_wide
 
         assert second_template.id == "test_id_2"
         assert second_template.name == "B"
-        assert second_template.regions == [PrivacyNoticeRegion.eu_it]
+        assert second_template.regions == [PrivacyNoticeRegion.it]
         assert second_template.consent_mechanism == ConsentMechanism.opt_in
         assert second_template.data_uses == ["improve"]
         assert second_template.enforcement_level == EnforcementLevel.frontend
@@ -931,7 +931,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     id="test_id_2",
                     notice_key="b",
                     name="B",
-                    regions=["eu_it"],
+                    regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_out,
                     data_uses=["marketing.advertising"],
                     enforcement_level=EnforcementLevel.frontend,
@@ -942,7 +942,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     id="test_id_3",
                     notice_key="c",
                     name="C",
-                    regions=["eu_it"],
+                    regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_out,
                     data_uses=["improve"],
                     enforcement_level=EnforcementLevel.system_wide,
@@ -964,7 +964,7 @@ class TestUpsertPrivacyNoticeTemplates:
         # First template didn't change
         assert first_template.id == "test_id_1"
         assert first_template.name == "A"
-        assert first_template.regions == [PrivacyNoticeRegion.eu_it]
+        assert first_template.regions == [PrivacyNoticeRegion.it]
         assert first_template.consent_mechanism == ConsentMechanism.opt_in
         assert first_template.data_uses == ["essential"]
         assert first_template.enforcement_level == EnforcementLevel.system_wide
@@ -972,7 +972,7 @@ class TestUpsertPrivacyNoticeTemplates:
         # Second template updated data use and consent mechanism
         assert second_template.id == "test_id_2"
         assert second_template.name == "B"
-        assert second_template.regions == [PrivacyNoticeRegion.eu_it]
+        assert second_template.regions == [PrivacyNoticeRegion.it]
         assert second_template.consent_mechanism == ConsentMechanism.opt_out
         assert second_template.data_uses == ["marketing.advertising"]
         assert second_template.enforcement_level == EnforcementLevel.frontend
@@ -981,7 +981,7 @@ class TestUpsertPrivacyNoticeTemplates:
         # Third template is new
         assert third_template.id == "test_id_3"
         assert third_template.name == "C"
-        assert third_template.regions == [PrivacyNoticeRegion.eu_it]
+        assert third_template.regions == [PrivacyNoticeRegion.it]
         assert third_template.consent_mechanism == ConsentMechanism.opt_out
         assert third_template.data_uses == ["improve"]
         assert third_template.enforcement_level == EnforcementLevel.system_wide

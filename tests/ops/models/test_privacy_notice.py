@@ -287,7 +287,7 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -306,7 +306,7 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising", "third_party_sharing"],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -314,7 +314,7 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -328,7 +328,7 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.first_party.contextual",
                             "third_party_sharing",
                         ],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -336,7 +336,7 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -347,7 +347,7 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising", "third_party_sharing"],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -358,7 +358,7 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.first_party.contextual",
                             "personalize",
                         ],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -369,7 +369,7 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising", "third_party_sharing"],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -377,7 +377,7 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -391,7 +391,7 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.third_party.targeted",
                             "third_party_sharing",
                         ],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -399,7 +399,7 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -418,7 +418,7 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -429,13 +429,13 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising", "third_party_sharing"],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     ),
                     PrivacyNotice(
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     ),
                 ],
                 [],
@@ -560,7 +560,7 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.first_party.contextual",
                             "third_party_sharing",
                         ],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -569,7 +569,7 @@ class TestPrivacyNoticeModel:
                         notice_key="pn_2",
                         disabled=True,
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -584,7 +584,7 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.first_party.contextual",
                             "third_party_sharing",
                         ],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -592,7 +592,7 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -607,7 +607,7 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.first_party.contextual",
                             "third_party_sharing",
                         ],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -616,7 +616,7 @@ class TestPrivacyNoticeModel:
                         notice_key="pn_2",
                         disabled=True,
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -631,13 +631,13 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.first_party.contextual",
                             "third_party_sharing",
                         ],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     ),
                     PrivacyNotice(
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     ),
                 ],
                 [],
