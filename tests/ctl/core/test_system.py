@@ -349,6 +349,7 @@ class TestUpsertCookies:
         generate_auth_header,
         test_config,
         generate_role_header,
+        db,
     ):
         resource = System(
             fides_key=str(uuid4()),
