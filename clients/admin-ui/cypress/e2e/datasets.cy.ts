@@ -17,7 +17,7 @@ describe("Dataset", () => {
       cy.visit("/");
       cy.contains("nav a", "Data map").click();
       cy.contains("nav a", "Manage datasets").click();
-      cy.wait("@getDatasets");
+      cy.wait("@getFilteredDatasets");
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-row-demo_users_dataset_4");
 
@@ -35,7 +35,7 @@ describe("Dataset", () => {
 
     it("Can load an individual dataset", () => {
       cy.visit("/dataset");
-      cy.wait("@getDatasets");
+      cy.wait("@getFilteredDatasets");
       cy.getByTestId("dataset-row-demo_users_dataset").click();
       // for some reason this is slow in CI, so add a timeout :(
       cy.url({ timeout: 10000 }).should(
