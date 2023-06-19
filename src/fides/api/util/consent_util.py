@@ -1,4 +1,4 @@
-from html import escape, unescape
+from html import escape
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
 import yaml
