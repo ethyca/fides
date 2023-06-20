@@ -591,4 +591,8 @@ def create_default_experience_config(
             check_name=False,
         )
 
+    logger.info(
+        "Found existing experience config {}, not creating a new default experience config",
+        experience_config_schema.id,
+    )
     return None
