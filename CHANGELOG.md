@@ -27,6 +27,10 @@ The types of changes are:
 
 - Removed `pyodbc` in favor of `pymssql` for handling SQL Server connections [#3435](https://github.com/ethyca/fides/pull/3435)
 
+### Docs
+
+- Updated delevoper docs to M1 users related to `pymssql` [#3615](https://github.com/ethyca/fides/pull/3615)
+
 ### Fixed
 
 - Fix race condition with consent modal link rendering [#3521](https://github.com/ethyca/fides/pull/3521)
