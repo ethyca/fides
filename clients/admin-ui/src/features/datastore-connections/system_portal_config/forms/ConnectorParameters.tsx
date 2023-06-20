@@ -1,4 +1,4 @@
-import { Box, Button, Flex, SlideFade, Spacer, Text } from "@fidesui/react";
+import { Box, Flex, SlideFade, Spacer, Text } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
@@ -7,7 +7,6 @@ import {
   useCreateSassConnectionConfigMutation,
   useDeleteDatastoreConnectionMutation,
   useGetConnectionConfigDatasetConfigsQuery,
-  useLazyGetDatastoreConnectionStatusQuery,
   useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
 import { useDatasetConfigField } from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
@@ -389,20 +388,20 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       />
 
       {connectionConfig && (
-      <Flex mt="0px" justifyContent="center" alignItems="center">
-      <Spacer />
-        {response
-          ? <TestData
-              succeeded={response.data.test_status === "succeeded"}
-              timestamp={response.fulfilledTimeStamp}
-            />
-          : <TestData 
-              succeeded={connectionConfig?.last_test_succeeded}
-              timestamp={connectionConfig?.last_test_timestamp || ""}
-          /> 
-          }
-      <Spacer />
-    </Flex>)}
+      <Flex mt="2" justifyContent="center" alignItems="center">
+        <Spacer />
+          {response
+            ? <TestData
+                succeeded={response.data.test_status === "succeeded"}
+                timestamp={response.fulfilledTimeStamp}
+              />
+            : <TestData 
+                succeeded={connectionConfig?.last_test_succeeded}
+                timestamp={connectionConfig?.last_test_timestamp || ""}
+            /> 
+            }
+        <Spacer />
+      </Flex>)}
 
       {response && (
         <SlideFade in>
