@@ -36,6 +36,7 @@ The types of changes are:
 - remove the configure privacy request tile from the home screen [#3555](https://github.com/ethyca/fides/pull/3555)
 - Updated Privacy Experience Safe Strings Serialization [#3600](https://github.com/ethyca/fides/pull/3600/)
 - Only create default experience configs on startup, not update [#3605](https://github.com/ethyca/fides/pull/3605)
+- Update to latest asyncpg dependency to avoid build error [#3614](https://github.com/ethyca/fides/pull/3614)
 
 ### Developer Experience
 
