@@ -32,11 +32,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-defined]
-from fides.api.schemas.privacy_experience import (
-    ExperienceConfigCreate,
-    ExperienceConfigCreateWithId,
-    ExperienceConfigUpdate,
-)
+from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.schemas.redis_cache import Identity
 from fides.core.config.helpers import load_file
@@ -558,16 +554,14 @@ def load_default_experience_configs_on_startup(
         experience_configs = yaml.safe_load(file).get("privacy_experience_configs", [])
 
         for experience_config_data in experience_configs:
-            upsert_default_experience_config(db, experience_config_data)
+            create_default_experience_config(db, experience_config_data)
 
 
-def upsert_default_experience_config(
+def create_default_experience_config(
     db: Session, experience_config_data: dict
-) -> Tuple[bool, PrivacyExperienceConfig]:
-    """Upserts an experience config - intended to be used for upserting default
-    configs on startup.  The id is specified upfront.
+) -> Optional[PrivacyExperienceConfig]:
+    """Create a default experience config on startup.  The id is specified upfront.
 
-    Returns whether the resource is new, and the experience config object.
     Split from load_default_experience_configs_on_startup for easier testing
     of a function that runs on application startup.
     """
@@ -587,31 +581,18 @@ def upsert_default_experience_config(
         db=db, object_id=experience_config_schema.id
     )
 
-    if existing_experience_config:
+    if not existing_experience_config:
         logger.info(
-            "Checking default experience config {} for updates",
-            existing_experience_config.id,
+            "Creating default experience config {}", experience_config_schema.id
+        )
+        return PrivacyExperienceConfig.create(
+            db,
+            data=experience_config_schema.dict(exclude_unset=True),
+            check_name=False,
         )
 
-        dry_update: PrivacyExperienceConfig = existing_experience_config.dry_update(
-            data=experience_config_schema.dict(exclude_unset=True)
-        )
-        # Validating some required fields if this is an overlay
-        ExperienceConfigCreate.from_orm(dry_update)
-
-        update_data = experience_config_schema.dict(exclude_unset=True)
-        del update_data["component"]
-        del update_data["id"]
-        # This is important for making sure config is only updated if it actually changed
-        existing_experience_config.update(
-            db=db, data=ExperienceConfigUpdate(**update_data).dict(exclude_unset=True)
-        )
-        return False, existing_experience_config
-
-    logger.info("Creating default experience config {}", experience_config_schema.id)
-    new_experience_config = PrivacyExperienceConfig.create(
-        db,
-        data=experience_config_schema.dict(exclude_unset=True),
-        check_name=False,
+    logger.info(
+        "Found existing experience config {}, not creating a new default experience config",
+        experience_config_schema.id,
     )
-    return True, new_experience_config
+    return None
