@@ -58,16 +58,19 @@ const PrivacyDeclarationManager = ({
     PrivacyDeclarationWithId | undefined
   >(undefined);
 
+  const allDeclarations = useMemo(
+    () => transformPrivacyDeclarationsToHaveId(system.privacy_declarations),
+    [system.privacy_declarations]
+  );
+
+  // Accordion declarations include all declarations but the newly created one (if it exists)
   const accordionDeclarations = useMemo(() => {
-    const declarations = transformPrivacyDeclarationsToHaveId(
-      system.privacy_declarations
-    );
     if (!newDeclaration) {
-      return declarations;
+      return allDeclarations;
     }
 
-    return declarations.filter((pd) => pd.id !== newDeclaration.id);
-  }, [newDeclaration, system]);
+    return allDeclarations.filter((pd) => pd.id !== newDeclaration.id);
+  }, [newDeclaration, allDeclarations]);
 
   const checkAlreadyExists = (values: PrivacyDeclaration) => {
     if (
@@ -140,7 +143,7 @@ const PrivacyDeclarationManager = ({
     }
     // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
-    const updatedDeclarations = accordionDeclarations.map((dec) =>
+    const updatedDeclarations = allDeclarations.map((dec) =>
       dec.id === oldDeclaration.id ? updatedDeclaration : dec
     );
     return handleSave(updatedDeclarations);

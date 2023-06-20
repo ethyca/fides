@@ -1,56 +1,55 @@
-import { Box, Button, ButtonGroup, Stack, Tag, useToast } from "@fidesui/react";
+import { Button, ButtonGroup, Stack, useToast } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
-import FormSection from "~/features/common/form/FormSection";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-  usePatchPrivacyExperienceMutation,
-  usePostPrivacyExperienceMutation,
+  usePatchExperienceConfigMutation,
+  usePostExperienceConfigMutation,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import {
-  PrivacyExperienceCreate,
-  PrivacyExperienceResponse,
-} from "~/types/api";
+import { ExperienceConfigCreate, ExperienceConfigResponse } from "~/types/api";
 
-import BannerActionForm from "./BannerActionForm";
-import BannerTextForm from "./BannerTextForm";
-import DeliveryMechanismForm from "./DeliveryMechanismForm";
 import {
   defaultInitialValues,
-  transformPrivacyExperienceResponseToCreation,
-  useExperienceFormRules,
+  transformExperienceConfigResponseToCreation,
+  useExperienceForm,
 } from "./helpers";
-import PrivacyCenterMessagingForm from "./PrivacyCenterMessagingForm";
+import OverlayForm from "./OverlayForm";
+import PrivacyCenterForm from "./PrivacyCenterForm";
 
-const PrivacyNoticeForm = ({
+const PrivacyExperienceForm = ({
   privacyExperience: passedInPrivacyExperience,
 }: {
-  privacyExperience?: PrivacyExperienceResponse;
+  privacyExperience?: ExperienceConfigResponse;
 }) => {
   const router = useRouter();
   const toast = useToast();
   const initialValues = passedInPrivacyExperience
-    ? transformPrivacyExperienceResponseToCreation(passedInPrivacyExperience)
+    ? transformExperienceConfigResponseToCreation(passedInPrivacyExperience)
     : defaultInitialValues;
 
-  const [patchExperiencesMutationTrigger] = usePatchPrivacyExperienceMutation();
-  const [postExperiencesMutationTrigger] = usePostPrivacyExperienceMutation();
+  const [patchExperiencesMutationTrigger] = usePatchExperienceConfigMutation();
+  const [postExperiencesMutationTrigger] = usePostExperienceConfigMutation();
 
   const isEditing = useMemo(
     () => !!passedInPrivacyExperience,
     [passedInPrivacyExperience]
   );
 
-  const handleSubmit = async (values: PrivacyExperienceCreate) => {
+  const handleSubmit = async (values: ExperienceConfigCreate) => {
     let result;
-    if (isEditing) {
-      result = await patchExperiencesMutationTrigger([values]);
+    if (isEditing && passedInPrivacyExperience) {
+      // Cannot change component (BE will not accept it)
+      const { component, ...payload } = values;
+      result = await patchExperiencesMutationTrigger({
+        ...payload,
+        id: passedInPrivacyExperience.id,
+      });
     } else {
-      result = await postExperiencesMutationTrigger([values]);
+      result = await postExperiencesMutationTrigger(values);
     }
 
     if (isErrorResult(result)) {
@@ -67,13 +66,8 @@ const PrivacyNoticeForm = ({
     }
   };
 
-  const associatedNotices = passedInPrivacyExperience
-    ? passedInPrivacyExperience.privacy_notices
-    : undefined;
-
-  const { validationSchema, ...rules } = useExperienceFormRules({
+  const { validationSchema, isOverlay } = useExperienceForm({
     privacyExperience: initialValues,
-    privacyNotices: associatedNotices,
   });
 
   return (
@@ -86,35 +80,7 @@ const PrivacyNoticeForm = ({
       {({ dirty, isValid, isSubmitting }) => (
         <Form>
           <Stack spacing={10}>
-            <Stack spacing={6}>
-              {/* Location shows in every form */}
-              <FormSection title="Locations">
-                <Box
-                  border="1px solid"
-                  borderColor="gray.200"
-                  borderRadius="md"
-                  p={5}
-                  m={0}
-                >
-                  {initialValues.regions.map((r) => (
-                    <Tag
-                      key={r}
-                      mr="2"
-                      backgroundColor="primary.400"
-                      color="white"
-                    >
-                      {r}
-                    </Tag>
-                  ))}
-                </Box>
-              </FormSection>
-              {/* Form subsections are responsible for their own render/don't render logic */}
-              <DeliveryMechanismForm {...rules} />
-              <PrivacyCenterMessagingForm {...rules} />
-              <BannerTextForm {...rules} />
-              <BannerActionForm {...rules} />
-              {/* End form subsections */}
-            </Stack>
+            {isOverlay ? <OverlayForm /> : <PrivacyCenterForm />}
             <ButtonGroup size="sm" spacing={2}>
               <Button
                 variant="outline"
@@ -142,4 +108,4 @@ const PrivacyNoticeForm = ({
   );
 };
 
-export default PrivacyNoticeForm;
+export default PrivacyExperienceForm;

@@ -49,7 +49,7 @@ policy:
         data_uses:
           matches: OTHER
           values:
-            - provide
+            - essential
         data_subjects:
           matches: OTHER
           values:

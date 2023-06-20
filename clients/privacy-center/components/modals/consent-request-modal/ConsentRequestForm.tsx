@@ -127,26 +127,20 @@ const useConsentRequestForm = ({
     validationSchema: Yup.object().shape({
       email: emailValidation(identityInputs?.email).test(
         "one of email or phone entered",
-        "You must enter either email or phone",
+        "You must enter an email",
         (value, context) => {
-          if (
-            identityInputs?.email === "optional" &&
-            identityInputs?.phone === "optional"
-          ) {
-            return Boolean(context.parent.phone || context.parent.email);
+          if (identityInputs?.email === "required") {
+            return Boolean(context.parent.email);
           }
           return true;
         }
       ),
       phone: phoneValidation(identityInputs?.phone).test(
         "one of email or phone entered",
-        "You must enter either email or phone",
+        "You must enter a phone number",
         (value, context) => {
-          if (
-            identityInputs?.email === "optional" &&
-            identityInputs?.phone === "optional"
-          ) {
-            return Boolean(context.parent.phone || context.parent.email);
+          if (identityInputs?.phone === "required") {
+            return Boolean(context.parent.phone);
           }
           return true;
         }
@@ -208,7 +202,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
   return (
     <>
       <ModalHeader pt={6} pb={0}>
-        {config.consent?.button.title}
+        {config.consent?.button.modalTitle || config.consent?.button.title}
       </ModalHeader>
       <chakra.form onSubmit={handleSubmit} data-testid="consent-request-form">
         <ModalBody>
@@ -246,9 +240,6 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                   onBlur={handleBlur}
                   value={values.email}
                   isInvalid={touched.email && Boolean(errors.email)}
-                  isDisabled={Boolean(
-                    typeof values.phone !== "undefined" && values.phone
-                  )}
                 />
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
@@ -258,9 +249,6 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                 id="phone"
                 isInvalid={touched.phone && Boolean(errors.phone)}
                 isRequired={identityInputs.phone === "required"}
-                isDisabled={Boolean(
-                  typeof values.email !== "undefined" && values.email
-                )}
               >
                 <FormLabel fontSize="sm">Phone</FormLabel>
                 <PhoneInput
@@ -280,7 +268,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
 
         <ModalFooter pb={6}>
           <Button variant="outline" flex="1" mr={3} size="sm" onClick={onClose}>
-            Cancel
+            {config.consent?.button.cancelButtonText || "Cancel"}
           </Button>
           <Button
             type="submit"
@@ -293,7 +281,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
             isDisabled={isSubmitting || !(isValid && dirtyCheck)}
             size="sm"
           >
-            Continue
+            {config.consent?.button.confirmButtonText || "Continue"}
           </Button>
         </ModalFooter>
       </chakra.form>

@@ -32,9 +32,19 @@ import {
  * FIDES_PRIVACY_CENTER__FIDES_API_URL=https://fides.example.com/api/v1
  */
 export interface PrivacyCenterSettings {
+  // Privacy center settings
   FIDES_API_URL: string; // e.g. http://localhost:8080/api/v1
-  CONFIG_JSON_URL: string; // e.g. file:///app/config/config.json
   CONFIG_CSS_URL: string; // e.g. file:///app/config/config.css
+  CONFIG_JSON_URL: string; // e.g. file:///app/config/config.json
+
+  // Fides.js options
+  DEBUG: boolean; // whether console logs are enabled for consent components
+  GEOLOCATION_API_URL: string; // e.g. http://location-cdn.com
+  IS_GEOLOCATION_ENABLED: boolean; // whether we should use geolocation to drive privacy experience
+  IS_OVERLAY_ENABLED: boolean; // whether we should render privacy-experience-driven components
+  OVERLAY_PARENT_ID: string | null; // (optional) ID of the parent DOM element where the overlay should be inserted
+  MODAL_LINK_ID: string | null; // (optional) ID of the DOM element that should trigger the consent modal
+  PRIVACY_CENTER_URL: string; // e.g. http://localhost:3000
 }
 
 /**
@@ -44,7 +54,14 @@ export interface PrivacyCenterSettings {
  */
 export type PrivacyCenterClientSettings = Pick<
   PrivacyCenterSettings,
-  "FIDES_API_URL"
+  | "FIDES_API_URL"
+  | "DEBUG"
+  | "GEOLOCATION_API_URL"
+  | "IS_GEOLOCATION_ENABLED"
+  | "IS_OVERLAY_ENABLED"
+  | "OVERLAY_PARENT_ID"
+  | "MODAL_LINK_ID"
+  | "PRIVACY_CENTER_URL"
 >;
 
 export type Styles = string;
@@ -233,6 +250,26 @@ export const loadPrivacyCenterEnvironment =
       CONFIG_CSS_URL:
         process.env.FIDES_PRIVACY_CENTER__CONFIG_CSS_URL ||
         "file:///app/config/config.css",
+
+      // Overlay options
+      DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG
+        ? process.env.FIDES_PRIVACY_CENTER__DEBUG === "true"
+        : false,
+      IS_OVERLAY_ENABLED: process.env.FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED
+        ? process.env.FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED === "true"
+        : false,
+      IS_GEOLOCATION_ENABLED: process.env
+        .FIDES_PRIVACY_CENTER__IS_GEOLOCATION_ENABLED
+        ? process.env.FIDES_PRIVACY_CENTER__IS_GEOLOCATION_ENABLED === "true"
+        : false,
+      GEOLOCATION_API_URL:
+        process.env.FIDES_PRIVACY_CENTER__GEOLOCATION_API_URL || "",
+      OVERLAY_PARENT_ID:
+        process.env.FIDES_PRIVACY_CENTER__OVERLAY_PARENT_ID || null,
+      MODAL_LINK_ID: process.env.FIDES_PRIVACY_CENTER__MODAL_LINK_ID || null,
+      PRIVACY_CENTER_URL:
+        process.env.FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL ||
+        "http://localhost:3000",
     };
 
     // Load configuration file (if it exists)
@@ -244,6 +281,13 @@ export const loadPrivacyCenterEnvironment =
     // Load client settings (ensuring we only pass-along settings that are safe for the client)
     const clientSettings: PrivacyCenterClientSettings = {
       FIDES_API_URL: settings.FIDES_API_URL,
+      DEBUG: settings.DEBUG,
+      IS_OVERLAY_ENABLED: settings.IS_OVERLAY_ENABLED,
+      IS_GEOLOCATION_ENABLED: settings.IS_GEOLOCATION_ENABLED,
+      GEOLOCATION_API_URL: settings.GEOLOCATION_API_URL,
+      OVERLAY_PARENT_ID: settings.OVERLAY_PARENT_ID,
+      MODAL_LINK_ID: settings.MODAL_LINK_ID,
+      PRIVACY_CENTER_URL: settings.PRIVACY_CENTER_URL,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present

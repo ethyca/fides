@@ -16,8 +16,7 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.ctl.sql_models import PrivacyDeclaration, System
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     SCOPE_REGISTRY,
     STORAGE_READ,
@@ -30,26 +29,27 @@ from fides.api.ops.api.v1.scope_registry import (
     USER_READ,
     USER_UPDATE,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.urn_registry import (
     LOGIN,
     LOGOUT,
     USER_DETAIL,
     USERS,
     V1_URL_PREFIX,
 )
-from fides.api.ops.cryptography.cryptographic_util import str_to_b64_str
-from fides.api.ops.cryptography.schemas.jwt import (
+from fides.api.cryptography.cryptographic_util import str_to_b64_str
+from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.fides_user import FidesUser
-from fides.api.ops.models.fides_user_permissions import FidesUserPermissions
-from fides.api.ops.oauth.jwt import generate_jwe
-from fides.api.ops.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
-from fides.api.ops.oauth.utils import extract_payload
+from fides.api.models.client import ClientDetail
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.sql_models import PrivacyDeclaration, System
+from fides.api.oauth.jwt import generate_jwe
+from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
+from fides.api.oauth.utils import extract_payload
 from fides.core.config import CONFIG
 from tests.conftest import generate_auth_header_for_user
 
@@ -875,7 +875,7 @@ class TestUserLogin:
             "password": str_to_b64_str("idonotknowmypassword"),
         }
         response = api_client.post(url, headers={}, json=body)
-        assert response.status_code == HTTP_404_NOT_FOUND
+        assert response.status_code == HTTP_403_FORBIDDEN
 
     def test_bad_login(self, url, user, api_client):
         body = {
@@ -1435,7 +1435,7 @@ class TestUpdateSystemsManagedByUser:
                 "name": "Collect data for marketing",
                 "system_id": second_system.id,
                 "data_categories": ["user.device.cookie_id"],
-                "data_use": "advertising",
+                "data_use": "marketing.advertising",
                 "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "dataset_references": None,

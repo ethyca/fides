@@ -10,4 +10,5 @@ export type Identity = {
   email?: string;
   ga_client_id?: string;
   ljt_readerID?: string;
+  fides_user_device_id?: string;
 };

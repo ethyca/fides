@@ -1,7 +1,6 @@
 import { Box, FormLabel, Stack } from "@fidesui/react";
 import { useFormikContext } from "formik";
 
-import { useAppSelector } from "~/app/hooks";
 import { YesNoOptions } from "~/features/common/constants";
 import { COUNTRY_OPTIONS } from "~/features/common/countries";
 import {
@@ -15,16 +14,11 @@ import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { DataResponsibilityTitle } from "~/types/api";
 
 import type { FormValues } from "./form";
-import { selectAllSystems } from "./system.slice";
 
 const dataResponsibilityOptions = enumToOptions(DataResponsibilityTitle);
 
 const DescribeSystemsFormExtension = ({ values }: { values: FormValues }) => {
   const { initialValues } = useFormikContext<FormValues>();
-  const systems = useAppSelector(selectAllSystems);
-  const systemOptions = systems
-    ? systems.map((s) => ({ label: s.name ?? s.fides_key, value: s.fides_key }))
-    : [];
 
   return (
     <>
@@ -41,13 +35,6 @@ const DescribeSystemsFormExtension = ({ values }: { values: FormValues }) => {
             : []
         }
         tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
-        isMulti
-      />
-      <CustomSelect
-        label="System dependencies"
-        name="system_dependencies"
-        tooltip="A list of fides keys to model dependencies."
-        options={systemOptions}
         isMulti
       />
       <CustomSelect

@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationResponse";
 import type { ContactDetails } from "./ContactDetails";
 import type { DataFlow } from "./DataFlow";
 import type { DataProtectionImpactAssessment } from "./DataProtectionImpactAssessment";
@@ -73,10 +74,6 @@ export type SystemResponse = {
    */
   privacy_declarations: Array<PrivacyDeclarationResponse>;
   /**
-   * A list of fides keys to model dependencies.
-   */
-  system_dependencies?: Array<string>;
-  /**
    *
    * The contact details information model.
    *
@@ -109,4 +106,12 @@ export type SystemResponse = {
    *
    */
   data_protection_impact_assessment?: DataProtectionImpactAssessment;
+  /**
+   *
+   * Describes the returned schema for a ConnectionConfiguration.
+   *
+   * Do *NOT* add "secrets" to this schema.
+   *
+   */
+  connection_configs?: ConnectionConfigurationResponse;
 };

@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Spinner, Stack } from "@fidesui/react";
 import { PRIVACY_EXPERIENCE_ROUTE, SYSTEM_ROUTE } from "common/nav/v2/routes";
 import { useHasPermission } from "common/Restrict";
-import { DateCell, FidesTable, MultiTagCell } from "common/table";
+import { DateCell, FidesTable } from "common/table";
 import EmptyTableState from "common/table/EmptyTableState";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -12,14 +12,15 @@ import { useAppSelector } from "~/app/hooks";
 import {
   ComponentCell,
   EnablePrivacyExperienceCell,
+  LocationCell,
 } from "~/features/privacy-experience/cells";
 import {
-  selectAllPrivacyExperiences,
+  selectAllExperienceConfigs,
   selectPage,
   selectPageSize,
-  useGetAllPrivacyExperiencesQuery,
+  useGetAllExperienceConfigsQuery,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import { PrivacyExperienceResponse, ScopeRegistryEnum } from "~/types/api";
+import { ExperienceConfigResponse, ScopeRegistryEnum } from "~/types/api";
 
 import JavaScriptTag from "./JavaScriptTag";
 
@@ -28,24 +29,24 @@ const PrivacyExperiencesTable = () => {
   // Subscribe to get all privacy experiences
   const page = useAppSelector(selectPage);
   const pageSize = useAppSelector(selectPageSize);
-  const { isLoading } = useGetAllPrivacyExperiencesQuery({
+  const { isLoading } = useGetAllExperienceConfigsQuery({
     page,
     size: pageSize,
   });
-  const privacyExperiences = useAppSelector(selectAllPrivacyExperiences);
+  const privacyExperiences = useAppSelector(selectAllExperienceConfigs);
   // Permissions
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.PRIVACY_EXPERIENCE_UPDATE,
   ]);
-  const handleRowClick = ({ id }: PrivacyExperienceResponse) => {
+  const handleRowClick = ({ id }: ExperienceConfigResponse) => {
     if (userCanUpdate) {
       router.push(`${PRIVACY_EXPERIENCE_ROUTE}/${id}`);
     }
   };
 
-  const columns: Column<PrivacyExperienceResponse>[] = useMemo(
+  const columns: Column<ExperienceConfigResponse>[] = useMemo(
     () => [
-      { Header: "Location", accessor: "regions", Cell: MultiTagCell },
+      { Header: "Location", accessor: "regions", Cell: LocationCell },
       {
         Header: "Component",
         accessor: "component",
@@ -97,7 +98,7 @@ const PrivacyExperiencesTable = () => {
       <Box alignSelf="end">
         <JavaScriptTag />
       </Box>
-      <FidesTable<PrivacyExperienceResponse>
+      <FidesTable<ExperienceConfigResponse>
         columns={columns}
         data={privacyExperiences}
         onRowClick={userCanUpdate ? handleRowClick : undefined}

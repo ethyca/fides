@@ -1,11 +1,11 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { STEPS } from "datastore-connections/add-connection/constants";
 import { AddConnectionStep } from "datastore-connections/add-connection/types";
-import { DatastoreConnection } from "datastore-connections/types";
 
 import { CONNECTION_TYPE_ROUTE } from "~/constants";
 import { baseApi } from "~/features/common/api.slice";
 import {
+  ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   Page_ConnectionSystemTypeMap_,
   SystemType,
@@ -51,7 +51,7 @@ export const connectionTypeSlice = createSlice({
     reset: () => initialState,
     setConnection: (
       state,
-      action: PayloadAction<DatastoreConnection | undefined>
+      action: PayloadAction<ConnectionConfigurationResponse | undefined>
     ) => ({
       ...state,
       connection: action.payload,

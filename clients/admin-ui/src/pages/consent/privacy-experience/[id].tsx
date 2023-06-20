@@ -15,8 +15,13 @@ import Layout from "~/features/common/Layout";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { COMPONENT_MAP } from "~/features/privacy-experience/constants";
 import PrivacyExperienceForm from "~/features/privacy-experience/form/PrivacyExperienceForm";
-import { useGetPrivacyExperienceByIdQuery } from "~/features/privacy-experience/privacy-experience.slice";
+import { useGetExperienceConfigByIdQuery } from "~/features/privacy-experience/privacy-experience.slice";
 import { ComponentType } from "~/types/api";
+
+const OVERLAY_DESCRIPTION =
+  "Configure the text of your privacy overlay, privacy banner, and the text of the buttons which users will click to accept, reject, manage, and save their preferences.";
+const PRIVACY_CENTER_DESCRIPTION =
+  "Configure this privacy center experience. You can update the text which will display above the privacy notices and choose whether you’d like users to access the privacy center with a link.";
 
 const PrivacyExperienceDetailPage = () => {
   const router = useRouter();
@@ -28,7 +33,7 @@ const PrivacyExperienceDetailPage = () => {
       : router.query.id;
   }
 
-  const { data, isLoading } = useGetPrivacyExperienceByIdQuery(experienceId);
+  const { data, isLoading } = useGetExperienceConfigByIdQuery(experienceId);
 
   if (isLoading) {
     return (
@@ -52,6 +57,11 @@ const PrivacyExperienceDetailPage = () => {
     data.component === ComponentType.OVERLAY
       ? "Configure your consent overlay"
       : "Configure your privacy center";
+
+  const description =
+    data.component === ComponentType.OVERLAY
+      ? OVERLAY_DESCRIPTION
+      : PRIVACY_CENTER_DESCRIPTION;
 
   return (
     <Layout title={`Privacy experience ${data.component}`}>
@@ -92,10 +102,7 @@ const PrivacyExperienceDetailPage = () => {
       </Box>
       <Box width={{ base: "100%", lg: "70%" }}>
         <Text fontSize="sm" mb={8}>
-          Configure the text of your privacy overlay, privacy banner, and the
-          text of the buttons which users will click to accept, reject, manage,
-          and save their preferences. This privacy overlay contains opt-in
-          privacy notices and must be delivered with a banner.
+          {description}
         </Text>
         <Box data-testid="privacy-experience-detail-page">
           <PrivacyExperienceForm privacyExperience={data} />

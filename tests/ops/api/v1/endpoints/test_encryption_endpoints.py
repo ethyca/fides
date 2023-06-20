@@ -5,21 +5,15 @@ from unittest.mock import Mock
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
-    ENCRYPTION_EXEC,
-    STORAGE_CREATE_OR_UPDATE,
-)
-from fides.api.ops.api.v1.urn_registry import (
+from fides.api.api.v1.scope_registry import ENCRYPTION_EXEC, STORAGE_CREATE_OR_UPDATE
+from fides.api.api.v1.urn_registry import (
     DECRYPT_AES,
     ENCRYPT_AES,
     ENCRYPTION_KEY,
     V1_URL_PREFIX,
 )
-from fides.api.ops.cryptography.cryptographic_util import (
-    b64_str_to_bytes,
-    bytes_to_b64_str,
-)
-from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
+from fides.api.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
+from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     encrypt_verify_secret_length,
 )
@@ -45,7 +39,7 @@ class TestGetEncryptionKey:
         assert response.status_code == 403
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.encryption_endpoints.cryptographic_util.generate_secure_random_string"
+        "fides.api.api.v1.endpoints.encryption_endpoints.cryptographic_util.generate_secure_random_string"
     )
     def test_get_encryption_key(
         self,

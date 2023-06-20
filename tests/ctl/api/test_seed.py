@@ -9,12 +9,12 @@ from fideslang import DEFAULT_TAXONOMY, DataCategory, Organization
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from fides.api.ctl.database import samples, seed
-from fides.api.ctl.sql_models import Dataset, PolicyCtl, System
-from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.fides_user import FidesUser
-from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.db import samples, seed
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.models.sql_models import Dataset, PolicyCtl, System
 from fides.core import api as _api
 from fides.core.config import CONFIG, FidesConfig
 
@@ -534,7 +534,7 @@ class TestLoadSamples:
         needs to parse everything from this directory:
         - src/fides/data/sample_project/sample_resources/*.yml
 
-        See src/fides/api/ctl/database/samples.py for details.
+        See src/fides/api/database/samples.py for details.
 
         Sorry for the trouble, but we want to ensure there isn't a subtle bug
         sneaking into our sample project code!
@@ -566,7 +566,7 @@ class TestLoadSamples:
         needs to parse everything from this directory:
         - src/fides/data/sample_project/sample_connections/*.yml
 
-        See src/fides/api/ctl/database/samples.py for details.
+        See src/fides/api/database/samples.py for details.
 
         Sorry for the trouble, but we want to ensure there isn't a subtle bug
         sneaking into our sample project code!

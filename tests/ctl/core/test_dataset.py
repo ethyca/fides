@@ -4,6 +4,7 @@ from typing import Dict, Generator, List
 from urllib.parse import quote_plus
 from uuid import uuid4
 
+import pymssql
 import pytest
 import sqlalchemy
 from fideslang.manifests import write_manifest
@@ -11,14 +12,14 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField
 from py._path.local import LocalPath
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.database.crud import get_resource
-from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ops.models.connectionconfig import (
+from fides.api.db.crud import get_resource
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.core import api
 from fides.core import dataset as _dataset
 from fides.core.config import FidesConfig
@@ -365,9 +366,9 @@ POSTGRES_URL = (
 
 MYSQL_URL = "mysql+pymysql://mysql_user:mysql_pw@mysql-test:3306/mysql_example"
 
-MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:SQLserver1@sqlserver-test:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
+MSSQL_URL_TEMPLATE = "mssql+pymssql://sa:SQLserver1@sqlserver-test:1433/{}"
 MSSQL_URL = MSSQL_URL_TEMPLATE.format("sqlserver_example")
-MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
+MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master")
 
 # External databases require credentials passed through environment variables
 SNOWFLAKE_URL_TEMPLATE = "snowflake://FIDESCTL:{}@ZOA73785/FIDESCTL_TEST"
@@ -409,6 +410,9 @@ TEST_DATABASE_PARAMETERS = {
     "mssql": {
         "url": MSSQL_URL,
         "setup_url": MASTER_MSSQL_URL,
+        "server": "sqlserver-test:1433",
+        "username": "sa",
+        "password": "SQLserver1",
         "init_script_path": "tests/ctl/data/example_sql/sqlserver_example.sql",
         "is_external": False,
         "expected_collection": {
@@ -461,9 +465,26 @@ class TestDatabase:
                 queries = [
                     query for query in query_file.read().splitlines() if query != ""
                 ]
-            print(queries)
-            for query in queries:
-                engine.execute(sqlalchemy.sql.text(query))
+
+            try:
+                if "pymssql" not in database_parameters.get("setup_url", ""):
+                    for query in queries:
+                        engine.execute(sqlalchemy.sql.text(query))
+                else:
+                    # This special MSSQL case is required due to how autocommit is activated
+                    with pymssql.connect(
+                        database_parameters["server"],
+                        database_parameters["username"],
+                        database_parameters["password"],
+                        autocommit=True,
+                    ) as connection:
+                        for query in queries:
+                            with connection.cursor() as cursor:
+                                cursor.execute(query)
+            except:
+                print(f"> FAILED DB SETUP: {database_parameters.get('setup_url')}")
+                # We don't want to error all tests if a single setup fails
+                pass
         yield
 
     def test_get_db_tables(self, request: Dict, database_type: str) -> None:

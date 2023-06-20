@@ -7,9 +7,9 @@ import validators
 from pydantic import Field, validator
 from slowapi.wrappers import parse_many  # type: ignore
 
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.api.ops.cryptography.cryptographic_util import generate_salt, hash_with_salt
-from fides.api.ops.oauth.roles import OWNER
+from fides.api.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.api.oauth.roles import OWNER
 
 from .fides_settings import FidesSettings
 
@@ -85,6 +85,10 @@ class SecuritySettings(FidesSettings):
         default=None,
         description="When using a parent/child Fides deployment, this username will be used by the child server to access the parent server.",
     )
+    public_request_rate_limit: str = Field(
+        default="2000/minute",
+        description="The number of requests from a single IP address allowed to hit a public endpoint within the specified time period",
+    )
     rate_limit_prefix: str = Field(
         default="fides-",
         description="The prefix given to keys in the Redis cache used by the rate limiter.",
@@ -117,6 +121,30 @@ class SecuritySettings(FidesSettings):
     allow_custom_connector_functions: Optional[bool] = Field(
         default=False,
         description="Enables or disables the ability to import connector templates with custom functions. When enabled, custom functions which will be loaded in a restricted environment to minimize security risks.",
+    )
+    enable_audit_log_resource_middleware: Optional[bool] = Field(
+        default=False,
+        description="Either enables the collection of audit log resource data or bypasses the middleware",
+    )
+
+    bastion_server_host: Optional[str] = Field(
+        default=None, description="An optional field to store the bastion server host"
+    )
+    bastion_server_ssh_username: Optional[str] = Field(
+        default=None,
+        description="An optional field to store the username used to access the bastion server",
+    )
+    bastion_server_ssh_private_key: Optional[str] = Field(
+        default=None,
+        description="An optional field to store the key used to SSH into the bastion server.",
+    )
+    bastion_server_ssh_timeout: float = Field(
+        default=0.1,
+        description="The timeout in seconds for the transport socket (``socket.settimeout``)",
+    )
+    bastion_server_ssh_tunnel_timeout: float = Field(
+        default=10,
+        description="The timeout in seconds for tunnel connection (open_channel timeout)",
     )
 
     @validator("app_encryption_key")

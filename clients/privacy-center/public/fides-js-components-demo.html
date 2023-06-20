@@ -2,8 +2,7 @@
 <html>
   <head>
     <title>fides-js script demo page</title>
-
-    <link rel="stylesheet" href="./lib/fides.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <script src="./lib/fides.js"></script>
     <script>
@@ -25,24 +24,46 @@
           ],
         },
         experience: {
-          version: "1.0",
+          id: "132345243",
+          region: "us_ca",
+          show_banner: true,
           component: "overlay",
-          delivery_mechanism: "banner",
-          regions: ["us_ca", "us_co"],
-          component_title: "Manage your consent",
-          component_description:
-            "On this page you can opt in and out of these data uses cases",
-          banner_title: "Manage your consent",
-          banner_description:
-            "This test website is overriding the banner description label.",
-          confirmation_button_label: "Accept Test",
-          reject_button_label: "Reject Test",
+          created_at: "2023-04-24T21:29:08.870351+00:00",
+          updated_at: "2023-04-24T21:29:08.870351+00:00",
+          experience_config: {
+            accept_button_label: "Accept Test",
+            acknowledge_button_label: "OK",
+            banner_enabled: "enabled_where_required",
+            disabled: false,
+            description:
+              "We use cookies and similar methods to recognize visitors and remember their preferences. We also use them to measure ad campaign effectiveness, target ads and analyze site traffic. Learn more about these methods, including how to manage them, by clicking ‘Manage Preferences.’ By clicking ‘accept’ you consent to the of these methods by us and our third parties. By clicking ‘reject’ you decline the use of these methods.",
+            reject_button_label: "Reject Test",
+            is_default: false,
+            save_button_label: "Save test",
+            title: "Manage your consent",
+            component: "overlay",
+            version: 2.0,
+            privacy_policy_link_label: "Privacy policy",
+            privacy_policy_url: "https://privacy.ethyca.com/",
+            privacy_preferences_link_label: "Manage preferences",
+            created_at: "2023-04-24T21:29:08.870351+00:00",
+            updated_at: "2023-04-24T21:29:08.870351+00:00",
+            id: "2348571y34",
+            regions: ["us_ca"],
+          },
           privacy_notices: [
             {
               name: "Test privacy notice",
+              disabled: false,
+              origin: "12435134",
               description: "a test sample privacy notice configuration",
+              internal_description:
+                "a test sample privacy notice configuration for internal use",
               regions: ["us_ca"],
               consent_mechanism: "opt_in",
+              default_preference: "opt_out",
+              current_preference: null,
+              outdated_preference: null,
               has_gpc_flag: true,
               data_uses: ["advertising", "third_party_sharing"],
               enforcement_level: "system_wide",
@@ -55,16 +76,47 @@
               version: 1.0,
               privacy_notice_history_id:
                 "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
+              notice_key: "advertising",
+            },
+            {
+              name: "Essential",
+              description:
+                "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
+              regions: ["us_ca"],
+              consent_mechanism: "notice_only",
+              default_preference: "opt_in",
+              current_preference: null,
+              outdated_preference: null,
+              has_gpc_flag: true,
+              data_uses: ["provide.service"],
+              enforcement_level: "system_wide",
+              displayed_in_overlay: true,
+              displayed_in_api: true,
+              displayed_in_privacy_center: false,
+              id: "pri_4bed96d0-b9e3-4596-a807-26b783836375",
+              created_at: "2023-04-24T21:29:08.870351+00:00",
+              updated_at: "2023-04-24T21:29:08.870351+00:00",
+              version: 1.0,
+              privacy_notice_history_id:
+                "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
+              notice_key: "essential",
             },
           ],
         },
-        geolocation: {},
+        geolocation: {
+          country: "US",
+          location: "US-CA",
+          region: "CA",
+        },
         options: {
           debug: true,
-          isOverlayDisabled: false,
+          isOverlayEnabled: true,
           isGeolocationEnabled: false,
           geolocationApiUrl: "",
+          overlayParentId: null,
+          modalLinkId: null,
           privacyCenterUrl: "http://localhost:3000",
+          fidesApiUrl: "http://localhost:8080/api/v1",
         },
       };
       window.Fides.init(fidesConfig);
@@ -98,8 +150,8 @@
       <h2>Consent JSON</h2>
       <pre id="consent-json"></pre>
 
-      <h2>Consent Banner Link</h2>
-      <a href="#" id="fides-consent-link">Manage Consent</a>
+      <h2>Consent Modal Link</h2>
+      <a id="fides-modal-link">Manage Consent</a>
 
       <h2>Consent Experience</h2>
       <pre id="consent-experience"></pre>
@@ -121,34 +173,45 @@
         return;
       }
 
-      // Pretty-print the fides consent object and add it to the page.
-      document.getElementById("consent-json").textContent = JSON.stringify(
-        Fides.consent,
-        null,
-        2
-      );
+      // Once Fides.js is initialized, show some debug information on the page
+      const onInitialized = () => {
+        console.log("Fides has been initialized!");
+        // Pretty-print the fides consent object and add it to the page.
+        document.getElementById("consent-json").textContent = JSON.stringify(
+          Fides.consent,
+          null,
+          2
+        );
 
-      // Pretty-print the fides experience config object and add it to the page.
-      document.getElementById("consent-experience").textContent =
-        JSON.stringify(Fides.experience, null, 2);
+        // Pretty-print the fides experience config object and add it to the page.
+        document.getElementById("consent-experience").textContent =
+          JSON.stringify(Fides.experience, null, 2);
 
-      // Pretty-print the fides geolocation object and add it to the page.
-      document.getElementById("consent-geolocation").textContent =
-        JSON.stringify(Fides.geolocation, null, 2);
+        // Pretty-print the fides geolocation object and add it to the page.
+        document.getElementById("consent-geolocation").textContent =
+          JSON.stringify(Fides.geolocation, null, 2);
 
-      // Pretty-print the fides options object and add it to the page.
-      document.getElementById("consent-options").textContent = JSON.stringify(
-        Fides.options,
-        null,
-        2
-      );
+        // Pretty-print the fides options object and add it to the page.
+        document.getElementById("consent-options").textContent = JSON.stringify(
+          Fides.options,
+          null,
+          2
+        );
 
-      // Test behavior of integrations that can be configured without/before their platform scripts.
-      Fides.gtm();
-      Fides.meta({
-        consent: Fides.consent.tracking,
-        dataUse: Fides.consent.data_sales,
-      });
+        // Test behavior of integrations that can be configured without/before their platform scripts.
+        Fides.gtm();
+        Fides.meta({
+          consent: Fides.consent.tracking,
+          dataUse: Fides.consent.data_sales,
+        });
+      };
+
+      // Handle both synchronous & asynchronous initialization
+      if (Fides.initialized) {
+        onInitialized();
+      } else {
+        window.addEventListener("FidesInitialized", onInitialized);
+      }
     })();
   </script>
 </html>
