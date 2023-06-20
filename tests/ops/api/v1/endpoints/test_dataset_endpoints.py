@@ -19,7 +19,6 @@ from fides.api.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
-    CTL_DATASET_READ,
 )
 from fides.api.api.v1.urn_registry import (
     CONNECTION_DATASETS,
@@ -27,10 +26,9 @@ from fides.api.api.v1.urn_registry import (
     DATASET_CONFIGS,
     DATASET_VALIDATE,
     DATASETCONFIG_BY_KEY,
-    CONNECTION_DATASETS,
+    DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
-    DATASETS,
 )
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
