@@ -5,7 +5,7 @@ from typing import Optional
 
 import rich_click as click
 
-from fides.common.utils import print_divider
+from fides.common.utils import echo_green, print_divider
 from fides.config.create import create_and_update_config_file
 from fides.core.deploy import (
     check_docker_version,
@@ -16,7 +16,6 @@ from fides.core.deploy import (
     start_application,
     teardown_application,
 )
-from fides.core.utils import echo_green
 
 
 # NOTE: This behaves similarly to 'init' in that it is excluded from analytics
