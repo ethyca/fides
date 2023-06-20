@@ -35,6 +35,9 @@ The types of changes are:
 - Disable connector dropdown in integration tab on save [#3552](https://github.com/ethyca/fides/pull/3552)
 - Handles an edge case for non-existent identities with the Kustomer API [#3513](https://github.com/ethyca/fides/pull/3513)
 - remove the configure privacy request tile from the home screen [#3555](https://github.com/ethyca/fides/pull/3555)
+- Updated Privacy Experience Safe Strings Serialization [#3600](https://github.com/ethyca/fides/pull/3600/)
+- Only create default experience configs on startup, not update [#3605](https://github.com/ethyca/fides/pull/3605)
+- Update to latest asyncpg dependency to avoid build error [#3614](https://github.com/ethyca/fides/pull/3614)
 
 ### Developer Experience
 
@@ -547,6 +550,7 @@ The types of changes are:
   - This PR contains a migration that deletes duplicate users and keeps the oldest original account.
 - Update Logos for shipped connectors [#2464](https://github.com/ethyca/fides/pull/2587)
 - Search field on privacy request page isn't working [#2270](https://github.com/ethyca/fides/pull/2595)
+- Fix connection dropdown in integration table to not be disabled add system creation [#3589](https://github.com/ethyca/fides/pull/3589)
 
 ### Developer Experience
 

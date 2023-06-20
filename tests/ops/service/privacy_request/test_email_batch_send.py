@@ -540,7 +540,7 @@ class TestConsentEmailBatchSend:
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="example privacy notice",
                             notice_key="example_privacy_notice",
-                            description="a sample privacy notice configuration",
+                            description="user&#x27;s description &lt;script /&gt;",  # This isn't actually sent in the email
                             regions=["us_ca", "us_co"],
                             consent_mechanism="opt_in",
                             data_uses=["marketing.advertising", "third_party_sharing"],
@@ -670,7 +670,7 @@ class TestConsentEmailBatchSend:
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="example privacy notice",
                             notice_key="example_privacy_notice",
-                            description="a sample privacy notice configuration",
+                            description="user&#x27;s description &lt;script /&gt;",
                             regions=["us_ca", "us_co"],
                             consent_mechanism="opt_in",
                             data_uses=["marketing.advertising", "third_party_sharing"],

@@ -505,7 +505,7 @@ class TestGetPrivacyNotices:
     @pytest.mark.usefixtures(
         "system",
     )
-    def test_can_unescape(
+    def test_can_unescape_list_notices(
         self,
         db,
         api_client: TestClient,
@@ -669,7 +669,6 @@ class TestGetPrivacyNoticeDetail:
         )
         assert resp.status_code == 200
         data = resp.json()
-        print(f"Unescaped Response: {data}")
         assert data["description"] == "user&#x27;s description &lt;script /&gt;"
 
         # now request with the unescape header
@@ -1813,6 +1812,40 @@ class TestPostPrivacyNotices:
 
         overlay_exp.delete(db)
 
+    def test_post_privacy_notice_response_escaped(
+        self, api_client, generate_auth_header, db
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
+        maybe_dangerous_description = "user's description <script />"
+        resp = api_client.post(
+            V1_URL_PREFIX + PRIVACY_NOTICE,
+            headers=auth_header,
+            json=[
+                {
+                    "name": "test privacy notice 1",
+                    "notice_key": "test_privacy_notice_1",
+                    "description": maybe_dangerous_description,
+                    "regions": [
+                        PrivacyNoticeRegion.eu_be.value,
+                        PrivacyNoticeRegion.us_ca.value,
+                    ],
+                    "consent_mechanism": ConsentMechanism.opt_in.value,
+                    "data_uses": ["marketing.advertising"],
+                    "enforcement_level": EnforcementLevel.system_wide.value,
+                    "displayed_in_overlay": True,
+                }
+            ],
+        )
+        assert resp.status_code == 200
+        created_notice_data = resp.json()[0]
+        assert (
+            created_notice_data["description"] == "user's description <script />"
+        )  # Returned as normal in create response
+        created_notice = db.query(PrivacyNotice).get(created_notice_data["id"])
+        assert (
+            created_notice.description == "user&#x27;s description &lt;script /&gt;"
+        )  # But saved in escaped format
+
     def test_post_privacy_notice_duplicate_regions(
         self,
         api_client: TestClient,
@@ -2615,6 +2648,133 @@ class TestPatchPrivacyNotices:
         )
         db.refresh(db_notice)
 
+        assert response_notice["name"] == db_notice.name
+        assert response_notice["version"] == db_notice.version
+        assert response_notice["created_at"] == db_notice.created_at.isoformat()
+        assert response_notice["updated_at"] == db_notice.updated_at.isoformat()
+        assert response_notice["disabled"] == db_notice.disabled
+        assert response_notice["regions"] == [
+            region.value for region in db_notice.regions
+        ]
+        assert response_notice["consent_mechanism"] == db_notice.consent_mechanism.value
+        assert response_notice["data_uses"] == db_notice.data_uses
+
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
+        assert overlay_exp.component == ComponentType.overlay
+
+        assert privacy_center_exp.component == ComponentType.privacy_center
+
+    def test_patch_privacy_notice_escaping(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        patch_privacy_notice_payload: dict[str, Any],
+        privacy_notice: PrivacyNotice,
+        url,
+        db,
+    ):
+        """
+        Test escape behavior when patching notices
+        """
+        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
+        assert overlay_exp is None
+        assert privacy_center_exp is None
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_UPDATE])
+
+        before_update = datetime.now().isoformat()
+        maybe_dangerous_description = "user's description <script />"
+        patch_privacy_notice_payload["description"] = maybe_dangerous_description
+
+        resp = api_client.patch(
+            url, headers=auth_header, json=[patch_privacy_notice_payload]
+        )
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
+        response_notice = resp.json()[0]
+
+        # assert our response object has the updated values
+        assert response_notice["name"] == patch_privacy_notice_payload["name"]
+        assert response_notice["id"] == patch_privacy_notice_payload["id"]
+        assert response_notice["regions"] == patch_privacy_notice_payload["regions"]
+        assert (
+            response_notice["consent_mechanism"]
+            == patch_privacy_notice_payload["consent_mechanism"]
+        )
+        assert response_notice["data_uses"] == patch_privacy_notice_payload["data_uses"]
+        assert response_notice["version"] == 2.0
+        assert response_notice["created_at"] < before_update
+        assert response_notice["updated_at"] < datetime.now().isoformat()
+        assert response_notice["updated_at"] > before_update
+        assert response_notice["disabled"]
+        assert response_notice["notice_key"] == "updated_privacy_notice_key"
+        assert (
+            response_notice["description"] == maybe_dangerous_description
+        ), "Unescaped in response"
+
+        # assert our old history record has the old privacy notice data
+        history_record: PrivacyNoticeHistory = (
+            PrivacyNoticeHistory.query(db=db)
+            .filter(PrivacyNoticeHistory.privacy_notice_id == privacy_notice.id)
+            .filter(PrivacyNoticeHistory.version == 1.0)
+        ).first()
+        assert (
+            history_record.name
+            == privacy_notice.name
+            != patch_privacy_notice_payload["name"]
+        )
+        assert (
+            history_record.regions
+            == privacy_notice.regions
+            != patch_privacy_notice_payload["regions"]
+        )
+        assert (
+            history_record.consent_mechanism
+            == privacy_notice.consent_mechanism
+            != patch_privacy_notice_payload["consent_mechanism"]
+        )
+        assert (
+            history_record.data_uses
+            == privacy_notice.data_uses
+            != patch_privacy_notice_payload["data_uses"]
+        )
+        assert history_record.version == 1.0
+        assert (
+            history_record.disabled
+            == privacy_notice.disabled
+            != patch_privacy_notice_payload["disabled"]
+        )
+
+        # assert there's a new history record with the new privacy notice data
+        history_record: PrivacyNoticeHistory = (
+            PrivacyNoticeHistory.query(db=db)
+            .filter(PrivacyNoticeHistory.privacy_notice_id == privacy_notice.id)
+            .filter(PrivacyNoticeHistory.version == 2.0)
+        ).first()
+        assert history_record.name == patch_privacy_notice_payload["name"]
+        assert [
+            region.value for region in history_record.regions
+        ] == patch_privacy_notice_payload["regions"]
+        assert (
+            history_record.consent_mechanism.value
+            == patch_privacy_notice_payload["consent_mechanism"]
+        )
+        assert history_record.data_uses == patch_privacy_notice_payload["data_uses"]
+        assert history_record.version == 2.0
+        assert history_record.disabled == patch_privacy_notice_payload["disabled"]
+
+        # assert the db privacy notice record has the updated values
+        db_notice: PrivacyNotice = PrivacyNotice.get(
+            db=db, object_id=response_notice["id"]
+        )
+        db.refresh(db_notice)
+        assert (
+            db_notice.description == "user&#x27;s description &lt;script /&gt;"
+        )  # Escaped in db
         assert response_notice["name"] == db_notice.name
         assert response_notice["version"] == db_notice.version
         assert response_notice["created_at"] == db_notice.created_at.isoformat()
