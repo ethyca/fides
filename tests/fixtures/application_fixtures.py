@@ -15,9 +15,6 @@ from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
 from fides.api.common_exceptions import SystemManagerException
-from fides.api.ctl.sql_models import DataCategory as DataCategoryDbModel
-from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ctl.sql_models import System
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
@@ -59,6 +56,9 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.models.registration import UserRegistration
+from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
+from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.models.sql_models import System
 from fides.api.models.storage import (
     ResponseFormat,
     StorageConfig,
@@ -1445,7 +1445,7 @@ def privacy_notice(db: Session) -> Generator:
         data={
             "name": "example privacy notice",
             "notice_key": "example_privacy_notice",
-            "description": "a sample privacy notice configuration",
+            "description": "user&#x27;s description &lt;script /&gt;",
             "regions": [
                 PrivacyNoticeRegion.us_ca,
                 PrivacyNoticeRegion.us_co,
@@ -2201,7 +2201,7 @@ def experience_config_privacy_center(db: Session) -> Generator:
         db=db,
         data={
             "accept_button_label": "Accept all",
-            "description": "We care about your privacy",
+            "description": "user&#x27;s description &lt;script /&gt;",
             "component": "privacy_center",
             "reject_button_label": "Reject all",
             "save_button_label": "Save",
@@ -2244,7 +2244,7 @@ def experience_config_overlay(db: Session) -> Generator:
             "description": "On this page you can opt in and out of these data uses cases",
             "disabled": False,
             "privacy_preferences_link_label": "Manage preferences",
-            "privacy_policy_link_label": "View our privacy policy",
+            "privacy_policy_link_label": "View our company&#x27;s privacy policy",
             "privacy_policy_url": "example.com/privacy",
             "reject_button_label": "Reject all",
             "save_button_label": "Save",

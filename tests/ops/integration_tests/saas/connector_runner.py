@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from sqlalchemy.orm import Session
 
 from fides.api.cryptography import cryptographic_util
-from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import (
@@ -15,6 +14,7 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from fides.api.task import graph_task

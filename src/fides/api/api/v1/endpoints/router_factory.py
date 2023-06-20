@@ -14,8 +14,15 @@ from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
+from fides.api.api.v1.endpoints.utils import (
+    API_PREFIX,
+    CLI_SCOPE_PREFIX_MAPPING,
+    forbid_if_default,
+    forbid_if_editing_any_is_default,
+    forbid_if_editing_is_default,
+)
 from fides.api.api.v1.scope_registry import CREATE, DELETE, READ, UPDATE
-from fides.api.ctl.database.crud import (
+from fides.api.db.crud import (
     create_resource,
     delete_resource,
     get_resource_with_custom_fields,
@@ -23,23 +30,16 @@ from fides.api.ctl.database.crud import (
     update_resource,
     upsert_resources,
 )
-from fides.api.ctl.database.session import get_async_db
-from fides.api.ctl.routes.util import (
-    API_PREFIX,
-    CLI_SCOPE_PREFIX_MAPPING,
-    forbid_if_default,
-    forbid_if_editing_any_is_default,
-    forbid_if_editing_is_default,
-)
-from fides.api.ctl.sql_models import (
+from fides.api.db.ctl_session import get_async_db
+from fides.api.models.sql_models import (
     DataCategory,
     models_with_default_field,
     sql_model_map,
 )
-from fides.api.ctl.utils import errors
-from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.schemas.dataset import validate_data_categories_against_db
+from fides.api.util import errors
+from fides.api.util.api_router import APIRouter
 
 
 async def get_data_categories_from_db(async_session: AsyncSession) -> List[FidesKey]:

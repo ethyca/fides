@@ -2,9 +2,8 @@ from html import unescape
 from typing import Dict, List, Optional, Set, Tuple
 
 from fastapi import Depends, Request, Security
-from fastapi_pagination import Page, Params
+from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
-from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from pydantic import conlist
 from sqlalchemy.orm import Query, Session
@@ -20,16 +19,17 @@ from fides.api.api.v1 import scope_registry
 from fides.api.api.v1 import urn_registry as urls
 from fides.api.api.v1.endpoints.utils import transform_fields
 from fides.api.common_exceptions import ValidationError
-from fides.api.ctl.sql_models import DataUse, System  # type: ignore
 from fides.api.models.privacy_experience import (
     upsert_privacy_experiences_after_notice_update,
 )
 from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
+from fides.api.models.sql_models import DataUse, System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas import privacy_notice as schemas
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     PRIVACY_NOTICE_ESCAPE_FIELDS,
+    UNESCAPE_SAFESTR_HEADER,
     create_privacy_notices_util,
     ensure_unique_ids,
     prepare_privacy_notice_patches,
@@ -89,17 +89,21 @@ def get_privacy_notice_list(
         systems_applicable=systems_applicable,
         region=region,
     )
-    should_unescape = request.headers.get("unescape-safestr")
+    should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
     privacy_notices = notice_query.order_by(PrivacyNotice.created_at.desc())
-    paginated = paginate(privacy_notices, params=params)
-    if should_unescape:
-        paginated.items = [  # type: ignore[attr-defined]
+    return paginate(
+        [
             transform_fields(
-                transformation=unescape, model=item, fields=PRIVACY_NOTICE_ESCAPE_FIELDS
+                transformation=unescape,
+                model=notice,
+                fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
             )
-            for item in paginated.items  # type: ignore[attr-defined]
-        ]
-    return paginated
+            if should_unescape
+            else notice
+            for notice in privacy_notices
+        ],
+        params=params,
+    )
 
 
 @router.get(
@@ -184,7 +188,7 @@ def get_privacy_notice(
     """
     Return a single PrivacyNotice
     """
-    should_unescape = request.headers.get("unescape-safestr")
+    should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
     notice = get_privacy_notice_or_error(db, privacy_notice_id)
     if should_unescape:
         notice = transform_fields(
@@ -219,7 +223,14 @@ def create_privacy_notices(
     except (ValueError, ValidationError) as e:
         raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
-    return created_privacy_notices
+    return [
+        transform_fields(
+            transformation=unescape,
+            model=notice,
+            fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
+        )
+        for notice in created_privacy_notices
+    ]
 
 
 @router.patch(
@@ -267,4 +278,11 @@ def update_privacy_notices(
         db, affected_regions=list(affected_regions)
     )
 
-    return notices
+    return [
+        transform_fields(
+            transformation=unescape,
+            model=notice,
+            fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
+        )
+        for notice in notices
+    ]

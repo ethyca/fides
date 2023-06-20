@@ -12,7 +12,7 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to a MS SQL Database
 
     connection string takes the format:
-    mssql+pyodbc://[username]:[password]@[host]:[port]/[dbname]?driver=ODBC+Driver+17+for+SQL+Server
+    mssql+pymssql://[username]:[password]@[host]:[port]/[dbname]
 
     """
 

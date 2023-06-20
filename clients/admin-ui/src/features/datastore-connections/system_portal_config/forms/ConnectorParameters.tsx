@@ -260,7 +260,11 @@ export const useConnectorForm = ({
         values.dataset = res;
       }
 
-      if (connectionConfig && values.dataset) {
+      if (
+        connectionConfig &&
+        values.dataset &&
+        connectionOption.type === SystemType.DATABASE
+      ) {
         await patchConnectionDatasetConfig(values, connectionConfig.key);
       }
 

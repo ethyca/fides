@@ -1,4 +1,5 @@
 import {
+  stubDatasetCrud,
   stubPlus,
   stubSystemCrud,
   stubTaxonomyEntities,
@@ -67,9 +68,7 @@ describe("System management page", () => {
       beforeEach(() => {
         stubTaxonomyEntities();
         stubSystemCrud();
-        cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-          "getDatasets"
-        );
+        stubDatasetCrud();
         cy.intercept("GET", "/api/v1/connection_type*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
@@ -145,7 +144,7 @@ describe("System management page", () => {
             "@getDataCategories",
             "@getDataSubjects",
             "@getDataUses",
-            "@getDatasets",
+            "@getFilteredDatasets",
           ]);
           cy.getByTestId("new-declaration-form");
           const declaration = system.privacy_declarations[0];
@@ -517,6 +516,72 @@ describe("System management page", () => {
         cy.getByTestId("save-btn").click();
       });
       cy.getByTestId("toast-success-msg");
+    });
+
+    it("can edit an accordion data use while persisting a newly added data use", () => {
+      cy.visit(`${SYSTEM_ROUTE}/configure/fidesctl_system`);
+      cy.getByTestId("tab-Data uses").click();
+      cy.getByTestId("add-btn").click();
+      cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
+
+      const newDeclaration = {
+        id: "pri_bf701ddb-1d05-48f9-913f-b5ff05b8f987",
+        name: "Second data use",
+        data_categories: ["user.biometric"],
+        data_use: "collect",
+        data_qualifier:
+          "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        data_subjects: ["anonymous"],
+        dataset_references: [],
+      };
+      // We need to update both the PUT and GET fixtures to make sure they return
+      // the data use we are adding. This is how we can get the form into a state
+      // where there are both "accordion" declarations and the one declaration
+      // in the new form
+      cy.fixture("systems/system.json").then((system) => {
+        const { privacy_declarations: declarations } = system;
+        const updatedSystem = {
+          ...system,
+          fides_key: "fidesctl_system",
+          privacy_declarations: [...declarations, newDeclaration],
+        };
+        cy.intercept("PUT", "/api/v1/system*", {
+          body: updatedSystem,
+        }).as("putSystemWithAddedDataUse");
+        cy.intercept("GET", "/api/v1/system/*", {
+          body: updatedSystem,
+        }).as("getSystemWithAddedDataUse");
+      });
+
+      // Add one data use (one already exists)
+      cy.getByTestId("new-declaration-form").within(() => {
+        cy.getByTestId("input-data_use").type(
+          `${newDeclaration.data_use}{enter}`
+        );
+        cy.getByTestId("input-name").type(newDeclaration.name);
+        cy.getByTestId("input-data_categories").type(
+          `${newDeclaration.data_categories[0]}{enter}`
+        );
+        cy.getByTestId("input-data_subjects").type(
+          `${newDeclaration.data_subjects[0]}{enter}`
+        );
+        cy.getByTestId("save-btn").click();
+        cy.wait("@putSystemWithAddedDataUse")
+          .its("request.body.privacy_declarations")
+          .should("have.length", 2);
+        cy.wait("@getSystemWithAddedDataUse");
+      });
+
+      // Edit the existing data use
+      cy.getByTestId("privacy-declaration-accordion").within(() => {
+        cy.getByTestId("accordion-header-improve.system").click();
+        // Add a data subject
+        cy.getByTestId("input-data_subjects").type(`citizen{enter}`);
+        cy.getByTestId("save-btn").click();
+        cy.wait("@putSystemWithAddedDataUse")
+          .its("request.body.privacy_declarations")
+          .should("have.length", 2);
+      });
     });
 
     describe("delete privacy declaration", () => {
