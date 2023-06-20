@@ -18,11 +18,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.common.api.scope_registry import (
-    MESSAGING_CREATE_OR_UPDATE,
-    MESSAGING_DELETE,
-    MESSAGING_READ,
-)
 from fides.api.api.v1.urn_registry import (
     MESSAGING_ACTIVE_DEFAULT,
     MESSAGING_BY_KEY,
@@ -69,6 +64,11 @@ from fides.api.service.messaging.messaging_crud_service import (
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
+from fides.common.api.scope_registry import (
+    MESSAGING_CREATE_OR_UPDATE,
+    MESSAGING_DELETE,
+    MESSAGING_READ,
+)
 from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Messaging"], prefix=V1_URL_PREFIX)

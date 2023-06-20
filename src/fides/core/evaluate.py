@@ -21,12 +21,11 @@ from fideslang.utils import get_resource_by_fides_key
 from fideslang.validation import FidesKey
 from pydantic import AnyHttpUrl
 
-from fides.common.utils import handle_cli_response, pretty_echo
+from fides.common.utils import echo_green, echo_red, handle_cli_response, pretty_echo
 from fides.core import api
 from fides.core.api_helpers import get_server_resource, get_server_resources
 from fides.core.parse import parse
 from fides.core.utils import get_all_level_fields
-from fides.common.utils import echo_green, echo_red
 
 
 def get_evaluation_policies(

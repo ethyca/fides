@@ -16,8 +16,8 @@ from pydantic import BaseModel, ValidationError
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
-from fides.connectors.models import ConnectorAuthFailureException
 from fides.common.utils import echo_red
+from fides.connectors.models import ConnectorAuthFailureException
 
 logger.bind(name="server_api")
 

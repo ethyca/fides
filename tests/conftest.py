@@ -18,7 +18,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from toml import load as load_toml
 
-from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.api.app_setup import PRIVACY_EXPERIENCE_CONFIGS_PATH
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -42,6 +41,7 @@ from fides.api.oauth.roles import (
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import load_default_experience_configs_on_startup
+from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *

@@ -27,7 +27,6 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.common.api.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fides.api.common_exceptions import (
     IdentityVerificationException,
     ManualWebhookFieldsUnset,
@@ -72,6 +71,7 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.identity_verification import IdentityVerificationMixin
+from fides.common.api.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fides.config import CONFIG
 
 # Locations from which privacy request execution can be resumed, in order.

@@ -21,7 +21,6 @@ from fides.api.api.v1.endpoints.utils import (
     forbid_if_editing_any_is_default,
     forbid_if_editing_is_default,
 )
-from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
 from fides.api.db.crud import (
     create_resource,
     delete_resource,
@@ -40,6 +39,7 @@ from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.schemas.dataset import validate_data_categories_against_db
 from fides.api.util import errors
 from fides.api.util.api_router import APIRouter
+from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
 
 
 async def get_data_categories_from_db(async_session: AsyncSession) -> List[FidesKey]:

@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
 
 from fides.api.api import deps
-from fides.common.api import scope_registry as scopes
 from fides.api.api.v1 import urn_registry as urls
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.oauth.utils import verify_oauth_client
@@ -15,6 +14,7 @@ from fides.api.schemas.application_config import (
     ApplicationConfig as ApplicationConfigSchema,
 )
 from fides.api.util.api_router import APIRouter
+from fides.common.api import scope_registry as scopes
 from fides.config import censor_config
 from fides.config import get_config as get_app_config
 

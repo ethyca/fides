@@ -7,8 +7,8 @@ from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 
 import fides.connectors.aws as aws_connector
-from fides.connectors.models import AWSConfig
 from fides.config import FidesConfig
+from fides.connectors.models import AWSConfig
 
 
 @pytest.fixture()

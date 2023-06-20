@@ -4,7 +4,6 @@ from copy import deepcopy
 
 import pytest
 
-from fides.common.api.scope_registry import DATASET_CREATE_OR_UPDATE, SCOPE_REGISTRY
 from fides.api.cryptography.cryptographic_util import (
     generate_salt,
     generate_secure_random_string,
@@ -20,6 +19,7 @@ from fides.api.cryptography.schemas.jwt import (
 from fides.api.models.client import ClientDetail, _get_root_client_detail
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.oauth.utils import extract_payload
+from fides.common.api.scope_registry import DATASET_CREATE_OR_UPDATE, SCOPE_REGISTRY
 
 
 def test_create_client_and_secret(db, config):

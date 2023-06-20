@@ -6,7 +6,7 @@ import requests
 from fideslang.validation import FidesKey
 
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
-from fides.common.utils import handle_cli_response
+from fides.common.utils import echo_green, echo_red, handle_cli_response
 from fides.config import CONFIG
 from fides.core.utils import (
     Credentials,
@@ -15,7 +15,6 @@ from fides.core.utils import (
     read_credentials_file,
     write_credentials_file,
 )
-from fides.common.utils import echo_green, echo_red
 
 CREATE_USER_PATH = "/api/v1/user"
 LOGIN_PATH = "/api/v1/login"

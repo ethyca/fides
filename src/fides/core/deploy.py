@@ -11,8 +11,8 @@ from click import echo
 
 import fides
 from fides.cli.utils import FIDES_ASCII_ART
-from fides.core.exceptions import DockerCheckException
 from fides.common.utils import echo_green, echo_red
+from fides.core.exceptions import DockerCheckException
 
 FIDES_DEPLOY_UPLOADS_DIR = getcwd() + "/fides_uploads/"
 REQUIRED_DOCKER_VERSION = "20.10.17"

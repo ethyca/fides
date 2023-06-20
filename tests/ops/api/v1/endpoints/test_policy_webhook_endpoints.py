@@ -3,12 +3,6 @@ from typing import Dict
 
 import pytest
 
-from fides.common.api.scope_registry import (
-    POLICY_READ,
-    WEBHOOK_CREATE_OR_UPDATE,
-    WEBHOOK_DELETE,
-    WEBHOOK_READ,
-)
 from fides.api.api.v1.urn_registry import (
     POLICY_POST_WEBHOOK_DETAIL,
     POLICY_PRE_WEBHOOK_DETAIL,
@@ -18,6 +12,12 @@ from fides.api.api.v1.urn_registry import (
 )
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import PolicyPostWebhook, PolicyPreWebhook
+from fides.common.api.scope_registry import (
+    POLICY_READ,
+    WEBHOOK_CREATE_OR_UPDATE,
+    WEBHOOK_DELETE,
+    WEBHOOK_READ,
+)
 from tests.ops.api.v1.endpoints.test_privacy_request_endpoints import stringify_date
 
 

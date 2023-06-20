@@ -11,12 +11,6 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.common.api.scope_registry import (
-    CONNECTION_CREATE_OR_UPDATE,
-    CONNECTION_READ,
-    SAAS_CONNECTION_INSTANTIATE,
-    STORAGE_DELETE,
-)
 from fides.api.api.v1.urn_registry import V1_URL_PREFIX
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -24,6 +18,12 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.common.api.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_READ,
+    SAAS_CONNECTION_INSTANTIATE,
+    STORAGE_DELETE,
+)
 
 page_size = Params().size
 

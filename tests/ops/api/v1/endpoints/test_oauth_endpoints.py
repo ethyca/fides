@@ -6,15 +6,6 @@ from unittest.mock import Mock
 import pytest
 from starlette.testclient import TestClient
 
-from fides.common.api.scope_registry import (
-    CLIENT_CREATE,
-    CLIENT_DELETE,
-    CLIENT_READ,
-    CLIENT_UPDATE,
-    SCOPE_READ,
-    SCOPE_REGISTRY,
-    STORAGE_READ,
-)
 from fides.api.api.v1.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
@@ -37,6 +28,15 @@ from fides.api.models.client import ClientDetail
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import OWNER
 from fides.api.oauth.utils import extract_payload
+from fides.common.api.scope_registry import (
+    CLIENT_CREATE,
+    CLIENT_DELETE,
+    CLIENT_READ,
+    CLIENT_UPDATE,
+    SCOPE_READ,
+    SCOPE_REGISTRY,
+    STORAGE_READ,
+)
 from fides.config import CONFIG
 
 

@@ -6,15 +6,6 @@ from datetime import datetime
 import pytest
 from fastapi.security import SecurityScopes
 
-from fides.common.api.scope_registry import (
-    DATASET_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_REVIEW,
-    SCOPE_REGISTRY,
-    USER_DELETE,
-    USER_PERMISSION_READ,
-    USER_READ,
-)
 from fides.api.common_exceptions import AuthorizationError
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -42,6 +33,15 @@ from fides.api.oauth.utils import (
     has_scope_subset,
     is_token_expired,
     verify_oauth_client,
+)
+from fides.common.api.scope_registry import (
+    DATASET_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
+    SCOPE_REGISTRY,
+    USER_DELETE,
+    USER_PERMISSION_READ,
+    USER_READ,
 )
 from fides.config import CONFIG
 

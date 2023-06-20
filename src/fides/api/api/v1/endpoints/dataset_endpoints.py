@@ -24,11 +24,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.common.api.scope_registry import (
-    DATASET_CREATE_OR_UPDATE,
-    DATASET_DELETE,
-    DATASET_READ,
-)
 from fides.api.api.v1.urn_registry import (
     CONNECTION_DATASETS,
     DATASET_BY_KEY,
@@ -52,7 +47,9 @@ from fides.api.models.datasetconfig import (
     convert_dataset_to_graph,
     to_graph_field,
 )
-from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
+from fides.api.models.sql_models import (
+    Dataset as CtlDataset,  # type: ignore[attr-defined]
+)
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
@@ -66,6 +63,11 @@ from fides.api.schemas.dataset import (
 from fides.api.util.api_router import APIRouter
 from fides.api.util.data_category import get_data_categories_from_db
 from fides.api.util.saas_util import merge_datasets
+from fides.common.api.scope_registry import (
+    DATASET_CREATE_OR_UPDATE,
+    DATASET_DELETE,
+    DATASET_READ,
+)
 
 X_YAML = "application/x-yaml"
 

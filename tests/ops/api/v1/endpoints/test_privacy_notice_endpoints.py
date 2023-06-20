@@ -8,7 +8,6 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.common.api import scope_registry as scopes
 from fides.api.api.v1.urn_registry import (
     PRIVACY_NOTICE,
     PRIVACY_NOTICE_BY_DATA_USE,
@@ -24,6 +23,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeRegion,
 )
 from fides.api.schemas.privacy_notice import PrivacyNoticeResponse
+from fides.common.api import scope_registry as scopes
 
 
 class TestGetPrivacyNotices:

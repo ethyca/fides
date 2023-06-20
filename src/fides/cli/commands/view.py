@@ -7,8 +7,8 @@ from fides.cli.utils import with_analytics
 from fides.common.utils import (
     echo_red,
     get_credentials_path,
-    read_credentials_file,
     print_divider,
+    read_credentials_file,
 )
 
 

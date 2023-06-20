@@ -10,6 +10,12 @@ from slowapi.util import get_remote_address  # type: ignore
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_400_BAD_REQUEST
 
+from fides.api.db.base import Base  # type: ignore[attr-defined]
+from fides.api.db.crud import get_resource, list_resource
+from fides.api.models.sql_models import (  # type: ignore[attr-defined]
+    models_with_default_field,
+)
+from fides.api.util import errors
 from fides.common.api.scope_registry import (
     CTL_DATASET,
     CTL_POLICY,
@@ -22,12 +28,6 @@ from fides.common.api.scope_registry import (
     REGISTRY,
     SYSTEM,
 )
-from fides.api.db.base import Base  # type: ignore[attr-defined]
-from fides.api.db.crud import get_resource, list_resource
-from fides.api.models.sql_models import (  # type: ignore[attr-defined]
-    models_with_default_field,
-)
-from fides.api.util import errors
 from fides.config import CONFIG
 
 API_PREFIX = "/api/v1"

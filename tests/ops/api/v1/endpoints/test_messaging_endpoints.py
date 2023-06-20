@@ -7,11 +7,6 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.common.api.scope_registry import (
-    MESSAGING_CREATE_OR_UPDATE,
-    MESSAGING_DELETE,
-    MESSAGING_READ,
-)
 from fides.api.api.v1.urn_registry import (
     MESSAGING_ACTIVE_DEFAULT,
     MESSAGING_BY_KEY,
@@ -33,6 +28,11 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
+)
+from fides.common.api.scope_registry import (
+    MESSAGING_CREATE_OR_UPDATE,
+    MESSAGING_DELETE,
+    MESSAGING_READ,
 )
 from fides.config import get_config
 
