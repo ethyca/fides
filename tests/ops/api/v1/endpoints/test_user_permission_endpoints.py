@@ -29,7 +29,7 @@ from fides.api.oauth.roles import (
     VIEWER,
     VIEWER_AND_APPROVER,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from tests.conftest import generate_auth_header_for_user, generate_role_header_for_user
 
 

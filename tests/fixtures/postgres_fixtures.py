@@ -20,7 +20,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.service.connectors import PostgreSQLConnector
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 
 from .application_fixtures import integration_secrets

@@ -19,7 +19,7 @@ from fideslang.models import (
 )
 
 from fides.core import evaluate
-from fides.core.config import FidesConfig
+from fides.config import FidesConfig
 
 
 # Helpers

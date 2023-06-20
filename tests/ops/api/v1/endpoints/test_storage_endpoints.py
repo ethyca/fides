@@ -40,8 +40,8 @@ from fides.api.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.core.config import get_config
-from fides.core.config.config_proxy import ConfigProxy
+from fides.config import get_config
+from fides.config.config_proxy import ConfigProxy
 
 PAGE_SIZE = Params().size
 CONFIG = get_config()

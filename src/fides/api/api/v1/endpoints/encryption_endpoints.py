@@ -26,7 +26,7 @@ from fides.api.util.encryption.aes_gcm_encryption_scheme import (
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_verify_secret_length as aes_gcm_encrypt,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 router = APIRouter(tags=["Encryption"], prefix=V1_URL_PREFIX)
 

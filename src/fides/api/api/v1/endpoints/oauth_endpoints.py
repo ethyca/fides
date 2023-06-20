@@ -52,7 +52,7 @@ from fides.api.service.authentication.authentication_strategy_oauth2_authorizati
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
 from fides.api.util.api_router import APIRouter
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 

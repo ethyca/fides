@@ -29,7 +29,7 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.manual_connector import ManualAction
 from fides.api.util.cache import FidesopsRedis, get_identity_cache_key
 from fides.api.util.constants import API_DATE_FORMAT
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 

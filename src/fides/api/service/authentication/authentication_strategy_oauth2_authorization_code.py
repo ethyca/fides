@@ -15,7 +15,7 @@ from fides.api.service.authentication.authentication_strategy_oauth2_base import
     OAuth2AuthenticationStrategyBase,
 )
 from fides.api.util.saas_util import assign_placeholders, map_param_values
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategyBase):

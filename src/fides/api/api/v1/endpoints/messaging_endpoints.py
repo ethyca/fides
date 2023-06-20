@@ -69,7 +69,7 @@ from fides.api.service.messaging.messaging_crud_service import (
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
-from fides.core.config.config_proxy import ConfigProxy
+from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Messaging"], prefix=V1_URL_PREFIX)
 

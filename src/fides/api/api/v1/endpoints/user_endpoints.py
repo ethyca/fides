@@ -64,7 +64,7 @@ from fides.api.schemas.user import (
     UserUpdate,
 )
 from fides.api.util.api_router import APIRouter
-from fides.core.config import CONFIG, FidesConfig, get_config
+from fides.config import CONFIG, FidesConfig, get_config
 
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 

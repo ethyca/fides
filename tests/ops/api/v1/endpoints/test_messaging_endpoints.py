@@ -34,7 +34,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceSecrets,
     MessagingServiceType,
 )
-from fides.core.config import get_config
+from fides.config import get_config
 
 PAGE_SIZE = Params().size
 CONFIG = get_config()

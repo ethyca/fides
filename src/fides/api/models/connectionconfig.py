@@ -18,7 +18,7 @@ from fides.api.db.base_class import Base, FidesBase, JSONTypeOverride, get_key_f
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 class ConnectionTestStatus(enum.Enum):

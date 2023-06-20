@@ -7,7 +7,7 @@ from fideslang.validation import FidesKey
 
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.common.utils import handle_cli_response
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from fides.core.utils import (
     Credentials,
     get_auth_header,

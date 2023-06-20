@@ -7,7 +7,7 @@ from fideslang import FidesModel, model_list
 
 from fides.core import api as _api
 from fides.core import api_helpers as _api_helpers
-from fides.core.config import FidesConfig
+from fides.config import FidesConfig
 from tests.ctl.types import FixtureRequest
 
 RESOURCE_CREATION_COUNT = 5

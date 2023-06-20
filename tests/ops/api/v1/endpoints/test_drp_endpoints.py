@@ -30,7 +30,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.privacy_request import PrivacyRequestDRPStatus
 from fides.api.util.cache import get_drp_request_body_cache_key, get_identity_cache_key
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 class TestCreateDrpPrivacyRequest:

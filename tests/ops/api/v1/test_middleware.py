@@ -16,7 +16,7 @@ from fides.api.cryptography.schemas.jwt import (
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.oauth.jwt import generate_jwe
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 # from tests.conftest import generate_auth_header_for_user
 
@@ -36,7 +36,7 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
 )
 from fides.api.oauth.jwt import generate_jwe
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 # from sqlalchemy.exc import SQLAlchemyError
 

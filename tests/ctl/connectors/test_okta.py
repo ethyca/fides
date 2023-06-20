@@ -9,7 +9,7 @@ from py._path.local import LocalPath
 
 import fides.connectors.okta as okta_connector
 from fides.connectors.models import OktaConfig
-from fides.core.config import FidesConfig
+from fides.config import FidesConfig
 
 
 @pytest.fixture()

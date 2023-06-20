@@ -9,7 +9,7 @@ from fides.api.db.database import configure_db, reset_db
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.util import errors
 from fides.api.util.api_router import APIRouter
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])
 

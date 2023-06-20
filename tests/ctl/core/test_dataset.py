@@ -22,7 +22,7 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.core import api
 from fides.core import dataset as _dataset
-from fides.core.config import FidesConfig
+from fides.config import FidesConfig
 
 
 def create_server_datasets(test_config: FidesConfig, datasets: List[Dataset]) -> None:

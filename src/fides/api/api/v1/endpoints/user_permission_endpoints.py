@@ -25,7 +25,7 @@ from fides.api.schemas.user_permission import (
     UserPermissionsResponse,
 )
 from fides.api.util.api_router import APIRouter
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 

@@ -11,7 +11,7 @@ from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     poll_server_for_completion,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 @pytest.fixture

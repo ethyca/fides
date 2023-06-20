@@ -72,7 +72,7 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.identity_verification import IdentityVerificationMixin
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [

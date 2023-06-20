@@ -27,7 +27,7 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from tests.ops.api.v1.endpoints.test_dataset_endpoints import _reject_key
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
 

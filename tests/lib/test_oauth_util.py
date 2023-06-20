@@ -43,7 +43,7 @@ from fides.api.oauth.utils import (
     is_token_expired,
     verify_oauth_client,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 @pytest.fixture

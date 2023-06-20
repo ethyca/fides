@@ -28,7 +28,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     models_with_default_field,
 )
 from fides.api.util import errors
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 API_PREFIX = "/api/v1"
 # Map the ctl model type to the scope prefix.

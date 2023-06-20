@@ -15,8 +15,8 @@ from fides.api.schemas.application_config import (
     ApplicationConfig as ApplicationConfigSchema,
 )
 from fides.api.util.api_router import APIRouter
-from fides.core.config import censor_config
-from fides.core.config import get_config as get_app_config
+from fides.config import censor_config
+from fides.config import get_config as get_app_config
 
 router = APIRouter(tags=["Config"], prefix=urls.V1_URL_PREFIX)
 

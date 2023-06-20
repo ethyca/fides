@@ -25,7 +25,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.util.consent_util import get_fides_user_device_id_provided_identity
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 @pytest.fixture

@@ -4,7 +4,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from fides.api.util.logger import setup as setup_fidesapi_logger
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -12,7 +12,7 @@ from py._path.local import LocalPath
 from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.cli import cli
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from fides.core.user import get_systems_managed_by_user, get_user_permissions
 from fides.core.utils import get_auth_header, read_credentials_file
 

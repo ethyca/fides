@@ -42,7 +42,7 @@ from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.schemas.system import PrivacyDeclarationResponse
 from fides.core import api as _api
-from fides.core.config import FidesConfig, get_config
+from fides.config import FidesConfig, get_config
 
 CONFIG = get_config()
 

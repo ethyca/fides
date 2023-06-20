@@ -42,8 +42,8 @@ from fides.api.oauth.roles import (
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import load_default_experience_configs_on_startup
-from fides.core.config import get_config
-from fides.core.config.config_proxy import ConfigProxy
+from fides.config import get_config
+from fides.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
 from tests.fixtures.dynamodb_fixtures import *

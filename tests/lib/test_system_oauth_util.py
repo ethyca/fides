@@ -24,7 +24,7 @@ from fides.api.util.system_manager_oauth_util import (
     get_system_schema,
     verify_oauth_client_for_system_from_request_body,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 class TestHasSystemPermissions:

@@ -50,7 +50,7 @@ from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
 from fides.api.oauth.utils import extract_payload
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size

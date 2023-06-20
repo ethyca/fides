@@ -10,7 +10,7 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
 from fideslang.validation import FidesValidationError
 
 from fides.core import api_helpers
-from fides.core.config import FidesConfig
+from fides.config import FidesConfig
 from fides.core.utils import echo_green, get_all_level_fields
 
 

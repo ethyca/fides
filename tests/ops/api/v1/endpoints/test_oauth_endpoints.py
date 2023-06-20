@@ -37,7 +37,7 @@ from fides.api.models.client import ClientDetail
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import OWNER
 from fides.api.oauth.utils import extract_payload
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 class TestCreateClient:

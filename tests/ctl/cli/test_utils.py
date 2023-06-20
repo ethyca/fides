@@ -6,7 +6,7 @@ import click
 import pytest
 
 import fides.cli.utils as utils
-from fides.core.config import FidesConfig
+from fides.config import FidesConfig
 from tests.ctl.conftest import orig_requests_get
 
 

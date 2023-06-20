@@ -12,7 +12,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.service.connectors import TimescaleConnector
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 
 from .application_fixtures import integration_secrets

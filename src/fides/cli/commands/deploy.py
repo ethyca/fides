@@ -6,7 +6,7 @@ from typing import Optional
 import rich_click as click
 
 from fides.common.utils import print_divider
-from fides.core.config.create import create_and_update_config_file
+from fides.config.create import create_and_update_config_file
 from fides.core.deploy import (
     check_docker_version,
     check_fides_uploads_dir,

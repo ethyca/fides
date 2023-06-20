@@ -93,7 +93,7 @@ from fides.api.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 page_size = Params().size
 

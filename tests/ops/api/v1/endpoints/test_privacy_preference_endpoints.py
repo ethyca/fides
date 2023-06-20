@@ -34,7 +34,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 class TestSavePrivacyPreferencesPrivacyCenter:

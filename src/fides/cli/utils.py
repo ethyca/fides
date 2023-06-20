@@ -33,15 +33,15 @@ from fides.connectors.models import (
     OktaConfig,
 )
 from fides.core import api as _api
-from fides.core.config import FidesConfig
-from fides.core.config.credentials_settings import (
+from fides.config import FidesConfig
+from fides.config.credentials_settings import (
     get_config_aws_credentials,
     get_config_bigquery_credentials,
     get_config_database_credentials,
     get_config_okta_credentials,
 )
-from fides.core.config.helpers import get_config_from_file
-from fides.core.config.utils import get_dev_mode
+from fides.config.helpers import get_config_from_file
+from fides.config.utils import get_dev_mode
 
 APP = fides.__name__
 PACKAGE = "ethyca-fides"

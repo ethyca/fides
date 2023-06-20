@@ -9,7 +9,7 @@ from fideslang.models import DatasetCollection, DatasetField
 
 from fides.common import utils as common_utils
 from fides.core import utils as core_utils
-from fides.core.config import get_config
+from fides.config import get_config
 
 
 @pytest.fixture()

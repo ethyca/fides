@@ -14,7 +14,7 @@ from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache
 from fides.api.util.logger import Pii
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 CacheHealth = Literal["healthy", "unhealthy", "no cache configured"]
 HEALTH_ROUTER = APIRouter(tags=["Health"])

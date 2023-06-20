@@ -13,8 +13,8 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceType,
 )
 from fides.api.service.connectors.base_connector import DB_CONNECTOR_TYPE
-from fides.core.config import CONFIG
-from fides.core.config.config_proxy import ConfigProxy
+from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 
 class BaseEmailConnector(Generic[DB_CONNECTOR_TYPE], ABC):
