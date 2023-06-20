@@ -190,13 +190,17 @@ describe("Privacy notice driven consent", () => {
         cy.getByTestId("save-btn").click();
 
         cy.wait("@patchPrivacyPreference").then(() => {
-          // The first notice's cookies should still be around
-          // But there should be none of the second cookie's
-          cy.getAllCookies().then((cookies) => {
-            const filteredCookies = cookies.filter(
-              (c) => c.name !== CONSENT_COOKIE_NAME
-            );
-            expect(filteredCookies.length).to.eql(0);
+          // Use waitUntil to help with CI
+          cy.waitUntil(() =>
+            cy.getAllCookies().then((cookies) => cookies.length === 1)
+          ).then(() => {
+            // There should be no cookies related to the privacy notices around
+            cy.getAllCookies().then((cookies) => {
+              const filteredCookies = cookies.filter(
+                (c) => c.name !== CONSENT_COOKIE_NAME
+              );
+              expect(filteredCookies.length).to.eql(0);
+            });
           });
         });
       });
@@ -214,18 +218,23 @@ describe("Privacy notice driven consent", () => {
         cy.getByTestId("save-btn").click();
 
         cy.wait("@patchPrivacyPreference").then(() => {
-          // The first notice's cookies should still be around
-          // But there should be none of the second cookie's
-          cy.getAllCookies().then((cookies) => {
-            const filteredCookies = cookies.filter(
-              (c) => c.name !== CONSENT_COOKIE_NAME
-            );
-            expect(filteredCookies.length).to.eql(1);
-            cy.get("@notices").then((notices: any) => {
-              expect(filteredCookies[0]).to.have.property(
-                "name",
-                notices[0].cookies[0].name
+          // Use waitUntil to help with CI
+          cy.waitUntil(() =>
+            cy.getAllCookies().then((cookies) => cookies.length === 2)
+          ).then(() => {
+            // The first notice's cookies should still be around
+            // But there should be none of the second cookie's
+            cy.getAllCookies().then((cookies) => {
+              const filteredCookies = cookies.filter(
+                (c) => c.name !== CONSENT_COOKIE_NAME
               );
+              expect(filteredCookies.length).to.eql(1);
+              cy.get("@notices").then((notices: any) => {
+                expect(filteredCookies[0]).to.have.property(
+                  "name",
+                  notices[0].cookies[0].name
+                );
+              });
             });
           });
         });
@@ -241,8 +250,6 @@ describe("Privacy notice driven consent", () => {
         cy.getByTestId("save-btn").click();
 
         cy.wait("@patchPrivacyPreference").then(() => {
-          // The first notice's cookies should still be around
-          // But there should be none of the second cookie's
           cy.getAllCookies().then((cookies) => {
             const filteredCookies = cookies.filter(
               (c) => c.name !== CONSENT_COOKIE_NAME
