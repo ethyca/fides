@@ -8,7 +8,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
     upsert_privacy_experiences_after_config_update,
-    upsert_privacy_experiences_after_notice_update,
+    upsert_privacy_experiences_after_notice_update, PrivacyExperienceConfigHistory,
 )
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
@@ -123,11 +123,11 @@ class TestExperienceConfig:
         assert config.updated_at > config_updated_at
 
         assert config.histories.count() == 2
-        history = config.histories[1]
+        history = config.histories.order_by(PrivacyExperienceConfigHistory.created_at)[1]
         assert history.component == ComponentType.privacy_center
         assert config.experience_config_history_id == history.id
 
-        old_history = config.histories[0]
+        old_history = config.histories.order_by(PrivacyExperienceConfigHistory.created_at)[0]
         assert old_history.version == 1.0
         assert old_history.component == ComponentType.overlay
 
