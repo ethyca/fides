@@ -10,13 +10,12 @@ from fides.common.utils import handle_cli_response
 from fides.core.config import CONFIG
 from fides.core.utils import (
     Credentials,
-    echo_green,
-    echo_red,
     get_auth_header,
     get_credentials_path,
     read_credentials_file,
     write_credentials_file,
 )
+from fides.common.utils import echo_green, echo_red
 
 CREATE_USER_PATH = "/api/v1/user"
 LOGIN_PATH = "/api/v1/login"

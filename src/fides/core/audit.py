@@ -8,7 +8,7 @@ from fides.core.api_helpers import (
     get_server_resources,
     list_server_resources,
 )
-from fides.core.utils import echo_green, echo_red
+from fides.common.utils import echo_green, echo_red
 
 
 def audit_systems(

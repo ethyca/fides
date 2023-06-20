@@ -17,11 +17,9 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 from fides.connectors.models import ConnectorAuthFailureException
+from fides.common.utils import echo_red
 
 logger.bind(name="server_api")
-
-echo_red = partial(click.secho, fg="red", bold=True)
-echo_green = partial(click.secho, fg="green", bold=True)
 
 
 class Credentials(BaseModel):

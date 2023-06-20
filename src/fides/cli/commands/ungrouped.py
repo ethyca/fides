@@ -28,7 +28,8 @@ from fides.core import pull as _pull
 from fides.core import push as _push
 from fides.core.api_helpers import get_server_resource, list_server_resources
 from fides.core.config.create import create_and_update_config_file
-from fides.core.utils import echo_green, echo_red, git_is_dirty
+from fides.core.utils import git_is_dirty
+from fides.common.utils import echo_green, echo_red
 
 
 @click.command()
