@@ -7,7 +7,7 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     CLIENT_READ,
     CONNECTION_AUTHORIZE,
     CONNECTOR_TEMPLATE_REGISTER,

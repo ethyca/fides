@@ -7,7 +7,7 @@ import validators
 from pydantic import Field, validator
 from slowapi.wrappers import parse_many  # type: ignore
 
-from fides.api.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
 from fides.api.oauth.roles import OWNER
 

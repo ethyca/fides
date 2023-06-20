@@ -3,7 +3,7 @@ from typing import Dict
 
 import pytest
 
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     POLICY_READ,
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,

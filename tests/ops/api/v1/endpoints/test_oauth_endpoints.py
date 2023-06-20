@@ -6,7 +6,7 @@ from unittest.mock import Mock
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
     CLIENT_READ,

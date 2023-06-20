@@ -6,7 +6,7 @@ from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
 from starlette.status import HTTP_404_NOT_FOUND
 
-from fides.api.api.v1.scope_registry import CONNECTION_TYPE_READ
+from fides.common.api.scope_registry import CONNECTION_TYPE_READ
 from fides.api.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,

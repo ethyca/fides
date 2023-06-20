@@ -26,7 +26,7 @@ from fides.api.api import deps
 from fides.api.api.deps import get_db
 from fides.api.api.v1 import urn_registry as urls
 from fides.api.api.v1.endpoints.user_permission_endpoints import validate_user_id
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     SCOPE_REGISTRY,
     SYSTEM_MANAGER_DELETE,
     SYSTEM_MANAGER_READ,

@@ -4,7 +4,7 @@ from fastapi import HTTPException, Security
 from loguru import logger
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from fides.api.api.v1.scope_registry import MASKING_EXEC, MASKING_READ
+from fides.common.api.scope_registry import MASKING_EXEC, MASKING_READ
 from fides.api.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
 from fides.api.common_exceptions import NoSuchStrategyException, ValidationError
 from fides.api.oauth.utils import verify_oauth_client_prod

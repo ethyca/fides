@@ -11,7 +11,7 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     SAAS_CONNECTION_INSTANTIATE,

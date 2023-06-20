@@ -13,7 +13,7 @@ from starlette.status import HTTP_200_OK
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     SAAS_CONNECTION_INSTANTIATE,

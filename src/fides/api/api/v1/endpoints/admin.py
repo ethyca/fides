@@ -3,7 +3,7 @@ from typing import Dict
 
 from fastapi import Security
 
-from fides.api.api.v1 import scope_registry
+from fides.common.api import scope_registry
 from fides.api.api.v1.endpoints import API_PREFIX
 from fides.api.db.database import configure_db, reset_db
 from fides.api.oauth.utils import verify_oauth_client_prod

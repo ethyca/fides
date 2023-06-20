@@ -8,7 +8,7 @@ from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NO
 
 from fides.api.api import deps
 from fides.api.api.v1 import urn_registry as urls
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     USER_PERMISSION_ASSIGN_OWNERS,
     USER_PERMISSION_CREATE,
     USER_PERMISSION_READ,

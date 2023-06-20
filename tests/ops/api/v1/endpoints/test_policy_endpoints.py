@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.api.v1 import scope_registry as scopes
+from fides.common.api import scope_registry as scopes
 from fides.api.api.v1.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI
 from fides.api.api.v1.urn_registry import POLICY_LIST as POLICY_CREATE_URI
 from fides.api.api.v1.urn_registry import RULE_DETAIL as RULE_DETAIL_URI

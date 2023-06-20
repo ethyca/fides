@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session, make_transient
 from sqlalchemy.orm.attributes import flag_modified
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     CTL_DATASET_READ,
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,

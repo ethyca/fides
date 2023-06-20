@@ -5,7 +5,7 @@ from fastapi import Depends, Security
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fides.api.api.v1 import scope_registry
+from fides.common.api import scope_registry
 from fides.api.db.crud import list_resource
 from fides.api.db.ctl_session import get_async_db
 from fides.api.models.sql_models import Evaluation  # type: ignore[attr-defined]

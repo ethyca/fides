@@ -3,7 +3,7 @@ import secrets
 from fastapi import Security
 from loguru import logger
 
-from fides.api.api.v1.scope_registry import ENCRYPTION_EXEC
+from fides.common.api.scope_registry import ENCRYPTION_EXEC
 from fides.api.api.v1.urn_registry import (
     DECRYPT_AES,
     ENCRYPT_AES,

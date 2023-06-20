@@ -10,7 +10,7 @@ from loguru import logger as log
 from pydantic import BaseModel, root_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fides.api.api.v1 import scope_registry
+from fides.common.api import scope_registry
 from fides.api.api.v1.endpoints import API_PREFIX
 from fides.api.db.crud import get_resource
 from fides.api.db.ctl_session import get_async_db

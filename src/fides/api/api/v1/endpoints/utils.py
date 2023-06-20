@@ -10,7 +10,7 @@ from slowapi.util import get_remote_address  # type: ignore
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_400_BAD_REQUEST
 
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     CTL_DATASET,
     CTL_POLICY,
     DATA_CATEGORY,

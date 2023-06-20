@@ -24,7 +24,7 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,

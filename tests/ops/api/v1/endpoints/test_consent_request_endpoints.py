@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from requests import Session
 
-from fides.api.api.v1.scope_registry import CONNECTION_READ, CONSENT_READ
+from fides.common.api.scope_registry import CONNECTION_READ, CONSENT_READ
 from fides.api.api.v1.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,

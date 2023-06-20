@@ -16,7 +16,7 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_READ,
     SCOPE_REGISTRY,
     STORAGE_READ,

@@ -9,7 +9,7 @@ from click.testing import CliRunner
 from git.repo import Repo
 from py._path.local import LocalPath
 
-from fides.api.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.cli import cli
 from fides.core.config import CONFIG

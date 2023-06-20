@@ -18,7 +18,7 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1 import scope_registry
+from fides.common.api import scope_registry
 from fides.api.api.v1 import urn_registry as urls
 from fides.api.common_exceptions import (
     DataCategoryNotSupported,

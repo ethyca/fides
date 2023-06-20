@@ -23,7 +23,7 @@ from fides.api.api.v1.endpoints.utils import (
     fides_limiter,
     validate_start_and_end_filters,
 )
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     CURRENT_PRIVACY_PREFERENCE_READ,
     PRIVACY_PREFERENCE_HISTORY_READ,
 )

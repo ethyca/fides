@@ -18,7 +18,7 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     CONNECTION_AUTHORIZE,
     CONNECTOR_TEMPLATE_REGISTER,
     SAAS_CONFIG_CREATE_OR_UPDATE,

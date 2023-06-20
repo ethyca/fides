@@ -6,7 +6,7 @@ from typing import List
 import pytest
 from fastapi_pagination import Params
 
-from fides.api.api.v1.scope_registry import USER_CREATE
+from fides.common.api.scope_registry import USER_CREATE
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -28,7 +28,7 @@ from typing import Any, Dict, Generator
 import pytest
 
 from fides.api import middleware as _middleware
-from fides.api.api.v1.scope_registry import USER_CREATE
+from fides.common.api.scope_registry import USER_CREATE
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,

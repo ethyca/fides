@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import pytest
 
-from fides.api.api.v1.scope_registry import DATASET_CREATE_OR_UPDATE, SCOPE_REGISTRY
+from fides.common.api.scope_registry import DATASET_CREATE_OR_UPDATE, SCOPE_REGISTRY
 from fides.api.cryptography.cryptographic_util import (
     generate_salt,
     generate_secure_random_string,

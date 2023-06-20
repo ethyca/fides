@@ -15,7 +15,7 @@ from starlette.status import (
 
 from fides.api import common_exceptions
 from fides.api.api import deps
-from fides.api.api.v1 import scope_registry as scopes
+from fides.common.api import scope_registry as scopes
 from fides.api.api.v1 import urn_registry as urls
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,

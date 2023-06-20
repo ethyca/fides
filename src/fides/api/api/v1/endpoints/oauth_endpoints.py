@@ -14,7 +14,7 @@ from fides.api.api.deps import get_db
 from fides.api.api.v1.endpoints.saas_config_endpoints import (
     verify_oauth_connection_config,
 )
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
     CLIENT_READ,

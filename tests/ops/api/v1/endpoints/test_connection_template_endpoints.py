@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
     SAAS_CONNECTION_INSTANTIATE,

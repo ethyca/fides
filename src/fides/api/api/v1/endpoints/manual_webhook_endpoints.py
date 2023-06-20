@@ -16,7 +16,7 @@ from starlette.status import (
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.dataset_endpoints import _get_connection_config
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
     WEBHOOK_READ,

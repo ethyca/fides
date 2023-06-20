@@ -5,7 +5,7 @@ import pytest
 from fastapi.security import SecurityScopes
 from fideslang.models import System as SystemSchema
 
-from fides.api.api.v1.scope_registry import POLICY_CREATE_OR_UPDATE, SYSTEM_UPDATE
+from fides.common.api.scope_registry import POLICY_CREATE_OR_UPDATE, SYSTEM_UPDATE
 from fides.api.common_exceptions import AuthorizationError
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,

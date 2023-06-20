@@ -5,7 +5,7 @@ from unittest.mock import Mock
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import ENCRYPTION_EXEC, STORAGE_CREATE_OR_UPDATE
+from fides.common.api.scope_registry import ENCRYPTION_EXEC, STORAGE_CREATE_OR_UPDATE
 from fides.api.api.v1.urn_registry import (
     DECRYPT_AES,
     ENCRYPT_AES,

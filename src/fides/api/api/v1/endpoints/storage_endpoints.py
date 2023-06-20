@@ -21,7 +21,7 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,

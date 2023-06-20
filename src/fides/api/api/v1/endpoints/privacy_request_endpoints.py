@@ -35,7 +35,7 @@ from fides.api.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
 )
 from fides.api.api.v1.endpoints.utils import validate_start_and_end_filters
-from fides.api.api.v1.scope_registry import (
+from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,

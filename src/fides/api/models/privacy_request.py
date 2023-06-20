@@ -27,7 +27,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.api.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
+from fides.common.api.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fides.api.common_exceptions import (
     IdentityVerificationException,
     ManualWebhookFieldsUnset,

@@ -21,7 +21,7 @@ from fides.api.api.v1.endpoints.utils import (
     forbid_if_editing_any_is_default,
     forbid_if_editing_is_default,
 )
-from fides.api.api.v1.scope_registry import CREATE, DELETE, READ, UPDATE
+from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
 from fides.api.db.crud import (
     create_resource,
     delete_resource,

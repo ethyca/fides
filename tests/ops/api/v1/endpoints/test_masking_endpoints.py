@@ -2,7 +2,7 @@ import json
 
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import MASKING_EXEC, MASKING_READ
+from fides.common.api.scope_registry import MASKING_EXEC, MASKING_READ
 from fides.api.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
 from fides.api.schemas.masking.masking_api import MaskingAPIResponse
 from fides.api.schemas.masking.masking_configuration import (

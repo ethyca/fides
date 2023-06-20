@@ -27,7 +27,7 @@ from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
 from fides.api.api.v1.endpoints.utils import validate_start_and_end_filters
-from fides.api.api.v1.scope_registry import CONSENT_READ
+from fides.common.api.scope_registry import CONSENT_READ
 from fides.api.api.v1.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,
