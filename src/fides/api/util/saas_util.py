@@ -222,11 +222,18 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
                 "'unflatten_dict' expects a flattened dictionary as input."
             )
         keys = path.split(separator)
-        target = reduce(
-            lambda current, key: current.setdefault(key, {}),
-            keys[:-1],
-            output,
-        )
+        target = output
+        for i, current_key in enumerate(keys[:-1]):
+            next_key = keys[i + 1]
+            if next_key.isdigit():
+                target = target.setdefault(current_key, [])
+            else:
+                if isinstance(target, dict):
+                    target = target.setdefault(current_key, {})
+                elif isinstance(target, list):
+                    while len(target) <= int(current_key):
+                        target.append({})
+                    target = target[int(current_key)]
         try:
             target[keys[-1]] = value
         except TypeError as exc:
