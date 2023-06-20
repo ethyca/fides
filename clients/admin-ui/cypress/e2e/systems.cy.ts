@@ -524,7 +524,6 @@ describe("System management page", () => {
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
 
-      // Need to update the intercept to now have 2 data uses for when redux refetches
       const newDeclaration = {
         id: "pri_bf701ddb-1d05-48f9-913f-b5ff05b8f987",
         name: "Second data use",
@@ -535,7 +534,6 @@ describe("System management page", () => {
         data_subjects: ["anonymous"],
         dataset_references: [],
       };
-
       // We need to update both the PUT and GET fixtures to make sure they return
       // the data use we are adding. This is how we can get the form into a state
       // where there are both "accordion" declarations and the one declaration
