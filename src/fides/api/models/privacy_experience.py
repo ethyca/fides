@@ -308,7 +308,7 @@ class PrivacyExperience(Base):
 
     @staticmethod
     def get_experience_by_region_and_component(
-        db: Session, region: PrivacyNoticeRegion, component: ComponentType
+        db: Session, region: str, component: ComponentType
     ) -> Optional[PrivacyExperience]:
         """Load an experience for a given region and component type"""
         return (
@@ -322,7 +322,7 @@ class PrivacyExperience(Base):
 
     @staticmethod
     def get_experiences_by_region(
-        db: Session, region: PrivacyNoticeRegion
+        db: Session, region: str
     ) -> Tuple[Optional[PrivacyExperience], Optional[PrivacyExperience]]:
         """Load both the overlay and privacy center experience for a given region"""
         overlay_experience: Optional[
@@ -418,7 +418,7 @@ def upsert_privacy_experiences_after_notice_update(
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db=db, region=region)
+        ) = PrivacyExperience.get_experiences_by_region(db=db, region=region.value)
 
         privacy_center_notices: Query = get_privacy_notices_by_region_and_component(
             db, region, ComponentType.privacy_center
@@ -503,7 +503,7 @@ def upsert_privacy_experiences_after_config_update(
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, region)
+        ) = PrivacyExperience.get_experiences_by_region(db, region.value)
 
         existing_experience: Optional[PrivacyExperience] = (
             overlay_experience

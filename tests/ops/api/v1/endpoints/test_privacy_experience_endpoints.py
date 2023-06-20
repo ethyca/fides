@@ -150,6 +150,8 @@ class TestGetPrivacyExperiences:
         url,
         privacy_experience_privacy_center,
         privacy_experience_overlay,
+        privacy_notice_france,
+        privacy_experience_privacy_center_france,
     ):
         resp = api_client.get(
             url + "?region=us_co",
@@ -176,13 +178,22 @@ class TestGetPrivacyExperiences:
         resp = api_client.get(
             url + "?region=bad_region",
         )
-        assert resp.status_code == 422
-
-        resp = api_client.get(
-            url + "?region=eu_it",
-        )
         assert resp.status_code == 200
         assert resp.json()["total"] == 0
+
+        resp = api_client.get(
+            url + "?region=fr_idg",
+        )  # There are no experiences with "fr_idg" so we fell back to searching for "fr"
+        assert resp.status_code == 200
+        assert resp.json()["total"] == 1
+        data = resp.json()
+        assert len(data["items"]) == 1
+        assert {exp["id"] for exp in data["items"]} == {
+            privacy_experience_privacy_center_france.id
+        }
+        assert len(data["items"][0]["privacy_notices"]) == 1
+        assert data["items"][0]["privacy_notices"][0]["regions"] == ["fr"]
+        assert data["items"][0]["privacy_notices"][0]["id"] == privacy_notice_france.id
 
     def test_get_privacy_experiences_components_filter(
         self,

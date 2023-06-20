@@ -2271,3 +2271,43 @@ def privacy_experience_overlay(db: Session, experience_config_overlay) -> Genera
 
     yield privacy_experience
     privacy_experience.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_experience_privacy_center_france(
+    db: Session, experience_config_privacy_center
+) -> Generator:
+    privacy_experience = PrivacyExperience.create(
+        db=db,
+        data={
+            "component": ComponentType.privacy_center,
+            "region": PrivacyNoticeRegion.fr,
+            "experience_config_id": experience_config_privacy_center.id,
+        },
+    )
+
+    yield privacy_experience
+    privacy_experience.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_notice_france(db: Session) -> Generator:
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice",
+            "notice_key": "example_privacy_notice",
+            "description": "user description",
+            "regions": [
+                PrivacyNoticeRegion.fr,
+            ],
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["marketing.advertising", "third_party_sharing"],
+            "enforcement_level": EnforcementLevel.system_wide,
+            "displayed_in_privacy_center": True,
+            "displayed_in_overlay": False,
+            "displayed_in_api": False,
+        },
+    )
+
+    yield privacy_notice
