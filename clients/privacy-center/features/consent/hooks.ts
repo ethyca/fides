@@ -1,4 +1,4 @@
-import { getOrMakeFidesCookie } from "fides-js";
+import { getOrMakeFidesCookie, isNewFidesCookie } from "fides-js";
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { PrivacyNoticeRegion } from "~/types/api";
@@ -30,7 +30,13 @@ export const useSubscribeToPrivacyExperienceQuery = () => {
   const dispatch = useAppDispatch();
   const { IS_GEOLOCATION_ENABLED, GEOLOCATION_API_URL } = useSettings();
   const cookie = getOrMakeFidesCookie();
-  const { fides_user_device_id: fidesUserDeviceId } = cookie.identity;
+  const hasExistingCookie = !isNewFidesCookie(cookie);
+  // fidesUserDeviceId is only stable in this function if the cookie already exists
+  // Using it when the cookie is new results in an unstable device ID and can
+  // cause infinite fetching of the privacy experience, so make sure we only use a saved one
+  const fidesUserDeviceId = hasExistingCookie
+    ? cookie.identity.fides_user_device_id
+    : undefined;
 
   const skipFetchExperience = !useAppSelector(selectIsNoticeDriven);
   const skipFetchGeolocation =
@@ -41,7 +47,9 @@ export const useSubscribeToPrivacyExperienceQuery = () => {
   });
 
   useEffect(() => {
-    dispatch(setFidesUserDeviceId(fidesUserDeviceId));
+    if (fidesUserDeviceId) {
+      dispatch(setFidesUserDeviceId(fidesUserDeviceId));
+    }
   }, [dispatch, fidesUserDeviceId]);
 
   const region = useAppSelector(selectUserRegion);
