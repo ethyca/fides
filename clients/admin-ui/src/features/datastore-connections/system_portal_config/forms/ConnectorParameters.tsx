@@ -327,10 +327,8 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   setSelectedConnectionOption,
 }) => {
   const [response, setResponse] = useState<any>();
-  const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
 
   const handleTestConnectionClick = (value: any) => {
-    if (connectionConfig) trigger(connectionConfig?.key);
     setResponse(value);
   };
   const skip = connectionOption.type === SystemType.MANUAL;
@@ -392,13 +390,19 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 
       {connectionConfig && (
       <Flex mt="0px" justifyContent="center" alignItems="center">
-        <Spacer />
-        <TestData
-          succeeded={connectionConfig?.last_test_succeeded}
-          timestamp={connectionConfig?.last_test_timestamp || ""}
-        />
-        <Spacer />
-      </Flex>)}
+      <Spacer />
+        {response
+          ? <TestData
+              succeeded={response.data.test_status === "succeeded"}
+              timestamp={response.fulfilledTimeStamp}
+            />
+          : <TestData 
+              succeeded={connectionConfig?.last_test_succeeded}
+              timestamp={connectionConfig?.last_test_timestamp || ""}
+          /> 
+          }
+      <Spacer />
+    </Flex>)}
 
       {response && (
         <SlideFade in>
