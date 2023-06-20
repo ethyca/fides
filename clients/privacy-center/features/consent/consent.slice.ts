@@ -149,7 +149,10 @@ export const consentSlice = createSlice({
       });
     },
 
-    setFidesUserDeviceId(draftState, { payload }: PayloadAction<string>) {
+    setFidesUserDeviceId(
+      draftState,
+      { payload }: PayloadAction<string | undefined>
+    ) {
       draftState.fidesUserDeviceId = payload;
     },
   },
@@ -197,6 +200,7 @@ export const selectUserRegion = createSelector(
 export const selectPrivacyExperience = createSelector(
   [(RootState) => RootState, selectUserRegion, selectFidesUserDeviceId],
   (RootState, region, deviceId) => {
+    console.log({ deviceId });
     if (!region) {
       return undefined;
     }

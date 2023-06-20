@@ -47,9 +47,7 @@ export const useSubscribeToPrivacyExperienceQuery = () => {
   });
 
   useEffect(() => {
-    if (fidesUserDeviceId) {
-      dispatch(setFidesUserDeviceId(fidesUserDeviceId));
-    }
+    dispatch(setFidesUserDeviceId(fidesUserDeviceId));
   }, [dispatch, fidesUserDeviceId]);
 
   const region = useAppSelector(selectUserRegion);
