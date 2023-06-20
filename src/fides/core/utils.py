@@ -1,13 +1,11 @@
 import glob
 import re
-from functools import partial
 from hashlib import sha1
 from os import getenv
 from os.path import isfile
 from pathlib import Path
 from typing import Dict, Iterator, List
 
-import click
 import sqlalchemy
 import toml
 from fideslang.models import DatasetField, FidesModel

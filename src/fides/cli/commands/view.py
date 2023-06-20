@@ -6,8 +6,10 @@ from toml import dumps
 from fides.cli.utils import with_analytics
 from fides.common.utils import (
     echo_red,
-    get_credentials_path,
     print_divider,
+)
+from fides.core.utils import (
+    get_credentials_path,
     read_credentials_file,
 )
 
