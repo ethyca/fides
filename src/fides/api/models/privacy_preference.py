@@ -22,7 +22,6 @@ from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeHistory,
-    PrivacyNoticeRegion,
     UserConsentPreference,
 )
 from fides.api.models.privacy_request import (
@@ -155,7 +154,7 @@ class PrivacyPreferenceHistory(Base):
         ),
     )
 
-    user_geography = Column(EnumColumn(PrivacyNoticeRegion), index=True)
+    user_geography = Column(String, index=True)
 
     # Relationships
     privacy_notice_history = relationship(PrivacyNoticeHistory)

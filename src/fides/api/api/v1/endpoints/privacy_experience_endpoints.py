@@ -1,5 +1,5 @@
 import uuid
-from html import unescape, escape
+from html import escape, unescape
 from typing import List, Optional
 
 from fastapi import Depends, HTTPException, Request, Response
@@ -7,7 +7,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
-from sqlalchemy.orm import Session, Query
+from sqlalchemy.orm import Query, Session
 from starlette.status import (
     HTTP_200_OK,
     HTTP_404_NOT_FOUND,
