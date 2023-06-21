@@ -173,7 +173,7 @@ class TestShouldOptIntoService:
         db,
         system,
         privacy_request_with_consent_policy,
-        privacy_notice_eu_fr_provide_service_frontend_only,
+        privacy_notice_fr_provide_service_frontend_only,
         fides_user_provided_identity,
     ):
         """
@@ -185,7 +185,7 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": preference,
-                "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.privacy_notice_history_id,
+                "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.privacy_notice_history_id,
                 "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
@@ -321,14 +321,14 @@ class TestCacheSystemStatusesForConsentReporting:
         privacy_request_with_consent_policy,
         connection_config,
         privacy_preference_history,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ):
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
 
-        privacy_preference_history_eu_fr_provide_service_frontend_only.privacy_request_id = (
+        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
@@ -338,21 +338,21 @@ class TestCacheSystemStatusesForConsentReporting:
             privacy_request_with_consent_policy,
             connection_config,
             relevant_preferences=[
-                privacy_preference_history_eu_fr_provide_service_frontend_only
+                privacy_preference_history_fr_provide_service_frontend_only
             ],
             relevant_user_identities={"email": "customer-1@example.com"},
         )
 
         db.refresh(privacy_preference_history)
-        db.refresh(privacy_preference_history_eu_fr_provide_service_frontend_only)
+        db.refresh(privacy_preference_history_fr_provide_service_frontend_only)
 
         # Relevant systems
         assert (
-            privacy_preference_history_eu_fr_provide_service_frontend_only.affected_system_status
+            privacy_preference_history_fr_provide_service_frontend_only.affected_system_status
             == {connection_config.name: "pending"}
         )
         assert (
-            privacy_preference_history_eu_fr_provide_service_frontend_only.secondary_user_ids
+            privacy_preference_history_fr_provide_service_frontend_only.secondary_user_ids
             == {"email": "customer-1@example.com"}
         )
 
@@ -368,14 +368,14 @@ class TestCacheSystemStatusesForConsentReporting:
         privacy_request_with_consent_policy,
         connection_config,
         privacy_preference_history,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ):
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
 
-        privacy_preference_history_eu_fr_provide_service_frontend_only.privacy_request_id = (
+        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
@@ -385,7 +385,7 @@ class TestCacheSystemStatusesForConsentReporting:
             privacy_request_with_consent_policy,
             connection_config,
             relevant_preferences=[
-                privacy_preference_history_eu_fr_provide_service_frontend_only
+                privacy_preference_history_fr_provide_service_frontend_only
             ],
             relevant_user_identities={"email": "customer-1@example.com"},
         )
@@ -395,15 +395,15 @@ class TestCacheSystemStatusesForConsentReporting:
         )
 
         db.refresh(privacy_preference_history)
-        db.refresh(privacy_preference_history_eu_fr_provide_service_frontend_only)
+        db.refresh(privacy_preference_history_fr_provide_service_frontend_only)
 
         # Relevant systems
         assert (
-            privacy_preference_history_eu_fr_provide_service_frontend_only.affected_system_status
+            privacy_preference_history_fr_provide_service_frontend_only.affected_system_status
             == {connection_config.name: "complete"}
         )
         assert (
-            privacy_preference_history_eu_fr_provide_service_frontend_only.secondary_user_ids
+            privacy_preference_history_fr_provide_service_frontend_only.secondary_user_ids
             == {"email": "customer-1@example.com"}
         )
 
@@ -419,14 +419,14 @@ class TestCacheSystemStatusesForConsentReporting:
         privacy_request_with_consent_policy,
         connection_config,
         privacy_preference_history,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ):
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
 
-        privacy_preference_history_eu_fr_provide_service_frontend_only.privacy_request_id = (
+        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
@@ -436,7 +436,7 @@ class TestCacheSystemStatusesForConsentReporting:
             privacy_request_with_consent_policy,
             connection_config,
             relevant_preferences=[
-                privacy_preference_history_eu_fr_provide_service_frontend_only
+                privacy_preference_history_fr_provide_service_frontend_only
             ],
             relevant_user_identities={"email": "customer-1@example.com"},
         )
@@ -446,15 +446,15 @@ class TestCacheSystemStatusesForConsentReporting:
         )
 
         db.refresh(privacy_preference_history)
-        db.refresh(privacy_preference_history_eu_fr_provide_service_frontend_only)
+        db.refresh(privacy_preference_history_fr_provide_service_frontend_only)
 
         # Relevant systems
         assert (
-            privacy_preference_history_eu_fr_provide_service_frontend_only.affected_system_status
+            privacy_preference_history_fr_provide_service_frontend_only.affected_system_status
             == {connection_config.name: "error"}
         )
         assert (
-            privacy_preference_history_eu_fr_provide_service_frontend_only.secondary_user_ids
+            privacy_preference_history_fr_provide_service_frontend_only.secondary_user_ids
             == {"email": "customer-1@example.com"}
         )
 

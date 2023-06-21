@@ -704,13 +704,13 @@ class TestPrivacyNoticeModel:
         privacy_notice,
         privacy_notice_us_ca_provide,
         privacy_notice_us_co_provide_service_operations,
-        privacy_notice_eu_fr_provide_service_frontend_only,
+        privacy_notice_fr_provide_service_frontend_only,
     ):
         """
         privacy_notice fixture: marketing.advertising/third party sharing
         privacy_notice_us_ca_provide fixture: essential
         privacy_notice_us_co_provide_service_operations: essential.service.operations
-        privacy_notice_eu_fr_provide_service_frontend_only:  essential.service but fe only
+        privacy_notice_fr_provide_service_frontend_only:  essential.service but fe only
         """
 
         # Only system's data use is advertising
@@ -728,7 +728,7 @@ class TestPrivacyNoticeModel:
             == []
         )
         assert (
-            privacy_notice_eu_fr_provide_service_frontend_only.histories[
+            privacy_notice_fr_provide_service_frontend_only.histories[
                 0
             ].calculate_relevant_systems(db)
             == []
@@ -748,7 +748,7 @@ class TestPrivacyNoticeModel:
             == []
         ), "Privacy notice data use is a child of the system: N/A"
         assert (
-            privacy_notice_eu_fr_provide_service_frontend_only.histories[
+            privacy_notice_fr_provide_service_frontend_only.histories[
                 0
             ].calculate_relevant_systems(db)
             == []

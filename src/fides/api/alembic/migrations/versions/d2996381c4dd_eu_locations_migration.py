@@ -64,7 +64,10 @@ def get_replacement_region(
 
 
 def upgrade_region_list(
-    bind: Connection, select_query: TextClause, update_query: TextClause, region_mapping: Dict[str, str]
+    bind: Connection,
+    select_query: TextClause,
+    update_query: TextClause,
+    region_mapping: Dict[str, str],
 ) -> None:
     """Upgrade regions for tables that have a "regions" list field"""
     existing_records: ResultProxy = bind.execute(select_query)

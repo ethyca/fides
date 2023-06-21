@@ -1577,7 +1577,7 @@ def privacy_experience_france_overlay(
         db=db,
         data={
             "component": ComponentType.overlay,
-            "region": PrivacyNoticeRegion.eu_fr,
+            "region": PrivacyNoticeRegion.fr,
             "experience_config_id": experience_config_overlay.id,
         },
     )
@@ -1587,7 +1587,7 @@ def privacy_experience_france_overlay(
 
 
 @pytest.fixture(scope="function")
-def privacy_notice_eu_fr_provide_service_frontend_only(db: Session) -> Generator:
+def privacy_notice_fr_provide_service_frontend_only(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
         data={
@@ -1629,8 +1629,8 @@ def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator
 
 
 @pytest.fixture(scope="function")
-def privacy_preference_history_eu_fr_provide_service_frontend_only(
-    db: Session, privacy_notice_eu_fr_provide_service_frontend_only
+def privacy_preference_history_fr_provide_service_frontend_only(
+    db: Session, privacy_notice_fr_provide_service_frontend_only
 ) -> Generator:
     provided_identity_data = {
         "privacy_request_id": None,
@@ -1645,7 +1645,8 @@ def privacy_preference_history_eu_fr_provide_service_frontend_only(
         data={
             "preference": "opt_in",
             "provided_identity_id": provided_identity.id,
-            "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.privacy_notice_history_id,
+            "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.privacy_notice_history_id,
+            "user_geography": "fr_idg",
         },
         check_name=False,
     )
