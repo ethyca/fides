@@ -22,6 +22,7 @@ The types of changes are:
 - Included optional env vars to have postgres or Redshift connected via bastion host [#3374](https://github.com/ethyca/fides/pull/3374/)
 - Support for acknowledge button for notice-only Privacy Notices and to disable toggling them off [#3546](https://github.com/ethyca/fides/pull/3546)
 - HTML format for privacy request storage destinations [#3427](https://github.com/ethyca/fides/pull/3427)
+- Access and erasure support for SurveyMonkey [#3590](https://github.com/ethyca/fides/pull/3590)
 
 ### Changed
 
@@ -37,6 +38,7 @@ The types of changes are:
 - Updated Privacy Experience Safe Strings Serialization [#3600](https://github.com/ethyca/fides/pull/3600/)
 - Only create default experience configs on startup, not update [#3605](https://github.com/ethyca/fides/pull/3605)
 - Update to latest asyncpg dependency to avoid build error [#3614](https://github.com/ethyca/fides/pull/3614)
+- Fix bug where editing a data use on a system could delete existing data uses [#3627](https://github.com/ethyca/fides/pull/3627)
 
 ### Developer Experience
 
