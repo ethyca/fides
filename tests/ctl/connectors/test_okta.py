@@ -8,8 +8,8 @@ from okta.models import Application as OktaApplication
 from py._path.local import LocalPath
 
 import fides.connectors.okta as okta_connector
+from fides.config import FidesConfig
 from fides.connectors.models import OktaConfig
-from fides.core.config import FidesConfig
 
 
 @pytest.fixture()

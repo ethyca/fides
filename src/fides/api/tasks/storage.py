@@ -28,7 +28,7 @@ from fides.api.util.encryption.aes_gcm_encryption_scheme import (
 )
 from fides.api.util.storage_authenticator import get_s3_session
 from fides.api.util.storage_util import storage_json_encoder
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 

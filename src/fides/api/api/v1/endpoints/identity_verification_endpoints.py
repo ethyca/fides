@@ -8,7 +8,7 @@ from fides.api.api.v1 import urn_registry as urls
 from fides.api.models.messaging import MessagingConfig
 from fides.api.schemas.identity_verification import IdentityVerificationConfigResponse
 from fides.api.util.api_router import APIRouter
-from fides.core.config.config_proxy import ConfigProxy
+from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Identity Verification"], prefix=urls.V1_URL_PREFIX)
 

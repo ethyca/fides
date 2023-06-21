@@ -25,7 +25,7 @@ from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.core.config import get_config
+from fides.config import get_config
 
 CONFIG = get_config()
 

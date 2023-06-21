@@ -37,7 +37,7 @@ from fides.api.db.base_class import FidesBase as FideslibBase
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 class FidesBase(FideslibBase):

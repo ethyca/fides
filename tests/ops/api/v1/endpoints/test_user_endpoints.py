@@ -16,19 +16,6 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
-    PRIVACY_REQUEST_READ,
-    SCOPE_REGISTRY,
-    STORAGE_READ,
-    SYSTEM_MANAGER_DELETE,
-    SYSTEM_MANAGER_READ,
-    SYSTEM_MANAGER_UPDATE,
-    USER_CREATE,
-    USER_DELETE,
-    USER_PASSWORD_RESET,
-    USER_READ,
-    USER_UPDATE,
-)
 from fides.api.api.v1.urn_registry import (
     LOGIN,
     LOGOUT,
@@ -50,7 +37,20 @@ from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
 from fides.api.oauth.utils import extract_payload
-from fides.core.config import CONFIG
+from fides.common.api.scope_registry import (
+    PRIVACY_REQUEST_READ,
+    SCOPE_REGISTRY,
+    STORAGE_READ,
+    SYSTEM_MANAGER_DELETE,
+    SYSTEM_MANAGER_READ,
+    SYSTEM_MANAGER_UPDATE,
+    USER_CREATE,
+    USER_DELETE,
+    USER_PASSWORD_RESET,
+    USER_READ,
+    USER_UPDATE,
+)
+from fides.config import CONFIG
 from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size

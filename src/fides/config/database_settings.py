@@ -8,7 +8,7 @@ from urllib.parse import quote, urlencode
 
 from pydantic import Field, PostgresDsn, validator
 
-from fides.core.config.utils import get_test_mode
+from fides.config.utils import get_test_mode
 
 from .fides_settings import FidesSettings
 

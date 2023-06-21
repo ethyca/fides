@@ -10,8 +10,8 @@ from click import echo
 from pydantic import BaseSettings
 
 from fides.cli.utils import request_analytics_consent
-from fides.core.config import FidesConfig, build_config
-from fides.core.config.utils import replace_config_value
+from fides.config import FidesConfig, build_config
+from fides.config.utils import replace_config_value
 
 CONFIG_DOCS_URL = "https://ethyca.github.io/fides/stable/config/"
 HELP_LINK = f"# For more info, please visit: {CONFIG_DOCS_URL}"

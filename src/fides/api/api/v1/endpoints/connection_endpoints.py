@@ -16,11 +16,6 @@ from sqlalchemy_utils import escape_like
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
 from fides.api.api import deps
-from fides.api.api.v1.scope_registry import (
-    CONNECTION_CREATE_OR_UPDATE,
-    CONNECTION_DELETE,
-    CONNECTION_READ,
-)
 from fides.api.api.v1.urn_registry import (
     CONNECTION_BY_KEY,
     CONNECTION_SECRETS,
@@ -58,6 +53,11 @@ from fides.api.util.connection_util import (
     validate_secrets,
 )
 from fides.api.util.logger import Pii
+from fides.common.api.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_DELETE,
+    CONNECTION_READ,
+)
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 
