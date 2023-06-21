@@ -14,6 +14,8 @@ git clone https://github.com/ethyca/fides
 
 Once that's complete, there are a few different tools to install for get everything up and running.
 
+---
+
 ## Requirements
 
 The primary requirements for contributing to Fides are `Docker` and `Python`. The download links as well as minimum required versions are provided below
@@ -24,32 +26,38 @@ The primary requirements for contributing to Fides are `Docker` and `Python`. Th
 * __Python (version 3.8 through 3.10)__ - To simplify the installation experience and create a more stable Python installation that can be managed indepently, we recommend installing Python via Anaconda. The installer for Anaconda can be found [here](https://www.anaconda.com/download).
 
 !!! warning
-_Mac Users_: Apple's ARM silicon (M-series chips, i.e. M1, M2, M2 Max, etc.) have a few extra requirements to get Fides running:
+    _Mac Users_: Apple's ARM silicon (M-series chips, i.e. M1, M2, M2 Max, etc.) have a few extra requirements to get Fides running
 
-### Optional: Explicitly set resource allocations in Docker Desktop
+### Additional Requirements for Mac Users (ARM-based)
 
-* CPUs: 4
-* Memory:8GB
-* Disk Limit: 200GB
-
-### Required: Install FreeTDS and OpenSSL
+Install FreeTDS and OpenSSL
 
 ```bash
 brew install freetds openssl
 ```
 
-**Add the following to your run commands (i.e. `.zshrc`), updating any path/versions to match yours**
+Add the following to your run commands (i.e. `.zshrc`), updating any path/versions to match yours
 
 ```bash
 export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"`
 export CFLAGS="-I/opt/homebrew/Cellar/freetds/1.3.18/include"
 ```
 
-Now that those are installed, the final step is to install the Python dev requirements for the Fides project. We recommend doing this in a virtual environment or using [pipx](https://pypa.github.io/pipx/), but specific installation details for those tools are outside the scope of this guide.
+### Optional Requirements for Mac Users (ARM-based)
+
+Explicitly set resource allocations in Docker Desktop
+
+* CPUs: 4
+* Memory:8GB
+* Disk Limit: 200GB
+
+Now that those are installed, the final step is to install the Python dev requirements for the Fides project. We recommend doing this in a virtual environment.
 
 ```bash
 pip install -r dev-requirements.txt
 ```
+
+---
 
 ### Write your code
 
