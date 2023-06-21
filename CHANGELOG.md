@@ -23,6 +23,7 @@ The types of changes are:
 - Support for acknowledge button for notice-only Privacy Notices and to disable toggling them off [#3546](https://github.com/ethyca/fides/pull/3546)
 - HTML format for privacy request storage destinations [#3427](https://github.com/ethyca/fides/pull/3427)
 - New Cookies Table for storing cookies associated with systems and privacy declarations [#3572](https://github.com/ethyca/fides/pull/3572)
+- Cookie input field on system data use tab [#3571](https://github.com/ethyca/fides/pull/3571)
 - Access and erasure support for SurveyMonkey [#3590](https://github.com/ethyca/fides/pull/3590)
 
 ### Changed
@@ -48,6 +49,7 @@ The types of changes are:
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
 
 ### Added
+
 - Privacy center can now render its consent values based on Privacy Notices and Privacy Experiences [#3411](https://github.com/ethyca/fides/pull/3411)
 - Add Google Tag Manager and Privacy Center ENV vars to sample app [#2949](https://github.com/ethyca/fides/pull/2949)
 - Add `notice_key` field to Privacy Notice UI form [#3403](https://github.com/ethyca/fides/pull/3403)
@@ -106,7 +108,6 @@ The types of changes are:
 
 - Removed the deprecated `system_dependencies` from `System` resources, migrating to `egress` [#3285](https://github.com/ethyca/fides/pull/3285)
 
-
 ## [2.14.1](https://github.com/ethyca/fides/compare/2.14.0...2.14.1)
 
 ### Added
@@ -118,7 +119,6 @@ The types of changes are:
 ### Changed
 
 - Update privacy centre email and phone validation to allow for both to be blank [#3432](https://github.com/ethyca/fides/pull/3432)
-
 
 ## [2.14.0](https://github.com/ethyca/fides/compare/2.13.0...2.14.0)
 
@@ -171,7 +171,6 @@ The types of changes are:
 
 - Remove `fides export` command and backing code [#3256](https://github.com/ethyca/fides/pull/3256)
 
-
 ## [2.13.0](https://github.com/ethyca/fides/compare/2.12.1...2.13.0)
 
 ### Added
@@ -204,7 +203,7 @@ The types of changes are:
 
 ### Developer Experience
 
-- Use prettier to format *all* source files in client packages [#3240](https://github.com/ethyca/fides/pull/3240)
+- Use prettier to format _all_ source files in client packages [#3240](https://github.com/ethyca/fides/pull/3240)
 
 ### Deprecated
 
@@ -269,14 +268,12 @@ The types of changes are:
 - Fixed unit tests for saas connector type endpoints now that we have >50 [#3101](https://github.com/ethyca/fides/pull/3101)
 - Fixed nox docs link [#3121](https://github.com/ethyca/fides/pull/3121/files)
 
-
 ### Developer Experience
 
 - Update fides deploy to use a new database.load_samples setting to initialize sample Systems, Datasets, and Connections for testing [#3102](https://github.com/ethyca/fides/pull/3102)
 - Remove support for automatically configuring messaging (Mailgun) & storage (S3) using `.env` with `nox -s "fides_env(test)"` [#3102](https://github.com/ethyca/fides/pull/3102)
 - Add smoke tests for consent management [#3158](https://github.com/ethyca/fides/pull/3158)
 - Added nox command that opens dev docs [#3082](https://github.com/ethyca/fides/pull/3082)
-
 
 ## [2.11.0](https://github.com/ethyca/fides/compare/2.10.0...2.11.0)
 
