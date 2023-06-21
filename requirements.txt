@@ -1,7 +1,7 @@
 AccessControl==6.0
 alembic==1.8.1
 APScheduler==3.9.1.post1
-asyncpg==0.25.0
+asyncpg==0.27.0
 boto3==1.26.1
 celery[pytest]==5.2.7
 colorama>=0.4.3
@@ -12,7 +12,7 @@ expandvars==0.9.0
 fastapi[all]==0.89.1
 fastapi-caching[redis]==0.3.0
 fastapi-pagination[sqlalchemy]~= 0.10.0
-fideslang @ git+https://github.com/ethyca/fideslang.git@b66cd3555d8d18ec0f81b58a933f5e326cbf9b3b
+fideslang @ git+https://github.com/ethyca/fideslang.git@6f9d7a60ccccf46be2fc92d2a001e4c47c8adba7
 fideslog==1.2.10
 firebase-admin==5.3.0
 GitPython==3.1.31
@@ -31,7 +31,7 @@ passlib[bcrypt]==1.7.4
 plotly==5.13.1
 pyarrow==6.0.0
 psycopg2-binary==2.9.6
-pydantic<1.10.2
+pydantic==1.10.9
 pydash==6.0.2
 PyJWT==2.4.0
 pymongo==3.13.0

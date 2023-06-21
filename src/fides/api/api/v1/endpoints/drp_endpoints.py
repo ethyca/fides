@@ -15,7 +15,6 @@ from starlette.status import (
 
 from fides.api import common_exceptions
 from fides.api.api import deps
-from fides.api.api.v1 import scope_registry as scopes
 from fides.api.api.v1 import urn_registry as urls
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
@@ -47,8 +46,9 @@ from fides.api.service.privacy_request.request_service import (
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.logger import Pii
-from fides.core.config import CONFIG
-from fides.core.config.config_proxy import ConfigProxy
+from fides.common.api import scope_registry as scopes
+from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
 

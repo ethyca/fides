@@ -10,7 +10,13 @@ from slowapi.util import get_remote_address  # type: ignore
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_400_BAD_REQUEST
 
-from fides.api.api.v1.scope_registry import (
+from fides.api.db.base import Base  # type: ignore[attr-defined]
+from fides.api.db.crud import get_resource, list_resource
+from fides.api.models.sql_models import (  # type: ignore[attr-defined]
+    models_with_default_field,
+)
+from fides.api.util import errors
+from fides.common.api.scope_registry import (
     CTL_DATASET,
     CTL_POLICY,
     DATA_CATEGORY,
@@ -22,13 +28,7 @@ from fides.api.api.v1.scope_registry import (
     REGISTRY,
     SYSTEM,
 )
-from fides.api.db.base import Base  # type: ignore[attr-defined]
-from fides.api.db.crud import get_resource, list_resource
-from fides.api.models.sql_models import (  # type: ignore[attr-defined]
-    models_with_default_field,
-)
-from fides.api.util import errors
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 API_PREFIX = "/api/v1"
 # Map the ctl model type to the scope prefix.
@@ -137,9 +137,7 @@ def validate_start_and_end_filters(
             )
 
 
-def transform_fields(
-    transformation: Callable, model: object, fields: List[str]
-) -> object:
+def transform_fields(transformation: Callable, model: Base, fields: List[str]) -> Base:
     """
     Takes a callable and returns a transformed object.
     """

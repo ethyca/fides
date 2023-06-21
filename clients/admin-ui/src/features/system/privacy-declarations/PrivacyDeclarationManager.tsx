@@ -47,6 +47,7 @@ const PrivacyDeclarationManager = ({
     PrivacyDeclarationResponse | undefined
   >(undefined);
 
+  // Accordion declarations include all declarations but the newly created one (if it exists)
   const accordionDeclarations = useMemo(() => {
     if (!newDeclaration) {
       return system.privacy_declarations;
@@ -125,7 +126,7 @@ const PrivacyDeclarationManager = ({
     }
     // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
-    const updatedDeclarations = accordionDeclarations.map((dec) =>
+    const updatedDeclarations = system.privacy_declarations.map((dec) =>
       dec.id === oldDeclaration.id ? updatedDeclaration : dec
     );
     return handleSave(updatedDeclarations);

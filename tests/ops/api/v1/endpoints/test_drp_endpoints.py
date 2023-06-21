@@ -8,12 +8,6 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
-    POLICY_READ,
-    PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_REVIEW,
-    STORAGE_CREATE_OR_UPDATE,
-)
 from fides.api.api.v1.urn_registry import (
     DRP_DATA_RIGHTS,
     DRP_EXERCISE,
@@ -30,7 +24,13 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.privacy_request import PrivacyRequestDRPStatus
 from fides.api.util.cache import get_drp_request_body_cache_key, get_identity_cache_key
-from fides.core.config import CONFIG
+from fides.common.api.scope_registry import (
+    POLICY_READ,
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
+    STORAGE_CREATE_OR_UPDATE,
+)
+from fides.config import CONFIG
 
 
 class TestCreateDrpPrivacyRequest:

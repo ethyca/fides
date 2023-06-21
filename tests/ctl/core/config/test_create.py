@@ -4,8 +4,8 @@ import pytest
 import toml
 from py._path.local import LocalPath
 
-from fides.core.config import FidesConfig
-from fides.core.config.create import (
+from fides.config import FidesConfig
+from fides.config.create import (
     build_field_documentation,
     create_and_update_config_file,
     create_config_file,
