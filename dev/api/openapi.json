@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.2b0.post0.dev52"
+    "version": "2.14.2b0.post0.dev53"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -14071,6 +14071,28 @@
         },
         "description": "The contact details information model.\n\nUsed to capture contact information for controllers, used\nas part of exporting a data map / ROPA.\n\nThis model is nested under an Organization and\npotentially under a system/dataset."
       },
+      "Cookies": {
+        "title": "Cookies",
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "domain": {
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "description": "The Cookies resource model"
+      },
       "CoreHealthCheck": {
         "title": "CoreHealthCheck",
         "required": [
@@ -15168,6 +15190,15 @@
         "additionalProperties": false,
         "description": "DynamoDB Secrets Schema for API Docs"
       },
+      "EdgeDirection": {
+        "title": "EdgeDirection",
+        "enum": [
+          "from",
+          "to"
+        ],
+        "type": "string",
+        "description": "Direction of a FidesDataSetReference"
+      },
       "EmailDocsSchema": {
         "title": "EmailDocsSchema",
         "required": [
@@ -15784,12 +15815,7 @@
             "type": "string"
           },
           "direction": {
-            "title": "Direction",
-            "enum": [
-              "from",
-              "to"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/EdgeDirection"
           }
         },
         "description": "Reference to a field from another Collection"
@@ -17971,6 +17997,14 @@
               "type": "string"
             },
             "description": "The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied."
+          },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            },
+            "description": "Cookies associated with this data use to deliver services and functionality"
           }
         },
         "description": "The PrivacyDeclaration resource model.\n\nStates a function of a system, and describes how it relates\nto the privacy data types."
@@ -18047,6 +18081,14 @@
               "type": "string"
             },
             "description": "The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied."
+          },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            },
+            "default": []
           },
           "id": {
             "title": "Id",
@@ -18380,7 +18422,8 @@
           "created_at",
           "updated_at",
           "version",
-          "privacy_notice_history_id"
+          "privacy_notice_history_id",
+          "cookies"
         ],
         "type": "object",
         "properties": {
@@ -18472,6 +18515,13 @@
           "privacy_notice_history_id": {
             "title": "Privacy Notice History Id",
             "type": "string"
+          },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            }
           }
         },
         "additionalProperties": false,
@@ -18485,6 +18535,7 @@
           "updated_at",
           "version",
           "privacy_notice_history_id",
+          "cookies",
           "default_preference"
         ],
         "type": "object",
@@ -18577,6 +18628,13 @@
           "privacy_notice_history_id": {
             "title": "Privacy Notice History Id",
             "type": "string"
+          },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            }
           },
           "default_preference": {
             "$ref": "#/components/schemas/UserConsentPreference"
@@ -20613,6 +20671,14 @@
               }
             ],
             "description": "\n    Describes the returned schema for a ConnectionConfiguration.\n\n    Do *NOT* add \"secrets\" to this schema.\n    "
+          },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            },
+            "default": []
           }
         },
         "description": "Extension of base pydantic model to include `privacy_declarations.id` fields in responses"
