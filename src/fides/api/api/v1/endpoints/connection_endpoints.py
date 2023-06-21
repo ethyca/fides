@@ -16,11 +16,6 @@ from sqlalchemy_utils import escape_like
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
 from fides.api.api import deps
-from fides.api.api.v1.scope_registry import (
-    CONNECTION_CREATE_OR_UPDATE,
-    CONNECTION_DELETE,
-    CONNECTION_READ,
-)
 from fides.api.api.v1.urn_registry import (
     CONNECTION_BY_KEY,
     CONNECTION_SECRETS,
@@ -33,6 +28,10 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionTestStatus,
     ConnectionType,
+)
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import (  # type: ignore[attr-defined]
+    Dataset as CtlDataset,
 )
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
@@ -54,6 +53,11 @@ from fides.api.util.connection_util import (
     validate_secrets,
 )
 from fides.api.util.logger import Pii
+from fides.common.api.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_DELETE,
+    CONNECTION_READ,
+)
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 
@@ -216,6 +220,23 @@ def delete_connection(
     connection_config = get_connection_config_or_error(db, connection_key)
     connection_type = connection_config.connection_type
     logger.info("Deleting connection config with key '{}'.", connection_key)
+    if connection_config.saas_config:
+        saas_dataset_fides_key = connection_config.saas_config.get("fides_key")
+
+        dataset_config = db.query(DatasetConfig).filter(
+            DatasetConfig.connection_config_id == connection_config.id
+        )
+        dataset_config.delete(synchronize_session="evaluate")
+
+        if saas_dataset_fides_key:
+            logger.info("Deleting saas dataset with key '{}'.", saas_dataset_fides_key)
+            saas_dataset = (
+                db.query(CtlDataset)
+                .filter(CtlDataset.fides_key == saas_dataset_fides_key)
+                .first()
+            )
+            saas_dataset.delete(db)  # type: ignore[union-attr]
+
     connection_config.delete(db)
 
     # Access Manual Webhooks are cascade deleted if their ConnectionConfig is deleted,

@@ -18,7 +18,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from toml import load as load_toml
 
-from fides.api.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.app_setup import PRIVACY_EXPERIENCE_CONFIGS_PATH
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -27,10 +26,10 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
-from fides.api.ctl.database.session import sync_engine
-from fides.api.ctl.sql_models import DataUse, PrivacyDeclaration
+from fides.api.db.ctl_session import sync_engine
 from fides.api.main import app
 from fides.api.models.privacy_request import generate_request_callback_jwe
+from fides.api.models.sql_models import DataUse, PrivacyDeclaration
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import (
     APPROVER,
@@ -42,8 +41,9 @@ from fides.api.oauth.roles import (
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import load_default_experience_configs_on_startup
-from fides.core.config import get_config
-from fides.core.config.config_proxy import ConfigProxy
+from fides.common.api.scope_registry import SCOPE_REGISTRY
+from fides.config import get_config
+from fides.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
 from tests.fixtures.dynamodb_fixtures import *
@@ -99,8 +99,6 @@ async def async_session(test_client):
         yield session
         session.close()
         async_engine.dispose()
-
-
 
 
 # TODO: THIS IS A HACKY WORKAROUND.

@@ -15,9 +15,6 @@ from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
 from fides.api.common_exceptions import SystemManagerException
-from fides.api.ctl.sql_models import DataCategory as DataCategoryDbModel
-from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ctl.sql_models import System
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
@@ -59,6 +56,9 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.models.registration import UserRegistration
+from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
+from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.models.sql_models import System
 from fides.api.models.storage import (
     ResponseFormat,
     StorageConfig,
@@ -88,8 +88,8 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
 from fides.api.util.data_category import DataCategory
-from fides.core.config import CONFIG
-from fides.core.config.helpers import load_file
+from fides.config import CONFIG
+from fides.config.helpers import load_file
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -1445,7 +1445,7 @@ def privacy_notice(db: Session) -> Generator:
         data={
             "name": "example privacy notice",
             "notice_key": "example_privacy_notice",
-            "description": "a sample privacy notice configuration",
+            "description": "user&#x27;s description &lt;script /&gt;",
             "regions": [
                 PrivacyNoticeRegion.us_ca,
                 PrivacyNoticeRegion.us_co,
@@ -1570,6 +1570,23 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def privacy_experience_france_overlay(
+    db: Session, experience_config_overlay
+) -> Generator:
+    privacy_experience = PrivacyExperience.create(
+        db=db,
+        data={
+            "component": ComponentType.overlay,
+            "region": PrivacyNoticeRegion.eu_fr,
+            "experience_config_id": experience_config_overlay.id,
+        },
+    )
+
+    yield privacy_experience
+    privacy_experience.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_notice_eu_fr_provide_service_frontend_only(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
@@ -1669,6 +1686,86 @@ def ctl_dataset(db: Session, example_datasets):
     db.add(dataset)
     db.commit()
     yield dataset
+    dataset.delete(db)
+
+
+@pytest.fixture(scope="function")
+def unlinked_dataset(db: Session):
+    ds = Dataset(
+        fides_key="unlinked_dataset",
+        organization_fides_key="default_organization",
+        name="Unlinked Dataset",
+        description="Example dataset created in test fixtures",
+        data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        retention="No retention or erasure policy",
+        collections=[
+            {
+                "name": "subscriptions",
+                "fields": [
+                    {
+                        "name": "id",
+                        "data_categories": ["system.operations"],
+                    },
+                    {
+                        "name": "email",
+                        "data_categories": ["user.contact.email"],
+                        "fidesops_meta": {
+                            "identity": "email",
+                        },
+                    },
+                ],
+            },
+        ],
+    )
+    dataset = CtlDataset(**ds.dict())
+    db.add(dataset)
+    db.commit()
+    yield dataset
+    dataset.delete(db)
+
+
+@pytest.fixture(scope="function")
+def linked_dataset(db: Session, connection_config: ConnectionConfig) -> Generator:
+    ds = Dataset(
+        fides_key="linked_dataset",
+        organization_fides_key="default_organization",
+        name="Linked Dataset",
+        description="Example dataset created in test fixtures",
+        data_qualifier="aggregated.anonymized.linked_pseudonymized.pseudonymized.identified",
+        retention="No retention or erasure policy",
+        collections=[
+            {
+                "name": "subscriptions",
+                "fields": [
+                    {
+                        "name": "id",
+                        "data_categories": ["system.operations"],
+                    },
+                    {
+                        "name": "email",
+                        "data_categories": ["user.contact.email"],
+                        "fidesops_meta": {
+                            "identity": "email",
+                        },
+                    },
+                ],
+            },
+        ],
+    )
+    dataset = CtlDataset(**ds.dict())
+    db.add(dataset)
+    db.commit()
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "fides_key": "postgres_example_subscriptions_dataset",
+            "ctl_dataset_id": dataset.id,
+        },
+    )
+
+    yield dataset
+    dataset_config.delete(db)
     dataset.delete(db)
 
 
@@ -2121,7 +2218,7 @@ def experience_config_privacy_center(db: Session) -> Generator:
         db=db,
         data={
             "accept_button_label": "Accept all",
-            "description": "We care about your privacy",
+            "description": "user&#x27;s description &lt;script /&gt;",
             "component": "privacy_center",
             "reject_button_label": "Reject all",
             "save_button_label": "Save",
@@ -2164,7 +2261,7 @@ def experience_config_overlay(db: Session) -> Generator:
             "description": "On this page you can opt in and out of these data uses cases",
             "disabled": False,
             "privacy_preferences_link_label": "Manage preferences",
-            "privacy_policy_link_label": "View our privacy policy",
+            "privacy_policy_link_label": "View our company&#x27;s privacy policy",
             "privacy_policy_url": "example.com/privacy",
             "reject_button_label": "Reject all",
             "save_button_label": "Save",

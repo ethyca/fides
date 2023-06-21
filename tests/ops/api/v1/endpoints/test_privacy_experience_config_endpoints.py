@@ -4,7 +4,6 @@ import pytest
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
-from fides.api.api.v1 import scope_registry as scopes
 from fides.api.api.v1.endpoints.privacy_experience_config_endpoints import (
     get_experience_config_or_error,
 )
@@ -16,6 +15,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperienceConfig,
 )
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
+from fides.common.api import scope_registry as scopes
 
 
 class TestGetExperienceConfigList:
@@ -70,11 +70,9 @@ class TestGetExperienceConfigList:
         experience_config_privacy_center,
         experience_config_overlay,
     ) -> None:
+        unescape_header = {"Unescape-Safestr": "true"}
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
-        response = api_client.get(
-            url,
-            headers=auth_header,
-        )
+        response = api_client.get(url, headers={**auth_header, **unescape_header})
         assert response.status_code == 200
         resp = response.json()
         assert resp["total"] == 4  # Two default configs loaded on startup plus two here
@@ -99,6 +97,9 @@ class TestGetExperienceConfigList:
 
         second_config = data[1]
         assert second_config["id"] == experience_config_privacy_center.id
+        assert (
+            second_config["description"] == "user's description <script />"
+        )  # Unescaped due to header
         assert second_config["component"] == "privacy_center"
         assert second_config["banner_enabled"] is None
         assert second_config["disabled"] is True
@@ -126,6 +127,29 @@ class TestGetExperienceConfigList:
         assert fourth_config["disabled"] is False
         assert fourth_config["regions"] == []
         assert fourth_config["component"] == "overlay"
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_privacy_center",
+        "privacy_experience_overlay",
+        "experience_config_overlay",
+    )
+    def test_get_experience_config_list_no_unescape_header(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_privacy_center,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        resp = response.json()["items"]
+
+        second_config = resp[1]
+        assert second_config["id"] == experience_config_privacy_center.id
+        assert (
+            second_config["description"] == "user&#x27;s description &lt;script /&gt;"
+        )  # Still escaped
 
     @pytest.mark.usefixtures(
         "privacy_experience_overlay",
@@ -440,7 +464,7 @@ class TestCreateExperienceConfig:
                 "accept_button_label": "Yes",
                 "banner_enabled": "always_disabled",
                 "component": "privacy_center",
-                "description": "We take your privacy seriously",
+                "description": "We take your company's privacy seriously",
                 "privacy_policy_link_label": "Manage your privacy",
                 "privacy_policy_url": "example.com/privacy",
                 "reject_button_label": "No",
@@ -454,7 +478,9 @@ class TestCreateExperienceConfig:
         assert resp["accept_button_label"] == "Yes"
         assert resp["banner_enabled"] == "always_disabled"
         assert resp["component"] == "privacy_center"
-        assert resp["description"] == "We take your privacy seriously"
+        assert (
+            resp["description"] == "We take your company's privacy seriously"
+        )  # Returned in the response, unescaped, for display
         assert resp["privacy_policy_link_label"] == "Manage your privacy"
         assert resp["privacy_policy_url"] == "example.com/privacy"
         assert resp["regions"] == []
@@ -470,6 +496,10 @@ class TestCreateExperienceConfig:
         assert experience_config.privacy_policy_link_label == "Manage your privacy"
         assert experience_config.experiences.all() == []
         assert experience_config.histories.count() == 1
+        assert (
+            experience_config.description
+            == "We take your company&#x27;s privacy seriously"
+        )  # Saved in the db escaped
         history = experience_config.histories[0]
         assert history.version == 1.0
         assert history.component == ComponentType.privacy_center
@@ -860,6 +890,32 @@ class TestGetExperienceConfigDetail:
             == experience_config_overlay.experience_config_history_id
         )
         assert resp["title"] == "Manage your consent"
+        assert (
+            resp["privacy_policy_link_label"]
+            == "View our company&#x27;s privacy policy"
+        )  # Escaped without request header
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_overlay",
+    )
+    def test_get_experience_config_detail_with_unescape_header(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_overlay,
+    ) -> None:
+        unescape_header = {"Unescape-Safestr": "true"}
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        response = api_client.get(url, headers={**auth_header, **unescape_header})
+        assert response.status_code == 200
+        resp = response.json()
+
+        assert resp["id"] == experience_config_overlay.id
+        assert resp["component"] == "overlay"
+        assert (
+            resp["privacy_policy_link_label"] == "View our company's privacy policy"
+        )  # Unescaped with request header
 
 
 class TestUpdateExperienceConfig:
@@ -1028,6 +1084,34 @@ class TestUpdateExperienceConfig:
             response.json()["detail"]
             == "Cannot set as the default. Only one default overlay config can be in the system."
         )
+
+    def test_update_experience_config_with_fields_that_should_be_escaped(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        overlay_experience_config,
+        db,
+    ) -> None:
+        """Failing if duplicate regions in request to avoid unexpected behavior"""
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "title": "We care about you and your family's privacy",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert (
+            response.json()["experience_config"]["title"]
+            == "We care about you and your family's privacy"
+        )  # Unescaped in response
+        db.refresh(overlay_experience_config)
+        assert (
+            overlay_experience_config.title
+            == "We care about you and your family&#x27;s privacy"
+        )  # But stored escaped
 
     def test_attempt_to_update_component_type(
         self,

@@ -21,6 +21,7 @@ import "./fides.css";
 import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
+import ConsentButtons from "./ConsentButtons";
 
 export interface OverlayProps {
   options: FidesOptions;
@@ -41,12 +42,10 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
 
   const initialEnabledNoticeKeys = useMemo(
-    () =>
-      Object.keys(window.Fides.consent).filter(
-        (key) => window.Fides.consent[key]
-      ),
-    []
+    () => Object.keys(cookie.consent).filter((key) => cookie.consent[key]),
+    [cookie.consent]
   );
+
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<PrivacyNotice["notice_key"]>
   >(initialEnabledNoticeKeys);
@@ -149,13 +148,6 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     setBannerIsOpen(false);
   };
 
-  const handleAcceptAll = () => {
-    handleUpdatePreferences(privacyNotices.map((n) => n.notice_key));
-  };
-  const handleRejectAll = () => {
-    handleUpdatePreferences([]);
-  };
-
   if (!hasMounted) {
     return null;
   }
@@ -166,17 +158,25 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   }
 
   return (
-    <div id="fides-js-root">
+    <div>
       {showBanner ? (
         <ConsentBanner
           experience={experience.experience_config}
-          onAcceptAll={handleAcceptAll}
-          onRejectAll={handleRejectAll}
-          onManagePreferences={handleManagePreferencesClick}
           bannerIsOpen={bannerIsOpen}
           onClose={() => {
             setBannerIsOpen(false);
           }}
+          buttonGroup={
+            <ConsentButtons
+              experience={experience}
+              onManagePreferencesClick={handleManagePreferencesClick}
+              enabledKeys={draftEnabledNoticeKeys}
+              onSave={(keys) => {
+                handleUpdatePreferences(keys);
+                setBannerIsOpen(false);
+              }}
+            />
+          }
         />
       ) : null}
       <ConsentModal
@@ -186,9 +186,17 @@ const Overlay: FunctionComponent<OverlayProps> = ({
         onChange={setDraftEnabledNoticeKeys}
         notices={privacyNotices}
         onClose={handleCloseModal}
-        onAcceptAll={handleAcceptAll}
-        onRejectAll={handleRejectAll}
-        onSave={handleUpdatePreferences}
+        buttonGroup={
+          <ConsentButtons
+            experience={experience}
+            enabledKeys={draftEnabledNoticeKeys}
+            isInModal
+            onSave={(keys) => {
+              handleUpdatePreferences(keys);
+              handleCloseModal();
+            }}
+          />
+        }
       />
     </div>
   );

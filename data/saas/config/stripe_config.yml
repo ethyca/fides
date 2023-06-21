@@ -3,12 +3,14 @@ saas_config:
   name: Stripe
   type: stripe
   description: A sample schema representing the Stripe connector for Fides
-  version: 0.0.3
+  version: 0.0.4
 
   connector_params:
     - name: domain
       default_value: api.stripe.com
     - name: api_key
+      label: API Key
+      sensitive: True
 
   client_config:
     protocol: https
