@@ -41,7 +41,7 @@ class RequestOrigin(Enum):
 class ConsentMethod(Enum):
     button = "button"
     gpc = "gpc"
-    individual_notice = "api"
+    individual_notice = "individual_notice"
 
 
 class PrivacyPreferenceHistory(Base):
