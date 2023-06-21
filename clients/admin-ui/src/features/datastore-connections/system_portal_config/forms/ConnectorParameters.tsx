@@ -359,7 +359,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         deleteResult={deleteDatastoreConnectionResult}
       />
 
-      {connectionConfig && (
+      {connectionConfig ? (
         <Flex mt="2" justifyContent="center" alignItems="center">
           <Spacer />
           {response ? (
@@ -375,7 +375,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
           )}
           <Spacer />
         </Flex>
-      )}
+      ) : null}
 
       {response && (
         <SlideFade in>
