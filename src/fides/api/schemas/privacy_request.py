@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.validation import FidesKey
 from pydantic import Field, validator
@@ -82,9 +82,10 @@ class PrivacyRequestCreate(FidesSchema):
     encryption_key: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
 
+    @classmethod
     @validator("encryption_key")
     def validate_encryption_key(
-        cls: "PrivacyRequestCreate", value: Optional[str] = None
+        cls: Type["PrivacyRequestCreate"], value: Optional[str] = None
     ) -> Optional[str]:
         """Validate encryption key where applicable"""
         if value:

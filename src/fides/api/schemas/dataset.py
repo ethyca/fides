@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Type
 
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.validation import FidesKey
@@ -28,9 +28,10 @@ def validate_data_categories_against_db(
         defined_data_categories = list(DefaultTaxonomyDataCategories.__members__.keys())
 
     class DataCategoryValidationMixin(BaseModel):
+        @classmethod
         @validator("data_categories", check_fields=False, allow_reuse=True)
         def valid_data_categories(
-            cls, v: Optional[List[FidesKey]]
+            cls: Type["DataCategoryValidationMixin"], v: Optional[List[FidesKey]]
         ) -> Optional[List[FidesKey]]:
             """Validate that all annotated data categories exist in the taxonomy"""
             return _valid_data_categories(v, defined_data_categories)
