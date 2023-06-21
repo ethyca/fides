@@ -175,7 +175,7 @@ class TestPrivacyPreferenceHistory:
             preference_history_record.user_agent
             == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24"
         )
-        assert preference_history_record.user_geography == PrivacyNoticeRegion.us_ca
+        assert preference_history_record.user_geography == "us_ca"
         assert preference_history_record.url_recorded == "example.com/privacy_center"
 
         # Assert PrivacyRequest.privacy_preferences relationship
