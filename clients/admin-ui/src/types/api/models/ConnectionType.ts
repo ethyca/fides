@@ -3,26 +3,26 @@
 /* eslint-disable */
 
 /**
- * Supported types to which we can connect fidesops.
+ * Supported types to which we can connect Fides.
  */
 export enum ConnectionType {
-  POSTGRES = "postgres", //DB
-  MONGODB = "mongodb", //DB
-  MYSQL = "mysql", // DB
+  POSTGRES = "postgres",
+  MONGODB = "mongodb",
+  MYSQL = "mysql",
   HTTPS = "https",
   SAAS = "saas",
-  REDSHIFT = "redshift", //DB
-  SNOWFLAKE = "snowflake", //DB
-  MSSQL = "mssql", //DB
-  MARIADB = "mariadb", //DB
-  BIGQUERY = "bigquery", //DB
-  MANUAL = "manual", // manual
-  SOVRN = "sovrn", // email
-  ATTENTIVE = "attentive", // email
-  DYNAMODB = "dynamodb", //DB
-  MANUAL_WEBHOOK = "manual_webhook", //manual
-  TIMESCALE = "timescale", //DB
+  REDSHIFT = "redshift",
+  SNOWFLAKE = "snowflake",
+  MSSQL = "mssql",
+  MARIADB = "mariadb",
+  BIGQUERY = "bigquery",
+  MANUAL = "manual",
+  SOVRN = "sovrn",
+  ATTENTIVE = "attentive",
+  DYNAMODB = "dynamodb",
+  MANUAL_WEBHOOK = "manual_webhook",
+  TIMESCALE = "timescale",
   FIDES = "fides",
-  GENERIC_ERASURE_EMAIL = "erasure_email",
-  GENERIC_CONSENT_EMAIL = "consent_email",
+  GENERIC_ERASURE_EMAIL = "generic_erasure_email",
+  GENERIC_CONSENT_EMAIL = "generic_consent_email",
 }

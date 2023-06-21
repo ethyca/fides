@@ -29,7 +29,7 @@ export type SaaSRequest = {
   postprocessors?: Array<Strategy>;
   pagination?: Strategy;
   grouped_inputs?: Array<string>;
-  ignore_errors?: boolean;
+  ignore_errors?: boolean | Array<number>;
   rate_limit_config?: RateLimitConfig;
   skip_missing_param_values?: boolean;
 };

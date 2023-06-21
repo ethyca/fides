@@ -12,4 +12,5 @@ export type ConnectorParam = {
   default_value?: string | Array<string>;
   multiselect?: boolean;
   description?: string;
+  sensitive?: boolean;
 };
