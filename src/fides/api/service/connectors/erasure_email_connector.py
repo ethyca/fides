@@ -32,7 +32,7 @@ from fides.api.service.connectors.base_email_connector import (
     get_org_name,
 )
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
-from fides.core.config import get_config
+from fides.config import get_config
 
 CONFIG = get_config()
 

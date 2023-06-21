@@ -23,7 +23,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from tests.fixtures.application_fixtures import integration_secrets
 
 from ..service.privacy_request.test_request_runner_service import (

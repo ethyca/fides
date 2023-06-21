@@ -12,12 +12,10 @@ from sqlalchemy import delete
 from fides.api.db.system import create_system, upsert_cookies
 from fides.api.models.sql_models import Cookies, PrivacyDeclaration
 from fides.api.models.sql_models import System as sql_System
-from fides.api.oauth.roles import OWNER
+from fides.config import FidesConfig
 from fides.connectors.models import OktaConfig
 from fides.core import api
-from fides.core import api as _api
 from fides.core import system as _system
-from fides.core.config import FidesConfig
 
 
 def create_server_systems(test_config: FidesConfig, systems: List[System]) -> None:
