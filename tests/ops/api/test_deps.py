@@ -8,7 +8,7 @@ from sqlalchemy.pool import QueuePool
 import fides.api.api.deps
 from fides.api.api.deps import get_api_session, get_cache
 from fides.api.common_exceptions import FunctionalityNotConfigured
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 @pytest.fixture

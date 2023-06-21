@@ -18,8 +18,8 @@ from fides.api.schemas.storage.storage import ResponseFormat, StorageType
 from fides.api.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
 from fides.api.util.logger import Pii
 from fides.api.util.storage_util import get_schema_for_secrets
-from fides.core.config import CONFIG
-from fides.core.config.config_proxy import ConfigProxy
+from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 
 class StorageConfig(Base):

@@ -12,7 +12,7 @@ from typing import Dict, List, Optional, Union
 
 from loguru import logger
 
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 MASKED = "MASKED"
 

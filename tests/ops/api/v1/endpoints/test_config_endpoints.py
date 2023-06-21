@@ -6,11 +6,11 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1 import scope_registry as scopes
 from fides.api.api.v1 import urn_registry as urls
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.oauth.roles import CONTRIBUTOR, OWNER, VIEWER
 from fides.api.schemas.storage.storage import StorageType
+from fides.common.api import scope_registry as scopes
 
 
 class TestPatchApplicationConfig:

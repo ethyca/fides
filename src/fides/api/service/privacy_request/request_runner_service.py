@@ -83,8 +83,8 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.wrappers import sync
-from fides.core.config import CONFIG
-from fides.core.config.config_proxy import ConfigProxy
+from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 
 class ManualWebhookResults(FidesSchema):
