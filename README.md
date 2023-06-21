@@ -22,10 +22,25 @@ Fides (pronounced */fee-dhez/*, from Latin: Fidēs) is an open-source privacy en
 
 In order to get started quickly with Fides, a sample project is bundled within the Fides CLI that will set up a server, privacy center, and a sample application for you to experiment with.
 
-#### Minimum requirements
+#### Minimum requirements (for all platforms)
 
 * [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
 * [Python](https://www.python.org/downloads/) (version 3.8 through 3.10)
+
+#### Additional requirements (for ARM Mac Users)
+
+Due to platform differences, the following dependencies and steps are also required:
+
+```bash
+brew install freetds openssl
+```
+
+**Add the following to your run commands (i.e. `.zshrc`), updating any path/versions to match yours**
+
+```bash
+export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"`
+export CFLAGS="-I/opt/homebrew/Cellar/freetds/1.3.18/include"
+```
 
 #### Download and install Fides
 
