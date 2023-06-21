@@ -12,8 +12,8 @@ from fides.api.service.messaging.message_dispatch_service import dispatch_messag
 from fides.api.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
 )
-from fides.core.config import CONFIG
-from fides.core.config.config_proxy import ConfigProxy
+from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 
 def send_verification_code_to_user(

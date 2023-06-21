@@ -49,7 +49,7 @@ from fides.api.util.collection_util import NodeInput, Row, append, partition
 from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 dask.config.set(scheduler="threads")
 

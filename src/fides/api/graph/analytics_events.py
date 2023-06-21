@@ -15,7 +15,7 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.task.graph_task import GraphTask

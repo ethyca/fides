@@ -52,7 +52,7 @@ from fides.api.service.connectors.query_config import (
     SQLQueryConfig,
 )
 from fides.api.util.collection_util import Row
-from fides.core.config import get_config
+from fides.config import get_config
 
 CONFIG = get_config()
 

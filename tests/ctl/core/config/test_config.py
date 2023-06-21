@@ -5,10 +5,10 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
-from fides.core.config import check_required_webserver_config_values, get_config
-from fides.core.config.database_settings import DatabaseSettings
-from fides.core.config.redis_settings import RedisSettings
-from fides.core.config.security_settings import SecuritySettings
+from fides.config import check_required_webserver_config_values, get_config
+from fides.config.database_settings import DatabaseSettings
+from fides.config.redis_settings import RedisSettings
+from fides.config.security_settings import SecuritySettings
 
 REQUIRED_ENV_VARS = {
     "FIDES__SECURITY__APP_ENCRYPTION_KEY": "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3",
