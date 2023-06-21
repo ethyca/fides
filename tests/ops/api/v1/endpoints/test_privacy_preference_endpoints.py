@@ -138,7 +138,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         request_body,
         privacy_notice,
     ):
-        """Verify code and then return privacy preferences"""
+        """Verify code, save, and then return privacy preferences
+        Privacy request also queued because a notice has system wide enforcement
+        """
         masked_ip = "12.214.31.0"  # Mocking because hostname for FastAPI TestClient is "testclient"
         mock_anonymize.return_value = masked_ip
 
@@ -194,8 +196,100 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             == PrivacyNoticeHistorySchema.from_orm(privacy_notice.histories[0]).dict()
         )
 
-        privacy_preference_history.delete(db=db)
+        assert privacy_preference_history.privacy_request_id is not None
         assert run_privacy_request_mock.called
+
+        privacy_preference_history.delete(db=db)
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required", "automatically_approved", "system"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+    )
+    def test_verify_then_set_privacy_preferences_but_no_privacy_request_created(
+        self,
+        mock_anonymize,
+        run_privacy_request_mock,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        db: Session,
+        privacy_notice_eu_fr_provide_service_frontend_only,
+        privacy_experience_france_overlay,
+        consent_policy,
+    ):
+        """Verify code, save, and then return privacy preferences
+        Privacy request not queued because no notice has system wide enforcement
+        """
+        masked_ip = "12.214.31.0"  # Mocking because hostname for FastAPI TestClient is "testclient"
+        mock_anonymize.return_value = masked_ip
+
+        _, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY.format(consent_request_id=consent_request.id)}",
+            json={"code": verification_code},
+        )
+        assert response.status_code == 200
+        # Assert no existing privacy preferences exist for this identity
+        assert response.json() == {"items": [], "total": 0, "page": 1, "size": 50}
+
+        request_body = {
+            "browser_identity": {"ga_client_id": "test"},
+            "code": verification_code,
+            "preferences": [
+                {
+                    "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.histories[
+                        0
+                    ].id,
+                    "preference": "opt_out",
+                }
+            ],
+            "policy_key": consent_policy.key,
+            "user_geography": "eu_fr",
+            "privacy_experience_id": privacy_experience_france_overlay.id,
+            "method": "button",
+        }
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+
+        response_json = response.json()[0]
+        created_privacy_preference_history_id = response_json[
+            "privacy_preference_history_id"
+        ]
+        privacy_preference_history = (
+            db.query(PrivacyPreferenceHistory)
+            .filter(
+                PrivacyPreferenceHistory.id == created_privacy_preference_history_id
+            )
+            .first()
+        )
+        assert response_json["preference"] == "opt_out"
+
+        assert (
+            response_json["privacy_notice_history"]
+            == PrivacyNoticeHistorySchema.from_orm(
+                privacy_notice_eu_fr_provide_service_frontend_only.histories[0]
+            ).dict()
+        )
+        db.refresh(consent_request)
+        # No privacy request created here
+        assert not consent_request.privacy_request_id
+
+        # Privacy request not created or queued
+        assert privacy_preference_history.privacy_request_id is None
+        assert not run_privacy_request_mock.called
+
+        privacy_preference_history.delete(db=db)
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_not_required", "automatically_approved"
@@ -1037,8 +1131,12 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
     def test_save_privacy_preferences_with_respect_to_fides_user_device_id(
         self,
+        run_privacy_request_mock,
         mock_anonymize,
         db,
         api_client,
@@ -1117,6 +1215,79 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert privacy_preference_history.anonymized_ip_address == masked_ip
         assert privacy_preference_history.url_recorded is None
         assert privacy_preference_history.method == ConsentMethod.button
+
+        # Privacy request created and queued because a privacy notice has system wide enforcement
+        assert privacy_preference_history.privacy_request_id is not None
+        assert run_privacy_request_mock.called
+
+        current_preference.delete(db)
+        privacy_preference_history.delete(db)
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_save_privacy_preferences_for_fides_user_device_id_no_notice_has_system_wide_enforcement(
+        self,
+        run_privacy_request_mock,
+        mock_anonymize,
+        db,
+        api_client,
+        url,
+        consent_policy,
+        privacy_notice_eu_fr_provide_service_frontend_only,
+        privacy_experience_france_overlay,
+    ):
+        """PrivacyPreferences and CurrentPrivacyPreferences saved for the given fides user device id
+        but no privacy request created to propagate preferences, because all privacy notices
+        have frontend only enforcement
+        """
+        masked_ip = "12.214.31.0"
+        mock_anonymize.return_value = masked_ip
+
+        request_body = {
+            "browser_identity": {
+                "ga_client_id": "test",
+                "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
+            },
+            "preferences": [
+                {
+                    "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.histories[
+                        0
+                    ].id,
+                    "preference": "opt_out",
+                }
+            ],
+            "policy_key": consent_policy.key,
+            "user_geography": "us_ca",
+            "privacy_experience_id": privacy_experience_france_overlay.id,
+            "method": "button",
+        }
+
+        response = api_client.patch(
+            url, json=request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        response_json = response.json()[0]
+        assert response_json["preference"] == "opt_out"
+        assert (
+            response_json["privacy_notice_history"]["id"]
+            == privacy_notice_eu_fr_provide_service_frontend_only.histories[0].id
+        )
+
+        # Fetch current privacy preference that was updated
+        current_preference = CurrentPrivacyPreference.get(
+            db, object_id=response_json["id"]
+        )
+        # Get corresponding historical preference that was just created
+        privacy_preference_history = current_preference.privacy_preference_history
+
+        assert (
+            privacy_preference_history.privacy_request_id is None
+        )  # Privacy request not created
+        assert not run_privacy_request_mock.called  # Privacy Request is not queued
 
         current_preference.delete(db)
         privacy_preference_history.delete(db)

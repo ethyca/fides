@@ -25,11 +25,18 @@ The types of changes are:
 - New Cookies Table for storing cookies associated with systems and privacy declarations [#3572](https://github.com/ethyca/fides/pull/3572)
 - `fides-js` and privacy center now delete cookies associated with notices that were opted out of [#3569](https://github.com/ethyca/fides/pull/3569)
 - Cookie input field on system data use tab [#3571](https://github.com/ethyca/fides/pull/3571)
+- Persistent message showing result and timestamp of last integration test to "Integrations" tab in system view [#3628](https://github.com/ethyca/fides/pull/3628)
 - Access and erasure support for SurveyMonkey [#3590](https://github.com/ethyca/fides/pull/3590)
 
 ### Changed
 
 - Removed `pyodbc` in favor of `pymssql` for handling SQL Server connections [#3435](https://github.com/ethyca/fides/pull/3435)
+- Only create a PrivacyRequest when saving consent if at least one notice has system-wide enforcement [#3626](https://github.com/ethyca/fides/pull/3626)
+- Increased the character limit for the `SafeStr` type from 500 to 32000 [#3647](https://github.com/ethyca/fides/pull/3647)
+
+### Docs
+
+- Updated developer docs for ARM platform users related to `pymssql` [#3615](https://github.com/ethyca/fides/pull/3615)
 
 ### Fixed
 
@@ -42,6 +49,7 @@ The types of changes are:
 - Only create default experience configs on startup, not update [#3605](https://github.com/ethyca/fides/pull/3605)
 - Update to latest asyncpg dependency to avoid build error [#3614](https://github.com/ethyca/fides/pull/3614)
 - Fix bug where editing a data use on a system could delete existing data uses [#3627](https://github.com/ethyca/fides/pull/3627)
+- Restrict Privacy Center debug logging to development-only [#3638](https://github.com/ethyca/fides/pull/3638)
 
 ### Developer Experience
 

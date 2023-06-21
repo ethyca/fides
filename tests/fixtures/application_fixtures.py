@@ -1570,6 +1570,23 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def privacy_experience_france_overlay(
+    db: Session, experience_config_overlay
+) -> Generator:
+    privacy_experience = PrivacyExperience.create(
+        db=db,
+        data={
+            "component": ComponentType.overlay,
+            "region": PrivacyNoticeRegion.eu_fr,
+            "experience_config_id": experience_config_overlay.id,
+        },
+    )
+
+    yield privacy_experience
+    privacy_experience.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_notice_eu_fr_provide_service_frontend_only(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
