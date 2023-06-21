@@ -5,7 +5,7 @@ from fides.api.graph.traversal import *
 from fides.api.models.policy import ActionType
 from fides.api.task.graph_task import retry
 from fides.api.task.task_resources import TaskResources
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from tests.ops.task.traversal_data import integration_db_graph
 
 t1 = Collection(

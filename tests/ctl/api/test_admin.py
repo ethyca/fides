@@ -4,7 +4,7 @@ from starlette.testclient import TestClient
 
 from fides.api.api.v1.endpoints.utils import API_PREFIX
 from fides.api.util import errors
-from fides.core.config import FidesConfig
+from fides.config import FidesConfig
 
 
 def test_db_reset_dev_mode_enabled(

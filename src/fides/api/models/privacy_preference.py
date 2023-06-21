@@ -29,7 +29,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     ProvidedIdentity,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 class RequestOrigin(Enum):

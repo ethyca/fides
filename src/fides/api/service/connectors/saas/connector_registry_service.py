@@ -40,7 +40,7 @@ from fides.api.util.saas_util import (
     replace_dataset_placeholders,
     replace_version,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 class ConnectorTemplateLoader(ABC):

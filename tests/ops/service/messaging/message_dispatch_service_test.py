@@ -37,7 +37,7 @@ from fides.api.service.messaging.message_dispatch_service import (
     _twilio_sms_dispatcher,
     dispatch_message,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 @pytest.fixture

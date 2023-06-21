@@ -7,7 +7,7 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from fides.api.task import graph_task
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.dataset_utils import update_dataset
 

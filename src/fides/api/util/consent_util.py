@@ -35,7 +35,7 @@ from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-def
 from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.schemas.redis_cache import Identity
-from fides.core.config.helpers import load_file
+from fides.config.helpers import load_file
 
 PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "description", "internal_description"]
 PRIVACY_EXPERIENCE_ESCAPE_FIELDS = [
