@@ -5491,7 +5491,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"accept_button_label\": \"Accept\",\n    \"reject_button_label\": \"Reject\",\n    \"save_button_label\": \"Save all\",\n    \"title\": \"Here is where you manage your consent!\",\n    \"regions\": [\"us_ca\", \"eu_de\"]\n}",
+							"raw": "{\n    \"accept_button_label\": \"Accept\",\n    \"reject_button_label\": \"Reject\",\n    \"save_button_label\": \"Save all\",\n    \"title\": \"Here is where you manage your consent!\",\n    \"regions\": [\"us_ca\", \"de\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
