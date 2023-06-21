@@ -19,7 +19,7 @@ const NoticeEmptyStateModal = ({
 }) => (
   <Modal isOpen={isOpen} onClose={onClose} isCentered>
     <ModalOverlay />
-    <ModalContent textAlign="center">
+    <ModalContent textAlign="center" data-testid="notice-empty-state">
       <ModalHeader fontSize="lg" pt={6} fontWeight={500}>
         Consent management unavailable
       </ModalHeader>
