@@ -23,10 +23,16 @@ The types of changes are:
 - Support for acknowledge button for notice-only Privacy Notices and to disable toggling them off [#3546](https://github.com/ethyca/fides/pull/3546)
 - HTML format for privacy request storage destinations [#3427](https://github.com/ethyca/fides/pull/3427)
 - Empty state for when there are no relevant privacy notices in the privacy center [#3640](https://github.com/ethyca/fides/pull/3640)
+- Access and erasure support for SurveyMonkey [#3590](https://github.com/ethyca/fides/pull/3590)
 
 ### Changed
 
 - Removed `pyodbc` in favor of `pymssql` for handling SQL Server connections [#3435](https://github.com/ethyca/fides/pull/3435)
+- Only create a PrivacyRequest when saving consent if at least one notice has system-wide enforcement [#3626](https://github.com/ethyca/fides/pull/3626)
+
+### Docs
+
+- Updated developer docs for ARM platform users related to `pymssql` [#3615](https://github.com/ethyca/fides/pull/3615)
 
 ### Fixed
 
@@ -38,6 +44,8 @@ The types of changes are:
 - Updated Privacy Experience Safe Strings Serialization [#3600](https://github.com/ethyca/fides/pull/3600/)
 - Only create default experience configs on startup, not update [#3605](https://github.com/ethyca/fides/pull/3605)
 - Update to latest asyncpg dependency to avoid build error [#3614](https://github.com/ethyca/fides/pull/3614)
+- Fix bug where editing a data use on a system could delete existing data uses [#3627](https://github.com/ethyca/fides/pull/3627)
+- Restrict Privacy Center debug logging to development-only [#3638](https://github.com/ethyca/fides/pull/3638)
 
 ### Developer Experience
 
