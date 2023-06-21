@@ -28,6 +28,7 @@ The types of changes are:
 
 - Removed `pyodbc` in favor of `pymssql` for handling SQL Server connections [#3435](https://github.com/ethyca/fides/pull/3435)
 - Only create a PrivacyRequest when saving consent if at least one notice has system-wide enforcement [#3626](https://github.com/ethyca/fides/pull/3626)
+- Increased the character limit for the `SafeStr` type from 500 to 32000 [#3647](https://github.com/ethyca/fides/pull/3647)
 
 ### Docs
 
