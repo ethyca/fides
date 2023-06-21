@@ -6,7 +6,7 @@ dataset:
       - name: customer
         fields:
           - name: address
-            data_categories: [user.location]
+            data_categories: [user.contact.address]
             fidesops_meta:
               data_type: string
           - name: customAttributes
@@ -23,10 +23,10 @@ dataset:
                   data_type: string
           - name: emails
             fidesops_meta:
-              data_type: 'object[]'
+              data_type: "object[]"
             fields:
               - name: normalized
-                data_categories: [system.operations]
+                data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
               - name: original
@@ -43,10 +43,10 @@ dataset:
               data_type: string
           - name: phones
             fidesops_meta:
-              data_type: 'object[]'
+              data_type: "object[]"
             fields:
               - name: normalized
-                data_categories: [system.operations]
+                data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string
               - name: original
