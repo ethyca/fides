@@ -4,43 +4,16 @@ Override basic theme colors by uncommenting and editing those below
 */
 
 :root:root {
-
   /* Background color */
-    --chakra-colors-gray-50: #ffffff;
+  /* --chakra-colors-gray-50: #F7FAFC; */
   /* Header & highlight color */
-  --chakra-colors-gray-100: #0f1536;
+  /* --chakra-colors-gray-100: #EDF2F7; */
   /* Modal text color */
-  --chakra-colors-gray-500: #000000;
+  /* --chakra-colors-gray-500: #718096; */
   /* Body text color */
-  --chakra-colors-gray-600: #000000; 
+  /* --chakra-colors-gray-600: #4A5568; */
   /* Primary button hover color */
-   --chakra-colors-primary-400: #00f5bd;
+  /* --chakra-colors-primary-400: #464B83; */
   /* Primary button color */
-  --chakra-colors-primary-800: #0f1536;
-  /* Privacy action button focus color */
-  --chakra-colors-complimentary-500: #03f0ff;
-}
-
-.chakra-button:hover, .chakra-button[type="button"]:hover, .chakra-button[type="submit"]:hover {
-  background: #00f5bd;
-  color: #0f1536;
-}
-
-a.chakra-link p, a.chakra-link svg, p a.chakra-link {
-  color: #000000;
-  font-style: italic;
-}
-
-.chakra-stack[data-testid="gpc-banner"]{
-  background: #f1f1f1;
-  border-color:#0f1536;
-}
-
-.chakra-stack[data-testid="gpc-banner"] svg{
-  color: #000000;
-}
-
-.chakra-stack div[data-testid*="consent-item-"] *:not(.chakra-badge){
-  background: #ffffff;
-  color: #413939;
+  /* --chakra-colors-primary-800: #111439; */
 }
