@@ -23,6 +23,7 @@ The types of changes are:
 - Support for acknowledge button for notice-only Privacy Notices and to disable toggling them off [#3546](https://github.com/ethyca/fides/pull/3546)
 - HTML format for privacy request storage destinations [#3427](https://github.com/ethyca/fides/pull/3427)
 - New Cookies Table for storing cookies associated with systems and privacy declarations [#3572](https://github.com/ethyca/fides/pull/3572)
+- `fides-js` and privacy center now delete cookies associated with notices that were opted out of [#3569](https://github.com/ethyca/fides/pull/3569)
 - Cookie input field on system data use tab [#3571](https://github.com/ethyca/fides/pull/3571)
 - Access and erasure support for SurveyMonkey [#3590](https://github.com/ethyca/fides/pull/3590)
 
