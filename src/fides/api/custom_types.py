@@ -22,8 +22,8 @@ class SafeStr(str):
         # HTML Escapes
         value = escape(value)
 
-        if len(value) > 500:
-            raise ValueError("Value must be 500 characters or less.")
+        if len(value) > 32000:
+            raise ValueError("Value must be 32000 characters or less.")
 
         return value
 
