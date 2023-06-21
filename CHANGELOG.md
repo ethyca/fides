@@ -27,7 +27,7 @@ The types of changes are:
 ### Changed
 
 - Removed `pyodbc` in favor of `pymssql` for handling SQL Server connections [#3435](https://github.com/ethyca/fides/pull/3435)
-
+- Only create a PrivacyRequest when saving consent if at least one notice has system-wide enforcement [#3626](https://github.com/ethyca/fides/pull/3626)
 ### Fixed
 
 - Fix race condition with consent modal link rendering [#3521](https://github.com/ethyca/fides/pull/3521)
