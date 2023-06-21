@@ -1,4 +1,6 @@
 import * as uuid from "uuid";
+
+import { CookieAttributes } from "typescript-cookie/dist/types";
 import {
   CookieKeyConsent,
   FidesCookie,
@@ -6,10 +8,11 @@ import {
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
   makeFidesCookie,
+  removeCookiesFromBrowser,
   saveFidesCookie,
 } from "../../src/lib/cookie";
 import type { ConsentContext } from "../../src/lib/consent-context";
-import { LegacyConsentConfig } from "~/lib/consent-types";
+import { Cookies, LegacyConsentConfig } from "../../src/lib/consent-types";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
@@ -31,6 +34,10 @@ const mockSetCookie = jest.fn(
   (name: string, value: string, attributes: object, encoding: object) =>
     `mock setCookie return (value=${value})`
 );
+const mockRemoveCookie = jest.fn(
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  (name: string, attributes?: CookieAttributes) => undefined
+);
 jest.mock("typescript-cookie", () => ({
   getCookie: () => mockGetCookie(),
   setCookie: (
@@ -39,6 +46,8 @@ jest.mock("typescript-cookie", () => ({
     attributes: object,
     encoding: object
   ) => mockSetCookie(name, value, attributes, encoding),
+  removeCookie: (name: string, attributes?: CookieAttributes) =>
+    mockRemoveCookie(name, attributes),
 }));
 
 describe("makeFidesCookie", () => {
@@ -275,4 +284,42 @@ describe("isNewFidesCookie", () => {
       expect(isNewFidesCookie(savedCookie)).toBeFalsy();
     });
   });
+});
+
+describe("removeCookiesFromBrowser", () => {
+  afterEach(() => mockRemoveCookie.mockClear());
+
+  it.each([
+    { cookies: [], expectedAttributes: [] },
+    { cookies: [{ name: "_ga123" }], expectedAttributes: [{ path: "/" }] },
+    {
+      cookies: [{ name: "_ga123", path: "" }],
+      expectedAttributes: [{ path: "" }],
+    },
+    {
+      cookies: [{ name: "_ga123", path: "/subpage" }],
+      expectedAttributes: [{ path: "/subpage" }],
+    },
+    {
+      cookies: [{ name: "_ga123" }, { name: "shopify" }],
+      expectedAttributes: [{ path: "/" }, { path: "/" }],
+    },
+  ])(
+    "should remove a list of cookies",
+    ({
+      cookies,
+      expectedAttributes,
+    }: {
+      cookies: Cookies[];
+      expectedAttributes: CookieAttributes[];
+    }) => {
+      removeCookiesFromBrowser(cookies);
+      expect(mockRemoveCookie.mock.calls).toHaveLength(cookies.length);
+      cookies.forEach((cookie, idx) => {
+        const [name, attributes] = mockRemoveCookie.mock.calls[idx];
+        expect(name).toEqual(cookie.name);
+        expect(attributes).toEqual(expectedAttributes[idx]);
+      });
+    }
+  );
 });

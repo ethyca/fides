@@ -449,6 +449,13 @@ class TestSystemCreate:
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
+                    cookies=[
+                        {
+                            "name": "essential_cookie",
+                            "path": "/",
+                            "domain": "example.com",
+                        }
+                    ],
                 ),
                 models.PrivacyDeclaration(
                     name="declaration-name-2",
@@ -551,12 +558,24 @@ class TestSystemCreate:
 
         assert result.status_code == HTTP_201_CREATED
         assert result.json()["name"] == "Test System"
+        assert result.json()["cookies"] == [
+            {"name": "essential_cookie", "path": "/", "domain": "example.com"}
+        ]
+        assert result.json()["privacy_declarations"][0]["cookies"] == [
+            {"name": "essential_cookie", "path": "/", "domain": "example.com"}
+        ]
+        assert result.json()["privacy_declarations"][1]["cookies"] == []
         assert len(result.json()["privacy_declarations"]) == 2
 
         systems = System.all(db)
         assert len(systems) == 1
         assert systems[0].name == "Test System"
         assert len(systems[0].privacy_declarations) == 2
+        assert [cookie.name for cookie in systems[0].cookies] == ["essential_cookie"]
+        assert [
+            cookie.name for cookie in systems[0].privacy_declarations[0].cookies
+        ] == ["essential_cookie"]
+        assert systems[0].privacy_declarations[1].cookies == []
 
     async def test_system_create_custom_metadata_saas_config(
         self,
@@ -730,6 +749,31 @@ class TestSystemUpdate:
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
+                )
+            ],
+        )
+
+    @pytest.fixture(scope="function")
+    def system_update_request_body_with_cookies(self, system) -> SystemSchema:
+        return SystemSchema(
+            organization_fides_key=1,
+            registryId=1,
+            fides_key=system.fides_key,
+            system_type="SYSTEM",
+            name=self.updated_system_name,
+            description="Test Policy",
+            privacy_declarations=[
+                models.PrivacyDeclaration(
+                    name="declaration-name",
+                    data_categories=[],
+                    data_use="essential",
+                    data_subjects=[],
+                    data_qualifier="aggregated_data",
+                    dataset_references=[],
+                    cookies=[
+                        {"name": "my_cookie", "domain": "example.com"},
+                        {"name": "my_other_cookie"},
+                    ],
                 )
             ],
         )
@@ -1093,6 +1137,40 @@ class TestSystemUpdate:
             and system.privacy_declarations[1].name == "new declaration 1"
         )
 
+    def test_system_update_privacy_declaration_cookies(
+        self,
+        test_config,
+        system_update_request_body_with_cookies,
+        system,
+        db,
+        generate_system_manager_header,
+    ):
+        assert system.name != self.updated_system_name
+
+        auth_header = generate_system_manager_header([system.id])
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body_with_cookies.json(
+                exclude_none=True
+            ),
+        )
+        assert result.status_code == HTTP_200_OK
+        assert result.json()["name"] == self.updated_system_name
+        assert result.json()["cookies"] == [
+            {"name": "my_cookie", "path": None, "domain": "example.com"},
+            {"name": "my_other_cookie", "path": None, "domain": None},
+            {"name": "test_cookie", "path": "/", "domain": None},
+        ]
+
+        db.refresh(system)
+        assert system.name == self.updated_system_name
+        assert (
+            len(system.cookies) == 3
+        )  # Two from the current privacy declaration, one from the previous privacy declaration that was deleted, but still linked to the system
+        assert len(system.privacy_declarations[0].cookies) == 2
+
     @pytest.mark.parametrize(
         "update_declarations",
         [
@@ -1105,6 +1183,7 @@ class TestSystemUpdate:
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     )
                 ]
             ),
@@ -1118,6 +1197,7 @@ class TestSystemUpdate:
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     ),
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
@@ -1126,6 +1206,7 @@ class TestSystemUpdate:
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     ),
                 ]
             ),
@@ -1139,6 +1220,7 @@ class TestSystemUpdate:
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     ),
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
@@ -1147,6 +1229,7 @@ class TestSystemUpdate:
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     ),
                 ]
             ),
@@ -1160,6 +1243,7 @@ class TestSystemUpdate:
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     ),
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
@@ -1168,6 +1252,7 @@ class TestSystemUpdate:
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     ),
                 ]
             ),

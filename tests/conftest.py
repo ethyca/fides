@@ -29,7 +29,7 @@ from fides.api.cryptography.schemas.jwt import (
 from fides.api.db.ctl_session import sync_engine
 from fides.api.main import app
 from fides.api.models.privacy_request import generate_request_callback_jwe
-from fides.api.models.sql_models import DataUse, PrivacyDeclaration
+from fides.api.models.sql_models import Cookies, DataUse, PrivacyDeclaration
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import (
     APPROVER,
@@ -411,6 +411,7 @@ def resources_dict():
             system_type="SYSTEM",
             name="Test System",
             description="Test Policy",
+            cookies=[],
             privacy_declarations=[
                 models.PrivacyDeclaration(
                     name="declaration-name",
@@ -419,6 +420,7 @@ def resources_dict():
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
+                    cookies=[],
                 )
             ],
         ),
@@ -1018,7 +1020,7 @@ def system(db: Session) -> System:
         },
     )
 
-    PrivacyDeclaration.create(
+    privacy_declaration = PrivacyDeclaration.create(
         db=db,
         data={
             "name": "Collect data for marketing",
@@ -1031,6 +1033,17 @@ def system(db: Session) -> System:
             "egress": None,
             "ingress": None,
         },
+    )
+
+    Cookies.create(
+        db=db,
+        data={
+            "name": "test_cookie",
+            "path": "/",
+            "privacy_declaration_id": privacy_declaration.id,
+            "system_id": system.id,
+        },
+        check_name=False,
     )
 
     db.refresh(system)

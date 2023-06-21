@@ -1,12 +1,16 @@
 import { v4 as uuidv4 } from "uuid";
-import { getCookie, setCookie, Types } from "typescript-cookie";
+import { getCookie, removeCookie, setCookie, Types } from "typescript-cookie";
 
 import { ConsentContext } from "./consent-context";
 import {
   resolveConsentValue,
   resolveLegacyConsentValue,
 } from "./consent-value";
-import { LegacyConsentConfig, PrivacyExperience } from "./consent-types";
+import {
+  Cookies,
+  LegacyConsentConfig,
+  PrivacyExperience,
+} from "./consent-types";
 import { debugLog } from "./consent-utils";
 
 /**
@@ -272,4 +276,16 @@ export const makeConsentDefaultsLegacy = (
   });
   debugLog(debug, `Returning defaults for legacy config.`, defaults);
   return defaults;
+};
+
+/**
+ * Given a list of cookies, deletes them from the browser
+ */
+export const removeCookiesFromBrowser = (cookies: Cookies[]) => {
+  cookies.forEach((cookie) => {
+    removeCookie(cookie.name, {
+      path: cookie.path ?? "/",
+      domain: cookie.domain,
+    });
+  });
 };

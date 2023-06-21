@@ -316,20 +316,25 @@ const CreatableSelectInput = ({
       size={size}
       classNamePrefix="custom-creatable-select"
       chakraStyles={{
-        container: (provided) => ({ ...provided, flexGrow: 1 }),
+        container: (provided) => ({
+          ...provided,
+          flexGrow: 1,
+          backgroundColor: "white",
+        }),
         dropdownIndicator: (provided) => ({
           ...provided,
-          background: "white",
+          bg: "transparent",
+          px: 2,
+          cursor: "inherit",
+        }),
+        indicatorSeparator: (provided) => ({
+          ...provided,
+          display: "none",
         }),
         multiValue: (provided) => ({
           ...provided,
           background: "primary.400",
           color: "white",
-        }),
-        multiValueRemove: (provided) => ({
-          ...provided,
-          display: "none",
-          visibility: "hidden",
         }),
       }}
       components={components}

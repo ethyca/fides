@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesKey
 from pydantic import Extra, conlist, root_validator, validator
 
@@ -140,6 +141,7 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
     updated_at: datetime
     version: float
     privacy_notice_history_id: str
+    cookies: List[CookieSchema]
 
 
 class PrivacyNoticeResponseWithUserPreferences(PrivacyNoticeResponse):
