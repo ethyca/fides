@@ -81,7 +81,6 @@ export const fetchExperience = async (
 export const patchUserPreferenceToFidesServer = async (
   preferences: PrivacyPreferencesRequest,
   fidesApiUrl: string,
-  fidesUserDeviceId: string,
   debug: boolean
 ): Promise<void> => {
   debugLog(debug, "Saving user consent preference...", preferences);

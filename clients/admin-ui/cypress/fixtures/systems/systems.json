@@ -17,7 +17,9 @@
         "data_use": "improve.system",
         "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         "data_subjects": ["anonymous_user"],
-        "dataset_references": ["public"]
+        "dataset_references": ["public"],
+        "cookies": [],
+        "id": "pri_ac9d4dfb-d033-4b06-bc7f-968df8d125ff"
       }
     ],
     "joint_controller": null,
@@ -59,7 +61,9 @@
         "data_subjects": ["customer"],
         "dataset_references": ["demo_users_dataset"],
         "egress": null,
-        "ingress": null
+        "ingress": null,
+        "cookies": [],
+        "id": "pri_ac9d4dfb-d033-4b06-bc7f-968df8d125ff"
       }
     ],
     "joint_controller": null,
@@ -99,7 +103,9 @@
         "data_subjects": ["customer"],
         "dataset_references": null,
         "egress": null,
-        "ingress": null
+        "ingress": null,
+        "cookies": [],
+        "id": "pri_06430a1c-1365-422e-90a7-d444ddb32181"
       }
     ],
     "joint_controller": null,

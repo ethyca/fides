@@ -11,5 +11,5 @@ export type EmailDocsSchema = {
   third_party_vendor_name: string;
   recipient_email_address: string;
   test_email_address?: string;
-  advanced_settings: AdvancedSettings;
+  advanced_settings?: AdvancedSettings;
 };

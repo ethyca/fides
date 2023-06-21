@@ -44,6 +44,9 @@ The types of changes are:
 - HTML format for privacy request storage destinations [#3427](https://github.com/ethyca/fides/pull/3427)
 - Persistent message showing result and timestamp of last integration test to "Integrations" tab in system view [#3628](https://github.com/ethyca/fides/pull/3628)
 - Access and erasure support for SurveyMonkey [#3590](https://github.com/ethyca/fides/pull/3590)
+- New Cookies Table for storing cookies associated with systems and privacy declarations [#3572](https://github.com/ethyca/fides/pull/3572)
+- `fides-js` and privacy center now delete cookies associated with notices that were opted out of [#3569](https://github.com/ethyca/fides/pull/3569)
+- Cookie input field on system data use tab [#3571](https://github.com/ethyca/fides/pull/3571)
 
 ### Fixed
 
@@ -198,7 +201,7 @@ The types of changes are:
 
 ### Developer Experience
 
-- Use prettier to format *all* source files in client packages [#3240](https://github.com/ethyca/fides/pull/3240)
+- Use prettier to format _all_ source files in client packages [#3240](https://github.com/ethyca/fides/pull/3240)
 
 ### Deprecated
 
