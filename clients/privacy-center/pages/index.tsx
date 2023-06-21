@@ -60,12 +60,12 @@ const Home: NextPage = () => {
   let isConsentModalOpen = isConsentModalOpenConst;
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
 
-  // Subscribe to experiences just to see if there are any notices
+  // Subscribe to experiences just to see if there are any notices.
+  // The subscription automatically handles skipping if overlay is not enabled
   useSubscribeToPrivacyExperienceQuery();
   const noticeEmptyStateModal = useDisclosure();
   const experience = useAppSelector(selectPrivacyExperience);
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
-
   const emptyNotices =
     experience?.privacy_notices == null ||
     experience.privacy_notices.length === 0;

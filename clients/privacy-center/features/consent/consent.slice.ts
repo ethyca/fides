@@ -200,7 +200,6 @@ export const selectUserRegion = createSelector(
 export const selectPrivacyExperience = createSelector(
   [(RootState) => RootState, selectUserRegion, selectFidesUserDeviceId],
   (RootState, region, deviceId) => {
-    console.log({ deviceId });
     if (!region) {
       return undefined;
     }
