@@ -360,8 +360,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       />
 
       {connectionConfig ? (
-        <Flex mt="2" justifyContent="center" alignItems="center">
-          <Spacer />
+        <Flex mt="4" justifyContent="between" alignItems="center">
           {response ? (
             <TestData
               succeeded={response.data.test_status === "succeeded"}
