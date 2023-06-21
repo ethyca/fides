@@ -68,8 +68,8 @@ const Home: NextPage = () => {
 
   const emptyNotices =
     experience?.privacy_notices == null ||
-    experience?.privacy_notices?.length === 0;
-  console.log({ experience, isNoticeDriven, emptyNotices });
+    experience.privacy_notices.length === 0;
+
   const handleConsentCardOpen = () => {
     if (isNoticeDriven && emptyNotices) {
       noticeEmptyStateModal.onOpen();
