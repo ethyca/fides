@@ -1,4 +1,4 @@
-import { Box, Flex, SlideFade, Spacer, Text } from "@fidesui/react";
+import { Box, Flex, SlideFade, Spacer } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
@@ -19,8 +19,6 @@ import {
 import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import ConnectedCircle from "~/features/common/ConnectedCircle";
-import { formatDate } from "~/features/common/utils";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import TestConnection from "~/features/datastore-connections/system_portal_config/TestConnection";
@@ -39,35 +37,9 @@ import {
   SystemType,
 } from "~/types/api";
 
+import TestData from "../../TestData";
 import { ConnectionConfigFormValues } from "../types";
 import ConnectorParametersForm from "./ConnectorParametersForm";
-
-type TestDataProps = {
-  succeeded?: boolean;
-  timestamp: string;
-};
-
-const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
-  const date = timestamp ? formatDate(timestamp) : "";
-  const testText = timestamp
-    ? `Last tested on ${date}`
-    : "This connection has not been tested yet";
-
-  return (
-    <>
-      <ConnectedCircle connected={succeeded} />
-      <Text
-        color="gray.500"
-        fontSize="xs"
-        fontWeight="semibold"
-        lineHeight="16px"
-        ml="10px"
-      >
-        {testText}
-      </Text>
-    </>
-  );
-};
 
 /**
  * Only handles creating saas connectors. The BE handler automatically
