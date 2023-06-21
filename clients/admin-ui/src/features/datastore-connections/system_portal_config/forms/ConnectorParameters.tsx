@@ -22,6 +22,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import TestConnection from "~/features/datastore-connections/system_portal_config/TestConnection";
+import TestData from "~/features/datastore-connections/TestData";
 import {
   selectActiveSystem,
   setActiveSystem,
@@ -37,7 +38,6 @@ import {
   SystemType,
 } from "~/types/api";
 
-import TestData from "../../TestData";
 import { ConnectionConfigFormValues } from "../types";
 import ConnectorParametersForm from "./ConnectorParametersForm";
 
