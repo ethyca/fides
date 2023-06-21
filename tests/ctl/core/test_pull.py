@@ -1,7 +1,7 @@
 import pytest
 from git.repo import Repo
 
-from fides.core.config import FidesConfig
+from fides.config import FidesConfig
 from fides.core.pull import pull_existing_resources
 
 

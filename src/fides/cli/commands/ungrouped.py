@@ -19,7 +19,14 @@ from fides.cli.utils import (
     send_init_analytics,
     with_analytics,
 )
-from fides.common.utils import handle_cli_response, pretty_echo, print_divider
+from fides.common.utils import (
+    echo_green,
+    echo_red,
+    handle_cli_response,
+    pretty_echo,
+    print_divider,
+)
+from fides.config.create import create_and_update_config_file
 from fides.core import api as _api
 from fides.core import audit as _audit
 from fides.core import evaluate as _evaluate
@@ -27,8 +34,7 @@ from fides.core import parse as _parse
 from fides.core import pull as _pull
 from fides.core import push as _push
 from fides.core.api_helpers import get_server_resource, list_server_resources
-from fides.core.config.create import create_and_update_config_file
-from fides.core.utils import echo_green, echo_red, git_is_dirty
+from fides.core.utils import git_is_dirty
 
 
 @click.command()

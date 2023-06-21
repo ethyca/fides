@@ -30,7 +30,7 @@ from fides.api.models.policy import PolicyPreWebhook
 from fides.api.oauth.roles import get_scopes_from_roles
 from fides.api.schemas.external_https import WebhookJWE
 from fides.api.schemas.oauth import OAuth2ClientCredentialsBearer
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 

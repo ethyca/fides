@@ -97,7 +97,7 @@ Some common Alembic commands are listed below. For a comprehensive guide see: <h
 
 The commands will need to be run inside a shell on your Docker containers, which can be opened with `nox -s dev -- shell`.
 
-In the `/src/fides/api/` directory:
+In the `/src/fides/api/alembic` directory:
 
 - Migrate your database to the latest state: `alembic upgrade head`
 - Merge heads (for when you have conflicting heads from a merge/rebase): `alembic merge heads`

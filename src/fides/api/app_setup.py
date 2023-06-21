@@ -43,7 +43,7 @@ from fides.api.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 VERSION = fides.__version__
 

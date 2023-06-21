@@ -1,13 +1,11 @@
 import glob
 import re
-from functools import partial
 from hashlib import sha1
 from os import getenv
 from os.path import isfile
 from pathlib import Path
 from typing import Dict, Iterator, List
 
-import click
 import sqlalchemy
 import toml
 from fideslang.models import DatasetField, FidesModel
@@ -16,12 +14,10 @@ from pydantic import BaseModel, ValidationError
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
+from fides.common.utils import echo_red
 from fides.connectors.models import ConnectorAuthFailureException
 
 logger.bind(name="server_api")
-
-echo_red = partial(click.secho, fg="red", bold=True)
-echo_green = partial(click.secho, fg="green", bold=True)
 
 
 class Credentials(BaseModel):
