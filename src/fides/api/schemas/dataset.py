@@ -28,7 +28,6 @@ def validate_data_categories_against_db(
         defined_data_categories = list(DefaultTaxonomyDataCategories.__members__.keys())
 
     class DataCategoryValidationMixin(BaseModel):
-        @classmethod
         @validator("data_categories", check_fields=False, allow_reuse=True)
         def valid_data_categories(
             cls: Type["DataCategoryValidationMixin"], v: Optional[List[FidesKey]]

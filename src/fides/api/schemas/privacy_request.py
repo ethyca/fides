@@ -82,7 +82,6 @@ class PrivacyRequestCreate(FidesSchema):
     encryption_key: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
 
-    @classmethod
     @validator("encryption_key")
     def validate_encryption_key(
         cls: Type["PrivacyRequestCreate"], value: Optional[str] = None
