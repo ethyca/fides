@@ -381,7 +381,9 @@ class TestUpsertCookies:
             data={
                 "name": "strawberry",
                 "path": "/",
-                "privacy_declaration_id": system.privacy_declarations[1].id,
+                "privacy_declaration_id": sorted(
+                    system.privacy_declarations, key=lambda x: x.name
+                )[1].id,
                 "system_id": system.id,
             },
             check_name=False,
@@ -395,12 +397,14 @@ class TestUpsertCookies:
         system already has a cookie."""
 
         new_cookies = [{"name": "apple"}]
-        privacy_declaration = sorted(test_cookie_system.privacy_declarations, key=lambda x: x.name)[0]
+        privacy_declaration = sorted(
+            test_cookie_system.privacy_declarations, key=lambda x: x.name
+        )[0]
 
         await upsert_cookies(
             async_session_temp,
             new_cookies,
-            test_cookie_system.privacy_declarations[0],
+            privacy_declaration,
             test_cookie_system,
         )
         await async_session_temp.refresh(test_cookie_system)
@@ -423,7 +427,9 @@ class TestUpsertCookies:
     async def test_no_change_to_cookies(self, test_cookie_system, async_session_temp):
         """Test specified cookies already exist on given privacy declaration, so no change required"""
         new_cookies = [{"name": "strawberry"}]
-        privacy_declaration = sorted(test_cookie_system.privacy_declarations, key=lambda x: x.name)[1]
+        privacy_declaration = sorted(
+            test_cookie_system.privacy_declarations, key=lambda x: x.name
+        )[1]
         existing_cookie = privacy_declaration.cookies[0]
         assert existing_cookie.name == "strawberry"
 
@@ -454,7 +460,9 @@ class TestUpsertCookies:
         """Test specified cookies already exist on given privacy declaration, so no change required"""
 
         new_cookies = [{"name": "strawberry", "path": "/"}]
-        privacy_declaration = sorted(test_cookie_system.privacy_declarations, key=lambda x: x.name)[1]
+        privacy_declaration = sorted(
+            test_cookie_system.privacy_declarations, key=lambda x: x.name
+        )[1]
         existing_cookie = privacy_declaration.cookies[0]
         assert existing_cookie.name == "strawberry"
 
@@ -485,7 +493,9 @@ class TestUpsertCookies:
         cookie and we remove the existing one"""
 
         new_cookies = [{"name": "apple"}]
-        privacy_declaration = sorted(test_cookie_system.privacy_declarations, key=lambda x: x.name)[1]
+        privacy_declaration = sorted(
+            test_cookie_system.privacy_declarations, key=lambda x: x.name
+        )[1]
         existing_cookie = privacy_declaration.cookies[0]
         assert existing_cookie.name == "strawberry"
 
@@ -516,7 +526,9 @@ class TestUpsertCookies:
     ):
         """Test if a privacy declaration is deleted, its cookie is still linked to the system"""
 
-        privacy_declaration = test_cookie_system.privacy_declarations[1]
+        privacy_declaration = sorted(
+            test_cookie_system.privacy_declarations, key=lambda x: x.name
+        )[1]
         existing_cookie = privacy_declaration.cookies[0]
 
         assert existing_cookie.privacy_declaration_id == privacy_declaration.id
