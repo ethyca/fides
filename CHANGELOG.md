@@ -29,7 +29,7 @@ The types of changes are:
 
 ### Docs
 
-- Updated delevoper docs to M1 users related to `pymssql` [#3615](https://github.com/ethyca/fides/pull/3615)
+- Updated developer docs for ARM platform users related to `pymssql` [#3615](https://github.com/ethyca/fides/pull/3615)
 
 ### Fixed
 
