@@ -33,7 +33,7 @@ from fides.api.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.util.data_category import DataCategory
-from fides.core.config import get_config
+from fides.config import get_config
 
 CONFIG = get_config()
 

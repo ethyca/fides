@@ -15,7 +15,7 @@ from rich_click import Context, echo, group, option, pass_context, secho, versio
 
 import fides
 from fides.cli.utils import check_server
-from fides.core.config import get_config
+from fides.config import get_config
 
 from . import cli_formatting
 from .commands.annotate import annotate

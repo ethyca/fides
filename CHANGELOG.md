@@ -23,11 +23,12 @@ The types of changes are:
 - Support for acknowledge button for notice-only Privacy Notices and to disable toggling them off [#3546](https://github.com/ethyca/fides/pull/3546)
 - HTML format for privacy request storage destinations [#3427](https://github.com/ethyca/fides/pull/3427)
 - Persistent message showing result and timestamp of last integration test to "Integrations" tab in system view [#3607](https://github.com/ethyca/fides/issues/3607)
+- Access and erasure support for SurveyMonkey [#3590](https://github.com/ethyca/fides/pull/3590)
 
 ### Changed
 
 - Removed `pyodbc` in favor of `pymssql` for handling SQL Server connections [#3435](https://github.com/ethyca/fides/pull/3435)
-
+- Only create a PrivacyRequest when saving consent if at least one notice has system-wide enforcement [#3626](https://github.com/ethyca/fides/pull/3626)
 ### Fixed
 
 - Fix race condition with consent modal link rendering [#3521](https://github.com/ethyca/fides/pull/3521)
@@ -36,7 +37,9 @@ The types of changes are:
 - Handles an edge case for non-existent identities with the Kustomer API [#3513](https://github.com/ethyca/fides/pull/3513)
 - remove the configure privacy request tile from the home screen [#3555](https://github.com/ethyca/fides/pull/3555)
 - Updated Privacy Experience Safe Strings Serialization [#3600](https://github.com/ethyca/fides/pull/3600/)
+- Only create default experience configs on startup, not update [#3605](https://github.com/ethyca/fides/pull/3605)
 - Update to latest asyncpg dependency to avoid build error [#3614](https://github.com/ethyca/fides/pull/3614)
+- Fix bug where editing a data use on a system could delete existing data uses [#3627](https://github.com/ethyca/fides/pull/3627)
 
 ### Developer Experience
 
@@ -549,6 +552,7 @@ The types of changes are:
   - This PR contains a migration that deletes duplicate users and keeps the oldest original account.
 - Update Logos for shipped connectors [#2464](https://github.com/ethyca/fides/pull/2587)
 - Search field on privacy request page isn't working [#2270](https://github.com/ethyca/fides/pull/2595)
+- Fix connection dropdown in integration table to not be disabled add system creation [#3589](https://github.com/ethyca/fides/pull/3589)
 
 ### Developer Experience
 

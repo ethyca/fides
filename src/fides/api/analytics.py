@@ -9,7 +9,7 @@ from loguru import logger as log
 
 from fides import __version__ as fides_version
 from fides.api.models.registration import UserRegistration
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 def in_docker_container() -> bool:

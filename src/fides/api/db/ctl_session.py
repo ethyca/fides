@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from fides.api.db.session import ExtendedSession
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 # Associated with a workaround in fides.core.config.database_settings
 # ref: https://github.com/sqlalchemy/sqlalchemy/discussions/5975

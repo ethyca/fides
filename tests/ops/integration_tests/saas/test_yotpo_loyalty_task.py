@@ -9,7 +9,7 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
-from fides.core.config import get_config
+from fides.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 

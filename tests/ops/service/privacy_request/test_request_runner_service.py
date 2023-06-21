@@ -60,7 +60,7 @@ from fides.api.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
 )
 from fides.api.util.data_category import DataCategory
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return

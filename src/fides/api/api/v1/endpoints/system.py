@@ -13,15 +13,6 @@ from starlette.status import HTTP_200_OK
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
-from fides.api.api.v1.scope_registry import (
-    CONNECTION_CREATE_OR_UPDATE,
-    CONNECTION_READ,
-    SAAS_CONNECTION_INSTANTIATE,
-    SYSTEM_CREATE,
-    SYSTEM_DELETE,
-    SYSTEM_READ,
-    SYSTEM_UPDATE,
-)
 from fides.api.api.v1.urn_registry import (
     INSTANTIATE_SYSTEM_CONNECTION,
     SYSTEM_CONNECTIONS,
@@ -56,6 +47,15 @@ from fides.api.util.connection_util import patch_connection_configs
 from fides.api.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
+)
+from fides.common.api.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_READ,
+    SAAS_CONNECTION_INSTANTIATE,
+    SYSTEM_CREATE,
+    SYSTEM_DELETE,
+    SYSTEM_READ,
+    SYSTEM_UPDATE,
 )
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")

@@ -1,6 +1,6 @@
 import pytest
 
-from fides.core.config.security_settings import SecuritySettings
+from fides.config.security_settings import SecuritySettings
 
 
 @pytest.mark.unit
