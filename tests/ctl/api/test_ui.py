@@ -9,11 +9,7 @@ import pytest
 import requests
 from starlette.testclient import TestClient
 
-from fides.api.ctl.ui import (
-    generate_route_file_map,
-    match_route,
-    path_is_in_ui_directory,
-)
+from fides.api.ui import generate_route_file_map, match_route, path_is_in_ui_directory
 
 # Path segments of temporary files whose routes are tested.
 STATIC_FILES = (
@@ -73,7 +69,7 @@ def test_match_route(
 
 
 @pytest.mark.unit
-@mock.patch("fides.api.ctl.ui.get_path_to_admin_ui_file")
+@mock.patch("fides.api.ui.get_path_to_admin_ui_file")
 @pytest.mark.parametrize(
     "route, expected",
     [

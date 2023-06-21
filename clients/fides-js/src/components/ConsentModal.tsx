@@ -1,11 +1,6 @@
-import { h } from "preact";
+import { h, VNode } from "preact";
 import { Attributes } from "../lib/a11y-dialog";
-import Button from "./Button";
-import {
-  ButtonType,
-  PrivacyNotice,
-  ExperienceConfig,
-} from "../lib/consent-types";
+import { PrivacyNotice, ExperienceConfig } from "../lib/consent-types";
 import NoticeToggles from "./NoticeToggles";
 import CloseButton from "./CloseButton";
 
@@ -17,10 +12,7 @@ const ConsentModal = ({
   notices,
   enabledNoticeKeys,
   onChange,
-  onClose,
-  onSave,
-  onRejectAll,
-  onAcceptAll,
+  buttonGroup,
 }: {
   attributes: Attributes;
   experience: ExperienceConfig;
@@ -28,26 +20,9 @@ const ConsentModal = ({
   enabledNoticeKeys: NoticeKeys;
   onClose: () => void;
   onChange: (enabledNoticeKeys: NoticeKeys) => void;
-  onSave: (enabledNoticeKeys: NoticeKeys) => void;
-  onRejectAll: () => void;
-  onAcceptAll: () => void;
+  buttonGroup: VNode;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
-
-  const handleSave = () => {
-    onSave(enabledNoticeKeys);
-    onClose();
-  };
-
-  const handleAcceptAll = () => {
-    onAcceptAll();
-    onClose();
-  };
-
-  const handleRejectAll = () => {
-    onRejectAll();
-    onClose();
-  };
 
   return (
     // @ts-ignore A11yDialog ref obj type isn't quite the same
@@ -83,23 +58,7 @@ const ConsentModal = ({
             onChange={onChange}
           />
         </div>
-        <div className="fides-modal-button-group">
-          <Button
-            label={experience.save_button_label}
-            buttonType={ButtonType.SECONDARY}
-            onClick={handleSave}
-          />
-          <Button
-            label={experience.reject_button_label}
-            buttonType={ButtonType.PRIMARY}
-            onClick={handleRejectAll}
-          />
-          <Button
-            label={experience.accept_button_label}
-            buttonType={ButtonType.PRIMARY}
-            onClick={handleAcceptAll}
-          />
-        </div>
+        {buttonGroup}
         {experience.privacy_policy_link_label &&
         experience.privacy_policy_url ? (
           <a

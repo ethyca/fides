@@ -3,10 +3,11 @@ saas_config:
   name: Wunderkind
   type: wunderkind
   description: A schema representing the Wunderkind connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: website_id
+      label: Website ID
 
   client_config:
     protocol: https

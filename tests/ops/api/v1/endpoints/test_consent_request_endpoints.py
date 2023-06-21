@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from requests import Session
 
-from fides.api.api.v1.scope_registry import CONNECTION_READ, CONSENT_READ
 from fides.api.api.v1.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,
@@ -25,7 +24,8 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.util.consent_util import get_fides_user_device_id_provided_identity
-from fides.core.config import CONFIG
+from fides.common.api.scope_registry import CONNECTION_READ, CONSENT_READ
+from fides.config import CONFIG
 
 
 @pytest.fixture
@@ -85,6 +85,54 @@ class TestConsentRequestReporting:
                 item["identity"]["email"]
                 == consent_record.provided_identity.encrypted_value["value"]
             )
+
+    def test_consent_request_report_handles_anonymous_consent_requests(
+        self,
+        url,
+        generate_auth_header,
+        api_client,
+        anonymous_consent_records,
+    ):
+        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 2
+        # Reverse the fixture list so that items are sorted in the same way
+        # the API returns them
+        anonymous_consent_records.sort(
+            key=lambda consent: consent.updated_at, reverse=True
+        )
+        for idx in [0, 1]:
+            item = data["items"][idx]
+            consent_record = anonymous_consent_records[idx]
+            assert item["data_use"] == consent_record.data_use
+            assert item["has_gpc_flag"] == consent_record.has_gpc_flag
+            assert item["opt_in"] == consent_record.opt_in
+            assert (
+                item["identity"]["fides_user_device_id"]
+                == consent_record.provided_identity.encrypted_value["value"]
+            )
+
+    def test_all_consent_requests_handled(
+        self,
+        url,
+        generate_auth_header,
+        api_client,
+        anonymous_consent_records,
+        consent_records,
+    ):
+        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 4
 
     def test_consent_request_report_filters_data_use(
         self,

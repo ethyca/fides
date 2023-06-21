@@ -2,7 +2,6 @@ import json
 
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import MASKING_EXEC, MASKING_READ
 from fides.api.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
 from fides.api.schemas.masking.masking_api import MaskingAPIResponse
 from fides.api.schemas.masking.masking_configuration import (
@@ -23,6 +22,7 @@ from fides.api.service.masking.strategy.masking_strategy_random_string_rewrite i
 from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
+from fides.common.api.scope_registry import MASKING_EXEC, MASKING_READ
 
 
 class TestGetMaskingStrategies:

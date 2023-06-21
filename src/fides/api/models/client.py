@@ -23,7 +23,7 @@ from fides.api.cryptography.schemas.jwt import (
 from fides.api.db.base_class import Base
 from fides.api.models.fides_user import FidesUser
 from fides.api.oauth.jwt import generate_jwe
-from fides.core.config import FidesConfig
+from fides.config import FidesConfig
 
 DEFAULT_SCOPES: list[str] = []
 DEFAULT_ROLES: list[str] = []

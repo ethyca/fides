@@ -4,6 +4,7 @@ import {
   ConsentMethod,
   FidesCookie,
   LegacyConsentConfig,
+  PrivacyNotice,
 } from "fides-js";
 import {
   ConsentMechanism,
@@ -100,6 +101,35 @@ const stubConfig = (
   });
 };
 
+const mockPrivacyNotice = (params: Partial<PrivacyNotice>) => {
+  const notice = {
+    name: "Test privacy notice with GPC enabled",
+    disabled: false,
+    origin: "12435134",
+    description: "a test sample privacy notice configuration",
+    internal_description:
+      "a test sample privacy notice configuration for internal use",
+    regions: ["us_ca"],
+    consent_mechanism: ConsentMechanism.OPT_OUT,
+    default_preference: UserConsentPreference.OPT_IN,
+    current_preference: undefined,
+    outdated_preference: undefined,
+    has_gpc_flag: true,
+    data_uses: ["advertising", "third_party_sharing"],
+    enforcement_level: EnforcementLevel.SYSTEM_WIDE,
+    displayed_in_overlay: true,
+    displayed_in_api: true,
+    displayed_in_privacy_center: false,
+    id: "pri_4bed96d0-b9e3-4596-a807-26b783836374",
+    created_at: "2023-04-24T21:29:08.870351+00:00",
+    updated_at: "2023-04-24T21:29:08.870351+00:00",
+    version: 1.0,
+    privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
+    notice_key: "advertising",
+  };
+  return { ...notice, ...params };
+};
+
 const PRIVACY_NOTICE_KEY_1 = "advertising";
 const PRIVACY_NOTICE_KEY_2 = "essential";
 
@@ -175,7 +205,7 @@ describe("Consent banner", () => {
           ).contains(
             "This test website is overriding the banner description label."
           );
-          cy.get("div#fides-banner-buttons.fides-banner-buttons").within(() => {
+          cy.get("div#fides-button-group").within(() => {
             cy.get(
               "button#fides-banner-button-tertiary.fides-banner-button.fides-banner-button-tertiary"
             ).contains("Manage preferences");
@@ -220,7 +250,7 @@ describe("Consent banner", () => {
         });
       });
 
-      it("should support rejecting all consent options", () => {
+      it("should support rejecting all consent options but keeping notice-only true", () => {
         cy.contains("button", "Reject Test").should("be.visible").click();
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
@@ -230,9 +260,10 @@ describe("Consent banner", () => {
             expect(cookieKeyConsent.consent)
               .property(PRIVACY_NOTICE_KEY_1)
               .is.eql(false);
+            // Notice-only should stay true
             expect(cookieKeyConsent.consent)
               .property(PRIVACY_NOTICE_KEY_2)
-              .is.eql(false);
+              .is.eql(true);
           });
         });
       });
@@ -245,15 +276,15 @@ describe("Consent banner", () => {
 
         it("can toggle the notices", () => {
           cy.contains("button", "Manage preferences").click();
-          // Notices should start off disabled
+          // Notice should start off toggled off
           cy.getByTestId("toggle-Test privacy notice").within(() => {
             cy.get("input").should("not.have.attr", "checked");
           });
           cy.getByTestId("toggle-Test privacy notice").click();
+          // Notice-only should start off toggled on
           cy.getByTestId("toggle-Essential").within(() => {
-            cy.get("input").should("not.have.attr", "checked");
+            cy.get("input").should("have.attr", "checked");
           });
-          cy.getByTestId("toggle-Essential").click();
 
           cy.getByTestId("Save test-btn").click();
           // Modal should close after saving
@@ -343,8 +374,9 @@ describe("Consent banner", () => {
         cy.getByTestId("toggle-Test privacy notice").within(() => {
           cy.get("input").should("not.have.attr", "checked");
         });
+        // Notice-only should still be checked
         cy.getByTestId("toggle-Essential").within(() => {
-          cy.get("input").should("not.have.attr", "checked");
+          cy.get("input").should("have.attr", "checked");
         });
       });
 
@@ -380,7 +412,9 @@ describe("Consent banner", () => {
 
         // Save new preferences
         cy.getByTestId("toggle-Test privacy notice").click();
-        cy.getByTestId("toggle-Essential").click();
+        cy.getByTestId("toggle-Essential").within(() => {
+          cy.get("input").should("be.disabled");
+        });
         cy.getByTestId("Save test-btn").click();
 
         // New privacy notice values only, no legacy ones
@@ -427,6 +461,14 @@ describe("Consent banner", () => {
         cy.window().its("Fides").its("consent").should("eql", expectedConsent);
       });
 
+      it("disables notice-only notices from opting out", () => {
+        cy.contains("button", "Manage preferences").click();
+        cy.getByTestId("toggle-Essential").within(() => {
+          cy.get("input").should("be.disabled");
+          cy.get("input").should("have.attr", "checked");
+        });
+      });
+
       it.skip("should support option to display at top or bottom of page", () => {
         // TODO: add tests for top/bottom
         expect(false).is.eql(true);
@@ -435,6 +477,65 @@ describe("Consent banner", () => {
       it.skip("should support styling with CSS variables", () => {
         // TODO: add tests for CSS
         expect(false).is.eql(true);
+      });
+    });
+
+    describe("when there are only notice-only notices", () => {
+      const expected = [
+        {
+          privacy_notice_history_id: "one",
+          preference: "acknowledge",
+        },
+        {
+          privacy_notice_history_id: "two",
+          preference: "acknowledge",
+        },
+      ];
+      beforeEach(() => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        stubConfig({
+          experience: {
+            privacy_notices: [
+              mockPrivacyNotice({
+                privacy_notice_history_id: "one",
+                notice_key: "one",
+                consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+              }),
+              mockPrivacyNotice({
+                privacy_notice_history_id: "two",
+                notice_key: "second",
+                consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+              }),
+            ],
+          },
+          options: {
+            isOverlayEnabled: true,
+          },
+        });
+      });
+
+      it("renders an acknowledge button in the banner", () => {
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("OK");
+          cy.get("button").contains("Accept Test").should("not.exist");
+          cy.get("button").contains("OK").click();
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            const { body } = interception.request;
+            expect(body.preferences).to.eql(expected);
+          });
+        });
+      });
+
+      it("renders an acknowledge button in the modal", () => {
+        cy.get("#fides-modal-link").click();
+        cy.getByTestId("consent-modal").within(() => {
+          cy.get("button").contains("Accept Test").should("not.exist");
+          cy.get("button").contains("OK").click();
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            const { body } = interception.request;
+            expect(body.preferences).to.eql(expected);
+          });
+        });
       });
     });
 
@@ -448,32 +549,10 @@ describe("Consent banner", () => {
         stubConfig({
           experience: {
             privacy_notices: [
-              {
-                name: "Test privacy notice with GPC enabled",
-                disabled: false,
-                origin: "12435134",
-                description: "a test sample privacy notice configuration",
-                internal_description:
-                  "a test sample privacy notice configuration for internal use",
-                regions: ["us_ca"],
-                consent_mechanism: ConsentMechanism.OPT_OUT,
-                default_preference: UserConsentPreference.OPT_IN,
-                current_preference: undefined,
-                outdated_preference: undefined,
+              mockPrivacyNotice({
+                name: "Test privacy notice with gpc enabled",
                 has_gpc_flag: true,
-                data_uses: ["advertising", "third_party_sharing"],
-                enforcement_level: EnforcementLevel.SYSTEM_WIDE,
-                displayed_in_overlay: true,
-                displayed_in_api: true,
-                displayed_in_privacy_center: false,
-                id: "pri_4bed96d0-b9e3-4596-a807-26b783836374",
-                created_at: "2023-04-24T21:29:08.870351+00:00",
-                updated_at: "2023-04-24T21:29:08.870351+00:00",
-                version: 1.0,
-                privacy_notice_history_id:
-                  "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
-                notice_key: "advertising",
-              },
+              }),
             ],
           },
         });
@@ -541,32 +620,10 @@ describe("Consent banner", () => {
         stubConfig({
           experience: {
             privacy_notices: [
-              {
-                name: "Test privacy notice with GPC enabled",
-                disabled: false,
-                origin: "12435134",
-                description: "a test sample privacy notice configuration",
-                internal_description:
-                  "a test sample privacy notice configuration for internal use",
-                regions: ["us_ca"],
-                consent_mechanism: ConsentMechanism.OPT_OUT,
-                default_preference: UserConsentPreference.OPT_IN,
-                current_preference: undefined,
-                outdated_preference: undefined,
+              mockPrivacyNotice({
+                name: "Test privacy notice with GPC disabled",
                 has_gpc_flag: false,
-                data_uses: ["advertising", "third_party_sharing"],
-                enforcement_level: EnforcementLevel.SYSTEM_WIDE,
-                displayed_in_overlay: true,
-                displayed_in_api: true,
-                displayed_in_privacy_center: false,
-                id: "pri_4bed96d0-b9e3-4596-a807-26b783836374",
-                created_at: "2023-04-24T21:29:08.870351+00:00",
-                updated_at: "2023-04-24T21:29:08.870351+00:00",
-                version: 1.0,
-                privacy_notice_history_id:
-                  "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
-                notice_key: "advertising",
-              },
+              }),
             ],
           },
         });
@@ -600,34 +657,7 @@ describe("Consent banner", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         stubConfig({
           experience: {
-            privacy_notices: [
-              {
-                name: "Test privacy notice with GPC enabled",
-                disabled: false,
-                origin: "12435134",
-                description: "a test sample privacy notice configuration",
-                internal_description:
-                  "a test sample privacy notice configuration for internal use",
-                regions: ["us_ca"],
-                consent_mechanism: ConsentMechanism.OPT_OUT,
-                default_preference: UserConsentPreference.OPT_IN,
-                current_preference: undefined,
-                outdated_preference: undefined,
-                has_gpc_flag: true,
-                data_uses: ["advertising", "third_party_sharing"],
-                enforcement_level: EnforcementLevel.SYSTEM_WIDE,
-                displayed_in_overlay: true,
-                displayed_in_api: true,
-                displayed_in_privacy_center: false,
-                id: "pri_4bed96d0-b9e3-4596-a807-26b783836374",
-                created_at: "2023-04-24T21:29:08.870351+00:00",
-                updated_at: "2023-04-24T21:29:08.870351+00:00",
-                version: 1.0,
-                privacy_notice_history_id:
-                  "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
-                notice_key: "advertising",
-              },
-            ],
+            privacy_notices: [mockPrivacyNotice({ has_gpc_flag: true })],
           },
         });
       });
@@ -882,32 +912,13 @@ describe("Consent banner", () => {
         stubConfig({
           experience: {
             privacy_notices: [
-              {
+              mockPrivacyNotice({
                 name: "Test privacy notice",
-                disabled: false,
-                origin: "12435134",
-                description: "a test sample privacy notice configuration",
-                internal_description:
-                  "a test sample privacy notice configuration for internal use",
-                regions: ["us_ca"],
+                has_gpc_flag: true,
                 consent_mechanism: ConsentMechanism.OPT_IN,
                 default_preference: UserConsentPreference.OPT_IN,
                 current_preference: UserConsentPreference.OPT_IN,
-                outdated_preference: undefined,
-                has_gpc_flag: true,
-                data_uses: ["advertising", "third_party_sharing"],
-                enforcement_level: EnforcementLevel.SYSTEM_WIDE,
-                displayed_in_overlay: true,
-                displayed_in_api: true,
-                displayed_in_privacy_center: false,
-                id: "pri_4bed96d0-b9e3-4596-a807-26b783836374",
-                created_at: "2023-04-24T21:29:08.870351+00:00",
-                updated_at: "2023-04-24T21:29:08.870351+00:00",
-                version: 1.0,
-                privacy_notice_history_id:
-                  "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
-                notice_key: "advertising",
-              },
+              }),
             ],
           },
         });
@@ -1023,7 +1034,7 @@ describe("Consent banner", () => {
         .its("consent")
         .should("eql", {
           [PRIVACY_NOTICE_KEY_1]: false,
-          [PRIVACY_NOTICE_KEY_2]: false,
+          [PRIVACY_NOTICE_KEY_2]: true,
         });
       cy.get("@FidesInitialized")
         .should("have.been.calledOnce")
@@ -1031,7 +1042,7 @@ describe("Consent banner", () => {
         .should("deep.equal", {
           consent: {
             [PRIVACY_NOTICE_KEY_1]: false,
-            [PRIVACY_NOTICE_KEY_2]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
           },
         });
       cy.get("@FidesUpdated")
@@ -1040,7 +1051,7 @@ describe("Consent banner", () => {
         .should("deep.equal", {
           consent: {
             [PRIVACY_NOTICE_KEY_1]: false,
-            [PRIVACY_NOTICE_KEY_2]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
           },
         });
     });
@@ -1055,7 +1066,7 @@ describe("Consent banner", () => {
           .should("deep.equal", {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,
-              [PRIVACY_NOTICE_KEY_2]: false,
+              [PRIVACY_NOTICE_KEY_2]: true,
             },
           });
         cy.get("@FidesUpdated")
@@ -1064,7 +1075,7 @@ describe("Consent banner", () => {
           .should("deep.equal", {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,
-              [PRIVACY_NOTICE_KEY_2]: false,
+              [PRIVACY_NOTICE_KEY_2]: true,
             },
           });
       });
@@ -1078,7 +1089,7 @@ describe("Consent banner", () => {
           .should("deep.equal", {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,
-              [PRIVACY_NOTICE_KEY_2]: false,
+              [PRIVACY_NOTICE_KEY_2]: true,
             },
           });
         cy.get("@FidesUpdated")
@@ -1105,7 +1116,7 @@ describe("Consent banner", () => {
           .should("deep.equal", {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,
-              [PRIVACY_NOTICE_KEY_2]: false,
+              [PRIVACY_NOTICE_KEY_2]: true,
             },
           });
         cy.get("@FidesUpdated")
@@ -1114,7 +1125,7 @@ describe("Consent banner", () => {
           .should("deep.equal", {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: true,
-              [PRIVACY_NOTICE_KEY_2]: false,
+              [PRIVACY_NOTICE_KEY_2]: true,
             },
           });
       });
@@ -1131,7 +1142,7 @@ describe("Consent banner", () => {
           Fides: {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,
-              [PRIVACY_NOTICE_KEY_2]: false,
+              [PRIVACY_NOTICE_KEY_2]: true,
             },
           },
         });
@@ -1189,7 +1200,7 @@ describe("Consent banner", () => {
           .its("consent")
           .should("eql", {
             [PRIVACY_NOTICE_KEY_1]: false,
-            [PRIVACY_NOTICE_KEY_2]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
           });
         cy.get("@FidesInitialized")
           .should("have.been.calledOnce")
@@ -1215,7 +1226,7 @@ describe("Consent banner", () => {
           .should("deep.equal", {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,
-              [PRIVACY_NOTICE_KEY_2]: false,
+              [PRIVACY_NOTICE_KEY_2]: true,
             },
           });
       });
@@ -1254,7 +1265,7 @@ describe("Consent banner", () => {
           .its("consent")
           .should("eql", {
             [PRIVACY_NOTICE_KEY_1]: false,
-            [PRIVACY_NOTICE_KEY_2]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
           });
         cy.get("@FidesInitialized")
           .should("have.been.calledOnce")
@@ -1280,7 +1291,7 @@ describe("Consent banner", () => {
           .should("deep.equal", {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,
-              [PRIVACY_NOTICE_KEY_2]: false,
+              [PRIVACY_NOTICE_KEY_2]: true,
             },
           });
       });

@@ -4,28 +4,31 @@ import json
 import os
 import secrets
 import zipfile
-from datetime import datetime
 from io import BytesIO
 from typing import Any, Dict, Union
 
 import pandas as pd
 from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
-from bson import ObjectId
 from loguru import logger
 
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.storage.storage import (
     ResponseFormat,
     S3AuthMethod,
     StorageSecrets,
+)
+from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
+    DsrReportBuilder,
 )
 from fides.api.util.cache import get_cache, get_encryption_cache_key
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )
 from fides.api.util.storage_authenticator import get_s3_session
-from fides.core.config import CONFIG
+from fides.api.util.storage_util import storage_json_encoder
+from fides.config import CONFIG
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
@@ -56,7 +59,7 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
 
 
 def write_to_in_memory_buffer(
-    resp_format: str, data: Dict[str, Any], request_id: str
+    resp_format: str, data: Dict[str, Any], privacy_request: PrivacyRequest
 ) -> BytesIO:
     """Write JSON/CSV data to in-memory file-like object to be passed to S3. Encrypt data if encryption key/nonce
     has been cached for the given privacy request id
@@ -68,9 +71,9 @@ def write_to_in_memory_buffer(
     logger.info("Writing data to in-memory buffer")
 
     if resp_format == ResponseFormat.json.value:
-        json_str = json.dumps(data, indent=2, default=_handle_json_encoding)
+        json_str = json.dumps(data, indent=2, default=storage_json_encoder)
         return BytesIO(
-            encrypt_access_request_results(json_str, request_id).encode(
+            encrypt_access_request_results(json_str, privacy_request.id).encode(
                 CONFIG.security.encoding
             )
         )
@@ -85,11 +88,19 @@ def write_to_in_memory_buffer(
                 buffer.seek(0)
                 f.writestr(
                     f"{key}.csv",
-                    encrypt_access_request_results(buffer.getvalue(), request_id),
+                    encrypt_access_request_results(
+                        buffer.getvalue(), privacy_request.id
+                    ),
                 )
 
         zipped_csvs.seek(0)
         return zipped_csvs
+
+    if resp_format == ResponseFormat.html.value:
+        return DsrReportBuilder(
+            privacy_request=privacy_request,
+            dsr_data=data,
+        ).generate()
 
     raise NotImplementedError(f"No handling for response format {resp_format}.")
 
@@ -120,7 +131,7 @@ def upload_to_s3(  # pylint: disable=R0913
     bucket_name: str,
     file_key: str,
     resp_format: str,
-    request_id: str,
+    privacy_request: PrivacyRequest,
     auth_method: S3AuthMethod,
 ) -> str:
     """Uploads arbitrary data to s3 returned from an access request"""
@@ -133,7 +144,7 @@ def upload_to_s3(  # pylint: disable=R0913
         # handles file chunking
         try:
             s3_client.upload_fileobj(
-                Fileobj=write_to_in_memory_buffer(resp_format, data, request_id),
+                Fileobj=write_to_in_memory_buffer(resp_format, data, privacy_request),
                 Bucket=bucket_name,
                 Key=file_key,
             )
@@ -155,25 +166,20 @@ def upload_to_s3(  # pylint: disable=R0913
         raise ValueError(f"The parameters you provided are incorrect: {e}")
 
 
-def _handle_json_encoding(field: Any) -> Union[str, Dict[str, str]]:
-    """Specify str format for datetime objects"""
-    if isinstance(field, datetime):
-        return field.strftime("%Y-%m-%dT%H:%M:%S")
-    if isinstance(field, ObjectId):
-        return {"$oid": str(field)}
-    return field
-
-
-def upload_to_local(payload: Dict, file_key: str, request_id: str) -> str:
+def upload_to_local(
+    data: Dict,
+    file_key: str,
+    privacy_request: PrivacyRequest,
+    resp_format: str = ResponseFormat.json.value,
+) -> str:
     """Uploads access request data to a local folder - for testing/demo purposes only"""
     if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
         os.makedirs(LOCAL_FIDES_UPLOAD_DIRECTORY)
 
     filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"
-    data_str: str = encrypt_access_request_results(
-        json.dumps(payload, default=_handle_json_encoding), request_id
-    )
-    with open(filename, "w") as file:  # pylint: disable=W1514
-        file.write(data_str)
+    in_memory_file = write_to_in_memory_buffer(resp_format, data, privacy_request)
+
+    with open(filename, "wb") as file:
+        file.write(in_memory_file.getvalue())
 
     return "your local fides_uploads folder"

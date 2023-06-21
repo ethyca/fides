@@ -4,12 +4,12 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.sql_models import Organization
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.models.sql_models import Organization
 from fides.api.service.connectors.consent_email_connector import (
     GenericConsentEmailConnector,
 )

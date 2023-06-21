@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from sqlalchemy.orm import Session
 
 from fides.api.cryptography import cryptographic_util
-from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import (
@@ -15,6 +14,7 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from fides.api.task import graph_task
@@ -25,7 +25,7 @@ from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.core.config import get_config
+from fides.config import get_config
 
 CONFIG = get_config()
 
@@ -107,7 +107,9 @@ class ConnectorRunner:
         )
         # verify we returned at least one row for each collection in the dataset
         for collection in self.dataset["collections"]:
-            assert len(access_results[f"{fides_key}:{collection['name']}"])
+            assert len(
+                access_results[f"{fides_key}:{collection['name']}"]
+            ), f"No rows returned for collection '{collection['name']}'"
         return access_results
 
     async def strict_erasure_request(
@@ -193,7 +195,9 @@ class ConnectorRunner:
 
         # verify we returned at least one row for each collection in the dataset
         for collection in self.dataset["collections"]:
-            assert len(access_results[f"{fides_key}:{collection['name']}"])
+            assert len(
+                access_results[f"{fides_key}:{collection['name']}"]
+            ), f"No rows returned for collection '{collection['name']}'"
 
         erasure_results = await graph_task.run_erasure(
             privacy_request,

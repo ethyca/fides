@@ -43,9 +43,9 @@ class TestGetPrivacyExperiences:
         privacy_notice,
         privacy_experience_privacy_center,
     ):
-        resp = api_client.get(
-            url,
-        )
+        unescape_header = {"Unescape-Safestr": "true"}
+
+        resp = api_client.get(url, headers=unescape_header)
         assert resp.status_code == 200
         data = resp.json()
 
@@ -62,6 +62,7 @@ class TestGetPrivacyExperiences:
         # Assert experience config is nested
         experience_config = resp["experience_config"]
         assert experience_config["title"] == "Control your privacy"
+        assert experience_config["description"] == "user's description <script />"
         assert experience_config["banner_enabled"] is None
         assert experience_config["accept_button_label"] == "Accept all"
         assert experience_config["reject_button_label"] == "Reject all"
@@ -78,6 +79,29 @@ class TestGetPrivacyExperiences:
         assert resp["privacy_notices"][0]["default_preference"] == "opt_out"
         assert resp["privacy_notices"][0]["current_preference"] is None
         assert resp["privacy_notices"][0]["outdated_preference"] is None
+        assert (
+            resp["privacy_notices"][0]["description"] == "user's description <script />"
+        )
+
+    def test_get_experiences_unescaped(
+        self,
+        api_client,
+        url,
+        privacy_notice,
+        privacy_experience_privacy_center,
+    ):
+        # Assert not escaped without proper request header
+        resp = api_client.get(url)
+        resp = resp.json()["items"][0]
+        experience_config = resp["experience_config"]
+        assert (
+            experience_config["description"]
+            == "user&#x27;s description &lt;script /&gt;"
+        )
+        assert (
+            resp["privacy_notices"][0]["description"]
+            == "user&#x27;s description &lt;script /&gt;"
+        )
 
     def test_get_privacy_experiences_show_disabled_filter(
         self,

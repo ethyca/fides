@@ -26,25 +26,14 @@ from fides.api.api import deps
 from fides.api.api.deps import get_db
 from fides.api.api.v1 import urn_registry as urls
 from fides.api.api.v1.endpoints.user_permission_endpoints import validate_user_id
-from fides.api.api.v1.scope_registry import (
-    SCOPE_REGISTRY,
-    SYSTEM_MANAGER_DELETE,
-    SYSTEM_MANAGER_READ,
-    SYSTEM_MANAGER_UPDATE,
-    USER_CREATE,
-    USER_DELETE,
-    USER_PASSWORD_RESET,
-    USER_READ,
-    USER_UPDATE,
-)
 from fides.api.api.v1.urn_registry import V1_URL_PREFIX
 from fides.api.common_exceptions import AuthenticationError, AuthorizationError
 from fides.api.cryptography.cryptographic_util import b64_str_to_str
 from fides.api.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
-from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.oauth.utils import (
     extract_payload,
@@ -64,7 +53,18 @@ from fides.api.schemas.user import (
     UserUpdate,
 )
 from fides.api.util.api_router import APIRouter
-from fides.core.config import CONFIG, FidesConfig, get_config
+from fides.common.api.scope_registry import (
+    SCOPE_REGISTRY,
+    SYSTEM_MANAGER_DELETE,
+    SYSTEM_MANAGER_READ,
+    SYSTEM_MANAGER_UPDATE,
+    USER_CREATE,
+    USER_DELETE,
+    USER_PASSWORD_RESET,
+    USER_READ,
+    USER_UPDATE,
+)
+from fides.config import CONFIG, FidesConfig, get_config
 
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 

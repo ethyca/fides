@@ -5,8 +5,8 @@ import json
 import sys
 
 from fides.api.main import app
-from fides.core.config import CONFIG
-from fides.core.config.create import generate_config_docs
+from fides.config import CONFIG
+from fides.config.create import generate_config_docs
 
 
 def generate_openapi(outfile_dir: str) -> str:

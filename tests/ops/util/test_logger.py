@@ -3,7 +3,7 @@ import os
 import pytest
 
 from fides.api.util.logger import MASKED, Pii, _log_exception, _log_warning
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 @pytest.mark.unit
