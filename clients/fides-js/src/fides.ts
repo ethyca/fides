@@ -258,10 +258,10 @@ const init = async ({
   }
   if (shouldInitOverlay) {
     automaticallyApplyGPCPreferences(
-        cookie,
-        fidesRegionString,
-        options.fidesApiUrl,
-        effectiveExperience
+      cookie,
+      fidesRegionString,
+      options.fidesApiUrl,
+      effectiveExperience
     );
   }
 
@@ -282,7 +282,6 @@ const init = async ({
     dispatchFidesEvent("FidesInitialized", cookie);
   }
   dispatchFidesEvent("FidesUpdated", cookie);
-
 };
 
 // The global Fides object; this is bound to window.Fides if available
