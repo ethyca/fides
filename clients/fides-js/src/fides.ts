@@ -144,8 +144,7 @@ const automaticallyApplyGPCPreferences = (
     if (notice.has_gpc_flag && !notice.current_preference) {
       consentPreferencesToSave.push(
         new SaveConsentPreference(
-          notice.notice_key,
-          notice.privacy_notice_history_id,
+          notice,
           transformConsentToFidesUserPreference(false, notice.consent_mechanism)
         )
       );
