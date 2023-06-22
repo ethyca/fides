@@ -441,3 +441,24 @@ div#fides-modal .fides-modal-button-group {
 .fides-notice-toggle-expanded {
   background-color: var(--fides-overlay-row-hover-color);
 }
+
+/* GPC */
+.fides-gpc-banner {
+  border: 1px solid var(--fides-overlay-primary-color);
+  border-radius: var(--fides-overlay-component-border-radius);
+  display: flex;
+  padding: 1.1em;
+  margin-bottom: 1em;
+}
+
+.fides-gpc-banner p {
+  margin: 0;
+}
+
+.fides-gpc-warning {
+  margin-right: 0.5em;
+}
+
+.fides-gpc-header {
+  font-weight: 700;
+}
