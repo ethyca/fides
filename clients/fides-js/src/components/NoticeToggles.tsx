@@ -4,6 +4,7 @@ import { ConsentMechanism, PrivacyNotice } from "../lib/consent-types";
 import Toggle from "./Toggle";
 import Divider from "./Divider";
 import { useDisclosure } from "../lib/hooks";
+import GpcBadge from "./GpcBadge";
 
 const NoticeToggle = ({
   notice,
@@ -46,7 +47,9 @@ const NoticeToggle = ({
           className="fides-notice-toggle-trigger"
         >
           {notice.name}
+          <GpcBadge notice={notice} value={checked} />
         </span>
+
         <Toggle
           name={notice.name || ""}
           id={notice.notice_key}

@@ -8,6 +8,10 @@
   --fides-overlay-font-color: #4a5568;
   --fides-overlay-font-color-dark: #2d3748;
   --fides-overlay-hover-color: #edf2f7;
+  --fides-overlay-gpc-applied-background-color: #38a169;
+  --fides-overlay-gpc-applied-text-color: white;
+  --fides-overlay-gpc-overridden-background-color: #e53e3e;
+  --fides-overlay-gpc-overridden-text-color: white;
   /* Buttons */
   --fides-overlay-primary-button-background-color: var(
     --fides-overlay-primary-color
@@ -423,10 +427,15 @@ div#fides-modal .fides-modal-button-group {
   padding: 0.5em;
   display: flex;
   justify-content: space-between;
+  min-height: 40px;
+  align-items: center;
 }
 
 .fides-notice-toggle .fides-notice-toggle-trigger {
   width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-right: 0.5em;
 }
 
 .fides-notice-toggle .fides-notice-toggle-title:hover {
@@ -456,9 +465,32 @@ div#fides-modal .fides-modal-button-group {
 }
 
 .fides-gpc-warning {
+  color: var(--fides-overlay-primary-color);
   margin-right: 0.5em;
 }
 
 .fides-gpc-header {
   font-weight: 700;
+}
+
+.fides-gpc-label {
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.fides-gpc-badge {
+  text-transform: uppercase;
+  padding: 0 4px;
+  font-weight: 700;
+  border-radius: var(--fides-overlay-button-border-radius);
+}
+
+.fides-gpc-badge-applied {
+  background: var(--fides-overlay-gpc-applied-background-color);
+  color: var(--fides-overlay-gpc-applied-text-color);
+}
+
+.fides-gpc-badge-overridden {
+  background: var(--fides-overlay-gpc-overridden-background-color);
+  color: var(--fides-overlay-gpc-overridden-text-color);
 }
