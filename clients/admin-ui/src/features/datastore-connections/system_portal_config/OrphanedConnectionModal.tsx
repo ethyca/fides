@@ -116,7 +116,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
       <Modal isCentered isOpen={isOpen} size="lg" onClose={closeIfComplete}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Unlinked Connections</ModalHeader>
+          <ModalHeader>Unlinked Integrations</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <Stack direction="column" spacing="15px">
@@ -126,8 +126,8 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
                 fontWeight="sm"
                 lineHeight="20px"
               >
-                These are all the connections that are not linked to a system.
-                Please select a connection to link to a system.
+                These are all the integrations that are not linked to a system.
+                Please select an integration to link to a system.
               </Text>
               <Box maxHeight="350px" height="100%" overflowY="auto">
                 {connectionConfigs.map((connectionConfig) => (
@@ -192,7 +192,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
                 color: "gray.600",
               }}
             >
-              Link connector
+              Link integration
             </Button>
           </ModalFooter>
         </ModalContent>

@@ -68,7 +68,9 @@ const ConnectorTemplateUploadModal: React.FC<RequestModalProps> = ({
     if (uploadedFile) {
       try {
         await registerConnectorTemplate(uploadedFile).unwrap();
-        toast(successToastParams("Connector template uploaded successfully."));
+        toast(
+          successToastParams("Integration template uploaded successfully.")
+        );
 
         // refresh the connection types
         const { data } = await refetchConnectionTypes();
@@ -96,10 +98,10 @@ const ConnectorTemplateUploadModal: React.FC<RequestModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalOverlay />
       <ModalContent textAlign="left" p={2} data-testid={testId}>
-        <ModalHeader>Upload connector template</ModalHeader>
+        <ModalHeader>Upload integration template</ModalHeader>
         <ModalBody>
           <Text fontSize="sm" mb={4}>
-            Drag and drop your connector template zip file here, or click to
+            Drag and drop your integration template zip file here, or click to
             browse your files.
           </Text>
           <Box
@@ -119,7 +121,7 @@ const ConnectorTemplateUploadModal: React.FC<RequestModalProps> = ({
             {renderFileText()}
           </Box>
           <Text fontSize="sm" mt={4}>
-            A connector template zip file must include a SaaS config and
+            An integration template zip file must include a SaaS config and
             dataset, but may also contain an icon (.svg) and custom functions
             (.py) as optional files.
           </Text>
