@@ -1,5 +1,5 @@
 import { FidesCookie } from "./cookie";
-import {debugLog} from "~/lib/consent-utils";
+import { debugLog } from "~/lib/consent-utils";
 
 /**
  * Defines the available event names:
@@ -49,7 +49,12 @@ export const dispatchFidesEvent = (
     const { consent }: FidesEventDetail = cookie;
     const detail: FidesEventDetail = { consent };
     const event = new CustomEvent(type, { detail });
-    debugLog(debug, `Dispatching event type ${  type  } with cookie consent ${ JSON.stringify(cookie?.consent) }`);
+    debugLog(
+      debug,
+      `Dispatching event type ${type} with cookie consent ${JSON.stringify(
+        cookie?.consent
+      )}`
+    );
     window.dispatchEvent(event);
   }
 };
