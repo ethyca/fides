@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.2b0.post0.dev53"
+    "version": "2.14.3b0.post0.dev8"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
