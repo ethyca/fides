@@ -65,7 +65,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
       <Flex py={5}>
         <ConnectionListDropdown
           list={dropDownOptions}
-          label="Integration type"
+          label="Connection type"
           selectedValue={selectedConnectionOption}
           onChange={setSelectedConnectionOption}
           disabled={connectionConfig && connectionConfig !== null}
@@ -87,7 +87,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
             onClick={uploadTemplateModal.onOpen}
             marginLeft={2}
           >
-            Upload integration
+            Upload connector
           </Button>
         </Restrict>
         <ConnectorTemplateUploadModal

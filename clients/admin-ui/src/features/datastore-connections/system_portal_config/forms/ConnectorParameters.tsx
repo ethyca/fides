@@ -193,7 +193,7 @@ export const useConnectorForm = ({
       // @ts-ignore connection_configs isn't on the type yet but will be in the future
       dispatch(setActiveSystem({ ...activeSystem, connection_configs: null }));
       setSelectedConnectionOption(undefined);
-      successAlert(`Integration successfully deleted!`);
+      successAlert(`Connector successfully deleted!`);
     } catch (e) {
       handleError(e);
     }
@@ -270,7 +270,7 @@ export const useConnectorForm = ({
       }
 
       successAlert(
-        `Integration successfully ${
+        `Connector successfully ${
           isCreatingConnectionConfig ? "added" : "updated"
         }!`
       );
@@ -342,7 +342,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       <Box color="gray.700" fontSize="14px" mb={4} h="80px">
         Connect to your {connectionOption!.human_readable} environment by
         providing credential information below. Once you have saved your
-        integration credentials, you can review what data is included when
+        connector credentials, you can review what data is included when
         processing a privacy request in your Dataset configuration.
       </Box>
       <ConnectorParametersForm

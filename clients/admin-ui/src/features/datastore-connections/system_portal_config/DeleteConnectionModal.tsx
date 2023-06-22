@@ -63,7 +63,7 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
       <Modal isCentered isOpen={isOpen} onClose={closeIfComplete}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Delete Integration</ModalHeader>
+          <ModalHeader>Delete Connection</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <Stack direction="column" spacing="15px">
@@ -73,7 +73,7 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
                 fontWeight="sm"
                 lineHeight="20px"
               >
-                Deleting an integration may impact any privacy request that is
+                Deleting a connection may impact any privacy request that is
                 currently in progress. Do you wish to proceed?
               </Text>
             </Stack>
@@ -108,7 +108,7 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
                 color: "gray.600",
               }}
             >
-              Delete integration
+              Delete connection
             </Button>
           </ModalFooter>
         </ModalContent>
