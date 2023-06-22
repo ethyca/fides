@@ -197,8 +197,8 @@ const init = async ({
     _Fides.geolocation = geolocation;
     _Fides.options = options;
     _Fides.initialized = true;
-    dispatchFidesEvent("FidesInitialized", cookie);
-    dispatchFidesEvent("FidesUpdated", cookie);
+    dispatchFidesEvent("FidesInitialized", cookie, options.debug);
+    dispatchFidesEvent("FidesUpdated", cookie, options.debug);
   }
 
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
@@ -279,9 +279,9 @@ const init = async ({
   // For convenience, also dispatch the "FidesUpdated" event; this allows
   // listeners to ignore the initialization event if they prefer
   if (!hasExistingCookie) {
-    dispatchFidesEvent("FidesInitialized", cookie);
+    dispatchFidesEvent("FidesInitialized", cookie, options.debug);
   }
-  dispatchFidesEvent("FidesUpdated", cookie);
+  dispatchFidesEvent("FidesUpdated", cookie, options.debug);
 };
 
 // The global Fides object; this is bound to window.Fides if available

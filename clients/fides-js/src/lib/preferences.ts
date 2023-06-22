@@ -79,5 +79,5 @@ export const updateConsentPreferences = ({
   saveFidesCookie(cookie);
 
   // 4. Dispatch a "FidesUpdated" event
-  dispatchFidesEvent("FidesUpdated", cookie);
+  dispatchFidesEvent("FidesUpdated", cookie, debug);
 };
