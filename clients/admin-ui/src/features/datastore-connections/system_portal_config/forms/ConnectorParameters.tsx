@@ -1,4 +1,4 @@
-import { Box, SlideFade } from "@fidesui/react";
+import { Box, Flex, SlideFade, Spacer } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
@@ -22,6 +22,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import TestConnection from "~/features/datastore-connections/system_portal_config/TestConnection";
+import TestData from "~/features/datastore-connections/TestData";
 import {
   selectActiveSystem,
   setActiveSystem,
@@ -357,6 +358,23 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         onDelete={handleDelete}
         deleteResult={deleteDatastoreConnectionResult}
       />
+
+      {connectionConfig ? (
+        <Flex mt="4" justifyContent="between" alignItems="center">
+          {response ? (
+            <TestData
+              succeeded={response.data.test_status === "succeeded"}
+              timestamp={response.fulfilledTimeStamp}
+            />
+          ) : (
+            <TestData
+              succeeded={connectionConfig?.last_test_succeeded}
+              timestamp={connectionConfig?.last_test_timestamp || ""}
+            />
+          )}
+          <Spacer />
+        </Flex>
+      ) : null}
 
       {response && (
         <SlideFade in>

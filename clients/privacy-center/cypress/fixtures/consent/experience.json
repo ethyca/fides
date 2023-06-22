@@ -51,7 +51,8 @@
           "privacy_notice_history_id": "pri_df14051b-1eaf-4f07-ae63-232bffd2dc3e",
           "default_preference": "opt_out",
           "current_preference": null,
-          "outdated_preference": null
+          "outdated_preference": null,
+          "cookies": [{ "name": "sales", "path": null, "domain": null }]
         },
         {
           "name": "Advertising",
@@ -75,7 +76,11 @@
           "privacy_notice_history_id": "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707",
           "default_preference": "opt_in",
           "current_preference": null,
-          "outdated_preference": null
+          "outdated_preference": null,
+          "cookies": [
+            { "name": "_ga", "path": null, "domain": null },
+            { "name": "advertisingCookie", "path": null, "domain": null }
+          ]
         },
         {
           "name": "Essential",
@@ -99,7 +104,8 @@
           "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
           "default_preference": "opt_in",
           "current_preference": null,
-          "outdated_preference": null
+          "outdated_preference": null,
+          "cookies": []
         }
       ]
     }

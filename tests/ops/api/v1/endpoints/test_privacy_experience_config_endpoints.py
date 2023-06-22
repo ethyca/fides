@@ -13,6 +13,7 @@ from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
     PrivacyExperienceConfig,
+    PrivacyExperienceConfigHistory,
 )
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.common.api import scope_registry as scopes
@@ -1167,14 +1168,18 @@ class TestUpdateExperienceConfig:
         experience_config = get_experience_config_or_error(db, resp["id"])
         assert experience_config.experiences.all() == [privacy_experience_overlay]
         assert experience_config.histories.count() == 2
-        history = experience_config.histories[0]
+        history = experience_config.histories.order_by(
+            PrivacyExperienceConfigHistory.created_at
+        )[0]
         assert history.version == 1.0
         assert history.component == ComponentType.overlay
         assert history.banner_enabled == BannerEnabled.enabled_where_required
         assert history.experience_config_id == experience_config.id
         assert history.disabled is False
 
-        history = experience_config.histories[1]
+        history = experience_config.histories.order_by(
+            PrivacyExperienceConfigHistory.created_at
+        )[1]
         assert history.version == 2.0
         assert history.disabled is True
 
@@ -1224,14 +1229,18 @@ class TestUpdateExperienceConfig:
         experience_config = get_experience_config_or_error(db, resp["id"])
         assert experience_config.experiences.all() == []
         assert experience_config.histories.count() == 2
-        history = experience_config.histories[0]
+        history = experience_config.histories.order_by(
+            PrivacyExperienceConfigHistory.created_at
+        )[0]
         assert history.version == 1.0
         assert history.component == ComponentType.overlay
         assert history.banner_enabled == BannerEnabled.enabled_where_required
         assert history.experience_config_id == experience_config.id
         assert history.disabled is False
 
-        history = experience_config.histories[1]
+        history = experience_config.histories.order_by(
+            PrivacyExperienceConfigHistory.created_at
+        )[1]
         assert history.version == 2.0
         assert history.disabled is True
 
@@ -1448,7 +1457,9 @@ class TestUpdateExperienceConfig:
         db.refresh(overlay_experience_config)
         # ExperienceConfig was disabled - this is a change, so another historical record is created
         assert overlay_experience_config.histories.count() == 2
-        experience_config_history = overlay_experience_config.histories[1]
+        experience_config_history = overlay_experience_config.histories.order_by(
+            PrivacyExperienceConfigHistory.created_at
+        )[1]
         assert experience_config_history.version == 2.0
         assert experience_config_history.disabled
         assert experience_config_history.component == ComponentType.overlay

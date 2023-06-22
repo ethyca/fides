@@ -6,6 +6,7 @@ import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
   System,
+  SystemResponse,
 } from "~/types/api";
 
 interface SystemDeleteResponse {
@@ -21,11 +22,11 @@ interface UpsertResponse {
 
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getAllSystems: build.query<System[], void>({
+    getAllSystems: build.query<SystemResponse[], void>({
       query: () => ({ url: `system/` }),
       providesTags: () => ["System"],
     }),
-    getSystemByFidesKey: build.query<System, string>({
+    getSystemByFidesKey: build.query<SystemResponse, string>({
       query: (fides_key) => ({ url: `system/${fides_key}/` }),
       providesTags: ["System"],
     }),
@@ -56,7 +57,7 @@ const systemApi = baseApi.injectEndpoints({
       invalidatesTags: ["Datamap", "System", "Datastore Connection"],
     }),
     updateSystem: build.mutation<
-      System,
+      SystemResponse,
       Partial<System> & Pick<System, "fides_key">
     >({
       query: ({ ...patch }) => ({

@@ -13,4 +13,5 @@ export type PostgreSQLDocsSchema = {
   db_schema?: string;
   host?: string;
   port?: number;
+  ssh_required?: boolean;
 };

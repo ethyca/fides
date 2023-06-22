@@ -1,7 +1,7 @@
 """add eu locations migration
 
 Revision ID: d2996381c4dd
-Revises: c1885270b3cc
+Revises: 2be84e68df32
 Create Date: 2023-06-20 21:43:45.404454
 
 """
@@ -15,7 +15,7 @@ from sqlalchemy.engine import Connection, ResultProxy
 from sqlalchemy.sql.elements import TextClause
 
 revision = "d2996381c4dd"
-down_revision = "c1885270b3cc"
+down_revision = "2be84e68df32"
 branch_labels = None
 depends_on = None
 
