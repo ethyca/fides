@@ -157,7 +157,7 @@ class FidesopsRedis(Redis):
         return None
 
 
-def get_cache() -> FidesopsRedis:
+def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
     """Return a singleton connection to our Redis cache"""
     global _connection  # pylint: disable=W0603
     if _connection is None:
@@ -174,15 +174,18 @@ def get_cache() -> FidesopsRedis:
             ssl_ca_certs=CONFIG.redis.ssl_ca_certs,
             ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
         )
-        logger.debug("New Redis connection created.")
+        if should_log:
+            logger.debug("New Redis connection created.")
 
-    logger.debug("Testing Redis connection...")
+    if should_log:
+        logger.debug("Testing Redis connection...")
     try:
         connected = _connection.ping()
     except ConnectionErrorFromRedis:
         connected = False
     else:
-        logger.debug("Redis connection succeeded.")
+        if should_log:
+            logger.debug("Redis connection succeeded.")
 
     if not connected:
         logger.debug("Redis connection failed.")

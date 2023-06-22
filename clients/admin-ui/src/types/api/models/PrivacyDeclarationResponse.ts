@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { Cookies } from "./Cookies";
+
 /**
  * Extension of base pydantic model to include DB `id` field in the response
  */
@@ -38,6 +40,7 @@ export type PrivacyDeclarationResponse = {
    * The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied.
    */
   ingress?: Array<string>;
+  cookies?: Array<Cookies>;
   /**
    * The database-assigned ID of the privacy declaration on the system. This is meant to be a read-only field, returned only in API responses
    */

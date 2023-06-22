@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { IdentityBase } from "./IdentityBase";
+import type { Identity } from "./Identity";
 
 /**
  * Schema for reporting Consent requests.
@@ -14,7 +14,7 @@ export type ConsentReport = {
   has_gpc_flag?: boolean;
   conflicts_with_gpc?: boolean;
   id: string;
-  identity: IdentityBase;
+  identity: Identity;
   created_at: string;
   updated_at: string;
 };

@@ -117,11 +117,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
           enabledPrivacyNoticeKeys.includes(notice.notice_key),
           notice.consent_mechanism
         );
-        return new SaveConsentPreference(
-          notice.notice_key,
-          notice.privacy_notice_history_id,
-          userPreference
-        );
+        return new SaveConsentPreference(notice, userPreference);
       });
       updateConsentPreferences({
         consentPreferencesToSave,
