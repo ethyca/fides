@@ -2,6 +2,7 @@ import {
   ConsentContext,
   CookieKeyConsent,
   resolveLegacyConsentValue,
+  GpcStatus,
 } from "fides-js";
 
 import {
@@ -10,7 +11,7 @@ import {
   ConsentConfig,
 } from "~/types/config";
 import { PrivacyNoticeResponseWithUserPreferences } from "~/types/api";
-import { FidesKeyToConsent, GpcStatus } from "./types";
+import { FidesKeyToConsent } from "./types";
 
 /**
  * Ascertain whether a consentConfig is V1 or V2 based upon the presence of a `button` key
