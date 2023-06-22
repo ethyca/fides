@@ -110,7 +110,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
         color="white"
         colorScheme="primary"
       >
-        Link connector
+        Link integration
       </Button>
 
       <Modal isCentered isOpen={isOpen} size="lg" onClose={closeIfComplete}>
