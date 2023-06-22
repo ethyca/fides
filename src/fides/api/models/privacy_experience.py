@@ -263,7 +263,9 @@ class PrivacyExperience(Base):
             )
 
         if systems_applicable:
-            data_uses: set[str] = System.get_data_uses(System.all(db), include_parents=True)
+            data_uses: set[str] = System.get_data_uses(
+                System.all(db), include_parents=True
+            )
             privacy_notice_query = privacy_notice_query.filter(PrivacyNotice.data_uses.overlap(data_uses))  # type: ignore
 
         if not fides_user_provided_identity:
