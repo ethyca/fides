@@ -103,24 +103,3 @@ export const getGpcStatus = ({
 
   return GpcStatus.OVERRIDDEN;
 };
-
-export const getGpcStatusFromNotice = ({
-  value,
-  notice,
-  consentContext,
-}: {
-  value: boolean;
-  notice: PrivacyNoticeResponseWithUserPreferences;
-  consentContext: ConsentContext;
-}) => {
-  // If GPC is not enabled, it won't be applied at all.
-  if (!consentContext.globalPrivacyControl || !notice.has_gpc_flag) {
-    return GpcStatus.NONE;
-  }
-
-  if (!value) {
-    return GpcStatus.APPLIED;
-  }
-
-  return GpcStatus.OVERRIDDEN;
-};
