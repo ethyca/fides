@@ -69,6 +69,7 @@ The types of changes are:
 - Update to latest asyncpg dependency to avoid build error [#3614](https://github.com/ethyca/fides/pull/3614)
 - Fix bug where editing a data use on a system could delete existing data uses [#3627](https://github.com/ethyca/fides/pull/3627)
 - Restrict Privacy Center debug logging to development-only [#3638](https://github.com/ethyca/fides/pull/3638)
+- Render linebreaks in the Fides.js overlay descriptions, etc. [#3665](https://github.com/ethyca/fides/pull/3665)
 
 ### Changed
 
