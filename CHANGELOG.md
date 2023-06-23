@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.15.0...main)
 
+### Fixed
+
+- Render linebreaks in the Fides.js overlay descriptions, etc. [#3665](https://github.com/ethyca/fides/pull/3665)
+
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
 
 ### Added
