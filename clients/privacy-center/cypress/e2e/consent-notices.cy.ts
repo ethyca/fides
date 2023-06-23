@@ -131,10 +131,11 @@ describe("Privacy notice driven consent", () => {
 
     it("uses the device id found in an already existing cookie", () => {
       const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
-      const now = "2023-04-28T12:00:00.000Z";
+      const createdAt = "2023-04-28T12:00:00.000Z";
+      const updatedAt = "2023-04-29T12:00:00.000Z";
       const cookie = {
         identity: { fides_user_device_id: uuid },
-        fides_meta: { version: "0.9.0", createdAt: now },
+        fides_meta: { version: "0.9.0", createdAt, updatedAt },
         consent: {},
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
