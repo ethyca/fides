@@ -12,7 +12,11 @@ import ConnectionForm from "~/features/datastore-connections/system_portal_confi
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
 import { System, SystemResponse } from "~/types/api";
 
-import { selectActiveSystem, setActiveSystem } from "./system.slice";
+import {
+  selectActiveSystem,
+  setActiveSystem,
+  useGetSystemByFidesKeyQuery,
+} from "./system.slice";
 import SystemInformationForm from "./SystemInformationForm";
 import UnmountWarning from "./UnmountWarning";
 
@@ -78,6 +82,17 @@ const SystemFormTabs = ({
   const toast = useToast();
   const dispatch = useAppDispatch();
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
+
+  // Once we have saved the system basics, subscribe to the query so that activeSystem
+  // stays up to date when redux invalidates the cache (for example, when we patch a connection config)
+  const { data: systemFromApi } = useGetSystemByFidesKeyQuery(
+    activeSystem?.fides_key,
+    { skip: !activeSystem }
+  );
+
+  useEffect(() => {
+    dispatch(setActiveSystem(systemFromApi));
+  }, [systemFromApi, dispatch]);
 
   const handleSuccess = (system: System) => {
     // show a save message if this is the first time the system was saved

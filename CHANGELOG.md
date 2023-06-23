@@ -69,6 +69,7 @@ The types of changes are:
 - Update to latest asyncpg dependency to avoid build error [#3614](https://github.com/ethyca/fides/pull/3614)
 - Fix bug where editing a data use on a system could delete existing data uses [#3627](https://github.com/ethyca/fides/pull/3627)
 - Restrict Privacy Center debug logging to development-only [#3638](https://github.com/ethyca/fides/pull/3638)
+- Fix bug where linking an integration would not update the tab when creating a new system [#3662](https://github.com/ethyca/fides/pull/3662)
 
 ### Changed
 
