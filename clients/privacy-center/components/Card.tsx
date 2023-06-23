@@ -23,7 +23,7 @@ const Card: React.FC<CardProps> = ({
     data-testid="card"
     flexDirection="column"
     gap="12px"
-    h="176px"
+    minH="176px"
     key={title}
     m={2}
     onClick={() => {
@@ -62,7 +62,7 @@ const Card: React.FC<CardProps> = ({
       fontSize="xs"
       fontWeight="normal"
       lineHeight="16px"
-      noOfLines={3}
+      noOfLines={[3,4,5]}
     >
       {description}
     </Text>
