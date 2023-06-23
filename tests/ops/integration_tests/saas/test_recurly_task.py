@@ -16,22 +16,7 @@ class TestRecurlyConnector:
             access_policy=policy, identities={"email": recurly_identity_email}
         )
 
-    # async def test_strict_erasure_request(
-    #     self,
-    #     recurly_runner: ConnectorRunner,
-    #     policy: Policy,
-    #     erasure_policy_string_rewrite: Policy,
-    #     recurly_erasure_identity_email: str,
-    #     recurly_erasure_data,
-    # ):
-    #     (
-    #         access_results,
-    #         erasure_results,
-    #     ) = await recurly_runner.strict_erasure_request(
-    #         access_policy=policy,
-    #         erasure_policy=erasure_policy_string_rewrite,
-    #         identities={"email": recurly_erasure_identity_email},
-    #     )
+        assert access_results["recurly_instance:accounts"][0]["email"] == recurly_identity_email
 
     async def test_non_strict_erasure_request(
         self,
