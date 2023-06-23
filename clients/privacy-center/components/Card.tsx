@@ -57,13 +57,7 @@ const Card: React.FC<CardProps> = ({
     >
       {title}
     </Text>
-    <Text
-      color="gray.600"
-      fontSize="xs"
-      fontWeight="normal"
-      lineHeight="16px"
-      noOfLines={[3,4,5]}
-    >
+    <Text color="gray.600" fontSize="xs" fontWeight="normal" lineHeight="16px">
       {description}
     </Text>
   </Flex>
