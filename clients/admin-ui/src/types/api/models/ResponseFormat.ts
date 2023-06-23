@@ -8,4 +8,5 @@
 export enum ResponseFormat {
   JSON = "json",
   CSV = "csv",
+  HTML = "html",
 }
