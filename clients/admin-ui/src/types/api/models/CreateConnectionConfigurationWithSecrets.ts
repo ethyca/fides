@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ActionType } from "~/features/privacy-requests/types";
 import type { AccessLevel } from "./AccessLevel";
+import type { ActionType } from "./ActionType";
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { ConnectionType } from "./ConnectionType";
 import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
@@ -31,6 +31,7 @@ export type CreateConnectionConfigurationWithSecrets = {
   access: AccessLevel;
   disabled?: boolean;
   description?: string;
+  enabled_actions?: Array<ActionType>;
   secrets?:
     | MongoDBDocsSchema
     | PostgreSQLDocsSchema
@@ -48,5 +49,4 @@ export type CreateConnectionConfigurationWithSecrets = {
     | SovrnDocsSchema
     | DynamoDBDocsSchema;
   saas_connector_type?: string;
-  enabled_actions?: ActionType[];
 };

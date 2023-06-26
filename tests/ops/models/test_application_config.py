@@ -5,8 +5,8 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.application_config import ApplicationConfig
-from fides.core.config import get_config
-from fides.core.config.config_proxy import ConfigProxy
+from fides.config import get_config
+from fides.config.config_proxy import ConfigProxy
 
 CONFIG = get_config()
 

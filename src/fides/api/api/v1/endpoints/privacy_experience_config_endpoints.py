@@ -1,3 +1,4 @@
+from html import escape, unescape
 from typing import Dict, List, Optional
 
 from fastapi import Depends, HTTPException, Security
@@ -6,6 +7,7 @@ from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
 from sqlalchemy.orm import Query, Session
+from starlette.requests import Request
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -14,10 +16,8 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1 import scope_registry
 from fides.api.api.v1 import urn_registry as urls
-from fides.api.api.v1.endpoints.utils import human_friendly_list
-from fides.api.api.v1.scope_registry import PRIVACY_EXPERIENCE_UPDATE
+from fides.api.api.v1.endpoints.utils import human_friendly_list, transform_fields
 from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
@@ -33,6 +33,12 @@ from fides.api.schemas.privacy_experience import (
     ExperienceConfigUpdate,
 )
 from fides.api.util.api_router import APIRouter
+from fides.api.util.consent_util import (
+    PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
+    UNESCAPE_SAFESTR_HEADER,
+)
+from fides.common.api import scope_registry
+from fides.common.api.scope_registry import PRIVACY_EXPERIENCE_UPDATE
 
 router = APIRouter(tags=["Privacy Experience Config"], prefix=urls.V1_URL_PREFIX)
 
@@ -71,12 +77,13 @@ def experience_config_list(
     show_disabled: Optional[bool] = True,
     component: Optional[ComponentType] = None,
     region: Optional[PrivacyNoticeRegion] = None,
+    request: Request,
 ) -> AbstractPage[PrivacyExperienceConfig]:
     """
     Returns a list of PrivacyExperienceConfig resources.  These resources have common titles, descriptions, and
     labels that can be shared between multiple experiences.
     """
-
+    should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
     privacy_experience_config_query: Query = db.query(PrivacyExperienceConfig)
 
     if component:
@@ -100,7 +107,18 @@ def experience_config_list(
     )
 
     logger.info("Loading Experience Configs with params {}.", params)
-    return fastapi_paginate(privacy_experience_config_query.all(), params=params)
+    experience_configs = privacy_experience_config_query.all()
+    if should_unescape:
+        experience_configs = [
+            transform_fields(
+                transformation=unescape,
+                model=experience_config,
+                fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
+            )
+            for experience_config in experience_configs
+        ]
+
+    return fastapi_paginate(experience_configs, params=params)
 
 
 @router.post(
@@ -125,7 +143,12 @@ def experience_config_create(
     """
     Create Experience Config and then attempt to upsert Experiences and link to ExperienceConfig
     """
-    experience_config_dict: Dict = experience_config_data.dict(exclude_unset=True)
+    privacy_experience_data = transform_fields(
+        transformation=escape,
+        model=experience_config_data,
+        fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
+    )
+    experience_config_dict: Dict = privacy_experience_data.dict(exclude_unset=True)
     # Pop the regions off the request
     new_regions: Optional[List[PrivacyNoticeRegion]] = experience_config_dict.pop(
         "regions", None
@@ -145,6 +168,7 @@ def experience_config_create(
         "Creating experience config of component '{}'.",
         experience_config_data.component.value,
     )
+
     experience_config = PrivacyExperienceConfig.create(
         db, data=experience_config_dict, check_name=False
     )
@@ -162,7 +186,11 @@ def experience_config_create(
         )
 
     return ExperienceConfigCreateOrUpdateResponse(
-        experience_config=experience_config,
+        experience_config=transform_fields(
+            transformation=unescape,
+            model=experience_config,
+            fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
+        ),
         linked_regions=linked,
         unlinked_regions=unlinked,
     )
@@ -177,15 +205,22 @@ def experience_config_create(
     ],
 )
 def experience_config_detail(
-    *,
-    db: Session = Depends(deps.get_db),
-    experience_config_id: str,
+    *, db: Session = Depends(deps.get_db), experience_config_id: str, request: Request
 ) -> PrivacyExperienceConfig:
     """
     Returns a PrivacyExperienceConfig.
     """
     logger.info("Retrieving experience config with id '{}'.", experience_config_id)
-    return get_experience_config_or_error(db, experience_config_id)
+    should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
+
+    experience_config = get_experience_config_or_error(db, experience_config_id)
+    if should_unescape:
+        experience_config = transform_fields(
+            transformation=unescape,
+            model=experience_config,
+            fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
+        )
+    return experience_config
 
 
 @router.patch(
@@ -233,7 +268,13 @@ def experience_config_update(
             detail=f"Cannot set as the default. Only one default {experience_config.component.value} config can be in the system.",  # type: ignore[attr-defined]
         )
 
-    experience_config_data_dict: Dict = experience_config_data.dict(exclude_unset=True)
+    privacy_experience_data = transform_fields(
+        transformation=escape,
+        model=experience_config_data,
+        fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
+    )
+
+    experience_config_data_dict: Dict = privacy_experience_data.dict(exclude_unset=True)
     # Pop the regions off the request
     regions: Optional[List[PrivacyNoticeRegion]] = experience_config_data_dict.pop(
         "regions", None
@@ -284,7 +325,11 @@ def experience_config_update(
             )
 
     return ExperienceConfigCreateOrUpdateResponse(
-        experience_config=experience_config,
+        experience_config=transform_fields(
+            transformation=unescape,
+            model=experience_config,
+            fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
+        ),
         linked_regions=linked,
         unlinked_regions=unlinked_regions,
     )

@@ -1,11 +1,9 @@
 # If you update this, also update `DEFAULT_PYTHON_VERSION` in the GitHub workflow files
 ARG PYTHON_VERSION="3.10.11"
-
 #########################
 ## Compile Python Deps ##
 #########################
 FROM python:${PYTHON_VERSION}-slim-bullseye as compile_image
-ARG TARGETPLATFORM
 
 # Install auxiliary software
 RUN apt-get update && \
@@ -17,15 +15,32 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+
+# Install FreeTDS (used for PyMSSQL)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libssl-dev \
+    libffi-dev \
+    libxslt-dev \
+    libkrb5-dev \
+    unixodbc \
+    unixodbc-dev \
+    freetds-dev \
+    freetds-bin \
+    python-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python Dependencies
+COPY dev-requirements.txt .
+RUN pip install --user -U pip --no-cache-dir install -r dev-requirements.txt
+
 # Activate a Python venv
 RUN python3 -m venv /opt/fides
 ENV PATH="/opt/fides/bin:${PATH}"
 
 # Install Python Dependencies
 RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools wheel
-
-COPY dangerous-requirements.txt .
-RUN if [ $TARGETPLATFORM != linux/arm64 ] ; then pip install --no-cache-dir install -r dangerous-requirements.txt ; fi
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir install -r requirements.txt
@@ -37,38 +52,20 @@ RUN pip install --no-cache-dir install -r dev-requirements.txt
 ## Backend Base ##
 ##################
 FROM python:${PYTHON_VERSION}-slim-bullseye as backend
-ARG TARGETPLATFORM
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    git \
+    freetds-dev \
+    freetds-bin \
+    python-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Loads compiled requirements and adds the to the path
 COPY --from=compile_image /opt/fides /opt/fides
 ENV PATH=/opt/fides/bin:$PATH
-
-# These are all required for MSSQL
-RUN : \
-    && apt-get update \
-    && apt-get install \
-    -y --no-install-recommends \
-    apt-transport-https \
-    curl \
-    git \
-    gnupg \
-    unixodbc-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# SQL Server (MS SQL)
-# https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver15
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-RUN curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/msprod.list
-ENV ACCEPT_EULA=y DEBIAN_FRONTEND=noninteractive
-RUN if [ "$TARGETPLATFORM" != "linux/arm64" ] ; \
-    then apt-get update \
-    && apt-get install \
-    -y --no-install-recommends \
-    mssql-tools \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* ; \
-    fi
 
 # General Application Setup ##
 COPY . /fides

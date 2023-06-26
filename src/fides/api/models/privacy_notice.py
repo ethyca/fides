@@ -8,14 +8,18 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 from fideslang.validation import FidesKey
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Float, ForeignKey, String
+from sqlalchemy import Float, ForeignKey, String, or_
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.util import hybridproperty
 
 from fides.api.common_exceptions import ValidationError
-from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.db.base_class import Base, FidesBase
+from fides.api.models.sql_models import (  # type: ignore[attr-defined]
+    Cookies,
+    PrivacyDeclaration,
+    System,
+)
 
 
 class UserConsentPreference(Enum):
@@ -254,6 +258,26 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             return UserConsentPreference.acknowledge
 
         raise Exception("Invalid notice consent mechanism.")
+
+    @property
+    def cookies(self) -> List[Cookies]:
+        """Return relevant cookie names (via the data use)"""
+        db = Session.object_session(self)
+        return (
+            db.query(Cookies)
+            .join(
+                PrivacyDeclaration,
+                PrivacyDeclaration.id == Cookies.privacy_declaration_id,
+            )
+            .filter(
+                or_(
+                    *[
+                        PrivacyDeclaration.data_use.like(f"{notice_use}%")
+                        for notice_use in self.data_uses
+                    ]
+                )
+            )
+        ).all()
 
     @classmethod
     def create(

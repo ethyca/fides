@@ -10,12 +10,6 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
-    CONNECTION_CREATE_OR_UPDATE,
-    CONNECTION_DELETE,
-    CONNECTION_READ,
-    STORAGE_DELETE,
-)
 from fides.api.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
@@ -23,10 +17,19 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequestStatus
+from fides.api.models.sql_models import Dataset
 from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
+from fides.common.api.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_DELETE,
+    CONNECTION_READ,
+    STORAGE_DELETE,
+)
 from tests.fixtures.application_fixtures import integration_secrets
+from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
 page_size = Params().size
 
@@ -1262,6 +1265,39 @@ class TestDeleteConnection:
             privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
         )
 
+    def test_delete_saas_connection_config(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ) -> None:
+        secrets = {
+            "domain": "test_sendgrid_domain",
+            "api_key": "test_sendgrid_api_key",
+        }
+        connection_config, dataset_config = instantiate_connector(
+            db,
+            "sendgrid",
+            "sendgrid_connection_config_secondary",
+            "secondary_sendgrid_instance",
+            "Sendgrid ConnectionConfig description",
+            secrets,
+        )
+        dataset = dataset_config.ctl_dataset
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
+        resp = api_client.delete(
+            f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}", headers=auth_header
+        )
+        assert resp.status_code == 204
+        assert (
+            db.query(ConnectionConfig).filter_by(key=connection_config.key).first()
+            is None
+        )
+        assert db.query(DatasetConfig).filter_by(id=dataset_config.id).first() is None
+        assert db.query(Dataset).filter_by(id=dataset.id).first() is None
+
 
 class TestPutConnectionConfigSecrets:
     @pytest.fixture(scope="function")
@@ -1341,7 +1377,11 @@ class TestPutConnectionConfigSecrets:
     ) -> None:
         """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = {"host": "localhost", "port": "1234", "dbname": "my_test_db"}
+        payload = {
+            "host": "localhost",
+            "port": "1234",
+            "dbname": "my_test_db",
+        }
         resp = api_client.put(
             url + "?verify=False",
             headers=auth_header,
@@ -1361,6 +1401,7 @@ class TestPutConnectionConfigSecrets:
             "password": None,
             "url": None,
             "db_schema": None,
+            "ssh_required": False,
         }
 
         payload = {"url": "postgresql://test_user:test_pass@localhost:1234/my_test_db"}
@@ -1383,6 +1424,7 @@ class TestPutConnectionConfigSecrets:
             "password": None,
             "url": payload["url"],
             "db_schema": None,
+            "ssh_required": False,
         }
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
@@ -1477,6 +1519,7 @@ class TestPutConnectionConfigSecrets:
             "user": "awsuser",
             "password": "test_password",
             "db_schema": "test",
+            "ssh_required": False,
         }
         resp = api_client.put(
             url + "?verify=False",
@@ -1497,6 +1540,7 @@ class TestPutConnectionConfigSecrets:
             "password": "test_password",
             "db_schema": "test",
             "url": None,
+            "ssh_required": False,
         }
         assert redshift_connection_config.last_test_timestamp is None
         assert redshift_connection_config.last_test_succeeded is None

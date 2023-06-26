@@ -54,10 +54,10 @@ const ConfigureSystem: NextPage = () => {
       <Box mb={8}>
         <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
           <BreadcrumbItem>
-            <NextLink href={SYSTEM_ROUTE}>System Connections</NextLink>
+            <NextLink href={SYSTEM_ROUTE}>System Integrations</NextLink>
           </BreadcrumbItem>
           <BreadcrumbItem>
-            <NextLink href="#">Configure your connection</NextLink>
+            <NextLink href="#">Configure your integration</NextLink>
           </BreadcrumbItem>
         </Breadcrumb>
       </Box>

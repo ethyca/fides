@@ -56,6 +56,7 @@ div#fides-overlay {
   font-size: var(--fides-overlay-font-size-body);
   z-index: 1000;
   position: fixed;
+  white-space: pre-line;
 
   /* CSS reset values, adapted from https://www.joshwcomeau.com/css/custom-css-reset/ */
   line-height: calc(1em + 0.4rem);
@@ -158,12 +159,20 @@ div#fides-banner-description {
   flex: 1;
 }
 
-div#fides-banner-buttons {
+div#fides-button-group {
   margin-top: 0.5em;
+  display: flex;
+  justify-content: space-between;
 }
 
-span.fides-banner-buttons-right {
-  float: right;
+div.fides-acknowledge-button-container {
+  margin-top: 0.5em;
+  display: flex;
+  justify-content: end;
+}
+
+div.fides-banner-acknowledge .fides-banner-button {
+  max-width: 168px;
 }
 
 button.fides-banner-button {
@@ -272,6 +281,7 @@ div#fides-modal .fides-modal-description {
 
 div#fides-modal .fides-modal-button-group {
   display: flex;
+  width: 100%;
 }
 
 .fides-close-button {
