@@ -189,9 +189,9 @@ def rds_describe_clusters() -> Generator:
         "DBClusters": [
             {
                 "DBClusterIdentifier": "database-2",
-                "Endpoint": "database-2.cluster-ckrdpkkb4ukm.us-east-1.rds.amazonaws.com",
+                "Endpoint": "database-2.cluster-cjh1qplnnv3b.us-east-1.rds.amazonaws.com",
                 "Port": 3306,
-                "DBClusterArn": "arn:aws:rds:us-east-1:910934740016:cluster:database-2",
+                "DBClusterArn": "arn:aws:rds:us-east-1:469973866127:cluster:database-2",
             },
         ]
     }
@@ -205,36 +205,14 @@ def rds_describe_instances() -> Generator:
             {
                 "DBInstanceIdentifier": "database-1",
                 "Endpoint": {
-                    "Address": "database-1.ckrdpkkb4ukm.us-east-1.rds.amazonaws.com",
+                    "Address": "database-1.cjh1qplnnv3b.us-east-1.rds.amazonaws.com",
                     "Port": 3306,
                 },
-                "DBInstanceArn": "arn:aws:rds:us-east-1:910934740016:db:database-1",
+                "DBInstanceArn": "arn:aws:rds:us-east-1:469973866127:db:database-1",
             },
         ]
     }
     yield describe_instances
-
-
-@pytest.mark.unit
-def test_get_system_resource_ids(redshift_systems: List[System]) -> None:
-    expected_result = [
-        "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
-        "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149177",
-    ]
-    actual_result = _system.get_system_resource_ids(redshift_systems)
-    assert actual_result == expected_result
-
-
-@pytest.mark.unit
-def test_find_missing_systems(
-    redshift_systems: List[System], rds_systems: List[System]
-) -> None:
-    source_systems = rds_systems + redshift_systems
-    existing_systems = redshift_systems
-    actual_result = _system.find_missing_systems(
-        source_systems=source_systems, existing_systems=existing_systems
-    )
-    assert actual_result == rds_systems
 
 
 @pytest.mark.integration
@@ -249,94 +227,121 @@ def test_get_all_server_systems(
     assert actual_result
 
 
-@pytest.mark.external
-def test_scan_system_aws_passes(
-    test_config: FidesConfig, create_external_server_systems: Generator
-) -> None:
-    _system.scan_system_aws(
-        coverage_threshold=100,
-        manifest_dir="",
-        organization_key="default_organization",
-        aws_config=None,
-        url=test_config.cli.server_url,
-        headers=test_config.user.auth_header,
-    )
+class TestSystemAWS:
+    @pytest.mark.unit
+    def test_get_system_resource_ids(self, redshift_systems: List[System]) -> None:
+        expected_result = [
+            "arn:aws:redshift:us-east-1:469973866127:namespace:06ba7fe3-8cb3-4e1c-b2c6-cc2f2415a979",
+            "arn:aws:redshift:us-east-1:469973866127:namespace:06ba7fe3-8cb3-4e1c-b2c6-cc2f2415a979",
+        ]
+        actual_result = _system.get_system_resource_ids(redshift_systems)
+        assert actual_result == expected_result
 
+    @pytest.mark.unit
+    def test_find_missing_systems(
+        self, redshift_systems: List[System], rds_systems: List[System]
+    ) -> None:
+        source_systems = rds_systems + redshift_systems
+        existing_systems = redshift_systems
+        actual_result = _system.find_missing_systems(
+            source_systems=source_systems, existing_systems=existing_systems
+        )
+        assert actual_result == rds_systems
 
-@pytest.mark.external
-def test_generate_system_aws(tmpdir: LocalPath, test_config: FidesConfig) -> None:
-    actual_result = _system.generate_system_aws(
-        file_name=f"{tmpdir}/test_file.yml",
-        include_null=False,
-        organization_key="default_organization",
-        aws_config=None,
-        url=test_config.cli.server_url,
-        headers=test_config.user.auth_header,
-    )
-    assert actual_result
+    @pytest.mark.external
+    def test_scan_system_aws_passes(
+        self, test_config: FidesConfig, create_external_server_systems: Generator
+    ) -> None:
+        _system.scan_system_aws(
+            coverage_threshold=100,
+            manifest_dir="",
+            organization_key="default_organization",
+            aws_config=None,
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+        )
+
+    @pytest.mark.external
+    def test_generate_system_aws(
+        self, tmpdir: LocalPath, test_config: FidesConfig
+    ) -> None:
+        actual_result = _system.generate_system_aws(
+            file_name=f"{tmpdir}/test_file.yml",
+            include_null=False,
+            organization_key="default_organization",
+            aws_config=None,
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+        )
+        assert actual_result
 
 
 OKTA_ORG_URL = "https://dev-78908748.okta.com"
 
 
-@pytest.mark.external
-def test_generate_system_okta(tmpdir: LocalPath, test_config: FidesConfig) -> None:
-    actual_result = _system.generate_system_okta(
-        file_name=f"{tmpdir}/test_file.yml",
-        include_null=False,
-        organization_key="default_organization",
-        okta_config=OktaConfig(
-            orgUrl=OKTA_ORG_URL,
-            token=os.environ["OKTA_CLIENT_TOKEN"],
-        ),
-        url=test_config.cli.server_url,
-        headers=test_config.user.auth_header,
-    )
-    assert actual_result
-
-
-@pytest.mark.external
-def test_scan_system_okta_success(tmpdir: LocalPath, test_config: FidesConfig) -> None:
-    file_name = f"{tmpdir}/test_file.yml"
-    _system.generate_system_okta(
-        file_name=file_name,
-        include_null=False,
-        organization_key="default_organization",
-        okta_config=OktaConfig(
-            orgUrl=OKTA_ORG_URL,
-            token=os.environ["OKTA_CLIENT_TOKEN"],
-        ),
-        url=test_config.cli.server_url,
-        headers=test_config.user.auth_header,
-    )
-    _system.scan_system_okta(
-        manifest_dir=file_name,
-        okta_config=OktaConfig(
-            orgUrl=OKTA_ORG_URL,
-            token=os.environ["OKTA_CLIENT_TOKEN"],
-        ),
-        organization_key="default_organization",
-        coverage_threshold=100,
-        url=test_config.cli.server_url,
-        headers=test_config.user.auth_header,
-    )
-    assert True
-
-
-@pytest.mark.external
-def test_scan_system_okta_fail(tmpdir: LocalPath, test_config: FidesConfig) -> None:
-    with pytest.raises(SystemExit):
-        _system.scan_system_okta(
-            manifest_dir="",
+class TestSystemOkta:
+    @pytest.mark.external
+    def test_generate_system_okta(
+        self, tmpdir: LocalPath, test_config: FidesConfig
+    ) -> None:
+        actual_result = _system.generate_system_okta(
+            file_name=f"{tmpdir}/test_file.yml",
+            include_null=False,
+            organization_key="default_organization",
             okta_config=OktaConfig(
                 orgUrl=OKTA_ORG_URL,
                 token=os.environ["OKTA_CLIENT_TOKEN"],
             ),
-            coverage_threshold=100,
-            organization_key="default_organization",
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
         )
+        assert actual_result
+
+    @pytest.mark.external
+    def test_scan_system_okta_success(
+        self, tmpdir: LocalPath, test_config: FidesConfig
+    ) -> None:
+        file_name = f"{tmpdir}/test_file.yml"
+        _system.generate_system_okta(
+            file_name=file_name,
+            include_null=False,
+            organization_key="default_organization",
+            okta_config=OktaConfig(
+                orgUrl=OKTA_ORG_URL,
+                token=os.environ["OKTA_CLIENT_TOKEN"],
+            ),
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+        )
+        _system.scan_system_okta(
+            manifest_dir=file_name,
+            okta_config=OktaConfig(
+                orgUrl=OKTA_ORG_URL,
+                token=os.environ["OKTA_CLIENT_TOKEN"],
+            ),
+            organization_key="default_organization",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+        )
+        assert True
+
+    @pytest.mark.external
+    def test_scan_system_okta_fail(
+        self, tmpdir: LocalPath, test_config: FidesConfig
+    ) -> None:
+        with pytest.raises(SystemExit):
+            _system.scan_system_okta(
+                manifest_dir="",
+                okta_config=OktaConfig(
+                    orgUrl=OKTA_ORG_URL,
+                    token=os.environ["OKTA_CLIENT_TOKEN"],
+                ),
+                coverage_threshold=100,
+                organization_key="default_organization",
+                url=test_config.cli.server_url,
+                headers=test_config.user.auth_header,
+            )
 
 
 class TestUpsertCookies:
