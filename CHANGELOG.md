@@ -71,6 +71,7 @@ The types of changes are:
 - Restrict Privacy Center debug logging to development-only [#3638](https://github.com/ethyca/fides/pull/3638)
 - Fix bug where linking an integration would not update the tab when creating a new system [#3662](https://github.com/ethyca/fides/pull/3662)
 - Fix dataset yaml not properly reflecting the dataset in the dropdown of system integrations tab [#3666](https://github.com/ethyca/fides/pull/3666)
+- Fix privacy notices not being able to be edited via the UI after the addition of the `cookies` field [#3670](https://github.com/ethyca/fides/pull/3670)
 
 ### Changed
 
