@@ -120,7 +120,7 @@ def redshift_describe_clusters() -> Generator:
 @pytest.fixture()
 def redshift_systems() -> Generator:
     redshift_systems = [
-        System(
+        System.construct(
             fides_key="redshift-cluster-1",
             organization_fides_key="default_organization",
             name="redshift-cluster-1",
@@ -128,18 +128,18 @@ def redshift_systems() -> Generator:
             fidesctl_meta=SystemMetadata(
                 endpoint_address="redshift-cluster-1.cue8hjdl1kb1.us-east-1.redshift.amazonaws.com",
                 endpoint_port="5439",
-                resource_id="arn:aws:redshift:us-east-1:469973866127:namespace:06ba7fe3-8cb3-4e1c-b2c6-cc2f2415a979",
+                resource_id="arn:aws:redshift:us-east-1:469973866127:namespace:5eb1f195-7815-4c62-9140-e062dd98da83",
             ),
             system_type="redshift_cluster",
             privacy_declarations=[],
         ),
-        System(
+        System.construct(
             fides_key="redshift-cluster-2",
             organization_fides_key="default_organization",
             name="redshift-cluster-2",
             description="Fides Generated Description for Redshift Cluster: redshift-cluster-2",
             fidesctl_meta=SystemMetadata(
-                endpoint_address="redshift-cluster-1.cue8hjdl1kb1.us-east-1.redshift.amazonaws.com",
+                endpoint_address="redshift-cluster-2.cue8hjdl1kb1.us-east-1.redshift.amazonaws.com",
                 endpoint_port="5439",
                 resource_id="arn:aws:redshift:us-east-1:469973866127:namespace:06ba7fe3-8cb3-4e1c-b2c6-cc2f2415a979",
             ),
@@ -231,7 +231,7 @@ class TestSystemAWS:
     @pytest.mark.unit
     def test_get_system_resource_ids(self, redshift_systems: List[System]) -> None:
         expected_result = [
-            "arn:aws:redshift:us-east-1:469973866127:namespace:06ba7fe3-8cb3-4e1c-b2c6-cc2f2415a979",
+            "arn:aws:redshift:us-east-1:469973866127:namespace:5eb1f195-7815-4c62-9140-e062dd98da83",
             "arn:aws:redshift:us-east-1:469973866127:namespace:06ba7fe3-8cb3-4e1c-b2c6-cc2f2415a979",
         ]
         actual_result = _system.get_system_resource_ids(redshift_systems)
