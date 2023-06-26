@@ -1,4 +1,4 @@
-import { Box, Flex, SlideFade, Spacer } from "@fidesui/react";
+import { Box, Flex, SlideFade, Spacer, useToast } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
@@ -16,9 +16,10 @@ import {
   DatastoreConnectionSecretsRequest,
   DatastoreConnectionSecretsResponse,
 } from "datastore-connections/types";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import TestConnection from "~/features/datastore-connections/system_portal_config/TestConnection";
@@ -299,8 +300,30 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 }) => {
   const [response, setResponse] = useState<any>();
 
+  let previousTestTimestamp = useRef(0);
+
+  useEffect(() => {
+    if (response) {
+      console.log(`comparing ${response.startedTimeStamp} to ${previousTestTimestamp.current}...`);
+      if (response.startedTimeStamp !== previousTestTimestamp.current) {
+        console.log("toast!");
+      }
+      else {
+        previousTestTimestamp.current = response.startedTimeStamp;
+      }
+    }
+  }, [response]);
+
+  const toast = useToast();
+
   const handleTestConnectionClick = (value: any) => {
+    console.log();
     setResponse(value);
+    const toastParams = {
+      ...DEFAULT_TOAST_PARAMS,
+      description: `Successfully connected to ${connectionOption.human_readable}!`,
+    }
+    toast(toastParams);
   };
   const skip = connectionOption.type === SystemType.MANUAL;
   const { data: secretsSchema } = useGetConnectionTypeSecretSchemaQuery(
@@ -376,7 +399,9 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         </Flex>
       ) : null}
 
-      {response && (
+      {/* instead of doing this, make a toast with the same information */}
+
+      {/* {response && (
         <SlideFade in>
           <Box mt="16px" maxW="528px" w="fit-content">
             <TestConnection
@@ -385,7 +410,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
             />
           </Box>
         </SlideFade>
-      )}
+      )} */}
     </>
   );
 };
