@@ -72,6 +72,7 @@ The types of changes are:
 - Fix bug where linking an integration would not update the tab when creating a new system [#3662](https://github.com/ethyca/fides/pull/3662)
 - Fix dataset yaml not properly reflecting the dataset in the dropdown of system integrations tab [#3666](https://github.com/ethyca/fides/pull/3666)
 - Fix privacy notices not being able to be edited via the UI after the addition of the `cookies` field [#3670](https://github.com/ethyca/fides/pull/3670)
+- Add a transform in the case of `null` name fields in privacy declarations for the data use forms [#3683](https://github.com/ethyca/fides/pull/3683)
 
 ### Changed
 
