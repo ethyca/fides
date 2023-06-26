@@ -1,4 +1,4 @@
-import { Box, SlideFade } from "@fidesui/react";
+import { Box, Flex, SlideFade, Spacer } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
@@ -22,6 +22,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import TestConnection from "~/features/datastore-connections/system_portal_config/TestConnection";
+import TestData from "~/features/datastore-connections/TestData";
 import {
   selectActiveSystem,
   setActiveSystem,
@@ -192,7 +193,7 @@ export const useConnectorForm = ({
       // @ts-ignore connection_configs isn't on the type yet but will be in the future
       dispatch(setActiveSystem({ ...activeSystem, connection_configs: null }));
       setSelectedConnectionOption(undefined);
-      successAlert(`Connector successfully deleted!`);
+      successAlert(`Integration successfully deleted!`);
     } catch (e) {
       handleError(e);
     }
@@ -260,12 +261,16 @@ export const useConnectorForm = ({
         values.dataset = res;
       }
 
-      if (connectionConfig && values.dataset) {
+      if (
+        connectionConfig &&
+        values.dataset &&
+        connectionOption.type === SystemType.DATABASE
+      ) {
         await patchConnectionDatasetConfig(values, connectionConfig.key);
       }
 
       successAlert(
-        `Connector successfully ${
+        `Integration successfully ${
           isCreatingConnectionConfig ? "added" : "updated"
         }!`
       );
@@ -337,7 +342,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       <Box color="gray.700" fontSize="14px" mb={4} h="80px">
         Connect to your {connectionOption!.human_readable} environment by
         providing credential information below. Once you have saved your
-        connector credentials, you can review what data is included when
+        integration credentials, you can review what data is included when
         processing a privacy request in your Dataset configuration.
       </Box>
       <ConnectorParametersForm
@@ -353,6 +358,23 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         onDelete={handleDelete}
         deleteResult={deleteDatastoreConnectionResult}
       />
+
+      {connectionConfig ? (
+        <Flex mt="4" justifyContent="between" alignItems="center">
+          {response ? (
+            <TestData
+              succeeded={response.data.test_status === "succeeded"}
+              timestamp={response.fulfilledTimeStamp}
+            />
+          ) : (
+            <TestData
+              succeeded={connectionConfig?.last_test_succeeded}
+              timestamp={connectionConfig?.last_test_timestamp || ""}
+            />
+          )}
+          <Spacer />
+        </Flex>
+      ) : null}
 
       {response && (
         <SlideFade in>

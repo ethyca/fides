@@ -3,13 +3,18 @@ saas_config:
   name: Universal Analytics
   type: universal_analytics
   description: A schema representing the Universal Analytics connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: client_id
+      label: Client ID
+      sensitive: True
     - name: client_secret
+      sensitive: True
     - name: redirect_uri
+      label: Redirect URI
     - name: web_property_id
+      label: Web Property ID
       description: Web property ID of the form UA-XXXXX-YY.
 
   client_config:

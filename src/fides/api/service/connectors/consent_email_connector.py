@@ -47,7 +47,7 @@ from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
     filter_privacy_preferences_for_propagation,
 )
-from fides.core.config import get_config
+from fides.config import get_config
 
 CONFIG = get_config()
 

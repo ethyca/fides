@@ -1,5 +1,0 @@
-# This file exists for caching optional dependencies within the Docker build
-# These requirements are dangerous on certain platforms
-
-# MSSQL
-pyodbc==4.0.34

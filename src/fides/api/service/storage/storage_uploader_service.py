@@ -5,6 +5,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import StorageUploadError
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.storage import StorageConfig
 from fides.api.schemas.storage.storage import (
     FileNaming,
@@ -15,7 +16,9 @@ from fides.api.schemas.storage.storage import (
 from fides.api.tasks.storage import upload_to_local, upload_to_s3
 
 
-def upload(db: Session, *, request_id: str, data: Dict, storage_key: FidesKey) -> str:
+def upload(
+    db: Session, *, privacy_request: PrivacyRequest, data: Dict, storage_key: FidesKey
+) -> str:
     """
     Retrieves storage configs and calls appropriate upload method
     :param db: SQLAlchemy Session
@@ -32,20 +35,23 @@ def upload(db: Session, *, request_id: str, data: Dict, storage_key: FidesKey) -
         logger.warning("Storage type not found: {}", storage_key)
         raise StorageUploadError(f"Storage type not found: {storage_key}")
     uploader: Any = _get_uploader_from_config_type(config.type)  # type: ignore
-    return uploader(db, config, data, request_id)
+    return uploader(db, config, data, privacy_request)
 
 
 def get_extension(resp_format: ResponseFormat) -> str:
     """
     Determine file extension for various response formats.
 
-    CSV's are zipped together before uploading to s3.
+    CSV's and HTML reports are zipped together before uploading to s3.
     """
     if resp_format == ResponseFormat.csv:
         return "zip"
 
     if resp_format == ResponseFormat.json:
         return "json"
+
+    if resp_format == ResponseFormat.html:
+        return "zip"
 
     raise NotImplementedError(f"No extension defined for {resp_format}")
 
@@ -69,21 +75,23 @@ def _get_uploader_from_config_type(storage_type: StorageType) -> Any:
     }[storage_type.value]
 
 
-def _s3_uploader(_: Session, config: StorageConfig, data: Dict, request_id: str) -> str:
+def _s3_uploader(
+    _: Session, config: StorageConfig, data: Dict, privacy_request: PrivacyRequest
+) -> str:
     """Constructs necessary info needed for s3 before calling upload"""
-    file_key: str = _construct_file_key(request_id, config)
+    file_key: str = _construct_file_key(privacy_request.id, config)
 
     bucket_name = config.details[StorageDetails.BUCKET.value]
     auth_method = config.details[StorageDetails.AUTH_METHOD.value]
 
     return upload_to_s3(
-        config.secrets, data, bucket_name, file_key, config.format.value, request_id, auth_method  # type: ignore
+        config.secrets, data, bucket_name, file_key, config.format.value, privacy_request, auth_method  # type: ignore
     )
 
 
 def _local_uploader(
-    _: Session, config: StorageConfig, data: Dict, request_id: str
+    _: Session, config: StorageConfig, data: Dict, privacy_request: PrivacyRequest
 ) -> str:
     """Uploads data to local storage, used for quick-start/demo purposes"""
-    file_key: str = _construct_file_key(request_id, config)
-    return upload_to_local(data, file_key, request_id)
+    file_key: str = _construct_file_key(privacy_request.id, config)
+    return upload_to_local(data, file_key, privacy_request, config.format.value)  # type: ignore

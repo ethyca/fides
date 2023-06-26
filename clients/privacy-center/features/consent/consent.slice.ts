@@ -149,7 +149,10 @@ export const consentSlice = createSlice({
       });
     },
 
-    setFidesUserDeviceId(draftState, { payload }: PayloadAction<string>) {
+    setFidesUserDeviceId(
+      draftState,
+      { payload }: PayloadAction<string | undefined>
+    ) {
       draftState.fidesUserDeviceId = payload;
     },
   },

@@ -3,7 +3,7 @@ saas_config:
   name: Segment
   type: segment
   description: A sample schema representing the Segment connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: domain
@@ -12,8 +12,11 @@ saas_config:
       default_value: profiles.segment.com
     - name: workspace
     - name: access_token
+      sensitive: True
     - name: namespace_id
+      label: Namespace ID
     - name: access_secret
+      sensitive: True
 
   client_config:
     protocol: https

@@ -215,4 +215,4 @@ markers = [
 asyncio_mode = "auto"
 
 [tool.coverage.run]
-omit = ["src/fides/api/ctl/migrations/*"]
+omit = ["src/fides/api/alembic/migrations/*"]

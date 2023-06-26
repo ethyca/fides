@@ -3,7 +3,7 @@ saas_config:
   name: Yotpo Loyalty & Referrals
   type: yotpo_loyalty
   description: A sample schema representing the Yotpo Loyalty & Referrals connector for Fides
-  version: 0.1.0
+  version: 0.1.1
 
   connector_params:
     - name: domain
@@ -14,10 +14,12 @@ saas_config:
       label: GUID
     - name: api_key
       label: API Key
+      sensitive: True
     - name: store_id
       label: Store ID
       description: Formerly known as app key
     - name: secret_key
+      sensitive: True
 
   client_config:
     protocol: https
