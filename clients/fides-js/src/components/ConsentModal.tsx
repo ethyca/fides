@@ -3,7 +3,7 @@ import { Attributes } from "../lib/a11y-dialog";
 import { PrivacyNotice, ExperienceConfig } from "../lib/consent-types";
 import NoticeToggles from "./NoticeToggles";
 import CloseButton from "./CloseButton";
-import GpcBanner from "./GpcBanner";
+import GpcInfo from "./GpcInfo";
 
 type NoticeKeys = Array<PrivacyNotice["notice_key"]>;
 
@@ -52,7 +52,7 @@ const ConsentModal = ({
         >
           {experience.description}
         </p>
-        <GpcBanner />
+        <GpcInfo />
         <div className="fides-modal-notices">
           <NoticeToggles
             notices={notices}

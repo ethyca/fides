@@ -2,7 +2,7 @@ import { h } from "preact";
 import WarningIcon from "./WarningIcon";
 import { getConsentContext } from "../lib/consent-context";
 
-const GpcBanner = () => {
+const GpcInfo = () => {
   const context = getConsentContext();
 
   if (!context.globalPrivacyControl) {
@@ -26,4 +26,4 @@ const GpcBanner = () => {
   );
 };
 
-export default GpcBanner;
+export default GpcInfo;
