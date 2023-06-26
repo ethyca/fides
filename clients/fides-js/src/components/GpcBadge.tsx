@@ -3,20 +3,10 @@ import { GpcStatus, PrivacyNotice } from "../lib/consent-types";
 import { getConsentContext } from "../lib/consent-context";
 import { getGpcStatusFromNotice } from "../lib/consent-utils";
 
-const GpcBadge = ({
-  value,
-  notice,
-}: {
-  value: boolean;
-  notice: PrivacyNotice;
-}) => {
-  const consentContext = getConsentContext();
-  const status = getGpcStatusFromNotice({ value, notice, consentContext });
-
+export const GpcBadge = ({ status }: { status: GpcStatus }) => {
   if (status === GpcStatus.NONE) {
     return null;
   }
-
   return (
     <span className="fides-gpc-label">
       Global Privacy Control{" "}
@@ -27,4 +17,15 @@ const GpcBadge = ({
   );
 };
 
-export default GpcBadge;
+export const GpcBadgeForNotice = ({
+  value,
+  notice,
+}: {
+  value: boolean;
+  notice: PrivacyNotice;
+}) => {
+  const consentContext = getConsentContext();
+  const status = getGpcStatusFromNotice({ value, notice, consentContext });
+
+  return <GpcBadge status={status} />;
+};

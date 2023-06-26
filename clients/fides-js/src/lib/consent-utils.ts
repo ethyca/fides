@@ -1,4 +1,4 @@
-import { ConsentContext } from "./consent-context";
+import { ConsentContext, getConsentContext } from "./consent-context";
 import {
   ComponentType,
   ConsentMechanism,
@@ -214,4 +214,19 @@ export const getGpcStatusFromNotice = ({
   }
 
   return GpcStatus.OVERRIDDEN;
+};
+
+export const getGpcStatusFromNotices = ({
+  notices,
+  enabledNoticeKeys,
+}: {
+  notices: PrivacyNotice[];
+  enabledNoticeKeys: Array<PrivacyNotice["notice_key"]>;
+}) => {
+  const consentContext = getConsentContext();
+  const statuses = notices.map((notice) => {
+    const enabled = enabledNoticeKeys.indexOf(notice.notice_key) !== -1;
+    return getGpcStatusFromNotice({ value: enabled, notice, consentContext });
+  });
+  console.log({ statuses });
 };
