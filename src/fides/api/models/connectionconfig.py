@@ -105,7 +105,7 @@ class ConnectionConfig(Base):
     Stores credentials to connect fidesops to an engineer's application databases.
     """
 
-    name = Column(String, index=True, unique=True, nullable=False)
+    name = Column(String, nullable=True)
     key = Column(String, index=True, unique=True, nullable=False)
     description = Column(String, index=True, nullable=True)
     connection_type = Column(Enum(ConnectionType), nullable=False)
