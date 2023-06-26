@@ -371,12 +371,14 @@ class RedshiftConnector(SQLConnector):
             self.create_ssh_tunnel(host=config.host, port=config.port)
             self.ssh_server.start()
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
+            connect_args = {"sslmode": "prefer"}
         else:
             uri = config.url or self.build_uri()
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
+            connect_args=connect_args or None,
         )
 
     def set_schema(self, connection: Connection) -> None:
