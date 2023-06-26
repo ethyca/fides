@@ -86,7 +86,7 @@ def create_external_server_systems(test_config: FidesConfig) -> Generator:
     yield
     delete_server_systems(test_config, systems)
 
-# Update fixture to match reality
+
 @pytest.fixture()
 def redshift_describe_clusters() -> Generator:
     describe_clusters = {
