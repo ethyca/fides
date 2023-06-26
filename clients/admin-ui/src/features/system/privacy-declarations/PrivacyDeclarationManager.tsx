@@ -78,9 +78,15 @@ const PrivacyDeclarationManager = ({
     updatedDeclarations: PrivacyDeclarationResponse[],
     isDelete?: boolean
   ) => {
+    // The API can return a null name, but cannot receive a null name,
+    // so do an additional transform here (fides#3862)
+    const transformedDeclarations = updatedDeclarations.map((d) => ({
+      ...d,
+      name: d.name ?? "",
+    }));
     const systemBodyWithDeclaration = {
       ...system,
-      privacy_declarations: updatedDeclarations,
+      privacy_declarations: transformedDeclarations,
     };
     const handleResult = (
       result:
