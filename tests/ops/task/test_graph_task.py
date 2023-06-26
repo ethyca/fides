@@ -38,6 +38,7 @@ from fides.api.task.graph_task import (
     start_function,
     update_erasure_mapping_from_cache,
 )
+from fides.api.task.task_resources import Connections
 from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
 )
@@ -595,9 +596,9 @@ class TestBuildAffectedFieldLogs:
 
 class TestUpdateErasureMappingFromCache:
     @pytest.fixture(scope="function")
-    def task_resource(self, privacy_request, policy, db):
+    def task_resource(self, privacy_request, policy, db, connection_config):
         tr = TaskResources(privacy_request, policy, [], db)
-        tr.get_connector = lambda x: True
+        tr.get_connector = lambda x: Connections.build_connector(connection_config)
         return tr
 
     @pytest.fixture(scope="function")
