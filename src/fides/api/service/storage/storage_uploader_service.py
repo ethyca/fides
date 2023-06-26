@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Set
 
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -23,6 +23,7 @@ def upload(
     data: Dict,
     storage_key: FidesKey,
     data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
+    data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """
     Retrieves storage configs and calls appropriate upload method
@@ -40,7 +41,9 @@ def upload(
         logger.warning("Storage type not found: {}", storage_key)
         raise StorageUploadError(f"Storage type not found: {storage_key}")
     uploader: Any = _get_uploader_from_config_type(config.type)  # type: ignore
-    return uploader(db, config, data, privacy_request, data_category_field_mapping)
+    return uploader(
+        db, config, data, privacy_request, data_category_field_mapping, data_use_map
+    )
 
 
 def get_extension(resp_format: ResponseFormat) -> str:
@@ -85,7 +88,8 @@ def _s3_uploader(
     config: StorageConfig,
     data: Dict,
     privacy_request: PrivacyRequest,
-    data_category_field_mapping: Optional[DataCategoryFieldMapping],
+    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
+    data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """Constructs necessary info needed for s3 before calling upload"""
     file_key: str = _construct_file_key(privacy_request.id, config)
@@ -103,7 +107,8 @@ def _local_uploader(
     config: StorageConfig,
     data: Dict,
     privacy_request: PrivacyRequest,
-    data_category_field_mapping: Optional[DataCategoryFieldMapping],
+    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
+    data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """Uploads data to local storage, used for quick-start/demo purposes"""
     file_key: str = _construct_file_key(privacy_request.id, config)

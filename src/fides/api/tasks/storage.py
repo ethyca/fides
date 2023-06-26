@@ -5,7 +5,7 @@ import os
 import secrets
 import zipfile
 from io import BytesIO
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Set, Union
 
 import pandas as pd
 from boto3 import Session
@@ -135,6 +135,7 @@ def upload_to_s3(  # pylint: disable=R0913
     privacy_request: PrivacyRequest,
     auth_method: S3AuthMethod,
     data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
+    data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """Uploads arbitrary data to s3 returned from an access request"""
     logger.info("Starting S3 Upload of {}", file_key)
@@ -174,6 +175,7 @@ def upload_to_local(
     privacy_request: PrivacyRequest,
     resp_format: str = ResponseFormat.json.value,
     data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
+    data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """Uploads access request data to a local folder - for testing/demo purposes only"""
     if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
