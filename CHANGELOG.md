@@ -19,9 +19,13 @@ The types of changes are:
 
 ### Added
 - Empty state for when there are no relevant privacy notices in the privacy center [#3640](https://github.com/ethyca/fides/pull/3640)
-### Fixed
 
+### Fixed
 - Render linebreaks in the Fides.js overlay descriptions, etc. [#3665](https://github.com/ethyca/fides/pull/3665)
+
+### Changed
+- Moved GPC preferences slightly earlier in Fides.js lifecycle [#3561](https://github.com/ethyca/fides/pull/3561)
+
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
 
