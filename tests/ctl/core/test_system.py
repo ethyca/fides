@@ -94,18 +94,18 @@ def redshift_describe_clusters() -> Generator:
             {
                 "ClusterIdentifier": "redshift-cluster-1",
                 "Endpoint": {
-                    "Address": "redshift-cluster-1.c2angfh5kpo4.us-east-1.redshift.amazonaws.com",
+                    "Address": "redshift-cluster-1.cue8hjdl1kb1.us-east-1.redshift.amazonaws.com",
                     "Port": 5439,
                 },
-                "ClusterNamespaceArn": "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
+                "ClusterNamespaceArn": "arn:aws:redshift:us-east-1:469973866127:namespace:5eb1f195-7815-4c62-9140-e062dd98da83",
             },
             {
                 "ClusterIdentifier": "redshift-cluster-2",
                 "Endpoint": {
-                    "Address": "redshift-cluster-2.c2angfh5kpo4.us-east-1.redshift.amazonaws.com",
+                    "Address": "redshift-cluster-2.cue8hjdl1kb1.us-east-1.redshift.amazonaws.com",
                     "Port": 5439,
                 },
-                "ClusterNamespaceArn": "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149177",
+                "ClusterNamespaceArn": "arn:aws:redshift:us-east-1:469973866127:namespace:06ba7fe3-8cb3-4e1c-b2c6-cc2f2415a979",
             },
         ]
     }
@@ -121,9 +121,9 @@ def redshift_systems() -> Generator:
             name="redshift-cluster-1",
             description="Fides Generated Description for Redshift Cluster: redshift-cluster-1",
             fidesctl_meta=SystemMetadata(
-                endpoint_address="redshift-cluster-1.c2angfh5kpo4.us-east-1.redshift.amazonaws.com",
+                endpoint_address="redshift-cluster-1.cue8hjdl1kb1.us-east-1.redshift.amazonaws.com",
                 endpoint_port="5439",
-                resource_id="arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
+                resource_id="arn:aws:redshift:us-east-1:469973866127:namespace:06ba7fe3-8cb3-4e1c-b2c6-cc2f2415a979",
             ),
             system_type="redshift_cluster",
             privacy_declarations=[],
@@ -134,9 +134,9 @@ def redshift_systems() -> Generator:
             name="redshift-cluster-2",
             description="Fides Generated Description for Redshift Cluster: redshift-cluster-2",
             fidesctl_meta=SystemMetadata(
-                endpoint_address="redshift-cluster-2.c2angfh5kpo4.us-east-1.redshift.amazonaws.com",
+                endpoint_address="redshift-cluster-1.cue8hjdl1kb1.us-east-1.redshift.amazonaws.com",
                 endpoint_port="5439",
-                resource_id="arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149177",
+                resource_id="arn:aws:redshift:us-east-1:469973866127:namespace:06ba7fe3-8cb3-4e1c-b2c6-cc2f2415a979",
             ),
             system_type="redshift_cluster",
             privacy_declarations=[],
