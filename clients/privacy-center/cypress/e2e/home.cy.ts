@@ -1,8 +1,11 @@
+import { Config } from "~/types/config";
+import { API_URL } from "../support/constants";
+
 describe("Home", () => {
   it("renders the configured page info", () => {
     cy.visit("/");
     cy.getByTestId("home");
-    cy.loadConfigFixture("config/config_all.json").then((config) => {
+    cy.loadConfigFixture("config/config_all.json").then((config: Config) => {
       // DEFER: Test *all* the configurable display options
       // (see https://github.com/ethyca/fides/issues/3216)
 
@@ -30,6 +33,27 @@ describe("Home", () => {
     const styles = "body { background-color: tomato !important; }";
     cy.dispatch({ type: "styles/loadStyles", payload: styles });
     cy.get("body").should("have.css", "background-color", "rgb(255, 99, 71)");
+  });
+
+  it("should show an empty state when notice-driven but there are no notices", () => {
+    const geolocationApiUrl = "https://www.example.com/location";
+    const settings = {
+      IS_OVERLAY_ENABLED: true,
+      IS_GEOLOCATION_ENABLED: true,
+      GEOLOCATION_API_URL: geolocationApiUrl,
+    };
+    cy.intercept("GET", geolocationApiUrl, {
+      fixture: "consent/geolocation.json",
+    }).as("getGeolocation");
+    // Will return undefined when there are no relevant privacy notices
+    cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
+      body: undefined,
+    }).as("getExperience");
+    cy.visit("/");
+    cy.overrideSettings(settings);
+
+    cy.getByTestId("card").contains("Manage your consent").click();
+    cy.getByTestId("notice-empty-state");
   });
 
   describe("when handling errors", () => {
