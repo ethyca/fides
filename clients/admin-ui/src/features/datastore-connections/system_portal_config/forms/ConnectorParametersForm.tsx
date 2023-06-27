@@ -13,7 +13,6 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Textarea,
   Tooltip,
   VStack,
 } from "@fidesui/react";

@@ -90,15 +90,16 @@ export const patchConnectionConfig = async (
       ? formatKey(values.instance_key as string)
       : connectionConfig?.key;
 
-  const params1: Omit<ConnectionConfigurationResponse, "created_at"| "name"> = {
-    access: AccessLevel.WRITE,
-    connection_type: (connectionOption.type === SystemType.SAAS
-      ? connectionOption.type
-      : connectionOption.identifier) as ConnectionType,
-    description: values.description,
-    disabled: false,
-    key,
-  };
+  const params1: Omit<ConnectionConfigurationResponse, "created_at" | "name"> =
+    {
+      access: AccessLevel.WRITE,
+      connection_type: (connectionOption.type === SystemType.SAAS
+        ? connectionOption.type
+        : connectionOption.identifier) as ConnectionType,
+      description: values.description,
+      disabled: false,
+      key,
+    };
   const payload = await patchFunc({
     systemFidesKey,
     connectionConfigs: [params1],
