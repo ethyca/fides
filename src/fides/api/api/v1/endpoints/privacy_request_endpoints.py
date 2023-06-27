@@ -34,7 +34,6 @@ from fides.api.api.v1.endpoints.dataset_endpoints import _get_connection_config
 from fides.api.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
 )
-from fides.api.api.v1.endpoints.utils import validate_start_and_end_filters
 from fides.api.api.v1.urn_registry import (
     PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     PRIVACY_REQUEST_APPROVE,
@@ -129,6 +128,7 @@ from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
+from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
 from fides.api.util.logger import Pii
 from fides.common.api.scope_registry import (

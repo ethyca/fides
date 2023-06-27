@@ -26,7 +26,6 @@ from fides.api.api.deps import get_config_proxy, get_db
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
-from fides.api.api.v1.endpoints.utils import validate_start_and_end_filters
 from fides.api.api.v1.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,
@@ -66,6 +65,7 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
+from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.logger import Pii
 from fides.common.api.scope_registry import CONSENT_READ
 from fides.config import CONFIG
