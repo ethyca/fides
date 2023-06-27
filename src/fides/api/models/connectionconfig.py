@@ -14,7 +14,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
-from fides.api.db.base_class import Base, FidesBase, JSONTypeOverride, get_key_from_data
+from fides.api.db.base_class import Base, FidesBase, JSONTypeOverride
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
@@ -171,19 +171,11 @@ class ConnectionConfig(Base):
         # Build properly formatted key/name for ConnectionConfig.
         # Borrowed from OrmWrappedFidesBase.create
         if hasattr(cls, "key"):
-            data["key"] = get_key_from_data(data, cls.__name__)
             if db.query(cls).filter_by(key=data["key"]).first():
                 raise KeyOrNameAlreadyExists(
                     f"Key {data['key']} already exists in {cls.__name__}. Keys will be snake-cased names if not provided. "
                     f"If you are seeing this error without providing a key, please provide a key or a different name."
                     ""
-                )
-
-        if hasattr(cls, "name"):
-            data["name"] = data.get("name")
-            if db.query(cls).filter_by(name=data["name"]).first():
-                raise KeyOrNameAlreadyExists(
-                    f"Name {data['name']} already exists in {cls.__name__}."
                 )
 
         # Create
