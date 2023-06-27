@@ -8,11 +8,6 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
-    STORAGE_CREATE_OR_UPDATE,
-    STORAGE_DELETE,
-    STORAGE_READ,
-)
 from fides.api.api.v1.urn_registry import (
     STORAGE_ACTIVE_DEFAULT,
     STORAGE_BY_KEY,
@@ -40,8 +35,13 @@ from fides.api.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.core.config import get_config
-from fides.core.config.config_proxy import ConfigProxy
+from fides.common.api.scope_registry import (
+    STORAGE_CREATE_OR_UPDATE,
+    STORAGE_DELETE,
+    STORAGE_READ,
+)
+from fides.config import get_config
+from fides.config.config_proxy import ConfigProxy
 
 PAGE_SIZE = Params().size
 CONFIG = get_config()

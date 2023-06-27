@@ -13,33 +13,21 @@ import { useEffect, useMemo, useState } from "react";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useUpdateSystemMutation } from "~/features/system/system.slice";
-import { PrivacyDeclaration, System } from "~/types/api";
+import {
+  PrivacyDeclarationResponse,
+  System,
+  SystemResponse,
+} from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
-import {
-  DataProps,
-  PrivacyDeclarationForm,
-  transformPrivacyDeclarationsToHaveId,
-} from "./PrivacyDeclarationForm";
-import { PrivacyDeclarationWithId } from "./types";
-
-const transformDeclarationForSubmission = (
-  formValues: PrivacyDeclarationWithId
-): PrivacyDeclaration => {
-  // Remove the id which is only a frontend artifact
-  const { id, ...values } = formValues;
-  return {
-    ...values,
-    // Fill in an empty string for name because of https://github.com/ethyca/fideslang/issues/98
-    name: values.name ?? "",
-  };
-};
+import { DataProps, PrivacyDeclarationForm } from "./PrivacyDeclarationForm";
 
 interface Props {
-  system: System;
+  system: SystemResponse;
   addButtonProps?: ButtonProps;
   includeCustomFields?: boolean;
+  includeCookies?: boolean;
   onSave?: (system: System) => void;
 }
 
@@ -47,6 +35,7 @@ const PrivacyDeclarationManager = ({
   system,
   addButtonProps,
   includeCustomFields,
+  includeCookies,
   onSave,
   ...dataProps
 }: Props & DataProps) => {
@@ -55,24 +44,21 @@ const PrivacyDeclarationManager = ({
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const [showNewForm, setShowNewForm] = useState(false);
   const [newDeclaration, setNewDeclaration] = useState<
-    PrivacyDeclarationWithId | undefined
+    PrivacyDeclarationResponse | undefined
   >(undefined);
-
-  const allDeclarations = useMemo(
-    () => transformPrivacyDeclarationsToHaveId(system.privacy_declarations),
-    [system.privacy_declarations]
-  );
 
   // Accordion declarations include all declarations but the newly created one (if it exists)
   const accordionDeclarations = useMemo(() => {
     if (!newDeclaration) {
-      return allDeclarations;
+      return system.privacy_declarations;
     }
 
-    return allDeclarations.filter((pd) => pd.id !== newDeclaration.id);
-  }, [newDeclaration, allDeclarations]);
+    return system.privacy_declarations.filter(
+      (pd) => pd.id !== newDeclaration.id
+    );
+  }, [newDeclaration, system]);
 
-  const checkAlreadyExists = (values: PrivacyDeclaration) => {
+  const checkAlreadyExists = (values: PrivacyDeclarationResponse) => {
     if (
       accordionDeclarations.filter(
         (d) => d.data_use === values.data_use && d.name === values.name
@@ -89,19 +75,22 @@ const PrivacyDeclarationManager = ({
   };
 
   const handleSave = async (
-    updatedDeclarations: PrivacyDeclarationWithId[],
+    updatedDeclarations: PrivacyDeclarationResponse[],
     isDelete?: boolean
   ) => {
-    const transformedDeclarations = updatedDeclarations.map((d) =>
-      transformDeclarationForSubmission(d)
-    );
+    // The API can return a null name, but cannot receive a null name,
+    // so do an additional transform here (fides#3862)
+    const transformedDeclarations = updatedDeclarations.map((d) => ({
+      ...d,
+      name: d.name ?? "",
+    }));
     const systemBodyWithDeclaration = {
       ...system,
       privacy_declarations: transformedDeclarations,
     };
     const handleResult = (
       result:
-        | { data: System }
+        | { data: SystemResponse }
         | { error: FetchBaseQueryError | SerializedError }
     ) => {
       if (isErrorResult(result)) {
@@ -120,7 +109,7 @@ const PrivacyDeclarationManager = ({
       if (onSave) {
         onSave(result.data);
       }
-      return result.data.privacy_declarations as PrivacyDeclarationWithId[];
+      return result.data.privacy_declarations;
     };
 
     const updateSystemResult = await updateSystemMutationTrigger(
@@ -131,8 +120,8 @@ const PrivacyDeclarationManager = ({
   };
 
   const handleEditDeclaration = async (
-    oldDeclaration: PrivacyDeclarationWithId,
-    updatedDeclaration: PrivacyDeclarationWithId
+    oldDeclaration: PrivacyDeclarationResponse,
+    updatedDeclaration: PrivacyDeclarationResponse
   ) => {
     // Do not allow editing a privacy declaration to have the same data use as one that already exists
     if (
@@ -143,13 +132,13 @@ const PrivacyDeclarationManager = ({
     }
     // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
-    const updatedDeclarations = allDeclarations.map((dec) =>
+    const updatedDeclarations = system.privacy_declarations.map((dec) =>
       dec.id === oldDeclaration.id ? updatedDeclaration : dec
     );
     return handleSave(updatedDeclarations);
   };
 
-  const saveNewDeclaration = async (values: PrivacyDeclarationWithId) => {
+  const saveNewDeclaration = async (values: PrivacyDeclarationResponse) => {
     if (checkAlreadyExists(values)) {
       return undefined;
     }
@@ -174,16 +163,16 @@ const PrivacyDeclarationManager = ({
   };
 
   const handleDelete = async (
-    declarationToDelete: PrivacyDeclarationWithId
+    declarationToDelete: PrivacyDeclarationResponse
   ) => {
-    const updatedDeclarations = transformPrivacyDeclarationsToHaveId(
-      system.privacy_declarations
-    ).filter((dec) => dec.id !== declarationToDelete.id);
+    const updatedDeclarations = system.privacy_declarations.filter(
+      (dec) => dec.id !== declarationToDelete.id
+    );
     return handleSave(updatedDeclarations, true);
   };
 
   const handleDeleteNew = async (
-    declarationToDelete: PrivacyDeclarationWithId
+    declarationToDelete: PrivacyDeclarationResponse
   ) => {
     const success = await handleDelete(declarationToDelete);
     if (success) {
@@ -209,6 +198,7 @@ const PrivacyDeclarationManager = ({
         onEdit={handleEditDeclaration}
         onDelete={handleDelete}
         includeCustomFields={includeCustomFields}
+        includeCookies={includeCookies}
         {...dataProps}
       />
       {showNewForm ? (
@@ -218,6 +208,7 @@ const PrivacyDeclarationManager = ({
             onSubmit={saveNewDeclaration}
             onDelete={handleDeleteNew}
             includeCustomFields={includeCustomFields}
+            includeCookies={includeCookies}
             {...dataProps}
           />
         </Box>

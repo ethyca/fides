@@ -23,18 +23,20 @@ import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import ConfirmationModal from "~/features/common/ConfirmationModal";
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import {
+  CustomCreatableSelect,
+  CustomSelect,
+  CustomTextInput,
+} from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import {
   DataCategory,
   Dataset,
   DataSubject,
   DataUse,
-  PrivacyDeclaration,
+  PrivacyDeclarationResponse,
   ResourceTypes,
 } from "~/types/api";
-
-import { PrivacyDeclarationWithId } from "./types";
 
 export const ValidationSchema = Yup.object().shape({
   data_categories: Yup.array(Yup.string())
@@ -46,8 +48,9 @@ export const ValidationSchema = Yup.object().shape({
     .label("Data subjects"),
 });
 
-export type FormValues = PrivacyDeclarationWithId & {
+export type FormValues = Omit<PrivacyDeclarationResponse, "cookies"> & {
   customFieldValues: CustomFieldValues;
+  cookies: string[];
 };
 
 const defaultInitialValues: FormValues = {
@@ -57,29 +60,20 @@ const defaultInitialValues: FormValues = {
   dataset_references: [],
   customFieldValues: {},
   id: "",
+  cookies: [],
 };
 
-const transformPrivacyDeclarationToHaveId = (
-  privacyDeclaration: PrivacyDeclaration
-) => {
-  // TODO: there's a typing problem here: the backend types still show PrivacyDeclaration
-  // instead of PrivacyDeclarationResponse (which has an id)
-  // @ts-ignore
-  const { id, name, data_use: dataUse } = privacyDeclaration;
-  let declarationId: string | undefined = id;
-  if (!declarationId) {
-    declarationId = name ? `${dataUse} - ${name}` : dataUse;
-  }
+const transformFormValueToDeclaration = (values: FormValues) => {
+  const { customFieldValues, ...declaration } = values;
+
   return {
-    ...privacyDeclaration,
-    id: declarationId,
+    ...declaration,
+    // Fill in an empty string for name because of https://github.com/ethyca/fideslang/issues/98
+    name: values.name ?? "",
+    // Transform cookies from string back to an object with default values
+    cookies: declaration.cookies.map((name) => ({ name, path: "/" })),
   };
 };
-
-export const transformPrivacyDeclarationsToHaveId = (
-  privacyDeclarations: PrivacyDeclaration[]
-): PrivacyDeclarationWithId[] =>
-  privacyDeclarations.map(transformPrivacyDeclarationToHaveId);
 
 export interface DataProps {
   allDataCategories: DataCategory[];
@@ -95,10 +89,12 @@ export const PrivacyDeclarationFormComponents = ({
   allDatasets,
   onDelete,
   privacyDeclarationId,
+  includeCookies,
   includeCustomFields,
 }: DataProps &
   Pick<Props, "onDelete"> & {
     privacyDeclarationId?: string;
+    includeCookies?: boolean;
     includeCustomFields?: boolean;
   }) => {
   const { dirty, isSubmitting, isValid, initialValues } =
@@ -113,7 +109,7 @@ export const PrivacyDeclarationFormComponents = ({
     : [];
 
   const handleDelete = async () => {
-    await onDelete(transformPrivacyDeclarationToHaveId(initialValues));
+    await onDelete(transformFormValueToDeclaration(initialValues));
     deleteModal.onClose();
   };
 
@@ -164,6 +160,16 @@ export const PrivacyDeclarationFormComponents = ({
         isMulti
         variant="stacked"
       />
+      {includeCookies ? (
+        <CustomCreatableSelect
+          name="cookies"
+          label="Cookies"
+          options={[]}
+          isMulti
+          variant="stacked"
+          isClearable={false}
+        />
+      ) : null}
       {allDatasets ? (
         <CustomSelect
           name="dataset_references"
@@ -212,13 +218,14 @@ export const PrivacyDeclarationFormComponents = ({
 };
 
 export const transformPrivacyDeclarationToFormValues = (
-  privacyDeclaration?: PrivacyDeclarationWithId,
+  privacyDeclaration?: PrivacyDeclarationResponse,
   customFieldValues?: CustomFieldValues
 ): FormValues =>
   privacyDeclaration
     ? {
         ...privacyDeclaration,
         customFieldValues: customFieldValues || {},
+        cookies: privacyDeclaration.cookies?.map((cookie) => cookie.name) ?? [],
       }
     : defaultInitialValues;
 
@@ -264,8 +271,10 @@ export const usePrivacyDeclarationForm = ({
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    const { customFieldValues: formCustomFieldValues, ...declaration } = values;
-    const success = await onSubmit(declaration, formikHelpers);
+    const { customFieldValues: formCustomFieldValues } = values;
+    const declarationToSubmit = transformFormValueToDeclaration(values);
+
+    const success = await onSubmit(declarationToSubmit, formikHelpers);
     if (success) {
       // find the matching resource based on data use and name
       const customFieldResource = success.filter(
@@ -321,15 +330,16 @@ export const usePrivacyDeclarationForm = ({
 
 interface Props {
   onSubmit: (
-    values: PrivacyDeclarationWithId,
+    values: PrivacyDeclarationResponse,
     formikHelpers: FormikHelpers<FormValues>
-  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
+  ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   onDelete: (
-    declaration: PrivacyDeclarationWithId
-  ) => Promise<PrivacyDeclarationWithId[] | undefined>;
-  initialValues?: PrivacyDeclarationWithId;
+    declaration: PrivacyDeclarationResponse
+  ) => Promise<PrivacyDeclarationResponse[] | undefined>;
+  initialValues?: PrivacyDeclarationResponse;
   privacyDeclarationId?: string;
   includeCustomFields?: boolean;
+  includeCookies?: boolean;
 }
 
 export const PrivacyDeclarationForm = ({

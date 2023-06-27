@@ -23,10 +23,6 @@ from fides.api.api.v1.endpoints.utils import (
     fides_limiter,
     validate_start_and_end_filters,
 )
-from fides.api.api.v1.scope_registry import (
-    CURRENT_PRIVACY_PREFERENCE_READ,
-    PRIVACY_PREFERENCE_HISTORY_READ,
-)
 from fides.api.api.v1.urn_registry import (
     CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
     CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
@@ -38,7 +34,11 @@ from fides.api.api.v1.urn_registry import (
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.privacy_experience import PrivacyExperience
-from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
+from fides.api.models.privacy_notice import (
+    EnforcementLevel,
+    PrivacyNotice,
+    PrivacyNoticeHistory,
+)
 from fides.api.models.privacy_preference import (
     CurrentPrivacyPreference,
     PrivacyPreferenceHistory,
@@ -67,8 +67,12 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
-from fides.core.config import CONFIG
-from fides.core.config.config_proxy import ConfigProxy
+from fides.common.api.scope_registry import (
+    CURRENT_PRIVACY_PREFERENCE_READ,
+    PRIVACY_PREFERENCE_HISTORY_READ,
+)
+from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Privacy Preference"], prefix=V1_URL_PREFIX)
 
@@ -341,6 +345,7 @@ def _save_privacy_preferences_for_identities(
         fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
     )
 
+    needs_server_side_propagation: bool = False
     for privacy_preference in request_data.preferences:
         historical_preference: PrivacyPreferenceHistory = PrivacyPreferenceHistory.create(
             db=db,
@@ -377,9 +382,15 @@ def _save_privacy_preferences_for_identities(
         upserted_current_preference: CurrentPrivacyPreference = (
             historical_preference.current_privacy_preference
         )
-
         created_historical_preferences.append(historical_preference)
         upserted_current_preferences.append(upserted_current_preference)
+
+        if (
+            historical_preference.privacy_notice_history.enforcement_level
+            == EnforcementLevel.system_wide
+        ):
+            # At least one privacy notice has expected system wide enforcement
+            needs_server_side_propagation = True
 
     identity = (
         request_data.browser_identity if request_data.browser_identity else Identity()
@@ -392,30 +403,32 @@ def _save_privacy_preferences_for_identities(
             verified_provided_identity.encrypted_value["value"],  # type:ignore[index]
         )
 
-    # Privacy Request needs to be created with respect to the *historical* privacy preferences
-    privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
-        db=db,
-        config_proxy=ConfigProxy(db),
-        data=[
-            PrivacyRequestCreate(
-                identity=identity,
-                policy_key=request_data.policy_key or DEFAULT_CONSENT_POLICY,
-            )
-        ],
-        authenticated=True,
-        privacy_preferences=created_historical_preferences,
-    )
-
-    if privacy_request_results.failed or not privacy_request_results.succeeded:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=privacy_request_results.failed[0].message,
+    if needs_server_side_propagation:
+        # Privacy Request needs to be created with respect to the *historical* privacy preferences
+        privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
+            db=db,
+            config_proxy=ConfigProxy(db),
+            data=[
+                PrivacyRequestCreate(
+                    identity=identity,
+                    policy_key=request_data.policy_key or DEFAULT_CONSENT_POLICY,
+                )
+            ],
+            authenticated=True,
+            privacy_preferences=created_historical_preferences,
         )
 
-    if consent_request:
-        # If we have a verified user identity, go ahead and update the associated ConsentRequest for record keeping
-        consent_request.privacy_request_id = privacy_request_results.succeeded[0].id
-        consent_request.save(db=db)
+        if privacy_request_results.failed or not privacy_request_results.succeeded:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=privacy_request_results.failed[0].message,
+            )
+
+        if consent_request:
+            # If we have a verified user identity, go ahead and update the associated ConsentRequest for record keeping
+            consent_request.privacy_request_id = privacy_request_results.succeeded[0].id
+            consent_request.save(db=db)
+
     return upserted_current_preferences
 
 

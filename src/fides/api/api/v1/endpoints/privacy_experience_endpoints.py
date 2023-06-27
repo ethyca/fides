@@ -32,7 +32,7 @@ from fides.api.util.consent_util import (
     UNESCAPE_SAFESTR_HEADER,
     get_fides_user_device_id_provided_identity,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
 

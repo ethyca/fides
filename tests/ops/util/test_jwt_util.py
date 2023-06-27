@@ -8,7 +8,7 @@ from fides.api.cryptography.schemas.jwt import (
 )
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.utils import extract_payload, is_token_expired
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 def test_jwe_create_and_extract() -> None:

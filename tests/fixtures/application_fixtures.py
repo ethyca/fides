@@ -88,8 +88,8 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
 from fides.api.util.data_category import DataCategory
-from fides.core.config import CONFIG
-from fides.core.config.helpers import load_file
+from fides.config import CONFIG
+from fides.config.helpers import load_file
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -1567,6 +1567,23 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
     )
 
     yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def privacy_experience_france_overlay(
+    db: Session, experience_config_overlay
+) -> Generator:
+    privacy_experience = PrivacyExperience.create(
+        db=db,
+        data={
+            "component": ComponentType.overlay,
+            "region": PrivacyNoticeRegion.eu_fr,
+            "experience_config_id": experience_config_overlay.id,
+        },
+    )
+
+    yield privacy_experience
+    privacy_experience.delete(db)
 
 
 @pytest.fixture(scope="function")

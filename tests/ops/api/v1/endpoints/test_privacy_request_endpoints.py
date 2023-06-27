@@ -18,19 +18,6 @@ from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
     validate_manual_input,
 )
-from fides.api.api.v1.scope_registry import (
-    DATASET_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_CALLBACK_RESUME,
-    PRIVACY_REQUEST_CREATE,
-    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_NOTIFICATIONS_READ,
-    PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_REVIEW,
-    PRIVACY_REQUEST_TRANSFER,
-    PRIVACY_REQUEST_UPLOAD_DATA,
-    PRIVACY_REQUEST_VIEW_DATA,
-    STORAGE_CREATE_OR_UPDATE,
-)
 from fides.api.api.v1.urn_registry import (
     CONNECTION_DATASETS,
     PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
@@ -93,7 +80,20 @@ from fides.api.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fides.core.config import CONFIG
+from fides.common.api.scope_registry import (
+    DATASET_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_CREATE,
+    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_NOTIFICATIONS_READ,
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
+    PRIVACY_REQUEST_TRANSFER,
+    PRIVACY_REQUEST_UPLOAD_DATA,
+    PRIVACY_REQUEST_VIEW_DATA,
+    STORAGE_CREATE_OR_UPDATE,
+)
+from fides.config import CONFIG
 
 page_size = Params().size
 

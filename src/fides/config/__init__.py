@@ -13,7 +13,7 @@ from pydantic import Field
 from pydantic.class_validators import _FUNCS
 from pydantic.env_settings import SettingsSourceCallable
 
-from fides.core.utils import echo_red
+from fides.common.utils import echo_red
 
 from .admin_ui_settings import AdminUISettings
 from .cli_settings import CLISettings

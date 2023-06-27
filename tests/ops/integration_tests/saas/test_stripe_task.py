@@ -11,7 +11,7 @@ from fides.api.service.connectors import get_connector
 from fides.api.task import graph_task
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import get_cached_data_for_erasures
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 

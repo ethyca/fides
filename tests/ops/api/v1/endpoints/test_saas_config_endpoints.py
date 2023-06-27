@@ -7,14 +7,6 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
-    CLIENT_READ,
-    CONNECTION_AUTHORIZE,
-    CONNECTOR_TEMPLATE_REGISTER,
-    SAAS_CONFIG_CREATE_OR_UPDATE,
-    SAAS_CONFIG_DELETE,
-    SAAS_CONFIG_READ,
-)
 from fides.api.api.v1.urn_registry import (
     AUTHORIZE,
     REGISTER_CONNECTOR_TEMPLATE,
@@ -27,7 +19,15 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.core.config import CONFIG
+from fides.common.api.scope_registry import (
+    CLIENT_READ,
+    CONNECTION_AUTHORIZE,
+    CONNECTOR_TEMPLATE_REGISTER,
+    SAAS_CONFIG_CREATE_OR_UPDATE,
+    SAAS_CONFIG_DELETE,
+    SAAS_CONFIG_READ,
+)
+from fides.config import CONFIG
 from tests.ops.api.v1.endpoints.test_dataset_endpoints import _reject_key
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
 

@@ -14,7 +14,7 @@ from fides.api.util.cache import (
     ENCODED_MONGO_OBJECT_ID_PREFIX,
     FidesopsRedis,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from tests.fixtures.application_fixtures import faker
 
 

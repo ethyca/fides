@@ -111,6 +111,9 @@ describe("System management page", () => {
 
       it("Can step through the flow", () => {
         cy.fixture("systems/system.json").then((system) => {
+          cy.intercept("GET", "/api/v1/system/*", {
+            body: { ...system, privacy_declarations: [] },
+          }).as("getDemoSystem");
           // Fill in the describe form based on fixture data
           cy.visit(ADD_SYSTEMS_ROUTE);
           cy.getByTestId("manual-btn").click();
@@ -145,6 +148,7 @@ describe("System management page", () => {
             "@getDataSubjects",
             "@getDataUses",
             "@getFilteredDatasets",
+            "@getDemoSystem",
           ]);
           cy.getByTestId("new-declaration-form");
           const declaration = system.privacy_declarations[0];
@@ -172,38 +176,49 @@ describe("System management page", () => {
               data_categories: declaration.data_categories,
               data_subjects: declaration.data_subjects,
               dataset_references: ["demo_users_dataset_2"],
+              cookies: [],
+              id: "",
             });
           });
         });
       });
 
       it("can render a warning when there is unsaved data", () => {
-        cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
-        cy.wait("@getSystems");
-        cy.wait("@getConnectionTypes");
-        cy.getByTestId("create-system-btn").click();
-        cy.getByTestId("input-name").type("test");
-        cy.getByTestId("input-fides_key").type("test");
-        cy.getByTestId("save-btn").click();
-        cy.wait("@postSystem");
+        cy.fixture("systems/system.json").then((system) => {
+          cy.intercept("GET", "/api/v1/system/*", {
+            body: { ...system, privacy_declarations: [] },
+          }).as("getDemoSystem");
+          cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
+          cy.wait("@getSystems");
+          cy.wait("@getConnectionTypes");
+          cy.getByTestId("create-system-btn").click();
+          cy.getByTestId("input-name").type(system.name);
+          cy.getByTestId("input-fides_key").type(system.fides_key);
+          cy.getByTestId("input-description").type(system.description);
+          cy.getByTestId("save-btn").click();
+          cy.wait("@postSystem");
 
-        // start typing a description
-        const description = "half formed thought";
-        cy.getByTestId("input-description").type(description);
-        // then try navigating to the privacy declarations tab
-        cy.getByTestId("tab-Data uses").click();
-        cy.getByTestId("confirmation-modal");
-        // make sure canceling works
-        cy.getByTestId("cancel-btn").click();
-        cy.getByTestId("input-description").should("have.value", description);
-        // now actually discard
-        cy.getByTestId("tab-Data uses").click();
-        cy.getByTestId("continue-btn").click();
-        // should load the privacy declarations page
-        cy.getByTestId("privacy-declaration-step");
-        // navigate back
-        cy.getByTestId("tab-System information").click();
-        cy.getByTestId("input-description").should("have.value", "");
+          // start typing a description
+          const description = "half formed thought";
+          cy.getByTestId("input-description").clear().type(description);
+          // then try navigating to the privacy declarations tab
+          cy.getByTestId("tab-Data uses").click();
+          cy.getByTestId("confirmation-modal");
+          // make sure canceling works
+          cy.getByTestId("cancel-btn").click();
+          cy.getByTestId("input-description").should("have.value", description);
+          // now actually discard
+          cy.getByTestId("tab-Data uses").click();
+          cy.getByTestId("continue-btn").click();
+          // should load the privacy declarations page
+          cy.getByTestId("privacy-declaration-step");
+          // navigate back and make sure description has the original description
+          cy.getByTestId("tab-System information").click();
+          cy.getByTestId("input-description").should(
+            "have.value",
+            system.description
+          );
+        });
       });
     });
   });
@@ -309,6 +324,7 @@ describe("System management page", () => {
         const { body } = interception.request;
         expect(body.joint_controller.name).to.eql(controllerName);
       });
+      cy.wait("@getFidesctlSystem");
 
       // Switch to the Data Uses tab
       cy.getByTestId("tab-Data uses").click();
@@ -334,15 +350,15 @@ describe("System management page", () => {
       // edit the existing declaration
       cy.getByTestId("accordion-header-improve.system").click();
       cy.getByTestId("improve.system-form").within(() => {
-        cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
+        cy.getByTestId("input-data_subjects").type(`customer{enter}`);
         cy.getByTestId("save-btn").click();
       });
       cy.wait("@putSystem").then((interception) => {
         const { body } = interception.request;
         expect(body.privacy_declarations.length).to.eql(1);
         expect(body.privacy_declarations[0].data_subjects).to.eql([
-          "customer",
           "anonymous_user",
+          "customer",
         ]);
       });
       cy.getByTestId("saved-indicator");
