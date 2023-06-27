@@ -26,6 +26,7 @@ def upgrade():
 def downgrade():
     op.alter_column("connectionconfig", "name", nullable=False)
 
-    op.create_index(
-        op.f("ix_connectionconfig_name"), "connectionconfig", ["name"], unique=True
+    conn = op.get_bind()
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS ix_connectionconfig_name ON connectionconfig (name);"
     )
