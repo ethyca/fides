@@ -17,7 +17,7 @@ class TestTaskResources:
             [{"id": 2, "ccn": "111-111-1111-1111", "customer_id": 1}],
         )
         resources.cache_object(
-            "access_request__postgres_example:double__underscore__collection",
+            "access_request__postgres__double__underscore__example:double__underscore__collection",
             [{"id": 3, "last_name": "Doe"}],
         )
         resources.cache_erasure("manual_example:filing-cabinet", 2)
@@ -28,7 +28,7 @@ class TestTaskResources:
                 {"id": 2, "ccn": "111-111-1111-1111", "customer_id": 1}
             ],
             "postgres_example:customer": [{"id": 1, "last_name": "Doe"}],
-            "postgres_example:double__underscore__collection": [
+            "postgres__double__underscore__example:double__underscore__collection": [
                 {"id": 3, "last_name": "Doe"}
             ],
         }
