@@ -10,26 +10,21 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '7315b9d7fda6'
-down_revision = '2be84e68df32'
+revision = "7315b9d7fda6"
+down_revision = "2be84e68df32"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
     pass
-    op.alter_column(
-        "connectionconfig", "name", nullable=True
-    )
+    op.alter_column("connectionconfig", "name", nullable=True)
 
-    op.drop_index(
-        op.f("ix_connectionconfig_name"), table_name="connectionconfig"
-    )
+    op.drop_index(op.f("ix_connectionconfig_name"), table_name="connectionconfig")
+
 
 def downgrade():
-    op.alter_column(
-        "connectionconfig", "name", nullable=False
-    )
+    op.alter_column("connectionconfig", "name", nullable=False)
 
     op.create_index(
         op.f("ix_connectionconfig_name"), "connectionconfig", ["name"], unique=True

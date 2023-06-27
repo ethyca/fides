@@ -155,10 +155,12 @@ class ConnectionConfig(Base):
     )
 
     @property
-    def system_key(self) -> str:
+    def system_key(self) -> Optional[str]:
         """Property for caching a system identifier for systems (or connector names as a fallback) for consent reporting"""
         if self.system:
             return self.system.fides_key
+        # TODO: Remove this fallback once all connection configs are linked to systems
+        # This will always be None in the future. `self.system` will always be set.
         return self.name
 
     @classmethod
