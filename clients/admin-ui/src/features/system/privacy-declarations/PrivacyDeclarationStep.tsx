@@ -1,27 +1,19 @@
 import { Heading, Spinner, Stack, Text } from "@fidesui/react";
 import NextLink from "next/link";
 
-import { useAppDispatch } from "~/app/hooks";
-import { setActiveSystem } from "~/features/system";
-import { System } from "~/types/api";
+import { SystemResponse } from "~/types/api";
 
 import { usePrivacyDeclarationData } from "./hooks";
 import PrivacyDeclarationManager from "./PrivacyDeclarationManager";
 
 interface Props {
-  system: System;
+  system: SystemResponse;
 }
 
 const PrivacyDeclarationStep = ({ system }: Props) => {
-  const dispatch = useAppDispatch();
-
   const { isLoading, ...dataProps } = usePrivacyDeclarationData({
     includeDatasets: true,
   });
-
-  const onSave = (savedSystem: System) => {
-    dispatch(setActiveSystem(savedSystem));
-  };
 
   return (
     <Stack spacing={3} data-testid="privacy-declaration-step">
@@ -46,8 +38,8 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
       ) : (
         <PrivacyDeclarationManager
           system={system}
-          onSave={onSave}
           includeCustomFields
+          includeCookies
           {...dataProps}
         />
       )}

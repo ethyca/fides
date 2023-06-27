@@ -9,6 +9,21 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Install FreeTDS (used for PyMSSQL)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libssl-dev \
+    libffi-dev \
+    libxslt-dev \
+    libkrb5-dev \
+    unixodbc \
+    unixodbc-dev \
+    freetds-dev \
+    freetds-bin \
+    python-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 

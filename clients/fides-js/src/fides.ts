@@ -144,8 +144,7 @@ const automaticallyApplyGPCPreferences = (
     if (notice.has_gpc_flag && !notice.current_preference) {
       consentPreferencesToSave.push(
         new SaveConsentPreference(
-          notice.notice_key,
-          notice.privacy_notice_history_id,
+          notice,
           transformConsentToFidesUserPreference(false, notice.consent_mechanism)
         )
       );
@@ -197,8 +196,8 @@ const init = async ({
     _Fides.geolocation = geolocation;
     _Fides.options = options;
     _Fides.initialized = true;
-    dispatchFidesEvent("FidesInitialized", cookie);
-    dispatchFidesEvent("FidesUpdated", cookie);
+    dispatchFidesEvent("FidesInitialized", cookie, options.debug);
+    dispatchFidesEvent("FidesUpdated", cookie, options.debug);
   }
 
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
@@ -256,6 +255,14 @@ const init = async ({
       }
     }
   }
+  if (shouldInitOverlay) {
+    automaticallyApplyGPCPreferences(
+      cookie,
+      fidesRegionString,
+      options.fidesApiUrl,
+      effectiveExperience
+    );
+  }
 
   // Initialize the window.Fides object
   _Fides.consent = cookie.consent;
@@ -271,18 +278,9 @@ const init = async ({
   // For convenience, also dispatch the "FidesUpdated" event; this allows
   // listeners to ignore the initialization event if they prefer
   if (!hasExistingCookie) {
-    dispatchFidesEvent("FidesInitialized", cookie);
+    dispatchFidesEvent("FidesInitialized", cookie, options.debug);
   }
-  dispatchFidesEvent("FidesUpdated", cookie);
-
-  if (shouldInitOverlay) {
-    automaticallyApplyGPCPreferences(
-      cookie,
-      fidesRegionString,
-      options.fidesApiUrl,
-      effectiveExperience
-    );
-  }
+  dispatchFidesEvent("FidesUpdated", cookie, options.debug);
 };
 
 // The global Fides object; this is bound to window.Fides if available

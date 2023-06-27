@@ -72,7 +72,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   isSubmitting = false,
   onSaveClick,
   onTestConnectionClick,
-  testButtonLabel = "Test connection",
+  testButtonLabel = "Test integration",
   connectionOption,
   connectionConfig,
   datasetDropdownOptions,
@@ -88,10 +88,10 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   const validateConnectionIdentifier = (value: string) => {
     let error;
     if (typeof value === "undefined" || value === "") {
-      error = "Connection Identifier is required";
+      error = "Integration Identifier is required";
     }
     if (value && isNumeric(value)) {
-      error = "Connection Identifier must be an alphanumeric value";
+      error = "Integration Identifier must be an alphanumeric value";
     }
     return error;
   };
@@ -287,7 +287,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       color="gray.700"
                       placeholder={`Enter a friendly name for your new ${
                         connectionOption!.human_readable
-                      } connection`}
+                      } integration`}
                       size="sm"
                       data-testid="input-name"
                     />
@@ -309,7 +309,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     color="gray.700"
                     placeholder={`Enter a description for your new ${
                       connectionOption!.human_readable
-                    } connection`}
+                    } integration`}
                     resize="none"
                     size="sm"
                     value={field.value || ""}
@@ -335,7 +335,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       props.errors.instance_key && props.touched.instance_key
                     }
                   >
-                    {getFormLabel("instance_key", "Connection Identifier")}
+                    {getFormLabel("instance_key", "Integration Identifier")}
                     <VStack align="flex-start" w="inherit">
                       <Input
                         {...field}
@@ -344,7 +344,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                         isDisabled={!!connectionConfig?.key}
                         placeholder={`A unique identifier for your new ${
                           connectionOption!.human_readable
-                        } connection`}
+                        } integration`}
                         size="sm"
                       />
                       <FormErrorMessage>
@@ -352,9 +352,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       </FormErrorMessage>
                     </VStack>
                     <Tooltip
-                      aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
+                      aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
                       hasArrow
-                      label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
+                      label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
                       placement="right-start"
                       openDelay={500}
                     >
@@ -382,7 +382,10 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               : null}
             {SystemType.DATABASE === connectionOption.type &&
             !isCreatingConnectionConfig ? (
-              <DatasetConfigField dropdownOptions={datasetDropdownOptions} />
+              <DatasetConfigField
+                dropdownOptions={datasetDropdownOptions}
+                connectionConfig={connectionConfig}
+              />
             ) : null}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
