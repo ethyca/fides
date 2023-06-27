@@ -733,6 +733,7 @@ def get_cached_data_for_erasures(
     value_dict = cache.get_encoded_objects_by_prefix(
         f"PLACEHOLDER_RESULTS__{privacy_request_id}"
     )
+    # TODO: Determine if this requires handling as well
     return {k.split("__")[-1]: v for k, v in value_dict.items()}
 
 
