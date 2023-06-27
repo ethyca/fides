@@ -147,7 +147,19 @@ class TaskResources:
             f"{self.request.id}__access_request"
         )
         # extract request id to return a map of address:value
-        return {k.split("__")[-1]: v for k, v in value_dict.items()}
+        return {self.extract_key_for_address(k): v for k, v in value_dict.items()}
+
+    def extract_key_for_address(self, full_request_id: str) -> str:
+        """
+        Handles extracting the correct Dataset:Collection to map to extracted
+        values.
+
+        Handles an edge case where double underscores exist in either the fides_key
+        of the Dataset or the Collection name.
+        """
+        request_id_dataset, collection = full_request_id.split(":")
+        dataset = request_id_dataset.split("__")[-1]
+        return f"{dataset}:{collection}"
 
     def cache_erasure(self, key: str, value: int) -> None:
         """Cache that a node's masking is complete. Object will be stored in redis under
@@ -163,7 +175,7 @@ class TaskResources:
             f"{self.request.id}__erasure_request"
         )
         # extract request id to return a map of address:value
-        return {k.split("__")[-1]: v for k, v in value_dict.items()}  # type: ignore
+        return {self.extract_key_for_address(k): v for k, v in value_dict.items()}  # type: ignore
 
     def write_execution_log(  # pylint: disable=too-many-arguments
         self,
