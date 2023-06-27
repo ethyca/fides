@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.14.2"
+    "version": "2.15.0"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -3352,6 +3352,75 @@
         ]
       }
     },
+    "/api/v1/system/{fides_key}/connection/instantiate/{saas_connector_type}": {
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Instantiate Connection From Template",
+        "description": "Instantiates a SaaS connection from the available template and the template values.\nAssociates the newly instantiated connection with the provided system.",
+        "operationId": "instantiate_connection_from_template_api_v1_system__fides_key__connection_instantiate__saas_connector_type__post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Saas Connector Type",
+              "type": "string"
+            },
+            "name": "saas_connector_type",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaasConnectionTemplateValues"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaasConnectionTemplateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:instantiate"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/system/{fides_key}/connection": {
       "get": {
         "tags": [
@@ -4881,7 +4950,7 @@
             },
             "consent": [
               {
-                "data_use": "advertising",
+                "data_use": "marketing.advertising",
                 "data_use_description": "We may use some of your personal information for advertising performance analysis and audience modeling for ongoing advertising which may be interpreted as 'Data Sharing' under some regulations.",
                 "opt_in": true,
                 "highlight": false
@@ -5452,6 +5521,71 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DatasetConfigSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/filter/dataset": {
+      "get": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Get Ctl Datasets",
+        "description": "Returns all CTL datasets .",
+        "operationId": "get_ctl_datasets_api_v1_filter_dataset_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Remove Saas Datasets",
+              "type": "boolean",
+              "default": true
+            },
+            "name": "remove_saas_datasets",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Only Unlinked Datasets",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "only_unlinked_datasets",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Ctl Datasets Api V1 Filter Dataset Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Dataset"
+                  }
                 }
               }
             }
@@ -7898,7 +8032,7 @@
           "Privacy Experience Config"
         ],
         "summary": "Experience Config Update",
-        "description": "Update Experience Config and then attempt to upsert Experiences and link back to ExperienceConfig.\n\nAll regions that should be linked to this ExperienceConfig (or remain linked) need to be\nincluded in this request.",
+        "description": "Update Experience Config and then attempt to upsert Experiences and link back to ExperienceConfig.\n\nAll regions that should be linked to this ExperienceConfig (or remain linked) need to be\nincluded in this request.  Don't pass in a regions key if you want to leave regions untouched.\nPassing in an empty list will remove all regions.",
         "operationId": "experience_config_update_api_v1_experience_config__experience_config_id__patch",
         "parameters": [
           {
@@ -11355,7 +11489,6 @@
           "SaaS Configs"
         ],
         "summary": "Instantiate Connection From Template",
-        "description": "Creates a SaaS Connector and a SaaS Dataset from a template.\n\nLooks up the connector type in the SaaS connector registry and, if all required\nfields are provided, persists the associated connection config and dataset to the database.",
         "operationId": "instantiate_connection_from_template_api_v1_connection_instantiate__saas_connector_type__post",
         "parameters": [
           {
@@ -12921,6 +13054,15 @@
         "type": "string",
         "description": "Enum for audit log actions, reflecting what a user did."
       },
+      "BannerEnabled": {
+        "title": "BannerEnabled",
+        "enum": [
+          "always_enabled",
+          "enabled_where_required",
+          "always_disabled"
+        ],
+        "description": "Whether the banner should display - not formalized in the db"
+      },
       "BigQueryConfig": {
         "title": "BigQueryConfig",
         "required": [
@@ -12946,15 +13088,22 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "dataset": {
             "title": "Dataset",
             "type": "string"
           },
           "keyfile_creds": {
-            "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds"
+            "title": "Keyfile Creds",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds"
+              }
+            ],
+            "sensitive": true
           }
         },
         "additionalProperties": false,
@@ -13455,9 +13604,11 @@
           "dynamodb",
           "manual_webhook",
           "timescale",
-          "fides"
+          "fides",
+          "generic_erasure_email",
+          "generic_consent_email"
         ],
-        "description": "Supported types to which we can connect fidesops."
+        "description": "Supported types to which we can connect Fides."
       },
       "ConnectorParam": {
         "title": "ConnectorParam",
@@ -13503,6 +13654,11 @@
           "description": {
             "title": "Description",
             "type": "string"
+          },
+          "sensitive": {
+            "title": "Sensitive",
+            "type": "boolean",
+            "default": false
           }
         },
         "description": "Used to define the required parameters for the connector (user and constants)"
@@ -13795,8 +13951,8 @@
             "title": "The historical config for the experience that the user was presented - contains the experience language",
             "type": "string"
           },
-          "privacy_experience_history_id": {
-            "title": "The historical id of the experience that the user was presented - contains the experience type, region, and delivery mechanism",
+          "privacy_experience_id": {
+            "title": "The id of the experience that the user was presented - contains the experience type and region",
             "type": "string"
           },
           "truncated_ip_address": {
@@ -13915,6 +14071,28 @@
         },
         "description": "The contact details information model.\n\nUsed to capture contact information for controllers, used\nas part of exporting a data map / ROPA.\n\nThis model is nested under an Organization and\npotentially under a system/dataset."
       },
+      "Cookies": {
+        "title": "Cookies",
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "domain": {
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "description": "The Cookies resource model"
+      },
       "CoreHealthCheck": {
         "title": "CoreHealthCheck",
         "required": [
@@ -13999,6 +14177,12 @@
           "description": {
             "title": "Description",
             "type": "string"
+          },
+          "enabled_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionType"
+            }
           },
           "secrets": {
             "title": "Secrets",
@@ -14572,10 +14756,7 @@
           "meta": {
             "title": "Meta",
             "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "An optional object that provides additional information about the Dataset. You can structure the object however you like. It can be a simple set of `key: value` properties or a deeply nested hierarchy of objects. How you use the object is up to you: Fides ignores it."
+            "description": "An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects."
           },
           "data_categories": {
             "title": "Data Categories",
@@ -14818,14 +14999,6 @@
         },
         "description": "Describes whether or not the parent dataset is traversable; if not, includes\nan error message describing the traversal issues."
       },
-      "DeliveryMechanism": {
-        "title": "DeliveryMechanism",
-        "enum": [
-          "banner",
-          "link"
-        ],
-        "description": "The delivery mechanism - not formalized in the db"
-      },
       "DenyPrivacyRequests": {
         "title": "DenyPrivacyRequests",
         "required": [
@@ -14990,37 +15163,47 @@
         "title": "DynamoDBDocsSchema",
         "required": [
           "region_name",
-          "aws_secret_access_key",
-          "aws_access_key_id"
+          "aws_access_key_id",
+          "aws_secret_access_key"
         ],
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "region_name": {
             "title": "Region Name",
             "type": "string"
           },
-          "aws_secret_access_key": {
-            "title": "Aws Secret Access Key",
+          "aws_access_key_id": {
+            "title": "AWS Access Key ID",
             "type": "string"
           },
-          "aws_access_key_id": {
-            "title": "Aws Access Key Id",
-            "type": "string"
+          "aws_secret_access_key": {
+            "title": "AWS Secret Access Key",
+            "type": "string",
+            "sensitive": true
           }
         },
         "additionalProperties": false,
         "description": "DynamoDB Secrets Schema for API Docs"
       },
+      "EdgeDirection": {
+        "title": "EdgeDirection",
+        "enum": [
+          "from",
+          "to"
+        ],
+        "type": "string",
+        "description": "Direction of a FidesDataSetReference"
+      },
       "EmailDocsSchema": {
         "title": "EmailDocsSchema",
         "required": [
           "third_party_vendor_name",
-          "recipient_email_address",
-          "advanced_settings"
+          "recipient_email_address"
         ],
         "type": "object",
         "properties": {
@@ -15039,7 +15222,18 @@
             "format": "email"
           },
           "advanced_settings": {
-            "$ref": "#/components/schemas/AdvancedSettings"
+            "title": "Advanced Settings",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdvancedSettings"
+              }
+            ],
+            "default": {
+              "identity_types": {
+                "email": true,
+                "phone_number": false
+              }
+            }
           }
         },
         "additionalProperties": false,
@@ -15254,66 +15448,84 @@
       "ExperienceConfigCreate": {
         "title": "ExperienceConfigCreate",
         "required": [
-          "component",
-          "component_title",
-          "delivery_mechanism",
-          "regions"
+          "accept_button_label",
+          "description",
+          "reject_button_label",
+          "save_button_label",
+          "title",
+          "component"
         ],
         "type": "object",
         "properties": {
-          "acknowledgement_button_label": {
-            "title": "Acknowledgement Button Label",
+          "accept_button_label": {
+            "title": "Accept Button Label",
             "type": "string"
           },
-          "banner_title": {
-            "title": "Banner Title",
+          "acknowledge_button_label": {
+            "title": "Acknowledge Button Label",
+            "type": "string",
+            "description": "Overlay 'Acknowledge button label for notice only banner'"
+          },
+          "banner_enabled": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BannerEnabled"
+              }
+            ],
+            "description": "Overlay 'Banner'"
+          },
+          "description": {
+            "title": "Description",
             "type": "string"
-          },
-          "banner_description": {
-            "title": "Banner Description",
-            "type": "string"
-          },
-          "component": {
-            "$ref": "#/components/schemas/ComponentType"
-          },
-          "component_title": {
-            "title": "Component Title",
-            "type": "string"
-          },
-          "component_description": {
-            "title": "Component Description",
-            "type": "string"
-          },
-          "confirmation_button_label": {
-            "title": "Confirmation Button Label",
-            "type": "string"
-          },
-          "delivery_mechanism": {
-            "$ref": "#/components/schemas/DeliveryMechanism"
           },
           "disabled": {
             "title": "Disabled",
             "type": "boolean",
+            "description": "Whether the given ExperienceConfig is disabled",
             "default": false
           },
           "is_default": {
             "title": "Is Default",
             "type": "boolean",
+            "description": "Whether the given ExperienceConfig is a global default",
             "default": false
           },
-          "link_label": {
-            "title": "Link Label",
-            "type": "string"
+          "privacy_policy_link_label": {
+            "title": "Privacy Policy Link Label",
+            "type": "string",
+            "description": "Overlay and Privacy Center 'Privacy policy link label'"
           },
-          "reject_button_label": {
-            "title": "Reject Button Label",
-            "type": "string"
+          "privacy_policy_url": {
+            "title": "Privacy Policy Url",
+            "type": "string",
+            "description": "Overlay and Privacy Center 'Privacy policy URl'"
+          },
+          "privacy_preferences_link_label": {
+            "title": "Privacy Preferences Link Label",
+            "type": "string",
+            "description": "Overlay 'Privacy preferences link label'"
           },
           "regions": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PrivacyNoticeRegion"
-            }
+            },
+            "description": "Regions using this ExperienceConfig"
+          },
+          "reject_button_label": {
+            "title": "Reject Button Label",
+            "type": "string"
+          },
+          "save_button_label": {
+            "title": "Save Button Label",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "component": {
+            "$ref": "#/components/schemas/ComponentType"
           }
         },
         "description": "An API representation to create ExperienceConfig.\nThis model doesn't include an `id` so that it can be used for creation.\nIt also establishes some fields _required_ for creation"
@@ -15323,8 +15535,7 @@
         "required": [
           "experience_config",
           "linked_regions",
-          "unlinked_regions",
-          "skipped_regions"
+          "unlinked_regions"
         ],
         "type": "object",
         "properties": {
@@ -15342,12 +15553,6 @@
             "items": {
               "$ref": "#/components/schemas/PrivacyNoticeRegion"
             }
-          },
-          "skipped_regions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrivacyNoticeRegion"
-            }
           }
         },
         "description": "Schema with the created/updated experience config with regions that succeeded or failed"
@@ -15355,66 +15560,93 @@
       "ExperienceConfigResponse": {
         "title": "ExperienceConfigResponse",
         "required": [
+          "regions",
           "id",
+          "component",
           "experience_config_history_id",
           "version",
           "created_at",
-          "updated_at",
-          "regions"
+          "updated_at"
         ],
         "type": "object",
         "properties": {
-          "acknowledgement_button_label": {
-            "title": "Acknowledgement Button Label",
-            "type": "string"
+          "accept_button_label": {
+            "title": "Accept Button Label",
+            "type": "string",
+            "description": "Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'"
           },
-          "banner_title": {
-            "title": "Banner Title",
-            "type": "string"
+          "acknowledge_button_label": {
+            "title": "Acknowledge Button Label",
+            "type": "string",
+            "description": "Overlay 'Acknowledge button label for notice only banner'"
           },
-          "banner_description": {
-            "title": "Banner Description",
-            "type": "string"
+          "banner_enabled": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BannerEnabled"
+              }
+            ],
+            "description": "Overlay 'Banner'"
           },
-          "component": {
-            "$ref": "#/components/schemas/ComponentType"
-          },
-          "component_title": {
-            "title": "Component Title",
-            "type": "string"
-          },
-          "component_description": {
-            "title": "Component Description",
-            "type": "string"
-          },
-          "confirmation_button_label": {
-            "title": "Confirmation Button Label",
-            "type": "string"
-          },
-          "delivery_mechanism": {
-            "$ref": "#/components/schemas/DeliveryMechanism"
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "Overlay 'Banner Description' or Privacy Center 'Description'"
           },
           "disabled": {
             "title": "Disabled",
             "type": "boolean",
+            "description": "Whether the given ExperienceConfig is disabled",
             "default": false
           },
           "is_default": {
             "title": "Is Default",
             "type": "boolean",
+            "description": "Whether the given ExperienceConfig is a global default",
             "default": false
           },
-          "link_label": {
-            "title": "Link Label",
-            "type": "string"
+          "privacy_policy_link_label": {
+            "title": "Privacy Policy Link Label",
+            "type": "string",
+            "description": "Overlay and Privacy Center 'Privacy policy link label'"
+          },
+          "privacy_policy_url": {
+            "title": "Privacy Policy Url",
+            "type": "string",
+            "description": "Overlay and Privacy Center 'Privacy policy URl'"
+          },
+          "privacy_preferences_link_label": {
+            "title": "Privacy Preferences Link Label",
+            "type": "string",
+            "description": "Overlay 'Privacy preferences link label'"
+          },
+          "regions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
           },
           "reject_button_label": {
             "title": "Reject Button Label",
-            "type": "string"
+            "type": "string",
+            "description": "Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'"
+          },
+          "save_button_label": {
+            "title": "Save Button Label",
+            "type": "string",
+            "description": "Overlay 'Privacy preferences 'Save' button label"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string",
+            "description": "Overlay 'Banner title' or Privacy Center 'title'"
           },
           "id": {
             "title": "Id",
             "type": "string"
+          },
+          "component": {
+            "$ref": "#/components/schemas/ComponentType"
           },
           "experience_config_history_id": {
             "title": "Experience Config History Id",
@@ -15433,79 +15665,89 @@
             "title": "Updated At",
             "type": "string",
             "format": "date-time"
-          },
-          "regions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrivacyNoticeRegion"
-            }
           }
         },
         "description": "An API representation of ExperienceConfig used for response payloads"
       },
       "ExperienceConfigUpdate": {
         "title": "ExperienceConfigUpdate",
-        "required": [
-          "regions"
-        ],
         "type": "object",
         "properties": {
-          "acknowledgement_button_label": {
-            "title": "Acknowledgement Button Label",
-            "type": "string"
+          "accept_button_label": {
+            "title": "Accept Button Label",
+            "type": "string",
+            "description": "Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'"
           },
-          "banner_title": {
-            "title": "Banner Title",
-            "type": "string"
+          "acknowledge_button_label": {
+            "title": "Acknowledge Button Label",
+            "type": "string",
+            "description": "Overlay 'Acknowledge button label for notice only banner'"
           },
-          "banner_description": {
-            "title": "Banner Description",
-            "type": "string"
+          "banner_enabled": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BannerEnabled"
+              }
+            ],
+            "description": "Overlay 'Banner'"
           },
-          "component": {
-            "$ref": "#/components/schemas/ComponentType"
-          },
-          "component_title": {
-            "title": "Component Title",
-            "type": "string"
-          },
-          "component_description": {
-            "title": "Component Description",
-            "type": "string"
-          },
-          "confirmation_button_label": {
-            "title": "Confirmation Button Label",
-            "type": "string"
-          },
-          "delivery_mechanism": {
-            "$ref": "#/components/schemas/DeliveryMechanism"
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "Overlay 'Banner Description' or Privacy Center 'Description'"
           },
           "disabled": {
             "title": "Disabled",
             "type": "boolean",
+            "description": "Whether the given ExperienceConfig is disabled",
             "default": false
           },
           "is_default": {
             "title": "Is Default",
             "type": "boolean",
+            "description": "Whether the given ExperienceConfig is a global default",
             "default": false
           },
-          "link_label": {
-            "title": "Link Label",
-            "type": "string"
+          "privacy_policy_link_label": {
+            "title": "Privacy Policy Link Label",
+            "type": "string",
+            "description": "Overlay and Privacy Center 'Privacy policy link label'"
           },
-          "reject_button_label": {
-            "title": "Reject Button Label",
-            "type": "string"
+          "privacy_policy_url": {
+            "title": "Privacy Policy Url",
+            "type": "string",
+            "description": "Overlay and Privacy Center 'Privacy policy URl'"
+          },
+          "privacy_preferences_link_label": {
+            "title": "Privacy Preferences Link Label",
+            "type": "string",
+            "description": "Overlay 'Privacy preferences link label'"
           },
           "regions": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PrivacyNoticeRegion"
-            }
+            },
+            "description": "Regions using this ExperienceConfig"
+          },
+          "reject_button_label": {
+            "title": "Reject Button Label",
+            "type": "string",
+            "description": "Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'"
+          },
+          "save_button_label": {
+            "title": "Save Button Label",
+            "type": "string",
+            "description": "Overlay 'Privacy preferences 'Save' button label"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string",
+            "description": "Overlay 'Banner title' or Privacy Center 'title'"
           }
         },
-        "description": "Updating ExperienceConfig - requires regions to be patched specifically"
+        "additionalProperties": false,
+        "description": "Updating ExperienceConfig. Note that component cannot be updated once its created"
       },
       "ExtendedIdentityTypes": {
         "title": "ExtendedIdentityTypes",
@@ -15573,12 +15815,7 @@
             "type": "string"
           },
           "direction": {
-            "title": "Direction",
-            "enum": [
-              "from",
-              "to"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/EdgeDirection"
           }
         },
         "description": "Reference to a field from another Collection"
@@ -15593,8 +15830,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "uri": {
             "title": "Uri",
@@ -15606,7 +15844,8 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "polling_timeout": {
             "title": "Polling Timeout",
@@ -15923,8 +16162,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "username": {
             "title": "Username",
@@ -15932,7 +16172,8 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "host": {
             "title": "Host",
@@ -15943,7 +16184,7 @@
             "type": "integer"
           },
           "dbname": {
-            "title": "Dbname",
+            "title": "DB Name",
             "type": "string"
           }
         },
@@ -16034,8 +16275,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "username": {
             "title": "Username",
@@ -16043,10 +16285,11 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "dbname": {
-            "title": "Dbname",
+            "title": "DB Name",
             "type": "string"
           },
           "host": {
@@ -16465,8 +16708,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "username": {
             "title": "Username",
@@ -16474,7 +16718,8 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "host": {
             "title": "Host",
@@ -16485,7 +16730,7 @@
             "type": "integer"
           },
           "defaultauthdb": {
-            "title": "Defaultauthdb",
+            "title": "Default Auth DB",
             "type": "string"
           }
         },
@@ -16497,8 +16742,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "username": {
             "title": "Username",
@@ -16506,10 +16752,11 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "dbname": {
-            "title": "Dbname",
+            "title": "DB Name",
             "type": "string"
           },
           "host": {
@@ -17641,8 +17888,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "username": {
             "title": "Username",
@@ -17650,14 +17898,15 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "dbname": {
-            "title": "Dbname",
+            "title": "DB Name",
             "type": "string"
           },
           "db_schema": {
-            "title": "Db Schema",
+            "title": "DB Schema",
             "type": "string"
           },
           "host": {
@@ -17667,6 +17916,11 @@
           "port": {
             "title": "Port",
             "type": "integer"
+          },
+          "ssh_required": {
+            "title": "SSH Required",
+            "type": "boolean",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -17743,6 +17997,14 @@
               "type": "string"
             },
             "description": "The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied."
+          },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            },
+            "description": "Cookies associated with this data use to deliver services and functionality"
           }
         },
         "description": "The PrivacyDeclaration resource model.\n\nStates a function of a system, and describes how it relates\nto the privacy data types."
@@ -17820,6 +18082,14 @@
             },
             "description": "The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied."
           },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            },
+            "default": []
+          },
           "id": {
             "title": "Id",
             "type": "string",
@@ -17834,25 +18104,15 @@
           "region",
           "id",
           "created_at",
-          "updated_at",
-          "version",
-          "privacy_experience_history_id"
+          "updated_at"
         ],
         "type": "object",
         "properties": {
-          "disabled": {
-            "title": "Disabled",
-            "type": "boolean",
-            "default": false
+          "region": {
+            "$ref": "#/components/schemas/PrivacyNoticeRegion"
           },
           "component": {
             "$ref": "#/components/schemas/ComponentType"
-          },
-          "delivery_mechanism": {
-            "$ref": "#/components/schemas/DeliveryMechanism"
-          },
-          "region": {
-            "$ref": "#/components/schemas/PrivacyNoticeRegion"
           },
           "experience_config": {
             "$ref": "#/components/schemas/ExperienceConfigResponse"
@@ -17871,13 +18131,9 @@
             "type": "string",
             "format": "date-time"
           },
-          "version": {
-            "title": "Version",
-            "type": "number"
-          },
-          "privacy_experience_history_id": {
-            "title": "Privacy Experience History Id",
-            "type": "string"
+          "show_banner": {
+            "title": "Show Banner",
+            "type": "boolean"
           },
           "privacy_notices": {
             "title": "Privacy Notices",
@@ -18148,7 +18404,14 @@
           "eu_si",
           "eu_sk",
           "eu_fi",
-          "eu_se"
+          "eu_se",
+          "gb_eng",
+          "gb_sct",
+          "gb_wls",
+          "gb_nir",
+          "isl",
+          "nor",
+          "li"
         ],
         "description": "Enum is not formalized in the DB because it is subject to frequent change"
       },
@@ -18159,7 +18422,8 @@
           "created_at",
           "updated_at",
           "version",
-          "privacy_notice_history_id"
+          "privacy_notice_history_id",
+          "cookies"
         ],
         "type": "object",
         "properties": {
@@ -18251,6 +18515,13 @@
           "privacy_notice_history_id": {
             "title": "Privacy Notice History Id",
             "type": "string"
+          },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            }
           }
         },
         "additionalProperties": false,
@@ -18264,6 +18535,7 @@
           "updated_at",
           "version",
           "privacy_notice_history_id",
+          "cookies",
           "default_preference"
         ],
         "type": "object",
@@ -18356,6 +18628,13 @@
           "privacy_notice_history_id": {
             "title": "Privacy Notice History Id",
             "type": "string"
+          },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            }
           },
           "default_preference": {
             "$ref": "#/components/schemas/UserConsentPreference"
@@ -18480,8 +18759,8 @@
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
-          "privacy_experience_history_id": {
-            "title": "Privacy Experience History Id",
+          "privacy_experience_id": {
+            "title": "Privacy Experience Id",
             "type": "string"
           },
           "user_geography": {
@@ -18953,8 +19232,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "host": {
             "title": "Host",
@@ -18974,11 +19254,17 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "db_schema": {
-            "title": "Db Schema",
+            "title": "DB Schema",
             "type": "string"
+          },
+          "ssh_required": {
+            "title": "SSH Required",
+            "type": "boolean",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -19087,7 +19373,8 @@
         "title": "ResponseFormat",
         "enum": [
           "json",
-          "csv"
+          "csv",
+          "html"
         ],
         "description": "Response formats"
       },
@@ -19447,7 +19734,17 @@
           },
           "ignore_errors": {
             "title": "Ignore Errors",
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            ],
             "default": false
           },
           "rate_limit_config": {
@@ -19724,8 +20021,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "user_login_name": {
             "title": "User Login Name",
@@ -19733,7 +20031,8 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "account_identifier": {
             "title": "Account Identifier",
@@ -19761,9 +20060,6 @@
       },
       "SovrnDocsSchema": {
         "title": "SovrnDocsSchema",
-        "required": [
-          "advanced_settings"
-        ],
         "type": "object",
         "properties": {
           "third_party_vendor_name": {
@@ -19783,7 +20079,21 @@
             "format": "email"
           },
           "advanced_settings": {
-            "$ref": "#/components/schemas/AdvancedSettingsWithExtendedIdentityTypes"
+            "title": "Advanced Settings",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdvancedSettingsWithExtendedIdentityTypes"
+              }
+            ],
+            "default": {
+              "identity_types": {
+                "email": false,
+                "phone_number": false,
+                "cookie_ids": [
+                  "ljt_readerID"
+                ]
+              }
+            }
           }
         },
         "additionalProperties": false,
@@ -20113,10 +20423,7 @@
           "meta": {
             "title": "Meta",
             "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "An optional property to store any extra information for a system. Not used by fidesctl."
+            "description": "An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects."
           },
           "fidesctl_meta": {
             "title": "Fidesctl Meta",
@@ -20164,15 +20471,6 @@
               "$ref": "#/components/schemas/PrivacyDeclaration"
             },
             "description": "\n    The PrivacyDeclaration resource model.\n\n    States a function of a system, and describes how it relates\n    to the privacy data types.\n    "
-          },
-          "system_dependencies": {
-            "title": "System Dependencies",
-            "type": "array",
-            "items": {
-              "pattern": "^[a-zA-Z0-9_.<>-]+$",
-              "type": "string"
-            },
-            "description": "A list of fides keys to model dependencies."
           },
           "joint_controller": {
             "title": "Joint Controller",
@@ -20281,10 +20579,7 @@
           "meta": {
             "title": "Meta",
             "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "An optional property to store any extra information for a system. Not used by fidesctl."
+            "description": "An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects."
           },
           "fidesctl_meta": {
             "title": "Fidesctl Meta",
@@ -20333,15 +20628,6 @@
             },
             "description": "Extension of base pydantic model to include DB `id` field in the response"
           },
-          "system_dependencies": {
-            "title": "System Dependencies",
-            "type": "array",
-            "items": {
-              "pattern": "^[a-zA-Z0-9_.<>-]+$",
-              "type": "string"
-            },
-            "description": "A list of fides keys to model dependencies."
-          },
           "joint_controller": {
             "title": "Joint Controller",
             "allOf": [
@@ -20376,6 +20662,23 @@
             "default": {
               "is_required": false
             }
+          },
+          "connection_configs": {
+            "title": "Connection Configs",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionConfigurationResponse"
+              }
+            ],
+            "description": "\n    Describes the returned schema for a ConnectionConfiguration.\n\n    Do *NOT* add \"secrets\" to this schema.\n    "
+          },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            },
+            "default": []
           }
         },
         "description": "Extension of base pydantic model to include `privacy_declarations.id` fields in responses"
@@ -20446,8 +20749,9 @@
         "type": "object",
         "properties": {
           "url": {
-            "title": "Url",
-            "type": "string"
+            "title": "URL",
+            "type": "string",
+            "sensitive": true
           },
           "username": {
             "title": "Username",
@@ -20455,14 +20759,15 @@
           },
           "password": {
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "dbname": {
-            "title": "Dbname",
+            "title": "DB Name",
             "type": "string"
           },
           "db_schema": {
-            "title": "Db Schema",
+            "title": "DB Schema",
             "type": "string"
           },
           "host": {
@@ -20472,6 +20777,11 @@
           "port": {
             "title": "Port",
             "type": "integer"
+          },
+          "ssh_required": {
+            "title": "SSH Required",
+            "type": "boolean",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -20978,16 +21288,17 @@
             "type": "string"
           },
           "project_id": {
-            "title": "Project Id",
+            "title": "Project ID",
             "type": "string"
           },
           "private_key_id": {
-            "title": "Private Key Id",
+            "title": "Private Key ID",
             "type": "string"
           },
           "private_key": {
             "title": "Private Key",
-            "type": "string"
+            "type": "string",
+            "sensitive": true
           },
           "client_email": {
             "title": "Client Email",
@@ -20995,23 +21306,23 @@
             "format": "email"
           },
           "client_id": {
-            "title": "Client Id",
+            "title": "Client ID",
             "type": "string"
           },
           "auth_uri": {
-            "title": "Auth Uri",
+            "title": "Auth URI",
             "type": "string"
           },
           "token_uri": {
-            "title": "Token Uri",
+            "title": "Token URI",
             "type": "string"
           },
           "auth_provider_x509_cert_url": {
-            "title": "Auth Provider X509 Cert Url",
+            "title": "Auth Provider X509 Cert URL",
             "type": "string"
           },
           "client_x509_cert_url": {
-            "title": "Client X509 Cert Url",
+            "title": "Client X509 Cert URL",
             "type": "string"
           }
         },

@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "8a98db7fa1499fc5ab7286c45236e5c9" # string
+analytics_id = "a602b83b88d9150a835ee97c27f89b51" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -83,6 +83,10 @@ task_engine_max_overflow = 50 # integer
 
 # The database user with which to login to the application database.
 user = "defaultuser" # string
+
+# Additional connection parameters used when connecting to the
+# applicaiton database.
+params = {} # object
 
 #---------------#
 #-- EXECUTION --#
@@ -202,8 +206,13 @@ ssl = false # boolean
 
 # If using TLS encryption, set this to 'required' if you wish to
 # enforce the Redis cache to provide a certificate. Note that not all
-# cache providers support this e.g. AWS Elasticache.
+# cache providers support this without setting ssl_ca_certs (e.g. AWS
+# Elasticache).
 ssl_cert_reqs = "required" # string
+
+# If using TLS encryption rooted with a custom Certificate Authority,
+# set this to the path of the CA certificate.
+ssl_ca_certs = "" # string
 
 # The user with which to login to the Redis cache.
 user = "" # string
@@ -315,6 +324,24 @@ allow_custom_connector_functions = false # boolean
 # Either enables the collection of audit log resource data or bypasses
 # the middleware
 enable_audit_log_resource_middleware = false # boolean
+
+# An optional field to store the bastion server host
+bastion_server_host = "" # string
+
+# An optional field to store the username used to access the bastion
+# server
+bastion_server_ssh_username = "" # string
+
+# An optional field to store the key used to SSH into the bastion
+# server.
+bastion_server_ssh_private_key = "" # string
+
+# The timeout in seconds for the transport socket
+# (``socket.settimeout``)
+bastion_server_ssh_timeout = 0.1 # number
+
+# The timeout in seconds for tunnel connection (open_channel timeout)
+bastion_server_ssh_tunnel_timeout = 10 # number
 
 #----------#
 #-- USER --#
