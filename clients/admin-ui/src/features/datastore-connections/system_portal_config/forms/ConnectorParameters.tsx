@@ -1,4 +1,4 @@
-import { Box, Flex, SlideFade, Spacer, useToast } from "@fidesui/react";
+import { Box, Flex, Spacer, useToast, UseToastOptions } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
@@ -22,7 +22,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import TestConnection from "~/features/datastore-connections/system_portal_config/TestConnection";
+import TestConnectionToast from "~/features/datastore-connections/system_portal_config/TestConnectionToast";
 import TestData from "~/features/datastore-connections/TestData";
 import {
   selectActiveSystem,
@@ -304,26 +304,25 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 
   useEffect(() => {
     if (response) {
-      console.log(`comparing ${response.startedTimeStamp} to ${previousTestTimestamp.current}...`);
-      if (response.startedTimeStamp !== previousTestTimestamp.current) {
-        console.log("toast!");
+      if (response.status === "fulfilled" && response.fulfilledTimeStamp !== previousTestTimestamp.current) {
+        const status: UseToastOptions['status'] = response.data?.test_status === "succeeded" ? "success" : "error";
+        const toastParams = {
+          ...DEFAULT_TOAST_PARAMS,
+          status: status,
+          description: <TestConnectionToast
+            response={response}
+          />,
+        };
+        toast(toastParams);
       }
-      else {
-        previousTestTimestamp.current = response.startedTimeStamp;
-      }
+      previousTestTimestamp.current = response.fulfilledTimeStamp;
     }
   }, [response]);
 
   const toast = useToast();
 
   const handleTestConnectionClick = (value: any) => {
-    console.log();
     setResponse(value);
-    const toastParams = {
-      ...DEFAULT_TOAST_PARAMS,
-      description: `Successfully connected to ${connectionOption.human_readable}!`,
-    }
-    toast(toastParams);
   };
   const skip = connectionOption.type === SystemType.MANUAL;
   const { data: secretsSchema } = useGetConnectionTypeSecretSchemaQuery(
@@ -398,19 +397,6 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
           <Spacer />
         </Flex>
       ) : null}
-
-      {/* instead of doing this, make a toast with the same information */}
-
-      {/* {response && (
-        <SlideFade in>
-          <Box mt="16px" maxW="528px" w="fit-content">
-            <TestConnection
-              response={response}
-              connectionOption={connectionOption}
-            />
-          </Box>
-        </SlideFade>
-      )} */}
     </>
   );
 };
