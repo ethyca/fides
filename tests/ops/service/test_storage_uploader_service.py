@@ -354,6 +354,7 @@ class TestWriteToInMemoryBuffer:
                 {"uuid": "xyz-122-333", "name": "foo1", "email": "foo@bar1"},
             ],
             "mongo:foobar": [{"_id": 1, "customer": {"x": 1, "y": [1, 2]}}],
+            "filing_cabinet": [{"id": "123"}],  # represents manual data
         }
 
     def test_json_data(self, data, privacy_request):
@@ -367,6 +368,7 @@ class TestWriteToInMemoryBuffer:
 
         zipfile = ZipFile(buff)
         assert zipfile.namelist() == [
+            "filing_cabinet.csv",
             "mongo:address.csv",
             "mysql:customer.csv",
             "mongo:foobar.csv",
@@ -435,6 +437,9 @@ class TestWriteToInMemoryBuffer:
         assert zipfile.namelist() == [
             "/main.css",
             "/back.svg",
+            "/manual/index.html",
+            "/manual/filing_cabinet/1.html",
+            "/manual/filing_cabinet/index.html",
             "/mongo/address/1.html",
             "/mongo/address/2.html",
             "/mongo/address/index.html",
