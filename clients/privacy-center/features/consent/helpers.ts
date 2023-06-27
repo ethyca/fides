@@ -10,7 +10,6 @@ import {
   LegacyConsentConfig,
   ConsentConfig,
 } from "~/types/config";
-import { PrivacyNoticeResponseWithUserPreferences } from "~/types/api";
 import { FidesKeyToConsent } from "./types";
 
 /**
