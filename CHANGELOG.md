@@ -25,6 +25,7 @@ The types of changes are:
 
 ### Changed
 - Moved GPC preferences slightly earlier in Fides.js lifecycle [#3561](https://github.com/ethyca/fides/pull/3561)
+- Remove name and description fields from integration form [#3684](https://github.com/ethyca/fides/pull/3684)
 
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
