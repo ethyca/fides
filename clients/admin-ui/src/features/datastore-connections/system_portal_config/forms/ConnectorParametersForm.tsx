@@ -267,59 +267,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {(props: FormikProps<Values>) => (
         <Form noValidate>
           <VStack align="stretch" gap="16px">
-            <Field
-              id="name"
-              name="name"
-              validate={(value: string) => validateField("Name", value)}
-            >
-              {({ field }: { field: FieldInputProps<string> }) => (
-                <FormControl
-                  display="flex"
-                  isRequired
-                  isInvalid={props.errors.name && props.touched.name}
-                >
-                  {getFormLabel("name", "Name")}
-                  <VStack align="flex-start" w="inherit">
-                    <Input
-                      {...field}
-                      autoComplete="off"
-                      autoFocus
-                      color="gray.700"
-                      placeholder={`Enter a friendly name for your new ${
-                        connectionOption!.human_readable
-                      } integration`}
-                      size="sm"
-                      data-testid="input-name"
-                    />
-                    <FormErrorMessage>{props.errors.name}</FormErrorMessage>
-                  </VStack>
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
-                </FormControl>
-              )}
-            </Field>
-            {/* Description */}
-            <Field id="description" name="description">
-              {({ field }: { field: FieldInputProps<string> }) => (
-                <FormControl display="flex">
-                  {getFormLabel("description", "Description")}
-                  <Textarea
-                    {...field}
-                    color="gray.700"
-                    placeholder={`Enter a description for your new ${
-                      connectionOption!.human_readable
-                    } integration`}
-                    resize="none"
-                    size="sm"
-                    value={field.value || ""}
-                  />
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
-                </FormControl>
-              )}
-            </Field>
             {/* Connection Identifier */}
             {connectionOption.type !== SystemType.MANUAL ? (
               <Field
