@@ -72,7 +72,7 @@ def tertiary_mailchimp_instance(db):
     connection_config.delete(db)
 
 
-def instantiate_mailchimp(db, key, fides_key) -> tuple[ConnectionConfig, DatasetConfig]:
+def instantiate_mailchimp(db, fides_key) -> tuple[ConnectionConfig, DatasetConfig]:
     secrets = {
         "domain": "test_mailchimp_domain",
         "username": "test_mailchimp_username",
