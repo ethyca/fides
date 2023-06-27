@@ -31,7 +31,6 @@ def secondary_sendgrid_instance(db):
     connection_config, dataset_config = instantiate_connector(
         db,
         "sendgrid",
-        "sendgrid_connection_config_secondary",
         "secondary_sendgrid_instance",
         "Sendgrid ConnectionConfig description",
         secrets,
@@ -49,7 +48,6 @@ def secondary_mailchimp_instance(db):
     """
     connection_config, dataset_config = instantiate_mailchimp(
         db,
-        "mailchimp_connection_config_secondary",
         "secondary_mailchimp_instance",
     )
     yield connection_config, dataset_config
@@ -67,7 +65,6 @@ def tertiary_mailchimp_instance(db):
     """
     connection_config, dataset_config = instantiate_mailchimp(
         db,
-        "mailchimp_connection_config_tertiary",
         "tertiary_mailchimp_instance",
     )
     yield connection_config, dataset_config
@@ -84,7 +81,6 @@ def instantiate_mailchimp(db, key, fides_key) -> tuple[ConnectionConfig, Dataset
     return instantiate_connector(
         db,
         "mailchimp",
-        key,
         fides_key,
         "Mailchimp ConnectionConfig description",
         secrets,
@@ -94,7 +90,6 @@ def instantiate_mailchimp(db, key, fides_key) -> tuple[ConnectionConfig, Dataset
 def instantiate_connector(
     db,
     connector_type,
-    key,
     fides_key,
     description,
     secrets,
@@ -106,15 +101,14 @@ def instantiate_connector(
         ConnectorTemplate
     ] = ConnectorRegistry.get_connector_template(connector_type)
     template_vals = SaasConnectionTemplateValues(
-        name=key,
-        key=key,
+        key=fides_key,
         description=description,
         secrets=secrets,
         instance_key=fides_key,
     )
 
     connection_config = ConnectionConfig.filter(
-        db=db, conditions=(ConnectionConfig.key == key)
+        db=db, conditions=(ConnectionConfig.key == fides_key)
     ).first()
     assert connection_config is None
 
@@ -140,7 +134,7 @@ def instantiate_connector(
     )
 
     connection_config = ConnectionConfig.filter(
-        db=db, conditions=(ConnectionConfig.key == key)
+        db=db, conditions=(ConnectionConfig.key == fides_key)
     ).first()
     assert connection_config is not None
     dataset_config = DatasetConfig.filter(
