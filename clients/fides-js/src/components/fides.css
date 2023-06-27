@@ -491,7 +491,8 @@ div#fides-modal .fides-modal-button-group {
   border-radius: var(--fides-overlay-button-border-radius);
 }
 
-.fides-gpc-badge-applied {
+.fides-gpc-badge-applied,
+.fides-gpc-badge-detected {
   background: var(--fides-overlay-gpc-applied-background-color);
   color: var(--fides-overlay-gpc-applied-text-color);
 }

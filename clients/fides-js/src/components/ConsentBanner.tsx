@@ -1,5 +1,6 @@
 import { h, FunctionComponent, VNode } from "preact";
-import { ExperienceConfig, GpcStatus } from "../lib/consent-types";
+import { getConsentContext } from "../lib/consent-context";
+import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
 import { GpcBadge } from "./GpcBadge";
 
@@ -16,7 +17,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onClose,
   bannerIsOpen,
 }) => {
-  const gpcStatus = GpcStatus.APPLIED;
+  const showGpcBadge = getConsentContext().globalPrivacyControl;
   return (
     <div
       id="fides-banner-container"
@@ -31,7 +32,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
             <div id="fides-banner-title" className="fides-banner-title">
               {experience.title}
             </div>
-            <GpcBadge status={gpcStatus} />
+            {showGpcBadge ? (
+              <GpcBadge
+                label="Global Privacy Control Signal"
+                status="detected"
+              />
+            ) : null}
           </div>
           <div
             id="fides-banner-description"
