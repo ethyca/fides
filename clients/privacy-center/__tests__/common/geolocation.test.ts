@@ -53,7 +53,7 @@ describe("getGeolocation", () => {
         },
       });
       const geolocation = lookupGeolocation(req, privacyCenterSettings);
-      expect(geolocation).toBeUndefined();
+      expect(geolocation).toBeNull();
     });
 
     it("handles invalid geolocation headers", () => {
@@ -64,7 +64,7 @@ describe("getGeolocation", () => {
         },
       });
       const geolocation = lookupGeolocation(req, privacyCenterSettings);
-      expect(geolocation).toBeUndefined();
+      expect(geolocation).toBeNull();
     });
   });
 
@@ -86,7 +86,7 @@ describe("getGeolocation", () => {
         url: "https://privacy.example.com/fides.js?geolocation=America",
       });
       const geolocation = lookupGeolocation(req, privacyCenterSettings);
-      expect(geolocation).toBeUndefined();
+      expect(geolocation).toBeNull();
     });
   });
 
@@ -113,7 +113,7 @@ describe("getGeolocation", () => {
         url: "https://privacy.example.com/fides.js",
       });
       const geolocation = lookupGeolocation(req, privacyCenterSettings);
-      expect(geolocation).toBeUndefined();
+      expect(geolocation).toBeNull();
     });
   });
 

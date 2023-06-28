@@ -23,13 +23,13 @@ export const LOCATION_HEADERS = [
  * 2) Supported geolocation headers (e.g. "Cloudfront-Viewer-Country: US")
  * 3) A geolocation API URL to infer location based on IP
  *
- * If none of these are found, return an undefined geolocation.
+ * If none of these are found, return a null geolocation.
  *
  */
 export const lookupGeolocation = async (
     req: NextApiRequest,
     settings: PrivacyCenterClientSettings
-): Promise<UserGeolocation | undefined | null> => {
+): Promise<UserGeolocation | null> => {
   // DEFER: read headers to determine & return the request's IP address
 
   // Check for a provided "geolocation" query param
