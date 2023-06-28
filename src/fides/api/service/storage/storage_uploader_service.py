@@ -98,7 +98,7 @@ def _s3_uploader(
     auth_method = config.details[StorageDetails.AUTH_METHOD.value]
 
     return upload_to_s3(
-        config.secrets, data, bucket_name, file_key, config.format.value, privacy_request, auth_method, data_category_field_mapping  # type: ignore
+        config.secrets, data, bucket_name, file_key, config.format.value, privacy_request, auth_method, data_category_field_mapping, data_use_map  # type: ignore
     )
 
 
@@ -112,4 +112,4 @@ def _local_uploader(
 ) -> str:
     """Uploads data to local storage, used for quick-start/demo purposes"""
     file_key: str = _construct_file_key(privacy_request.id, config)
-    return upload_to_local(data, file_key, privacy_request, config.format.value, data_category_field_mapping)  # type: ignore
+    return upload_to_local(data, file_key, privacy_request, config.format.value, data_category_field_mapping, data_use_map)  # type: ignore

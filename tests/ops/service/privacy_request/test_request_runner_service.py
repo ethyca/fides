@@ -349,7 +349,7 @@ def test_upload_access_results_has_data_category_field_mapping(
     args, kwargs = upload_mock.call_args
     data_category_field_mapping = kwargs["data_category_field_mapping"]
 
-    # make sure the catergory field mapping generally looks as we expect
+    # make sure the category field mapping generally looks as we expect
     address_mapping = data_category_field_mapping[
         CollectionAddress.from_string("postgres_example_test_dataset:address")
     ]

@@ -671,15 +671,18 @@ def _format_data_use_map_for_caching(
 ) -> Dict[str, Set[str]]:
     """
     Create a map of `Collection`s mapped to their associated `DataUse`s
-    to be stored in the cache.
+    to be stored in the cache. This is done before request execution, so that we
+    maintain the _original_ state of the graph as it's used for request execution.
+    The graph is subject to change "from underneath" the request execution runtime,
+    but we want to avoid picking up those changes in our data use map.
 
     `DataUse`s are associated with a `Collection` by means of the `System`
     that's linked to a `Collection`'s `Connection` definition.
 
     Example:
     {
-       <collection1>: ["data_use_1", "data_use_2"],
-       <collection2>: ["data_use_1"],
+       <collection1>: {"data_use_1", "data_use_2"},
+       <collection2>: {"data_use_1"},
     }
     """
     return {collection.value: g_task.data_uses for collection, g_task in env.items()}
@@ -742,7 +745,14 @@ async def run_access_request(
                 privacy_request, env, end_nodes, resources, ActionType.access
             )
         )
+
+        # cache access graph for use in logging/analytics event
         privacy_request.cache_access_graph(format_graph_for_caching(env, end_nodes))
+
+        # cache a map of collections -> data uses for the output package of access requests
+        # this is cached here before request execution, since this is the state of the
+        # graph used for request execution. the graph could change _during_ request execution,
+        # but we don't want those changes in our data use map.
         privacy_request.cache_data_use_map(_format_data_use_map_for_caching(env))
 
         v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
