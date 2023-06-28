@@ -28,7 +28,7 @@ region_map: Dict = {
     "eu_de": "de",
     "eu_ee": "ee",
     "eu_ie": "ie",
-    "eu_el": "el",
+    "eu_el": "gr",
     "eu_es": "es",
     "eu_fr": "fr",
     "eu_hr": "hr",

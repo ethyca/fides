@@ -89,7 +89,7 @@ PrivacyNoticeRegion = Enum(
         ("de", "de"),  # germany
         ("ee", "ee"),  # estonia
         ("ie", "ie"),  # ireland
-        ("el", "el"),  # greece
+        ("gr", "gr"),  # greece
         ("es", "es"),  # spain
         ("fr", "fr"),  # france
         ("hr", "hr"),  # croatia
