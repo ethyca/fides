@@ -19,9 +19,16 @@ The types of changes are:
 
 ### Added
 - Empty state for when there are no relevant privacy notices in the privacy center [#3640](https://github.com/ethyca/fides/pull/3640)
+- GPC indicators in fides-js banner and modal [#3673](https://github.com/ethyca/fides/pull/3673)
+- Set `sslmode` to `prefer` if connecting to Redshift via ssh [#3685](https://github.com/ethyca/fides/pull/3685)
+- Include `data_use` and `data_category` metadata in `upload` of access results [#3674](https://github.com/ethyca/fides/pull/3674)
 
 ### Fixed
 - Render linebreaks in the Fides.js overlay descriptions, etc. [#3665](https://github.com/ethyca/fides/pull/3665)
+- Broken link to Fides docs site on the About Fides page in Admin UI [#3643](https://github.com/ethyca/fides/pull/3643)
+- Add Systems Applicable Filter to Privacy Experience List [#3654](https://github.com/ethyca/fides/pull/3654)
+
+### Developer Experience
 
 ### Changed
 - Moved GPC preferences slightly earlier in Fides.js lifecycle [#3561](https://github.com/ethyca/fides/pull/3561)

@@ -34,6 +34,7 @@ export const fetchExperience = async (
     component: ComponentType.OVERLAY,
     has_notices: "true",
     has_config: "true",
+    systems_applicable: "true",
     fides_user_device_id: fidesUserDeviceId,
   });
   const response = await fetch(
