@@ -19,9 +19,10 @@ import React from "react";
 import logoImage from "~/../public/logo.svg";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { INDEX_ROUTE } from "~/constants";
-import { USER_MANAGEMENT_ROUTE } from "./nav/v2/routes";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
+
+import { USER_MANAGEMENT_ROUTE } from "./nav/v2/routes";
 
 const useHeader = () => {
   const { username } = useAppSelector(selectUser) ?? { username: "" };

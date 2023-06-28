@@ -25,15 +25,17 @@ export const NavTopBar = () => {
         if (group.title !== "Management") {
           // The group links to its first child's path.
           const { path } = group.children[0]!;
-  
+
           const isActive = group.title === nav.active?.title;
-  
+
           return (
             <NavTopBarLink key={group.title} href={path} isActive={isActive}>
               {group.title}
             </NavTopBarLink>
           );
         }
+
+        return null;
       })}
     </Flex>
   );
