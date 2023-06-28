@@ -80,10 +80,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   onDelete,
   deleteResult,
 }) => {
-  const mounted = useRef(false);
   const { handleError } = useAPIHelper();
 
-  const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
+  const [trigger, {isLoading, isFetching}] = useLazyGetDatastoreConnectionStatusQuery();
 
   const validateConnectionIdentifier = (value: string) => {
     let error;
@@ -238,22 +237,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   };
 
   const handleTestConnectionClick = async () => {
-    try {
-      await trigger(connectionConfig!.key).unwrap();
-    } catch (error) {
-      handleError(error);
-    }
+    const result = await trigger(connectionConfig!.key);
+    onTestConnectionClick(result);
   };
-
-  useEffect(() => {
-    mounted.current = true;
-    if (result.isSuccess) {
-      onTestConnectionClick(result);
-    }
-    return () => {
-      mounted.current = false;
-    };
-  }, [onTestConnectionClick, result]);
 
   return (
     <Formik
@@ -395,7 +381,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   isSubmitting ||
                   deleteResult.isLoading
                 }
-                isLoading={result.isLoading || result.isFetching}
+                isLoading={isLoading || isFetching}
                 loadingText="Testing"
                 onClick={handleTestConnectionClick}
                 variant="outline"

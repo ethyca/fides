@@ -300,28 +300,19 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 }) => {
   const [response, setResponse] = useState<any>();
 
-  const previousTestTimestamp = useRef(0);
-
   const toast = useToast();
 
   useEffect(() => {
     if (response) {
-      console.log(response);
-      if (
-        response.status === "fulfilled" &&
-        response.fulfilledTimeStamp !== previousTestTimestamp.current
-      ) {
-        const status: UseToastOptions["status"] =
-          response.data?.test_status === "succeeded" ? "success" : "error";
-        const toastParams = {
-          ...DEFAULT_TOAST_PARAMS,
-          status,
-          description: <TestConnectionToast response={response} />,
-        };
-        toast(toastParams);
-      }
-      previousTestTimestamp.current = response.fulfilledTimeStamp;
+      const status: UseToastOptions["status"] = response.data?.test_status === "succeeded" ? "success" : "error";
+      const toastParams = {
+        ...DEFAULT_TOAST_PARAMS,
+        status,
+        description: <TestConnectionToast response={response} />
+      };
+      toast(toastParams);
     }
+    console.log(response);
   }, [response, toast]);
 
   const handleTestConnectionClick = (value: any) => {
