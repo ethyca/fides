@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 from celery.result import AsyncResult
 from loguru import logger
@@ -658,6 +658,24 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         value_dict: Optional[
             Dict[str, Optional[GraphRepr]]
         ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
+        return list(value_dict.values())[0] if value_dict else None
+
+    def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
+        """
+        Cache a dict of collections traversed in the privacy request
+        mapped to their associated data uses
+        """
+        cache: FidesopsRedis = get_cache()
+        cache.set_encoded_object(f"DATA_USE_MAP__{self.id}", value)
+
+    def get_cached_data_use_map(self) -> Optional[Dict[str, Set[str]]]:
+        """
+        Fetch the collection -> data use map cached for this privacy request
+        """
+        cache: FidesopsRedis = get_cache()
+        value_dict: Optional[
+            Dict[str, Optional[Dict[str, Set[str]]]]
+        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
     def trigger_policy_webhook(

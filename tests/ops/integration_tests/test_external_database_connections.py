@@ -65,6 +65,16 @@ def snowflake_test_engine() -> Generator:
 
 @pytest.mark.integration_external
 @pytest.mark.integration_redshift
+def test_redshift_sslmode_default(redshift_test_engine):
+    """Confirm that sslmode is set to verify-full for non SSH connections"""
+    _, kwargs = redshift_test_engine.dialect.create_connect_args(
+        redshift_test_engine.url
+    )
+    assert kwargs["sslmode"] == "verify-full"
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_redshift
 def test_redshift_example_data(redshift_test_engine):
     """Confirm that we can connect to the redshift test db and get table names"""
     inspector = inspect(redshift_test_engine)
