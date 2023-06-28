@@ -7,11 +7,12 @@ from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
-    HTTP_404_NOT_FOUND,
+    HTTP_404_NOT_FOUND, HTTP_200_OK,
 )
 from starlette.testclient import TestClient
 
 from fides.api.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -24,6 +25,7 @@ from fides.common.api.scope_registry import (
     SAAS_CONNECTION_INSTANTIATE,
     STORAGE_DELETE,
 )
+from tests.conftest import generate_role_header_for_user
 
 page_size = Params().size
 
@@ -81,6 +83,29 @@ class TestPatchSystemConnections:
             == "A valid system must be provided to create or update connections"
         )
 
+    @pytest.mark.parametrize(
+        "acting_user_role, expected_status_code, assign_system",
+        [
+            ("owner_user", HTTP_200_OK, False),
+            ("contributor_user", HTTP_200_OK, False ),
+            ("viewer_user",  HTTP_403_FORBIDDEN, False),
+            ("viewer_user",  HTTP_200_OK, True),
+            ("approver_user", HTTP_403_FORBIDDEN, False),
+            # ("viewer_and_approver_user", HTTP_403_FORBIDDEN, False), figure out what should happen here
+        ]
+    )
+    def test_patch_connections_create_role(
+        self, api_client: TestClient, url, payload,request, acting_user_role: ClientDetail, expected_status_code, assign_system
+    ):
+        acting_user_role = request.getfixturevalue(acting_user_role)
+        auth_header = generate_role_header_for_user(
+            acting_user_role, roles=acting_user_role.permissions.roles
+        )
+        resp = api_client.patch(url, headers=auth_header, json=payload)
+        from pprint import pprint
+        pprint(payload)
+        pprint(resp.json())
+        assert resp.status_code == expected_status_code
 
 class TestGetConnections:
     def test_get_connections_not_authenticated(
