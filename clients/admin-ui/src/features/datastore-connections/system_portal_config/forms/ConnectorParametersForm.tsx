@@ -143,7 +143,10 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       key={key}
       validate={
         secretsSchema?.required?.includes(key) ||
-        secretsSchema?.properties[key]?.hasOwnProperty("default") ||
+        Object.prototype.hasOwnProperty.call(
+          secretsSchema?.properties[key],
+          "default"
+        ) ||
         item.type === "integer"
           ? (value: string) =>
               validateField(item.title, value, item.allOf?.[0].$ref)
@@ -155,7 +158,10 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           display="flex"
           isRequired={
             secretsSchema?.required?.includes(key) ||
-            secretsSchema?.properties[key]?.hasOwnProperty("default")
+            Object.prototype.hasOwnProperty.call(
+              secretsSchema?.properties[key],
+              "default"
+            )
           }
           isInvalid={form.errors[key] && form.touched[key]}
         >
