@@ -17,9 +17,19 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.15.0...main)
 
-### Fixed
+### Added
+- Empty state for when there are no relevant privacy notices in the privacy center [#3640](https://github.com/ethyca/fides/pull/3640)
+- Set `sslmode` to `prefer` if connecting to Redshift via ssh [#3685](https://github.com/ethyca/fides/pull/3685)
 
+### Fixed
+- Render linebreaks in the Fides.js overlay descriptions, etc. [#3665](https://github.com/ethyca/fides/pull/3665)
+- Broken link to Fides docs site on the About Fides page in Admin UI [#3643](https://github.com/ethyca/fides/pull/3643)
 - Add Systems Applicable Filter to Privacy Experience List [#3654](https://github.com/ethyca/fides/pull/3654)
+
+### Developer Experience
+
+### Changed
+- Moved GPC preferences slightly earlier in Fides.js lifecycle [#3561](https://github.com/ethyca/fides/pull/3561)
 
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
@@ -74,6 +84,10 @@ The types of changes are:
 - Update to latest asyncpg dependency to avoid build error [#3614](https://github.com/ethyca/fides/pull/3614)
 - Fix bug where editing a data use on a system could delete existing data uses [#3627](https://github.com/ethyca/fides/pull/3627)
 - Restrict Privacy Center debug logging to development-only [#3638](https://github.com/ethyca/fides/pull/3638)
+- Fix bug where linking an integration would not update the tab when creating a new system [#3662](https://github.com/ethyca/fides/pull/3662)
+- Fix dataset yaml not properly reflecting the dataset in the dropdown of system integrations tab [#3666](https://github.com/ethyca/fides/pull/3666)
+- Fix privacy notices not being able to be edited via the UI after the addition of the `cookies` field [#3670](https://github.com/ethyca/fides/pull/3670)
+- Add a transform in the case of `null` name fields in privacy declarations for the data use forms [#3683](https://github.com/ethyca/fides/pull/3683)
 
 ### Changed
 
@@ -93,6 +107,7 @@ The types of changes are:
 - Removed `pyodbc` in favor of `pymssql` for handling SQL Server connections [#3435](https://github.com/ethyca/fides/pull/3435)
 - Only create a PrivacyRequest when saving consent if at least one notice has system-wide enforcement [#3626](https://github.com/ethyca/fides/pull/3626)
 - Increased the character limit for the `SafeStr` type from 500 to 32000 [#3647](https://github.com/ethyca/fides/pull/3647)
+- Changed "connection" to "integration" on system view and edit pages [#3659](https://github.com/ethyca/fides/pull/3659)
 
 ### Developer Experience
 
