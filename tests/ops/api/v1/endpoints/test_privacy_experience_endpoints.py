@@ -150,6 +150,8 @@ class TestGetPrivacyExperiences:
         url,
         privacy_experience_privacy_center,
         privacy_experience_overlay,
+        privacy_notice_france,
+        privacy_experience_privacy_center_france,
     ):
         resp = api_client.get(
             url + "?region=us_co",
@@ -176,13 +178,22 @@ class TestGetPrivacyExperiences:
         resp = api_client.get(
             url + "?region=bad_region",
         )
-        assert resp.status_code == 422
-
-        resp = api_client.get(
-            url + "?region=eu_it",
-        )
         assert resp.status_code == 200
         assert resp.json()["total"] == 0
+
+        resp = api_client.get(
+            url + "?region=fr_idg",
+        )  # There are no experiences with "fr_idg" so we fell back to searching for "fr"
+        assert resp.status_code == 200
+        assert resp.json()["total"] == 1
+        data = resp.json()
+        assert len(data["items"]) == 1
+        assert {exp["id"] for exp in data["items"]} == {
+            privacy_experience_privacy_center_france.id
+        }
+        assert len(data["items"][0]["privacy_notices"]) == 1
+        assert data["items"][0]["privacy_notices"][0]["regions"] == ["fr"]
+        assert data["items"][0]["privacy_notices"][0]["id"] == privacy_notice_france.id
 
     def test_get_privacy_experiences_components_filter(
         self,
@@ -252,7 +263,7 @@ class TestGetPrivacyExperiences:
     @pytest.mark.usefixtures(
         "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
         "privacy_notice_eu_cy_provide_service_frontend_only",  # doesn't overlap with any regions
-        "privacy_notice_eu_fr_provide_service_frontend_only",
+        "privacy_notice_fr_provide_service_frontend_only",
     )
     def test_get_privacy_experiences_has_notices(
         self,
@@ -333,7 +344,7 @@ class TestGetPrivacyExperiences:
         "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
         "privacy_notice_eu_cy_provide_service_frontend_only",  # doesn't overlap with any regions,
         "privacy_experience_overlay",  # us_ca
-        "privacy_notice_eu_fr_provide_service_frontend_only",  # eu_fr
+        "privacy_notice_fr_provide_service_frontend_only",  # fr
         "privacy_notice_us_ca_provide",  # us_ca
     )
     def test_filter_on_notices_and_region(
@@ -371,7 +382,7 @@ class TestGetPrivacyExperiences:
         "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
         "privacy_notice_eu_cy_provide_service_frontend_only",  # doesn't overlap with any regions,
         "privacy_experience_overlay",  # us_ca
-        "privacy_notice_eu_fr_provide_service_frontend_only",  # eu_fr
+        "privacy_notice_fr_provide_service_frontend_only",  # eu_fr
         "privacy_notice_us_ca_provide",  # us_ca
         "privacy_experience_privacy_center",
     )
@@ -427,7 +438,7 @@ class TestGetPrivacyExperiences:
         "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
         "privacy_notice_eu_cy_provide_service_frontend_only",  # doesn't overlap with any regions,
         "privacy_experience_privacy_center",
-        "privacy_notice_eu_fr_provide_service_frontend_only",  # eu_fr
+        "privacy_notice_fr_provide_service_frontend_only",  # fr
         "privacy_notice_us_co_third_party_sharing",  # us_co
     )
     def test_filter_on_notices_and_region_and_show_disabled_is_false(
