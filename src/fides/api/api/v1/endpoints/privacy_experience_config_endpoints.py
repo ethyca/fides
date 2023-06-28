@@ -16,7 +16,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1 import urn_registry as urls
 from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
@@ -39,6 +38,7 @@ from fides.api.util.consent_util import (
 from fides.api.util.endpoint_utils import human_friendly_list, transform_fields
 from fides.common.api import scope_registry
 from fides.common.api.scope_registry import PRIVACY_EXPERIENCE_UPDATE
+from fides.common.api.v1 import urn_registry as urls
 
 router = APIRouter(tags=["Privacy Experience Config"], prefix=urls.V1_URL_PREFIX)
 

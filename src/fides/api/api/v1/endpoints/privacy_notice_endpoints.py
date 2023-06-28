@@ -15,7 +15,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1 import urn_registry as urls
 from fides.api.common_exceptions import ValidationError
 from fides.api.models.privacy_experience import (
     upsert_privacy_experiences_after_notice_update,
@@ -35,6 +34,7 @@ from fides.api.util.consent_util import (
 )
 from fides.api.util.endpoint_utils import transform_fields
 from fides.common.api import scope_registry
+from fides.common.api.v1 import urn_registry as urls
 
 router = APIRouter(tags=["Privacy Notice"], prefix=urls.V1_URL_PREFIX)
 

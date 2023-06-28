@@ -4,12 +4,6 @@ from unittest import mock
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import (
-    CONNECTION_TYPE_SECRETS,
-    CONNECTION_TYPES,
-    SAAS_CONNECTOR_FROM_TEMPLATE,
-    V1_URL_PREFIX,
-)
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -26,6 +20,12 @@ from fides.common.api.scope_registry import (
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
     SAAS_CONNECTION_INSTANTIATE,
+)
+from fides.common.api.v1.urn_registry import (
+    CONNECTION_TYPE_SECRETS,
+    CONNECTION_TYPES,
+    SAAS_CONNECTOR_FROM_TEMPLATE,
+    V1_URL_PREFIX,
 )
 
 

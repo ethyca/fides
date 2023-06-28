@@ -4,8 +4,8 @@ import pytest
 from starlette.status import HTTP_200_OK
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import PRIVACY_EXPERIENCE, V1_URL_PREFIX
 from fides.api.models.privacy_notice import ConsentMechanism
+from fides.common.api.v1.urn_registry import PRIVACY_EXPERIENCE, V1_URL_PREFIX
 
 
 class TestGetPrivacyExperiences:
