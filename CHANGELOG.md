@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Empty state for when there are no relevant privacy notices in the privacy center [#3640](https://github.com/ethyca/fides/pull/3640)
+- GPC indicators in fides-js banner and modal [#3673](https://github.com/ethyca/fides/pull/3673)
 - Set `sslmode` to `prefer` if connecting to Redshift via ssh [#3685](https://github.com/ethyca/fides/pull/3685)
 
 ### Fixed

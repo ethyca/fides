@@ -8,6 +8,8 @@ import {
   removeCookiesFromBrowser,
   saveFidesCookie,
   transformUserPreferenceToBoolean,
+  getGpcStatusFromNotice,
+  PrivacyNotice,
 } from "fides-js";
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -16,7 +18,6 @@ import {
   selectPrivacyExperience,
   useUpdatePrivacyPreferencesMutation,
 } from "~/features/consent/consent.slice";
-import { getGpcStatusFromNotice } from "~/features/consent/helpers";
 
 import {
   ConsentMechanism,
@@ -100,7 +101,7 @@ const NoticeDrivenConsent = () => {
       const value = transformUserPreferenceToBoolean(preference);
       const gpcStatus = getGpcStatusFromNotice({
         value,
-        notice,
+        notice: notice as PrivacyNotice,
         consentContext,
       });
 
