@@ -28,6 +28,7 @@ The types of changes are:
 
 ### Changed
 - Moved GPC preferences slightly earlier in Fides.js lifecycle [#3561](https://github.com/ethyca/fides/pull/3561)
+- Moved "management" tab from nav into settings icon in top right [#3701](https://github.com/ethyca/fides/pull/3701)
 
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
