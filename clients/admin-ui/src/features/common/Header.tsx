@@ -8,6 +8,7 @@ import {
   MenuItem,
   MenuList,
   QuestionIcon,
+  SettingsIcon,
   Stack,
   Text,
   UserIcon,
@@ -18,6 +19,7 @@ import React from "react";
 import logoImage from "~/../public/logo.svg";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { INDEX_ROUTE } from "~/constants";
+import { USER_MANAGEMENT_ROUTE } from "./nav/v2/routes";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
 
@@ -59,6 +61,11 @@ const Header: React.FC = () => {
             <QuestionIcon color="gray.700" boxSize={4} />
           </Button>
         </Link>
+        <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
+          <Button size="sm" variant="ghost">
+            <SettingsIcon color="gray.700" boxSize={4} />
+          </Button>
+        </NextLink>
         {username && (
           <Menu>
             <MenuButton

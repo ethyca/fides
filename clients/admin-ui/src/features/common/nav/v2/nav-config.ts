@@ -33,6 +33,41 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
+    title: "Data map",
+    routes: [
+      {
+        title: "View map",
+        path: routes.DATAMAP_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+      },
+      {
+        title: "View systems",
+        path: routes.SYSTEM_ROUTE,
+        scopes: [ScopeRegistryEnum.SYSTEM_READ],
+      },
+      {
+        title: "Add systems",
+        path: routes.ADD_SYSTEMS_ROUTE,
+        scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
+      },
+      {
+        title: "Manage datasets",
+        path: routes.DATASET_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.CTL_DATASET_CREATE,
+          ScopeRegistryEnum.CTL_DATASET_UPDATE,
+        ],
+      },
+      {
+        title: "Classify systems",
+        path: routes.CLASSIFY_SYSTEMS_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.SYSTEM_UPDATE], // temporary scope until we decide what to do here
+      },
+    ],
+  },
+  {
     title: "Privacy requests",
     routes: [
       {
@@ -79,88 +114,53 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
     ],
   },
-  {
-    title: "Data map",
-    routes: [
-      {
-        title: "View map",
-        path: routes.DATAMAP_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.DATAMAP_READ],
-      },
-      {
-        title: "View systems",
-        path: routes.SYSTEM_ROUTE,
-        scopes: [ScopeRegistryEnum.SYSTEM_READ],
-      },
-      {
-        title: "Add systems",
-        path: routes.ADD_SYSTEMS_ROUTE,
-        scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
-      },
-      {
-        title: "Manage datasets",
-        path: routes.DATASET_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.CTL_DATASET_CREATE,
-          ScopeRegistryEnum.CTL_DATASET_UPDATE,
-        ],
-      },
-      {
-        title: "Classify systems",
-        path: routes.CLASSIFY_SYSTEMS_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.SYSTEM_UPDATE], // temporary scope until we decide what to do here
-      },
-    ],
-  },
-  {
-    title: "Management",
-    routes: [
-      {
-        title: "Users",
-        path: routes.USER_MANAGEMENT_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.USER_UPDATE,
-          ScopeRegistryEnum.USER_CREATE,
-          ScopeRegistryEnum.USER_PERMISSION_UPDATE,
-          ScopeRegistryEnum.USER_READ,
-        ],
-      },
-      {
-        title: "Organization",
-        path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
-        requiresFlag: "organizationManagement",
-        scopes: [
-          ScopeRegistryEnum.ORGANIZATION_READ,
-          ScopeRegistryEnum.ORGANIZATION_UPDATE,
-        ],
-      },
-      {
-        title: "Taxonomy",
-        path: routes.TAXONOMY_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.DATA_CATEGORY_CREATE,
-          ScopeRegistryEnum.DATA_CATEGORY_UPDATE,
-          ScopeRegistryEnum.DATA_USE_CREATE,
-          ScopeRegistryEnum.DATA_USE_UPDATE,
-          ScopeRegistryEnum.DATA_SUBJECT_CREATE,
-          ScopeRegistryEnum.DATA_SUBJECT_UPDATE,
-        ],
-      },
-      {
-        title: "Custom fields",
-        path: routes.CUSTOM_FIELDS_ROUTE,
-        scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
-        requiresPlus: true,
-      },
-      {
-        title: "About Fides",
-        path: routes.ABOUT_ROUTE,
-        scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features
-      },
-    ],
-  },
+  // {
+  //   title: "Management",
+  //   routes: [
+  //     {
+  //       title: "Users",
+  //       path: routes.USER_MANAGEMENT_ROUTE,
+  //       scopes: [
+  //         ScopeRegistryEnum.USER_UPDATE,
+  //         ScopeRegistryEnum.USER_CREATE,
+  //         ScopeRegistryEnum.USER_PERMISSION_UPDATE,
+  //         ScopeRegistryEnum.USER_READ,
+  //       ],
+  //     },
+  //     {
+  //       title: "Organization",
+  //       path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
+  //       requiresFlag: "organizationManagement",
+  //       scopes: [
+  //         ScopeRegistryEnum.ORGANIZATION_READ,
+  //         ScopeRegistryEnum.ORGANIZATION_UPDATE,
+  //       ],
+  //     },
+  //     {
+  //       title: "Taxonomy",
+  //       path: routes.TAXONOMY_ROUTE,
+  //       scopes: [
+  //         ScopeRegistryEnum.DATA_CATEGORY_CREATE,
+  //         ScopeRegistryEnum.DATA_CATEGORY_UPDATE,
+  //         ScopeRegistryEnum.DATA_USE_CREATE,
+  //         ScopeRegistryEnum.DATA_USE_UPDATE,
+  //         ScopeRegistryEnum.DATA_SUBJECT_CREATE,
+  //         ScopeRegistryEnum.DATA_SUBJECT_UPDATE,
+  //       ],
+  //     },
+  //     {
+  //       title: "Custom fields",
+  //       path: routes.CUSTOM_FIELDS_ROUTE,
+  //       scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
+  //       requiresPlus: true,
+  //     },
+  //     {
+  //       title: "About Fides",
+  //       path: routes.ABOUT_ROUTE,
+  //       scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features
+  //     },
+  //   ],
+  // },
 ];
 
 export type NavGroupChild = {
