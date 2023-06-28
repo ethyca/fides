@@ -19,6 +19,9 @@ The types of changes are:
 
 ## [2.15.1](https://github.com/ethyca/fides/compare/2.15.0...2.15.1)
 
+### Added
+- Set `sslmode` to `prefer` if connecting to Redshift via ssh [#3685](https://github.com/ethyca/fides/pull/3685)
+
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
 
 ### Added
