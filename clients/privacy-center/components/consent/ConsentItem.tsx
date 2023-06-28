@@ -12,7 +12,7 @@ import {
   ExternalLinkIcon,
 } from "@fidesui/react";
 
-import { GpcStatus } from "~/features/consent/types";
+import { GpcStatus } from "fides-js";
 import { GpcBadge, GpcInfo } from "~/features/consent/GpcMessages";
 
 export type ConsentItemProps = {

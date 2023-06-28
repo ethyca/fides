@@ -66,6 +66,7 @@ import {
   UserGeolocation,
   ConsentMethod,
   SaveConsentPreference,
+  ConsentMechanism,
 } from "./lib/consent-types";
 import {
   constructFidesRegionString,
@@ -79,6 +80,7 @@ import { fetchExperience } from "./services/fides/api";
 import { getGeolocation } from "./services/external/geolocation";
 import { OverlayProps } from "./components/Overlay";
 import { updateConsentPreferences } from "./lib/preferences";
+import { resolveConsentValue } from "./lib/consent-value";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -131,26 +133,40 @@ const automaticallyApplyGPCPreferences = (
   fidesApiUrl: string,
   effectiveExperience?: PrivacyExperience | null
 ) => {
-  if (!effectiveExperience) {
+  if (!effectiveExperience || !effectiveExperience.privacy_notices) {
     return;
   }
 
-  if (!getConsentContext().globalPrivacyControl) {
+  const context = getConsentContext();
+  if (!context.globalPrivacyControl) {
     return;
   }
 
-  const consentPreferencesToSave: Array<SaveConsentPreference> = [];
-  effectiveExperience.privacy_notices?.forEach((notice) => {
-    if (notice.has_gpc_flag && !notice.current_preference) {
-      consentPreferencesToSave.push(
-        new SaveConsentPreference(
+  let gpcApplied = false;
+  const consentPreferencesToSave = effectiveExperience.privacy_notices.map(
+    (notice) => {
+      if (
+        notice.has_gpc_flag &&
+        !notice.current_preference &&
+        notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY
+      ) {
+        gpcApplied = true;
+        return new SaveConsentPreference(
           notice,
           transformConsentToFidesUserPreference(false, notice.consent_mechanism)
+        );
+      }
+      return new SaveConsentPreference(
+        notice,
+        transformConsentToFidesUserPreference(
+          resolveConsentValue(notice, context),
+          notice.consent_mechanism
         )
       );
     }
-  });
-  if (consentPreferencesToSave.length > 0) {
+  );
+
+  if (gpcApplied) {
     updateConsentPreferences({
       consentPreferencesToSave,
       experienceId: effectiveExperience.id,
