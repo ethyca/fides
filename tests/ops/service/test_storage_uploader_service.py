@@ -79,6 +79,7 @@ def test_uploader_s3_success_secrets_auth(
         privacy_request,
         S3AuthMethod.SECRET_KEYS.value,
         None,
+        None,
     )
 
     storage_config.delete(db)
@@ -184,6 +185,7 @@ def test_uploader_s3_success_automatic_auth(
         "json",
         privacy_request,
         S3AuthMethod.AUTOMATIC.value,
+        None,
         None,
     )
 
