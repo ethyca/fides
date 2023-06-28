@@ -3,7 +3,13 @@ import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { CacheControl, stringify } from "cache-control-parser";
 
-import { ConsentOption, FidesConfig, constructFidesRegionString, CONSENT_COOKIE_NAME, fetchExperience } from "fides-js";
+import {
+  ConsentOption,
+  FidesConfig,
+  constructFidesRegionString,
+  CONSENT_COOKIE_NAME,
+  fetchExperience,
+} from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import { lookupGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
 
@@ -71,16 +77,15 @@ export default async function handler(
   if (geolocation) {
     const fidesRegionString = constructFidesRegionString(geolocation);
     if (fidesRegionString) {
-      let fidesUserDeviceId = null
+      let fidesUserDeviceId = null;
       if (Object.keys(req.cookies).length) {
-        const fidesCookie = req.cookies[CONSENT_COOKIE_NAME]
+        const fidesCookie = req.cookies[CONSENT_COOKIE_NAME];
         if (fidesCookie) {
-          fidesUserDeviceId = JSON.parse(fidesCookie)?.identity?.fides_user_device_id
+          fidesUserDeviceId =
+            JSON.parse(fidesCookie)?.identity?.fides_user_device_id;
         }
       }
-      console.log(
-          "Fetching relevant experiences from server-side..."
-      );
+      console.log("Fetching relevant experiences from server-side...");
       experience = await fetchExperience(
         fidesRegionString,
         environment.settings.FIDES_API_URL,
