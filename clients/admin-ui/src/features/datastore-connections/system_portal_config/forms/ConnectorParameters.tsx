@@ -16,7 +16,7 @@ import {
   DatastoreConnectionSecretsRequest,
   DatastoreConnectionSecretsResponse,
 } from "datastore-connections/types";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
@@ -304,15 +304,15 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 
   useEffect(() => {
     if (response) {
-      const status: UseToastOptions["status"] = response.data?.test_status === "succeeded" ? "success" : "error";
+      const status: UseToastOptions["status"] =
+        response.data?.test_status === "succeeded" ? "success" : "error";
       const toastParams = {
         ...DEFAULT_TOAST_PARAMS,
         status,
-        description: <TestConnectionToast response={response} />
+        description: <TestConnectionToast response={response} />,
       };
       toast(toastParams);
     }
-    console.log(response);
   }, [response, toast]);
 
   const handleTestConnectionClick = (value: any) => {

@@ -18,7 +18,6 @@ import {
   VStack,
 } from "@fidesui/react";
 import { Option } from "common/form/inputs";
-import { useAPIHelper } from "common/hooks";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaReponse,
@@ -26,7 +25,7 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
-import React, { useEffect, useRef } from "react";
+import React from "react";
 
 import DatasetConfigField from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
@@ -80,9 +79,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   onDelete,
   deleteResult,
 }) => {
-  const { handleError } = useAPIHelper();
-
-  const [trigger, {isLoading, isFetching}] = useLazyGetDatastoreConnectionStatusQuery();
+  const [trigger, { isLoading, isFetching }] =
+    useLazyGetDatastoreConnectionStatusQuery();
 
   const validateConnectionIdentifier = (value: string) => {
     let error;
