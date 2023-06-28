@@ -368,10 +368,10 @@ class TestWriteToInMemoryBuffer:
 
         zipfile = ZipFile(buff)
         assert zipfile.namelist() == [
-            "filing_cabinet.csv",
             "mongo:address.csv",
             "mysql:customer.csv",
             "mongo:foobar.csv",
+            "filing_cabinet.csv",
         ]
 
         with zipfile.open("mongo:address.csv") as address_csv:
@@ -437,9 +437,6 @@ class TestWriteToInMemoryBuffer:
         assert zipfile.namelist() == [
             "/main.css",
             "/back.svg",
-            "/manual/index.html",
-            "/manual/filing_cabinet/1.html",
-            "/manual/filing_cabinet/index.html",
             "/mongo/address/1.html",
             "/mongo/address/2.html",
             "/mongo/address/index.html",
@@ -450,6 +447,9 @@ class TestWriteToInMemoryBuffer:
             "/mysql/customer/2.html",
             "/mysql/customer/index.html",
             "/mysql/index.html",
+            "/manual/filing_cabinet/1.html",
+            "/manual/filing_cabinet/index.html",
+            "/manual/index.html",
             "/index.html",
         ]
 
