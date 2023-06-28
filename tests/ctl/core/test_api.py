@@ -958,6 +958,38 @@ class TestSystemUpdate:
         db.refresh(system)
         assert system.privacy_declarations[0].data_use == "marketing.advertising"
 
+    def test_system_update_privacy_declaration_null_name(
+        self,
+        system,
+        test_config,
+        system_update_request_body,
+        generate_role_header,
+        db,
+    ):
+        """
+        Test that `privacy_declaration.name` can be passed as null/None on a PUT
+        """
+        auth_header = generate_role_header(roles=[OWNER])
+        system_update_request_body.privacy_declarations.append(
+            models.PrivacyDeclaration(
+                name=None,  # testing that this is supported
+                data_categories=["user.payment"],
+                data_use="advertising",
+                data_subjects=["anonymous_user"],
+                data_qualifier="aggregated",
+                dataset_references=[],
+            )
+        )
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+
+        # this fails for now, returning a 422, which is the problem/bug we're trying to fix.
+        assert result.status_code == HTTP_200_OK
+
     def test_system_update_privacy_declaration_invalid_duplicate(
         self,
         system,
