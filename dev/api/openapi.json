@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.15.1b0.post0.dev3"
+    "version": "2.15.1b0.post0.dev4"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -7790,6 +7790,16 @@
               "type": "string"
             },
             "name": "fides_user_device_id",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Systems Applicable",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "systems_applicable",
             "in": "query"
           },
           {
