@@ -5,7 +5,10 @@ import { CacheControl, stringify } from "cache-control-parser";
 
 import { ConsentOption, FidesConfig } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
-import { getGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
+import { lookupGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
+import { fetchExperience } from "fides-js/src/services/fides/api";
+import { constructFidesRegionString } from "fides-js/src/lib/consent-utils";
+import { CONSENT_COOKIE_NAME } from "fides-js/src/lib/cookie";
 
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
 
@@ -52,9 +55,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Check if a geolocation was provided via headers or query param; if so, inject into the bundle
-  const geolocation = getGeolocation(req);
-
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await loadPrivacyCenterEnvironment();
   let options: ConsentOption[] = [];
@@ -65,6 +65,24 @@ export default async function handler(
       default: option.default,
       cookieKeys: option.cookieKeys,
     }));
+  }
+
+  // Check if a geolocation was provided via headers, query param, or obtainable via a geolocation URL;
+  // if so, inject into the bundle, along with privacy experience
+  const geolocation = lookupGeolocation(req, environment.settings);
+  let experience;
+  if (geolocation) {
+    const fidesRegionString = constructFidesRegionString(geolocation);
+    if (fidesRegionString) {
+      // @ts-ignore
+      const fidesCookie = req.cookies.get(CONSENT_COOKIE_NAME)?.value;
+      experience = await fetchExperience(
+        fidesRegionString,
+        environment.settings.FIDES_API_URL,
+        fidesCookie?.identity?.fides_user_device_id,
+        environment.settings.DEBUG
+      );
+    }
   }
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
@@ -82,7 +100,8 @@ export default async function handler(
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
       fidesApiUrl: environment.settings.FIDES_API_URL,
     },
-    geolocation,
+    experience: experience || undefined,
+    geolocation: geolocation || undefined,
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
