@@ -314,7 +314,7 @@ class TestPrivacyExperience:
 
         exp.delete(db)
 
-    def test_get_related_privacy_notices(self, db):
+    def test_get_related_privacy_notices(self, db, system):
         """Test PrivacyExperience.get_related_privacy_notices that are embedded in PrivacyExperience request"""
         privacy_experience = PrivacyExperience.create(
             db=db,
@@ -368,6 +368,23 @@ class TestPrivacyExperience:
             privacy_experience.get_related_privacy_notices(db, show_disabled=False)
             == []
         )
+
+        # Privacy notice is applicable to a system - they share a data use
+        assert privacy_experience.get_related_privacy_notices(
+            db, systems_applicable=True
+        ) == [privacy_notice]
+
+        system.privacy_declarations[0].delete(db)
+        db.refresh(system)
+
+        # Privacy notice is no longer applicable to any systems
+        assert (
+            privacy_experience.get_related_privacy_notices(db, systems_applicable=True)
+            == []
+        )
+
+        privacy_notice.histories[0].delete(db)
+        privacy_notice.delete(db)
 
     def test_get_should_show_banner(self, db):
         """Test PrivacyExperience.get_should_show_banner that is calculated at runtime"""

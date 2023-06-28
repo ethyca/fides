@@ -70,6 +70,7 @@ def privacy_experience_list(
     has_notices: Optional[bool] = None,
     has_config: Optional[bool] = None,
     fides_user_device_id: Optional[str] = None,
+    systems_applicable: Optional[bool] = False,
     request: Request,  # required for rate limiting
     response: Response,  # required for rate limiting
 ) -> AbstractPage[PrivacyExperience]:
@@ -130,7 +131,7 @@ def privacy_experience_list(
         privacy_notices: List[
             PrivacyNotice
         ] = privacy_experience.get_related_privacy_notices(
-            db, show_disabled, fides_user_provided_identity
+            db, show_disabled, systems_applicable, fides_user_provided_identity
         )
         if should_unescape:
             # Unescape both the experience config and the embedded privacy notices
