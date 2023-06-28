@@ -313,6 +313,8 @@ if (typeof window !== "undefined") {
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
 export * from "./components";
+export * from "./services/fides/api";
+export * from "./services/external/geolocation";
 export * from "./lib/consent";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";

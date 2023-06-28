@@ -3,12 +3,9 @@ import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { CacheControl, stringify } from "cache-control-parser";
 
-import { ConsentOption, FidesConfig } from "fides-js";
+import { ConsentOption, FidesConfig, constructFidesRegionString, CONSENT_COOKIE_NAME, fetchExperience } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import { lookupGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
-import { fetchExperience } from "fides-js/src/services/fides/api";
-import { constructFidesRegionString } from "fides-js/src/lib/consent-utils";
-import { CONSENT_COOKIE_NAME } from "fides-js/src/lib/cookie";
 
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
 
@@ -69,17 +66,25 @@ export default async function handler(
 
   // Check if a geolocation was provided via headers, query param, or obtainable via a geolocation URL;
   // if so, inject into the bundle, along with privacy experience
-  const geolocation = lookupGeolocation(req, environment.settings);
+  const geolocation = await lookupGeolocation(req, environment.settings);
   let experience;
   if (geolocation) {
     const fidesRegionString = constructFidesRegionString(geolocation);
     if (fidesRegionString) {
-      // @ts-ignore
-      const fidesCookie = req.cookies.get(CONSENT_COOKIE_NAME)?.value;
+      let fidesUserDeviceId = null
+      if (Object.keys(req.cookies).length) {
+        const fidesCookie = req.cookies[CONSENT_COOKIE_NAME]
+        if (fidesCookie) {
+          fidesUserDeviceId = JSON.parse(fidesCookie)?.identity?.fides_user_device_id
+        }
+      }
+      console.log(
+          "Fetching relevant experiences from server-side..."
+      );
       experience = await fetchExperience(
         fidesRegionString,
         environment.settings.FIDES_API_URL,
-        fidesCookie?.identity?.fides_user_device_id,
+        fidesUserDeviceId,
         environment.settings.DEBUG
       );
     }
