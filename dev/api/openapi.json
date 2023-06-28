@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.15.1b0.post0.dev6"
+    "version": "2.15.1b0.post0.dev7"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -7752,7 +7752,8 @@
           {
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+              "title": "Region",
+              "type": "string"
             },
             "name": "region",
             "in": "query"
@@ -13720,7 +13721,7 @@
         "enum": [
           "button",
           "gpc",
-          "api"
+          "individual_notice"
         ],
         "description": "An enumeration."
       },
@@ -13929,11 +13930,7 @@
           },
           "user_geography": {
             "title": "Detected geography of the user",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PrivacyNoticeRegion"
-              }
-            ]
+            "type": "string"
           },
           "relevant_systems": {
             "title": "Systems relevant to the given notice by data use.  Note that just because a system is relevant does not mean that a request is necessarily propagated.",
@@ -18388,42 +18385,42 @@
           "us_wv",
           "us_wi",
           "us_wy",
-          "eu_be",
-          "eu_bg",
-          "eu_cz",
-          "eu_dk",
-          "eu_de",
-          "eu_ee",
-          "eu_ie",
-          "eu_el",
-          "eu_es",
-          "eu_fr",
-          "eu_hr",
-          "eu_it",
-          "eu_cy",
-          "eu_lv",
-          "eu_lt",
-          "eu_lu",
-          "eu_hu",
-          "eu_mt",
-          "eu_nl",
-          "eu_at",
-          "eu_pl",
-          "eu_pt",
-          "eu_ro",
-          "eu_si",
-          "eu_sk",
-          "eu_fi",
-          "eu_se",
+          "be",
+          "bg",
+          "cz",
+          "dk",
+          "de",
+          "ee",
+          "ie",
+          "gr",
+          "es",
+          "fr",
+          "hr",
+          "it",
+          "cy",
+          "lv",
+          "lt",
+          "lu",
+          "hu",
+          "mt",
+          "nl",
+          "at",
+          "pl",
+          "pt",
+          "ro",
+          "si",
+          "sk",
+          "fi",
+          "se",
           "gb_eng",
           "gb_sct",
           "gb_wls",
           "gb_nir",
-          "isl",
-          "nor",
+          "is",
+          "no",
           "li"
         ],
-        "description": "Enum is not formalized in the DB because it is subject to frequent change"
+        "description": "An enumeration."
       },
       "PrivacyNoticeResponse": {
         "title": "PrivacyNoticeResponse",
@@ -18774,7 +18771,8 @@
             "type": "string"
           },
           "user_geography": {
-            "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            "title": "User Geography",
+            "type": "string"
           },
           "method": {
             "$ref": "#/components/schemas/ConsentMethod"
