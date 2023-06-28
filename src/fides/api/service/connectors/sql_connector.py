@@ -367,16 +367,19 @@ class RedshiftConnector(SQLConnector):
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
         config = self.secrets_schema(**self.configuration.secrets or {})
+        connect_args = {}
         if config.ssh_required and CONFIG.security.bastion_server_ssh_private_key:
             self.create_ssh_tunnel(host=config.host, port=config.port)
             self.ssh_server.start()
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
+            connect_args["sslmode"] = "prefer"
         else:
             uri = config.url or self.build_uri()
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
+            connect_args=connect_args,
         )
 
     def set_schema(self, connection: Connection) -> None:
