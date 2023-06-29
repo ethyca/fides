@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.15.1b0.post0.dev8"
+    "version": "2.15.1b0.post0.dev9"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -13496,7 +13496,6 @@
       "ConnectionConfigurationResponse": {
         "title": "ConnectionConfigurationResponse",
         "required": [
-          "name",
           "key",
           "connection_type",
           "access",
@@ -14155,7 +14154,6 @@
       "CreateConnectionConfigurationWithSecrets": {
         "title": "CreateConnectionConfigurationWithSecrets",
         "required": [
-          "name",
           "connection_type",
           "access"
         ],
@@ -19821,7 +19819,6 @@
       "SaasConnectionTemplateValues": {
         "title": "SaasConnectionTemplateValues",
         "required": [
-          "name",
           "secrets",
           "instance_key"
         ],
