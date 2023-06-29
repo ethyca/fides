@@ -1,4 +1,32 @@
+import { FidesEndpointPaths } from "fides-js/src/services/fides/api";
+
 describe("fides.js API route", () => {
+  beforeEach(() => {
+    cy.fixture("consent/test_banner_options.json").then((config) => {
+      // mock experience response
+      const experienceResp = {
+        fixture: "consent/overlay_experience.json",
+      };
+      cy.intercept(
+        "GET",
+        `${config.options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}*`,
+        experienceResp
+      ).as("getPrivacyExperience");
+      // mock geolocation response
+      const geoLocationResp = {
+        body: {
+          country: "US",
+          ip: "63.173.339.012:13489",
+          location: "US-CA",
+          region: "CA",
+        },
+      };
+      cy.intercept("GET", config.options.geolocationApiUrl, geoLocationResp).as(
+        "getGeolocation"
+      );
+    });
+  });
+
   it("returns the fides.js package bundled with the global config", () => {
     cy.request("/fides.js").then((response) => {
       expect(response.status).to.eq(200);
@@ -48,6 +76,7 @@ describe("fides.js API route", () => {
         const matches = response.body.match(
           /var fidesConfig = (?<json>\{.*?\});/
         );
+        // fixme: mock privacy experience api endpoint
         expect(JSON.parse(matches.groups.json))
           .to.have.nested.property("geolocation")
           .to.deep.equal({
@@ -76,6 +105,25 @@ describe("fides.js API route", () => {
             location: "FR-IDF",
             country: "FR",
             region: "IDF",
+          });
+      });
+    });
+
+    it("returns geolocation if geolocation API URL is provided", () => {
+      cy.request({
+        url: "/fides.js",
+      }).then((response) => {
+        expect(response.body).to.match(/var fidesConfig = \{/);
+        const matches = response.body.match(
+          /var fidesConfig = (?<json>\{.*?\});/
+        );
+        expect(JSON.parse(matches.groups.json))
+          .to.have.nested.property("geolocation")
+          .to.deep.equal({
+            country: "US",
+            ip: "63.173.339.012:13489",
+            location: "US-CA",
+            region: "CA",
           });
       });
     });
