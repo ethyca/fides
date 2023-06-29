@@ -218,7 +218,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         api_client,
         verification_code,
         db: Session,
-        privacy_notice_eu_fr_provide_service_frontend_only,
+        privacy_notice_fr_provide_service_frontend_only,
         privacy_experience_france_overlay,
         consent_policy,
     ):
@@ -244,14 +244,14 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             "code": verification_code,
             "preferences": [
                 {
-                    "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.histories[
+                    "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.histories[
                         0
                     ].id,
                     "preference": "opt_out",
                 }
             ],
             "policy_key": consent_policy.key,
-            "user_geography": "eu_fr",
+            "user_geography": "fr_idg",
             "privacy_experience_id": privacy_experience_france_overlay.id,
             "method": "button",
         }
@@ -278,7 +278,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         assert (
             response_json["privacy_notice_history"]
             == PrivacyNoticeHistorySchema.from_orm(
-                privacy_notice_eu_fr_provide_service_frontend_only.histories[0]
+                privacy_notice_fr_provide_service_frontend_only.histories[0]
             ).dict()
         )
         db.refresh(consent_request)
@@ -288,6 +288,8 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         # Privacy request not created or queued
         assert privacy_preference_history.privacy_request_id is None
         assert not run_privacy_request_mock.called
+
+        assert privacy_preference_history.user_geography == "fr_idg"
 
         privacy_preference_history.delete(db=db)
 
@@ -1237,7 +1239,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         api_client,
         url,
         consent_policy,
-        privacy_notice_eu_fr_provide_service_frontend_only,
+        privacy_notice_fr_provide_service_frontend_only,
         privacy_experience_france_overlay,
     ):
         """PrivacyPreferences and CurrentPrivacyPreferences saved for the given fides user device id
@@ -1254,7 +1256,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             },
             "preferences": [
                 {
-                    "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.histories[
+                    "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.histories[
                         0
                     ].id,
                     "preference": "opt_out",
@@ -1274,7 +1276,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert response_json["preference"] == "opt_out"
         assert (
             response_json["privacy_notice_history"]["id"]
-            == privacy_notice_eu_fr_provide_service_frontend_only.histories[0].id
+            == privacy_notice_fr_provide_service_frontend_only.histories[0].id
         )
 
         # Fetch current privacy preference that was updated
@@ -1409,6 +1411,31 @@ class TestHistoricalPreferences:
             == privacy_experience_privacy_center.id
         )
 
+    def test_get_historical_preferences_user_geography_unsupported(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_preference_history_fr_provide_service_frontend_only,
+    ) -> None:
+        """Just verifying it's fine if the user geography is not an official privacy notice region"""
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_PREFERENCE_HISTORY_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert len(response.json()["items"]) == 1
+        assert response.json()["total"] == 1
+        assert response.json()["page"] == 1
+        assert response.json()["size"] == 50
+
+        response_body = response.json()["items"][0]
+
+        assert (
+            response_body["id"]
+            == privacy_preference_history_fr_provide_service_frontend_only.id
+        )
+        assert response_body["user_geography"] == "fr_idg"
+
     def test_get_historical_preferences_ordering(
         self,
         api_client: TestClient,
@@ -1416,7 +1443,7 @@ class TestHistoricalPreferences:
         generate_auth_header,
         privacy_preference_history,
         privacy_preference_history_us_ca_provide,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ) -> None:
         auth_header = generate_auth_header(scopes=[PRIVACY_PREFERENCE_HISTORY_READ])
         response = api_client.get(url, headers=auth_header)
@@ -1431,7 +1458,7 @@ class TestHistoricalPreferences:
         # Records ordered most recently created first
         assert (
             response_body[0]["id"]
-            == privacy_preference_history_eu_fr_provide_service_frontend_only.id
+            == privacy_preference_history_fr_provide_service_frontend_only.id
         )
         assert response_body[1]["id"] == privacy_preference_history_us_ca_provide.id
         assert response_body[2]["id"] == privacy_preference_history.id
@@ -1443,7 +1470,7 @@ class TestHistoricalPreferences:
         generate_auth_header,
         privacy_preference_history,
         privacy_preference_history_us_ca_provide,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ) -> None:
         auth_header = generate_auth_header(scopes=[PRIVACY_PREFERENCE_HISTORY_READ])
 
@@ -1459,7 +1486,7 @@ class TestHistoricalPreferences:
         # Filter for everything created before the last preference plus an hour
         response = api_client.get(
             url
-            + f"?request_timestamp_lt={(privacy_preference_history_eu_fr_provide_service_frontend_only.created_at + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%S.%f')}",
+            + f"?request_timestamp_lt={(privacy_preference_history_fr_provide_service_frontend_only.created_at + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%S.%f')}",
             headers=auth_header,
         )
         assert response.status_code == 200
@@ -1467,7 +1494,7 @@ class TestHistoricalPreferences:
 
         assert (
             response.json()["items"][0]["id"]
-            == privacy_preference_history_eu_fr_provide_service_frontend_only.id
+            == privacy_preference_history_fr_provide_service_frontend_only.id
         )
         assert (
             response.json()["items"][1]["id"]
@@ -1485,7 +1512,7 @@ class TestHistoricalPreferences:
         assert response.json()["total"] == 2
         assert (
             response.json()["items"][0]["id"]
-            == privacy_preference_history_eu_fr_provide_service_frontend_only.id
+            == privacy_preference_history_fr_provide_service_frontend_only.id
         )
         assert (
             response.json()["items"][1]["id"]
@@ -1495,7 +1522,7 @@ class TestHistoricalPreferences:
         # Invalid filter
         response = api_client.get(
             url
-            + f"?request_timestamp_lt={privacy_preference_history.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}&request_timestamp_gt={privacy_preference_history_eu_fr_provide_service_frontend_only.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
+            + f"?request_timestamp_lt={privacy_preference_history.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}&request_timestamp_gt={privacy_preference_history_fr_provide_service_frontend_only.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
             headers=auth_header,
         )
         assert response.status_code == 400
@@ -1576,7 +1603,7 @@ class TestCurrentPrivacyPreferences:
         generate_auth_header,
         privacy_preference_history,
         privacy_preference_history_us_ca_provide,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CURRENT_PRIVACY_PREFERENCE_READ])
         response = api_client.get(url, headers=auth_header)
@@ -1591,7 +1618,7 @@ class TestCurrentPrivacyPreferences:
         # Records ordered most recently created first
         assert (
             response_body[0]["id"]
-            == privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.id
+            == privacy_preference_history_fr_provide_service_frontend_only.current_privacy_preference.id
         )
         assert (
             response_body[1]["id"]
@@ -1609,7 +1636,7 @@ class TestCurrentPrivacyPreferences:
         generate_auth_header,
         privacy_preference_history,
         privacy_preference_history_us_ca_provide,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CURRENT_PRIVACY_PREFERENCE_READ])
 
@@ -1625,7 +1652,7 @@ class TestCurrentPrivacyPreferences:
         # Filter for everything updated before the last preference plus an hour
         response = api_client.get(
             url
-            + f"?updated_lt={(privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.updated_at + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%S.%f')}",
+            + f"?updated_lt={(privacy_preference_history_fr_provide_service_frontend_only.current_privacy_preference.updated_at + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%S.%f')}",
             headers=auth_header,
         )
         assert response.status_code == 200
@@ -1633,7 +1660,7 @@ class TestCurrentPrivacyPreferences:
 
         assert (
             response.json()["items"][0]["id"]
-            == privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.id
+            == privacy_preference_history_fr_provide_service_frontend_only.current_privacy_preference.id
         )
         assert (
             response.json()["items"][1]["id"]
@@ -1654,7 +1681,7 @@ class TestCurrentPrivacyPreferences:
         assert response.json()["total"] == 2
         assert (
             response.json()["items"][0]["id"]
-            == privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.id
+            == privacy_preference_history_fr_provide_service_frontend_only.current_privacy_preference.id
         )
         assert (
             response.json()["items"][1]["id"]
@@ -1664,7 +1691,7 @@ class TestCurrentPrivacyPreferences:
         # Invalid filter
         response = api_client.get(
             url
-            + f"?updated_lt={privacy_preference_history.current_privacy_preference.updated_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}&updated_gt={privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
+            + f"?updated_lt={privacy_preference_history.current_privacy_preference.updated_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}&updated_gt={privacy_preference_history_fr_provide_service_frontend_only.current_privacy_preference.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
             headers=auth_header,
         )
         assert response.status_code == 400

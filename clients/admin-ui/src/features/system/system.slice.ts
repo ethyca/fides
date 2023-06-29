@@ -46,7 +46,7 @@ const systemApi = baseApi.injectEndpoints({
         params: { resource_type: "system" },
         method: "DELETE",
       }),
-      invalidatesTags: ["System", "Datastore Connection"],
+      invalidatesTags: ["System", "Datastore Connection", "Privacy Notices"],
     }),
     upsertSystems: build.mutation<UpsertResponse, System[]>({
       query: (systems) => ({

@@ -270,7 +270,6 @@ const DatasetConfigField: React.FC<Props> = ({
         }}
         name={fieldName}
         options={dropdownOptions}
-        isRequired
         onOpen={onOpen}
         isLoading={isLoading}
       />

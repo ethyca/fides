@@ -5,7 +5,7 @@ from fideslang.validation import FidesKey
 from pydantic import Field, conlist
 
 from fides.api.custom_types import SafeStr
-from fides.api.models.privacy_notice import PrivacyNoticeRegion, UserConsentPreference
+from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_preference import ConsentMethod, RequestOrigin
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.schemas.base_class import FidesSchema
@@ -29,7 +29,7 @@ class PrivacyPreferencesRequest(FidesSchema):
     preferences: conlist(ConsentOptionCreate, max_items=50)  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
     privacy_experience_id: Optional[SafeStr]
-    user_geography: Optional[PrivacyNoticeRegion]
+    user_geography: Optional[SafeStr]
     method: Optional[ConsentMethod]
 
 
@@ -83,9 +83,7 @@ class ConsentReportingSchema(FidesSchema):
     preference: UserConsentPreference = Field(
         title="The user's preference for the given notice: opt_in, opt_out, or acknowledge"
     )
-    user_geography: Optional[PrivacyNoticeRegion] = Field(
-        title="Detected geography of the user"
-    )
+    user_geography: Optional[SafeStr] = Field(title="Detected geography of the user")
     relevant_systems: Optional[List[str]] = Field(
         title="Systems relevant to the given notice by data use.  Note that just because a system is relevant does not mean that a request is necessarily propagated."
     )
