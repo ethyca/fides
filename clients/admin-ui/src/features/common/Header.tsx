@@ -69,6 +69,7 @@ const Header: React.FC = () => {
             size="sm"
             variant="ghost"
             icon={<SettingsIcon color="gray.700" boxSize={4} />}
+            data-testid="management-btn"
           />
         </NextLink>
         {username && (
