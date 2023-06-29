@@ -22,20 +22,19 @@ export const NavTopBar = () => {
     >
       {nav.groups.map((group) => {
         // "Management" is navigated to via the gear icon, so don't display it in the nav
-        if (group.title !== "Management") {
-          // The group links to its first child's path.
-          const { path } = group.children[0]!;
-
-          const isActive = group.title === nav.active?.title;
-
-          return (
-            <NavTopBarLink key={group.title} href={path} isActive={isActive}>
-              {group.title}
-            </NavTopBarLink>
-          );
+        if (group.title === "Management") {
+          return null;
         }
+        // The group links to its first child's path.
+        const { path } = group.children[0]!;
 
-        return null;
+        const isActive = group.title === nav.active?.title;
+
+        return (
+          <NavTopBarLink key={group.title} href={path} isActive={isActive}>
+            {group.title}
+          </NavTopBarLink>
+        );
       })}
     </Flex>
   );

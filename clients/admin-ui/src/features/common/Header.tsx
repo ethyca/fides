@@ -1,6 +1,7 @@
 import {
   Button,
   Flex,
+  IconButton,
   Link,
   Menu,
   MenuButton,
@@ -63,9 +64,12 @@ const Header: React.FC = () => {
           </Button>
         </Link>
         <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
-          <Button size="sm" variant="ghost">
-            <SettingsIcon color="gray.700" boxSize={4} />
-          </Button>
+          <IconButton
+            aria-label="Management"
+            size="sm"
+            variant="ghost"
+            icon={<SettingsIcon color="gray.700" boxSize={4}/>}
+          />
         </NextLink>
         {username && (
           <Menu>
