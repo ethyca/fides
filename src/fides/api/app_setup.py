@@ -37,7 +37,7 @@ from fides.api.util.consent_util import (
 )
 from fides.api.util.errors import FidesError
 from fides.api.util.logger import setup as setup_logging
-from fides.api.util.system_manager_oauth_util import (
+from fides.api.oauth.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
     verify_oauth_client_for_system_from_fides_key_cli,

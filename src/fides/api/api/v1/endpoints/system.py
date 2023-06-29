@@ -44,9 +44,10 @@ from fides.api.schemas.connection_configuration.connection_config import (
 from fides.api.schemas.system import SystemResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import patch_connection_configs
-from fides.api.util.system_manager_oauth_util import (
+from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
+    verify_oauth_client_for_system_from_fides_key,
 )
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
@@ -70,7 +71,11 @@ SYSTEM_CONNECTION_INSTANTIATE_ROUTER = APIRouter(
 
 @SYSTEM_CONNECTIONS_ROUTER.get(
     "",
-    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
+    dependencies=[
+        Security(
+            verify_oauth_client_for_system_from_fides_key, scopes=[CONNECTION_READ]
+        )
+    ],
     status_code=HTTP_200_OK,
     response_model=Page[ConnectionConfigurationResponse],
 )
@@ -88,7 +93,12 @@ def get_system_connections(
 
 @SYSTEM_CONNECTIONS_ROUTER.patch(
     "",
-    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
+    dependencies=[
+        Security(
+            verify_oauth_client_for_system_from_fides_key,
+            scopes=[CONNECTION_CREATE_OR_UPDATE],
+        )
+    ],
     status_code=HTTP_200_OK,
     response_model=BulkPutConnectionConfiguration,
 )

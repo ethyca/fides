@@ -19,11 +19,12 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.fides_user import FidesUser
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     SAAS_CONNECTION_INSTANTIATE,
-    STORAGE_DELETE,
+    STORAGE_DELETE, SYSTEM_MANAGER_UPDATE,
 )
 from tests.conftest import generate_role_header_for_user
 
@@ -84,27 +85,55 @@ class TestPatchSystemConnections:
         )
 
     @pytest.mark.parametrize(
-        "acting_user_role, expected_status_code, assign_system",
+        "acting_user_role, expected_status_code",
         [
-            ("owner_user", HTTP_200_OK, False),
-            ("contributor_user", HTTP_200_OK, False ),
-            ("viewer_user",  HTTP_403_FORBIDDEN, False),
-            ("viewer_user",  HTTP_200_OK, True),
-            ("approver_user", HTTP_403_FORBIDDEN, False),
-            # ("viewer_and_approver_user", HTTP_403_FORBIDDEN, False), figure out what should happen here
+            ("owner_user", HTTP_200_OK),
+            ("contributor_user", HTTP_200_OK),
+            ("approver_user", HTTP_403_FORBIDDEN),
         ]
     )
-    def test_patch_connections_create_role(
-        self, api_client: TestClient, url, payload,request, acting_user_role: ClientDetail, expected_status_code, assign_system
+    def test_patch_connections_role_check(
+        self, api_client: TestClient, payload,request, url,acting_user_role: FidesUser, expected_status_code, system, generate_auth_header
     ):
         acting_user_role = request.getfixturevalue(acting_user_role)
         auth_header = generate_role_header_for_user(
             acting_user_role, roles=acting_user_role.permissions.roles
         )
         resp = api_client.patch(url, headers=auth_header, json=payload)
-        from pprint import pprint
-        pprint(payload)
-        pprint(resp.json())
+        assert resp.status_code == expected_status_code
+
+
+
+    @pytest.mark.parametrize(
+        "acting_user_role, expected_status_code, assign_system",
+        [
+            ("viewer_user",  HTTP_403_FORBIDDEN, False),
+            ("viewer_user",  HTTP_200_OK, True),
+            # ("viewer_and_approver_user", HTTP_403_FORBIDDEN, False), figure out what should happen here
+        ]
+    )
+    def test_patch_connections_role_check_viewer(
+            self, api_client: TestClient, payload,request, acting_user_role: FidesUser, expected_status_code, assign_system, system, generate_auth_header, generate_system_manager_header
+    ):
+        url = V1_URL_PREFIX + f"/system/{system.fides_key}/connection"
+        acting_user_role = request.getfixturevalue(acting_user_role)
+
+        if assign_system:
+            assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
+            auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+            resp = api_client.put(assign_url, headers=auth_header, json=[system.fides_key])
+            from pprint import pprint
+            pprint(resp.json())
+
+        ## I need to generate a different token for the viewer
+        # that contains the system id??
+        if assign_system:
+            auth_header = generate_system_manager_header([system.id])
+        else:
+            auth_header = generate_role_header_for_user(
+                acting_user_role, roles=acting_user_role.permissions.roles
+            )
+        resp = api_client.patch(url, headers=auth_header, json=payload)
         assert resp.status_code == expected_status_code
 
 class TestGetConnections:
