@@ -23,6 +23,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeTemplate,
     UserConsentPreference,
     check_conflicting_data_uses,
+    check_conflicting_notice_keys,
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
@@ -316,6 +317,7 @@ def create_privacy_notices_util(
         for privacy_notice in privacy_notice_schemas
     ]
     check_conflicting_data_uses(new_notices, existing_notices)
+    check_conflicting_notice_keys(new_notices, existing_notices)
 
     created_privacy_notices: List[PrivacyNotice] = []
     affected_regions: Set = set()
@@ -436,6 +438,11 @@ def prepare_privacy_notice_patches(
     # run the validation here on our proposed "dry-run" updates
     try:
         check_conflicting_data_uses(
+            validation_updates,
+            existing_notices.values(),
+            ignore_disabled=ignore_disabled,
+        )
+        check_conflicting_notice_keys(
             validation_updates,
             existing_notices.values(),
             ignore_disabled=ignore_disabled,
