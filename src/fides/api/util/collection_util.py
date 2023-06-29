@@ -52,3 +52,17 @@ def filter_nonempty_values(d: Optional[Dict[Any, Any]]) -> Dict[Any, Any]:
     if d:
         return {e[0]: e[1] for e in d.items() if e[1]}
     return {}
+
+
+def extract_key_for_address(full_request_id: str) -> str:
+    """
+    Handles extracting the correct Dataset:Collection to map to extracted
+    values.
+
+    Handles an edge case where double underscores exist in either the fides_key
+    of the Dataset or the Collection name.
+    """
+    request_id_dataset, collection = full_request_id.split(":")
+    number_of_expected_items_to_remove = 2
+    dataset = request_id_dataset.split("__", number_of_expected_items_to_remove)[-1]
+    return f"{dataset}:{collection}"
