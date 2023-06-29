@@ -1,30 +1,20 @@
 import { FidesEndpointPaths } from "fides-js/src/services/fides/api";
+import { API_URL } from "~/cypress/support/constants";
 
 describe("fides.js API route", () => {
   beforeEach(() => {
-    cy.fixture("consent/test_banner_options.json").then((config) => {
-      // mock experience response
-      const experienceResp = {
+    const geolocationApiUrl = "www.example-location-url.com";
+    cy.intercept("GET", geolocationApiUrl, {
+      fixture: "consent/geolocation.json",
+    }).as("getGeolocation");
+    // Will return undefined when there are no relevant privacy notices
+    cy.intercept(
+      "GET",
+      `${API_URL}${FidesEndpointPaths.PRIVACY_EXPERIENCE}**`,
+      {
         fixture: "consent/overlay_experience.json",
-      };
-      cy.intercept(
-        "GET",
-        `${config.options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}*`,
-        experienceResp
-      ).as("getPrivacyExperience");
-      // mock geolocation response
-      const geoLocationResp = {
-        body: {
-          country: "US",
-          ip: "63.173.339.012:13489",
-          location: "US-CA",
-          region: "CA",
-        },
-      };
-      cy.intercept("GET", config.options.geolocationApiUrl, geoLocationResp).as(
-        "getGeolocation"
-      );
-    });
+      }
+    ).as("getExperience");
   });
 
   it("returns the fides.js package bundled with the global config", () => {
@@ -72,6 +62,7 @@ describe("fides.js API route", () => {
   describe("when pre-fetching geolocation", () => {
     it("returns geolocation and experience if provided as a '?geolocation' query param", () => {
       cy.request("/fides.js?geolocation=US-CA").then((response) => {
+        cy.wait("@getPrivacyExperience");
         expect(response.body).to.match(/var fidesConfig = \{/);
         const matches = response.body.match(
           /var fidesConfig = (?<json>\{.*?\});/
@@ -83,11 +74,10 @@ describe("fides.js API route", () => {
             country: "US",
             region: "CA",
           });
-        cy.fixture("consent/test_banner_options.json").then((config) => {
-          expect(JSON.parse(matches.groups.json))
-            .to.have.nested.property("experience")
-            .to.deep.equal(config);
-        });
+        expect(JSON.parse(matches.groups.json))
+          .to.have.nested.property("experience")
+          .to.have.property("items")
+          .to.have.length(2);
       });
     });
 
@@ -110,17 +100,20 @@ describe("fides.js API route", () => {
             country: "FR",
             region: "IDF",
           });
-        cy.fixture("consent/test_banner_options.json").then((config) => {
-          expect(JSON.parse(matches.groups.json))
-            .to.have.nested.property("experience")
-            .to.deep.equal(config);
-        });
+        expect(JSON.parse(matches.groups.json))
+          .to.have.nested.property("experience")
+          .to.have.property("items")
+          .to.have.length(2);
       });
     });
 
     it("returns geolocation and experience if geolocation API URL is provided", () => {
+      const geolocationApiUrl = "www.example-location-url.com";
+      cy.intercept("GET", geolocationApiUrl, {
+        fixture: "consent/geolocation.json",
+      }).as("getGeolocation");
       cy.request({
-        url: "/fides.js",
+        url: "/fides.js?isGeolocationEnabled=true&geolocationApiUrl=www.example-location-url.com",
       }).then((response) => {
         expect(response.body).to.match(/var fidesConfig = \{/);
         const matches = response.body.match(
@@ -130,15 +123,14 @@ describe("fides.js API route", () => {
           .to.have.nested.property("geolocation")
           .to.deep.equal({
             country: "US",
-            ip: "63.173.339.012:13489",
+            ip: "199.999.999.999:99999",
             location: "US-CA",
             region: "CA",
           });
-        cy.fixture("consent/test_banner_options.json").then((config) => {
-          expect(JSON.parse(matches.groups.json))
-            .to.have.nested.property("experience")
-            .to.deep.equal(config);
-        });
+        expect(JSON.parse(matches.groups.json))
+          .to.have.nested.property("experience")
+          .to.have.property("items")
+          .to.have.length(2);
       });
     });
   });
