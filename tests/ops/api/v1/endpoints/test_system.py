@@ -65,6 +65,46 @@ def payload():
     ]
 
 
+@pytest.fixture(scope="function")
+def connections():
+    return [
+        {
+            "name": "My Main Postgres DB",
+            "key": "postgres_db_1",
+            "connection_type": "postgres",
+            "access": "write",
+            "secrets": {
+                "url": None,
+                "host": "http://localhost",
+                "port": 5432,
+                "dbname": "test",
+                "db_schema": "test",
+                "username": "test",
+                "password": "test",
+            },
+        },
+        {
+            "name": "My Mongo DB",
+            "connection_type": "mongodb",
+            "access": "read",
+            "key": "mongo-db-key",
+        },
+        {
+            "secrets": {
+                "domain": "test_mailchimp_domain",
+                "username": "test_mailchimp_username",
+                "api_key": "test_mailchimp_api_key",
+            },
+            "name": "My Mailchimp Test",
+            "description": "Mailchimp ConnectionConfig description",
+            "key": "mailchimp-asdfasdf-asdftgg-dfgdfg",
+            "connection_type": "saas",
+            "saas_connector_type": "mailchimp",
+            "access": "read",
+        },
+    ]
+
+
 class TestPatchSystemConnections:
     def test_patch_connections_valid_system(
         self, api_client: TestClient, generate_auth_header, url, payload
@@ -138,15 +178,8 @@ class TestPatchSystemConnections:
         if assign_system:
             assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
             auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
-            resp = api_client.put(
-                assign_url, headers=auth_header, json=[system.fides_key]
-            )
-            from pprint import pprint
+            api_client.put(assign_url, headers=auth_header, json=[system.fides_key])
 
-            pprint(resp.json())
-
-        ## I need to generate a different token for the viewer
-        # that contains the system id??
         if assign_system:
             auth_header = generate_system_manager_header([system.id])
         else:
@@ -189,45 +222,9 @@ class TestGetConnections:
         generate_auth_header,
         connection_config,
         url,
+        connections,
         db: Session,
     ) -> None:
-        connections = [
-            {
-                "name": "My Main Postgres DB",
-                "key": "postgres_db_1",
-                "connection_type": "postgres",
-                "access": "write",
-                "secrets": {
-                    "url": None,
-                    "host": "http://localhost",
-                    "port": 5432,
-                    "dbname": "test",
-                    "db_schema": "test",
-                    "username": "test",
-                    "password": "test",
-                },
-            },
-            {
-                "name": "My Mongo DB",
-                "connection_type": "mongodb",
-                "access": "read",
-                "key": "mongo-db-key",
-            },
-            {
-                "secrets": {
-                    "domain": "test_mailchimp_domain",
-                    "username": "test_mailchimp_username",
-                    "api_key": "test_mailchimp_api_key",
-                },
-                "name": "My Mailchimp Test",
-                "description": "Mailchimp ConnectionConfig description",
-                "key": "mailchimp-asdfasdf-asdftgg-dfgdfg",
-                "connection_type": "saas",
-                "saas_connector_type": "mailchimp",
-                "access": "read",
-            },
-        ]
-
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         api_client.patch(url, headers=auth_header, json=connections)
 
@@ -259,6 +256,82 @@ class TestGetConnections:
         assert response_body["total"] == 3
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
+
+    @pytest.mark.parametrize(
+        "acting_user_role, expected_status_code, assign_system",
+        [
+            ("viewer_user", HTTP_200_OK, False),
+            ("viewer_user", HTTP_200_OK, True),
+            ("viewer_and_approver_user", HTTP_200_OK, False),
+            ("viewer_and_approver_user", HTTP_200_OK, True),
+        ],
+    )
+    def test_get_connection_configs_role_viewer(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        generate_system_manager_header,
+        connection_config,
+        connections,
+        acting_user_role,
+        expected_status_code,
+        assign_system,
+        system,
+        request,
+        db: Session,
+    ) -> None:
+        url = V1_URL_PREFIX + f"/system/{system.fides_key}/connection"
+        patch_auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        api_client.patch(url, headers=patch_auth_header, json=connections)
+
+        acting_user_role = request.getfixturevalue(acting_user_role)
+
+        if assign_system:
+            assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
+            auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+            api_client.put(assign_url, headers=auth_header, json=[system.fides_key])
+
+        if assign_system:
+            auth_header = generate_system_manager_header([system.id])
+        else:
+            auth_header = generate_role_header_for_user(
+                acting_user_role, roles=acting_user_role.permissions.roles
+            )
+
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == expected_status_code
+
+    @pytest.mark.parametrize(
+        "acting_user_role, expected_status_code",
+        [
+            ("owner_user", HTTP_200_OK),
+            ("contributor_user", HTTP_200_OK),
+            ("approver_user", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_get_connection_configs_role(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        connection_config,
+        connections,
+        acting_user_role,
+        expected_status_code,
+        system,
+        request,
+        db: Session,
+    ) -> None:
+        url = V1_URL_PREFIX + f"/system/{system.fides_key}/connection"
+        patch_auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        api_client.patch(url, headers=patch_auth_header, json=connections)
+
+        acting_user_role = request.getfixturevalue(acting_user_role)
+        auth_header = generate_role_header_for_user(
+            acting_user_role, roles=acting_user_role.permissions.roles
+        )
+
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == expected_status_code
 
 
 class TestInstantiateSystemConnectionFromTemplate:
