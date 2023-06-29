@@ -1,5 +1,5 @@
 import uuid
-from html import unescape
+from html import escape, unescape
 from typing import List, Optional
 
 from fastapi import Depends, HTTPException, Request, Response
@@ -7,7 +7,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 from starlette.status import (
     HTTP_200_OK,
     HTTP_404_NOT_FOUND,
@@ -22,7 +22,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
 )
-from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
+from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
 from fides.api.util.api_router import APIRouter
@@ -54,6 +54,44 @@ def get_privacy_experience_or_error(
     return privacy_experience
 
 
+def _filter_experiences_by_region_or_country(
+    db: Session, region: Optional[str], experience_query: Query
+) -> Query:
+    """
+    Return at most two privacy experiences, one overlay and one privacy center experience matching the given region.
+    Experiences are looked up by supplied region first.  If nothing is found, we attempt to look up by country code.
+
+    For example, if region was "fr_idg" and no experiences were saved under this code, we'd look again for experiences
+    saved with "fr".
+    """
+    if not region:
+        return experience_query
+
+    region = escape(region)
+    country: str = region.split("_")[0]
+
+    overlay = PrivacyExperience.get_experience_by_region_and_component(
+        db, region, ComponentType.overlay
+    ) or PrivacyExperience.get_experience_by_region_and_component(
+        db, country, ComponentType.overlay
+    )
+    privacy_center = PrivacyExperience.get_experience_by_region_and_component(
+        db, region, ComponentType.privacy_center
+    ) or PrivacyExperience.get_experience_by_region_and_component(
+        db, country, ComponentType.privacy_center
+    )
+
+    experience_ids: List[str] = []
+    if overlay:
+        experience_ids.append(overlay.id)
+    if privacy_center:
+        experience_ids.append(privacy_center.id)
+
+    if experience_ids:
+        return experience_query.filter(PrivacyExperience.id.in_(experience_ids))
+    return db.query(PrivacyExperience).filter(False)
+
+
 @router.get(
     urls.PRIVACY_EXPERIENCE,
     status_code=HTTP_200_OK,
@@ -65,7 +103,7 @@ def privacy_experience_list(
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
     show_disabled: Optional[bool] = True,
-    region: Optional[PrivacyNoticeRegion] = None,
+    region: Optional[str] = None,
     component: Optional[ComponentType] = None,
     has_notices: Optional[bool] = None,
     has_config: Optional[bool] = None,
@@ -109,7 +147,10 @@ def privacy_experience_list(
         ).filter(PrivacyExperienceConfig.disabled.is_(False))
 
     if region is not None:
-        experience_query = experience_query.filter(PrivacyExperience.region == region)
+        experience_query = _filter_experiences_by_region_or_country(
+            db=db, region=region, experience_query=experience_query
+        )
+
     if component is not None:
         experience_query = experience_query.filter(
             PrivacyExperience.component == component
