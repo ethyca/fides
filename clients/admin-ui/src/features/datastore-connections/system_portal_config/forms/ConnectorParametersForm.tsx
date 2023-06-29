@@ -132,6 +132,11 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     return undefined;
   };
 
+  const isRequiredSecretValue = (key: string): boolean =>
+    secretsSchema?.required?.includes(key) ||
+    (secretsSchema?.properties?.[key] !== undefined &&
+      "default" in secretsSchema.properties[key]);
+
   const getFormField = (
     key: string,
     item: ConnectionTypeSecretSchemaProperty
@@ -243,11 +248,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       handleError(error);
     }
   };
-
-  const isRequiredSecretValue = (key: string): boolean =>
-    secretsSchema?.required?.includes(key) ||
-    (secretsSchema?.properties?.[key] !== undefined &&
-      "default" in secretsSchema.properties[key]);
 
   useEffect(() => {
     mounted.current = true;
