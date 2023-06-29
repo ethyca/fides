@@ -20,7 +20,7 @@ class CreateConnectionConfiguration(BaseModel):
     Note that secrets are *NOT* allowed to be supplied here.
     """
 
-    name: str
+    name: Optional[str]
     key: Optional[FidesKey]
     connection_type: ConnectionType
     access: AccessLevel
@@ -93,7 +93,7 @@ class ConnectionConfigurationResponse(BaseModel):
     Do *NOT* add "secrets" to this schema.
     """
 
-    name: str
+    name: Optional[str]
     key: FidesKey
     description: Optional[str]
     connection_type: ConnectionType
@@ -128,7 +128,7 @@ class BulkPatchConnectionConfigurationWithSecrets(BulkResponse):
 class SaasConnectionTemplateValues(BaseModel):
     """Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template"""
 
-    name: str  # For ConnectionConfig
+    name: Optional[str]  # For ConnectionConfig
     key: Optional[FidesKey]  # For ConnectionConfig
     description: Optional[str]  # For ConnectionConfig
     secrets: connection_secrets_schemas  # For ConnectionConfig
