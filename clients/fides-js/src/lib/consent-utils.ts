@@ -1,8 +1,11 @@
+import { ConsentContext } from "./consent-context";
 import {
   ComponentType,
   ConsentMechanism,
   FidesOptions,
+  GpcStatus,
   PrivacyExperience,
+  PrivacyNotice,
   UserConsentPreference,
   UserGeolocation,
   VALID_ISO_3166_LOCATION_REGEX,
@@ -187,3 +190,28 @@ export const hasActionNeededNotices = (experience: PrivacyExperience) =>
       (notice) => notice.current_preference == null
     )
   );
+
+export const getGpcStatusFromNotice = ({
+  value,
+  notice,
+  consentContext,
+}: {
+  value: boolean;
+  notice: PrivacyNotice;
+  consentContext: ConsentContext;
+}) => {
+  // If GPC is not enabled, it won't be applied at all.
+  if (
+    !consentContext.globalPrivacyControl ||
+    !notice.has_gpc_flag ||
+    notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
+  ) {
+    return GpcStatus.NONE;
+  }
+
+  if (!value) {
+    return GpcStatus.APPLIED;
+  }
+
+  return GpcStatus.OVERRIDDEN;
+};

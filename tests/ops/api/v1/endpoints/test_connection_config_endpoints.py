@@ -707,6 +707,14 @@ class TestPatchConnections:
         assert call_args[5] is None
 
 
+    def test_patch_connections_no_name(self, api_client, generate_auth_header, url, payload):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        del payload[0]["name"]
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        assert response.json()["succeeded"][0]["name"] is None
+
+
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -1279,7 +1287,6 @@ class TestDeleteConnection:
         connection_config, dataset_config = instantiate_connector(
             db,
             "sendgrid",
-            "sendgrid_connection_config_secondary",
             "secondary_sendgrid_instance",
             "Sendgrid ConnectionConfig description",
             secrets,

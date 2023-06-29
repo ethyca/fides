@@ -187,7 +187,7 @@ class TestPrivacyExperience:
         """Test PrivacyExperience.get_experience_by_region_and_component method"""
         assert (
             PrivacyExperience.get_experience_by_region_and_component(
-                db, PrivacyNoticeRegion.eu_at, ComponentType.overlay
+                db, PrivacyNoticeRegion.at, ComponentType.overlay
             )
             is None
         )
@@ -196,19 +196,19 @@ class TestPrivacyExperience:
             db=db,
             data={
                 "component": "privacy_center",
-                "region": "eu_at",
+                "region": "at",
             },
         )
 
         assert (
             PrivacyExperience.get_experience_by_region_and_component(
-                db, PrivacyNoticeRegion.eu_at, ComponentType.overlay
+                db, PrivacyNoticeRegion.at, ComponentType.overlay
             )
             is None
         )
         assert (
             PrivacyExperience.get_experience_by_region_and_component(
-                db, PrivacyNoticeRegion.eu_at, ComponentType.privacy_center
+                db, PrivacyNoticeRegion.at, ComponentType.privacy_center
             )
             == pc_exp
         )
@@ -225,7 +225,7 @@ class TestPrivacyExperience:
             db=db,
             data={
                 "component": "privacy_center",
-                "region": "eu_at",
+                "region": "at",
                 "experience_config_id": experience_config_privacy_center.id,
             },
         )
@@ -250,7 +250,7 @@ class TestPrivacyExperience:
             db=db,
             data={
                 "component": "privacy_center",
-                "region": "eu_at",
+                "region": "at",
                 "experience_config_id": experience_config_privacy_center.id,
             },
         )
@@ -314,13 +314,13 @@ class TestPrivacyExperience:
 
         exp.delete(db)
 
-    def test_get_related_privacy_notices(self, db):
+    def test_get_related_privacy_notices(self, db, system):
         """Test PrivacyExperience.get_related_privacy_notices that are embedded in PrivacyExperience request"""
         privacy_experience = PrivacyExperience.create(
             db=db,
             data={
                 "component": ComponentType.overlay,
-                "region": "eu_it",
+                "region": "it",
             },
         )
 
@@ -333,7 +333,7 @@ class TestPrivacyExperience:
                 "name": "Test privacy notice",
                 "notice_key": "test_privacy_notice",
                 "description": "a test sample privacy notice configuration",
-                "regions": [PrivacyNoticeRegion.eu_fr, PrivacyNoticeRegion.eu_it],
+                "regions": [PrivacyNoticeRegion.fr, PrivacyNoticeRegion.it],
                 "consent_mechanism": ConsentMechanism.opt_in,
                 "data_uses": ["marketing.advertising", "third_party_sharing"],
                 "enforcement_level": EnforcementLevel.system_wide,
@@ -357,7 +357,7 @@ class TestPrivacyExperience:
         # While privacy notice is displayed in the overlay, it doesn't have a matching region
         assert privacy_experience.get_related_privacy_notices(db) == []
 
-        privacy_notice.regions = ["eu_it"]
+        privacy_notice.regions = ["it"]
         privacy_notice.save(db)
         privacy_notice.disabled = True
         privacy_notice.save(db)
@@ -369,13 +369,30 @@ class TestPrivacyExperience:
             == []
         )
 
+        # Privacy notice is applicable to a system - they share a data use
+        assert privacy_experience.get_related_privacy_notices(
+            db, systems_applicable=True
+        ) == [privacy_notice]
+
+        system.privacy_declarations[0].delete(db)
+        db.refresh(system)
+
+        # Privacy notice is no longer applicable to any systems
+        assert (
+            privacy_experience.get_related_privacy_notices(db, systems_applicable=True)
+            == []
+        )
+
+        privacy_notice.histories[0].delete(db)
+        privacy_notice.delete(db)
+
     def test_get_should_show_banner(self, db):
         """Test PrivacyExperience.get_should_show_banner that is calculated at runtime"""
         privacy_experience = PrivacyExperience.create(
             db=db,
             data={
                 "component": ComponentType.privacy_center,
-                "region": "eu_it",
+                "region": "it",
             },
         )
 
@@ -394,7 +411,7 @@ class TestPrivacyExperience:
                 "name": "Test privacy notice",
                 "notice_key": "test_privacy_notice",
                 "description": "a test sample privacy notice configuration",
-                "regions": [PrivacyNoticeRegion.eu_fr, PrivacyNoticeRegion.eu_it],
+                "regions": [PrivacyNoticeRegion.fr, PrivacyNoticeRegion.it],
                 "consent_mechanism": ConsentMechanism.opt_out,
                 "data_uses": ["marketing.advertising", "third_party_sharing"],
                 "enforcement_level": EnforcementLevel.system_wide,
@@ -743,7 +760,7 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
                 "name": "example privacy notice",
                 "notice_key": "example_privacy_notice",
                 "regions": [
-                    PrivacyNoticeRegion.eu_it,
+                    PrivacyNoticeRegion.it,
                 ],
                 "consent_mechanism": ConsentMechanism.opt_in,
                 "data_uses": ["marketing.advertising"],
@@ -757,25 +774,25 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.eu_it)
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.it)
         assert overlay_experience is None
         assert privacy_center_experience is None
 
         added_exp = upsert_privacy_experiences_after_notice_update(
-            db, [PrivacyNoticeRegion.eu_it]
+            db, [PrivacyNoticeRegion.it]
         )
 
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.eu_it)
+        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.it)
 
         assert overlay_experience is not None
         assert privacy_center_experience is None
         assert added_exp == [overlay_experience]
 
         assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.region == PrivacyNoticeRegion.eu_it
+        assert overlay_experience.region == PrivacyNoticeRegion.it
         assert (
             overlay_experience.experience_config_id
             == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
