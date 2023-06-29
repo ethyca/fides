@@ -32,6 +32,7 @@ The types of changes are:
 
 ### Changed
 - Moved GPC preferences slightly earlier in Fides.js lifecycle [#3561](https://github.com/ethyca/fides/pull/3561)
+- Remove name and description fields from integration form [#3684](https://github.com/ethyca/fides/pull/3684)
 - Update EU PrivacyNoticeRegion codes and allow experience filtering to drop back to country filtering if region not found [#3630](https://github.com/ethyca/fides/pull/3630)
 
 

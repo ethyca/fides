@@ -89,7 +89,7 @@ const initialState: DatastoreConnectionParams = {
 };
 
 export type CreateSaasConnectionConfig = {
-  connectionConfig: CreateSaasConnectionConfigRequest;
+  connectionConfig: Omit<CreateSaasConnectionConfigRequest, "name">;
   systemFidesKey: string;
 };
 
