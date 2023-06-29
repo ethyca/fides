@@ -68,7 +68,7 @@ const Header: React.FC = () => {
             aria-label="Management"
             size="sm"
             variant="ghost"
-            icon={<SettingsIcon color="gray.700" boxSize={4}/>}
+            icon={<SettingsIcon color="gray.700" boxSize={4} />}
           />
         </NextLink>
         {username && (
