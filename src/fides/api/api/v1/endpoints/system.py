@@ -33,7 +33,12 @@ from fides.api.db.system import (
 )
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.oauth.utils import verify_oauth_client, verify_oauth_client_prod
+from fides.api.oauth.system_manager_oauth_util import (
+    verify_oauth_client_for_system_from_fides_key,
+    verify_oauth_client_for_system_from_fides_key_cli,
+    verify_oauth_client_for_system_from_request_body_cli,
+)
+from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
@@ -44,11 +49,6 @@ from fides.api.schemas.connection_configuration.connection_config import (
 from fides.api.schemas.system import SystemResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import patch_connection_configs
-from fides.api.oauth.system_manager_oauth_util import (
-    verify_oauth_client_for_system_from_fides_key_cli,
-    verify_oauth_client_for_system_from_request_body_cli,
-    verify_oauth_client_for_system_from_fides_key,
-)
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,

@@ -5,10 +5,10 @@ import pytest
 from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.status import (
+    HTTP_200_OK,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_200_OK,
 )
 from starlette.testclient import TestClient
 
