@@ -864,7 +864,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         id="test_id_1",
                         notice_key="a",
                         name="A",
-                        regions=["eu_it"],
+                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["essential"],
                         enforcement_level=EnforcementLevel.system_wide,
@@ -874,7 +874,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         id="test_id_2",
                         notice_key="a",
                         name="B",
-                        regions=["eu_it"],
+                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["marketing"],
                         enforcement_level=EnforcementLevel.frontend,
@@ -886,7 +886,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert exc._excinfo[1].status_code == 422
         assert (
             exc._excinfo[1].detail
-            == "Privacy Notice 'A' has already assigned notice key 'a' to region 'eu_it'"
+            == "Privacy Notice 'A' has already assigned notice key 'a' to region 'it'"
         )
 
     def test_bad_data_uses(self, db, load_default_data_uses):
