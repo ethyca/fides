@@ -159,9 +159,7 @@ class TaskResources:
         """
         request_id_dataset, collection = full_request_id.split(":")
         number_of_expected_items_to_remove = 2
-        request_list = request_id_dataset.split("__")
-        address_list = request_list[number_of_expected_items_to_remove:]
-        dataset = "__".join(address_list)
+        dataset = request_id_dataset.split("__", number_of_expected_items_to_remove)[-1]
         return f"{dataset}:{collection}"
 
     def cache_erasure(self, key: str, value: int) -> None:
