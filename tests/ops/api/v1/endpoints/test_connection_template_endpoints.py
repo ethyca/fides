@@ -1143,18 +1143,17 @@ class TestInstantiateConnectionFromTemplate:
             headers=auth_header,
             json=request_body,
         )
-        assert resp.status_code == 400
-        assert (
-            f"Name {connection_config.name} already exists in ConnectionConfig"
-            in resp.json()["detail"]
-        )
+        # names don't have to be unique
+        assert resp.status_code == 200
+
 
     def test_create_connection_from_template_without_supplying_connection_key(
         self, db, generate_auth_header, api_client, base_url
     ):
         auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+        instance_key = "secondary_mailchimp_instance"
         request_body = {
-            "instance_key": "secondary_mailchimp_instance",
+            "instance_key": instance_key,
             "secrets": {
                 "domain": "test_mailchimp_domain",
                 "username": "test_mailchimp_username",
@@ -1181,7 +1180,7 @@ class TestInstantiateConnectionFromTemplate:
         assert connection_config is not None
         assert dataset_config is not None
 
-        assert connection_config.key == "mailchimp_connector"
+        assert connection_config.key == instance_key
         dataset_config.delete(db)
         connection_config.delete(db)
 
