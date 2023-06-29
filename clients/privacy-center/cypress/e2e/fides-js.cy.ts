@@ -70,13 +70,12 @@ describe("fides.js API route", () => {
   });
 
   describe("when pre-fetching geolocation", () => {
-    it("returns geolocation if provided as a '?geolocation' query param", () => {
+    it("returns geolocation and experience if provided as a '?geolocation' query param", () => {
       cy.request("/fides.js?geolocation=US-CA").then((response) => {
         expect(response.body).to.match(/var fidesConfig = \{/);
         const matches = response.body.match(
           /var fidesConfig = (?<json>\{.*?\});/
         );
-        // fixme: mock privacy experience api endpoint
         expect(JSON.parse(matches.groups.json))
           .to.have.nested.property("geolocation")
           .to.deep.equal({
@@ -84,10 +83,15 @@ describe("fides.js API route", () => {
             country: "US",
             region: "CA",
           });
+        cy.fixture("consent/test_banner_options.json").then((config) => {
+          expect(JSON.parse(matches.groups.json))
+            .to.have.nested.property("experience")
+            .to.deep.equal(config);
+        });
       });
     });
 
-    it("returns geolocation if provided as CloudFront geolocation headers", () => {
+    it("returns geolocation and experience if provided as CloudFront geolocation headers", () => {
       cy.request({
         url: "/fides.js",
         headers: {
@@ -106,10 +110,15 @@ describe("fides.js API route", () => {
             country: "FR",
             region: "IDF",
           });
+        cy.fixture("consent/test_banner_options.json").then((config) => {
+          expect(JSON.parse(matches.groups.json))
+            .to.have.nested.property("experience")
+            .to.deep.equal(config);
+        });
       });
     });
 
-    it("returns geolocation if geolocation API URL is provided", () => {
+    it("returns geolocation and experience if geolocation API URL is provided", () => {
       cy.request({
         url: "/fides.js",
       }).then((response) => {
@@ -125,6 +134,11 @@ describe("fides.js API route", () => {
             location: "US-CA",
             region: "CA",
           });
+        cy.fixture("consent/test_banner_options.json").then((config) => {
+          expect(JSON.parse(matches.groups.json))
+            .to.have.nested.property("experience")
+            .to.deep.equal(config);
+        });
       });
     });
   });
