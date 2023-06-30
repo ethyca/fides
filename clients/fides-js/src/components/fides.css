@@ -85,6 +85,7 @@ div#fides-banner-container {
   display: flex;
   justify-content: center;
   visibility: visible;
+  max-height: 100%;
 }
 
 div#fides-banner {
@@ -93,6 +94,7 @@ div#fides-banner {
   color: var(--fides-overlay-body-font-color);
   box-sizing: border-box;
   padding: var(--fides-overlay-padding);
+  overflow-y: scroll;
 
   display: flex;
   flex-direction: row;
@@ -256,6 +258,7 @@ div.fides-modal-content {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  overflow-y: scroll;
 }
 
 .fides-modal-container,
