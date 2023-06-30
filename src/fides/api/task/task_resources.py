@@ -147,7 +147,11 @@ class TaskResources:
             f"{self.request.id}__access_request"
         )
         # extract request id to return a map of address:value
-        return {extract_key_for_address(k): v for k, v in value_dict.items()}
+        number_of_leading_strings_to_exclude = 2
+        return {
+            extract_key_for_address(k, number_of_leading_strings_to_exclude): v
+            for k, v in value_dict.items()
+        }
 
     def cache_erasure(self, key: str, value: int) -> None:
         """Cache that a node's masking is complete. Object will be stored in redis under
@@ -163,7 +167,8 @@ class TaskResources:
             f"{self.request.id}__erasure_request"
         )
         # extract request id to return a map of address:value
-        return {extract_key_for_address(k): v for k, v in value_dict.items()}  # type: ignore
+        number_of_leading_strings_to_exclude = 2
+        return {extract_key_for_address(k, number_of_leading_strings_to_exclude): v for k, v in value_dict.items()}  # type: ignore
 
     def write_execution_log(  # pylint: disable=too-many-arguments
         self,

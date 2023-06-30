@@ -777,7 +777,11 @@ def get_cached_data_for_erasures(
     value_dict = cache.get_encoded_objects_by_prefix(
         f"PLACEHOLDER_RESULTS__{privacy_request_id}"
     )
-    return {extract_key_for_address(k): v for k, v in value_dict.items()}
+    number_of_leading_strings_to_exclude = 3
+    return {
+        extract_key_for_address(k, number_of_leading_strings_to_exclude): v
+        for k, v in value_dict.items()
+    }
 
 
 def update_erasure_mapping_from_cache(
