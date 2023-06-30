@@ -19,6 +19,9 @@ The types of changes are:
 
 ## [2.15.1](https://github.com/ethyca/fides/compare/2.15.0...2.15.1)
 
+### Changed
+- Privacy center action cards are now able to expand to accommodate longer text [#3669](https://github.com/ethyca/fides/pull/3669)
+
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
 
 ### Added
