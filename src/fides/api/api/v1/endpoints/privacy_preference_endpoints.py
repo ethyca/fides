@@ -347,7 +347,10 @@ def _save_privacy_preferences_for_identities(
 
     needs_server_side_propagation: bool = False
     for privacy_preference in request_data.preferences:
-        historical_preference: PrivacyPreferenceHistory = PrivacyPreferenceHistory.create(
+        (
+            historical_preference,
+            current_preference,
+        ) = PrivacyPreferenceHistory.create_history_and_upsert_current_preference(
             db=db,
             data={
                 "anonymized_ip_address": request_data.anonymized_ip_address,
@@ -379,11 +382,8 @@ def _save_privacy_preferences_for_identities(
             },
             check_name=False,
         )
-        upserted_current_preference: CurrentPrivacyPreference = (
-            historical_preference.current_privacy_preference
-        )
         created_historical_preferences.append(historical_preference)
-        upserted_current_preferences.append(upserted_current_preference)
+        upserted_current_preferences.append(current_preference)
 
         if (
             historical_preference.privacy_notice_history.enforcement_level
