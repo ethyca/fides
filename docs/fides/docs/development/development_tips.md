@@ -10,7 +10,7 @@ If you're looking for a general getting started guide, please see the [Overview]
 
 ### API URLs
 
-We define API URLs for specific API versions as constants within `fides.api.api.v1.urn_registry` (where `v1` can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the `APIRouter` class instantiation with a different base path (ie. `/api/v2` instead of `/api/v1`). For example:
+We define API URLs for specific API versions as constants within `fides.common.api.v1.urn_registry` (where `v1` can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the `APIRouter` class instantiation with a different base path (ie. `/api/v2` instead of `/api/v1`). For example:
 
 ```sh
 PRIVACY_REQUEST = "/privacy-request"

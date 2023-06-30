@@ -358,6 +358,7 @@ class TestWriteToInMemoryBuffer:
                 {"uuid": "xyz-122-333", "name": "foo1", "email": "foo@bar1"},
             ],
             "mongo:foobar": [{"_id": 1, "customer": {"x": 1, "y": [1, 2]}}],
+            "filing_cabinet": [{"id": "123"}],  # represents manual data
         }
 
     def test_json_data(self, data, privacy_request):
@@ -374,6 +375,7 @@ class TestWriteToInMemoryBuffer:
             "mongo:address.csv",
             "mysql:customer.csv",
             "mongo:foobar.csv",
+            "filing_cabinet.csv",
         ]
 
         with zipfile.open("mongo:address.csv") as address_csv:
@@ -449,6 +451,9 @@ class TestWriteToInMemoryBuffer:
             "/mysql/customer/2.html",
             "/mysql/customer/index.html",
             "/mysql/index.html",
+            "/manual/filing_cabinet/1.html",
+            "/manual/filing_cabinet/index.html",
+            "/manual/index.html",
             "/index.html",
         ]
 

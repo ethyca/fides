@@ -13,7 +13,6 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Textarea,
   Tooltip,
   VStack,
 } from "@fidesui/react";
@@ -136,6 +135,11 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     return undefined;
   };
 
+  const isRequiredSecretValue = (key: string): boolean =>
+    secretsSchema?.required?.includes(key) ||
+    (secretsSchema?.properties?.[key] !== undefined &&
+      "default" in secretsSchema.properties[key]);
+
   const getFormField = (
     key: string,
     item: ConnectionTypeSecretSchemaProperty
@@ -145,7 +149,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       name={key}
       key={key}
       validate={
-        secretsSchema?.required?.includes(key) || item.type === "integer"
+        isRequiredSecretValue(key) || item.type === "integer"
           ? (value: string) =>
               validateField(item.title, value, item.allOf?.[0].$ref)
           : false
@@ -154,7 +158,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {({ field, form }: { field: FieldInputProps<string>; form: any }) => (
         <FormControl
           display="flex"
-          isRequired={secretsSchema?.required?.includes(key)}
+          isRequired={isRequiredSecretValue(key)}
           isInvalid={form.errors[key] && form.touched[key]}
         >
           {getFormLabel(key, item.title)}
@@ -257,59 +261,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {(props: FormikProps<Values>) => (
         <Form noValidate>
           <VStack align="stretch" gap="16px">
-            <Field
-              id="name"
-              name="name"
-              validate={(value: string) => validateField("Name", value)}
-            >
-              {({ field }: { field: FieldInputProps<string> }) => (
-                <FormControl
-                  display="flex"
-                  isRequired
-                  isInvalid={props.errors.name && props.touched.name}
-                >
-                  {getFormLabel("name", "Name")}
-                  <VStack align="flex-start" w="inherit">
-                    <Input
-                      {...field}
-                      autoComplete="off"
-                      autoFocus
-                      color="gray.700"
-                      placeholder={`Enter a friendly name for your new ${
-                        connectionOption!.human_readable
-                      } integration`}
-                      size="sm"
-                      data-testid="input-name"
-                    />
-                    <FormErrorMessage>{props.errors.name}</FormErrorMessage>
-                  </VStack>
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
-                </FormControl>
-              )}
-            </Field>
-            {/* Description */}
-            <Field id="description" name="description">
-              {({ field }: { field: FieldInputProps<string> }) => (
-                <FormControl display="flex">
-                  {getFormLabel("description", "Description")}
-                  <Textarea
-                    {...field}
-                    color="gray.700"
-                    placeholder={`Enter a description for your new ${
-                      connectionOption!.human_readable
-                    } integration`}
-                    resize="none"
-                    size="sm"
-                    value={field.value || ""}
-                  />
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
-                </FormControl>
-              )}
-            </Field>
             {/* Connection Identifier */}
             {connectionOption.type !== SystemType.MANUAL ? (
               <Field

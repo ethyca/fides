@@ -14,16 +14,6 @@ from fides.api.api.deps import get_db
 from fides.api.api.v1.endpoints.saas_config_endpoints import (
     verify_oauth_connection_config,
 )
-from fides.api.api.v1.urn_registry import (
-    CLIENT,
-    CLIENT_BY_ID,
-    CLIENT_SCOPE,
-    OAUTH_CALLBACK,
-    ROLE,
-    SCOPE,
-    TOKEN,
-    V1_URL_PREFIX,
-)
 from fides.api.common_exceptions import (
     AuthenticationFailure,
     FidesopsException,
@@ -51,6 +41,16 @@ from fides.common.api.scope_registry import (
     SCOPE_READ,
     SCOPE_REGISTRY,
     ScopeRegistryEnum,
+)
+from fides.common.api.v1.urn_registry import (
+    CLIENT,
+    CLIENT_BY_ID,
+    CLIENT_SCOPE,
+    OAUTH_CALLBACK,
+    ROLE,
+    SCOPE,
+    TOKEN,
+    V1_URL_PREFIX,
 )
 from fides.config import CONFIG
 
