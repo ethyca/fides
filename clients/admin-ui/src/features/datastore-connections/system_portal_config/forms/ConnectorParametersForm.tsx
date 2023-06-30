@@ -35,11 +35,17 @@ import {
   SystemType,
 } from "~/types/api";
 
+import { DatastoreConnectionStatus } from "../../types";
 import DeleteConnectionModal from "../DeleteConnectionModal";
 import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
+
+export interface TestConnectionResponse {
+  data?: DatastoreConnectionStatus;
+  fulfilledTimeStamp?: number;
+}
 
 type ConnectorParametersFormProps = {
   secretsSchema?: ConnectionTypeSecretSchemaReponse;
@@ -52,7 +58,7 @@ type ConnectorParametersFormProps = {
   /**
    * Parent callback when Test Connection is clicked
    */
-  onTestConnectionClick: (value: any) => void;
+  onTestConnectionClick: (value: TestConnectionResponse) => void;
   /**
    * Text for the test button. Defaults to "Test connection"
    */

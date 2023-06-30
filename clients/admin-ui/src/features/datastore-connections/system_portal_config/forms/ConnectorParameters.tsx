@@ -16,13 +16,13 @@ import {
   DatastoreConnectionSecretsRequest,
   DatastoreConnectionSecretsResponse,
 } from "datastore-connections/types";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import TestConnectionToast from "~/features/datastore-connections/system_portal_config/TestConnectionToast";
+import TestConnectionMessage from "~/features/datastore-connections/system_portal_config/TestConnectionMessage";
 import TestData from "~/features/datastore-connections/TestData";
 import {
   selectActiveSystem,
@@ -40,7 +40,9 @@ import {
 } from "~/types/api";
 
 import { ConnectionConfigFormValues } from "../types";
-import ConnectorParametersForm from "./ConnectorParametersForm";
+import ConnectorParametersForm, {
+  TestConnectionResponse,
+} from "./ConnectorParametersForm";
 
 /**
  * Only handles creating saas connectors. The BE handler automatically
@@ -298,26 +300,22 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   connectionConfig,
   setSelectedConnectionOption,
 }) => {
-  const [response, setResponse] = useState<any>();
+  const [response, setResponse] = useState<TestConnectionResponse>();
 
   const toast = useToast();
 
-  useEffect(() => {
-    if (response) {
-      const status: UseToastOptions["status"] =
-        response.data?.test_status === "succeeded" ? "success" : "error";
-      const toastParams = {
-        ...DEFAULT_TOAST_PARAMS,
-        status,
-        description: <TestConnectionToast response={response} />,
-      };
-      toast(toastParams);
-    }
-  }, [response, toast]);
-
-  const handleTestConnectionClick = (value: any) => {
+  const handleTestConnectionClick = (value: TestConnectionResponse) => {
     setResponse(value);
+    const status: UseToastOptions["status"] =
+      value.data?.test_status === "succeeded" ? "success" : "error";
+    const toastParams = {
+      ...DEFAULT_TOAST_PARAMS,
+      status,
+      description: <TestConnectionMessage status={status} />,
+    };
+    toast(toastParams);
   };
+
   const skip = connectionOption.type === SystemType.MANUAL;
   const { data: secretsSchema } = useGetConnectionTypeSecretSchemaQuery(
     connectionOption!.identifier,
@@ -377,7 +375,9 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 
       {connectionConfig ? (
         <Flex mt="4" justifyContent="between" alignItems="center">
-          {response ? (
+          {response &&
+          response.data &&
+          response.fulfilledTimeStamp !== undefined ? (
             <TestData
               succeeded={response.data.test_status === "succeeded"}
               timestamp={response.fulfilledTimeStamp}
