@@ -332,7 +332,6 @@ def check_conflicting_notice_keys(
                 (privacy_notice.notice_key, privacy_notice.name)
             )
 
-    #
     for privacy_notice in new_privacy_notices:
         if privacy_notice.disabled and ignore_disabled:
             # Skip validation if the notice is disabled
