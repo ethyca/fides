@@ -6,7 +6,6 @@ import httpx
 from httpx import AsyncClient, Client, HTTPStatusError, Request, RequestError, Timeout
 from loguru import logger
 
-from fides.api.api.v1 import urn_registry as urls
 from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.privacy_request import (
     PrivacyRequestCreate,
@@ -18,6 +17,7 @@ from fides.api.service.privacy_request.request_service import poll_server_for_co
 from fides.api.util.collection_util import Row
 from fides.api.util.errors import FidesError
 from fides.api.util.wrappers import sync
+from fides.common.api.v1 import urn_registry as urls
 
 COMPLETION_STATUSES = [
     PrivacyRequestStatus.complete,

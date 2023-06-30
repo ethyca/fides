@@ -10,7 +10,6 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -28,6 +27,7 @@ from fides.common.api.scope_registry import (
     CONNECTION_READ,
     STORAGE_DELETE,
 )
+from fides.common.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from tests.fixtures.application_fixtures import integration_secrets
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
@@ -707,6 +707,14 @@ class TestPatchConnections:
         assert call_args[5] is None
 
 
+    def test_patch_connections_no_name(self, api_client, generate_auth_header, url, payload):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        del payload[0]["name"]
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        assert response.json()["succeeded"][0]["name"] is None
+
+
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -1279,7 +1287,6 @@ class TestDeleteConnection:
         connection_config, dataset_config = instantiate_connector(
             db,
             "sendgrid",
-            "sendgrid_connection_config_secondary",
             "secondary_sendgrid_instance",
             "Sendgrid ConnectionConfig description",
             secrets,
