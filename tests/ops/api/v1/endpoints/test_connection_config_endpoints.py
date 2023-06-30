@@ -10,7 +10,6 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -28,6 +27,7 @@ from fides.common.api.scope_registry import (
     CONNECTION_READ,
     STORAGE_DELETE,
 )
+from fides.common.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from tests.fixtures.application_fixtures import integration_secrets
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 

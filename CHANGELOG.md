@@ -27,6 +27,7 @@ The types of changes are:
 - Render linebreaks in the Fides.js overlay descriptions, etc. [#3665](https://github.com/ethyca/fides/pull/3665)
 - Broken link to Fides docs site on the About Fides page in Admin UI [#3643](https://github.com/ethyca/fides/pull/3643)
 - Add Systems Applicable Filter to Privacy Experience List [#3654](https://github.com/ethyca/fides/pull/3654)
+- Reorganized some `api.api.v1` code to avoid circular dependencies on `quickstart` [#3692](https://github.com/ethyca/fides/pull/3692)
 
 ### Developer Experience
 

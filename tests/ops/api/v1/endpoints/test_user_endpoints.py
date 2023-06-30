@@ -16,13 +16,6 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import (
-    LOGIN,
-    LOGOUT,
-    USER_DETAIL,
-    USERS,
-    V1_URL_PREFIX,
-)
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -49,6 +42,13 @@ from fides.common.api.scope_registry import (
     USER_PASSWORD_RESET,
     USER_READ,
     USER_UPDATE,
+)
+from fides.common.api.v1.urn_registry import (
+    LOGIN,
+    LOGOUT,
+    USER_DETAIL,
+    USERS,
+    V1_URL_PREFIX,
 )
 from fides.config import CONFIG
 from tests.conftest import generate_auth_header_for_user

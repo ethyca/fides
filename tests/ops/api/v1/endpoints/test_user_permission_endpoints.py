@@ -8,7 +8,6 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
@@ -29,6 +28,7 @@ from fides.common.api.scope_registry import (
     USER_PERMISSION_READ,
     USER_PERMISSION_UPDATE,
 )
+from fides.common.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
 from fides.config import CONFIG
 from tests.conftest import generate_auth_header_for_user, generate_role_header_for_user
 
