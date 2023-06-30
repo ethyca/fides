@@ -34,7 +34,7 @@ import {
   SystemType,
 } from "~/types/api";
 
-import { DatastoreConnectionStatus } from "../../types";
+import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 import DeleteConnectionModal from "../DeleteConnectionModal";
 import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
