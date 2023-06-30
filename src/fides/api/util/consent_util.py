@@ -7,7 +7,6 @@ from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
 
-from fides.api.api.v1.endpoints.utils import transform_fields
 from fides.api.common_exceptions import ValidationError
 from fides.api.custom_types import SafeStr
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -35,6 +34,7 @@ from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-def
 from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.schemas.redis_cache import Identity
+from fides.api.util.endpoint_utils import transform_fields
 from fides.config.helpers import load_file
 
 PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "description", "internal_description"]

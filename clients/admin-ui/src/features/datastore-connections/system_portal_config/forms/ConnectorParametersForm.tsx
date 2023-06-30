@@ -132,6 +132,11 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     return undefined;
   };
 
+  const isRequiredSecretValue = (key: string): boolean =>
+    secretsSchema?.required?.includes(key) ||
+    (secretsSchema?.properties?.[key] !== undefined &&
+      "default" in secretsSchema.properties[key]);
+
   const getFormField = (
     key: string,
     item: ConnectionTypeSecretSchemaProperty
@@ -141,7 +146,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       name={key}
       key={key}
       validate={
-        secretsSchema?.required?.includes(key) || item.type === "integer"
+        isRequiredSecretValue(key) || item.type === "integer"
           ? (value: string) =>
               validateField(item.title, value, item.allOf?.[0].$ref)
           : false
@@ -150,7 +155,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {({ field, form }: { field: FieldInputProps<string>; form: any }) => (
         <FormControl
           display="flex"
-          isRequired={secretsSchema?.required?.includes(key)}
+          isRequired={isRequiredSecretValue(key)}
           isInvalid={form.errors[key] && form.touched[key]}
         >
           {getFormLabel(key, item.title)}

@@ -9,12 +9,6 @@ from fideslang.models import Cookies as CookieSchema
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import (
-    PRIVACY_NOTICE,
-    PRIVACY_NOTICE_BY_DATA_USE,
-    PRIVACY_NOTICE_DETAIL,
-    V1_URL_PREFIX,
-)
 from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
@@ -25,6 +19,12 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.schemas.privacy_notice import PrivacyNoticeResponse
 from fides.common.api import scope_registry as scopes
+from fides.common.api.v1.urn_registry import (
+    PRIVACY_NOTICE,
+    PRIVACY_NOTICE_BY_DATA_USE,
+    PRIVACY_NOTICE_DETAIL,
+    V1_URL_PREFIX,
+)
 
 
 class TestGetPrivacyNotices:

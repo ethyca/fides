@@ -7,14 +7,6 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import (
-    CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
-    CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
-    CURRENT_PRIVACY_PREFERENCES_REPORT,
-    HISTORICAL_PRIVACY_PREFERENCES_REPORT,
-    PRIVACY_PREFERENCES,
-    V1_URL_PREFIX,
-)
 from fides.api.models.privacy_preference import (
     ConsentMethod,
     CurrentPrivacyPreference,
@@ -33,6 +25,14 @@ from fides.common.api.scope_registry import (
     CONSENT_READ,
     CURRENT_PRIVACY_PREFERENCE_READ,
     PRIVACY_PREFERENCE_HISTORY_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
+    CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
+    CURRENT_PRIVACY_PREFERENCES_REPORT,
+    HISTORICAL_PRIVACY_PREFERENCES_REPORT,
+    PRIVACY_PREFERENCES,
+    V1_URL_PREFIX,
 )
 from fides.config import CONFIG
 

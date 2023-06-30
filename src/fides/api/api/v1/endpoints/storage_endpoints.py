@@ -21,18 +21,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.urn_registry import (
-    STORAGE_ACTIVE_DEFAULT,
-    STORAGE_BY_KEY,
-    STORAGE_CONFIG,
-    STORAGE_DEFAULT,
-    STORAGE_DEFAULT_BY_TYPE,
-    STORAGE_DEFAULT_SECRETS,
-    STORAGE_SECRETS,
-    STORAGE_STATUS,
-    STORAGE_UPLOAD,
-    V1_URL_PREFIX,
-)
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, StorageUploadError
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.privacy_request import PrivacyRequest
@@ -70,6 +58,18 @@ from fides.common.api.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    STORAGE_ACTIVE_DEFAULT,
+    STORAGE_BY_KEY,
+    STORAGE_CONFIG,
+    STORAGE_DEFAULT,
+    STORAGE_DEFAULT_BY_TYPE,
+    STORAGE_DEFAULT_SECRETS,
+    STORAGE_SECRETS,
+    STORAGE_STATUS,
+    STORAGE_UPLOAD,
+    V1_URL_PREFIX,
 )
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
