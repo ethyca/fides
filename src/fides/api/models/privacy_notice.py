@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from enum import Enum
+from html import unescape
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from fideslang.validation import FidesKey
@@ -343,7 +344,7 @@ def check_conflicting_notice_keys(
             for notice_key, notice_name in region_notice_keys:
                 if notice_key == privacy_notice.notice_key:
                     raise ValidationError(
-                        message=f"Privacy Notice '{notice_name}' has already assigned notice key '{notice_key}' to region '{region}'"
+                        message=f"Privacy Notice '{unescape(notice_name)}' has already assigned notice key '{notice_key}' to region '{region}'"
                     )
             # add the new notice key to our map
             region_notice_keys.append((privacy_notice.notice_key, privacy_notice.name))
@@ -398,7 +399,7 @@ def check_conflicting_data_uses(
                     # an existing DataUse
                     if new_data_use_conflicts_with_existing_use(existing_use, data_use):
                         raise ValidationError(
-                            message=f"Privacy Notice '{notice_name}' has already assigned data use '{existing_use}' to region '{region}'"
+                            message=f"Privacy Notice '{unescape(notice_name)}' has already assigned data use '{existing_use}' to region '{region}'"
                         )
                 # add the data use to our map, to effectively include it in validation against the
                 # following incoming records

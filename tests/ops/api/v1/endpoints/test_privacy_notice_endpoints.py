@@ -2273,6 +2273,7 @@ class TestPatchPrivacyNotices:
 
         # conflict with identical data uses within region
         # we make the two patch payload items have the same data_use, they should fail
+        patch_privacy_notice_payload["name"] = "my notice's name"
         patch_privacy_notice_payload_updated_data_use = (
             patch_privacy_notice_payload.copy()
         )
@@ -2294,6 +2295,10 @@ class TestPatchPrivacyNotices:
             ],
         )  # direct overlap in the requests
         assert resp.status_code == 422
+        assert (
+            resp.json()["detail"]
+            == "Privacy Notice 'my notice's name' has already assigned data use 'improve' to region 'PrivacyNoticeRegion.us_ca'"
+        )
 
         # conflict with parent/child data uses within region
         # we make the two patch payload items have parent/child data uses, they should fail
@@ -2999,6 +3004,7 @@ class TestPatchPrivacyNotices:
         patch_privacy_notice_payload_us_ca_provide[
             "notice_key"
         ] = patch_privacy_notice_payload["notice_key"]
+        patch_privacy_notice_payload["name"] = "My notice's name"
         # Set disabled to False, because disabled notice keys are ignoredc
         patch_privacy_notice_payload["disabled"] = False
 
@@ -3013,7 +3019,7 @@ class TestPatchPrivacyNotices:
         assert resp.status_code == 422
         assert (
             resp.json()["detail"]
-            == "Privacy Notice 'updated privacy notice name' has already assigned notice key 'updated_privacy_notice_key' to region 'PrivacyNoticeRegion.us_ca'"
+            == "Privacy Notice 'My notice's name' has already assigned notice key 'updated_privacy_notice_key' to region 'PrivacyNoticeRegion.us_ca'"
         )
 
     def test_patching_privacy_notice_twice(
