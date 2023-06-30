@@ -21,6 +21,7 @@ The types of changes are:
 
 ### Changed
 - Privacy center action cards are now able to expand to accommodate longer text [#3669](https://github.com/ethyca/fides/pull/3669)
+- Allow Privacy Notices banner and modal to scroll as needed [#3713](https://github.com/ethyca/fides/pull/3713)
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
 
