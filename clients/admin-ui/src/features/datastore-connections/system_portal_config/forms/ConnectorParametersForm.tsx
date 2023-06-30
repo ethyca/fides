@@ -17,7 +17,6 @@ import {
   VStack,
 } from "@fidesui/react";
 import { Option } from "common/form/inputs";
-import { useAPIHelper } from "common/hooks";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaReponse,
@@ -25,7 +24,8 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
-import React, { useEffect, useRef } from "react";
+import React from "react";
+import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import DatasetConfigField from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
@@ -41,6 +41,11 @@ import { fillInDefaults } from "./helpers";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
+export interface TestConnectionResponse {
+  data?: DatastoreConnectionStatus;
+  fulfilledTimeStamp?: number;
+}
+
 type ConnectorParametersFormProps = {
   secretsSchema?: ConnectionTypeSecretSchemaReponse;
   defaultValues: ConnectionConfigFormValues;
@@ -52,7 +57,7 @@ type ConnectorParametersFormProps = {
   /**
    * Parent callback when Test Connection is clicked
    */
-  onTestConnectionClick: (value: any) => void;
+  onTestConnectionClick: (value: TestConnectionResponse) => void;
   /**
    * Text for the test button. Defaults to "Test connection"
    */
@@ -79,10 +84,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   onDelete,
   deleteResult,
 }) => {
-  const mounted = useRef(false);
-  const { handleError } = useAPIHelper();
-
-  const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
+  const [trigger, { isLoading, isFetching }] =
+    useLazyGetDatastoreConnectionStatusQuery();
 
   const validateConnectionIdentifier = (value: string) => {
     let error;
@@ -242,22 +245,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   };
 
   const handleTestConnectionClick = async () => {
-    try {
-      await trigger(connectionConfig!.key).unwrap();
-    } catch (error) {
-      handleError(error);
-    }
+    const result = await trigger(connectionConfig!.key);
+    onTestConnectionClick(result);
   };
-
-  useEffect(() => {
-    mounted.current = true;
-    if (result.isSuccess) {
-      onTestConnectionClick(result);
-    }
-    return () => {
-      mounted.current = false;
-    };
-  }, [onTestConnectionClick, result]);
 
   return (
     <Formik
@@ -346,7 +336,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   isSubmitting ||
                   deleteResult.isLoading
                 }
-                isLoading={result.isLoading || result.isFetching}
+                isLoading={isLoading || isFetching}
                 loadingText="Testing"
                 onClick={handleTestConnectionClick}
                 variant="outline"
