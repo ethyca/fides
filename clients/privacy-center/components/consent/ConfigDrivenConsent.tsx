@@ -1,6 +1,10 @@
 import { Divider, Stack, useToast } from "@fidesui/react";
 import React, { useCallback, useEffect, useMemo } from "react";
-import { getConsentContext, resolveLegacyConsentValue } from "fides-js";
+import {
+  getConsentContext,
+  resolveLegacyConsentValue,
+  GpcStatus,
+} from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
   changeConsent,
@@ -10,7 +14,6 @@ import {
 import { getGpcStatus } from "~/features/consent/helpers";
 
 import { useConfig } from "~/features/common/config.slice";
-import { GpcStatus } from "~/features/consent/types";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { useLocalStorage } from "~/common/hooks";
 import { ConsentPreferences } from "~/types/api";

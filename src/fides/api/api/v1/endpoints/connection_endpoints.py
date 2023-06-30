@@ -16,13 +16,6 @@ from sqlalchemy_utils import escape_like
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
 from fides.api.api import deps
-from fides.api.api.v1.urn_registry import (
-    CONNECTION_BY_KEY,
-    CONNECTION_SECRETS,
-    CONNECTION_TEST,
-    CONNECTIONS,
-    V1_URL_PREFIX,
-)
 from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fides.api.models.connectionconfig import (
     ConnectionConfig,
@@ -30,7 +23,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.sql_models import (  # type: ignore[attr-defined]
+from fides.api.models.sql_models import ( # type: ignore[attr-defined]
     Dataset as CtlDataset,
 )
 from fides.api.oauth.utils import verify_oauth_client
@@ -57,6 +50,13 @@ from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    CONNECTION_BY_KEY,
+    CONNECTION_SECRETS,
+    CONNECTION_TEST,
+    CONNECTIONS,
+    V1_URL_PREFIX,
 )
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)

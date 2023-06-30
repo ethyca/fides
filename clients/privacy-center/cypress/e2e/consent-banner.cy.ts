@@ -190,7 +190,7 @@ describe("Consent banner", () => {
   });
 
   describe("when user has no saved consent cookie", () => {
-    describe("when banner is not disabled", () => {
+    describe("when overlay is enabled", () => {
       beforeEach(() => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         stubConfig({
@@ -665,6 +665,23 @@ describe("Consent banner", () => {
             [PRIVACY_NOTICE_KEY_1]: false,
           });
       });
+
+      it("shows indicators that GPC has been applied", () => {
+        // In the banner
+        cy.get("div#fides-banner").within(() => {
+          cy.get("span").contains("Global Privacy Control Signal detected");
+        });
+        // And in the modal
+        cy.get("button").contains("Manage preferences").click();
+        cy.get("div.fides-gpc-banner").contains(
+          "Global Privacy Control detected"
+        );
+        cy.get("span")
+          .contains("Test privacy notice with gpc enabled")
+          .within(() => {
+            cy.get("span").contains("Global Privacy Control applied");
+          });
+      });
     });
 
     describe("when GPC flag is found, and no notices apply to GPC", () => {
@@ -702,6 +719,17 @@ describe("Consent banner", () => {
         // check that preferences do not exist in cookie
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       });
+
+      it("does not show gpc indicator but does show it was detected and the info banner", () => {
+        // In the banner
+        cy.get("div.fides-gpc-banner").contains(
+          "Global Privacy Control detected"
+        );
+        // And in the modal
+        cy.get("button").contains("Manage preferences").click();
+        cy.get("div.fides-gpc-banner").should("be.visible");
+        cy.get("div.fides-gpc-badge").should("not.exist");
+      });
     });
 
     describe("when no GPC flag is found, and notices apply to GPC", () => {
@@ -735,6 +763,17 @@ describe("Consent banner", () => {
         cy.window().its("Fides").its("consent").should("eql", {});
         // check that preferences do not exist in cookie
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      });
+
+      it("does not show any gpc indicators", () => {
+        // In the banner
+        cy.get("div#fides-banner").within(() => {
+          cy.get("span.fides-gpc-badge").should("not.exist");
+        });
+        // And in the modal
+        cy.get("button").contains("Manage preferences").click();
+        cy.get("div.fides-gpc-banner").should("not.exist");
+        cy.get("div.fides-gpc-badge").should("not.exist");
       });
     });
 
@@ -1007,6 +1046,18 @@ describe("Consent banner", () => {
         cy.window().its("Fides").its("consent").should("eql", {});
         // check that preferences do not exist in cookie
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      });
+
+      it("shows gpc indicators in modal", () => {
+        cy.get("#fides-modal-link").click();
+        cy.get("div.fides-gpc-banner").contains(
+          "Global Privacy Control detected"
+        );
+        cy.get("span")
+          .contains("Test privacy notice")
+          .within(() => {
+            cy.get("span").contains("Global Privacy Control overridden");
+          });
       });
     });
 
@@ -1482,6 +1533,65 @@ describe("Consent banner", () => {
             },
           });
       });
+    });
+  });
+
+  describe("gpc indicators in the modal", () => {
+    beforeEach(() => {
+      cy.on("window:before:load", (win) => {
+        // eslint-disable-next-line no-param-reassign
+        win.navigator.globalPrivacyControl = true;
+      });
+    });
+    it("renders the proper gpc indicator", () => {
+      stubConfig({
+        experience: {
+          privacy_notices: [
+            mockPrivacyNotice({
+              name: "Applied",
+              notice_key: "applied",
+              has_gpc_flag: true,
+              consent_mechanism: ConsentMechanism.OPT_OUT,
+              default_preference: UserConsentPreference.OPT_IN,
+              current_preference: undefined,
+            }),
+            mockPrivacyNotice({
+              name: "Notice only",
+              notice_key: "notice_only",
+              // notice-only should never have has_gpc_flag true, but just in case,
+              // make sure the expected behavior still holds if it is somehow true
+              has_gpc_flag: true,
+              consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+              default_preference: UserConsentPreference.ACKNOWLEDGE,
+              current_preference: UserConsentPreference.ACKNOWLEDGE,
+            }),
+            mockPrivacyNotice({
+              name: "Overridden",
+              notice_key: "overridden",
+              has_gpc_flag: true,
+              consent_mechanism: ConsentMechanism.OPT_OUT,
+              default_preference: UserConsentPreference.OPT_IN,
+              current_preference: UserConsentPreference.OPT_IN,
+            }),
+          ],
+        },
+      });
+      cy.get("#fides-modal-link").click();
+      cy.get(".fides-notice-toggle")
+        .contains("Applied")
+        .within(() => {
+          cy.get(".fides-gpc-label").contains("applied");
+        });
+      cy.get(".fides-notice-toggle")
+        .contains("Notice only")
+        .within(() => {
+          cy.get(".fides-gpc-label").should("not.exist");
+        });
+      cy.get(".fides-notice-toggle")
+        .contains("Overridden")
+        .within(() => {
+          cy.get(".fides-gpc-label").contains("overridden");
+        });
     });
   });
 });

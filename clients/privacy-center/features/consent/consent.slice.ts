@@ -67,6 +67,8 @@ export const consentApi = baseApi.injectEndpoints({
           component: ComponentType.PRIVACY_CENTER,
           has_notices: true,
           show_disabled: false,
+          has_config: true,
+          systems_applicable: true,
           ...payload,
         },
       }),
@@ -149,7 +151,10 @@ export const consentSlice = createSlice({
       });
     },
 
-    setFidesUserDeviceId(draftState, { payload }: PayloadAction<string>) {
+    setFidesUserDeviceId(
+      draftState,
+      { payload }: PayloadAction<string | undefined>
+    ) {
       draftState.fidesUserDeviceId = payload;
     },
   },

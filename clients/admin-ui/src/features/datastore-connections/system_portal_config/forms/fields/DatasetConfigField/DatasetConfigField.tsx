@@ -66,7 +66,6 @@ export const DatasetSelect = ({
       isInvalid={isInvalid}
       isRequired={isRequired}
     >
-      {/* <VStack align="flex-start" w="inherit"> */}
       {label ? (
         <Label htmlFor={props.id || props.name} {...labelProps}>
           {label}
@@ -107,7 +106,6 @@ export const DatasetSelect = ({
         />
         {tooltip ? <QuestionTooltip label={tooltip} /> : null}
       </Flex>
-      {/* </VStack> */}
     </FormControl>
   );
 };
@@ -272,7 +270,6 @@ const DatasetConfigField: React.FC<Props> = ({
         }}
         name={fieldName}
         options={dropdownOptions}
-        isRequired
         onOpen={onOpen}
         isLoading={isLoading}
       />

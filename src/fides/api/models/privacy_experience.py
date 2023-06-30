@@ -19,6 +19,7 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.privacy_preference import CurrentPrivacyPreference
 from fides.api.models.privacy_request import ProvidedIdentity
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
     ConsentMechanism.notice_only,
@@ -243,6 +244,7 @@ class PrivacyExperience(Base):
         self,
         db: Session,
         show_disabled: Optional[bool] = True,
+        systems_applicable: Optional[bool] = False,
         fides_user_provided_identity: Optional[ProvidedIdentity] = None,
     ) -> List[PrivacyNotice]:
         """Return privacy notices that overlap on at least one region
@@ -259,6 +261,12 @@ class PrivacyExperience(Base):
             privacy_notice_query = privacy_notice_query.filter(
                 PrivacyNotice.disabled.is_(False)
             )
+
+        if systems_applicable:
+            data_uses: set[str] = System.get_data_uses(
+                System.all(db), include_parents=True
+            )
+            privacy_notice_query = privacy_notice_query.filter(PrivacyNotice.data_uses.overlap(data_uses))  # type: ignore
 
         if not fides_user_provided_identity:
             return privacy_notice_query.order_by(PrivacyNotice.created_at.desc()).all()
@@ -308,7 +316,7 @@ class PrivacyExperience(Base):
 
     @staticmethod
     def get_experience_by_region_and_component(
-        db: Session, region: PrivacyNoticeRegion, component: ComponentType
+        db: Session, region: str, component: ComponentType
     ) -> Optional[PrivacyExperience]:
         """Load an experience for a given region and component type"""
         return (
@@ -322,7 +330,7 @@ class PrivacyExperience(Base):
 
     @staticmethod
     def get_experiences_by_region(
-        db: Session, region: PrivacyNoticeRegion
+        db: Session, region: str
     ) -> Tuple[Optional[PrivacyExperience], Optional[PrivacyExperience]]:
         """Load both the overlay and privacy center experience for a given region"""
         overlay_experience: Optional[
@@ -418,7 +426,7 @@ def upsert_privacy_experiences_after_notice_update(
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db=db, region=region)
+        ) = PrivacyExperience.get_experiences_by_region(db=db, region=region.value)
 
         privacy_center_notices: Query = get_privacy_notices_by_region_and_component(
             db, region, ComponentType.privacy_center
@@ -503,7 +511,7 @@ def upsert_privacy_experiences_after_config_update(
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, region)
+        ) = PrivacyExperience.get_experiences_by_region(db, region.value)
 
         existing_experience: Optional[PrivacyExperience] = (
             overlay_experience

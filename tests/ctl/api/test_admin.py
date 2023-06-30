@@ -2,8 +2,8 @@
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.endpoints.utils import API_PREFIX
 from fides.api.util import errors
+from fides.api.util.endpoint_utils import API_PREFIX
 from fides.config import FidesConfig
 
 

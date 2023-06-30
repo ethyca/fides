@@ -7,7 +7,7 @@ import {
   HStack,
   WarningTwoIcon,
 } from "@fidesui/react";
-import { GpcStatus } from "./types";
+import { GpcStatus } from "fides-js";
 
 const BADGE_COLORS = {
   [GpcStatus.NONE]: undefined,

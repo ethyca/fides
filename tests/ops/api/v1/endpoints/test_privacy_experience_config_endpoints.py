@@ -7,7 +7,6 @@ from starlette.testclient import TestClient
 from fides.api.api.v1.endpoints.privacy_experience_config_endpoints import (
     get_experience_config_or_error,
 )
-from fides.api.api.v1.urn_registry import EXPERIENCE_CONFIG, V1_URL_PREFIX
 from fides.api.models.privacy_experience import (
     BannerEnabled,
     ComponentType,
@@ -17,6 +16,7 @@ from fides.api.models.privacy_experience import (
 )
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.common.api import scope_registry as scopes
+from fides.common.api.v1.urn_registry import EXPERIENCE_CONFIG, V1_URL_PREFIX
 
 
 class TestGetExperienceConfigList:
@@ -358,7 +358,7 @@ class TestCreateExperienceConfig:
                 "accept_button_label": "Accept",
                 "description": "We care about your privacy",
                 "component": "overlay",
-                "regions": ["eu_it"],
+                "regions": ["it"],
                 "reject_button_label": "Reject",
                 "save_button_label": "Save",
                 "title": "Manage your privacy",
@@ -386,7 +386,7 @@ class TestCreateExperienceConfig:
                 "accept_button_label": "Accept",
                 "description": "We care about your privacy",
                 "component": "privacy_center",
-                "regions": ["eu_it"],
+                "regions": ["it"],
                 "save_button_label": "Save",
             },
             headers=auth_header,
@@ -412,7 +412,7 @@ class TestCreateExperienceConfig:
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
                 "title": "Control your privacy",
-                "regions": ["eu_it", "eu_it"],
+                "regions": ["it", "it"],
             },
             headers=auth_header,
         )

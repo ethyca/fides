@@ -9,12 +9,6 @@ from fideslang.models import Cookies as CookieSchema
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import (
-    PRIVACY_NOTICE,
-    PRIVACY_NOTICE_BY_DATA_USE,
-    PRIVACY_NOTICE_DETAIL,
-    V1_URL_PREFIX,
-)
 from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
@@ -25,6 +19,12 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.schemas.privacy_notice import PrivacyNoticeResponse
 from fides.common.api import scope_registry as scopes
+from fides.common.api.v1.urn_registry import (
+    PRIVACY_NOTICE,
+    PRIVACY_NOTICE_BY_DATA_USE,
+    PRIVACY_NOTICE_DETAIL,
+    V1_URL_PREFIX,
+)
 
 
 class TestGetPrivacyNotices:
@@ -643,7 +643,7 @@ class TestGetPrivacyNoticeDetail:
                     "notice_key": "test_privacy_notice_1",
                     "description": maybe_dangerous_description,
                     "regions": [
-                        PrivacyNoticeRegion.eu_be.value,
+                        PrivacyNoticeRegion.be.value,
                         PrivacyNoticeRegion.us_ca.value,
                     ],
                     "consent_mechanism": ConsentMechanism.opt_in.value,
@@ -794,7 +794,7 @@ class TestGetPrivacyNoticesByDataUse:
                             f"{PRIVACY_NOTICE_NAME}-2"
                         ),
                         regions=[
-                            PrivacyNoticeRegion.eu_be,
+                            PrivacyNoticeRegion.be,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["marketing.advertising"],
@@ -840,7 +840,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 f"{PRIVACY_NOTICE_NAME}-2"
                             ),
                             regions=[
-                                PrivacyNoticeRegion.eu_be,
+                                PrivacyNoticeRegion.be,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
                             data_uses=["marketing.advertising"],
@@ -889,7 +889,7 @@ class TestGetPrivacyNoticesByDataUse:
                             f"{PRIVACY_NOTICE_NAME}-2"
                         ),
                         regions=[
-                            PrivacyNoticeRegion.eu_be,
+                            PrivacyNoticeRegion.be,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["marketing.advertising"],
@@ -933,7 +933,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 f"{PRIVACY_NOTICE_NAME}-2"
                             ),
                             regions=[
-                                PrivacyNoticeRegion.eu_be,
+                                PrivacyNoticeRegion.be,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
                             data_uses=["marketing.advertising"],
@@ -1005,7 +1005,7 @@ class TestGetPrivacyNoticesByDataUse:
                             f"{PRIVACY_NOTICE_NAME}-2"
                         ),
                         regions=[
-                            PrivacyNoticeRegion.eu_be,
+                            PrivacyNoticeRegion.be,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["marketing.advertising"],
@@ -1027,7 +1027,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 f"{PRIVACY_NOTICE_NAME}-2"
                             ),
                             regions=[
-                                PrivacyNoticeRegion.eu_be,
+                                PrivacyNoticeRegion.be,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
                             data_uses=["marketing.advertising"],
@@ -1311,7 +1311,7 @@ class TestPostPrivacyNotices:
             "notice_key": "test_privacy_notice_1",
             "description": "my test privacy notice",
             "regions": [
-                PrivacyNoticeRegion.eu_be.value,
+                PrivacyNoticeRegion.be.value,
                 PrivacyNoticeRegion.us_ca.value,
             ],
             "consent_mechanism": ConsentMechanism.opt_in.value,
@@ -1326,7 +1326,7 @@ class TestPostPrivacyNotices:
             "name": "My Test Privacy Notice",
             "description": "my test privacy notice",
             "regions": [
-                PrivacyNoticeRegion.eu_be.value,
+                PrivacyNoticeRegion.be.value,
                 PrivacyNoticeRegion.us_ca.value,
             ],
             "consent_mechanism": ConsentMechanism.opt_in.value,
@@ -1436,7 +1436,7 @@ class TestPostPrivacyNotices:
         assert resp.status_code == 422
 
         notice_request_bad_region["regions"] = [
-            PrivacyNoticeRegion.eu_be.value,
+            PrivacyNoticeRegion.be.value,
             "invalid_region",
         ]
         # try post with one invalid region one valid region specified, should be rejected
@@ -1522,7 +1522,7 @@ class TestPostPrivacyNotices:
         # change the name on the copied notice so that it's "different"
         notice_request_identical_use["name"] = "different notice name"
         # keep one overlapping region with other request notice, no overlaps with
-        notice_request_identical_use["regions"] = [PrivacyNoticeRegion.eu_be.value]
+        notice_request_identical_use["regions"] = [PrivacyNoticeRegion.be.value]
         resp = api_client.post(
             url,
             headers=auth_header,
@@ -1535,7 +1535,7 @@ class TestPostPrivacyNotices:
         # change the name on the copied notice so that it's "different"
         notice_request_child_use["name"] = "different notice name"
         # keep one overlapping region with other request notice, no overlaps with
-        notice_request_child_use["region"] = [PrivacyNoticeRegion.eu_be.value]
+        notice_request_child_use["region"] = [PrivacyNoticeRegion.be.value]
         # update our data_use to be a child of the other request notice
         notice_request_child_use["data_use"] = ["marketing.advertising.first_party"]
 
@@ -1682,7 +1682,7 @@ class TestPostPrivacyNotices:
 
         before_creation = datetime.now().isoformat()
         overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
-            db, PrivacyNoticeRegion.eu_be
+            db, PrivacyNoticeRegion.be
         )
         assert overlay_exp is None
         assert privacy_center_exp is None
@@ -1718,7 +1718,7 @@ class TestPostPrivacyNotices:
         assert response_notice["disabled"] == db_notice.disabled
 
         overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
-            db, PrivacyNoticeRegion.eu_be
+            db, PrivacyNoticeRegion.be
         )
         assert overlay_exp is not None  # Overlay Experience Created Automatically
         assert (
@@ -1754,7 +1754,7 @@ class TestPostPrivacyNotices:
 
         before_creation = datetime.now().isoformat()
         overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
-            db, PrivacyNoticeRegion.eu_be
+            db, PrivacyNoticeRegion.be
         )
         assert overlay_exp is None
         assert privacy_center_exp is None
@@ -1792,7 +1792,7 @@ class TestPostPrivacyNotices:
         assert response_notice["notice_key"] == "my_test_privacy_notice"
 
         overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
-            db, PrivacyNoticeRegion.eu_be
+            db, PrivacyNoticeRegion.be
         )
         assert overlay_exp is not None
         assert privacy_center_exp is None
@@ -1826,7 +1826,7 @@ class TestPostPrivacyNotices:
                     "notice_key": "test_privacy_notice_1",
                     "description": maybe_dangerous_description,
                     "regions": [
-                        PrivacyNoticeRegion.eu_be.value,
+                        PrivacyNoticeRegion.be.value,
                         PrivacyNoticeRegion.us_ca.value,
                     ],
                     "consent_mechanism": ConsentMechanism.opt_in.value,
@@ -2167,7 +2167,7 @@ class TestPatchPrivacyNotices:
         assert resp.status_code == 422
 
         patch_privacy_notice_payload_bad_region["regions"] = [
-            PrivacyNoticeRegion.eu_be.value,
+            PrivacyNoticeRegion.be.value,
             "invalid_region",
         ]
         # try patch with one invalid region one valid region specified, should be rejected
