@@ -252,13 +252,13 @@ div.fides-modal-content {
   border-radius: var(--fides-overlay-component-border-radius);
   max-height: 100%;
   max-width: 100%;
+  overflow-y: scroll;
 
   z-index: 2;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  overflow-y: scroll;
 }
 
 .fides-modal-container,
