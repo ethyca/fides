@@ -37,6 +37,7 @@ The types of changes are:
 ### Changed
 - Moved GPC preferences slightly earlier in Fides.js lifecycle [#3561](https://github.com/ethyca/fides/pull/3561)
 - Changed results from clicking "Test connection" to be a toast instead of statically displayed on the page [#3700](https://github.com/ethyca/fides/pull/3700)
+- Moved "management" tab from nav into settings icon in top right [#3701](https://github.com/ethyca/fides/pull/3701)
 - Remove name and description fields from integration form [#3684](https://github.com/ethyca/fides/pull/3684)
 - Update EU PrivacyNoticeRegion codes and allow experience filtering to drop back to country filtering if region not found [#3630](https://github.com/ethyca/fides/pull/3630)
 - Fields with default fields are now flagged as required in the front-end [#3694](https://github.com/ethyca/fides/pull/3694)
