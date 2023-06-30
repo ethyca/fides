@@ -2000,6 +2000,32 @@ class TestPostPrivacyNotices:
         assert response_notice_2["updated_at"] == db_notice_2.updated_at.isoformat()
         assert response_notice_2["disabled"] == db_notice_2.disabled
 
+    def test_post_multiple_privacy_notice_notice_key_overlap(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        notice_request: dict[str, Any],
+        notice_request_2: dict[str, Any],
+        url,
+        db,
+    ):
+        """
+        Test posting multiple new privacy notices with overlay in notice key
+        """
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
+        # Override second notice to have the same notice key as the first notice
+        notice_request_2["notice_key"] = "test_privacy_notice_1"
+
+        resp = api_client.post(
+            url, headers=auth_header, json=[notice_request, notice_request_2]
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"]
+            == "Privacy Notice 'test privacy notice 1' has already assigned notice key 'test_privacy_notice_1' to region 'us_ca'"
+        )
+
 
 class TestPatchPrivacyNotices:
     @pytest.fixture(scope="function")
@@ -2247,6 +2273,7 @@ class TestPatchPrivacyNotices:
 
         # conflict with identical data uses within region
         # we make the two patch payload items have the same data_use, they should fail
+        patch_privacy_notice_payload["name"] = "my notice's name"
         patch_privacy_notice_payload_updated_data_use = (
             patch_privacy_notice_payload.copy()
         )
@@ -2268,6 +2295,10 @@ class TestPatchPrivacyNotices:
             ],
         )  # direct overlap in the requests
         assert resp.status_code == 422
+        assert (
+            resp.json()["detail"]
+            == "Privacy Notice 'my notice's name' has already assigned data use 'improve' to region 'PrivacyNoticeRegion.us_ca'"
+        )
 
         # conflict with parent/child data uses within region
         # we make the two patch payload items have parent/child data uses, they should fail
@@ -2952,6 +2983,44 @@ class TestPatchPrivacyNotices:
             == db_notice_2.consent_mechanism.value
         )
         assert response_notice_2["data_uses"] == db_notice_2.data_uses
+
+    def test_patch_multiple_privacy_notices_notice_key_overlap(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        patch_privacy_notice_payload: dict[str, Any],
+        patch_privacy_notice_payload_us_ca_provide: dict[str, Any],
+        privacy_notice: PrivacyNotice,
+        privacy_notice_us_ca_provide: PrivacyNotice,
+        url,
+        db,
+    ):
+        """
+        Test patching multiple privacy notices notice_key_overlap
+        """
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_UPDATE])
+        # Make notice keys match
+        patch_privacy_notice_payload_us_ca_provide[
+            "notice_key"
+        ] = patch_privacy_notice_payload["notice_key"]
+        patch_privacy_notice_payload["name"] = "My notice's name"
+        # Set disabled to False, because disabled notice keys are ignoredc
+        patch_privacy_notice_payload["disabled"] = False
+
+        resp = api_client.patch(
+            url,
+            headers=auth_header,
+            json=[
+                patch_privacy_notice_payload,
+                patch_privacy_notice_payload_us_ca_provide,
+            ],
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"]
+            == "Privacy Notice 'My notice's name' has already assigned notice key 'updated_privacy_notice_key' to region 'PrivacyNoticeRegion.us_ca'"
+        )
 
     def test_patching_privacy_notice_twice(
         self,
