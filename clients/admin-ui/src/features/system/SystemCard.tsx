@@ -57,7 +57,7 @@ const SystemCard = ({ system }: SystemCardProps) => {
 
   return (
     <Box display="flex" data-testid={`system-${system.fides_key}`}>
-      <Box flexGrow={1} p={4}>
+      <Box flexGrow={1} p={4} as="button" onClick={handleEdit}>
         <Heading as="h2" fontSize="16px" mb={2}>
           {systemName}
         </Heading>
