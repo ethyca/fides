@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.15.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.15.1...main)
+
+## [2.15.1](https://github.com/ethyca/fides/compare/2.15.0...2.15.1)
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
 
