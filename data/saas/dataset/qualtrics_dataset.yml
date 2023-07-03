@@ -1,0 +1,172 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: qualtrics
+    description: A sample dataset representing the Qualtrics connector for Fides
+    collections:
+      - name: search_directory_contact
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: firstName
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: lastName
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: email
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: phoneNumber
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: language
+          - name: externalDataReference
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: unsubscribed
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: unsubscribeDate
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: creationDate
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: lastModified
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: segmentMembership
+          - name: stats
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: AvgTimeToRespond
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: DataIntegrity
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: EmailCount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: InviteCount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: LastEmailDate
+              - name: LastInviteDate
+              - name: LastResponseDate
+              - name: MonthEmailCount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: MonthInviteCount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: Points
+              - name: ResponseCount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: ResponseRate
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+      - name: directory_contacts
+        fields:
+          - name: contactId
+            data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: creationDate
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: lastModified
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: firstName
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: lastName
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: email
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: emailDomain
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: phone
+            data_categories: [user.contact.phone_number]
+            fidesops_meta:
+              data_type: string
+          - name: extRef
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: embeddedData
+          - name: language
+          - name: skipped
+          - name: directoryUnsubscribed
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: directoryUnsubscribeDate
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: stats
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: MonthInviteCount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: LastEmailDate
+              - name: LastInviteDate
+              - name: ResponseRate
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: InviteCount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: LastResponseDate
+              - name: EmailCount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: ResponseCount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: AvgTimeToRespond
+              - name: MonthEmailCount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+          - name: mailingListMembership

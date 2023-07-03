@@ -1,0 +1,74 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Qualtrics SaaS Config
+  type: qualtrics
+  description: A sample schema representing the Qualtrics connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+    - name: api_key
+    - name: directory_id
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+          - name: X-API-TOKEN
+            value: <api_key>
+        query_params:
+          - name: api_key
+            value: api_key
+
+  test_request:
+    method: GET
+    path: /API/v3/directories
+
+  endpoints:
+    - name: search_directory_contact
+      requests:
+        read:
+          method: POST
+          path: /API/v3/directories/<directory_id>/contacts/search
+          body: |
+            {
+             "filter": {"filterType": "email","comparison": "eq","value": "<email>"}
+             }
+          data_path: result.elements
+          param_values:
+            - name: directory_id
+              connector_param: directory_id
+            - name: email
+              identity: email
+    - name: directory_contacts
+      requests:
+        read:
+          method: GET
+          path: /API/v3/directories/<directory_id>/contacts/<contact_id>
+          data_path: result
+          param_values:
+            - name: directory_id
+              connector_param: directory_id
+            - name: contact_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: search_directory_contact.id
+                  direction: from
+        update:
+          method: PUT
+          path: /API/v3/directories/<directory_id>/contacts/<contact_id>
+          body: |
+            {
+                  <masked_object_fields>  
+            }
+          param_values:
+            - name: directory_id
+              connector_param: directory_id
+            - name: contact_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: directory_contacts.contactId
+                  direction: from
