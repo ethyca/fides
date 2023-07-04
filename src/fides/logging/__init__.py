@@ -1,9 +1,10 @@
 import os
-import sys
 
 import structlog
 
 logger = structlog.get_logger()
+
+# Additional configuration is done in fides.config.settings.logging_settings
 
 shared_processors = [
     # Processors that have nothing to do with output,
@@ -29,6 +30,7 @@ shared_processors = [
     ),
 ]
 
+# This would allow us to set it based on TTY
 # if sys.stderr.isatty():
 if os.getenv("FIDES__DEV_MODE"):
     # Pretty printing when we run in a terminal session.
@@ -44,5 +46,3 @@ else:
         structlog.processors.JSONRenderer(),
     ]
 structlog.configure(processors)
-
-# Obfuscate secrets in logs

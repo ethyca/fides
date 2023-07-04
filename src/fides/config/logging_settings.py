@@ -11,6 +11,8 @@ from .utils import get_dev_mode
 
 ENV_PREFIX = "FIDES__LOGGING__"
 
+# TODO: configure structlog more here
+
 
 class LoggingSettings(FidesSettings):
     """Configuration settings for application logging."""

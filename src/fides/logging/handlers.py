@@ -5,11 +5,6 @@ Defines the logging format and other helper functions to be used throughout the 
 
 from __future__ import annotations
 
-import logging
-import sys
-from types import FrameType
-from typing import Dict, List, Optional, Union
-
 from structlog import get_logger
 
 from fides.config import CONFIG
@@ -30,7 +25,7 @@ class Pii(str):
 def _log_exception(exc: BaseException, dev_mode: bool = False) -> None:
     """If dev mode, log the entire traceback"""
     if dev_mode:
-        logger.opt(exception=True).error(exc)
+        logger.exception(exc)
     else:
         logger.error(exc)
 
@@ -38,6 +33,6 @@ def _log_exception(exc: BaseException, dev_mode: bool = False) -> None:
 def _log_warning(exc: BaseException, dev_mode: bool = False) -> None:
     """If dev mode, log the entire traceback"""
     if dev_mode:
-        logger.opt(exception=True).warning(exc)
+        logger.exception(exc)
     else:
         logger.error(exc)
