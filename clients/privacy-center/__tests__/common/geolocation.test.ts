@@ -124,6 +124,7 @@ describe("getGeolocation", () => {
       privacyCenterSettings.IS_OVERLAY_ENABLED = true;
       global.fetch = jest.fn(() =>
         Promise.resolve({
+          ok: true,
           json: () =>
             Promise.resolve({
               country: "US",
