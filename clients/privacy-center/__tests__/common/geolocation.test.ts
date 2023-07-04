@@ -121,6 +121,7 @@ describe("getGeolocation", () => {
     it("fetches data from geolocation URL", async () => {
       privacyCenterSettings.IS_GEOLOCATION_ENABLED = true;
       privacyCenterSettings.GEOLOCATION_API_URL = "some-geolocation-api.com";
+      privacyCenterSettings.IS_OVERLAY_ENABLED = true;
       global.fetch = jest.fn(() =>
         Promise.resolve({
           json: () =>

@@ -76,7 +76,7 @@ export default async function handler(
   let experience;
   if (geolocation) {
     const fidesRegionString = constructFidesRegionString(geolocation);
-    if (fidesRegionString) {
+    if (fidesRegionString && environment.settings.IS_OVERLAY_ENABLED) {
       let fidesUserDeviceId = null;
       if (Object.keys(req.cookies).length) {
         const fidesCookie = req.cookies[CONSENT_COOKIE_NAME];

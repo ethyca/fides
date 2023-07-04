@@ -79,10 +79,13 @@ export const lookupGeolocation = async (
       ? geolocationApiUrlQuery
       : settings.GEOLOCATION_API_URL;
 
-  // Get geolocation using API URL, if provided, else null is returned
-  return getGeolocation(
-    isGeolocationEnabled,
-    geolocationApiUrl,
-    settings.DEBUG
-  );
+  // Get geolocation using API URL, if provided and overlay is enabled, else null is returned
+  if (settings.IS_OVERLAY_ENABLED) {
+    return getGeolocation(
+      isGeolocationEnabled,
+      geolocationApiUrl,
+      settings.DEBUG
+    );
+  }
+  return null;
 };
