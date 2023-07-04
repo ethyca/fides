@@ -49,7 +49,7 @@ def get_experience_config_or_error(
     """
     Helper method to load ExperienceConfig or throw a 404
     """
-    logger.info("Finding Privacy Experience Config with id '{}'", experience_config_id)
+    logger.info("Finding Privacy Experience Config with id '%s'", experience_config_id)
     experience_config = PrivacyExperienceConfig.get(
         db=db, object_id=experience_config_id
     )
@@ -106,7 +106,7 @@ def experience_config_list(
         PrivacyExperienceConfig.created_at.desc()
     )
 
-    logger.info("Loading Experience Configs with params {}.", params)
+    logger.info("Loading Experience Configs with params %s.", params)
     experience_configs = privacy_experience_config_query.all()
     if should_unescape:
         experience_configs = [
@@ -165,7 +165,7 @@ def experience_config_create(
         )
 
     logger.info(
-        "Creating experience config of component '{}'.",
+        "Creating experience config of component '%s'.",
         experience_config_data.component.value,
     )
 
@@ -177,7 +177,7 @@ def experience_config_create(
     unlinked: List[PrivacyNoticeRegion] = []
     if new_regions:
         logger.info(
-            "Linking regions: {} to experience config '{}'",
+            "Linking regions: %s to experience config '%s'",
             human_friendly_list([reg.value for reg in new_regions]),
             experience_config.id,
         )
@@ -210,7 +210,7 @@ def experience_config_detail(
     """
     Returns a PrivacyExperienceConfig.
     """
-    logger.info("Retrieving experience config with id '{}'.", experience_config_id)
+    logger.info("Retrieving experience config with id '%s'.", experience_config_id)
     should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
 
     experience_config = get_experience_config_or_error(db, experience_config_id)
@@ -294,7 +294,7 @@ def experience_config_update(
             detail=exc.errors(),  # type: ignore
         )
 
-    logger.info("Updating experience config of id '{}'.", experience_config.id)
+    logger.info("Updating experience config of id '%s'.", experience_config.id)
     experience_config.update(db=db, data=experience_config_data_dict)
     db.refresh(experience_config)
 
@@ -304,7 +304,7 @@ def experience_config_update(
         regions is not None
     ):  # If regions list is not in the request, we skip linking/unlinking regions
         logger.info(
-            "Verifying or linking regions {} to experience config '{}'.",
+            "Verifying or linking regions %s to experience config '%s'.",
             human_friendly_list([reg.value for reg in regions]),
             experience_config.id,
         )
@@ -319,7 +319,7 @@ def experience_config_update(
 
         if unlinked_regions:
             logger.info(
-                "Unlinking regions {} from Privacy Experience Config '{}'.",
+                "Unlinking regions %s from Privacy Experience Config '%s'.",
                 human_friendly_list([reg.value for reg in unlinked_regions]),
                 experience_config.id,
             )

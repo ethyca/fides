@@ -87,7 +87,7 @@ def create_access_manual_webhook(
         )
 
     logger.info(
-        "Creating access manual webhook for connection config '{}'",
+        "Creating access manual webhook for connection config '%s'",
         connection_config.key,
     )
 
@@ -131,7 +131,7 @@ def patch_access_manual_webhook(
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=Pii(str(exc)))
 
     logger.info(
-        "Updated access manual webhook for connection config '{}'",
+        "Updated access manual webhook for connection config '%s'",
         connection_config.key,
     )
     return access_manual_webhook
@@ -153,7 +153,7 @@ def get_access_manual_webhook(
         connection_config
     )
     logger.info(
-        "Retrieved access manual webhook for connection config '{}'",
+        "Retrieved access manual webhook for connection config '%s'",
         connection_config.key,
     )
     return access_manual_webhook
@@ -178,7 +178,7 @@ def delete_access_manual_webhook(
 
     access_manual_webhook.delete(db)
     logger.info(
-        "Deleted access manual webhook for connection config '{}'",
+        "Deleted access manual webhook for connection config '%s'",
         connection_config.key,
     )
 

@@ -133,7 +133,7 @@ class AuthenticatedClient:
 
                     if attempt < retry_count:
                         logger.warning(
-                            "Retrying http request in {} seconds", sleep_time
+                            "Retrying http request in %s seconds", sleep_time
                         )
                         sleep(sleep_time)
 
@@ -216,7 +216,7 @@ class AuthenticatedClient:
                 errors_to_ignore=ignore_errors,
             ):
                 logger.info(
-                    "Ignoring errors on response with status code {} as configured.",
+                    "Ignoring errors on response with status code %s as configured.",
                     response.status_code,
                 )
                 return response

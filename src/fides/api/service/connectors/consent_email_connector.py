@@ -86,7 +86,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                     f"Cannot test connection. No test email defined for {self.configuration.name}"
                 )
 
-            logger.info("Starting test connection to {}", self.configuration.key)
+            logger.info("Starting test connection to %s", self.configuration.key)
 
             # synchronous since failure to send is considered a connection test failure
             send_single_consent_email(
@@ -141,7 +141,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             )
 
         except MessageDispatchException as exc:
-            logger.info("Email consent connector test failed with exception {}", exc)
+            logger.info("Email consent connector test failed with exception %s", exc)
             return ConnectionTestStatus.failed
         return ConnectionTestStatus.succeeded
 
@@ -267,14 +267,14 @@ class GenericConsentEmailConnector(BaseEmailConnector):
 
         if not batched_consent_preferences:
             logger.info(
-                "Skipping consent email send for connector: '{}'. "
+                "Skipping consent email send for connector: '%s'. "
                 "No corresponding user identities found for pending privacy requests.",
                 self.configuration.name,
             )
             return
 
         logger.info(
-            "Sending batched consent email for connector {}...",
+            "Sending batched consent email for connector %s...",
             self.configuration.name,
         )
 
@@ -290,7 +290,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 test_mode=False,
             )
         except MessageDispatchException as exc:
-            logger.info("Consent email failed with exception {}", exc)
+            logger.info("Consent email failed with exception %s", exc)
             for privacy_request in privacy_requests:
                 if privacy_request.id not in skipped_privacy_requests:
                     self.add_errored_log(db, privacy_request)

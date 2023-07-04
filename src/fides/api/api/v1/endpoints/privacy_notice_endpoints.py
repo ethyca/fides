@@ -82,7 +82,7 @@ def get_privacy_notice_list(
     Return a paginated list of `PrivacyNotice` records in this system.
     Includes some query params to help filter the list if needed
     """
-    logger.info("Finding all PrivacyNotices with pagination params '{}'", params)
+    logger.info("Finding all PrivacyNotices with pagination params '%s'", params)
     notice_query = generate_notice_query(
         db=db,
         show_disabled=show_disabled,
@@ -160,7 +160,7 @@ def get_privacy_notice_or_error(db: Session, notice_id: str) -> PrivacyNotice:
     """
     Helper method to load PrivacyNotice or throw a 404
     """
-    logger.info("Finding PrivacyNotice with id '{}'", notice_id)
+    logger.info("Finding PrivacyNotice with id '%s'", notice_id)
     privacy_notice = PrivacyNotice.get(db=db, object_id=notice_id)
     if not privacy_notice:
         raise HTTPException(

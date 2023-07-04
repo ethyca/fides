@@ -43,7 +43,7 @@ def get_privacy_experience_or_error(
     """
     Helper method to load PrivacyExperience or throw a 404
     """
-    logger.info("Finding PrivacyExperience with id '{}'", experience_id)
+    logger.info("Finding PrivacyExperience with id '%s'", experience_id)
     privacy_experience = PrivacyExperience.get(db=db, object_id=experience_id)
     if not privacy_experience:
         raise HTTPException(
@@ -122,7 +122,7 @@ def privacy_experience_list(
     'fides_user_device_id' query param will stash the current preferences of the given user
     alongside each notice where applicable.
     """
-    logger.info("Finding all Privacy Experiences with pagination params '{}'", params)
+    logger.info("Finding all Privacy Experiences with pagination params '%s'", params)
     fides_user_provided_identity: Optional[ProvidedIdentity] = None
     if fides_user_device_id:
         try:

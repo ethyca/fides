@@ -51,7 +51,7 @@ class FidesClient:
     def login(self) -> None:
         ul: UserLogin = UserLogin(username=self.username, password=self.password)
         logger.info(
-            "Logging in to remote fides {} with username '{}'...",
+            "Logging in to remote fides %s with username '%s'...",
             self.uri,
             self.username,
         )
@@ -60,18 +60,18 @@ class FidesClient:
                 f"{self.uri}{urls.V1_URL_PREFIX}{urls.LOGIN}", json=ul.dict()
             )
         except RequestError as e:
-            logger.error("Error logging in on remote Fides {}: {}", self.uri, str(e))
+            logger.error("Error logging in on remote Fides %s: %s", self.uri, str(e))
             raise e
 
         if response.is_success:
             self.token = response.json()["token_data"]["access_token"]
             logger.info(
-                "Successfully logged in to remote fides {} with username '{}'",
+                "Successfully logged in to remote fides %s with username '%s'",
                 self.uri,
                 self.username,
             )
         else:
-            logger.error("Error logging in on remote Fides {}", self.uri)
+            logger.error("Error logging in on remote Fides %s", self.uri)
             response.raise_for_status()
 
     def authenticated_request(
@@ -113,7 +113,7 @@ class FidesClient:
         )
 
         logger.info(
-            "Creating privacy request with external_id {} on remote fides {}...",
+            "Creating privacy request with external_id %s on remote fides %s...",
             external_id,
             self.uri,
         )
@@ -125,7 +125,7 @@ class FidesClient:
         response = self.session.send(request)
 
         if not response.is_success:
-            logger.error("Error creating privacy request on remote Fides {}", self.uri)
+            logger.error("Error creating privacy request on remote Fides %s", self.uri)
             response.raise_for_status()
 
         if response.json()["failed"]:
@@ -136,7 +136,7 @@ class FidesClient:
 
         pr_id = response.json()["succeeded"][0]["id"]
         logger.info(
-            "Successfully created privacy request with id {} and external_id {} on remote fides {}",
+            "Successfully created privacy request with id %s and external_id %s on remote fides %s",
             pr_id,
             external_id,
             self.uri,
@@ -165,7 +165,7 @@ class FidesClient:
             )
 
         logger.info(
-            "Polling remote fides {} for completion of privacy request with id {}...",
+            "Polling remote fides %s for completion of privacy request with id %s...",
             self.uri,
             privacy_request_id,
         )
@@ -191,7 +191,7 @@ class FidesClient:
             )
         if status.status == PrivacyRequestStatus.complete:
             logger.info(
-                "Privacy request [{}] is complete on remote Fides {}!",
+                "Privacy request [%s] is complete on remote Fides %s!",
                 privacy_request_id,
                 self.uri,
             )
@@ -207,13 +207,13 @@ class FidesClient:
         """
         if privacy_request_id:
             logger.info(
-                "Retrieving request status for privacy request {} on remote fides {}...",
+                "Retrieving request status for privacy request %s on remote fides %s...",
                 privacy_request_id,
                 self.uri,
             )
         else:
             logger.info(
-                "Retrieving request status for all privacy requests on remote fides {}...",
+                "Retrieving request status for all privacy requests on remote fides %s...",
                 self.uri,
             )
 
@@ -228,7 +228,7 @@ class FidesClient:
 
         if not response.is_success:
             logger.error(
-                "Error retrieving status of privacy request [{}] on remote Fides {}",
+                "Error retrieving status of privacy request [%s] on remote Fides %s",
                 privacy_request_id,
                 self.uri,
             )
@@ -236,13 +236,13 @@ class FidesClient:
 
         if privacy_request_id:
             logger.info(
-                "Retrieved request status for privacy request {} on remote fides {}",
+                "Retrieved request status for privacy request %s on remote fides %s",
                 privacy_request_id,
                 self.uri,
             )
         else:
             logger.info(
-                "Retrieved request status for all privacy requests on remote fides {}",
+                "Retrieved request status for all privacy requests on remote fides %s",
                 self.uri,
             )
         return response.json()["items"]
@@ -259,7 +259,7 @@ class FidesClient:
         """
         try:
             logger.info(
-                "Retrieving request results for privacy request {} on remote fides {}...",
+                "Retrieving request results for privacy request %s on remote fides %s...",
                 privacy_request_id,
                 self.uri,
             )
@@ -271,21 +271,21 @@ class FidesClient:
             response = self.session.send(request)
         except HTTPStatusError as e:
             logger.error(
-                "Error retrieving data from child server for privacy request {}: {}",
+                "Error retrieving data from child server for privacy request %s: %s",
                 privacy_request_id,
                 e,
             )
 
         if response.status_code != 200:
             logger.error(
-                "Error retrieving data from child server for privacy request {}: {}",
+                "Error retrieving data from child server for privacy request %s: %s",
                 privacy_request_id,
                 response.text,
             )
             return {}
 
         logger.info(
-            "Retrieved request results for privacy request {} on remote fides {}",
+            "Retrieved request results for privacy request %s on remote fides %s",
             privacy_request_id,
             self.uri,
         )

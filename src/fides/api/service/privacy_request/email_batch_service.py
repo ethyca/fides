@@ -45,7 +45,7 @@ def send_email_batch(self: DatabaseTask) -> EmailExitState:
         )
         if not privacy_requests.first():
             logger.info(
-                "Skipping batch email send with status: {}",
+                "Skipping batch email send with status: %s",
                 EmailExitState.no_applicable_privacy_requests.value,
             )
             return EmailExitState.no_applicable_privacy_requests
@@ -56,7 +56,7 @@ def send_email_batch(self: DatabaseTask) -> EmailExitState:
         if not combined_configs.first():
             requeue_privacy_requests_after_email_send(privacy_requests, session)
             logger.info(
-                "Skipping batch email send with status: {}",
+                "Skipping batch email send with status: %s",
                 EmailExitState.no_applicable_connectors.value,
             )
             return EmailExitState.no_applicable_connectors
@@ -79,7 +79,7 @@ def send_email_batch(self: DatabaseTask) -> EmailExitState:
                 )
         except MessageDispatchException as exc:
             logger.error(
-                "Batch email send for connector failed with exception: '{}'",
+                "Batch email send for connector failed with exception: '%s'",
                 exc,
             )
             return EmailExitState.email_send_failed

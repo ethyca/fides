@@ -62,7 +62,7 @@ class SaaSRequestOverrideFactory:
         ) -> Callable[..., Union[List[Row], int]]:
             for request_type in request_types:
                 logger.debug(
-                    "Registering new SaaS request override function '{}' under name '{}' for SaaSRequestType {}",
+                    "Registering new SaaS request override function '%s' under name '%s' for SaaSRequestType %s",
                     override_function.__name__,
                     name,
                     request_type,
@@ -84,7 +84,7 @@ class SaaSRequestOverrideFactory:
 
                 if name in cls.registry[request_type]:
                     logger.warning(
-                        "SaaS request override function with name '{}' already exists for SaaSRequestType {}. It previously referred to function '{}', but will now refer to '{}'",
+                        "SaaS request override function with name '%s' already exists for SaaSRequestType %s. It previously referred to function '%s', but will now refer to '%s'",
                         name,
                         request_type,
                         cls.registry[request_type][name],

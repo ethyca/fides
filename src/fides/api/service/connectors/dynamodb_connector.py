@@ -71,7 +71,7 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
         """
         Connects to AWS DynamoDB and lists tables to validate credentials.
         """
-        logger.info("Starting test connection to {}", self.configuration.key)
+        logger.info("Starting test connection to %s", self.configuration.key)
         client = self.client()
         try:
             client.list_tables()
@@ -156,7 +156,7 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
                 if update_result["ResponseMetadata"]["HTTPStatusCode"] == 200:
                     update_ct += 1
                 logger.info(
-                    "client.put_item({}, {})",
+                    "client.put_item(%s, %s)",
                     collection_name,
                     Pii(update_items),
                 )

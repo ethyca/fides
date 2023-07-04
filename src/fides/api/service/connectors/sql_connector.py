@@ -108,7 +108,7 @@ class SQLConnector(BaseConnector[Engine]):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Connects to the SQL DB and makes a trivial query."""
-        logger.info("Starting test connection to {}", self.configuration.key)
+        logger.info("Starting test connection to %s", self.configuration.key)
 
         try:
             engine = self.client()
@@ -140,7 +140,7 @@ class SQLConnector(BaseConnector[Engine]):
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
         if stmt is None:
             return []
-        logger.info("Starting data retrieval for {}", node.address)
+        logger.info("Starting data retrieval for %s", node.address)
         with client.connect() as connection:
             self.set_schema(connection)
             results = connection.execute(stmt)
@@ -172,7 +172,7 @@ class SQLConnector(BaseConnector[Engine]):
     def close(self) -> None:
         """Close any held resources"""
         if self.db_client:
-            logger.debug(" disposing of {}", self.__class__)
+            logger.debug(" disposing of %s", self.__class__)
             self.db_client.dispose()
         if self.ssh_server:
             self.ssh_server.stop()

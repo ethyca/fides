@@ -138,7 +138,7 @@ def upload_to_s3(  # pylint: disable=R0913
     data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """Uploads arbitrary data to s3 returned from an access request"""
-    logger.info("Starting S3 Upload of {}", file_key)
+    logger.info("Starting S3 Upload of %s", file_key)
 
     try:
         my_session = get_s3_session(auth_method, storage_secrets)
@@ -152,7 +152,7 @@ def upload_to_s3(  # pylint: disable=R0913
                 Key=file_key,
             )
         except Exception as e:
-            logger.error("Encountered error while uploading s3 object: {}", e)
+            logger.error("Encountered error while uploading s3 object: %s", e)
             raise e
 
         presigned_url: str = create_presigned_url_for_s3(
@@ -162,7 +162,7 @@ def upload_to_s3(  # pylint: disable=R0913
         return presigned_url
     except ClientError as e:
         logger.error(
-            "Encountered error while uploading and generating link for s3 object: {}", e
+            "Encountered error while uploading and generating link for s3 object: %s", e
         )
         raise e
     except ParamValidationError as e:

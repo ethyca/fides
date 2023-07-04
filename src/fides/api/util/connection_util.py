@@ -58,7 +58,7 @@ def requeue_requires_input_requests(db: Session) -> None:
             conditions=(PrivacyRequest.status == PrivacyRequestStatus.requires_input),
         ):
             logger.info(
-                "Queuing privacy request '{} with '{}' status now that manual inputs are no longer required.",
+                "Queuing privacy request '%s with '%s' status now that manual inputs are no longer required.",
                 pr.id,
                 pr.status.value,
             )
@@ -91,7 +91,7 @@ def validate_secrets(
     try:
         schema = get_connection_secrets_schema(connection_type.value, saas_config)  # type: ignore
         logger.info(
-            "Validating secrets on connection config with key '{}'",
+            "Validating secrets on connection config with key '%s'",
             connection_config.key,
         )
         connection_secrets = schema.parse_obj(request_body)
@@ -120,7 +120,7 @@ def patch_connection_configs(
 ) -> BulkPutConnectionConfiguration:
     created_or_updated: List[ConnectionConfigurationResponse] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info("Starting bulk upsert for {} connection configuration(s)", len(configs))
+    logger.info("Starting bulk upsert for %s connection configuration(s)", len(configs))
 
     for config in configs:
         # Retrieve the existing connection config from the database
@@ -216,7 +216,7 @@ def patch_connection_configs(
             )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
-                "Create/update failed for connection config with key '{}': {}",
+                "Create/update failed for connection config with key '%s': %s",
                 config.key,
                 exc,
             )
@@ -231,7 +231,7 @@ def patch_connection_configs(
             )
         except Exception:
             logger.warning(
-                "Create/update failed for connection config with key '{}'.", config.key
+                "Create/update failed for connection config with key '%s'.", config.key
             )
             # remove secrets information from the return for security reasons.
             orig_data.pop("secrets", None)

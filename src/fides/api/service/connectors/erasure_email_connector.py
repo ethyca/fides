@@ -61,7 +61,7 @@ class GenericErasureEmailConnector(BaseEmailConnector):
         """
         Sends an email to the "test_email" configured, just to establish that the email workflow is working.
         """
-        logger.info("Starting test connection to {}", self.configuration.key)
+        logger.info("Starting test connection to %s", self.configuration.key)
 
         db = Session.object_session(self.configuration)
 
@@ -79,7 +79,7 @@ class GenericErasureEmailConnector(BaseEmailConnector):
                 test_mode=True,
             )
         except MessageDispatchException as exc:
-            logger.info("Email connector test failed with exception {}", exc)
+            logger.info("Email connector test failed with exception %s", exc)
             return ConnectionTestStatus.failed
         return ConnectionTestStatus.succeeded
 
@@ -113,14 +113,14 @@ class GenericErasureEmailConnector(BaseEmailConnector):
 
         if not batched_identities:
             logger.info(
-                "Skipping erasure email send for connector: '{}'. "
+                "Skipping erasure email send for connector: '%s'. "
                 "No corresponding user identities found for pending privacy requests.",
                 self.configuration.name,
             )
             return
 
         logger.info(
-            "Sending batched erasure email for connector {}...",
+            "Sending batched erasure email for connector %s...",
             self.configuration.name,
         )
 
@@ -133,7 +133,7 @@ class GenericErasureEmailConnector(BaseEmailConnector):
                 test_mode=False,
             )
         except MessageDispatchException as exc:
-            logger.info("Erasure email failed with exception {}", exc)
+            logger.info("Erasure email failed with exception %s", exc)
             raise
 
         # create an audit event for each privacy request ID

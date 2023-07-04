@@ -93,7 +93,7 @@ def post_config(
         return create_or_update_messaging_config(db=db, config=messaging_config)
     except ValueError as e:
         logger.warning(
-            "Create failed for messaging config {}: {}",
+            "Create failed for messaging config %s: %s",
             messaging_config.key,
             Pii(str(e)),
         )
@@ -103,7 +103,7 @@ def post_config(
         )
     except Exception as exc:
         logger.warning(
-            "Create failed for messaging config {}: {}",
+            "Create failed for messaging config %s: %s",
             messaging_config.key,
             Pii(str(exc)),
         )
@@ -130,14 +130,14 @@ def patch_config_by_key(
     try:
         return update_messaging_config(db=db, key=config_key, config=messaging_config)
     except MessagingConfigNotFoundException:
-        logger.warning("No messaging config found with key {}", config_key)
+        logger.warning("No messaging config found with key %s", config_key)
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No messaging config found with key {config_key}",
         )
     except Exception as exc:
         logger.warning(
-            "Patch failed for messaging config {}: {}",
+            "Patch failed for messaging config %s: %s",
             messaging_config.key,
             Pii(str(exc)),
         )
@@ -254,7 +254,7 @@ def put_default_config(
     Updates default messaging config for given service type.
     """
     logger.info(
-        "Starting upsert for default messaging config of type '{}'",
+        "Starting upsert for default messaging config of type '%s'",
         messaging_config.service_type,
     )
     incoming_data = messaging_config.dict()
@@ -312,7 +312,7 @@ def put_config_secrets(
     """
     Add or update secrets for messaging config.
     """
-    logger.info("Finding messaging config with key '{}'", config_key)
+    logger.info("Finding messaging config with key '%s'", config_key)
     messaging_config = MessagingConfig.get_by(db=db, field="key", value=config_key)
     if not messaging_config:
         raise HTTPException(
@@ -344,7 +344,7 @@ def update_config_secrets(
         )
 
     logger.info(
-        "Updating messaging config secrets for config with key '{}'",
+        "Updating messaging config secrets for config with key '%s'",
         messaging_config.key,
     )
     try:
@@ -371,7 +371,7 @@ def get_configs(
     Retrieves configs for messaging.
     """
     logger.info(
-        "Finding all messaging configurations with pagination params {}", params
+        "Finding all messaging configurations with pagination params %s", params
     )
     return paginate(
         MessagingConfig.query(db=db).order_by(MessagingConfig.created_at.desc()),
@@ -390,7 +390,7 @@ def get_config_by_key(
     """
     Retrieves configs for messaging service by key.
     """
-    logger.info("Finding messaging config with key '{}'", config_key)
+    logger.info("Finding messaging config with key '%s'", config_key)
 
     try:
         return get_messaging_config_by_key(db=db, key=config_key)
@@ -412,7 +412,7 @@ def get_default_config_by_type(
     """
     Retrieves default config for messaging service by type.
     """
-    logger.info("Finding default messaging config of type '{}'", service_type)
+    logger.info("Finding default messaging config of type '%s'", service_type)
 
     messaging_config = MessagingConfig.get_by_type(db, service_type)
     if not messaging_config:

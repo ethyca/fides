@@ -77,7 +77,7 @@ class FriendbuyNextgenAuthenticationStrategy(AuthenticationStrategy):
                 }
                 connection_config.update(db, data={"secrets": updated_secrets})
                 logger.info(
-                    "Successfully updated the token for {}",
+                    "Successfully updated the token for %s",
                     connection_config.key,
                 )
             else:
@@ -94,7 +94,7 @@ class FriendbuyNextgenAuthenticationStrategy(AuthenticationStrategy):
 
         if expires_at is None:
             logger.info(
-                "The expires_at value is not defined for {}, skipping token refresh",
+                "The expires_at value is not defined for %s, skipping token refresh",
                 connection_config.key,
             )
             return False

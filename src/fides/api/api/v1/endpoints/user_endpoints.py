@@ -128,7 +128,7 @@ async def update_user(
         )
 
     user.update(db=db, data=data.dict())
-    logger.info("Updated user with id: '{}'.", user.id)
+    logger.info("Updated user with id: '%s'.", user.id)
     return user
 
 
@@ -160,7 +160,7 @@ def update_user_password(
 
     current_user.update_password(db=db, new_password=b64_str_to_str(data.new_password))
 
-    logger.info("Updated user with id: '{}'.", current_user.id)
+    logger.info("Updated user with id: '%s'.", current_user.id)
     return current_user
 
 
@@ -188,7 +188,7 @@ def force_update_password(
         )
 
     user.update_password(db=db, new_password=b64_str_to_str(data.new_password))
-    logger.info("Updated user with id: '{}'.", user.id)
+    logger.info("Updated user with id: '%s'.", user.id)
     return user
 
 
@@ -283,7 +283,7 @@ def update_managed_systems(
             detail=f"Cannot add user {user_id} as system manager. System(s) not found.",
         )
 
-    logger.info("Updating systems for which user {} is system manager", user_id)
+    logger.info("Updating systems for which user %s is system manager", user_id)
 
     # Adding new systems for which the user is not already a manager
     for system in retrieved_systems:
@@ -315,7 +315,7 @@ async def get_managed_systems(
     # A user is able to retrieve their own systems
     if current_user and current_user.id == user_id:
         logger.info(
-            "Retrieving current user's {} systems for which they are system manager",
+            "Retrieving current user's %s systems for which they are system manager",
             user_id,
         )
         return current_user.systems
@@ -327,7 +327,7 @@ async def get_managed_systems(
         authorization=authorization,
         db=db,
     )
-    logger.info("Getting systems for which user {} is system manager", user_id)
+    logger.info("Getting systems for which user %s is system manager", user_id)
     return user.systems
 
 
@@ -365,7 +365,7 @@ async def get_managed_system_details(
         )
 
     logger.info(
-        "Getting system {} for which user {} is system manager",
+        "Getting system %s for which user %s is system manager",
         system.fides_key,
         user_id,
     )
@@ -394,7 +394,7 @@ def remove_user_as_system_manager(
         )
 
     user.remove_as_system_manager(db, system)
-    logger.info("Removed user {} as system manager of {}", user_id, system.fides_key)
+    logger.info("Removed user %s as system manager of %s", user_id, system.fides_key)
 
 
 @router.post(
@@ -436,7 +436,7 @@ def create_user(
         )
 
     user = FidesUser.create(db=db, data=user_data.dict())
-    logger.info("Created user with id: '{}'.", user.id)
+    logger.info("Created user with id: '%s'.", user.id)
     FidesUserPermissions.create(
         db=db,
         data={"user_id": user.id, "roles": [VIEWER]},
@@ -466,7 +466,7 @@ def delete_user(
             status_code=HTTP_404_NOT_FOUND, detail=f"No user found with id {user_id}."
         )
 
-    logger.info("User with id {} deleted by user with id {}", user_id, client.user_id)
+    logger.info("User with id %s deleted by user with id %s", user_id, client.user_id)
 
     user.delete(db)
 
@@ -482,7 +482,7 @@ def get_user(*, db: Session = Depends(get_db), user_id: str) -> FidesUser:
     if user is None:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
 
-    logger.info("Returning user with id: '{}'.", user_id)
+    logger.info("Returning user with id: '%s'.", user_id)
     return user
 
 
@@ -615,7 +615,7 @@ def perform_login(
         client.save(db)
 
     if not user.permissions.roles and not user.systems:  # type: ignore
-        logger.warning("User {} needs roles or systems to login.", user.id)
+        logger.warning("User %s needs roles or systems to login.", user.id)
         raise AuthorizationError(detail="Not Authorized for this action")
 
     user.last_login_at = datetime.utcnow()

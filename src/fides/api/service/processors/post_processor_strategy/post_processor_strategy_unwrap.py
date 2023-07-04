@@ -54,7 +54,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
             unwrapped = pydash.get(data, self.data_path)
             if unwrapped is None:
                 logger.warning(
-                    "{} could not be found for the following post processing strategy: {}",
+                    "%s could not be found for the following post processing strategy: %s",
                     self.data_path,
                     self.name,
                 )
@@ -65,7 +65,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
                 unwrapped = pydash.get(item, self.data_path)
                 if unwrapped is None:
                     logger.warning(
-                        "{} could not be found for the following post processing strategy: {}",
+                        "%s could not be found for the following post processing strategy: %s",
                         self.data_path,
                         self.name,
                     )

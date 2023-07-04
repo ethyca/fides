@@ -712,7 +712,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             }
 
         logger.info(
-            "Calling webhook '{}' for privacy_request '{}'", webhook.key, self.id
+            "Calling webhook '%s' for privacy_request '%s'", webhook.key, self.id
         )
         response: Optional[SecondPartyResponseFormat] = https_connector.execute(  # type: ignore
             request_body.dict(),
@@ -729,7 +729,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             [response_body.derived_identity.dict().values()]
         ):
             logger.info(
-                "Updating known identities on privacy request '{}' from webhook '{}'.",
+                "Updating known identities on privacy request '%s' from webhook '%s'.",
                 self.id,
                 webhook.key,
             )
@@ -780,7 +780,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
             task_id = self.get_cached_task_id()
             if task_id:
-                logger.info("Revoking task {} for request {}", task_id, self.id)
+                logger.info("Revoking task %s for request %s", task_id, self.id)
                 # Only revokes if execution is not already in progress
                 celery_app.control.revoke(task_id, terminate=False)
 

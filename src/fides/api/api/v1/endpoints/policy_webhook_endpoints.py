@@ -53,7 +53,7 @@ def get_policy_pre_execution_webhooks(
     policy = get_policy_or_error(db, policy_key)
 
     logger.info(
-        "Finding all Pre-Execution Webhooks for Policy '{}' with pagination params '{}'",
+        "Finding all Pre-Execution Webhooks for Policy '%s' with pagination params '%s'",
         policy.key,
         params,
     )
@@ -79,7 +79,7 @@ def get_policy_post_execution_webhooks(
     policy = get_policy_or_error(db, policy_key)
 
     logger.info(
-        "Finding all Post-Execution Webhooks for Policy '{}' with pagination params '{}'",
+        "Finding all Post-Execution Webhooks for Policy '%s' with pagination params '%s'",
         policy.key,
         params,
     )
@@ -148,7 +148,7 @@ def put_webhooks(
 
     if webhooks_to_remove.count():
         logger.info(
-            "Removing {}-Execution Webhooks from Policy '{}' that were not included in request: {}",
+            "Removing %s-Execution Webhooks from Policy '%s' that were not included in request: %s",
             webhook_cls.prefix.capitalize(),
             policy.key,
             [webhook.key for webhook in webhooks_to_remove],
@@ -156,7 +156,7 @@ def put_webhooks(
         webhooks_to_remove.delete()
 
     logger.info(
-        "Creating/updating Policy Pre-Execution Webhooks: {}", staged_webhook_keys
+        "Creating/updating Policy Pre-Execution Webhooks: %s", staged_webhook_keys
     )
     # Committing to database now, as a last step, once we've verified that all the webhooks
     # in the request are free of issues.
@@ -221,7 +221,7 @@ def get_policy_webhook_or_error(
     Also verifies that the webhook belongs to the given Policy.
     """
     logger.info(
-        "Finding {}-Execution Webhook with key '{}' for Policy '{}'",
+        "Finding %s-Execution Webhook with key '%s' for Policy '%s'",
         webhook_cls.prefix.capitalize(),
         webhook_key,
         policy.key,
@@ -305,7 +305,7 @@ def _patch_webhook(
 
     try:
         logger.info(
-            "Updating {}-Execution Webhook with key '{}' on Policy '{}' ",
+            "Updating %s-Execution Webhook with key '%s' on Policy '%s' ",
             webhook_cls.prefix.capitalize(),
             webhook_key,
             policy_key,
@@ -319,7 +319,7 @@ def _patch_webhook(
 
     if index is not None and index != loaded_webhook.order:
         logger.info(
-            "Reordering {}-Execution Webhooks for Policy '{}'",
+            "Reordering %s-Execution Webhooks for Policy '%s'",
             webhook_cls.prefix.capitalize(),
             policy_key,
         )
@@ -420,14 +420,14 @@ def delete_webhook(
     if reordering:
         # Move the webhook to the end and shuffle other webhooks
         logger.info(
-            "Reordering {}-Execution Webhooks for Policy '{}'",
+            "Reordering %s-Execution Webhooks for Policy '%s'",
             webhook_cls.prefix.capitalize(),
             policy_key,
         )
         loaded_webhook.reorder_related_webhooks(db=db, new_index=total_webhook_count)
 
     logger.info(
-        "Deleting {}-Execution Webhook with key '{}' off of Policy '{}'",
+        "Deleting %s-Execution Webhook with key '%s' off of Policy '%s'",
         webhook_cls.prefix.capitalize(),
         webhook_key,
         policy_key,

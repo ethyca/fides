@@ -51,12 +51,12 @@ def cache_data(
 ) -> None:
     """Cache privacy request data"""
     # Store identity and encryption key in the cache
-    logger.info("Caching identity for privacy request {}", privacy_request.id)
+    logger.info("Caching identity for privacy request %s", privacy_request.id)
     privacy_request.cache_identity(identity)
     privacy_request.cache_encryption(encryption_key)  # handles None already
 
     # Store masking secrets in the cache
-    logger.info("Caching masking secrets for privacy request {}", privacy_request.id)
+    logger.info("Caching masking secrets for privacy request %s", privacy_request.id)
     erasure_rules = policy.get_rules_for_action(action_type=ActionType.erasure)
     unique_masking_strategies_by_name: Set[str] = set()
     for rule in erasure_rules:

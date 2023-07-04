@@ -78,7 +78,7 @@ router = APIRouter(tags=["Dataset Configs"], prefix=V1_URL_PREFIX)
 def _get_connection_config(
     connection_key: FidesKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
-    logger.info("Finding connection config with key '{}'", connection_key)
+    logger.info("Finding connection config with key '%s'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
     if not connection_config:
         raise HTTPException(
@@ -148,7 +148,7 @@ def validate_dataset(
         Traversal(complete_graph, {k: None for k in unique_identities})
     except (TraversalError, ValidationError) as err:
         logger.warning(
-            "Traversal validation failed for dataset '{}': {}", dataset.fides_key, err
+            "Traversal validation failed for dataset '%s': %s", dataset.fides_key, err
         )
         return ValidateDatasetResponse(
             dataset=dataset,
@@ -158,7 +158,7 @@ def validate_dataset(
             ),
         )
 
-    logger.info("Validation successful for dataset '{}'!", dataset.fides_key)
+    logger.info("Validation successful for dataset '%s'!", dataset.fides_key)
     return ValidateDatasetResponse(
         dataset=dataset,
         traversal_details=DatasetTraversalDetails(
@@ -190,11 +190,11 @@ def patch_dataset_configs(
     """
     created_or_updated: List[Dataset] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info("Starting bulk upsert for {} Dataset Configs", len(dataset_pairs))
+    logger.info("Starting bulk upsert for %s Dataset Configs", len(dataset_pairs))
 
     for dataset_pair in dataset_pairs:
         logger.info(
-            "Finding ctl_dataset with key '{}'", dataset_pair.ctl_dataset_fides_key
+            "Finding ctl_dataset with key '%s'", dataset_pair.ctl_dataset_fides_key
         )
         ctl_dataset: CtlDataset = (
             db.query(CtlDataset)
@@ -260,7 +260,7 @@ def patch_datasets(
 
     created_or_updated: List[Dataset] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info("Starting bulk upsert for {} datasets", len(datasets))
+    logger.info("Starting bulk upsert for %s datasets", len(datasets))
 
     # warn if there are duplicate fides_keys within the datasets
     # valid datasets with the same fides_key will override each other
@@ -384,7 +384,7 @@ def create_or_update_dataset(
             )
         )
     except Exception:
-        logger.warning("Create/update failed for dataset '{}'.", data["fides_key"])
+        logger.warning("Create/update failed for dataset '%s'.", data["fides_key"])
         failed.append(
             BulkUpdateFailed(
                 message="Dataset create/update failed.",
@@ -436,7 +436,7 @@ def get_datasets(
     """
 
     logger.info(
-        "Finding all datasets for connection '{}' with pagination params {}",
+        "Finding all datasets for connection '%s' with pagination params %s",
         connection_config.key,
         params,
     )
@@ -471,7 +471,7 @@ def get_dataset(
     """
 
     logger.info(
-        "Finding dataset '{}' for connection '{}'", fides_key, connection_config.key
+        "Finding dataset '%s' for connection '%s'", fides_key, connection_config.key
     )
     dataset_config = DatasetConfig.filter(
         db=db,
@@ -501,7 +501,7 @@ def get_dataset_configs(
     """Returns all Dataset Configs attached to current Connection Config."""
 
     logger.info(
-        "Finding all dataset configs for connection '{}' with pagination params {}",
+        "Finding all dataset configs for connection '%s' with pagination params %s",
         connection_config.key,
         params,
     )
@@ -525,7 +525,7 @@ def get_dataset_config(
     """Returns the specific Dataset Config linked to the Connection Config."""
 
     logger.info(
-        "Finding dataset config '{}' for connection '{}'",
+        "Finding dataset config '%s' for connection '%s'",
         fides_key,
         connection_config.key,
     )
@@ -558,7 +558,7 @@ def delete_dataset(
     """Removes the DatasetConfig based on the given key."""
 
     logger.info(
-        "Finding dataset '{}' for connection '{}'", fides_key, connection_config.key
+        "Finding dataset '%s' for connection '%s'", fides_key, connection_config.key
     )
     dataset_config = DatasetConfig.filter(
         db=db,
@@ -574,7 +574,7 @@ def delete_dataset(
         )
 
     logger.info(
-        "Deleting dataset '{}' for connection '{}'", fides_key, connection_config.key
+        "Deleting dataset '%s' for connection '%s'", fides_key, connection_config.key
     )
     dataset_config.delete(db)
 

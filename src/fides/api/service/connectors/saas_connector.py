@@ -146,7 +146,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         client_config = self.get_client_config()
         rate_limit_config = self.get_rate_limit_config()
 
-        logger.info("Creating client to {}", uri)
+        logger.info("Creating client to %s", uri)
         return AuthenticatedClient(
             uri, self.configuration, client_config, rate_limit_config
         )
@@ -180,7 +180,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             # then we return a single empty row to still trigger the mask_data method
             if delete_request:
                 logger.info(
-                    "Skipping read for the '{}' collection, it is delete-only",
+                    "Skipping read for the '%s' collection, it is delete-only",
                     self.current_collection_name,
                 )
                 return [{}]
@@ -255,7 +255,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         if missing_dataset_reference_values:
             logger.info(
-                "The '{}' request of {} is missing the following dataset reference values [{}], skipping traversal",
+                "The '%s' request of %s is missing the following dataset reference values [%s], skipping traversal",
                 self.current_collection_name,
                 self.saas_config.fides_key,  # type: ignore
                 ", ".join(missing_dataset_reference_values),
@@ -286,7 +286,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         )
 
         logger.info(
-            "{} row(s) returned after postprocessing '{}' collection.",
+            "%s row(s) returned after postprocessing '%s' collection.",
             len(rows),
             self.current_collection_name,
         )
@@ -304,7 +304,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         if next_request:
             logger.info(
-                "Using '{}' pagination strategy to get next page for '{}'.",
+                "Using '%s' pagination strategy to get next page for '%s'.",
                 saas_request.pagination.strategy,  # type: ignore
                 self.current_collection_name,
             )
@@ -331,7 +331,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 postprocessor.strategy, postprocessor.configuration  # type: ignore
             )
             logger.info(
-                "Starting postprocessing of '{}' collection with '{}' strategy.",
+                "Starting postprocessing of '%s' collection with '%s' strategy.",
                 self.current_collection_name,
                 postprocessor.strategy,  # type: ignore
             )
@@ -417,7 +417,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             except ValueError as exc:
                 if masking_request.skip_missing_param_values:
                     logger.info(
-                        "Skipping optional masking request on node {}: {}",
+                        "Skipping optional masking request on node %s: %s",
                         node.address.value,
                         exc,
                     )
@@ -460,7 +460,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         against the service.
         """
         logger.info(
-            "Starting consent request for node: '{}'",
+            "Starting consent request for node: '%s'",
             node.address.value,
         )
         self.set_privacy_request_state(privacy_request, node)
@@ -472,7 +472,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         if should_opt_in is None:
             logger.info(
-                "Skipping consent requests on node {}: No actionable consent preferences to propagate",
+                "Skipping consent requests on node %s: No actionable consent preferences to propagate",
                 node.address.value,
             )
             raise SkippingConsentPropagation(
@@ -489,7 +489,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         if not matching_consent_requests:
             logger.info(
-                "Skipping consent requests on node {}: No '{}' requests defined",
+                "Skipping consent requests on node %s: No '%s' requests defined",
                 node.address.value,
                 query_config.action,
             )
@@ -519,7 +519,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             except ValueError as exc:
                 if consent_request.skip_missing_param_values:
                     logger.info(
-                        "Skipping optional consent request on node {}: {}",
+                        "Skipping optional consent request on node %s: %s",
                         node.address.value,
                         exc,
                     )
@@ -552,7 +552,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
         if saas_request.ignore_errors and not response.ok:
             logger.info(
-                "Ignoring and clearing errored response with status code {}.",
+                "Ignoring and clearing errored response with status code %s.",
                 response.status_code,
             )
             response = Response()
@@ -606,7 +606,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             )  # type: ignore
         except Exception as exc:
             logger.error(
-                "Encountered error executing override access function '{}'",
+                "Encountered error executing override access function '%s'",
                 override_function_name,
                 exc_info=True,
             )
@@ -654,7 +654,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             )  # type: ignore
         except Exception as exc:
             logger.error(
-                "Encountered error executing override mask function '{}",
+                "Encountered error executing override mask function '%s",
                 override_function_name,
                 exc_info=True,
             )

@@ -38,7 +38,7 @@ def upload(
     )
 
     if config is None:
-        logger.warning("Storage type not found: {}", storage_key)
+        logger.warning("Storage type not found: %s", storage_key)
         raise StorageUploadError(f"Storage type not found: {storage_key}")
     uploader: Any = _get_uploader_from_config_type(config.type)  # type: ignore
     return uploader(

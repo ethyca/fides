@@ -54,7 +54,7 @@ def get_email_template(  # pylint: disable=too-many-return-statements
     if action_type == MessagingActionType.TEST_MESSAGE:
         return template_env.get_template(TEST_MESSAGE_TEMPLATE)
 
-    logger.error("No corresponding template linked to the {}", action_type)
+    logger.error("No corresponding template linked to the %s", action_type)
     raise EmailTemplateUnhandledActionType(
         f"No corresponding template linked to the {action_type}"
     )

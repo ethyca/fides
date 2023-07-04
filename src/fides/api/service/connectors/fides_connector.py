@@ -69,15 +69,15 @@ class FidesConnector(BaseConnector[FidesClient]):
         Tests connection to the configured Fides server with configured credentials
         by attempting an authorized API call and ensuring success
         """
-        log.info("Starting test connection to {}", self.configuration.key)
+        log.info("Starting test connection to %s", self.configuration.key)
         try:
             client: FidesClient = self.client()
             client.request_status()
         except Exception as e:
-            log.error("Error testing connection to remote Fides {}", str(e))
+            log.error("Error testing connection to remote Fides %s", str(e))
             return ConnectionTestStatus.failed
 
-        log.info("Successful connection test for {}", self.configuration.key)
+        log.info("Successful connection test for %s", self.configuration.key)
         return ConnectionTestStatus.succeeded
 
     def retrieve_data(

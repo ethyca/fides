@@ -176,7 +176,7 @@ def unpack_fides_connector_results(
             rule_results = results[rule_key]
         except KeyError:
             logger.error(
-                "Did not find a result entry on Fides connector {} for rule {}",
+                "Did not find a result entry on Fides connector %s for rule %s",
                 node_address,
                 rule_key,
             )
@@ -195,5 +195,5 @@ def unpack_fides_connector_results(
                     filtered_access_results[key] = value  # type: ignore
                 else:
                     if value:
-                        logger.info("Appending child rows to {}", key)
+                        logger.info("Appending child rows to %s", key)
                         filtered.extend(value)  # type: ignore

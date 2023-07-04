@@ -21,6 +21,7 @@ from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
 from fides.api.db.database import configure_db
 from fides.api.db.seed import create_or_update_parent_user
+from fides.logging import logger
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.oauth.utils import get_root_client, verify_oauth_client_prod
 from fides.api.service.connectors.saas.connector_registry_service import (
@@ -36,7 +37,6 @@ from fides.api.util.consent_util import (
 )
 from fides.api.util.endpoint_utils import fides_limiter
 from fides.api.util.errors import FidesError
-from fides.api.util.logger import setup as setup_logging
 from fides.api.util.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
@@ -68,14 +68,7 @@ def create_fides_app(
     security_env: str = CONFIG.security.env,
 ) -> FastAPI:
     """Return a properly configured application."""
-    setup_logging(
-        CONFIG.logging.level,
-        serialize=CONFIG.logging.serialization,
-        desination=CONFIG.logging.destination,
-    )
-    logger.bind(api_config=CONFIG.logging.json()).debug(
-        "Logger configuration options in use"
-    )
+    # TODO: Log current Config
 
     fastapi_app = FastAPI(title="fides", version=app_version)
     fastapi_app.state.limiter = fides_limiter
@@ -117,11 +110,11 @@ def log_startup() -> None:
     """Log application startup and other information."""
     logger.info(f"Starting Fides - v{VERSION}")
     logger.info(
-        "Startup configuration: reloading = {}, dev_mode = {}",
+        "Startup configuration: reloading = %s, dev_mode = %s",
         CONFIG.hot_reloading,
         CONFIG.dev_mode,
     )
-    logger.info("Startup configuration: pii logging = {}", CONFIG.logging.log_pii)
+    logger.info("Startup configuration: pii logging = %s", CONFIG.logging.log_pii)
 
     if CONFIG.logging.level == DEBUG:
         logger.warning(
@@ -150,7 +143,7 @@ async def run_database_startup() -> None:
     try:
         create_or_update_parent_user()
     except Exception as e:
-        logger.error("Error creating parent user: {}", str(e))
+        logger.error("Error creating parent user: %s", e)
         raise FidesError(f"Error creating parent user: {str(e)}")
 
     db = get_api_session()
@@ -158,7 +151,7 @@ async def run_database_startup() -> None:
     try:
         ApplicationConfig.update_config_set(db, CONFIG)
     except Exception as e:
-        logger.error("Error occurred writing config settings to database: {}", str(e))
+        logger.error("Error occurred writing config settings to database: %s", e)
         raise FidesError(
             f"Error occurred writing config settings to database: {str(e)}"
         )
@@ -171,8 +164,8 @@ async def run_database_startup() -> None:
         logger.info("Finished loading SaaS templates")
     except Exception as e:
         logger.error(
-            "Error occurred during SaaS connector template validation: {}",
-            str(e),
+            "Error occurred during SaaS connector template validation: %s",
+            e,
         )
         return
     finally:
@@ -193,7 +186,7 @@ def check_redis() -> None:
     try:
         get_cache(should_log=True)
     except (RedisConnectionError, RedisError, ResponseError) as e:
-        logger.error("Connection to cache failed: {}", str(e))
+        logger.error("Connection to cache failed: %s", e)
         return
     else:
         logger.debug("Connection to cache succeeded")
@@ -206,7 +199,7 @@ def load_default_privacy_notices() -> None:
         db = get_api_session()
         load_default_notices_on_startup(db, DEFAULT_PRIVACY_NOTICES_PATH)
     except Exception as e:
-        logger.error("Skipping loading default privacy notices: {}", str(e))
+        logger.error("Skipping loading default privacy notices: %s", e)
     finally:
         db.close()
 
@@ -218,6 +211,6 @@ def load_default_experience_configs() -> None:
         db = get_api_session()
         load_default_experience_configs_on_startup(db, PRIVACY_EXPERIENCE_CONFIGS_PATH)
     except Exception as e:
-        logger.error("Skipping loading default privacy experience configs: {}", str(e))
+        logger.error("Skipping loading default privacy experience configs: %s", e)
     finally:
         db.close()

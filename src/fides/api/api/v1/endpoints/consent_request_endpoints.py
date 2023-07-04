@@ -208,7 +208,7 @@ def create_consent_request(
         try:
             send_verification_code_to_user(db, consent_request, data)
         except MessageDispatchException as exc:
-            logger.error("Error sending the verification code message: {}", str(exc))
+            logger.error("Error sending the verification code message: %s", str(exc))
             raise HTTPException(
                 status_code=HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Error sending the verification code message: {str(exc)}",
@@ -381,12 +381,12 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
     if not executable_consent_preferences:
         logger.info(
             "Skipping propagating consent preferences to third-party services as "
-            "specified consent preferences: {} are not executable.",
+            "specified consent preferences: %s are not executable.",
             [pref.data_use for pref in consent_preferences.consent or []],
         )
         return None
 
-    logger.info("Executable consent options: {}", executable_data_uses)
+    logger.info("Executable consent options: %s", executable_data_uses)
     privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
         db=db,
         config_proxy=ConfigProxy(db),
@@ -608,7 +608,7 @@ def _get_consent_request_and_provided_identity(
             raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
         except PermissionError as exc:
             logger.info(
-                "Invalid verification code provided for {}.", consent_request.id
+                "Invalid verification code provided for %s.", consent_request.id
             )
             raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
 

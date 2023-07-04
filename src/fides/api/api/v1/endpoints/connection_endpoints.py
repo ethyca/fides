@@ -67,7 +67,7 @@ def get_connection_config_or_error(
 ) -> ConnectionConfig:
     """Helper to load the ConnectionConfig object or throw a 404"""
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    logger.info("Finding connection configuration with key '{}'", connection_key)
+    logger.info("Finding connection configuration with key '%s'", connection_key)
     if not connection_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -104,7 +104,7 @@ def get_connections(
     SaaS connector types.
     """
     logger.info(
-        "Finding connection configurations with pagination params {} and search query: '{}'.",
+        "Finding connection configurations with pagination params %s and search query: '%s'.",
         params,
         search if search else "",
     )
@@ -219,7 +219,7 @@ def delete_connection(
     """Removes the connection configuration with matching key."""
     connection_config = get_connection_config_or_error(db, connection_key)
     connection_type = connection_config.connection_type
-    logger.info("Deleting connection config with key '{}'.", connection_key)
+    logger.info("Deleting connection config with key '%s'.", connection_key)
     if connection_config.saas_config:
         saas_dataset_fides_key = connection_config.saas_config.get("fides_key")
 
@@ -229,7 +229,7 @@ def delete_connection(
         dataset_config.delete(synchronize_session="evaluate")
 
         if saas_dataset_fides_key:
-            logger.info("Deleting saas dataset with key '{}'.", saas_dataset_fides_key)
+            logger.info("Deleting saas dataset with key '%s'.", saas_dataset_fides_key)
             saas_dataset = (
                 db.query(CtlDataset)
                 .filter(CtlDataset.fides_key == saas_dataset_fides_key)
@@ -256,7 +256,7 @@ def connection_status(
 
     except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(
-            "Connection test failed on {}: {}",
+            "Connection test failed on %s: %s",
             connection_config.key,
             Pii(str(exc)),
         )
@@ -269,7 +269,7 @@ def connection_status(
             failure_reason=str(exc),
         )
 
-    logger.info("Connection test {} on {}", status.value, connection_config.key)  # type: ignore
+    logger.info("Connection test %s on %s", status.value, connection_config.key)  # type: ignore
     connection_config.update_test_status(test_status=status, db=db)  # type: ignore
 
     return TestStatusMessage(
@@ -303,7 +303,7 @@ def put_connection_config_secrets(
         db, unvalidated_secrets, connection_config
     ).dict()
     # Save validated secrets, regardless of whether they've been verified.
-    logger.info("Updating connection config secrets for '{}'", connection_key)
+    logger.info("Updating connection config secrets for '%s'", connection_key)
     connection_config.save(db=db)
 
     msg = f"Secrets updated for ConnectionConfig with key: {connection_key}."

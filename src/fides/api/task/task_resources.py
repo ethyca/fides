@@ -204,5 +204,5 @@ class TaskResources:
 
     def close(self) -> None:
         """Close any held resources"""
-        logger.debug("Closing all task resources for {}", self.request.id)
+        logger.debug("Closing all task resources for %s", self.request.id)
         self.connections.close()

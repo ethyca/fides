@@ -119,7 +119,7 @@ async def update_user_permissions(
     if user.systems and APPROVER in user.permissions.roles:  # type: ignore[attr-defined]
         for system in user.systems.copy():
             logger.info(
-                "Approvers cannot be system managers. Removing user {} as system manager of {}.",
+                "Approvers cannot be system managers. Removing user %s as system manager of %s.",
                 user.id,
                 system.fides_key,
             )

@@ -506,7 +506,7 @@ def load_default_notices_on_startup(
     already.  Otherwise, we skip making updates to the Notices themselves automatically.
     """
     logger.info(
-        "Loading default privacy notice templates from {}", notice_yaml_file_path
+        "Loading default privacy notice templates from %s", notice_yaml_file_path
     )
     with open(load_file([notice_yaml_file_path]), "r", encoding="utf-8") as file:
         notices = yaml.safe_load(file).get("privacy_notices", [])
@@ -555,7 +555,7 @@ def load_default_experience_configs_on_startup(
     yaml file if applicable.
     """
     logger.info(
-        "Loading default privacy experience configs from {}", notice_yaml_file_path
+        "Loading default privacy experience configs from %s", notice_yaml_file_path
     )
     with open(load_file([notice_yaml_file_path]), "r", encoding="utf-8") as file:
         experience_configs = yaml.safe_load(file).get("privacy_experience_configs", [])
@@ -590,7 +590,7 @@ def create_default_experience_config(
 
     if not existing_experience_config:
         logger.info(
-            "Creating default experience config {}", experience_config_schema.id
+            "Creating default experience config %s", experience_config_schema.id
         )
         return PrivacyExperienceConfig.create(
             db,
@@ -599,7 +599,7 @@ def create_default_experience_config(
         )
 
     logger.info(
-        "Found existing experience config {}, not creating a new default experience config",
+        "Found existing experience config %s, not creating a new default experience config",
         experience_config_schema.id,
     )
     return None

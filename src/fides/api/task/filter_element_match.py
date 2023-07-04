@@ -101,7 +101,7 @@ def _remove_paths_from_row(
         if matched_array is None:
             # This case shouldn't happen - if this gets logged, we've done something wrong
             logger.info(
-                "_remove_paths_from_row call: Path {} in row {} not found.",
+                "_remove_paths_from_row call: Path %s in row %s not found.",
                 path,
                 Pii(row),
             )

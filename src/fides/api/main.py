@@ -173,7 +173,7 @@ def read_other_paths(request: Request) -> Response:
                 status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
             )
         logger.debug(
-            "catchall request path '{}' matched static admin UI file: {}",
+            "catchall request path '%s' matched static admin UI file: %s",
             path,
             ui_file,
         )
@@ -182,7 +182,7 @@ def read_other_paths(request: Request) -> Response:
     # raise 404 for anything that should be backend endpoint but we can't find it
     if path.startswith(API_PREFIX[1:]):
         logger.debug(
-            "catchall request path '{}' matched an invalid API route, return 404",
+            "catchall request path '%s' matched an invalid API route, return 404",
             path,
         )
         raise HTTPException(
@@ -191,7 +191,7 @@ def read_other_paths(request: Request) -> Response:
 
     # otherwise return the index
     logger.debug(
-        "catchall request path '{}' did not match any admin UI routes, return generic admin UI index",
+        "catchall request path '%s' did not match any admin UI routes, return generic admin UI index",
         path,
     )
     return get_admin_index_as_response()
@@ -240,7 +240,7 @@ def start_webserver(port: int = 8080) -> None:
     server = Server(Config(app, host="0.0.0.0", port=port, log_level=WARNING))
 
     logger.info(
-        "Starting webserver - Host: {}, Port: {}, Log Level: {}",
+        "Starting webserver - Host: %s, Port: %s, Log Level: %s",
         server.config.host,
         server.config.port,
         server.config.log_level,

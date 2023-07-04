@@ -99,7 +99,7 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                         human_readable=human_readable,
                     )
                 except Exception:
-                    logger.exception("Unable to load {} connector", connector_type)
+                    logger.exception("Unable to load %s connector", connector_type)
 
 
 class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
@@ -123,7 +123,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             try:
                 CustomConnectorTemplateLoader._register_template(template)
             except Exception:
-                logger.exception("Unable to load {} connector", template.key)
+                logger.exception("Unable to load %s connector", template.key)
 
     @staticmethod
     def _replacement_available(template: CustomConnectorTemplate) -> bool:
@@ -379,7 +379,7 @@ def update_saas_configs(db: Session) -> None:
     """
     for connector_type in ConnectorRegistry.connector_types():
         logger.debug(
-            "Determining if any updates are needed for connectors of type {} based on templates...",
+            "Determining if any updates are needed for connectors of type %s based on templates...",
             connector_type,
         )
         template: ConnectorTemplate = ConnectorRegistry.get_connector_template(  # type: ignore
@@ -396,7 +396,7 @@ def update_saas_configs(db: Session) -> None:
             saas_config_instance = SaaSConfig.parse_obj(connection_config.saas_config)
             if parse_version(saas_config_instance.version) < template_version:
                 logger.info(
-                    "Updating SaaS config instance '{}' of type '{}' as its version, {}, was found to be lower than the template version {}",
+                    "Updating SaaS config instance '%s' of type '%s' as its version, %s, was found to be lower than the template version %s",
                     saas_config_instance.fides_key,
                     connector_type,
                     saas_config_instance.version,
@@ -411,7 +411,7 @@ def update_saas_configs(db: Session) -> None:
                     )
                 except Exception:
                     logger.exception(
-                        "Encountered error attempting to update SaaS config instance {}",
+                        "Encountered error attempting to update SaaS config instance %s",
                         saas_config_instance.fides_key,
                     )
 

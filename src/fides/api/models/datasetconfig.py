@@ -161,7 +161,7 @@ class DatasetConfig(Base):
             )
         else:
             logger.debug(
-                "Connection config with key {} is not a saas config, skipping merge dataset",
+                "Connection config with key %s is not a saas config, skipping merge dataset",
                 self.connection_config.key,
             )
 
@@ -277,12 +277,12 @@ def convert_dataset_to_graph(
     after = set()
     if dataset.fides_meta and dataset.fides_meta.after:
         after = set(dataset.fides_meta.after)
-    logger.debug("Parsing dataset '{}' into graph representation", dataset_name)
+    logger.debug("Parsing dataset '%s' into graph representation", dataset_name)
     graph_collections = []
     for collection in dataset.collections:
         graph_fields = [to_graph_field(field) for field in collection.fields]
         logger.debug(
-            "Parsing dataset {}: parsed collection {} with {} fields",
+            "Parsing dataset %s: parsed collection %s with %s fields",
             dataset_name,
             collection.name,
             len(graph_fields),
@@ -298,7 +298,7 @@ def convert_dataset_to_graph(
         )
         graph_collections.append(graph_collection)
     logger.debug(
-        "Finished parsing dataset {} with {} collections",
+        "Finished parsing dataset %s with %s collections",
         dataset_name,
         len(graph_collections),
     )

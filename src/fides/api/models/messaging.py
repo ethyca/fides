@@ -110,7 +110,7 @@ class MessagingConfig(Base):
             )
         if not instance.secrets:
             logger.warning(
-                "Messaging secrets not found for config with key: {}", instance.key
+                "Messaging secrets not found for config with key: %s", instance.key
             )
             raise MessageDispatchException(
                 f"Messaging secrets not found for config with key: {instance.key}"
@@ -151,7 +151,7 @@ class MessagingConfig(Base):
             KeyError,
             ValidationError,
         ) as exc:
-            logger.error("Error: {}", Pii(str(exc)))
+            logger.error("Error: %s", Pii(str(exc)))
             # We don't want to handle these explicitly here, only in the API view
             raise
 

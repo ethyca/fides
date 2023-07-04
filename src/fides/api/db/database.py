@@ -97,7 +97,7 @@ def get_db_health(database_url: str, db: Session) -> DatabaseHealth:
         return "healthy"
     except Exception as error:  # pylint: disable=broad-except
         error_type = get_full_exception_name(error)
-        log.error("Unable to reach the database: {}: {}", error_type, error)
+        log.error("Unable to reach the database: %s: %s", error_type, error)
         return "unhealthy"
 
 
@@ -114,5 +114,5 @@ async def configure_db(database_url: str, samples: bool = False) -> None:
 
     except Exception as error:  # pylint: disable=broad-except
         error_type = get_full_exception_name(error)
-        log.error("Unable to configure database: {}: {}", error_type, error)
+        log.error("Unable to configure database: %s: %s", error_type, error)
         log.opt(exception=True).error(error)

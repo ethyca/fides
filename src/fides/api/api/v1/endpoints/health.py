@@ -40,7 +40,7 @@ def get_cache_health() -> str:
         get_cache()
         return "healthy"
     except (RedisConnectionError, ResponseError) as e:
-        logger.error("Unable to reach cache: {}", Pii(str(e)))
+        logger.error("Unable to reach cache: %s", Pii(str(e)))
         return "unhealthy"
 
 

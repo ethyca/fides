@@ -128,7 +128,7 @@ class RateLimiter:
             redis: FidesopsRedis = get_cache()
         except RedisConnectionError as exc:
             logger.warning(
-                "Failed to connect to redis, skipping limiter for requests {}. {}",
+                "Failed to connect to redis, skipping limiter for requests %s. %s",
                 ",".join(str(r) for r in requests),
                 exc,
             )
@@ -150,7 +150,7 @@ class RateLimiter:
 
             if breached_requests:
                 logger.debug(
-                    "Breached rate limits: {}. Decrementing usage and trying again.",
+                    "Breached rate limits: %s. Decrementing usage and trying again.",
                     ",".join(str(r) for r in breached_requests),
                 )
                 self.decrement_usage(

@@ -40,9 +40,9 @@ async def send_analytics_event(event: AnalyticsEvent) -> None:
     try:
         await analytics_client.send_async(event)
     except AnalyticsError as err:
-        log.warning("Error sending analytics event: {}", err)
+        log.warning("Error sending analytics event: %s", err)
     else:
-        log.info("Analytics event sent with client id: {}", analytics_client.client_id)
+        log.info("Analytics event sent with client id: %s", analytics_client.client_id)
 
 
 async def send_registration(registration: UserRegistration) -> None:
@@ -51,7 +51,7 @@ async def send_registration(registration: UserRegistration) -> None:
     try:
         await analytics_client.register_async(registration.as_fideslog())
     except AnalyticsError as err:
-        log.warning("Error sending registration event: {}", err)
+        log.warning("Error sending registration event: %s", err)
     else:
         log.info(
             f"Analytics registration sent with client id: {analytics_client.client_id}"

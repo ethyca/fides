@@ -219,7 +219,7 @@ class Traversal:
         and raises an error on any traversal failure conditions."""
         self.traverse(
             {self.root_node.address: [self.seed_data]},
-            lambda n, m: logger.info("Traverse {}", n.address),
+            lambda n, m: logger.info("Traverse %s", n.address),
         )
 
     def traversal_map(
@@ -340,7 +340,7 @@ class Traversal:
             else:
                 # traversal traversal_node dict diff finished nodes
                 logger.error(
-                    "Node could not be reached given specified ordering [{}]",
+                    "Node could not be reached given specified ordering [%s]",
                     ",".join([str(tn.address) for tn in running_node_queue.data]),
                 )
                 raise TraversalError(
@@ -351,7 +351,7 @@ class Traversal:
         # error if there are nodes that have not been visited
         if remaining_node_keys:
             logger.error(
-                "Some nodes were not reachable: {}",
+                "Some nodes were not reachable: %s",
                 ",".join([str(x) for x in remaining_node_keys]),
             )
             raise TraversalError(
@@ -360,7 +360,7 @@ class Traversal:
         # error if there are edges that have not been visited
         if remaining_edges:
             logger.error(
-                "Some edges were not reachable: {}",
+                "Some edges were not reachable: %s",
                 ",".join([str(x) for x in remaining_edges]),
             )
             raise TraversalError(
@@ -371,5 +371,5 @@ class Traversal:
             tn.address for tn in finished_nodes.values() if tn.is_terminal_node
         ]
         if environment:
-            logger.debug("Found {} end nodes: {}", len(end_nodes), end_nodes)
+            logger.debug("Found %s end nodes: %s", len(end_nodes), end_nodes)
         return end_nodes

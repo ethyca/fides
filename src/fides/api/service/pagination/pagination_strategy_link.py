@@ -55,7 +55,7 @@ class LinkPaginationStrategy(PaginationStrategy):
         updated_path = urlsplit(next_link).path
         updated_query_params = dict(parse.parse_qsl(urlsplit(next_link).query))
         logger.debug(
-            "Replacing path with {} and query params with {}",
+            "Replacing path with %s and query params with %s",
             updated_path,
             Pii(updated_query_params),
         )

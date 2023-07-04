@@ -57,7 +57,7 @@ async def update_registration_status(
         registration = registrations[0]
         if registration.analytics_id != data.analytics_id:
             logger.debug(
-                "Error registering Fides with analytics_id: {} to opt_in: {}. Fides with analytics_id: {} already registered.",
+                "Error registering Fides with analytics_id: %s to opt_in: %s. Fides with analytics_id: %s already registered.",
                 data.analytics_id,
                 data.opt_in,
                 registration.analytics_id,
@@ -71,7 +71,7 @@ async def update_registration_status(
         send_to_fideslog = data.opt_in
 
     logger.debug(
-        "Registering Fides with analytics_id: {} to opt_in: {}",
+        "Registering Fides with analytics_id: %s to opt_in: %s",
         data.analytics_id,
         data.opt_in,
     )

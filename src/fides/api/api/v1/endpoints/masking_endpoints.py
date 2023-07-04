@@ -40,7 +40,7 @@ def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
 
         if num_strat > 1:
             logger.info(
-                "{} masking strategies requested; running in order.",
+                "%s masking strategies requested; running in order.",
                 num_strat,
             )
 
@@ -49,7 +49,7 @@ def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
                 strategy.strategy, strategy.configuration
             )
             logger.info(
-                "Starting masking of {} value(s) with strategy {}",
+                "Starting masking of %s value(s) with strategy %s",
                 len(values),
                 strategy.strategy,
             )

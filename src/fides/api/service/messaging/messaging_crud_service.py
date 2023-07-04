@@ -48,7 +48,7 @@ def create_or_update_messaging_config(
 
 
 def delete_messaging_config(db: Session, key: FidesKey) -> None:
-    logger.info("Finding messaging config with key '{}'", key)
+    logger.info("Finding messaging config with key '%s'", key)
     messaging_config: Optional[MessagingConfig] = MessagingConfig.get_by(
         db, field="key", value=key
     )
@@ -56,7 +56,7 @@ def delete_messaging_config(db: Session, key: FidesKey) -> None:
         raise MessagingConfigNotFoundException(
             f"No messaging config found with key {key}"
         )
-    logger.info("Deleting messaging config with key '{}'", key)
+    logger.info("Deleting messaging config with key '%s'", key)
     messaging_config.delete(db)
 
 

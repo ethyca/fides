@@ -92,7 +92,7 @@ def upload_data(
     Uploads data from an access request to specified storage destination.
     Returns location of data.
     """
-    logger.info("Finding privacy request with id '{}'", request_id)
+    logger.info("Finding privacy request with id '%s'", request_id)
 
     privacy_request = PrivacyRequest.get(db, object_id=request_id)
     if not privacy_request:
@@ -101,7 +101,7 @@ def upload_data(
             detail=f"No privacy with id {request_id}.",
         )
 
-    logger.info("Starting storage upload for request id: {}", request_id)
+    logger.info("Starting storage upload for request id: %s", request_id)
     try:
         data_location: str = upload(
             db, privacy_request=privacy_request, data=data, storage_key=storage_key
@@ -131,7 +131,7 @@ def patch_config(
     created_or_updated: List[StorageConfig] = []
     failed: List[BulkUpdateFailed] = []
 
-    logger.info("Starting bulk upsert for {} storage configs", len(storage_configs))
+    logger.info("Starting bulk upsert for %s storage configs", len(storage_configs))
     for destination in storage_configs:
         try:
             storage_config = StorageConfig.create_or_update(
@@ -139,7 +139,7 @@ def patch_config(
             )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
-                "Create/update failed for storage config {}: {}",
+                "Create/update failed for storage config %s: %s",
                 destination.key,
                 exc,
             )
@@ -151,7 +151,7 @@ def patch_config(
             continue
         except Exception as exc:
             logger.warning(
-                "Create/update failed for storage config {}: {}",
+                "Create/update failed for storage config %s: %s",
                 destination.key,
                 Pii(str(exc)),
             )
@@ -185,7 +185,7 @@ def put_config_secrets(
     """
     Add or update secrets for storage config.
     """
-    logger.info("Finding storage config with key '{}'", config_key)
+    logger.info("Finding storage config with key '%s'", config_key)
     storage_config = StorageConfig.get_by(db=db, field="key", value=config_key)
     if not storage_config:
         raise HTTPException(
@@ -208,7 +208,7 @@ def put_config_secrets(
             detail=exc.args[0],
         )
 
-    logger.info("Updating storage config secrets for config with key '{}'", config_key)
+    logger.info("Updating storage config secrets for config with key '%s'", config_key)
     try:
         storage_config.set_secrets(db=db, storage_secrets=secrets_schema.dict())  # type: ignore
     except ValueError as exc:
@@ -222,11 +222,11 @@ def put_config_secrets(
         status = secrets_are_valid(secrets_schema, storage_config.type)
         if status:
             logger.info(
-                "Storage secrets are valid for config with key '{}'", config_key
+                "Storage secrets are valid for config with key '%s'", config_key
             )
         else:
             logger.warning(
-                "Storage secrets are invalid for config with key '{}'", config_key
+                "Storage secrets are invalid for config with key '%s'", config_key
             )
 
         return TestStatusMessage(
@@ -250,7 +250,7 @@ def get_configs(
     """
     Retrieves configs for storage.
     """
-    logger.info("Finding all storage configurations with pagination params {}", params)
+    logger.info("Finding all storage configurations with pagination params %s", params)
     return paginate(
         StorageConfig.query(db).order_by(StorageConfig.created_at.desc()), params=params
     )
@@ -267,7 +267,7 @@ def get_config_by_key(
     """
     Retrieves configs for storage by key.
     """
-    logger.info("Finding storage config with key '{}'", config_key)
+    logger.info("Finding storage config with key '%s'", config_key)
 
     storage_config = StorageConfig.get_by(db, field="key", value=config_key)
     if not storage_config:
@@ -289,7 +289,7 @@ def delete_config_by_key(
     """
     Deletes configs by key.
     """
-    logger.info("Finding storage config with key '{}'", config_key)
+    logger.info("Finding storage config with key '%s'", config_key)
 
     storage_config: Optional[StorageConfig] = StorageConfig.get_by(
         db, field="key", value=config_key
@@ -305,7 +305,7 @@ def delete_config_by_key(
             detail="Default storage configurations cannot be deleted.",
         )
 
-    logger.info("Deleting storage config with key '{}'", config_key)
+    logger.info("Deleting storage config with key '%s'", config_key)
     storage_config.delete(db)
 
 
@@ -437,7 +437,7 @@ def put_default_config(
     Create or update the default storage configuration for the given storage type
     """
     logger.info(
-        "Starting upsert for default storage of type '{}'", incoming_storage_config.type
+        "Starting upsert for default storage of type '%s'", incoming_storage_config.type
     )
 
     incoming_data = incoming_storage_config.dict()
@@ -461,14 +461,14 @@ def put_default_config(
         return storage_config
     except KeyOrNameAlreadyExists as exc:
         logger.warning(
-            "Create/update failed for default config update for storage type {}: {}",
+            "Create/update failed for default config update for storage type %s: %s",
             incoming_storage_config.type,
             exc,
         )
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.args[0])
     except Exception as exc:
         logger.warning(
-            "Create/update failed for default config update for storage type {}: {}",
+            "Create/update failed for default config update for storage type %s: %s",
             incoming_storage_config.type,
             Pii(str(exc)),
         )
@@ -494,7 +494,7 @@ def put_default_config_secrets(
     """
     Add or update secrets for the default storage config of the given type
     """
-    logger.info("Finding default config of storage type '{}'", storage_type.value)
+    logger.info("Finding default config of storage type '%s'", storage_type.value)
     storage_config = get_default_storage_config_by_type(db, storage_type)
     if not storage_config:
         raise HTTPException(
@@ -518,7 +518,7 @@ def put_default_config_secrets(
         )
 
     logger.info(
-        "Updating storage config secrets for default config of storage type '{}'",
+        "Updating storage config secrets for default config of storage type '%s'",
         storage_type.value,
     )
     try:
@@ -534,12 +534,12 @@ def put_default_config_secrets(
         status = secrets_are_valid(secrets_schema, storage_config.type)
         if status:
             logger.info(
-                "Storage secrets are valid for default config of storage type '{}'",
+                "Storage secrets are valid for default config of storage type '%s'",
                 storage_type.value,
             )
         else:
             logger.warning(
-                "Storage secrets are invalid for default config of storage type '{}'",
+                "Storage secrets are invalid for default config of storage type '%s'",
                 storage_type.value,
             )
 
@@ -565,7 +565,7 @@ def get_default_configs(
     Retrieves default configs for each storage types.
     """
     logger.info(
-        "Finding default storage configurations with pagination params {}", params
+        "Finding default storage configurations with pagination params %s", params
     )
     return paginate(
         db.query(StorageConfig)
@@ -586,7 +586,7 @@ def get_default_config_by_type(
     """
     Retrieves default config for given storage type.
     """
-    logger.info("Finding default config for storage type '{}'", storage_type.value)
+    logger.info("Finding default config for storage type '%s'", storage_type.value)
     storage_config = get_default_storage_config_by_type(db, storage_type)
     if not storage_config:
         raise HTTPException(

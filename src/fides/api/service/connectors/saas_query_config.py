@@ -60,7 +60,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         try:
             requests = self.endpoints[collection_name].requests
         except KeyError:
-            logger.error("The '{}' endpoint is not defined", collection_name)
+            logger.error("The '%s' endpoint is not defined", collection_name)
             return []
 
         if not requests.read:
@@ -102,11 +102,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         )
         if request:
             logger.info(
-                "Found matching endpoint to {} '{}' collection", action, collection_name
+                "Found matching endpoint to %s '%s' collection", action, collection_name
             )
         else:
             logger.info(
-                "Unable to find matching endpoint to {} '{}' collection",
+                "Unable to find matching endpoint to %s '%s' collection",
                 action,
                 collection_name,
             )
@@ -143,7 +143,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action = action_type
 
             logger.info(
-                "Selecting '{}' action to perform masking request for '{}' collection.",
+                "Selecting '%s' action to perform masking request for '%s' collection.",
                 action_type,
                 self.collection_name,
             )
@@ -195,7 +195,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 except ValueError as exc:
                     if read_request.skip_missing_param_values:
                         logger.info(
-                            "Skipping optional read request on node {}: {}",
+                            "Skipping optional read request on node %s: %s",
                             self.node.address.value,
                             exc,
                         )
@@ -303,7 +303,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action, self.collection_name, self.current_request, param_values  # type: ignore
         )
 
-        logger.info("Populated request params for {}", self.current_request.path)
+        logger.info("Populated request params for %s", self.current_request.path)
 
         return saas_request_params
 
@@ -435,7 +435,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action, self.collection_name, update_request, param_values  # type: ignore
         )
 
-        logger.info("Populated request params for {}", update_request.path)
+        logger.info("Populated request params for %s", update_request.path)
         return saas_request_params
 
     def all_value_map(self, row: Row) -> Dict[str, Any]:

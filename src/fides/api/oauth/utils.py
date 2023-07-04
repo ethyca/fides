@@ -296,7 +296,7 @@ def has_scope_subset(user_scopes: List[str], endpoint_scopes: SecurityScopes) ->
         scopes_required = ",".join(endpoint_scopes.scopes)
         scopes_provided = ",".join(user_scopes)
         logger.debug(
-            "Auth token missing required scopes: {}. Scopes provided: {}.",
+            "Auth token missing required scopes: %s. Scopes provided: %s.",
             scopes_required,
             scopes_provided,
         )
