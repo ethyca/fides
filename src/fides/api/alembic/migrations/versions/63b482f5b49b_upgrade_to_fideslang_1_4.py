@@ -9,10 +9,11 @@ import json
 from typing import Dict, List, Optional
 
 from alembic import op
-from fides.logging import logger
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, ResultProxy
 from sqlalchemy.sql.elements import TextClause
+
+from fides.logging import logger
 
 # revision identifiers, used by Alembic.
 revision = "63b482f5b49b"

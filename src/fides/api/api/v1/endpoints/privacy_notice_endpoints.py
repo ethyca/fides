@@ -4,7 +4,6 @@ from typing import Dict, List, Optional, Set, Tuple
 from fastapi import Depends, Request, Security
 from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
-from fides.logging import logger
 from pydantic import conlist
 from sqlalchemy.orm import Query, Session
 from starlette.exceptions import HTTPException
@@ -35,6 +34,7 @@ from fides.api.util.consent_util import (
 from fides.api.util.endpoint_utils import transform_fields
 from fides.common.api import scope_registry
 from fides.common.api.v1 import urn_registry as urls
+from fides.logging import logger
 
 router = APIRouter(tags=["Privacy Notice"], prefix=urls.V1_URL_PREFIX)
 

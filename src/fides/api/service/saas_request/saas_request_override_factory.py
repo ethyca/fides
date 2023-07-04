@@ -2,13 +2,12 @@ from enum import Enum
 from inspect import Signature, signature
 from typing import Callable, Dict, List, Union
 
-from fides.logging import logger
-
 from fides.api.common_exceptions import (
     InvalidSaaSRequestOverrideException,
     NoSuchSaaSRequestOverrideException,
 )
 from fides.api.util.collection_util import Row
+from fides.logging import logger
 
 
 # at some point this should likely be formalized more centrally...

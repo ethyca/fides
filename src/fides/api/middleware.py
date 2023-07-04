@@ -2,7 +2,6 @@ import json
 from typing import Any, Dict, List
 
 from fastapi import Request
-from fides.logging import logger
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette.types import Message
@@ -10,6 +9,7 @@ from starlette.types import Message
 from fides.api.api import deps
 from fides.api.models.sql_models import AuditLogResource  # type: ignore[attr-defined]
 from fides.api.oauth.utils import extract_token_and_load_client
+from fides.logging import logger
 
 
 async def handle_audit_log_resource(request: Request) -> None:

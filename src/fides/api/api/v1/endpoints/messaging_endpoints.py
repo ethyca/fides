@@ -5,7 +5,6 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
-from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import (
@@ -51,7 +50,6 @@ from fides.api.service.messaging.messaging_crud_service import (
     update_messaging_config,
 )
 from fides.api.util.api_router import APIRouter
-from fides.logging.handlers import Pii
 from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
@@ -70,6 +68,8 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config.config_proxy import ConfigProxy
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 router = APIRouter(tags=["Messaging"], prefix=V1_URL_PREFIX)
 

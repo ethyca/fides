@@ -1,6 +1,5 @@
 from enum import Enum
 
-from fides.logging import logger
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import MessageDispatchException
@@ -16,6 +15,7 @@ from fides.api.service.privacy_request.request_runner_service import (
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.config import get_config
+from fides.logging import logger
 
 CONFIG = get_config()
 BATCH_EMAIL_SEND = "batch_email_send"

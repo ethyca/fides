@@ -1,7 +1,6 @@
 from typing import Any, Dict, Optional, Set
 
 from fideslang.validation import FidesKey
-from fides.logging import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import StorageUploadError
@@ -15,6 +14,7 @@ from fides.api.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.tasks.storage import upload_to_local, upload_to_s3
+from fides.logging import logger
 
 
 def upload(

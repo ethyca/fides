@@ -1,7 +1,6 @@
 from typing import Any, Dict, List, Optional, Union
 
 from fideslang.validation import FidesKey
-from fides.logging import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ConnectorNotFoundException
@@ -33,6 +32,7 @@ from fides.api.service.connectors import (
 from fides.api.service.connectors.base_email_connector import BaseEmailConnector
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row, extract_key_for_address
+from fides.logging import logger
 
 
 class Connections:

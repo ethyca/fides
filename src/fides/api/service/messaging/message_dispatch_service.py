@@ -5,7 +5,6 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import requests
 import sendgrid
-from fides.logging import logger
 from sendgrid.helpers.mail import Content, Email, Mail, Personalization, TemplateId, To
 from sqlalchemy.orm import Session
 from twilio.base.exceptions import TwilioRestException
@@ -40,9 +39,10 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
-from fides.logging.handlers import Pii
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 EMAIL_JOIN_STRING = ", "
 EMAIL_TEMPLATE_NAME = "fides"

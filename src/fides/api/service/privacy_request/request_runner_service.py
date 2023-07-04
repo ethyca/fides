@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import requests
-from fides.logging import logger
 from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Query, Session
@@ -77,7 +76,6 @@ from fides.api.util.cache import (
     get_cache,
 )
 from fides.api.util.collection_util import Row
-from fides.logging.handlers import Pii, _log_exception, _log_warning
 from fides.api.util.wrappers import sync
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
@@ -85,6 +83,8 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.logging import logger
+from fides.logging.handlers import Pii, _log_exception, _log_warning
 
 
 class ManualWebhookResults(FidesSchema):

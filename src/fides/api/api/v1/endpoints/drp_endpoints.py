@@ -2,7 +2,6 @@ from typing import Any, Dict, List, Optional
 
 import jwt
 from fastapi import Depends, HTTPException, Security
-from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -44,11 +43,12 @@ from fides.api.service.privacy_request.request_service import (
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import FidesopsRedis
-from fides.logging.handlers import Pii
 from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
 

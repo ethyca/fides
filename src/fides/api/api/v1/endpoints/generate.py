@@ -6,7 +6,6 @@ from typing import Dict, List, Optional, Union
 
 from fastapi import Depends, HTTPException, Security, status
 from fideslang.models import Dataset, Organization, System
-from fides.logging import logger as log
 from pydantic import BaseModel, root_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,6 +31,7 @@ from fides.core.dataset import (
 )
 from fides.core.system import generate_aws_systems, generate_okta_systems
 from fides.core.utils import validate_db_engine
+from fides.logging import logger as log
 
 GENERATE_ROUTER = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
 

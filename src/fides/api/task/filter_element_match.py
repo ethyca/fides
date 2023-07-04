@@ -3,7 +3,6 @@ from collections import defaultdict
 from typing import Any, Dict, List
 
 import pydash
-from fides.logging import logger
 
 from fides.api.task.refine_target_path import (
     DetailedPath,
@@ -12,6 +11,7 @@ from fides.api.task.refine_target_path import (
     join_detailed_path,
 )
 from fides.api.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
+from fides.logging import logger
 from fides.logging.handlers import Pii
 
 

@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional
 
 import httpx
 from httpx import AsyncClient, Client, HTTPStatusError, Request, RequestError, Timeout
-from fides.logging import logger
 
 from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.privacy_request import (
@@ -18,6 +17,7 @@ from fides.api.util.collection_util import Row
 from fides.api.util.errors import FidesError
 from fides.api.util.wrappers import sync
 from fides.common.api.v1 import urn_registry as urls
+from fides.logging import logger
 
 COMPLETION_STATUSES = [
     PrivacyRequestStatus.complete,

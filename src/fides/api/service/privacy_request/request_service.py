@@ -5,7 +5,6 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
 from httpx import AsyncClient
-from fides.logging import logger
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.policy import Policy
@@ -17,6 +16,7 @@ from fides.api.schemas.privacy_request import PrivacyRequestResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
+from fides.logging import logger
 
 
 def build_required_privacy_request_kwargs(

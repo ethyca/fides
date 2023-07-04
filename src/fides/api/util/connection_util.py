@@ -1,7 +1,6 @@
 from typing import List, Optional
 
 from fastapi import HTTPException
-from fides.logging import logger
 from pydantic import ValidationError
 from pydantic.types import conlist
 from sqlalchemy.orm import Session
@@ -40,6 +39,7 @@ from fides.api.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
+from fides.logging import logger
 
 # pylint: disable=too-many-nested-blocks,too-many-branches,too-many-statements
 

@@ -1,11 +1,10 @@
 from typing import Dict
 
-from fides.logging import logger
-
 from fides.api.models.privacy_request import PrivacyRequestStatus, ProvidedIdentityType
 from fides.api.schemas.drp_privacy_request import DrpIdentity
 from fides.api.schemas.privacy_request import PrivacyRequestDRPStatus
 from fides.api.schemas.redis_cache import Identity
+from fides.logging import logger
 
 
 class DrpFidesopsMapper:

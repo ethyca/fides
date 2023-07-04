@@ -1,7 +1,6 @@
 from typing import Dict, List, Literal, Optional
 
 from fastapi import Depends, HTTPException, status
-from fides.logging import logger
 from pydantic import BaseModel
 from redis.exceptions import ResponseError
 from sqlalchemy.orm import Session
@@ -13,8 +12,9 @@ from fides.api.db.database import DatabaseHealth, get_db_health
 from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache
-from fides.logging.handlers import Pii
 from fides.config import CONFIG
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 CacheHealth = Literal["healthy", "unhealthy", "no cache configured"]
 HEALTH_ROUTER = APIRouter(tags=["Health"])

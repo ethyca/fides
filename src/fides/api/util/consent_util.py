@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
 import yaml
 from fastapi import HTTPException
-from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
 
@@ -37,6 +36,7 @@ from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNotic
 from fides.api.schemas.redis_cache import Identity
 from fides.api.util.endpoint_utils import transform_fields
 from fides.config.helpers import load_file
+from fides.logging import logger
 
 PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "description", "internal_description"]
 PRIVACY_EXPERIENCE_ESCAPE_FIELDS = [

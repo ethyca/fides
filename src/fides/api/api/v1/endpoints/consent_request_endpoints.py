@@ -8,7 +8,6 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
-from fides.logging import logger
 from sqlalchemy import column
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Query, Session
@@ -59,7 +58,6 @@ from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
-from fides.logging.handlers import Pii
 from fides.common.api.scope_registry import CONSENT_READ
 from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST,
@@ -70,6 +68,8 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 

@@ -2,7 +2,6 @@ from typing import List, Optional
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
-from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
@@ -26,6 +25,7 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1 import urn_registry as urls
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.config import CONFIG
+from fides.logging import logger
 
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 

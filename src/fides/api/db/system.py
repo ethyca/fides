@@ -6,7 +6,6 @@ from typing import Dict, List, Optional, Tuple
 from fastapi import HTTPException
 from fideslang.models import Cookies as CookieSchema
 from fideslang.models import System as SystemSchema
-from fides.logging import logger as log
 from sqlalchemy import and_, delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
@@ -20,6 +19,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     System,
 )
 from fides.api.util.errors import NotFoundError
+from fides.logging import logger as log
 
 
 def privacy_declaration_logical_id(

@@ -2,7 +2,6 @@ from typing import List, Sequence
 
 from fastapi import Depends, Security
 from fastapi.encoders import jsonable_encoder
-from fides.logging import logger
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
@@ -24,7 +23,6 @@ from fides.api.schemas.manual_webhook_schemas import (
     AccessManualWebhooks,
 )
 from fides.api.util.api_router import APIRouter
-from fides.logging.handlers import Pii
 from fides.common.api.scope_registry import (
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
@@ -35,6 +33,8 @@ from fides.common.api.v1.urn_registry import (
     ACCESS_MANUAL_WEBHOOKS,
     V1_URL_PREFIX,
 )
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 router = APIRouter(tags=["Manual Webhooks"], prefix=V1_URL_PREFIX)
 

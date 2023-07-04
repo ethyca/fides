@@ -5,7 +5,6 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
-from fides.logging import logger
 from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -35,9 +34,10 @@ from fides.api.schemas import policy as schemas
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.policy import ActionType
 from fides.api.util.api_router import APIRouter
-from fides.logging.handlers import Pii
 from fides.common.api import scope_registry
 from fides.common.api.v1 import urn_registry as urls
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 router = APIRouter(tags=["DSR Policy"], prefix=urls.V1_URL_PREFIX)
 

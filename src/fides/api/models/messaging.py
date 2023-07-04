@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Optional
 
-from fides.logging import logger
 from pydantic import ValidationError
 from sqlalchemy import Column, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -29,9 +28,10 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
 )
-from fides.logging.handlers import Pii
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 
 def get_messaging_method(

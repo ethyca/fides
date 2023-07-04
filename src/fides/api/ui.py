@@ -8,6 +8,7 @@ from typing import Dict, Optional, Union
 
 from fastapi import Response
 from fastapi.responses import FileResponse
+
 from fides.logging import logger
 
 FIDES_DIRECTORY = "src/fides"

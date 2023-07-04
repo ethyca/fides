@@ -7,7 +7,6 @@ from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fides.logging import logger
 from sqlalchemy import literal
 from sqlalchemy.orm import Query, Session
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
@@ -70,6 +69,7 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.logging import logger
 
 router = APIRouter(tags=["Privacy Preference"], prefix=V1_URL_PREFIX)
 

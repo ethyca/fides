@@ -2,7 +2,6 @@ from typing import Dict, List, Optional
 
 from fastapi import Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
-from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
@@ -53,6 +52,7 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
+from fides.logging import logger
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 

@@ -3,7 +3,6 @@ from urllib import parse
 from urllib.parse import urlsplit
 
 import pydash
-from fides.logging import logger
 from requests import Response
 
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
@@ -12,6 +11,7 @@ from fides.api.schemas.saas.strategy_configuration import (
     LinkSource,
 )
 from fides.api.service.pagination.pagination_strategy import PaginationStrategy
+from fides.logging import logger
 from fides.logging.handlers import Pii
 
 

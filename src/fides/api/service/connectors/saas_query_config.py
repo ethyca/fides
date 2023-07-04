@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Literal, Optional, TypeVar
 
 import pydash
 from fideslang.models import FidesDatasetReference
-from fides.logging import logger
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.config import ScalarField
@@ -27,6 +26,7 @@ from fides.api.util.saas_util import (
     unflatten_dict,
 )
 from fides.config import CONFIG
+from fides.logging import logger
 
 T = TypeVar("T")
 

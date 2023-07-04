@@ -10,7 +10,6 @@ from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
 from jose import exceptions, jwe
 from jose.constants import ALGORITHMS
-from fides.logging import logger
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
@@ -31,6 +30,7 @@ from fides.api.schemas.external_https import WebhookJWE
 from fides.api.schemas.oauth import OAuth2ClientCredentialsBearer
 from fides.common.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.config import CONFIG
+from fides.logging import logger
 
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 

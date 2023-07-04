@@ -1,14 +1,13 @@
 import secrets
 from typing import Dict, List, Optional, TypeVar
 
-from fides.logging import logger
-
 from fides.api.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     MaskingSecretMeta,
     SecretType,
 )
 from fides.api.util.cache import get_cache, get_masking_secret_cache_key
+from fides.logging import logger
 
 T = TypeVar("T")
 

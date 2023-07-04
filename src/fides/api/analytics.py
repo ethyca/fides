@@ -5,11 +5,11 @@ from typing import Optional
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError
-from fides.logging import logger as log
 
 from fides import __version__ as fides_version
 from fides.api.models.registration import UserRegistration
 from fides.config import CONFIG
+from fides.logging import logger as log
 
 
 def in_docker_container() -> bool:

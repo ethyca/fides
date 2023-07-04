@@ -10,7 +10,6 @@ from typing import Any, Dict, Optional, Set, Union
 import pandas as pd
 from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
-from fides.logging import logger
 
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
 from fides.api.graph.graph import DataCategoryFieldMapping
@@ -30,6 +29,7 @@ from fides.api.util.encryption.aes_gcm_encryption_scheme import (
 from fides.api.util.storage_authenticator import get_s3_session
 from fides.api.util.storage_util import storage_json_encoder
 from fides.config import CONFIG
+from fides.logging import logger
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 

@@ -6,7 +6,6 @@ from os.path import dirname, join
 from typing import List, Optional, Pattern, Union
 
 from fastapi import FastAPI
-from fides.logging import logger
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
@@ -21,7 +20,6 @@ from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
 from fides.api.db.database import configure_db
 from fides.api.db.seed import create_or_update_parent_user
-from fides.logging import logger
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.oauth.utils import get_root_client, verify_oauth_client_prod
 from fides.api.service.connectors.saas.connector_registry_service import (
@@ -44,6 +42,7 @@ from fides.api.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_request_body_cli,
 )
 from fides.config import CONFIG
+from fides.logging import logger
 
 VERSION = fides.__version__
 

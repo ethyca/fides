@@ -6,9 +6,10 @@ Create Date: 2023-06-11 11:15:53.386526
 
 """
 from alembic import op
-from fides.logging import logger
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
+
+from fides.logging import logger
 
 # revision identifiers, used by Alembic.
 revision = "5307999c0dac"

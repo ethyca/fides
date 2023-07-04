@@ -2,7 +2,6 @@ from typing import Any, Dict, Optional
 
 from fastapi import Depends
 from fastapi.params import Security
-from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
 
@@ -17,6 +16,7 @@ from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import censor_config
 from fides.config import get_config as get_app_config
+from fides.logging import logger
 
 router = APIRouter(tags=["Config"], prefix=urls.V1_URL_PREFIX)
 

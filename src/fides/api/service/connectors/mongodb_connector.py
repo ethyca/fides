@@ -1,6 +1,5 @@
 from typing import Any, Dict, List, Optional
 
-from fides.logging import logger
 from pymongo import MongoClient
 from pymongo.errors import OperationFailure, ServerSelectionTimeoutError
 
@@ -15,6 +14,7 @@ from fides.api.schemas.connection_configuration.connection_secrets_mongodb impor
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import MongoQueryConfig, QueryConfig
 from fides.api.util.collection_util import Row
+from fides.logging import logger
 from fides.logging.handlers import Pii
 
 

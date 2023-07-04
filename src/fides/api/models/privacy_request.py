@@ -8,7 +8,6 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Set, Union
 
 from celery.result import AsyncResult
-from fides.logging import logger
 from pydantic import BaseModel
 from sqlalchemy import (
     Boolean,
@@ -73,6 +72,7 @@ from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.common.api.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fides.config import CONFIG
+from fides.logging import logger
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [

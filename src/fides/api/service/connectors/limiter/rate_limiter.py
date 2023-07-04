@@ -2,10 +2,9 @@ import time
 from enum import Enum
 from typing import List
 
-from fides.logging import logger
-
 from fides.api.common_exceptions import RedisConnectionError
 from fides.api.util.cache import FidesopsRedis, get_cache
+from fides.logging import logger
 
 
 class RateLimiterPeriod(Enum):

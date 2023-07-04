@@ -1,6 +1,5 @@
 from typing import Any, Dict, List, Optional
 
-from fides.logging import logger
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import MessageDispatchException
@@ -48,6 +47,7 @@ from fides.api.util.consent_util import (
     filter_privacy_preferences_for_propagation,
 )
 from fides.config import get_config
+from fides.logging import logger
 
 CONFIG = get_config()
 

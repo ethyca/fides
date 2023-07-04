@@ -4,6 +4,7 @@ from typing import Any, Dict, Generic, Optional, Set, Tuple, TypeVar
 
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
+
 from fides.logging import logger
 
 T = TypeVar("T")

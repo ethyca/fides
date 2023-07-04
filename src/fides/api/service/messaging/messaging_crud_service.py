@@ -1,7 +1,6 @@
 from typing import Optional
 
 from fideslang.validation import FidesKey
-from fides.logging import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import MessagingConfigNotFoundException
@@ -10,6 +9,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingConfigRequest,
     MessagingConfigResponse,
 )
+from fides.logging import logger
 
 
 def update_messaging_config(

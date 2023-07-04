@@ -3,7 +3,6 @@ from typing import Any, Dict, List
 import firebase_admin
 from firebase_admin import App, auth, credentials
 from firebase_admin.auth import UserNotFoundError, UserRecord
-from fides.logging import logger
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.traversal import TraversalNode
@@ -15,8 +14,9 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.util.collection_util import Row
-from fides.logging.handlers import Pii
 from fides.api.util.saas_util import get_identity
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 
 @register("firebase_auth_user_access", [SaaSRequestType.READ])

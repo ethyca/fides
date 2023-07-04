@@ -1,5 +1,4 @@
 from fastapi import Depends, status
-from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 
@@ -9,6 +8,7 @@ from fides.api.models.registration import UserRegistration
 from fides.api.schemas import registration as schemas
 from fides.api.util.api_router import APIRouter
 from fides.common.api.v1 import urn_registry as urls
+from fides.logging import logger
 
 router = APIRouter(
     tags=["Registration"],

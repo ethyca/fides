@@ -9,7 +9,6 @@ from typing import Callable, Optional
 from fastapi import HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
 from fideslog.sdk.python.event import AnalyticsEvent
-from fides.logging import logger
 from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 
@@ -36,9 +35,10 @@ from fides.api.ui import (
     path_is_in_ui_directory,
 )
 from fides.api.util.endpoint_utils import API_PREFIX
-from fides.logging.handlers import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
+from fides.logging import logger
+from fides.logging.handlers import _log_exception
 
 IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 

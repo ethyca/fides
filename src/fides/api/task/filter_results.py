@@ -3,10 +3,10 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Union
 
 from fideslang.validation import FidesKey
-from fides.logging import logger
 
 from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.util.collection_util import Row
+from fides.logging import logger
 
 
 def filter_data_categories(

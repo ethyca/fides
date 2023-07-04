@@ -2,7 +2,6 @@ from json import JSONDecodeError
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 
 import pydash
-from fides.logging import logger
 from requests import Response
 from sqlalchemy.orm import Session
 
@@ -41,6 +40,7 @@ from fides.api.util.consent_util import (
     should_opt_in_to_service,
 )
 from fides.api.util.saas_util import assign_placeholders, map_param_values
+from fides.logging import logger
 
 
 class SaaSConnector(BaseConnector[AuthenticatedClient]):

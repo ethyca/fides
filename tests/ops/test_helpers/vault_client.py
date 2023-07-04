@@ -2,9 +2,9 @@ import os
 from typing import Any, Dict
 
 from hvac import Client
-from fides.logging import logger
 
 from fides.api.common_exceptions import FidesopsException
+from fides.logging import logger
 
 params = {
     "VAULT_ADDR": os.environ.get("VAULT_ADDR"),

@@ -6,7 +6,6 @@ from fastapi import Body, Depends, HTTPException
 from fastapi.params import Security
 from fastapi.responses import JSONResponse
 from fideslang.validation import FidesKey
-from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -64,6 +63,7 @@ from fides.common.api.v1.urn_registry import (
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
+from fides.logging import logger
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 

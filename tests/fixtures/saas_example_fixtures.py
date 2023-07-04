@@ -1,7 +1,6 @@
 from typing import Any, Dict, Generator
 
 import pytest
-from fides.logging import logger
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from toml import load as load_toml
@@ -35,6 +34,7 @@ from fides.api.util.saas_util import (
     load_config,
     load_yaml_as_string,
 )
+from fides.logging import logger
 from tests.fixtures.application_fixtures import load_dataset
 
 

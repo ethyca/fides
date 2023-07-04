@@ -7,7 +7,6 @@ from functools import wraps
 from time import sleep
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
-from fides.logging import logger
 from requests import PreparedRequest, Request, Response, Session
 
 from fides.api.common_exceptions import (
@@ -21,6 +20,7 @@ from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiterRequest,
 )
 from fides.config import CONFIG
+from fides.logging import logger
 
 if TYPE_CHECKING:
     from fides.api.models.connectionconfig import ConnectionConfig

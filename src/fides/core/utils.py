@@ -9,13 +9,13 @@ from typing import Dict, Iterator, List
 import sqlalchemy
 import toml
 from fideslang.models import DatasetField, FidesModel
-from fides.logging import logger
 from pydantic import BaseModel, ValidationError
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 from fides.common.utils import echo_red
 from fides.connectors.models import ConnectorAuthFailureException
+from fides.logging import logger
 
 logger.bind(name="server_api")
 

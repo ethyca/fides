@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-from fides.logging.handlers import MASKED, Pii, _log_exception, _log_warning
 from fides.config import CONFIG
+from fides.logging.handlers import MASKED, Pii, _log_exception, _log_warning
 
 
 @pytest.mark.unit

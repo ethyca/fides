@@ -3,7 +3,6 @@ from typing import Any, Dict, Generator, List, Optional
 
 from boto3.dynamodb.types import TypeDeserializer
 from botocore.exceptions import ClientError
-from fides.logging import logger
 
 import fides.connectors.aws as aws_connector
 from fides.api.common_exceptions import ConnectionException
@@ -17,12 +16,13 @@ from fides.api.schemas.connection_configuration.connection_secrets_dynamodb impo
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import DynamoDBQueryConfig, QueryConfig
 from fides.api.util.collection_util import Row
-from fides.logging.handlers import Pii
 from fides.connectors.models import (
     AWSConfig,
     ConnectorAuthFailureException,
     ConnectorFailureException,
 )
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 
 class DynamoDBConnector(BaseConnector[Any]):  # type: ignore

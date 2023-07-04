@@ -1,7 +1,6 @@
-from fides.logging import logger
-
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.tasks import MESSAGING_QUEUE_NAME, celery_app
+from fides.logging import logger
 
 
 def start_worker() -> None:

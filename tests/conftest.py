@@ -12,7 +12,6 @@ import yaml
 from fastapi.testclient import TestClient
 from fideslang import DEFAULT_TAXONOMY, models
 from httpx import AsyncClient
-from fides.logging import logger
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -44,6 +43,7 @@ from fides.api.util.consent_util import load_default_experience_configs_on_start
 from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
+from fides.logging import logger
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
 from tests.fixtures.dynamodb_fixtures import *

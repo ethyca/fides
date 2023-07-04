@@ -12,7 +12,6 @@ from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fides.logging import logger
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import conlist
 from sqlalchemy import cast, column, null
@@ -111,7 +110,6 @@ from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
-from fides.logging.handlers import Pii
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
@@ -144,6 +142,8 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 

@@ -9,7 +9,6 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
-from fides.logging import logger
 from sqlalchemy.orm import Query, Session
 from sqlalchemy_utils import escape_like
 from starlette.status import (
@@ -65,6 +64,7 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1 import urn_registry as urls
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.config import CONFIG, FidesConfig, get_config
+from fides.logging import logger
 
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 

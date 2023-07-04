@@ -2,7 +2,6 @@ import json
 from typing import Any, Dict, List, Optional
 
 import requests
-from fides.logging import logger
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from fides.api.common_exceptions import ClientUnsuccessfulException
@@ -14,6 +13,7 @@ from fides.api.schemas.connection_configuration import HttpsSchema
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import QueryConfig
 from fides.api.util.collection_util import Row
+from fides.logging import logger
 
 
 class HTTPSConnector(BaseConnector[None]):

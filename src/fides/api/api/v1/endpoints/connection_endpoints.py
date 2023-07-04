@@ -8,7 +8,6 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
-from fides.logging import logger
 from pydantic import conlist
 from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
@@ -23,8 +22,8 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.sql_models import (  # type: ignore[attr-defined]
-    Dataset as CtlDataset,
+from fides.api.models.sql_models import (
+    Dataset as CtlDataset,  # type: ignore[attr-defined]
 )
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
@@ -45,7 +44,6 @@ from fides.api.util.connection_util import (
     requeue_requires_input_requests,
     validate_secrets,
 )
-from fides.logging.handlers import Pii
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -58,6 +56,8 @@ from fides.common.api.v1.urn_registry import (
     CONNECTIONS,
     V1_URL_PREFIX,
 )
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 

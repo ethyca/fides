@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from fides.logging import logger
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import URL
@@ -8,6 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from fides.api.common_exceptions import MissingConfig
 from fides.config import FidesConfig
+from fides.logging import logger
 
 
 def get_db_engine(

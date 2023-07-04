@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Optional, Union
 from urllib.parse import quote, unquote_to_bytes
 
 from bson.objectid import ObjectId
-from fides.logging import logger
 from redis import Redis
 from redis.client import Script  # type: ignore
 from redis.exceptions import ConnectionError as ConnectionErrorFromRedis
@@ -13,6 +12,7 @@ from redis.exceptions import ConnectionError as ConnectionErrorFromRedis
 from fides.api import common_exceptions
 from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.config import CONFIG
+from fides.logging import logger
 
 # This constant represents every type a redis key may contain, and can be
 # extended if needed

@@ -5,7 +5,6 @@ generated programmatically for each resource.
 from collections import defaultdict
 from typing import Any, Dict, List, Tuple
 
-from fides.logging import logger as log
 from sqlalchemy import and_, column
 from sqlalchemy import delete as _delete
 from sqlalchemy import or_
@@ -22,6 +21,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     ResourceTypes,
 )
 from fides.api.util import errors
+from fides.logging import logger as log
 
 
 # CRUD Functions

@@ -1,7 +1,6 @@
 from typing import Any, Dict, List, Union
 
 import pydash
-from fides.logging import logger
 
 from fides.api.schemas.saas.strategy_configuration import (
     UnwrapPostProcessorConfiguration,
@@ -9,6 +8,7 @@ from fides.api.schemas.saas.strategy_configuration import (
 from fides.api.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
+from fides.logging import logger
 
 
 class UnwrapPostProcessorStrategy(PostProcessorStrategy):

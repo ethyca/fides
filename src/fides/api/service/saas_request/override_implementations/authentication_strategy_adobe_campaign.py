@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from typing import Dict, Optional, cast
 
 from jwt import encode
-from fides.logging import logger
 from requests import PreparedRequest, post
 from sqlalchemy.orm import Session
 
@@ -15,6 +14,7 @@ from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
 from fides.api.util.saas_util import assign_placeholders
+from fides.logging import logger
 
 
 class AdobeCampaignAuthenticationConfiguration(StrategyConfiguration):

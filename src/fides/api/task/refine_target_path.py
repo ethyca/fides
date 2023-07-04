@@ -1,9 +1,8 @@
 from typing import Any, Dict, List, Optional, Union
 
-from fides.logging import logger
-
 from fides.api.graph.config import FieldPath
 from fides.api.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
+from fides.logging import logger
 
 Level = Union[
     str, int

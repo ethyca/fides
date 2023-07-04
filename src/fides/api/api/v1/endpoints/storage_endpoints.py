@@ -5,7 +5,6 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
-from fides.logging import logger
 from pydantic import conlist
 from requests import RequestException
 from sqlalchemy.orm import Session
@@ -52,7 +51,6 @@ from fides.api.schemas.storage.storage_secrets_docs_only import possible_storage
 from fides.api.service.storage.storage_authenticator_service import secrets_are_valid
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.util.api_router import APIRouter
-from fides.logging.handlers import Pii
 from fides.api.util.storage_util import get_schema_for_secrets
 from fides.common.api.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
@@ -71,6 +69,8 @@ from fides.common.api.v1.urn_registry import (
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 

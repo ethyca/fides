@@ -4,7 +4,6 @@ from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
 
 import pydash
 from boto3.dynamodb.types import TypeSerializer
-from fides.logging import logger
 from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Executable, Update  # type: ignore
@@ -30,8 +29,9 @@ from fides.api.task.refine_target_path import (
     join_detailed_path,
 )
 from fides.api.util.collection_util import Row, append, filter_nonempty_values
-from fides.logging.handlers import Pii
 from fides.api.util.querytoken import QueryToken
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 T = TypeVar("T")
 

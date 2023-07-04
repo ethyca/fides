@@ -8,7 +8,6 @@ from zipfile import ZipFile
 
 from AccessControl.ZopeGuards import safe_builtins
 from fideslang.models import Dataset
-from fides.logging import logger
 from packaging.version import Version
 from packaging.version import parse as parse_version
 from RestrictedPython import compile_restricted
@@ -41,6 +40,7 @@ from fides.api.util.saas_util import (
     replace_version,
 )
 from fides.config import CONFIG
+from fides.logging import logger
 
 
 class ConnectorTemplateLoader(ABC):

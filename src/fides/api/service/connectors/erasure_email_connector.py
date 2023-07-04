@@ -1,6 +1,5 @@
 from typing import Any, Dict, List, Optional
 
-from fides.logging import logger
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import MessageDispatchException
@@ -33,6 +32,7 @@ from fides.api.service.connectors.base_email_connector import (
 )
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.config import get_config
+from fides.logging import logger
 
 CONFIG = get_config()
 

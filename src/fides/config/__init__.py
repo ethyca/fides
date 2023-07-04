@@ -8,12 +8,12 @@ from os import getenv
 from typing import Any, Dict, Optional, Tuple, Union
 
 import toml
-from fides.logging import logger as log
 from pydantic import Field
 from pydantic.class_validators import _FUNCS
 from pydantic.env_settings import SettingsSourceCallable
 
 from fides.common.utils import echo_red
+from fides.logging import logger as log
 
 from .admin_ui_settings import AdminUISettings
 from .cli_settings import CLISettings

@@ -1,10 +1,9 @@
 from typing import Optional
 
-from fides.logging import logger
-
 from fides.api.common_exceptions import IdentityVerificationException
 from fides.api.util.cache import FidesopsRedis, get_cache
 from fides.config import CONFIG
+from fides.logging import logger
 
 
 class IdentityVerificationMixin:

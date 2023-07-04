@@ -6,7 +6,6 @@ from fastapi import Depends, HTTPException, Request, Response
 from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
-from fides.logging import logger
 from sqlalchemy.orm import Query, Session
 from starlette.status import (
     HTTP_200_OK,
@@ -33,6 +32,7 @@ from fides.api.util.consent_util import (
 from fides.api.util.endpoint_utils import fides_limiter, transform_fields
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
+from fides.logging import logger
 
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
 

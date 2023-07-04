@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Type
 
 import paramiko
 import sshtunnel  # type: ignore
-from fides.logging import logger
 from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import Column, text
 from sqlalchemy.engine import (  # type: ignore
@@ -53,6 +52,7 @@ from fides.api.service.connectors.query_config import (
 )
 from fides.api.util.collection_util import Row
 from fides.config import get_config
+from fides.logging import logger
 
 CONFIG = get_config()
 

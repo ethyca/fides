@@ -2,7 +2,6 @@ from typing import Any, Dict, Optional, Set
 
 from fideslang.models import Dataset, DatasetField, FidesDatasetReference
 from fideslang.validation import FidesKey
-from fides.logging import logger
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import Session, relationship
 
@@ -19,10 +18,11 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.data_type import parse_data_type_string
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.models.sql_models import (  # type: ignore[attr-defined]
-    Dataset as CtlDataset,
+from fides.api.models.sql_models import (
+    Dataset as CtlDataset,  # type: ignore[attr-defined]
 )
 from fides.api.util.saas_util import merge_datasets
+from fides.logging import logger
 
 
 class DatasetConfig(Base):

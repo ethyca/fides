@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Literal, Optional
 
-from fides.logging import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException, OAuth2TokenException
@@ -12,8 +11,9 @@ from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
-from fides.logging.handlers import Pii
 from fides.api.util.saas_util import assign_placeholders, map_param_values
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 
 class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):

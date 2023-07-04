@@ -9,7 +9,6 @@ import dask
 from dask import delayed  # type: ignore[attr-defined]
 from dask.core import getcycle
 from dask.threaded import get
-from fides.logging import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
@@ -54,9 +53,10 @@ from fides.api.util.collection_util import (
     partition,
 )
 from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
-from fides.logging.handlers import Pii
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from fides.config import CONFIG
+from fides.logging import logger
+from fides.logging.handlers import Pii
 
 dask.config.set(scheduler="threads")
 

@@ -4,7 +4,6 @@ from collections import defaultdict
 from typing import Callable, Dict, List, Optional, Set, Tuple
 
 from fideslang.validation import FidesKey
-from fides.logging import logger
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.graph.config import (
@@ -17,6 +16,7 @@ from fides.api.graph.config import (
     GraphDataset,
     SeedAddress,
 )
+from fides.logging import logger
 
 DataCategoryFieldMapping = Dict[CollectionAddress, Dict[FidesKey, List[FieldPath]]]
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any, Callable, Dict, List, Set, Tuple, cast
 
 import pydash.collections
-from fides.logging import logger
 
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (
@@ -18,6 +17,7 @@ from fides.api.graph.config import (
 from fides.api.graph.graph import DatasetGraph, Edge, Node
 from fides.api.util.collection_util import Row, append
 from fides.api.util.matching_queue import MatchingQueue
+from fides.logging import logger
 
 Datastore = Dict[CollectionAddress, List[Row]]
 """A type expressing retrieved rows of data from a specified collection"""

@@ -5,7 +5,6 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
-from fides.logging import logger
 from pydantic import conlist
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
@@ -30,6 +29,7 @@ from fides.api.schemas.policy_webhooks import PolicyWebhookDeleteResponse
 from fides.api.util.api_router import APIRouter
 from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
+from fides.logging import logger
 
 router = APIRouter(tags=["DSR Policy Webhooks"], prefix=urls.V1_URL_PREFIX)
 

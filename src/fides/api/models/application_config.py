@@ -3,7 +3,6 @@ from __future__ import annotations
 from json import loads
 from typing import Any, Dict, Optional
 
-from fides.logging import logger
 from pydantic.utils import deep_update
 from pydash.objects import get
 from sqlalchemy import Boolean, CheckConstraint, Column
@@ -16,6 +15,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 
 from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.config import CONFIG, FidesConfig
+from fides.logging import logger
 
 
 class ApplicationConfig(Base):
