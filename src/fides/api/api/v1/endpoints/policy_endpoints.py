@@ -35,7 +35,7 @@ from fides.api.schemas import policy as schemas
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.policy import ActionType
 from fides.api.util.api_router import APIRouter
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 from fides.common.api import scope_registry
 from fides.common.api.v1 import urn_registry as urls
 

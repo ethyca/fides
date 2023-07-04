@@ -15,7 +15,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.util.collection_util import Row
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 from fides.api.util.saas_util import get_identity
 
 

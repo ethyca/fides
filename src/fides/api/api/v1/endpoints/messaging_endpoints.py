@@ -51,7 +51,7 @@ from fides.api.service.messaging.messaging_crud_service import (
     update_messaging_config,
 )
 from fides.api.util.api_router import APIRouter
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,

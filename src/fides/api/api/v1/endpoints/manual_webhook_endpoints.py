@@ -24,7 +24,7 @@ from fides.api.schemas.manual_webhook_schemas import (
     AccessManualWebhooks,
 )
 from fides.api.util.api_router import APIRouter
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 from fides.common.api.scope_registry import (
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,

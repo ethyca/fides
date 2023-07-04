@@ -54,7 +54,7 @@ from fides.api.util.collection_util import (
     partition,
 )
 from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from fides.config import CONFIG
 

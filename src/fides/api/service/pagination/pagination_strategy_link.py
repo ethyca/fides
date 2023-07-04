@@ -12,7 +12,7 @@ from fides.api.schemas.saas.strategy_configuration import (
     LinkSource,
 )
 from fides.api.service.pagination.pagination_strategy import PaginationStrategy
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 
 
 class LinkPaginationStrategy(PaginationStrategy):

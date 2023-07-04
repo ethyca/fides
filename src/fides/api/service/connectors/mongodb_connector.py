@@ -15,7 +15,7 @@ from fides.api.schemas.connection_configuration.connection_secrets_mongodb impor
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import MongoQueryConfig, QueryConfig
 from fides.api.util.collection_util import Row
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 
 
 class MongoDBConnector(BaseConnector[MongoClient]):

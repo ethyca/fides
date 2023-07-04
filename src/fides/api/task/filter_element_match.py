@@ -12,7 +12,7 @@ from fides.api.task.refine_target_path import (
     join_detailed_path,
 )
 from fides.api.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 
 
 def filter_element_match(

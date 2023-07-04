@@ -36,7 +36,7 @@ from fides.api.ui import (
     path_is_in_ui_directory,
 )
 from fides.api.util.endpoint_utils import API_PREFIX
-from fides.api.util.logger import _log_exception
+from fides.logging.handlers import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
 

@@ -111,7 +111,7 @@ from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,

@@ -45,7 +45,7 @@ from fides.api.util.connection_util import (
     requeue_requires_input_requests,
     validate_secrets,
 )
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,

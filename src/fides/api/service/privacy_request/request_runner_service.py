@@ -77,7 +77,7 @@ from fides.api.util.cache import (
     get_cache,
 )
 from fides.api.util.collection_util import Row
-from fides.api.util.logger import Pii, _log_exception, _log_warning
+from fides.logging.handlers import Pii, _log_exception, _log_warning
 from fides.api.util.wrappers import sync
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,

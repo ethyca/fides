@@ -30,7 +30,7 @@ from fides.api.task.refine_target_path import (
     join_detailed_path,
 )
 from fides.api.util.collection_util import Row, append, filter_nonempty_values
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 from fides.api.util.querytoken import QueryToken
 
 T = TypeVar("T")

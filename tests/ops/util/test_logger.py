@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from fides.api.util.logger import MASKED, Pii, _log_exception, _log_warning
+from fides.logging.handlers import MASKED, Pii, _log_exception, _log_warning
 from fides.config import CONFIG
 
 

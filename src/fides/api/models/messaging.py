@@ -29,7 +29,7 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
 )
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 

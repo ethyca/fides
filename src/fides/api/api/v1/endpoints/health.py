@@ -13,7 +13,7 @@ from fides.api.db.database import DatabaseHealth, get_db_health
 from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 from fides.config import CONFIG
 
 CacheHealth = Literal["healthy", "unhealthy", "no cache configured"]

@@ -59,7 +59,7 @@ from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
-from fides.api.util.logger import Pii
+from fides.logging.handlers import Pii
 from fides.common.api.scope_registry import CONSENT_READ
 from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST,
