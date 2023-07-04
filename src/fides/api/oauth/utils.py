@@ -10,7 +10,7 @@ from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
 from jose import exceptions, jwe
 from jose.constants import ALGORITHMS
-from loguru import logger
+from fides.logging import logger
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND

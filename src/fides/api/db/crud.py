@@ -5,7 +5,7 @@ generated programmatically for each resource.
 from collections import defaultdict
 from typing import Any, Dict, List, Tuple
 
-from loguru import logger as log
+from fides.logging import logger as log
 from sqlalchemy import and_, column
 from sqlalchemy import delete as _delete
 from sqlalchemy import or_

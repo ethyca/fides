@@ -7,7 +7,7 @@ from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy import literal
 from sqlalchemy.orm import Query, Session
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND

@@ -2,7 +2,7 @@ import os
 from typing import Any, Dict
 
 from hvac import Client
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.common_exceptions import FidesopsException
 

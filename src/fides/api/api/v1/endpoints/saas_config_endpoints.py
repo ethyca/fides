@@ -6,7 +6,7 @@ from fastapi import Body, Depends, HTTPException
 from fastapi.params import Security
 from fastapi.responses import JSONResponse
 from fideslang.validation import FidesKey
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,

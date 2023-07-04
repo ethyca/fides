@@ -1,7 +1,7 @@
 import secrets
 
 from fastapi import Security
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.cryptography import cryptographic_util
 from fides.api.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str

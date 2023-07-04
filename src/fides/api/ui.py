@@ -8,7 +8,7 @@ from typing import Dict, Optional, Union
 
 from fastapi import Response
 from fastapi.responses import FileResponse
-from loguru import logger
+from fides.logging import logger
 
 FIDES_DIRECTORY = "src/fides"
 ADMIN_UI_DIRECTORY = "ui-build/static/admin/"

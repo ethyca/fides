@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional
 
 from fastapi import Depends
 from fastapi.params import Security
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
 

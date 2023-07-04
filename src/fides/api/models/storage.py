@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from loguru import logger
+from fides.logging import logger
 from pydantic import ValidationError
 from sqlalchemy import Boolean, Column, Enum, Index, String
 from sqlalchemy.dialects.postgresql import JSONB

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Optional, cast
 
 from jwt import encode
-from loguru import logger
+from fides.logging import logger
 from requests import PreparedRequest, post
 from sqlalchemy.orm import Session
 

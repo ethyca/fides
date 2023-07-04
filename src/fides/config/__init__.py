@@ -8,7 +8,7 @@ from os import getenv
 from typing import Any, Dict, Optional, Tuple, Union
 
 import toml
-from loguru import logger as log
+from fides.logging import logger as log
 from pydantic import Field
 from pydantic.class_validators import _FUNCS
 from pydantic.env_settings import SettingsSourceCallable

@@ -7,7 +7,7 @@ from functools import wraps
 from time import sleep
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
-from loguru import logger
+from fides.logging import logger
 from requests import PreparedRequest, Request, Response, Session
 
 from fides.api.common_exceptions import (

@@ -1,7 +1,7 @@
 from typing import Any, ContextManager, Dict, List, Optional
 
 from celery import Celery, Task
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.orm import Session
 
 from fides.api.db.session import get_db_engine, get_db_session

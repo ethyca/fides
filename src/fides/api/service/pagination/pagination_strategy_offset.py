@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional, Union
 
 import pydash
-from loguru import logger
+from fides.logging import logger
 from requests import Response
 
 from fides.api.common_exceptions import FidesopsException

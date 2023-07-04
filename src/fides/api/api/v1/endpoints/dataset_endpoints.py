@@ -8,7 +8,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
-from loguru import logger
+from fides.logging import logger
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import conlist
 from sqlalchemy import and_, not_, select
@@ -37,7 +37,7 @@ from fides.api.models.datasetconfig import (
     convert_dataset_to_graph,
     to_graph_field,
 )
-from fides.api.models.sql_models import ( # type: ignore[attr-defined]
+from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Dataset as CtlDataset,
 )
 from fides.api.oauth.utils import verify_oauth_client

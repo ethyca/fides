@@ -2,7 +2,7 @@ from enum import Enum
 from inspect import Signature, signature
 from typing import Callable, Dict, List, Union
 
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.common_exceptions import (
     InvalidSaaSRequestOverrideException,

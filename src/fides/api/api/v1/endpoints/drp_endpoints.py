@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 
 import jwt
 from fastapi import Depends, HTTPException, Security
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,

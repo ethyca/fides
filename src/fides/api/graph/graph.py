@@ -4,7 +4,7 @@ from collections import defaultdict
 from typing import Callable, Dict, List, Optional, Set, Tuple
 
 from fideslang.validation import FidesKey
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.graph.config import (

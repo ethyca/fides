@@ -8,7 +8,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy import column
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Query, Session

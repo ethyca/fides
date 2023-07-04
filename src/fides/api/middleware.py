@@ -2,7 +2,7 @@ import json
 from typing import Any, Dict, List
 
 from fastapi import Request
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette.types import Message

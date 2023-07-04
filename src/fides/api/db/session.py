@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import URL

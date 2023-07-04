@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Union
 
 from fastapi import Depends, HTTPException, Security, status
 from fideslang.models import Dataset, Organization, System
-from loguru import logger as log
+from fides.logging import logger as log
 from pydantic import BaseModel, root_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Set, Tuple
 from fastapi import Depends, Request, Security
 from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
-from loguru import logger
+from fides.logging import logger
 from pydantic import conlist
 from sqlalchemy.orm import Query, Session
 from starlette.exceptions import HTTPException

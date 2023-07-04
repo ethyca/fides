@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional, Set
 
 from fideslang.models import Dataset, DatasetField, FidesDatasetReference
 from fideslang.validation import FidesKey
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import Session, relationship
 

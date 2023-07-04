@@ -9,7 +9,7 @@ from typing import Callable, Optional
 from fastapi import HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
 from fideslog.sdk.python.event import AnalyticsEvent
-from loguru import logger
+from fides.logging import logger
 from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 

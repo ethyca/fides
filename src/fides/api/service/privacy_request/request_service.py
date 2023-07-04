@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
 from httpx import AsyncClient
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.policy import Policy

@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 from fastapi import Depends, Security
 from fastapi.security import SecurityScopes
 from fideslang.models import System as SystemSchema
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.orm import Session
 
 from fides.api.api.deps import get_db

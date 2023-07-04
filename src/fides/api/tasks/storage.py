@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional, Set, Union
 import pandas as pd
 from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
 from fides.api.graph.graph import DataCategoryFieldMapping

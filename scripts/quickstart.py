@@ -11,7 +11,7 @@ from typing import Optional
 
 import requests
 import yaml
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.models.policy import ActionType

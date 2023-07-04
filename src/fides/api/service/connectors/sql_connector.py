@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Type
 
 import paramiko
 import sshtunnel  # type: ignore
-from loguru import logger
+from fides.logging import logger
 from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import Column, text
 from sqlalchemy.engine import (  # type: ignore

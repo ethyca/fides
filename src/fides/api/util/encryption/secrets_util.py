@@ -1,7 +1,7 @@
 import secrets
 from typing import Dict, List, Optional, TypeVar
 
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.schemas.masking.masking_secrets import (
     MaskingSecretCache,

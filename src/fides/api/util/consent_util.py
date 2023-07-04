@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
 import yaml
 from fastapi import HTTPException
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
 

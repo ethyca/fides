@@ -1,7 +1,7 @@
 from typing import Dict, List, Literal, Optional
 
 from fastapi import Depends, HTTPException, status
-from loguru import logger
+from fides.logging import logger
 from pydantic import BaseModel
 from redis.exceptions import ResponseError
 from sqlalchemy.orm import Session

@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Set
 
-from loguru import logger as log
+from fides.logging import logger as log
 
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import (

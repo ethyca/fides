@@ -4,7 +4,7 @@ from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
 
 import pydash
 from boto3.dynamodb.types import TypeSerializer
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Executable, Update  # type: ignore

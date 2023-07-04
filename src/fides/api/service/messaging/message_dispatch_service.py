@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import requests
 import sendgrid
-from loguru import logger
+from fides.logging import logger
 from sendgrid.helpers.mail import Content, Email, Mail, Personalization, TemplateId, To
 from sqlalchemy.orm import Session
 from twilio.base.exceptions import TwilioRestException

@@ -3,7 +3,7 @@ from __future__ import annotations
 from json import loads
 from typing import Any, Dict, Optional
 
-from loguru import logger
+from fides.logging import logger
 from pydantic.utils import deep_update
 from pydash.objects import get
 from sqlalchemy import Boolean, CheckConstraint, Column

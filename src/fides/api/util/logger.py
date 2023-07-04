@@ -10,7 +10,7 @@ import sys
 from types import FrameType
 from typing import Dict, List, Optional, Union
 
-from loguru import logger
+from fides.logging import logger
 
 from fides.config import CONFIG
 

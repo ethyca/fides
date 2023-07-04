@@ -1,5 +1,5 @@
 from fastapi import Depends, status
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 

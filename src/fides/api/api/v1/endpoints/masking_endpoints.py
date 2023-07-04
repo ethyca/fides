@@ -1,7 +1,7 @@
 from typing import Any, List
 
 from fastapi import HTTPException, Security
-from loguru import logger
+from fides.logging import logger
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.common_exceptions import NoSuchStrategyException, ValidationError

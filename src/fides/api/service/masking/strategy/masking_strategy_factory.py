@@ -1,6 +1,6 @@
 from typing import Callable, Dict, Type, Union, ValuesView
 
-from loguru import logger
+from fides.logging import logger
 from pydantic import ValidationError
 
 from fides.api.common_exceptions import NoSuchStrategyException

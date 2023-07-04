@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Literal, Optional, TypeVar
 
 import pydash
 from fideslang.models import FidesDatasetReference
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.config import ScalarField

@@ -9,7 +9,7 @@ from typing import Dict, Iterator, List
 import sqlalchemy
 import toml
 from fideslang.models import DatasetField, FidesModel
-from loguru import logger
+from fides.logging import logger
 from pydantic import BaseModel, ValidationError
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError

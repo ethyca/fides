@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from loguru import logger
+from fides.logging import logger
 from pymongo import MongoClient
 from pymongo.errors import OperationFailure, ServerSelectionTimeoutError
 

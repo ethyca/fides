@@ -12,7 +12,7 @@ import yaml
 from fastapi.testclient import TestClient
 from fideslang import DEFAULT_TAXONOMY, models
 from httpx import AsyncClient
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker

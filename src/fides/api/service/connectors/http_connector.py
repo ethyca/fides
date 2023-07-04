@@ -2,7 +2,7 @@ import json
 from typing import Any, Dict, List, Optional
 
 import requests
-from loguru import logger
+from fides.logging import logger
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from fides.api.common_exceptions import ClientUnsuccessfulException

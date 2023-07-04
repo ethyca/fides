@@ -3,7 +3,7 @@ from urllib import parse
 from urllib.parse import urlsplit
 
 import pydash
-from loguru import logger
+from fides.logging import logger
 from requests import Response
 
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams

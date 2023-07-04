@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 import firebase_admin
 from firebase_admin import App, auth, credentials
 from firebase_admin.auth import UserNotFoundError, UserRecord
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.traversal import TraversalNode

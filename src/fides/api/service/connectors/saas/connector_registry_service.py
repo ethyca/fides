@@ -8,7 +8,7 @@ from zipfile import ZipFile
 
 from AccessControl.ZopeGuards import safe_builtins
 from fideslang.models import Dataset
-from loguru import logger
+from fides.logging import logger
 from packaging.version import Version
 from packaging.version import parse as parse_version
 from RestrictedPython import compile_restricted
@@ -323,7 +323,9 @@ def create_connection_config_from_template_no_save(
     )
 
     data = {
-        "key": template_values.key if template_values.key else template_values.instance_key,
+        "key": template_values.key
+        if template_values.key
+        else template_values.instance_key,
         "description": template_values.description,
         "connection_type": ConnectionType.saas,
         "access": AccessLevel.write,

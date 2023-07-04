@@ -2,7 +2,7 @@ from typing import Any, List, Optional, Type
 
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.validation import FidesKey
-from loguru import logger
+from fides.logging import logger
 from pydantic import BaseModel, validator
 
 from fides.api import common_exceptions

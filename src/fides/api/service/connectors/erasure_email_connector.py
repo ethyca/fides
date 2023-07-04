@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import MessageDispatchException

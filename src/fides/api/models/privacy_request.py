@@ -8,7 +8,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Set, Union
 
 from celery.result import AsyncResult
-from loguru import logger
+from fides.logging import logger
 from pydantic import BaseModel
 from sqlalchemy import (
     Boolean,

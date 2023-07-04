@@ -5,7 +5,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
-from loguru import logger
+from fides.logging import logger
 from pydantic import conlist
 from requests import RequestException
 from sqlalchemy.orm import Session

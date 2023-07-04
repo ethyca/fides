@@ -9,7 +9,7 @@ import dask
 from dask import delayed  # type: ignore[attr-defined]
 from dask.core import getcycle
 from dask.threaded import get
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (

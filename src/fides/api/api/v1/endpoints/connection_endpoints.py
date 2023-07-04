@@ -8,7 +8,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
-from loguru import logger
+from fides.logging import logger
 from pydantic import conlist
 from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
@@ -23,7 +23,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.sql_models import ( # type: ignore[attr-defined]
+from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Dataset as CtlDataset,
 )
 from fides.api.oauth.utils import verify_oauth_client

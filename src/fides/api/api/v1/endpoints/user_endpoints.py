@@ -9,7 +9,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.orm import Query, Session
 from sqlalchemy_utils import escape_like
 from starlette.status import (

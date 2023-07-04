@@ -2,7 +2,7 @@ from typing import List, Sequence
 
 from fastapi import Depends, Security
 from fastapi.encoders import jsonable_encoder
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException

@@ -2,7 +2,7 @@ from json import JSONDecodeError
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 
 import pydash
-from loguru import logger
+from fides.logging import logger
 from requests import Response
 from sqlalchemy.orm import Session
 

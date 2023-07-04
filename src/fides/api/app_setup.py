@@ -6,7 +6,7 @@ from os.path import dirname, join
 from typing import List, Optional, Pattern, Union
 
 from fastapi import FastAPI
-from loguru import logger
+from fides.logging import logger
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import requests
-from loguru import logger
+from fides.logging import logger
 from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Query, Session

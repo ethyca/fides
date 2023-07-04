@@ -3,7 +3,7 @@ from typing import Any, Dict, Generator, List, Optional
 
 from boto3.dynamodb.types import TypeDeserializer
 from botocore.exceptions import ClientError
-from loguru import logger
+from fides.logging import logger
 
 import fides.connectors.aws as aws_connector
 from fides.api.common_exceptions import ConnectionException

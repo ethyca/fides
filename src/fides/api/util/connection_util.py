@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from fastapi import HTTPException
-from loguru import logger
+from fides.logging import logger
 from pydantic import ValidationError
 from pydantic.types import conlist
 from sqlalchemy.orm import Session

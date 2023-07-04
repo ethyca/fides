@@ -1,7 +1,7 @@
 import pathlib
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.common_exceptions import EmailTemplateUnhandledActionType
 from fides.api.email_templates.template_names import (

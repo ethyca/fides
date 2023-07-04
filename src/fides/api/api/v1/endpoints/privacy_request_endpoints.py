@@ -12,7 +12,7 @@ from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from loguru import logger
+from fides.logging import logger
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import conlist
 from sqlalchemy import cast, column, null

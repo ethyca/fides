@@ -1,6 +1,6 @@
 from typing import Optional
 
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.common_exceptions import IdentityVerificationException
 from fides.api.util.cache import FidesopsRedis, get_cache

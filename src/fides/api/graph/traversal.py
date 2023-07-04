@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Callable, Dict, List, Set, Tuple, cast
 
 import pydash.collections
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (

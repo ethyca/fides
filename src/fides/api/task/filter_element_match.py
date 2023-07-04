@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Any, Dict, List
 
 import pydash
-from loguru import logger
+from fides.logging import logger
 
 from fides.api.task.refine_target_path import (
     DetailedPath,

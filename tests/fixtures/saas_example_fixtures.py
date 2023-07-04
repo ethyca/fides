@@ -1,7 +1,7 @@
 from typing import Any, Dict, Generator
 
 import pytest
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from toml import load as load_toml

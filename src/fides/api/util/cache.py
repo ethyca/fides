@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 from urllib.parse import quote, unquote_to_bytes
 
 from bson.objectid import ObjectId
-from loguru import logger
+from fides.logging import logger
 from redis import Redis
 from redis.client import Script  # type: ignore
 from redis.exceptions import ConnectionError as ConnectionErrorFromRedis

@@ -13,7 +13,7 @@ from typing import Dict, Union
 
 import click
 import requests
-from loguru import logger
+from fides.logging import logger
 
 echo_red = partial(click.secho, fg="red", bold=True)
 echo_green = partial(click.secho, fg="green", bold=True)

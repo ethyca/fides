@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
-from loguru import logger
+from fides.logging import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
