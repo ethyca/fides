@@ -137,7 +137,7 @@ async def log_request(request: Request, call_next: Callable) -> Response:
         status_code=response.status_code,
         handler_time=f"{round(handler_time.microseconds * 0.001,3)}ms",
         path=request.url.path,
-    ).info("Request received")
+    ).info("Request received and processed.")
     return response
 
 

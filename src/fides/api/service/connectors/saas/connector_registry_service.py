@@ -69,7 +69,7 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
     """
 
     def _load_connector_templates(self) -> None:
-        logger.info("Loading connectors templates from the data/saas directory")
+        logger.info("Loading connectors templates from the data/saas/ directory")
         for file in os.listdir("data/saas/config"):
             if file.endswith(".yml"):
                 config_file = os.path.join("data/saas/config", file)

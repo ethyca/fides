@@ -29,9 +29,7 @@ async def create_resource(
     sql_model: Base, resource_dict: Dict, async_session: AsyncSession
 ) -> Base:
     """Create a resource in the database."""
-    with log.contextualize(
-        sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]
-    ):
+    with log.bind(sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]):
         try:
             await get_resource(sql_model, resource_dict["fides_key"], async_session)
         except errors.NotFoundError:
@@ -72,7 +70,7 @@ async def get_custom_fields_filtered(
 
     This is for use in bulk querying of custom fields, to avoid multiple round trips to the db.
     """
-    with log.contextualize(model=CustomField):
+    with log.bind(model=CustomField):
         async with async_session.begin():
             try:
                 log.debug("Fetching resource")
@@ -117,7 +115,7 @@ async def get_resource(
 
     Returns a SQLAlchemy model of that resource.
     """
-    with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
+    with log.bind(sql_model=sql_model.__name__, fides_key=fides_key):
         async with async_session.begin():
             try:
                 log.debug("Fetching resource")
@@ -150,7 +148,7 @@ async def get_resource_with_custom_fields(
     resource_dict = resource.__dict__
     resource_dict.pop("_sa_instance_state", None)
 
-    with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
+    with log.bind(sql_model=sql_model.__name__, fides_key=fides_key):
         async with async_session.begin():
             try:
                 log.debug("Fetching custom fields for resource")
@@ -198,7 +196,7 @@ async def list_resource(sql_model: Base, async_session: AsyncSession) -> List[Ba
 
     Returns a list of SQLAlchemy models of that resource type.
     """
-    with log.contextualize(sql_model=sql_model.__name__):
+    with log.bind(sql_model=sql_model.__name__):
         async with async_session.begin():
             try:
                 log.debug("Fetching resources")
@@ -220,9 +218,7 @@ async def update_resource(
 ) -> Dict:
     """Update a resource in the database by its fides_key."""
 
-    with log.contextualize(
-        sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]
-    ):
+    with log.bind(sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]):
         await get_resource(sql_model, resource_dict["fides_key"], async_session)
 
         async with async_session.begin():
@@ -253,7 +249,7 @@ async def upsert_resources(
     Returns a Tuple containing the counts of inserted and updated rows.
     """
 
-    with log.contextualize(
+    with log.bind(
         sql_model=sql_model.__name__,
         fides_keys=[resource["fides_key"] for resource in resource_dicts],
     ):
@@ -303,7 +299,7 @@ async def delete_resource(
     If the resource has child keys referring to it, also delete those.
     """
 
-    with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
+    with log.bind(sql_model=sql_model.__name__, fides_key=fides_key):
         sql_resource = await get_resource(sql_model, fides_key, async_session)
 
         async with async_session.begin():

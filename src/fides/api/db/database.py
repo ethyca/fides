@@ -110,7 +110,7 @@ async def configure_db(database_url: str, samples: bool = False) -> None:
         log.error(
             "Unable to configure database due to a decryption error! Check to ensure your `app_encryption_key` has not changed."
         )
-        log.opt(exception=True).error(cipher_error)
+        log.exception(cipher_error)
 
     except Exception as error:  # pylint: disable=broad-except
         error_type = get_full_exception_name(error)
