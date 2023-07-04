@@ -115,4 +115,4 @@ async def configure_db(database_url: str, samples: bool = False) -> None:
     except Exception as error:  # pylint: disable=broad-except
         error_type = get_full_exception_name(error)
         log.error("Unable to configure database: %s: %s", error_type, error)
-        log.opt(exception=True).error(error)
+        log.exception(error)
