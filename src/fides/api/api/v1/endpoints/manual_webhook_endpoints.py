@@ -16,11 +16,6 @@ from starlette.status import (
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.dataset_endpoints import _get_connection_config
-from fides.api.api.v1.urn_registry import (
-    ACCESS_MANUAL_WEBHOOK,
-    ACCESS_MANUAL_WEBHOOKS,
-    V1_URL_PREFIX,
-)
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.oauth.utils import verify_oauth_client
@@ -34,6 +29,11 @@ from fides.common.api.scope_registry import (
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
     WEBHOOK_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    ACCESS_MANUAL_WEBHOOK,
+    ACCESS_MANUAL_WEBHOOKS,
+    V1_URL_PREFIX,
 )
 
 router = APIRouter(tags=["Manual Webhooks"], prefix=V1_URL_PREFIX)

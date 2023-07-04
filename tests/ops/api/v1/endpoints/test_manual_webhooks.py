@@ -2,12 +2,6 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import (
-    ACCESS_MANUAL_WEBHOOK,
-    ACCESS_MANUAL_WEBHOOKS,
-    CONNECTION_TEST,
-    V1_URL_PREFIX,
-)
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.common.api.scope_registry import (
     CONNECTION_READ,
@@ -15,6 +9,12 @@ from fides.common.api.scope_registry import (
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
     WEBHOOK_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    ACCESS_MANUAL_WEBHOOK,
+    ACCESS_MANUAL_WEBHOOKS,
+    CONNECTION_TEST,
+    V1_URL_PREFIX,
 )
 
 

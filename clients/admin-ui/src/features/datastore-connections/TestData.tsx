@@ -5,7 +5,7 @@ import { formatDate } from "../common/utils";
 
 type TestDataProps = {
   succeeded?: boolean;
-  timestamp: string;
+  timestamp: string | number;
 };
 
 const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {

@@ -35,19 +35,8 @@ describe("configureNavGroups", () => {
       children: [{ title: "Home", path: "/" }],
     });
 
-    expect(navGroups[1]).toMatchObject({
-      title: "Privacy requests",
-      children: [
-        { title: "Request manager", path: routes.PRIVACY_REQUESTS_ROUTE },
-        {
-          title: "Connection manager",
-          path: routes.DATASTORE_CONNECTION_ROUTE,
-        },
-      ],
-    });
-
     // NOTE: the data map should _not_ include the Plus routes (/plus/datamap, /classify-systems, etc.)
-    expect(navGroups[2]).toMatchObject({
+    expect(navGroups[1]).toMatchObject({
       title: "Data map",
       children: [
         { title: "View systems", path: routes.SYSTEM_ROUTE },
@@ -56,12 +45,14 @@ describe("configureNavGroups", () => {
       ],
     });
 
-    expect(navGroups[3]).toMatchObject({
-      title: "Management",
+    expect(navGroups[2]).toMatchObject({
+      title: "Privacy requests",
       children: [
-        { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
-        { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
-        { title: "About Fides", path: routes.ABOUT_ROUTE },
+        { title: "Request manager", path: routes.PRIVACY_REQUESTS_ROUTE },
+        {
+          title: "Connection manager",
+          path: routes.DATASTORE_CONNECTION_ROUTE,
+        },
       ],
     });
   });
@@ -79,7 +70,7 @@ describe("configureNavGroups", () => {
     });
 
     // The data map _should_ include the actual "/plus/datamap".
-    expect(navGroups[2]).toMatchObject({
+    expect(navGroups[1]).toMatchObject({
       title: "Data map",
       children: [
         { title: "View map", path: routes.DATAMAP_ROUTE },
@@ -147,7 +138,7 @@ describe("configureNavGroups", () => {
       });
 
       // The data map should _not_ include the actual "/plus/datamap".
-      expect(navGroups[2]).toMatchObject({
+      expect(navGroups[1]).toMatchObject({
         title: "Data map",
         children: [
           { title: "View systems", path: routes.SYSTEM_ROUTE },

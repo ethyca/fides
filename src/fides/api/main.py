@@ -14,7 +14,6 @@ from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 
 import fides
-from fides.api.api.v1.endpoints.utils import API_PREFIX
 from fides.api.app_setup import (
     check_redis,
     create_fides_app,
@@ -36,6 +35,7 @@ from fides.api.ui import (
     match_route,
     path_is_in_ui_directory,
 )
+from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values

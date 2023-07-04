@@ -27,6 +27,7 @@ export const fetchExperience = async (
   const fetchOptions: RequestInit = {
     method: "GET",
     mode: "cors",
+    headers: [["Unescape-Safestr", "true"]],
   };
   const params = new URLSearchParams({
     show_disabled: "false",

@@ -17,7 +17,6 @@ import fides
 from fides.api.api.deps import get_api_session
 from fides.api.api.v1 import CTL_ROUTER
 from fides.api.api.v1.api import api_router
-from fides.api.api.v1.endpoints.utils import fides_limiter
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
 from fides.api.db.database import configure_db
@@ -35,6 +34,7 @@ from fides.api.util.consent_util import (
     load_default_experience_configs_on_startup,
     load_default_notices_on_startup,
 )
+from fides.api.util.endpoint_utils import fides_limiter
 from fides.api.util.errors import FidesError
 from fides.api.util.logger import setup as setup_logging
 from fides.api.util.system_manager_oauth_util import (
