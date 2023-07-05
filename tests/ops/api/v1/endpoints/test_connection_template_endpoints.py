@@ -1146,7 +1146,6 @@ class TestInstantiateConnectionFromTemplate:
         # names don't have to be unique
         assert resp.status_code == 200
 
-
     def test_create_connection_from_template_without_supplying_connection_key(
         self, db, generate_auth_header, api_client, base_url
     ):
