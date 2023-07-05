@@ -25,6 +25,7 @@ import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import React from "react";
+import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import DatasetConfigField from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
@@ -34,7 +35,6 @@ import {
   SystemType,
 } from "~/types/api";
 
-import { DatastoreConnectionStatus } from "../../types";
 import DeleteConnectionModal from "../DeleteConnectionModal";
 import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
