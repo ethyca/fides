@@ -20,8 +20,6 @@ def ada_chatbot_secrets(saas_config) -> Dict[str, Any]:
         "domain": pydash.get(saas_config, "ada_chatbot.domain") or secrets["domain"],
         "export_access_token": pydash.get(saas_config, "ada_chatbot.export_access_token") or secrets["export_access_token"],
         "compliance_access_token": pydash.get(saas_config, "ada_chatbot.compliance_access_token") or secrets["compliance_access_token"],
-        "identity_email": pydash.get(saas_config, "ada_chatbot.identity_email") or secrets["identity_email"],
-        "chatter_id": pydash.get(saas_config, "ada_chatbot.chatter_id") or secrets["chatter_id"],
         # add the rest of your secrets here
     }
 
@@ -36,6 +34,13 @@ def ada_chatbot_identity_email(saas_config) -> str:
 @pytest.fixture
 def ada_chatbot_erasure_identity_email() -> str:
     return generate_random_email()
+
+@pytest.fixture
+def ada_chatbot_external_references(saas_config) -> Dict[str, Any]:
+    return {
+        "chatter_id": pydash.get(saas_config, "ada_chatbot.chatter_id")
+        or secrets["chatter_id"]
+    }
 
 
 class AdaChatbotClient:
@@ -88,10 +93,12 @@ def ada_chatbot_runner(
     db,
     cache,
     ada_chatbot_secrets,
+    ada_chatbot_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
         "ada_chatbot",
         ada_chatbot_secrets,
+        external_references=ada_chatbot_external_references,
     )

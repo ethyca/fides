@@ -47,7 +47,7 @@ saas_config:
             - strategy: filter
               configuration:
                 field: chatter_id
-                value: chatter_id
+                value: '={{$externalReferences["chatter_id"]}}'
           param_values:
             - name: placeholder
               identity: email
@@ -68,7 +68,7 @@ saas_config:
             - strategy: filter
               configuration:
                 field: chatter_id
-                value: chatter_id
+                value: '={{$externalReferences["chatter_id"]}}'
           pagination:
             strategy: cursor
             configuration:
@@ -84,7 +84,7 @@ saas_config:
                   direction: from
     - name: delete_chatter_data
       requests:
-        read:
+        delete:
           method: POST
           path: /api/v1/data-subject-request
           client_config:
