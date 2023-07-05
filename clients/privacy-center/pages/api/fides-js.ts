@@ -85,7 +85,9 @@ export default async function handler(
             JSON.parse(fidesCookie)?.identity?.fides_user_device_id;
         }
       }
-      console.log("Fetching relevant experiences from server-side...");
+      if (environment.settings.DEBUG) {
+        console.log("Fetching relevant experiences from server-side...");
+      }
       experience = await fetchExperience(
         fidesRegionString,
         environment.settings.FIDES_API_URL,
