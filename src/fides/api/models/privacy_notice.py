@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from enum import Enum
+from html import unescape
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from fideslang.validation import FidesKey
@@ -28,99 +29,96 @@ class UserConsentPreference(Enum):
     acknowledge = "acknowledge"  # The user has acknowledged this notice
 
 
-class PrivacyNoticeRegion(Enum):
-    """
-    Enum is not formalized in the DB because it is subject to frequent change
-    """
-
-    us_al = "us_al"  # alabama
-    us_ak = "us_ak"  # alaska
-    us_az = "us_az"  # arizona
-    us_ar = "us_ar"  # arkansas
-    us_ca = "us_ca"  # california
-    us_co = "us_co"  # colorado
-    us_ct = "us_ct"  # connecticut
-    us_de = "us_de"  # delaware
-    us_fl = "us_fl"  # florida
-    us_ga = "us_ga"  # georgia
-    us_hi = "us_hi"  # hawaii
-    us_id = "us_id"  # idaho
-    us_il = "us_il"  # illinois
-    us_in = "us_in"  # indiana
-    us_ia = "us_ia"  # iowa
-    us_ks = "us_ks"  # kansas
-    us_ky = "us_ky"  # kentucky
-    us_la = "us_la"  # louisiana
-    us_me = "us_me"  # maine
-    us_md = "us_md"  # maryland
-    us_ma = "us_ma"  # massachusetts
-    us_mi = "us_mi"  # michigan
-    us_mn = "us_mn"  # minnesota
-    us_ms = "us_ms"  # mississippi
-    us_mo = "us_mo"  # missouri
-    us_mt = "us_mt"  # montana
-    us_ne = "us_ne"  # nebraska
-    us_nv = "us_nv"  # nevada
-    us_nh = "us_nh"  # new hampshire
-    us_nj = "us_nj"  # new jersey
-    us_nm = "us_nm"  # new mexico
-    us_ny = "us_ny"  # new york
-    us_nc = "us_nc"  # north carolina
-    us_nd = "us_nd"  # north dakota
-    us_oh = "us_oh"  # ohio
-    us_ok = "us_ok"  # oklahoma
-    us_or = "us_or"  # oregon
-    us_pa = "us_pa"  # pennsylvania
-    us_ri = "us_ri"  # rhode island
-    us_sc = "us_sc"  # south carolina
-    us_sd = "us_sd"  # south dakota
-    us_tn = "us_tn"  # tennessee
-    us_tx = "us_tx"  # texas
-    us_ut = "us_ut"  # utah
-    us_vt = "us_vt"  # vermont
-    us_va = "us_va"  # virginia
-    us_wa = "us_wa"  # washington
-    us_wv = "us_wv"  # west virginia
-    us_wi = "us_wi"  # wisconsin
-    us_wy = "us_wy"  # wyoming
-
-    eu_be = "eu_be"  # belgium
-    eu_bg = "eu_bg"  # bulgaria
-    eu_cz = "eu_cz"  # czechia
-    eu_dk = "eu_dk"  # denmark
-    eu_de = "eu_de"  # germany
-    eu_ee = "eu_ee"  # estonia
-    eu_ie = "eu_ie"  # ireland
-    eu_el = "eu_el"  # greece
-    eu_es = "eu_es"  # spain
-    eu_fr = "eu_fr"  # france
-    eu_hr = "eu_hr"  # croatia
-    eu_it = "eu_it"  # italy
-    eu_cy = "eu_cy"  # cyprus
-    eu_lv = "eu_lv"  # latvia
-    eu_lt = "eu_lt"  # lithuania
-    eu_lu = "eu_lu"  # luxembourg
-    eu_hu = "eu_hu"  # hungary
-    eu_mt = "eu_mt"  # malta
-    eu_nl = "eu_nl"  # netherlands
-    eu_at = "eu_at"  # austria
-    eu_pl = "eu_pl"  # poland
-    eu_pt = "eu_pt"  # portugal
-    eu_ro = "eu_ro"  # romania
-    eu_si = "eu_si"  # slovenia
-    eu_sk = "eu_sk"  # slovakia
-    eu_fi = "eu_fi"  # finland
-    eu_se = "eu_se"  # sweden
-
-    gb_eng = "gb_eng"  # england
-    gb_sct = "gb_sct"  # scotland
-    gb_wls = "gb_wls"  # wales
-    gb_nir = "gb_nir"  # northern ireland
-
-    isl = "isl"  # iceland, 3 letter country code
-    nor = "nor"  # norway, 3 letter country code
-
-    li = "li"  # liechtenstein
+# Enum defined using functional API so we can use regions like "is"
+PrivacyNoticeRegion = Enum(
+    "PrivacyNoticeRegion",
+    [
+        ("us_al", "us_al"),  # alabama
+        ("us_ak", "us_ak"),  # alaska
+        ("us_az", "us_az"),  # arizona
+        ("us_ar", "us_ar"),  # arkansas
+        ("us_ca", "us_ca"),  # california
+        ("us_co", "us_co"),  # colorado
+        ("us_ct", "us_ct"),  # connecticut
+        ("us_de", "us_de"),  # delaware
+        ("us_fl", "us_fl"),  # florida
+        ("us_ga", "us_ga"),  # georgia
+        ("us_hi", "us_hi"),  # hawaii
+        ("us_id", "us_id"),  # idaho
+        ("us_il", "us_il"),  # illinois
+        ("us_in", "us_in"),  # indiana
+        ("us_ia", "us_ia"),  # iowa
+        ("us_ks", "us_ks"),  # kansas
+        ("us_ky", "us_ky"),  # kentucky
+        ("us_la", "us_la"),  # louisiana
+        ("us_me", "us_me"),  # maine
+        ("us_md", "us_md"),  # maryland
+        ("us_ma", "us_ma"),  # massachusetts
+        ("us_mi", "us_mi"),  # michigan
+        ("us_mn", "us_mn"),  # minnesota
+        ("us_ms", "us_ms"),  # mississippi
+        ("us_mo", "us_mo"),  # missouri
+        ("us_mt", "us_mt"),  # montana
+        ("us_ne", "us_ne"),  # nebraska
+        ("us_nv", "us_nv"),  # nevada
+        ("us_nh", "us_nh"),  # new hampshire
+        ("us_nj", "us_nj"),  # new jersey
+        ("us_nm", "us_nm"),  # new mexico
+        ("us_ny", "us_ny"),  # new york
+        ("us_nc", "us_nc"),  # north carolina
+        ("us_nd", "us_nd"),  # north dakota
+        ("us_oh", "us_oh"),  # ohio
+        ("us_ok", "us_ok"),  # oklahoma
+        ("us_or", "us_or"),  # oregon
+        ("us_pa", "us_pa"),  # pennsylvania
+        ("us_ri", "us_ri"),  # rhode island
+        ("us_sc", "us_sc"),  # south carolina
+        ("us_sd", "us_sd"),  # south dakota
+        ("us_tn", "us_tn"),  # tennessee
+        ("us_tx", "us_tx"),  # texas
+        ("us_ut", "us_ut"),  # utah
+        ("us_vt", "us_vt"),  # vermont
+        ("us_va", "us_va"),  # virginia
+        ("us_wa", "us_wa"),  # washington
+        ("us_wv", "us_wv"),  # west virginia
+        ("us_wi", "us_wi"),  # wisconsin
+        ("us_wy", "us_wy"),  # wyoming
+        ("be", "be"),  # belgium
+        ("bg", "bg"),  # bulgaria
+        ("cz", "cz"),  # czechia
+        ("dk", "dk"),  # denmark
+        ("de", "de"),  # germany
+        ("ee", "ee"),  # estonia
+        ("ie", "ie"),  # ireland
+        ("gr", "gr"),  # greece
+        ("es", "es"),  # spain
+        ("fr", "fr"),  # france
+        ("hr", "hr"),  # croatia
+        ("it", "it"),  # italy
+        ("cy", "cy"),  # cyprus
+        ("lv", "lv"),  # latvia
+        ("lt", "lt"),  # lithuania
+        ("lu", "lu"),  # luxembourg
+        ("hu", "hu"),  # hungary
+        ("mt", "mt"),  # malta
+        ("nl", "nl"),  # netherlands
+        ("at", "at"),  # austria
+        ("pl", "pl"),  # poland
+        ("pt", "pt"),  # portugal
+        ("ro", "ro"),  # romania
+        ("si", "si"),  # slovenia
+        ("sk", "sk"),  # slovakia
+        ("fi", "fi"),  # finland
+        ("se", "se"),  # sweden
+        ("gb_eng", "gb_eng"),  # england
+        ("gb_sct", "gb_sct"),  # scotland
+        ("gb_wls", "gb_wls"),  # wales
+        ("gb_nir", "gb_nir"),  # northern ireland
+        ("is", "is"),  # iceland
+        ("no", "no"),  # norway
+        ("li", "li"),  # liechtenstein
+    ],
+)
 
 
 class ConsentMechanism(Enum):
@@ -314,6 +312,43 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 PRIVACY_NOTICE_TYPE = Union[PrivacyNotice, PrivacyNoticeTemplate]
 
 
+def check_conflicting_notice_keys(
+    new_privacy_notices: Iterable[PRIVACY_NOTICE_TYPE],
+    existing_privacy_notices: Iterable[Union[PRIVACY_NOTICE_TYPE]],
+    ignore_disabled: bool = True,  # For PrivacyNoticeTemplates, set to False
+) -> None:
+    """
+    Checks to see if new notice keys will conflict with any existing notice keys for a specific region
+    """
+    # Map regions to existing notice key, notice name
+    notice_keys_by_region: Dict[
+        PrivacyNoticeRegion, List[Tuple[str, str]]
+    ] = defaultdict(list)
+    for privacy_notice in existing_privacy_notices:
+        if privacy_notice.disabled and ignore_disabled:
+            continue
+        for region in privacy_notice.regions:
+            notice_keys_by_region[PrivacyNoticeRegion(region)].append(
+                (privacy_notice.notice_key, privacy_notice.name)
+            )
+
+    for privacy_notice in new_privacy_notices:
+        if privacy_notice.disabled and ignore_disabled:
+            # Skip validation if the notice is disabled
+            continue
+        # check each of the incoming notice's regions
+        for region in privacy_notice.regions:
+            region_notice_keys = notice_keys_by_region[PrivacyNoticeRegion(region)]
+            # check the incoming notice keys
+            for notice_key, notice_name in region_notice_keys:
+                if notice_key == privacy_notice.notice_key:
+                    raise ValidationError(
+                        message=f"Privacy Notice '{unescape(notice_name)}' has already assigned notice key '{notice_key}' to region '{region}'"
+                    )
+            # add the new notice key to our map
+            region_notice_keys.append((privacy_notice.notice_key, privacy_notice.name))
+
+
 def check_conflicting_data_uses(
     new_privacy_notices: Iterable[PRIVACY_NOTICE_TYPE],
     existing_privacy_notices: Iterable[Union[PRIVACY_NOTICE_TYPE]],
@@ -363,7 +398,7 @@ def check_conflicting_data_uses(
                     # an existing DataUse
                     if new_data_use_conflicts_with_existing_use(existing_use, data_use):
                         raise ValidationError(
-                            message=f"Privacy Notice '{notice_name}' has already assigned data use '{existing_use}' to region '{region}'"
+                            message=f"Privacy Notice '{unescape(notice_name)}' has already assigned data use '{existing_use}' to region '{region}'"
                         )
                 # add the data use to our map, to effectively include it in validation against the
                 # following incoming records

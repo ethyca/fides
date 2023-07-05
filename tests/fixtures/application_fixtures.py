@@ -1577,7 +1577,7 @@ def privacy_experience_france_overlay(
         db=db,
         data={
             "component": ComponentType.overlay,
-            "region": PrivacyNoticeRegion.eu_fr,
+            "region": PrivacyNoticeRegion.fr,
             "experience_config_id": experience_config_overlay.id,
         },
     )
@@ -1587,14 +1587,14 @@ def privacy_experience_france_overlay(
 
 
 @pytest.fixture(scope="function")
-def privacy_notice_eu_fr_provide_service_frontend_only(db: Session) -> Generator:
+def privacy_notice_fr_provide_service_frontend_only(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
         data={
             "name": "example privacy notice us_co provide.service.operations",
             "notice_key": "example_privacy_notice_us_co_provide.service.operations",
             "description": "a sample privacy notice configuration",
-            "regions": [PrivacyNoticeRegion.eu_fr],
+            "regions": [PrivacyNoticeRegion.fr],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential.service"],
             "enforcement_level": EnforcementLevel.frontend,
@@ -1615,7 +1615,7 @@ def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator
             "name": "example privacy notice eu_cy provide.service.operations",
             "notice_key": "example_privacy_notice_eu_cy_provide.service.operations",
             "description": "a sample privacy notice configuration",
-            "regions": [PrivacyNoticeRegion.eu_cy],
+            "regions": [PrivacyNoticeRegion.cy],
             "consent_mechanism": ConsentMechanism.opt_out,
             "data_uses": ["essential.service"],
             "enforcement_level": EnforcementLevel.frontend,
@@ -1629,8 +1629,8 @@ def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator
 
 
 @pytest.fixture(scope="function")
-def privacy_preference_history_eu_fr_provide_service_frontend_only(
-    db: Session, privacy_notice_eu_fr_provide_service_frontend_only
+def privacy_preference_history_fr_provide_service_frontend_only(
+    db: Session, privacy_notice_fr_provide_service_frontend_only
 ) -> Generator:
     provided_identity_data = {
         "privacy_request_id": None,
@@ -1645,7 +1645,8 @@ def privacy_preference_history_eu_fr_provide_service_frontend_only(
         data={
             "preference": "opt_in",
             "provided_identity_id": provided_identity.id,
-            "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.privacy_notice_history_id,
+            "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.privacy_notice_history_id,
+            "user_geography": "fr_idg",
         },
         check_name=False,
     )
@@ -2288,3 +2289,43 @@ def privacy_experience_overlay(db: Session, experience_config_overlay) -> Genera
 
     yield privacy_experience
     privacy_experience.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_experience_privacy_center_france(
+    db: Session, experience_config_privacy_center
+) -> Generator:
+    privacy_experience = PrivacyExperience.create(
+        db=db,
+        data={
+            "component": ComponentType.privacy_center,
+            "region": PrivacyNoticeRegion.fr,
+            "experience_config_id": experience_config_privacy_center.id,
+        },
+    )
+
+    yield privacy_experience
+    privacy_experience.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_notice_france(db: Session) -> Generator:
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice",
+            "notice_key": "example_privacy_notice",
+            "description": "user description",
+            "regions": [
+                PrivacyNoticeRegion.fr,
+            ],
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["marketing.advertising", "third_party_sharing"],
+            "enforcement_level": EnforcementLevel.system_wide,
+            "displayed_in_privacy_center": True,
+            "displayed_in_overlay": False,
+            "displayed_in_api": False,
+        },
+    )
+
+    yield privacy_notice

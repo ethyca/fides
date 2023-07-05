@@ -38,6 +38,7 @@ from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequest
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
@@ -45,7 +46,13 @@ from fides.api.task.filter_element_match import filter_element_match
 from fides.api.task.refine_target_path import FieldPathNodeInput
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.cache import get_cache
-from fides.api.util.collection_util import NodeInput, Row, append, partition
+from fides.api.util.collection_util import (
+    NodeInput,
+    Row,
+    append,
+    extract_key_for_address,
+    partition,
+)
 from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
@@ -173,6 +180,13 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.resources = resources
         self.connector: BaseConnector = resources.get_connector(
             self.traversal_node.node.dataset.connection_key  # ConnectionConfig.key
+        )
+        self.data_uses: Set[str] = (
+            System.get_data_uses(
+                [self.connector.configuration.system], include_parents=False
+            )
+            if self.connector.configuration.system
+            else {}
         )
 
         # build incoming edges to the form : [dataset address: [(foreign field, local field)]
@@ -658,6 +672,28 @@ def update_mapping_from_cache(
         )
 
 
+def _format_data_use_map_for_caching(
+    env: Dict[CollectionAddress, "GraphTask"]
+) -> Dict[str, Set[str]]:
+    """
+    Create a map of `Collection`s mapped to their associated `DataUse`s
+    to be stored in the cache. This is done before request execution, so that we
+    maintain the _original_ state of the graph as it's used for request execution.
+    The graph is subject to change "from underneath" the request execution runtime,
+    but we want to avoid picking up those changes in our data use map.
+
+    `DataUse`s are associated with a `Collection` by means of the `System`
+    that's linked to a `Collection`'s `Connection` definition.
+
+    Example:
+    {
+       <collection1>: {"data_use_1", "data_use_2"},
+       <collection2>: {"data_use_1"},
+    }
+    """
+    return {collection.value: g_task.data_uses for collection, g_task in env.items()}
+
+
 def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, Any]]]:
     """Return a function for collections with no upstream dependencies, that just start
     with seed data.
@@ -715,7 +751,15 @@ async def run_access_request(
                 privacy_request, env, end_nodes, resources, ActionType.access
             )
         )
+
+        # cache access graph for use in logging/analytics event
         privacy_request.cache_access_graph(format_graph_for_caching(env, end_nodes))
+
+        # cache a map of collections -> data uses for the output package of access requests
+        # this is cached here before request execution, since this is the state of the
+        # graph used for request execution. the graph could change _during_ request execution,
+        # but we don't want those changes in our data use map.
+        privacy_request.cache_data_use_map(_format_data_use_map_for_caching(env))
 
         v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
         return v.compute()
@@ -733,7 +777,11 @@ def get_cached_data_for_erasures(
     value_dict = cache.get_encoded_objects_by_prefix(
         f"PLACEHOLDER_RESULTS__{privacy_request_id}"
     )
-    return {k.split("__")[-1]: v for k, v in value_dict.items()}
+    number_of_leading_strings_to_exclude = 3
+    return {
+        extract_key_for_address(k, number_of_leading_strings_to_exclude): v
+        for k, v in value_dict.items()
+    }
 
 
 def update_erasure_mapping_from_cache(

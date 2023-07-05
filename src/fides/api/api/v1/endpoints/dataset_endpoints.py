@@ -24,16 +24,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.urn_registry import (
-    CONNECTION_DATASETS,
-    DATASET_BY_KEY,
-    DATASET_CONFIGS,
-    DATASET_VALIDATE,
-    DATASETCONFIG_BY_KEY,
-    DATASETS,
-    V1_URL_PREFIX,
-    YAML_DATASETS,
-)
 from fides.api.common_exceptions import (
     SaaSConfigNotFoundException,
     TraversalError,
@@ -67,6 +57,16 @@ from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    CONNECTION_DATASETS,
+    DATASET_BY_KEY,
+    DATASET_CONFIGS,
+    DATASET_VALIDATE,
+    DATASETCONFIG_BY_KEY,
+    DATASETS,
+    V1_URL_PREFIX,
+    YAML_DATASETS,
 )
 
 X_YAML = "application/x-yaml"

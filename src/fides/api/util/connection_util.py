@@ -12,7 +12,6 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.common_exceptions import ValidationError as FidesValidationError
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -42,6 +41,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
+from fides.common.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
 
 # pylint: disable=too-many-nested-blocks,too-many-branches,too-many-statements
 

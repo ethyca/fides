@@ -36,7 +36,6 @@ from fides.common.api.scope_registry import (
 )
 from tests.conftest import generate_role_header_for_user
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
-from pprint import pprint
 
 page_size = Params().size
 
@@ -357,7 +356,6 @@ class TestDeleteSystemConnectionConfig:
         # Test not authenticated
 
         resp = api_client.delete(url, headers={})
-        pprint(resp.json())
         assert resp.status_code == HTTP_401_UNAUTHORIZED
 
     def test_delete_connection_config_wrong_scope(
@@ -365,7 +363,6 @@ class TestDeleteSystemConnectionConfig:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.delete(url, headers=auth_header)
-        pprint(resp.json())
         assert resp.status_code == HTTP_403_FORBIDDEN
 
     def test_delete_connection_config_does_not_exist(
@@ -376,7 +373,6 @@ class TestDeleteSystemConnectionConfig:
             V1_URL_PREFIX + f"/system/{system.fides_key}/connection/non_existent_config"
         )
         resp = api_client.delete(url, headers=auth_header)
-        pprint(resp.json())
         assert resp.status_code == HTTP_404_NOT_FOUND
 
     def test_delete_connection_config(
@@ -691,15 +687,13 @@ class TestInstantiateSystemConnectionFromTemplate:
     ):
         auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
         request_body = {
-            "instance_key": "secondary_mailchimp_instance",
+            "instance_key": connection_config.key,
             "secrets": {
                 "domain": "test_mailchimp_domain",
                 "username": "test_mailchimp_username",
                 "api_key": "test_mailchimp_api_key",
             },
-            "name": connection_config.name,
             "description": "Mailchimp ConnectionConfig description",
-            "key": connection_config.key,
         }
         resp = api_client.post(
             base_url.format(saas_connector_type="mailchimp"),
@@ -725,25 +719,22 @@ class TestInstantiateSystemConnectionFromTemplate:
             },
             "name": connection_config.name,
             "description": "Mailchimp ConnectionConfig description",
-            "key": "brand_new_key",
         }
         resp = api_client.post(
             base_url.format(saas_connector_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
-        assert resp.status_code == 400
-        assert (
-            f"Name {connection_config.name} already exists in ConnectionConfig"
-            in resp.json()["detail"]
-        )
+        # names don't have to be unique
+        assert resp.status_code == 200
 
     def test_create_connection_from_template_without_supplying_connection_key(
         self, db, generate_auth_header, api_client, base_url
     ):
         auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+        instance_key = "secondary_mailchimp_instance"
         request_body = {
-            "instance_key": "secondary_mailchimp_instance",
+            "instance_key": instance_key,
             "secrets": {
                 "domain": "test_mailchimp_domain",
                 "username": "test_mailchimp_username",
@@ -770,7 +761,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         assert connection_config is not None
         assert dataset_config is not None
 
-        assert connection_config.key == "mailchimp_connector"
+        assert connection_config.key == instance_key
         dataset_config.delete(db)
         connection_config.delete(db)
 

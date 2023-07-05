@@ -323,13 +323,16 @@ def create_connection_config_from_template_no_save(
     )
 
     data = {
-        "name": template_values.name,
-        "key": template_values.key,
+        "key": template_values.key
+        if template_values.key
+        else template_values.instance_key,
         "description": template_values.description,
         "connection_type": ConnectionType.saas,
         "access": AccessLevel.write,
         "saas_config": config_from_template,
     }
+    if template_values.name:
+        data["name"] = template_values.name
 
     if system_id:
         data["system_id"] = system_id

@@ -1,5 +1,5 @@
 import uuid
-from html import unescape
+from html import escape, unescape
 from typing import List, Optional
 
 from fastapi import Depends, HTTPException, Request, Response
@@ -7,7 +7,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 from starlette.status import (
     HTTP_200_OK,
     HTTP_404_NOT_FOUND,
@@ -15,14 +15,12 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1 import urn_registry as urls
-from fides.api.api.v1.endpoints.utils import fides_limiter, transform_fields
 from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
     PrivacyExperienceConfig,
 )
-from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
+from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
 from fides.api.util.api_router import APIRouter
@@ -32,6 +30,8 @@ from fides.api.util.consent_util import (
     UNESCAPE_SAFESTR_HEADER,
     get_fides_user_device_id_provided_identity,
 )
+from fides.api.util.endpoint_utils import fides_limiter, transform_fields
+from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
@@ -54,6 +54,44 @@ def get_privacy_experience_or_error(
     return privacy_experience
 
 
+def _filter_experiences_by_region_or_country(
+    db: Session, region: Optional[str], experience_query: Query
+) -> Query:
+    """
+    Return at most two privacy experiences, one overlay and one privacy center experience matching the given region.
+    Experiences are looked up by supplied region first.  If nothing is found, we attempt to look up by country code.
+
+    For example, if region was "fr_idg" and no experiences were saved under this code, we'd look again for experiences
+    saved with "fr".
+    """
+    if not region:
+        return experience_query
+
+    region = escape(region)
+    country: str = region.split("_")[0]
+
+    overlay = PrivacyExperience.get_experience_by_region_and_component(
+        db, region, ComponentType.overlay
+    ) or PrivacyExperience.get_experience_by_region_and_component(
+        db, country, ComponentType.overlay
+    )
+    privacy_center = PrivacyExperience.get_experience_by_region_and_component(
+        db, region, ComponentType.privacy_center
+    ) or PrivacyExperience.get_experience_by_region_and_component(
+        db, country, ComponentType.privacy_center
+    )
+
+    experience_ids: List[str] = []
+    if overlay:
+        experience_ids.append(overlay.id)
+    if privacy_center:
+        experience_ids.append(privacy_center.id)
+
+    if experience_ids:
+        return experience_query.filter(PrivacyExperience.id.in_(experience_ids))
+    return db.query(PrivacyExperience).filter(False)
+
+
 @router.get(
     urls.PRIVACY_EXPERIENCE,
     status_code=HTTP_200_OK,
@@ -65,11 +103,12 @@ def privacy_experience_list(
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
     show_disabled: Optional[bool] = True,
-    region: Optional[PrivacyNoticeRegion] = None,
+    region: Optional[str] = None,
     component: Optional[ComponentType] = None,
     has_notices: Optional[bool] = None,
     has_config: Optional[bool] = None,
     fides_user_device_id: Optional[str] = None,
+    systems_applicable: Optional[bool] = False,
     request: Request,  # required for rate limiting
     response: Response,  # required for rate limiting
 ) -> AbstractPage[PrivacyExperience]:
@@ -108,7 +147,10 @@ def privacy_experience_list(
         ).filter(PrivacyExperienceConfig.disabled.is_(False))
 
     if region is not None:
-        experience_query = experience_query.filter(PrivacyExperience.region == region)
+        experience_query = _filter_experiences_by_region_or_country(
+            db=db, region=region, experience_query=experience_query
+        )
+
     if component is not None:
         experience_query = experience_query.filter(
             PrivacyExperience.component == component
@@ -130,7 +172,7 @@ def privacy_experience_list(
         privacy_notices: List[
             PrivacyNotice
         ] = privacy_experience.get_related_privacy_notices(
-            db, show_disabled, fides_user_provided_identity
+            db, show_disabled, systems_applicable, fides_user_provided_identity
         )
         if should_unescape:
             # Unescape both the experience config and the embedded privacy notices

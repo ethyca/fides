@@ -14,11 +14,6 @@ from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
-from fides.api.api.v1.urn_registry import (
-    INSTANTIATE_SYSTEM_CONNECTION,
-    SYSTEM_CONNECTIONS,
-    V1_URL_PREFIX,
-)
 from fides.api.db.crud import (
     get_resource,
     get_resource_with_custom_fields,
@@ -62,6 +57,11 @@ from fides.common.api.scope_registry import (
     SYSTEM_READ,
     SYSTEM_UPDATE,
     CONNECTION_DELETE,
+)
+from fides.common.api.v1.urn_registry import (
+    INSTANTIATE_SYSTEM_CONNECTION,
+    SYSTEM_CONNECTIONS,
+    V1_URL_PREFIX,
 )
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional, Tuple, Type
 
 from sqlalchemy import ARRAY, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -22,7 +22,6 @@ from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeHistory,
-    PrivacyNoticeRegion,
     UserConsentPreference,
 )
 from fides.api.models.privacy_request import (
@@ -42,7 +41,7 @@ class RequestOrigin(Enum):
 class ConsentMethod(Enum):
     button = "button"
     gpc = "gpc"
-    individual_notice = "api"
+    individual_notice = "individual_notice"
 
 
 class PrivacyPreferenceHistory(Base):
@@ -155,7 +154,7 @@ class PrivacyPreferenceHistory(Base):
         ),
     )
 
-    user_geography = Column(EnumColumn(PrivacyNoticeRegion), index=True)
+    user_geography = Column(String, index=True)
 
     # Relationships
     privacy_notice_history = relationship(PrivacyNoticeHistory)
@@ -206,6 +205,24 @@ class PrivacyPreferenceHistory(Base):
         data: dict[str, Any],
         check_name: bool = False,
     ) -> PrivacyPreferenceHistory:
+        """Method that creates a PrivacyPreferenceRecord and upserts a CurrentPrivacyPreference record.
+
+        The only difference between this and PrivacyPreference.create_history_and_upsert_current_preference
+        is the response.
+        """
+        history, _ = cls.create_history_and_upsert_current_preference(
+            db, data=data, check_name=check_name
+        )
+        return history
+
+    @classmethod
+    def create_history_and_upsert_current_preference(
+        cls: Type[PrivacyPreferenceHistory],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = False,
+    ) -> Tuple[PrivacyPreferenceHistory, CurrentPrivacyPreference]:
         """Create a PrivacyPreferenceHistory record and then upsert the CurrentPrivacyPreference record.
         If separate CurrentPrivacyPreferences exist for both a verified provided identity and a fides user device
         id provided identity, consolidate these "current" preferences into a single record.
@@ -286,11 +303,11 @@ class PrivacyPreferenceHistory(Base):
         if current_preference:
             current_preference.update(db=db, data=current_privacy_preference_data)
         else:
-            CurrentPrivacyPreference.create(
+            current_preference = CurrentPrivacyPreference.create(
                 db=db, data=current_privacy_preference_data, check_name=False
             )
 
-        return created_privacy_preference_history
+        return created_privacy_preference_history, current_preference
 
 
 class CurrentPrivacyPreference(Base):

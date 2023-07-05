@@ -6,16 +6,6 @@ from unittest.mock import Mock
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import (
-    CLIENT,
-    CLIENT_BY_ID,
-    CLIENT_SCOPE,
-    OAUTH_CALLBACK,
-    ROLE,
-    SCOPE,
-    TOKEN,
-    V1_URL_PREFIX,
-)
 from fides.api.common_exceptions import OAuth2TokenException
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -36,6 +26,16 @@ from fides.common.api.scope_registry import (
     SCOPE_READ,
     SCOPE_REGISTRY,
     STORAGE_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    CLIENT,
+    CLIENT_BY_ID,
+    CLIENT_SCOPE,
+    OAUTH_CALLBACK,
+    ROLE,
+    SCOPE,
+    TOKEN,
+    V1_URL_PREFIX,
 )
 from fides.config import CONFIG
 

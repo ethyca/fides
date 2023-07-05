@@ -27,6 +27,7 @@ export const fetchExperience = async (
   const fetchOptions: RequestInit = {
     method: "GET",
     mode: "cors",
+    headers: [["Unescape-Safestr", "true"]],
   };
   const params = new URLSearchParams({
     show_disabled: "false",
@@ -34,6 +35,7 @@ export const fetchExperience = async (
     component: ComponentType.OVERLAY,
     has_notices: "true",
     has_config: "true",
+    systems_applicable: "true",
     fides_user_device_id: fidesUserDeviceId,
   });
   const response = await fetch(

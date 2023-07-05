@@ -19,6 +19,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
 )
 from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.models.sql_models import System
 from fides.api.service.connectors import PostgreSQLConnector
 from fides.config import CONFIG
 from tests.ops.test_helpers.db_utils import seed_postgres_data
@@ -178,6 +179,7 @@ def disabled_connection_config(
 @pytest.fixture(scope="function")
 def read_connection_config(
     db: Session,
+    system: System,
 ) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
@@ -186,6 +188,7 @@ def read_connection_config(
             "key": "my_postgres_db_1_read_config",
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.read,
+            "system_id": system.id,
             "secrets": integration_secrets["postgres_example"],
             "description": "Read-only connection config",
         },

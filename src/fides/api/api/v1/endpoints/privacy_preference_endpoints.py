@@ -19,18 +19,6 @@ from fides.api.api.v1.endpoints.consent_request_endpoints import (
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
-from fides.api.api.v1.endpoints.utils import (
-    fides_limiter,
-    validate_start_and_end_filters,
-)
-from fides.api.api.v1.urn_registry import (
-    CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
-    CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
-    CURRENT_PRIVACY_PREFERENCES_REPORT,
-    HISTORICAL_PRIVACY_PREFERENCES_REPORT,
-    PRIVACY_PREFERENCES,
-    V1_URL_PREFIX,
-)
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.privacy_experience import PrivacyExperience
@@ -67,9 +55,18 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
+from fides.api.util.endpoint_utils import fides_limiter, validate_start_and_end_filters
 from fides.common.api.scope_registry import (
     CURRENT_PRIVACY_PREFERENCE_READ,
     PRIVACY_PREFERENCE_HISTORY_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
+    CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
+    CURRENT_PRIVACY_PREFERENCES_REPORT,
+    HISTORICAL_PRIVACY_PREFERENCES_REPORT,
+    PRIVACY_PREFERENCES,
+    V1_URL_PREFIX,
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
@@ -347,7 +344,10 @@ def _save_privacy_preferences_for_identities(
 
     needs_server_side_propagation: bool = False
     for privacy_preference in request_data.preferences:
-        historical_preference: PrivacyPreferenceHistory = PrivacyPreferenceHistory.create(
+        (
+            historical_preference,
+            current_preference,
+        ) = PrivacyPreferenceHistory.create_history_and_upsert_current_preference(
             db=db,
             data={
                 "anonymized_ip_address": request_data.anonymized_ip_address,
@@ -379,11 +379,8 @@ def _save_privacy_preferences_for_identities(
             },
             check_name=False,
         )
-        upserted_current_preference: CurrentPrivacyPreference = (
-            historical_preference.current_privacy_preference
-        )
         created_historical_preferences.append(historical_preference)
-        upserted_current_preferences.append(upserted_current_preference)
+        upserted_current_preferences.append(current_preference)
 
         if (
             historical_preference.privacy_notice_history.enforcement_level

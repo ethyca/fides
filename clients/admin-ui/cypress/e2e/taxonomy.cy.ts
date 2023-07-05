@@ -8,7 +8,7 @@ describe("Taxonomy management page", () => {
 
   it("Can navigate to the taxonomy page", () => {
     cy.visit("/");
-    cy.contains("nav a", "Management").click();
+    cy.getByTestId("management-btn").click();
     cy.contains("nav a", "Taxonomy").click();
     cy.getByTestId("taxonomy-tabs");
     cy.getByTestId("tab-Data Categories");
