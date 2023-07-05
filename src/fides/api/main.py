@@ -6,13 +6,13 @@ import sys
 from datetime import datetime, timezone
 from logging import WARNING
 from typing import Callable, Optional
+from urllib.parse import unquote
 
 from fastapi import HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
 from starlette.background import BackgroundTask
-from urllib.parse import unquote
 from uvicorn import Config, Server
 
 import fides
