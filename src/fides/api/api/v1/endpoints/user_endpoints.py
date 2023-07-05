@@ -24,9 +24,7 @@ from starlette.status import (
 
 from fides.api.api import deps
 from fides.api.api.deps import get_db
-from fides.api.api.v1 import urn_registry as urls
 from fides.api.api.v1.endpoints.user_permission_endpoints import validate_user_id
-from fides.api.api.v1.urn_registry import V1_URL_PREFIX
 from fides.api.common_exceptions import AuthenticationError, AuthorizationError
 from fides.api.cryptography.cryptographic_util import b64_str_to_str
 from fides.api.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
@@ -64,6 +62,8 @@ from fides.common.api.scope_registry import (
     USER_READ,
     USER_UPDATE,
 )
+from fides.common.api.v1 import urn_registry as urls
+from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.config import CONFIG, FidesConfig, get_config
 
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)

@@ -25,15 +25,24 @@ The types of changes are:
 
 ### Fixed
 - Render linebreaks in the Fides.js overlay descriptions, etc. [#3665](https://github.com/ethyca/fides/pull/3665)
+- Handle names with a double underscore when processing access and erasure requests [#3688](https://github.com/ethyca/fides/pull/3688)
 - Broken link to Fides docs site on the About Fides page in Admin UI [#3643](https://github.com/ethyca/fides/pull/3643)
 - Add Systems Applicable Filter to Privacy Experience List [#3654](https://github.com/ethyca/fides/pull/3654)
+- Privacy center and fides-js now pass in `Unescape-Safestr` as a header so that special characters can be rendered properly [#3706](https://github.com/ethyca/fides/pull/3706)
 - Fixed ValidationError for saving PrivacyPreferences [#3719](https://github.com/ethyca/fides/pull/3719)
 
 ### Developer Experience
+- Reorganized some `api.api.v1` code to avoid circular dependencies on `quickstart` [#3692](https://github.com/ethyca/fides/pull/3692)
+- Allow Privacy Notices banner and modal to scroll as needed [#3713](https://github.com/ethyca/fides/pull/3713)
 
 ### Changed
 - Moved GPC preferences slightly earlier in Fides.js lifecycle [#3561](https://github.com/ethyca/fides/pull/3561)
+- Changed results from clicking "Test connection" to be a toast instead of statically displayed on the page [#3700](https://github.com/ethyca/fides/pull/3700)
+- Moved "management" tab from nav into settings icon in top right [#3701](https://github.com/ethyca/fides/pull/3701)
+- Remove name and description fields from integration form [#3684](https://github.com/ethyca/fides/pull/3684)
 - Update EU PrivacyNoticeRegion codes and allow experience filtering to drop back to country filtering if region not found [#3630](https://github.com/ethyca/fides/pull/3630)
+- Fields with default fields are now flagged as required in the front-end [#3694](https://github.com/ethyca/fides/pull/3694)
+- Privacy center action cards are now able to expand to accommodate longer text [#3669](https://github.com/ethyca/fides/pull/3669)
 
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)

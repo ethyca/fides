@@ -7,7 +7,6 @@ from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
 
-from fides.api.api.v1.endpoints.utils import transform_fields
 from fides.api.common_exceptions import ValidationError
 from fides.api.custom_types import SafeStr
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -23,6 +22,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeTemplate,
     UserConsentPreference,
     check_conflicting_data_uses,
+    check_conflicting_notice_keys,
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
@@ -35,6 +35,7 @@ from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-def
 from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.schemas.redis_cache import Identity
+from fides.api.util.endpoint_utils import transform_fields
 from fides.config.helpers import load_file
 
 PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "description", "internal_description"]
@@ -316,6 +317,7 @@ def create_privacy_notices_util(
         for privacy_notice in privacy_notice_schemas
     ]
     check_conflicting_data_uses(new_notices, existing_notices)
+    check_conflicting_notice_keys(new_notices, existing_notices)
 
     created_privacy_notices: List[PrivacyNotice] = []
     affected_regions: Set = set()
@@ -436,6 +438,11 @@ def prepare_privacy_notice_patches(
     # run the validation here on our proposed "dry-run" updates
     try:
         check_conflicting_data_uses(
+            validation_updates,
+            existing_notices.values(),
+            ignore_disabled=ignore_disabled,
+        )
+        check_conflicting_notice_keys(
             validation_updates,
             existing_notices.values(),
             ignore_disabled=ignore_disabled,
