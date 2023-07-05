@@ -22,13 +22,13 @@ class TestGetS3Session:
                 "bad", {StorageSecrets.AWS_ACCESS_KEY_ID: "aws_access_key_id"}  # type: ignore
             )
 
-    def tests_automatic_auth_method(self, loguru_caplog):
+    def tests_automatic_auth_method(self, logging_capture):
         get_s3_session(
             S3AuthMethod.AUTOMATIC.value,  # type: ignore
             {StorageSecrets.AWS_ACCESS_KEY_ID: "aws_access_key_id"},
         )
 
-        assert "created automatic session" in loguru_caplog.text
+        assert "created automatic session" in logging_capture.text
 
     def test_secrets_are_valid_bad_storage_type(self):
         with pytest.raises(ValueError):

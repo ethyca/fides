@@ -1022,7 +1022,7 @@ class TestFilterResults:
         print(expected_results)
         assert filtered_results == expected_results
 
-    def test_unpack_fides_connector_results_key_error(self, loguru_caplog):
+    def test_unpack_fides_connector_results_key_error(self, logging_capture):
         unpack_fides_connector_results(
             connector_results=[{"test": "bad"}],
             filtered_access_results={"test": [{"test": "t"}]},
@@ -1030,4 +1030,4 @@ class TestFilterResults:
             node_address="nothing",
         )
 
-        assert "Did not find a result entry" in loguru_caplog.text
+        assert "Did not find a result entry" in logging_capture.text

@@ -3,14 +3,20 @@ import os
 from os import environ
 from pathlib import Path
 from re import compile as regex
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, TYPE_CHECKING
+from pydantic import BaseModel
 
 from click import echo
-from toml import dump, load
+from logging import getLevelName
+import structlog
 
-from fides.logging import logger
+logger = structlog.get_logger()
+
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
+
+if TYPE_CHECKING:
+    from . import FidesConfig
 
 
 def load_file(file_names: Union[List[Path], List[str]]) -> str:
@@ -139,3 +145,62 @@ def handle_deprecated_env_variables(settings: Dict[str, Any]) -> Dict[str, Any]:
             settings["database"][setting] = val
 
     return settings
+
+
+def configure_structlog(config: BaseModel) -> None:
+    """
+    Configures the application logger according to the application config.
+    """
+
+    # Configure Log Destination, defaults to stdout
+    file_destination = (
+        open(config.logging.destination, mode="a", encoding="utf8")
+        if config.logging.destination
+        else ""
+    )
+    structlog.configure(
+        logger_factory=structlog.WriteLoggerFactory(file=file_destination)
+    )
+
+    # Configure Level Filtering
+    structlog.configure(
+        wrapper_class=structlog.make_filtering_bound_logger(
+            getLevelName(config.logging.level)
+        )
+    )
+
+    # Configure processors
+    shared_processors = [
+        structlog.processors.add_log_level,
+        structlog.processors.TimeStamper(fmt="iso"),
+        # If the "stack_info" key in the event dict is true, remove it and
+        # render the current stack trace in the "stack" key.
+        structlog.processors.StackInfoRenderer(),
+        # If the "exc_info" key in the event dict is either true or a
+        # sys.exc_info() tuple, remove "exc_info" and render the exception
+        # with traceback into the "exception" key.
+        structlog.processors.format_exc_info,
+        # If some value is in bytes, decode it to a unicode str.
+        structlog.processors.UnicodeDecoder(),
+        # Add callsite parameters.
+        structlog.processors.CallsiteParameterAdder(
+            {
+                structlog.processors.CallsiteParameter.FILENAME,
+                structlog.processors.CallsiteParameter.FUNC_NAME,
+                structlog.processors.CallsiteParameter.LINENO,
+            }
+        ),
+    ]
+
+    # This would allow us to set it based on TTY
+    # if sys.stderr.isatty():
+    if config.dev_mode:
+        processors = shared_processors + [
+            structlog.dev.ConsoleRenderer(),
+        ]
+    else:
+        processors = shared_processors + [
+            structlog.processors.dict_tracebacks,
+            structlog.processors.JSONRenderer(),
+        ]
+    structlog.configure(processors)

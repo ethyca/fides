@@ -1047,7 +1047,7 @@ class TestPutDefaultStorageConfig:
         url,
         generate_auth_header,
         payload,
-        loguru_caplog,
+        logging_capture,
     ):
         mock_create_or_update.side_effect = KeyValidationError()
         payload["type"] = StorageType.local.value
@@ -1066,7 +1066,7 @@ class TestPutDefaultStorageConfig:
         assert 500 == response.status_code
         assert (
             "Create/update failed for default config update for storage type"
-            in loguru_caplog.text
+            in logging_capture.text
         )
 
 

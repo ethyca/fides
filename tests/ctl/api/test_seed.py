@@ -432,7 +432,7 @@ async def test_load_default_dsr_policies(
     assert len(access_rule.targets) == num_rule_targets - 1
 
 
-async def test_load_orginizations(loguru_caplog, async_session, monkeypatch):
+async def test_load_orginizations(logging_capture, async_session, monkeypatch):
     updated_default_taxonomy = DEFAULT_TAXONOMY.copy()
     current_orgs = len(updated_default_taxonomy.organization)
     updated_default_taxonomy.organization.append(
@@ -442,8 +442,8 @@ async def test_load_orginizations(loguru_caplog, async_session, monkeypatch):
     monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
     await seed.load_default_organization(async_session)
 
-    assert "INSERTED 1" in loguru_caplog.text
-    assert f"SKIPPED {current_orgs}" in loguru_caplog.text
+    assert "INSERTED 1" in logging_capture.text
+    assert f"SKIPPED {current_orgs}" in logging_capture.text
 
 
 @pytest.mark.integration

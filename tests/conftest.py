@@ -16,6 +16,8 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from toml import load as load_toml
+from structlog.testing import LogCapture
+import structlog
 
 from fides.api.app_setup import PRIVACY_EXPERIENCE_CONFIGS_PATH
 from fides.api.cryptography.schemas.jwt import (
@@ -172,10 +174,12 @@ def config():
 
 
 @pytest.fixture
-def loguru_caplog(caplog):
-    handler_id = logger.add(caplog.handler, format="{message}")
-    yield caplog
-    logger.remove(handler_id)
+def logging_capture():
+    return LogCapture()
+
+@pytest.fixture(autouse=True)
+def fixture_configure_structlog(logging_capture):
+    structlog.configure(processors=[logging_capture])
 
 
 def create_citext_extension(engine: Engine) -> None:
