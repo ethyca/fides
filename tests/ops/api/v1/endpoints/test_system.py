@@ -13,9 +13,8 @@ from starlette.status import (
     HTTP_204_NO_CONTENT,
 )
 from starlette.testclient import TestClient
+from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
-from fides.api.api.v1.urn_registry import V1_URL_PREFIX
-from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
