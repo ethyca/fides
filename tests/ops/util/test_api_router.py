@@ -45,3 +45,24 @@ class TestApiRouter:
             f"{V1_URL_PREFIX}/route/does/not/exist/", headers=auth_header
         )
         assert resp_4.status_code == HTTP_404_NOT_FOUND
+
+    def test_malicious_url(
+        self,
+        api_client: TestClient,
+        url,
+    ) -> None:
+        malicious_paths = [
+            "../../../../../../../../../etc/passwd",
+            "..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc/passwd",
+            "%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd",
+            "%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd",
+            "..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f/etc/passwd",
+            ".../...//.../...//.../...//.../...//.../...//.../...//.../...//.../...//.../...//etc/passwd",
+            "...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2fetc/passwd",
+            "%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//etc/passwd",
+            "%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2fetc/passwd",
+        ]
+        for path in malicious_paths:
+            resp = api_client.get(f"{url}/{path}")
+            assert resp.status_code == 200
+            assert resp.text == "<h1>Privacy is a Human Right!</h1>"
