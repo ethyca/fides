@@ -33,6 +33,41 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
+    title: "Data map",
+    routes: [
+      {
+        title: "View map",
+        path: routes.DATAMAP_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+      },
+      {
+        title: "View systems",
+        path: routes.SYSTEM_ROUTE,
+        scopes: [ScopeRegistryEnum.SYSTEM_READ],
+      },
+      {
+        title: "Add systems",
+        path: routes.ADD_SYSTEMS_ROUTE,
+        scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
+      },
+      {
+        title: "Manage datasets",
+        path: routes.DATASET_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.CTL_DATASET_CREATE,
+          ScopeRegistryEnum.CTL_DATASET_UPDATE,
+        ],
+      },
+      {
+        title: "Classify systems",
+        path: routes.CLASSIFY_SYSTEMS_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.SYSTEM_UPDATE], // temporary scope until we decide what to do here
+      },
+    ],
+  },
+  {
     title: "Privacy requests",
     routes: [
       {
@@ -76,41 +111,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
             scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
           },
         ],
-      },
-    ],
-  },
-  {
-    title: "Data map",
-    routes: [
-      {
-        title: "View map",
-        path: routes.DATAMAP_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.DATAMAP_READ],
-      },
-      {
-        title: "View systems",
-        path: routes.SYSTEM_ROUTE,
-        scopes: [ScopeRegistryEnum.SYSTEM_READ],
-      },
-      {
-        title: "Add systems",
-        path: routes.ADD_SYSTEMS_ROUTE,
-        scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
-      },
-      {
-        title: "Manage datasets",
-        path: routes.DATASET_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.CTL_DATASET_CREATE,
-          ScopeRegistryEnum.CTL_DATASET_UPDATE,
-        ],
-      },
-      {
-        title: "Classify systems",
-        path: routes.CLASSIFY_SYSTEMS_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.SYSTEM_UPDATE], // temporary scope until we decide what to do here
       },
     ],
   },

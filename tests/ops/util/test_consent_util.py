@@ -854,6 +854,41 @@ class TestUpsertPrivacyNoticeTemplates:
             == "Privacy Notice 'A' has already assigned data use 'essential' to region 'it'"
         )
 
+    def test_overlapping_notice_keys(self, db, load_default_data_uses):
+        """Can't have overlapping notice keys on incoming templates, and we also check these for disabled templates"""
+        with pytest.raises(HTTPException) as exc:
+            upsert_privacy_notice_templates_util(
+                db,
+                [
+                    PrivacyNoticeWithId(
+                        id="test_id_1",
+                        notice_key="a",
+                        name="A",
+                        regions=["it"],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["essential"],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        displayed_in_overlay=True,
+                    ),
+                    PrivacyNoticeWithId(
+                        id="test_id_2",
+                        notice_key="a",
+                        name="B",
+                        regions=["it"],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["marketing"],
+                        enforcement_level=EnforcementLevel.frontend,
+                        disabled=True,
+                        displayed_in_overlay=True,
+                    ),
+                ],
+            )
+        assert exc._excinfo[1].status_code == 422
+        assert (
+            exc._excinfo[1].detail
+            == "Privacy Notice 'A' has already assigned notice key 'a' to region 'it'"
+        )
+
     def test_bad_data_uses(self, db, load_default_data_uses):
         """Test data uses must exist"""
         with pytest.raises(HTTPException) as exc:

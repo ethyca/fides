@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from enum import Enum
+from html import unescape
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from fideslang.validation import FidesKey
@@ -311,6 +312,43 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 PRIVACY_NOTICE_TYPE = Union[PrivacyNotice, PrivacyNoticeTemplate]
 
 
+def check_conflicting_notice_keys(
+    new_privacy_notices: Iterable[PRIVACY_NOTICE_TYPE],
+    existing_privacy_notices: Iterable[Union[PRIVACY_NOTICE_TYPE]],
+    ignore_disabled: bool = True,  # For PrivacyNoticeTemplates, set to False
+) -> None:
+    """
+    Checks to see if new notice keys will conflict with any existing notice keys for a specific region
+    """
+    # Map regions to existing notice key, notice name
+    notice_keys_by_region: Dict[
+        PrivacyNoticeRegion, List[Tuple[str, str]]
+    ] = defaultdict(list)
+    for privacy_notice in existing_privacy_notices:
+        if privacy_notice.disabled and ignore_disabled:
+            continue
+        for region in privacy_notice.regions:
+            notice_keys_by_region[PrivacyNoticeRegion(region)].append(
+                (privacy_notice.notice_key, privacy_notice.name)
+            )
+
+    for privacy_notice in new_privacy_notices:
+        if privacy_notice.disabled and ignore_disabled:
+            # Skip validation if the notice is disabled
+            continue
+        # check each of the incoming notice's regions
+        for region in privacy_notice.regions:
+            region_notice_keys = notice_keys_by_region[PrivacyNoticeRegion(region)]
+            # check the incoming notice keys
+            for notice_key, notice_name in region_notice_keys:
+                if notice_key == privacy_notice.notice_key:
+                    raise ValidationError(
+                        message=f"Privacy Notice '{unescape(notice_name)}' has already assigned notice key '{notice_key}' to region '{region}'"
+                    )
+            # add the new notice key to our map
+            region_notice_keys.append((privacy_notice.notice_key, privacy_notice.name))
+
+
 def check_conflicting_data_uses(
     new_privacy_notices: Iterable[PRIVACY_NOTICE_TYPE],
     existing_privacy_notices: Iterable[Union[PRIVACY_NOTICE_TYPE]],
@@ -360,7 +398,7 @@ def check_conflicting_data_uses(
                     # an existing DataUse
                     if new_data_use_conflicts_with_existing_use(existing_use, data_use):
                         raise ValidationError(
-                            message=f"Privacy Notice '{notice_name}' has already assigned data use '{existing_use}' to region '{region}'"
+                            message=f"Privacy Notice '{unescape(notice_name)}' has already assigned data use '{existing_use}' to region '{region}'"
                         )
                 # add the data use to our map, to effectively include it in validation against the
                 # following incoming records
