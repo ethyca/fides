@@ -65,25 +65,11 @@ export const lookupGeolocation = async (
     }
   }
 
-  // Check for provided geolocation env var override query params
-  const {
-    isGeolocationEnabled: isGeolocationEnabledQuery,
-    geolocationApiUrl: geolocationApiUrlQuery,
-  } = req.query;
-  const isGeolocationEnabled =
-    typeof isGeolocationEnabledQuery === "string"
-      ? Boolean(isGeolocationEnabledQuery)
-      : settings.IS_GEOLOCATION_ENABLED;
-  const geolocationApiUrl =
-    typeof geolocationApiUrlQuery === "string"
-      ? geolocationApiUrlQuery
-      : settings.GEOLOCATION_API_URL;
-
   // Get geolocation using API URL, if provided and overlay is enabled, else null is returned
   if (settings.IS_OVERLAY_ENABLED) {
     return getGeolocation(
-      isGeolocationEnabled,
-      geolocationApiUrl,
+      settings.IS_GEOLOCATION_ENABLED,
+      settings.GEOLOCATION_API_URL,
       settings.DEBUG
     );
   }
