@@ -46,6 +46,7 @@ The types of changes are:
 - Update EU PrivacyNoticeRegion codes and allow experience filtering to drop back to country filtering if region not found [#3630](https://github.com/ethyca/fides/pull/3630)
 - Fields with default fields are now flagged as required in the front-end [#3694](https://github.com/ethyca/fides/pull/3694)
 - Privacy center action cards are now able to expand to accommodate longer text [#3669](https://github.com/ethyca/fides/pull/3669)
+- In "view systems", system cards can now be clicked and link to that system's `configure/[id]` page [#3734](https://github.com/ethyca/fides/pull/3734)
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
 
