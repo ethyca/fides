@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from fastapi import HTTPException
+from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import ValidationError
 from pydantic.types import conlist
@@ -15,9 +16,10 @@ from fides.api.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.common_exceptions import ValidationError as FidesValidationError
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fides.api.models.sql_models import System  # type: ignore
+from fides.api.models.sql_models import System, Dataset as CtlDataset  # type: ignore
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.connection_configuration import (
     ConnectionConfigSecretsSchema,
@@ -250,3 +252,47 @@ def patch_connection_configs(
         succeeded=created_or_updated,
         failed=failed,
     )
+
+
+def get_connection_config_or_error(
+    db: Session, connection_key: FidesKey
+) -> ConnectionConfig:
+    """Helper to load the ConnectionConfig object or throw a 404"""
+    connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
+    logger.info("Finding connection configuration with key '{}'", connection_key)
+    if not connection_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No connection configuration found with key '{connection_key}'.",
+        )
+    return connection_config
+
+
+def delete_connection_config(db: Session, connection_key: FidesKey) -> None:
+    """Removes the connection configuration with matching key."""
+    connection_config = get_connection_config_or_error(db, connection_key)
+    connection_type = connection_config.connection_type
+    logger.info("Deleting connection config with key '{}'.", connection_key)
+    if connection_config.saas_config:
+        saas_dataset_fides_key = connection_config.saas_config.get("fides_key")
+
+        dataset_config = db.query(DatasetConfig).filter(
+            DatasetConfig.connection_config_id == connection_config.id
+        )
+        dataset_config.delete(synchronize_session="evaluate")
+
+        if saas_dataset_fides_key:
+            logger.info("Deleting saas dataset with key '{}'.", saas_dataset_fides_key)
+            saas_dataset = (
+                db.query(CtlDataset)
+                .filter(CtlDataset.fides_key == saas_dataset_fides_key)
+                .first()
+            )
+            saas_dataset.delete(db)  # type: ignore[union-attr]
+
+    connection_config.delete(db)
+
+    # Access Manual Webhooks are cascade deleted if their ConnectionConfig is deleted,
+    # so we queue any privacy requests that are no longer blocked by webhooks
+    if connection_type == ConnectionType.manual_webhook:
+        requeue_requires_input_requests(db)

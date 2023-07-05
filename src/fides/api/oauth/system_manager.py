@@ -3,6 +3,7 @@ from fides.common.api.scope_registry import (
     CONNECTION_READ,
     SYSTEM_DELETE,
     SYSTEM_UPDATE,
+    CONNECTION_DELETE,
 )
 
 # System managers are separate from roles, because you are just granted these
@@ -12,4 +13,5 @@ SYSTEM_MANAGER_SCOPES = [
     SYSTEM_DELETE,
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
+    CONNECTION_DELETE,
 ]

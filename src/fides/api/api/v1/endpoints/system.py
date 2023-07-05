@@ -5,11 +5,12 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
+from fideslang.validation import FidesKey
 from pydantic.types import conlist
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette import status
-from starlette.status import HTTP_200_OK
+from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
@@ -48,7 +49,10 @@ from fides.api.schemas.connection_configuration.connection_config import (
 )
 from fides.api.schemas.system import SystemResponse
 from fides.api.util.api_router import APIRouter
-from fides.api.util.connection_util import patch_connection_configs
+from fides.api.util.connection_util import (
+    patch_connection_configs,
+    delete_connection_config,
+)
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
@@ -57,6 +61,7 @@ from fides.common.api.scope_registry import (
     SYSTEM_DELETE,
     SYSTEM_READ,
     SYSTEM_UPDATE,
+    CONNECTION_DELETE,
 )
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
@@ -117,6 +122,22 @@ def patch_connections(
     """
     system = get_system(db, fides_key)
     return patch_connection_configs(db, configs, system)
+
+
+@SYSTEM_CONNECTIONS_ROUTER.delete(
+    "/{connection_key}",
+    dependencies=[
+        Security(
+            verify_oauth_client_for_system_from_fides_key, scopes=[CONNECTION_DELETE]
+        )
+    ],
+    status_code=HTTP_204_NO_CONTENT,
+    response_model=None,
+)
+def delete_connection(
+    connection_key: FidesKey, *, db: Session = Depends(deps.get_db)
+) -> None:
+    delete_connection_config(db, connection_key)
 
 
 @SYSTEM_ROUTER.put(

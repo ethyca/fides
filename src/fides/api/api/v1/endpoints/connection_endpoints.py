@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 from fastapi.params import Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -13,7 +13,7 @@ from pydantic import conlist
 from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
-from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 
 from fides.api.api import deps
 from fides.api.api.v1.urn_registry import (
@@ -28,10 +28,6 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionTestStatus,
     ConnectionType,
-)
-from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.sql_models import (
-    Dataset as CtlDataset,  # type: ignore[attr-defined]
 )
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
@@ -49,8 +45,9 @@ from fides.api.service.connectors import get_connector
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     patch_connection_configs,
-    requeue_requires_input_requests,
     validate_secrets,
+    get_connection_config_or_error,
+    delete_connection_config,
 )
 from fides.api.util.logger import Pii
 from fides.common.api.scope_registry import (
@@ -60,20 +57,6 @@ from fides.common.api.scope_registry import (
 )
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
-
-
-def get_connection_config_or_error(
-    db: Session, connection_key: FidesKey
-) -> ConnectionConfig:
-    """Helper to load the ConnectionConfig object or throw a 404"""
-    connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    logger.info("Finding connection configuration with key '{}'", connection_key)
-    if not connection_config:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connection configuration found with key '{connection_key}'.",
-        )
-    return connection_config
 
 
 @router.get(
@@ -216,33 +199,7 @@ def patch_connections(
 def delete_connection(
     connection_key: FidesKey, *, db: Session = Depends(deps.get_db)
 ) -> None:
-    """Removes the connection configuration with matching key."""
-    connection_config = get_connection_config_or_error(db, connection_key)
-    connection_type = connection_config.connection_type
-    logger.info("Deleting connection config with key '{}'.", connection_key)
-    if connection_config.saas_config:
-        saas_dataset_fides_key = connection_config.saas_config.get("fides_key")
-
-        dataset_config = db.query(DatasetConfig).filter(
-            DatasetConfig.connection_config_id == connection_config.id
-        )
-        dataset_config.delete(synchronize_session="evaluate")
-
-        if saas_dataset_fides_key:
-            logger.info("Deleting saas dataset with key '{}'.", saas_dataset_fides_key)
-            saas_dataset = (
-                db.query(CtlDataset)
-                .filter(CtlDataset.fides_key == saas_dataset_fides_key)
-                .first()
-            )
-            saas_dataset.delete(db)  # type: ignore[union-attr]
-
-    connection_config.delete(db)
-
-    # Access Manual Webhooks are cascade deleted if their ConnectionConfig is deleted,
-    # so we queue any privacy requests that are no longer blocked by webhooks
-    if connection_type == ConnectionType.manual_webhook:
-        requeue_requires_input_requests(db)
+    delete_connection_config(db, connection_key)
 
 
 def connection_status(
