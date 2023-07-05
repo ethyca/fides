@@ -16,6 +16,8 @@ class TestQualtricsConnector:
             access_policy=policy, identities={"email": qualtrics_identity_email}
         )
 
+        assert access_results["qualtrics_instance:search_directory_contact"][0]["email"] == qualtrics_identity_email
+
     # async def test_strict_erasure_request(
     #     self,
     #     qualtrics_runner: ConnectorRunner,
