@@ -11,8 +11,8 @@ import {
   useDisclosure,
   useToast,
 } from "@fidesui/react";
-import { useRouter } from "next/router";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
@@ -62,7 +62,7 @@ const SystemCard = ({ system }: SystemCardProps) => {
         <Box
           flexGrow={1}
           p={4}
-          data-testid={"system-box"}
+          data-testid="system-box"
           _hover={{ cursor: "pointer" }}
         >
           <Heading as="h2" fontSize="16px" mb={2}>

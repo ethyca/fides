@@ -266,7 +266,7 @@ describe("System management page", () => {
     });
   });
 
-  describe.only("Can edit a system", () => {
+  describe("Can edit a system", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
