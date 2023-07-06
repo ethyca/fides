@@ -37,10 +37,10 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 from fides.api.service.connectors import get_connector
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
+    delete_connection_config,
+    get_connection_config_or_error,
     patch_connection_configs,
     validate_secrets,
-    get_connection_config_or_error,
-    delete_connection_config,
 )
 from fides.api.util.logger import Pii
 from fides.common.api.scope_registry import (

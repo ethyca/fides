@@ -45,18 +45,18 @@ from fides.api.schemas.connection_configuration.connection_config import (
 from fides.api.schemas.system import SystemResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
-    patch_connection_configs,
     delete_connection_config,
+    patch_connection_configs,
 )
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_DELETE,
     CONNECTION_READ,
     SAAS_CONNECTION_INSTANTIATE,
     SYSTEM_CREATE,
     SYSTEM_DELETE,
     SYSTEM_READ,
     SYSTEM_UPDATE,
-    CONNECTION_DELETE,
 )
 from fides.common.api.v1.urn_registry import (
     INSTANTIATE_SYSTEM_CONNECTION,
