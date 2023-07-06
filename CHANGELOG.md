@@ -53,7 +53,7 @@ The types of changes are:
 - Allow Privacy Notices banner and modal to scroll as needed [#3713](https://github.com/ethyca/fides/pull/3713)
 
 ### Security
-- Resolve path traversal vulnerability in webserver API [GHSA-r25m-cr6v-p9hq](https://github.com/ethyca/fides/security/advisories/GHSA-r25m-cr6v-p9hq)
+- Resolve path traversal vulnerability in webserver API [CVE-2023-36827](https://github.com/ethyca/fides/security/advisories/GHSA-r25m-cr6v-p9hq)
 
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
