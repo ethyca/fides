@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.16.0...main)
 
+### Developer Experience
+
+- Changed where db-dependent routers were imported to avoid dependency issues [#3741](https://github.com/ethyca/fides/pull/3741)
+
 ## [2.16.0](https://github.com/ethyca/fides/compare/2.15.1...2.16.0)
 
 ### Added
