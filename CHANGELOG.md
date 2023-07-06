@@ -31,6 +31,8 @@ The types of changes are:
 
 ### Developer Experience
 - Reorganized some `api.api.v1` code to avoid circular dependencies on `quickstart` [#3692](https://github.com/ethyca/fides/pull/3692)
+- Treat underscores as special characters in user passwords [#3717](https://github.com/ethyca/fides/pull/3717)
+- Allow Privacy Notices banner and modal to scroll as needed [#3713](https://github.com/ethyca/fides/pull/3713)
 
 ### Changed
 - Moved GPC preferences slightly earlier in Fides.js lifecycle [#3561](https://github.com/ethyca/fides/pull/3561)
