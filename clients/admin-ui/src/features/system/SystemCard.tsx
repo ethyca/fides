@@ -59,7 +59,12 @@ const SystemCard = ({ system }: SystemCardProps) => {
   return (
     <Box display="flex" data-testid={`system-${system.fides_key}`}>
       <Link href={`${SYSTEM_ROUTE}/configure/${system.fides_key}`} passHref>
-        <Box flexGrow={1} p={4} _hover={{ cursor: "pointer" }}>
+        <Box
+          flexGrow={1}
+          p={4}
+          data-testid={"system-box"}
+          _hover={{ cursor: "pointer" }}
+        >
           <Heading as="h2" fontSize="16px" mb={2}>
             {systemName}
           </Heading>

@@ -266,7 +266,7 @@ describe("System management page", () => {
     });
   });
 
-  describe("Can edit a system", () => {
+  describe.only("Can edit a system", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
@@ -290,6 +290,14 @@ describe("System management page", () => {
       // and can render a not found state
       cy.visit("/systems/configure/system-that-does-not-exist");
       cy.getByTestId("system-not-found");
+    });
+
+    it("Can go to a system's edit page by clicking its card", () => {
+      cy.visit(SYSTEM_ROUTE);
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("system-box").click();
+      });
+      cy.url().should("contain", "/systems/configure/fidesctl_system");
     });
 
     it("Can go through the edit flow", () => {
