@@ -40,7 +40,7 @@ from fides.api.util.saas_util import (
     replace_dataset_placeholders,
     replace_version,
 )
-from fides.api.util.unsafe_file_util import verify_zip
+from fides.api.util.unsafe_file_util import verify_svg, verify_zip
 from fides.config import CONFIG
 
 
@@ -214,6 +214,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                     )
             elif info.filename.endswith(".svg"):
                 if not icon_contents:
+                    verify_svg(file_contents)
                     icon_contents = str_to_b64_str(file_contents)
                 else:
                     raise ValidationError(

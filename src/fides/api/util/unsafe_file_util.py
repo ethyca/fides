@@ -1,8 +1,32 @@
 from typing import Optional
 from zipfile import ZipFile
 
+from defusedxml.ElementTree import fromstring
+
+from fides.api.common_exceptions import ValidationError
+
 MAX_FILE_SIZE = 16 * 1024 * 1024  # 16 MB
 CHUNK_SIZE = 1024
+
+
+def verify_svg(contents: str) -> None:
+    """
+    Verifies the provided SVG content.
+
+    This function checks the given SVG content string for potential issues and throws an exception if any are found.
+    It first attempts to parse the SVG content using 'defusedxml.fromstring'. If the parsing is unsuccessful, this
+    will raise an exception, indicating that the SVG content may contain unsafe XML.
+
+    :param contents: The SVG content as a string.
+    :raises ValidationError: If the SVG content contains unsafe XML or 'use xlink'
+    """
+    try:
+        fromstring(contents)
+    except Exception:
+        raise ValidationError("SVG file contains unsafe XML.")
+
+    if "use xlink" in contents:
+        raise ValidationError("SVG files with xlink references are not allowed.")
 
 
 def verify_zip(zip_file: ZipFile, max_file_size: Optional[int] = None) -> None:
