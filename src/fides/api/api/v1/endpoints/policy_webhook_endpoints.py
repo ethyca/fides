@@ -12,7 +12,7 @@ from starlette.exceptions import HTTPException
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.api import deps
-from fides.api.api.v1.endpoints.connection_endpoints import (
+from fides.api.api.v1.endpoints.connection_endpoints import (  # type: ignore[attr-defined]
     get_connection_config_or_error,
 )
 from fides.api.api.v1.endpoints.policy_endpoints import get_policy_or_error
