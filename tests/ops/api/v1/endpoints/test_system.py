@@ -455,7 +455,6 @@ class TestDeleteSystemConnectionConfig:
         connection_config, dataset_config = instantiate_connector(
             db,
             "sendgrid",
-            "sendgrid_connection_config_secondary",
             "secondary_sendgrid_instance",
             "Sendgrid ConnectionConfig description",
             secrets,
