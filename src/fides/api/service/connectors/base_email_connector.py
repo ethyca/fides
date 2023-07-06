@@ -4,17 +4,17 @@ from typing import Any, Dict, Generic, List, Optional
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import MessageDispatchException
-from fides.api.ctl.sql_models import Organization  # type: ignore[attr-defined]
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.sql_models import Organization  # type: ignore[attr-defined]
 from fides.api.schemas.messaging.messaging import (
     EMAIL_MESSAGING_SERVICES,
     MessagingServiceType,
 )
 from fides.api.service.connectors.base_connector import DB_CONNECTOR_TYPE
-from fides.core.config import CONFIG
-from fides.core.config.config_proxy import ConfigProxy
+from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 
 class BaseEmailConnector(Generic[DB_CONNECTOR_TYPE], ABC):

@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional, Set
 from httpx import AsyncClient
 from loguru import logger
 
-from fides.api.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
@@ -17,6 +16,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 
 
 def build_required_privacy_request_kwargs(

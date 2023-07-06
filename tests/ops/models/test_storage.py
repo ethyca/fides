@@ -265,3 +265,36 @@ class TestStorageConfigModel:
         assert retrieved_config == get_default_storage_config_by_type(
             db, StorageType.local
         )
+
+    def test_format_validator(self):
+        """
+        Test the custom root validator that restricts certain formats for local destinations.
+        """
+
+        # No exceptions should be raised for valid local destination
+        assert StorageDestination(
+            name="Local destination",
+            type=StorageType.local.value,
+            format=ResponseFormat.json.value,
+            details={StorageDetails.NAMING.value: FileNaming.request_id.value},
+        )
+
+        assert StorageDestination(
+            name="Local destination",
+            type=StorageType.local.value,
+            format=ResponseFormat.html.value,
+            details={StorageDetails.NAMING.value: FileNaming.request_id.value},
+        )
+
+        # Expect ValueError for invalid local destination
+        with pytest.raises(ValueError) as e:
+            StorageDestination(
+                name="Local destination",
+                type=StorageType.local.value,
+                format=ResponseFormat.csv.value,
+                details={StorageDetails.NAMING.value: FileNaming.request_id.value},
+            )
+        assert (
+            "Only JSON or HTML upload format are supported for local storage destinations."
+            in str(e)
+        )

@@ -30,8 +30,8 @@ from fides.api.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
 )
 from fides.api.util.logger import Pii
-from fides.core.config import CONFIG
-from fides.core.config.config_proxy import ConfigProxy
+from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 
 def get_messaging_method(

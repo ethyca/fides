@@ -8,23 +8,6 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
-    STORAGE_CREATE_OR_UPDATE,
-    STORAGE_DELETE,
-    STORAGE_READ,
-)
-from fides.api.api.v1.urn_registry import (
-    STORAGE_ACTIVE_DEFAULT,
-    STORAGE_BY_KEY,
-    STORAGE_CONFIG,
-    STORAGE_DEFAULT,
-    STORAGE_DEFAULT_BY_TYPE,
-    STORAGE_DEFAULT_SECRETS,
-    STORAGE_SECRETS,
-    STORAGE_STATUS,
-    STORAGE_UPLOAD,
-    V1_URL_PREFIX,
-)
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, KeyValidationError
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.client import ClientDetail
@@ -40,8 +23,25 @@ from fides.api.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.core.config import get_config
-from fides.core.config.config_proxy import ConfigProxy
+from fides.common.api.scope_registry import (
+    STORAGE_CREATE_OR_UPDATE,
+    STORAGE_DELETE,
+    STORAGE_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    STORAGE_ACTIVE_DEFAULT,
+    STORAGE_BY_KEY,
+    STORAGE_CONFIG,
+    STORAGE_DEFAULT,
+    STORAGE_DEFAULT_BY_TYPE,
+    STORAGE_DEFAULT_SECRETS,
+    STORAGE_SECRETS,
+    STORAGE_STATUS,
+    STORAGE_UPLOAD,
+    V1_URL_PREFIX,
+)
+from fides.config import get_config
+from fides.config.config_proxy import ConfigProxy
 
 PAGE_SIZE = Params().size
 CONFIG = get_config()
@@ -102,10 +102,12 @@ class TestUploadData:
         assert 201 == response.status_code
         mock_post_upload_data.assert_called_with(
             mock.ANY,
-            request_id=privacy_request.id,
+            privacy_request=mock.ANY,
             data=payload.get("data"),
             storage_key=payload.get("storage_key"),
         )
+        call_kwargs = mock_post_upload_data.call_args.kwargs
+        assert call_kwargs["privacy_request"].id == privacy_request.id
         assert response_body == DataUpload(location=expected_location)
 
 

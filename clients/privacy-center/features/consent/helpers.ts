@@ -2,6 +2,7 @@ import {
   ConsentContext,
   CookieKeyConsent,
   resolveLegacyConsentValue,
+  GpcStatus,
 } from "fides-js";
 
 import {
@@ -9,8 +10,7 @@ import {
   LegacyConsentConfig,
   ConsentConfig,
 } from "~/types/config";
-import { PrivacyNoticeResponseWithUserPreferences } from "~/types/api";
-import { FidesKeyToConsent, GpcStatus } from "./types";
+import { FidesKeyToConsent } from "./types";
 
 /**
  * Ascertain whether a consentConfig is V1 or V2 based upon the presence of a `button` key
@@ -97,27 +97,6 @@ export const getGpcStatus = ({
   }
 
   if (value === consentOption.default.globalPrivacyControl) {
-    return GpcStatus.APPLIED;
-  }
-
-  return GpcStatus.OVERRIDDEN;
-};
-
-export const getGpcStatusFromNotice = ({
-  value,
-  notice,
-  consentContext,
-}: {
-  value: boolean;
-  notice: PrivacyNoticeResponseWithUserPreferences;
-  consentContext: ConsentContext;
-}) => {
-  // If GPC is not enabled, it won't be applied at all.
-  if (!consentContext.globalPrivacyControl || !notice.has_gpc_flag) {
-    return GpcStatus.NONE;
-  }
-
-  if (!value) {
     return GpcStatus.APPLIED;
   }
 

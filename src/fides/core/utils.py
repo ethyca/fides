@@ -1,13 +1,11 @@
 import glob
 import re
-from functools import partial
 from hashlib import sha1
 from os import getenv
 from os.path import isfile
 from pathlib import Path
 from typing import Dict, Iterator, List
 
-import click
 import sqlalchemy
 import toml
 from fideslang.models import DatasetField, FidesModel
@@ -16,12 +14,10 @@ from pydantic import BaseModel, ValidationError
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
+from fides.common.utils import echo_red
 from fides.connectors.models import ConnectorAuthFailureException
 
 logger.bind(name="server_api")
-
-echo_red = partial(click.secho, fg="red", bold=True)
-echo_green = partial(click.secho, fg="green", bold=True)
 
 
 class Credentials(BaseModel):
@@ -39,10 +35,11 @@ def get_db_engine(connection_string: str) -> Engine:
     """
     Use SQLAlchemy to create a DB engine.
     """
+
+    # Pymssql doesn't support this arg
+    connect_args = {"connect_timeout": 10} if "pymssql" not in connection_string else {}
     try:
-        engine = sqlalchemy.create_engine(
-            connection_string, connect_args={"connect_timeout": 10}
-        )
+        engine = sqlalchemy.create_engine(connection_string, connect_args=connect_args)
     except Exception as err:
         raise Exception("Failed to create engine!") from err
 

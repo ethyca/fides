@@ -16,6 +16,10 @@ class TestTaskResources:
             "access_request__postgres_example:payment",
             [{"id": 2, "ccn": "111-111-1111-1111", "customer_id": 1}],
         )
+        resources.cache_object(
+            "access_request__postgres__double__underscore__example:double__underscore__collection",
+            [{"id": 3, "last_name": "Doe"}],
+        )
         resources.cache_erasure("manual_example:filing-cabinet", 2)
 
         # Only access results from "cache_object" are returned
@@ -24,6 +28,9 @@ class TestTaskResources:
                 {"id": 2, "ccn": "111-111-1111-1111", "customer_id": 1}
             ],
             "postgres_example:customer": [{"id": 1, "last_name": "Doe"}],
+            "postgres__double__underscore__example:double__underscore__collection": [
+                {"id": 3, "last_name": "Doe"}
+            ],
         }
 
     def test_cache_erasure(

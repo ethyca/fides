@@ -4,7 +4,7 @@ from secrets import DB, IP, PASS, PORT, USER
 
 import sqlalchemy
 
-MASTER_MSSQL_URL = f"mssql+pyodbc://{USER}:{PASS}@{IP}:{PORT}/{DB}?driver=ODBC+Driver+17+for+SQL+Server"
+MASTER_MSSQL_URL = f"mssql+pymssql://{USER}:{PASS}@{IP}:{PORT}/{DB}"
 
 
 SUPPORTED_DATA_TYPES = set(

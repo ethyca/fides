@@ -10,7 +10,7 @@ If you're looking for a general getting started guide, please see the [Overview]
 
 ### API URLs
 
-We define API URLs for specific API versions as constants within `fides.api.api.v1.urn_registry` (where `v1` can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the `APIRouter` class instantiation with a different base path (ie. `/api/v2` instead of `/api/v1`). For example:
+We define API URLs for specific API versions as constants within `fides.common.api.v1.urn_registry` (where `v1` can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the `APIRouter` class instantiation with a different base path (ie. `/api/v2` instead of `/api/v1`). For example:
 
 ```sh
 PRIVACY_REQUEST = "/privacy-request"
@@ -97,7 +97,7 @@ Some common Alembic commands are listed below. For a comprehensive guide see: <h
 
 The commands will need to be run inside a shell on your Docker containers, which can be opened with `nox -s dev -- shell`.
 
-In the `/src/fides/api/ctl` directory:
+In the `/src/fides/api/alembic` directory:
 
 - Migrate your database to the latest state: `alembic upgrade head`
 - Merge heads (for when you have conflicting heads from a merge/rebase): `alembic merge heads`

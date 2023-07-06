@@ -13,12 +13,10 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Textarea,
   Tooltip,
   VStack,
 } from "@fidesui/react";
 import { Option } from "common/form/inputs";
-import { useAPIHelper } from "common/hooks";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaReponse,
@@ -26,7 +24,8 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
-import React, { useEffect, useRef } from "react";
+import React from "react";
+import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import DatasetConfigField from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
@@ -43,6 +42,11 @@ import DisableConnectionModal from "../../DisableConnectionModal";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
+export interface TestConnectionResponse {
+  data?: DatastoreConnectionStatus;
+  fulfilledTimeStamp?: number;
+}
+
 type ConnectorParametersFormProps = {
   secretsSchema?: ConnectionTypeSecretSchemaReponse;
   defaultValues: ConnectionConfigFormValues;
@@ -54,7 +58,7 @@ type ConnectorParametersFormProps = {
   /**
    * Parent callback when Test Connection is clicked
    */
-  onTestConnectionClick: (value: any) => void;
+  onTestConnectionClick: (value: TestConnectionResponse) => void;
   /**
    * Text for the test button. Defaults to "Test connection"
    */
@@ -73,7 +77,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   isSubmitting = false,
   onSaveClick,
   onTestConnectionClick,
-  testButtonLabel = "Test connection",
+  testButtonLabel = "Test integration",
   connectionOption,
   connectionConfig,
   datasetDropdownOptions,
@@ -81,18 +85,16 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   onDelete,
   deleteResult,
 }) => {
-  const mounted = useRef(false);
-  const { handleError } = useAPIHelper();
-
-  const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
+  const [trigger, { isLoading, isFetching }] =
+    useLazyGetDatastoreConnectionStatusQuery();
 
   const validateConnectionIdentifier = (value: string) => {
     let error;
     if (typeof value === "undefined" || value === "") {
-      error = "Connection Identifier is required";
+      error = "Integration Identifier is required";
     }
     if (value && isNumeric(value)) {
-      error = "Connection Identifier must be an alphanumeric value";
+      error = "Integration Identifier must be an alphanumeric value";
     }
     return error;
   };
@@ -134,6 +136,11 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     return undefined;
   };
 
+  const isRequiredSecretValue = (key: string): boolean =>
+    secretsSchema?.required?.includes(key) ||
+    (secretsSchema?.properties?.[key] !== undefined &&
+      "default" in secretsSchema.properties[key]);
+
   const getFormField = (
     key: string,
     item: ConnectionTypeSecretSchemaProperty
@@ -143,7 +150,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       name={key}
       key={key}
       validate={
-        secretsSchema?.required?.includes(key) || item.type === "integer"
+        isRequiredSecretValue(key) || item.type === "integer"
           ? (value: string) =>
               validateField(item.title, value, item.allOf?.[0].$ref)
           : false
@@ -152,7 +159,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {({ field, form }: { field: FieldInputProps<string>; form: any }) => (
         <FormControl
           display="flex"
-          isRequired={secretsSchema?.required?.includes(key)}
+          isRequired={isRequiredSecretValue(key)}
           isInvalid={form.errors[key] && form.touched[key]}
         >
           {getFormLabel(key, item.title)}
@@ -239,11 +246,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   };
 
   const handleTestConnectionClick = async () => {
-    try {
-      await trigger(connectionConfig!.key).unwrap();
-    } catch (error) {
-      handleError(error);
-    }
+    const result = await trigger(connectionConfig!.key);
+    onTestConnectionClick(result);
   };
 
   useEffect(() => {
@@ -270,59 +274,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {(props: FormikProps<Values>) => (
         <Form noValidate>
           <VStack align="stretch" gap="16px">
-            <Field
-              id="name"
-              name="name"
-              validate={(value: string) => validateField("Name", value)}
-            >
-              {({ field }: { field: FieldInputProps<string> }) => (
-                <FormControl
-                  display="flex"
-                  isRequired
-                  isInvalid={props.errors.name && props.touched.name}
-                >
-                  {getFormLabel("name", "Name")}
-                  <VStack align="flex-start" w="inherit">
-                    <Input
-                      {...field}
-                      autoComplete="off"
-                      autoFocus
-                      color="gray.700"
-                      placeholder={`Enter a friendly name for your new ${
-                        connectionOption!.human_readable
-                      } connection`}
-                      size="sm"
-                      data-testid="input-name"
-                    />
-                    <FormErrorMessage>{props.errors.name}</FormErrorMessage>
-                  </VStack>
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
-                </FormControl>
-              )}
-            </Field>
-            {/* Description */}
-            <Field id="description" name="description">
-              {({ field }: { field: FieldInputProps<string> }) => (
-                <FormControl display="flex">
-                  {getFormLabel("description", "Description")}
-                  <Textarea
-                    {...field}
-                    color="gray.700"
-                    placeholder={`Enter a description for your new ${
-                      connectionOption!.human_readable
-                    } connection`}
-                    resize="none"
-                    size="sm"
-                    value={field.value || ""}
-                  />
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
-                </FormControl>
-              )}
-            </Field>
             {/* Connection Identifier */}
             {connectionOption.type !== SystemType.MANUAL ? (
               <Field
@@ -338,7 +289,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       props.errors.instance_key && props.touched.instance_key
                     }
                   >
-                    {getFormLabel("instance_key", "Connection Identifier")}
+                    {getFormLabel("instance_key", "Integration Identifier")}
                     <VStack align="flex-start" w="inherit">
                       <Input
                         {...field}
@@ -347,7 +298,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                         isDisabled={!!connectionConfig?.key}
                         placeholder={`A unique identifier for your new ${
                           connectionOption!.human_readable
-                        } connection`}
+                        } integration`}
                         size="sm"
                       />
                       <FormErrorMessage>
@@ -355,9 +306,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       </FormErrorMessage>
                     </VStack>
                     <Tooltip
-                      aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
+                      aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
                       hasArrow
-                      label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
+                      label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
                       placement="right-start"
                       openDelay={500}
                     >
@@ -383,10 +334,12 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   return getFormField(key, item);
                 })
               : null}
-            {[SystemType.SAAS, SystemType.DATABASE].indexOf(
-              connectionOption.type
-            ) > -1 && !isCreatingConnectionConfig ? (
-              <DatasetConfigField dropdownOptions={datasetDropdownOptions} />
+            {SystemType.DATABASE === connectionOption.type &&
+            !isCreatingConnectionConfig ? (
+              <DatasetConfigField
+                dropdownOptions={datasetDropdownOptions}
+                connectionConfig={connectionConfig}
+              />
             ) : null}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
@@ -396,7 +349,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   isSubmitting ||
                   deleteResult.isLoading
                 }
-                isLoading={result.isLoading || result.isFetching}
+                isLoading={isLoading || isFetching}
                 loadingText="Testing"
                 onClick={handleTestConnectionClick}
                 variant="outline"

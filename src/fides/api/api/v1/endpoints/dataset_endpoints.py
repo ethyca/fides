@@ -24,27 +24,11 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.scope_registry import (
-    DATASET_CREATE_OR_UPDATE,
-    DATASET_DELETE,
-    DATASET_READ,
-)
-from fides.api.api.v1.urn_registry import (
-    CONNECTION_DATASETS,
-    DATASET_BY_KEY,
-    DATASET_CONFIGS,
-    DATASET_VALIDATE,
-    DATASETCONFIG_BY_KEY,
-    DATASETS,
-    V1_URL_PREFIX,
-    YAML_DATASETS,
-)
 from fides.api.common_exceptions import (
     SaaSConfigNotFoundException,
     TraversalError,
     ValidationError,
 )
-from fides.api.ctl.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -52,6 +36,9 @@ from fides.api.models.datasetconfig import (
     DatasetConfig,
     convert_dataset_to_graph,
     to_graph_field,
+)
+from fides.api.models.sql_models import ( # type: ignore[attr-defined]
+    Dataset as CtlDataset,
 )
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
@@ -66,6 +53,21 @@ from fides.api.schemas.dataset import (
 from fides.api.util.api_router import APIRouter
 from fides.api.util.data_category import get_data_categories_from_db
 from fides.api.util.saas_util import merge_datasets
+from fides.common.api.scope_registry import (
+    DATASET_CREATE_OR_UPDATE,
+    DATASET_DELETE,
+    DATASET_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    CONNECTION_DATASETS,
+    DATASET_BY_KEY,
+    DATASET_CONFIGS,
+    DATASET_VALIDATE,
+    DATASETCONFIG_BY_KEY,
+    DATASETS,
+    V1_URL_PREFIX,
+    YAML_DATASETS,
+)
 
 X_YAML = "application/x-yaml"
 

@@ -5,10 +5,10 @@ from starlette.exceptions import HTTPException
 
 from fides.api.analytics import send_registration
 from fides.api.api import deps
-from fides.api.api.v1 import urn_registry as urls
 from fides.api.models.registration import UserRegistration
 from fides.api.schemas import registration as schemas
 from fides.api.util.api_router import APIRouter
+from fides.common.api.v1 import urn_registry as urls
 
 router = APIRouter(
     tags=["Registration"],

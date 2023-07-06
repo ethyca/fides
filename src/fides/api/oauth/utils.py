@@ -16,7 +16,6 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
 
 from fides.api.api.deps import get_db
-from fides.api.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.api.common_exceptions import AuthenticationError, AuthorizationError
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -30,7 +29,8 @@ from fides.api.models.policy import PolicyPreWebhook
 from fides.api.oauth.roles import get_scopes_from_roles
 from fides.api.schemas.external_https import WebhookJWE
 from fides.api.schemas.oauth import OAuth2ClientCredentialsBearer
-from fides.core.config import CONFIG
+from fides.common.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
+from fides.config import CONFIG
 
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 

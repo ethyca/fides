@@ -6,12 +6,6 @@ from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
 from starlette.status import HTTP_404_NOT_FOUND
 
-from fides.api.api.v1.scope_registry import CONNECTION_TYPE_READ
-from fides.api.api.v1.urn_registry import (
-    CONNECTION_TYPE_SECRETS,
-    CONNECTION_TYPES,
-    V1_URL_PREFIX,
-)
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -23,6 +17,12 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_type import (
     connection_type_secret_schema,
     get_connection_types,
+)
+from fides.common.api.scope_registry import CONNECTION_TYPE_READ
+from fides.common.api.v1.urn_registry import (
+    CONNECTION_TYPE_SECRETS,
+    CONNECTION_TYPES,
+    V1_URL_PREFIX,
 )
 
 router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)

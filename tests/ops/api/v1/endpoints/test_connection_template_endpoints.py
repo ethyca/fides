@@ -4,17 +4,6 @@ from unittest import mock
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
-    CONNECTION_READ,
-    CONNECTION_TYPE_READ,
-    SAAS_CONNECTION_INSTANTIATE,
-)
-from fides.api.api.v1.urn_registry import (
-    CONNECTION_TYPE_SECRETS,
-    CONNECTION_TYPES,
-    SAAS_CONNECTOR_FROM_TEMPLATE,
-    V1_URL_PREFIX,
-)
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -26,6 +15,17 @@ from fides.api.models.policy import ActionType
 from fides.api.schemas.connection_configuration.connection_config import SystemType
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
+)
+from fides.common.api.scope_registry import (
+    CONNECTION_READ,
+    CONNECTION_TYPE_READ,
+    SAAS_CONNECTION_INSTANTIATE,
+)
+from fides.common.api.v1.urn_registry import (
+    CONNECTION_TYPE_SECRETS,
+    CONNECTION_TYPES,
+    SAAS_CONNECTOR_FROM_TEMPLATE,
+    V1_URL_PREFIX,
 )
 
 
@@ -691,6 +691,111 @@ class TestGetConnectionSecretSchema:
             == "No connection type found with name 'connection_type_we_do_not_support'."
         )
 
+    def test_get_connection_secret_schema_bigquery(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="bigquery"), headers=auth_header
+        )
+        assert resp.json() == {
+            "title": "BigQuerySchema",
+            "description": "Schema to validate the secrets needed to connect to BigQuery",
+            "type": "object",
+            "properties": {
+                "url": {"title": "URL", "sensitive": True, "type": "string"},
+                "dataset": {"title": "Dataset", "type": "string"},
+                "keyfile_creds": {
+                    "title": "Keyfile Creds",
+                    "sensitive": True,
+                    "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
+                },
+            },
+            "required": ["keyfile_creds"],
+            "additionalProperties": False,
+            "definitions": {
+                "KeyfileCreds": {
+                    "title": "KeyfileCreds",
+                    "description": "Schema that holds BigQuery keyfile key/vals",
+                    "type": "object",
+                    "properties": {
+                        "type": {"title": "Type", "type": "string"},
+                        "project_id": {"title": "Project ID", "type": "string"},
+                        "private_key_id": {"title": "Private Key ID", "type": "string"},
+                        "private_key": {
+                            "title": "Private Key",
+                            "sensitive": True,
+                            "type": "string",
+                        },
+                        "client_email": {
+                            "title": "Client Email",
+                            "type": "string",
+                            "format": "email",
+                        },
+                        "client_id": {"title": "Client ID", "type": "string"},
+                        "auth_uri": {"title": "Auth URI", "type": "string"},
+                        "token_uri": {"title": "Token URI", "type": "string"},
+                        "auth_provider_x509_cert_url": {
+                            "title": "Auth Provider X509 Cert URL",
+                            "type": "string",
+                        },
+                        "client_x509_cert_url": {
+                            "title": "Client X509 Cert URL",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["project_id"],
+                }
+            },
+        }
+
+    def test_get_connection_secret_schema_dynamodb(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="dynamodb"), headers=auth_header
+        )
+        assert resp.json() == {
+            "title": "DynamoDBSchema",
+            "description": "Schema to validate the secrets needed to connect to an Amazon DynamoDB cluster",
+            "type": "object",
+            "properties": {
+                "url": {"title": "URL", "sensitive": True, "type": "string"},
+                "region_name": {"title": "Region Name", "type": "string"},
+                "aws_access_key_id": {"title": "AWS Access Key ID", "type": "string"},
+                "aws_secret_access_key": {
+                    "title": "AWS Secret Access Key",
+                    "sensitive": True,
+                    "type": "string",
+                },
+            },
+            "required": ["region_name", "aws_access_key_id", "aws_secret_access_key"],
+            "additionalProperties": False,
+        }
+
+    def test_get_connection_secret_schema_mariadb(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="mariadb"), headers=auth_header
+        )
+        assert resp.json() == {
+            "title": "MariaDBSchema",
+            "description": "Schema to validate the secrets needed to connect to a MariaDB Database",
+            "type": "object",
+            "properties": {
+                "url": {"title": "URL", "sensitive": True, "type": "string"},
+                "username": {"title": "Username", "type": "string"},
+                "password": {"title": "Password", "sensitive": True, "type": "string"},
+                "dbname": {"title": "DB Name", "type": "string"},
+                "host": {"title": "Host", "type": "string"},
+                "port": {"title": "Port", "type": "integer"},
+            },
+            "additionalProperties": False,
+        }
+
     def test_get_connection_secret_schema_mongodb(
         self, api_client: TestClient, generate_auth_header, base_url
     ) -> None:
@@ -703,12 +808,139 @@ class TestGetConnectionSecretSchema:
             "description": "Schema to validate the secrets needed to connect to a MongoDB Database",
             "type": "object",
             "properties": {
-                "url": {"title": "Url", "type": "string"},
+                "url": {"title": "URL", "sensitive": True, "type": "string"},
                 "username": {"title": "Username", "type": "string"},
-                "password": {"title": "Password", "type": "string"},
+                "password": {"title": "Password", "sensitive": True, "type": "string"},
                 "host": {"title": "Host", "type": "string"},
                 "port": {"title": "Port", "type": "integer"},
-                "defaultauthdb": {"title": "Defaultauthdb", "type": "string"},
+                "defaultauthdb": {"title": "Default Auth DB", "type": "string"},
+            },
+            "additionalProperties": False,
+        }
+
+    def test_get_connection_secret_schema_mssql(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="mssql"), headers=auth_header
+        )
+        assert resp.json() == {
+            "title": "MicrosoftSQLServerSchema",
+            "description": "Schema to validate the secrets needed to connect to a MS SQL Database\n\nconnection string takes the format:\nmssql+pymssql://[username]:[password]@[host]:[port]/[dbname]",
+            "type": "object",
+            "properties": {
+                "url": {"title": "URL", "sensitive": True, "type": "string"},
+                "username": {"title": "Username", "type": "string"},
+                "password": {"title": "Password", "sensitive": True, "type": "string"},
+                "host": {"title": "Host", "type": "string"},
+                "port": {"title": "Port", "type": "integer"},
+                "dbname": {"title": "DB Name", "type": "string"},
+            },
+            "additionalProperties": False,
+        }
+
+    def test_get_connection_secret_schema_mysql(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="mysql"), headers=auth_header
+        )
+        assert resp.json() == {
+            "title": "MySQLSchema",
+            "description": "Schema to validate the secrets needed to connect to a MySQL Database",
+            "type": "object",
+            "properties": {
+                "url": {"title": "URL", "sensitive": True, "type": "string"},
+                "username": {"title": "Username", "type": "string"},
+                "password": {"title": "Password", "sensitive": True, "type": "string"},
+                "dbname": {"title": "DB Name", "type": "string"},
+                "host": {"title": "Host", "type": "string"},
+                "port": {"title": "Port", "type": "integer"},
+            },
+            "additionalProperties": False,
+        }
+
+    def test_get_connection_secret_schema_postgres(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="postgres"), headers=auth_header
+        )
+        assert resp.json() == {
+            "title": "PostgreSQLSchema",
+            "description": "Schema to validate the secrets needed to connect to a PostgreSQL Database",
+            "type": "object",
+            "properties": {
+                "url": {"title": "URL", "sensitive": True, "type": "string"},
+                "username": {"title": "Username", "type": "string"},
+                "password": {"title": "Password", "sensitive": True, "type": "string"},
+                "dbname": {"title": "DB Name", "type": "string"},
+                "db_schema": {"title": "DB Schema", "type": "string"},
+                "host": {"title": "Host", "type": "string"},
+                "port": {"title": "Port", "type": "integer"},
+                "ssh_required": {
+                    "title": "SSH Required",
+                    "default": False,
+                    "type": "boolean",
+                },
+            },
+            "additionalProperties": False,
+        }
+
+    def test_get_connection_secret_schema_redshift(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="redshift"), headers=auth_header
+        )
+        assert resp.json() == {
+            "title": "RedshiftSchema",
+            "description": "Schema to validate the secrets needed to connect to an Amazon Redshift cluster",
+            "type": "object",
+            "properties": {
+                "url": {"title": "URL", "sensitive": True, "type": "string"},
+                "host": {"title": "Host", "type": "string"},
+                "port": {"title": "Port", "type": "integer"},
+                "database": {"title": "Database", "type": "string"},
+                "user": {"title": "User", "type": "string"},
+                "password": {"title": "Password", "sensitive": True, "type": "string"},
+                "db_schema": {"title": "DB Schema", "type": "string"},
+                "ssh_required": {
+                    "title": "SSH Required",
+                    "default": False,
+                    "type": "boolean",
+                },
+            },
+            "additionalProperties": False,
+        }
+
+    def test_get_connection_secret_schema_snowflake(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="snowflake"), headers=auth_header
+        )
+        assert resp.json() == {
+            "title": "SnowflakeSchema",
+            "description": "Schema to validate the secrets needed to connect to Snowflake",
+            "type": "object",
+            "properties": {
+                "url": {"title": "URL", "sensitive": True, "type": "string"},
+                "user_login_name": {
+                    "title": "User Login Name",
+                    "type": "string",
+                },
+                "password": {"title": "Password", "sensitive": True, "type": "string"},
+                "account_identifier": {"title": "Account Identifier", "type": "string"},
+                "database_name": {"title": "Database Name", "type": "string"},
+                "schema_name": {"title": "Schema Name", "type": "string"},
+                "warehouse_name": {"title": "Warehouse Name", "type": "string"},
+                "role_name": {"title": "Role Name", "type": "string"},
             },
             "additionalProperties": False,
         }
@@ -726,10 +958,15 @@ class TestGetConnectionSecretSchema:
             "description": "Hubspot secrets schema",
             "type": "object",
             "properties": {
-                "private_app_token": {"title": "Private App Token", "type": "string"},
+                "private_app_token": {
+                    "title": "Private App Token",
+                    "sensitive": True,
+                    "type": "string",
+                },
                 "domain": {
                     "title": "Domain",
                     "default": "api.hubapi.com",
+                    "sensitive": False,
                     "type": "string",
                 },
             },
@@ -906,18 +1143,16 @@ class TestInstantiateConnectionFromTemplate:
             headers=auth_header,
             json=request_body,
         )
-        assert resp.status_code == 400
-        assert (
-            f"Name {connection_config.name} already exists in ConnectionConfig"
-            in resp.json()["detail"]
-        )
+        # names don't have to be unique
+        assert resp.status_code == 200
 
     def test_create_connection_from_template_without_supplying_connection_key(
         self, db, generate_auth_header, api_client, base_url
     ):
         auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+        instance_key = "secondary_mailchimp_instance"
         request_body = {
-            "instance_key": "secondary_mailchimp_instance",
+            "instance_key": instance_key,
             "secrets": {
                 "domain": "test_mailchimp_domain",
                 "username": "test_mailchimp_username",
@@ -944,7 +1179,7 @@ class TestInstantiateConnectionFromTemplate:
         assert connection_config is not None
         assert dataset_config is not None
 
-        assert connection_config.key == "mailchimp_connector"
+        assert connection_config.key == instance_key
         dataset_config.delete(db)
         connection_config.delete(db)
 

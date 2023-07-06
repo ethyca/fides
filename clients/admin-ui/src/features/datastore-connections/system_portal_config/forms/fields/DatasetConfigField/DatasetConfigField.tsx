@@ -21,7 +21,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import {
-  useGetAllDatasetsQuery,
+  useGetAllFilteredDatasetsQuery,
   useUpsertDatasetsMutation,
 } from "~/features/dataset";
 import {
@@ -66,7 +66,6 @@ export const DatasetSelect = ({
       isInvalid={isInvalid}
       isRequired={isRequired}
     >
-      {/* <VStack align="flex-start" w="inherit"> */}
       {label ? (
         <Label htmlFor={props.id || props.name} {...labelProps}>
           {label}
@@ -107,7 +106,6 @@ export const DatasetSelect = ({
         />
         {tooltip ? <QuestionTooltip label={tooltip} /> : null}
       </Flex>
-      {/* </VStack> */}
     </FormControl>
   );
 };
@@ -121,11 +119,19 @@ export const useDatasetConfigField = ({
   const [patchDatasetConfig] = usePatchDatasetConfigsMutation();
   const [upsertDatasets] = useUpsertDatasetsMutation();
 
-  const { data: allDatasetConfigs } = useGetConnectionConfigDatasetConfigsQuery(
-    connectionConfig?.key || ""
-  );
+  const { data: allDatasetConfigs, isLoading: isLoadingDatasetConfigs } =
+    useGetConnectionConfigDatasetConfigsQuery(connectionConfig?.key || "");
 
-  const { data: allDatasets } = useGetAllDatasetsQuery();
+  const { data: allDatasets } = useGetAllFilteredDatasetsQuery(
+    {
+      onlyUnlinkedDatasets: allDatasetConfigs
+        ? allDatasetConfigs.items.length === 0
+        : false,
+    },
+    {
+      skip: isLoadingDatasetConfigs,
+    }
+  );
 
   const [datasetConfigFidesKey, setDatasetConfigFidesKey] = useState<
     string | undefined
@@ -219,15 +225,21 @@ export const useDatasetConfigField = ({
 
 type Props = {
   dropdownOptions: Option[];
+  connectionConfig?: ConnectionConfigurationResponse;
 };
 
-const DatasetConfigField: React.FC<Props> = ({ dropdownOptions }) => {
+const DatasetConfigField: React.FC<Props> = ({
+  dropdownOptions,
+  connectionConfig,
+}) => {
   const [datasetDropdownOption] = useField<string>(fieldName);
   const [datasetYaml] = useField<Dataset>("datasetYaml");
   const { setFieldValue } = useFormikContext();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const { data: allDatasets, isLoading } = useGetAllDatasetsQuery();
+  const { data: allDatasets, isLoading } = useGetAllFilteredDatasetsQuery({
+    onlyUnlinkedDatasets: !connectionConfig,
+  });
 
   const setDatasetYaml = useCallback<(value: Dataset) => void>(
     (value) => {
@@ -258,7 +270,6 @@ const DatasetConfigField: React.FC<Props> = ({ dropdownOptions }) => {
         }}
         name={fieldName}
         options={dropdownOptions}
-        isRequired
         onOpen={onOpen}
         isLoading={isLoading}
       />

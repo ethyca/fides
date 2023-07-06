@@ -7,12 +7,22 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
+from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.messaging import MessagingConfig
+from fides.api.schemas.messaging.messaging import (
+    MessagingConfigStatus,
+    MessagingConfigStatusMessage,
+    MessagingServiceDetails,
+    MessagingServiceSecrets,
+    MessagingServiceType,
+)
+from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     MESSAGING_READ,
 )
-from fides.api.api.v1.urn_registry import (
+from fides.common.api.v1.urn_registry import (
     MESSAGING_ACTIVE_DEFAULT,
     MESSAGING_BY_KEY,
     MESSAGING_CONFIG,
@@ -24,17 +34,7 @@ from fides.api.api.v1.urn_registry import (
     MESSAGING_TEST,
     V1_URL_PREFIX,
 )
-from fides.api.common_exceptions import MessageDispatchException
-from fides.api.models.application_config import ApplicationConfig
-from fides.api.models.messaging import MessagingConfig
-from fides.api.schemas.messaging.messaging import (
-    MessagingConfigStatus,
-    MessagingConfigStatusMessage,
-    MessagingServiceDetails,
-    MessagingServiceSecrets,
-    MessagingServiceType,
-)
-from fides.core.config import get_config
+from fides.config import get_config
 
 PAGE_SIZE = Params().size
 CONFIG = get_config()

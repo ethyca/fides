@@ -52,7 +52,7 @@ from fides.api.service.connectors.query_config import (
     SQLQueryConfig,
 )
 from fides.api.util.collection_util import Row
-from fides.core.config import get_config
+from fides.config import get_config
 
 CONFIG = get_config()
 
@@ -367,16 +367,19 @@ class RedshiftConnector(SQLConnector):
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
         config = self.secrets_schema(**self.configuration.secrets or {})
+        connect_args = {}
         if config.ssh_required and CONFIG.security.bastion_server_ssh_private_key:
             self.create_ssh_tunnel(host=config.host, port=config.port)
             self.ssh_server.start()
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
+            connect_args["sslmode"] = "prefer"
         else:
             uri = config.url or self.build_uri()
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
+            connect_args=connect_args,
         )
 
     def set_schema(self, connection: Connection) -> None:
@@ -497,20 +500,19 @@ class MicrosoftSQLServerConnector(SQLConnector):
     def build_uri(self) -> URL:
         """
         Build URI of format
-        mssql+pyodbc://[username]:[password]@[host]:[port]/[dbname]?driver=ODBC+Driver+17+for+SQL+Server
+        mssql+pymssql://[username]:[password]@[host]:[port]/[dbname]
         Returns URL obj, since SQLAlchemy's create_engine method accepts either a URL obj or a string
         """
 
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         url = URL.create(
-            "mssql+pyodbc",
+            "mssql+pymssql",
             username=config.username,
             password=config.password,
             host=config.host,
             port=config.port,
             database=config.dbname,
-            query={"driver": "ODBC Driver 17 for SQL Server"},
         )
 
         return url

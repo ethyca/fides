@@ -1,4 +1,4 @@
-import { Box, SlideFade } from "@fidesui/react";
+import { Box, Flex, Spacer, useToast, UseToastOptions } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
@@ -19,9 +19,11 @@ import {
 import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import TestConnection from "~/features/datastore-connections/system_portal_config/TestConnection";
+import TestConnectionMessage from "~/features/datastore-connections/system_portal_config/TestConnectionMessage";
+import TestData from "~/features/datastore-connections/TestData";
 import {
   selectActiveSystem,
   setActiveSystem,
@@ -38,7 +40,9 @@ import {
 } from "~/types/api";
 
 import { ConnectionConfigFormValues } from "../types";
-import ConnectorParametersForm from "./ConnectorParametersForm";
+import ConnectorParametersForm, {
+  TestConnectionResponse,
+} from "./ConnectorParametersForm";
 
 /**
  * Only handles creating saas connectors. The BE handler automatically
@@ -52,9 +56,8 @@ const createSaasConnector = async (
   systemFidesKey: string,
   createSaasConnectorFunc: any
 ) => {
-  const connectionConfig: CreateSaasConnectionConfigRequest = {
+  const connectionConfig: Omit<CreateSaasConnectionConfigRequest, "name"> = {
     description: values.description,
-    name: values.name,
     instance_key: formatKey(values.instance_key as string),
     saas_connector_type: connectionOption.identifier,
     secrets: {},
@@ -90,16 +93,16 @@ export const patchConnectionConfig = async (
       ? formatKey(values.instance_key as string)
       : connectionConfig?.key;
 
-  const params1: Omit<ConnectionConfigurationResponse, "created_at"> = {
-    access: AccessLevel.WRITE,
-    connection_type: (connectionOption.type === SystemType.SAAS
-      ? connectionOption.type
-      : connectionOption.identifier) as ConnectionType,
-    description: values.description,
-    disabled: false,
-    key,
-    name: values.name,
-  };
+  const params1: Omit<ConnectionConfigurationResponse, "created_at" | "name"> =
+    {
+      access: AccessLevel.WRITE,
+      connection_type: (connectionOption.type === SystemType.SAAS
+        ? connectionOption.type
+        : connectionOption.identifier) as ConnectionType,
+      description: values.description,
+      disabled: false,
+      key,
+    };
   const payload = await patchFunc({
     systemFidesKey,
     connectionConfigs: [params1],
@@ -192,7 +195,7 @@ export const useConnectorForm = ({
       // @ts-ignore connection_configs isn't on the type yet but will be in the future
       dispatch(setActiveSystem({ ...activeSystem, connection_configs: null }));
       setSelectedConnectionOption(undefined);
-      successAlert(`Connector successfully deleted!`);
+      successAlert(`Integration successfully deleted!`);
     } catch (e) {
       handleError(e);
     }
@@ -260,12 +263,16 @@ export const useConnectorForm = ({
         values.dataset = res;
       }
 
-      if (connectionConfig && values.dataset) {
+      if (
+        connectionConfig &&
+        values.dataset &&
+        connectionOption.type === SystemType.DATABASE
+      ) {
         await patchConnectionDatasetConfig(values, connectionConfig.key);
       }
 
       successAlert(
-        `Connector successfully ${
+        `Integration successfully ${
           isCreatingConnectionConfig ? "added" : "updated"
         }!`
       );
@@ -292,11 +299,22 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   connectionConfig,
   setSelectedConnectionOption,
 }) => {
-  const [response, setResponse] = useState<any>();
+  const [response, setResponse] = useState<TestConnectionResponse>();
 
-  const handleTestConnectionClick = (value: any) => {
+  const toast = useToast();
+
+  const handleTestConnectionClick = (value: TestConnectionResponse) => {
     setResponse(value);
+    const status: UseToastOptions["status"] =
+      value.data?.test_status === "succeeded" ? "success" : "error";
+    const toastParams = {
+      ...DEFAULT_TOAST_PARAMS,
+      status,
+      description: <TestConnectionMessage status={status} />,
+    };
+    toast(toastParams);
   };
+
   const skip = connectionOption.type === SystemType.MANUAL;
   const { data: secretsSchema } = useGetConnectionTypeSecretSchemaQuery(
     connectionOption!.identifier,
@@ -337,7 +355,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       <Box color="gray.700" fontSize="14px" mb={4} h="80px">
         Connect to your {connectionOption!.human_readable} environment by
         providing credential information below. Once you have saved your
-        connector credentials, you can review what data is included when
+        integration credentials, you can review what data is included when
         processing a privacy request in your Dataset configuration.
       </Box>
       <ConnectorParametersForm
@@ -354,16 +372,24 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         deleteResult={deleteDatastoreConnectionResult}
       />
 
-      {response && (
-        <SlideFade in>
-          <Box mt="16px" maxW="528px" w="fit-content">
-            <TestConnection
-              response={response}
-              connectionOption={connectionOption}
+      {connectionConfig ? (
+        <Flex mt="4" justifyContent="between" alignItems="center">
+          {response &&
+          response.data &&
+          response.fulfilledTimeStamp !== undefined ? (
+            <TestData
+              succeeded={response.data.test_status === "succeeded"}
+              timestamp={response.fulfilledTimeStamp}
             />
-          </Box>
-        </SlideFade>
-      )}
+          ) : (
+            <TestData
+              succeeded={connectionConfig?.last_test_succeeded}
+              timestamp={connectionConfig?.last_test_timestamp || ""}
+            />
+          )}
+          <Spacer />
+        </Flex>
+      ) : null}
     </>
   );
 };

@@ -13,4 +13,5 @@ export type RedshiftDocsSchema = {
   user?: string;
   password?: string;
   db_schema?: string;
+  ssh_required?: boolean;
 };

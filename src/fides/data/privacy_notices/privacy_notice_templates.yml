@@ -5,39 +5,39 @@ privacy_notices:
   description: This website uses essential cookies and services to enable core website features and provide a seamless user experience. These cookies and services are used to facilitate features such as navigation, remember user preferences, and ensure the security of the website.
   internal_description: Essential cookies and services, also known as strictly necessary, are technologies that are crucial for the proper functioning of a website. These technologies are typically exempt from requiring user consent under privacy regulations because they are essential for the website to deliver its basic functionalities and services.
   regions:
-    - eu_be
-    - eu_bg
-    - eu_cz
-    - eu_dk
-    - eu_de
-    - eu_ee
-    - eu_ie
-    - eu_el
-    - eu_es
-    - eu_fr
-    - eu_hr
-    - eu_it
-    - eu_cy
-    - eu_lv
-    - eu_lt
-    - eu_lu
-    - eu_hu
-    - eu_mt
-    - eu_nl
-    - eu_at
-    - eu_pl
-    - eu_pt
-    - eu_ro
-    - eu_si
-    - eu_sk
-    - eu_fi
-    - eu_se
+    - be
+    - bg
+    - cz
+    - dk
+    - de
+    - ee
+    - ie
+    - gr
+    - es
+    - fr
+    - hr
+    - it
+    - cy
+    - lv
+    - lt
+    - lu
+    - hu
+    - mt
+    - nl
+    - at
+    - pl
+    - pt
+    - ro
+    - si
+    - sk
+    - fi
+    - se
     - gb_eng
     - gb_sct
     - gb_wls
     - gb_nir
-    - isl
-    - nor
+    - is
+    - "no"
     - li
   consent_mechanism: notice_only
   data_uses:
@@ -54,39 +54,39 @@ privacy_notices:
   description: This website uses functional cookies and services to remember your preferences and choices, such as language preferences, font sizes, region selections, and customized layouts. They enable this website to offer enhanced and personalized functionalities.
   internal_description: Functional cookies and services, also referred to as preferences, are technologies that enhance the usability and personalization of a website. Unlike essential cookies and services, functional technologies are not strictly necessary for the basic operation of the website but provide additional features and improved user experiences. These technologies typically require user consent under privacy regulations.
   regions:
-    - eu_be
-    - eu_bg
-    - eu_cz
-    - eu_dk
-    - eu_de
-    - eu_ee
-    - eu_ie
-    - eu_el
-    - eu_es
-    - eu_fr
-    - eu_hr
-    - eu_it
-    - eu_cy
-    - eu_lv
-    - eu_lt
-    - eu_lu
-    - eu_hu
-    - eu_mt
-    - eu_nl
-    - eu_at
-    - eu_pl
-    - eu_pt
-    - eu_ro
-    - eu_si
-    - eu_sk
-    - eu_fi
-    - eu_se
+    - be
+    - bg
+    - cz
+    - dk
+    - de
+    - ee
+    - ie
+    - gr
+    - es
+    - fr
+    - hr
+    - it
+    - cy
+    - lv
+    - lt
+    - lu
+    - hu
+    - mt
+    - nl
+    - at
+    - pl
+    - pt
+    - ro
+    - si
+    - sk
+    - fi
+    - se
     - gb_eng
     - gb_sct
     - gb_wls
     - gb_nir
-    - isl
-    - nor
+    - is
+    - "no"
     - li
   consent_mechanism: opt_in
   data_uses:
@@ -103,39 +103,39 @@ privacy_notices:
   description: This website uses analytics cookies and services for collecting aggregated data and statistical information. This data helps us analyze and optimize site performance, identify popular content, detect navigation issues, and make informed decisions to enhance the user experience.
   internal_description: Analytics cookies and services, also known as performance, are technologies that gather anonymous information about how visitors interact with a website. These technologies provide insights into website usage, visitor behavior, and performance metrics, allowing website owners to understand and improve their site's effectiveness. Analytics technologies typically require user consent under privacy regulations.
   regions:
-    - eu_be
-    - eu_bg
-    - eu_cz
-    - eu_dk
-    - eu_de
-    - eu_ee
-    - eu_ie
-    - eu_el
-    - eu_es
-    - eu_fr
-    - eu_hr
-    - eu_it
-    - eu_cy
-    - eu_lv
-    - eu_lt
-    - eu_lu
-    - eu_hu
-    - eu_mt
-    - eu_nl
-    - eu_at
-    - eu_pl
-    - eu_pt
-    - eu_ro
-    - eu_si
-    - eu_sk
-    - eu_fi
-    - eu_se
+    - be
+    - bg
+    - cz
+    - dk
+    - de
+    - ee
+    - ie
+    - gr
+    - es
+    - fr
+    - hr
+    - it
+    - cy
+    - lv
+    - lt
+    - lu
+    - hu
+    - mt
+    - nl
+    - at
+    - pl
+    - pt
+    - ro
+    - si
+    - sk
+    - fi
+    - se
     - gb_eng
     - gb_sct
     - gb_wls
     - gb_nir
-    - isl
-    - nor
+    - is
+    - "no"
     - li
   consent_mechanism: opt_in
   data_uses:
@@ -152,39 +152,39 @@ privacy_notices:
   description: This website uses marketing cookies and services to deliver personalized advertisements, promotions, and offers that are relevant to you. They help optimize ad delivery, measure campaign effectiveness, and enable advertisers to reach specific target audiences.
   internal_description: Marketing cookies and services, also referred to as targeting or advertising, are technologies that tracks users' browsing behavior across websites. These technologies enable targeted advertising and marketing campaigns by collecting information about users' interests, preferences, and online activities. Marketing technologies typically require user consent under privacy regulations.
   regions:
-    - eu_be
-    - eu_bg
-    - eu_cz
-    - eu_dk
-    - eu_de
-    - eu_ee
-    - eu_ie
-    - eu_el
-    - eu_es
-    - eu_fr
-    - eu_hr
-    - eu_it
-    - eu_cy
-    - eu_lv
-    - eu_lt
-    - eu_lu
-    - eu_hu
-    - eu_mt
-    - eu_nl
-    - eu_at
-    - eu_pl
-    - eu_pt
-    - eu_ro
-    - eu_si
-    - eu_sk
-    - eu_fi
-    - eu_se
+    - be
+    - bg
+    - cz
+    - dk
+    - de
+    - ee
+    - ie
+    - gr
+    - es
+    - fr
+    - hr
+    - it
+    - cy
+    - lv
+    - lt
+    - lu
+    - hu
+    - mt
+    - nl
+    - at
+    - pl
+    - pt
+    - ro
+    - si
+    - sk
+    - fi
+    - se
     - gb_eng
     - gb_sct
     - gb_wls
     - gb_nir
-    - isl
-    - nor
+    - is
+    - "no"
     - li
   consent_mechanism: opt_in
   data_uses:

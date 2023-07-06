@@ -18,27 +18,10 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.scope_registry import (
-    CONNECTION_AUTHORIZE,
-    CONNECTOR_TEMPLATE_REGISTER,
-    SAAS_CONFIG_CREATE_OR_UPDATE,
-    SAAS_CONFIG_DELETE,
-    SAAS_CONFIG_READ,
-    SAAS_CONNECTION_INSTANTIATE,
-)
-from fides.api.api.v1.urn_registry import (
-    AUTHORIZE,
-    CONNECTION_TYPES,
-    REGISTER_CONNECTOR_TEMPLATE,
-    SAAS_CONFIG,
-    SAAS_CONFIG_VALIDATE,
-    SAAS_CONNECTOR_FROM_TEMPLATE,
-    V1_URL_PREFIX,
-)
 from fides.api.common_exceptions import FidesopsException, KeyOrNameAlreadyExists
-from fides.api.ctl.sql_models import System  # type: ignore
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateResponse,
@@ -64,6 +47,23 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets
+from fides.common.api.scope_registry import (
+    CONNECTION_AUTHORIZE,
+    CONNECTOR_TEMPLATE_REGISTER,
+    SAAS_CONFIG_CREATE_OR_UPDATE,
+    SAAS_CONFIG_DELETE,
+    SAAS_CONFIG_READ,
+    SAAS_CONNECTION_INSTANTIATE,
+)
+from fides.common.api.v1.urn_registry import (
+    AUTHORIZE,
+    CONNECTION_TYPES,
+    REGISTER_CONNECTOR_TEMPLATE,
+    SAAS_CONFIG,
+    SAAS_CONFIG_VALIDATE,
+    SAAS_CONNECTOR_FROM_TEMPLATE,
+    V1_URL_PREFIX,
+)
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 

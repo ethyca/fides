@@ -1,9 +1,9 @@
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import ID_VERIFICATION_CONFIG, V1_URL_PREFIX
 from fides.api.models.application_config import ApplicationConfig
-from fides.core.config import get_config
+from fides.common.api.v1.urn_registry import ID_VERIFICATION_CONFIG, V1_URL_PREFIX
+from fides.config import get_config
 
 
 class TestGetIdentityVerificationConfig:

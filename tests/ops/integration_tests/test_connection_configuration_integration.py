@@ -6,12 +6,6 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
-    CONNECTION_CREATE_OR_UPDATE,
-    CONNECTION_READ,
-    STORAGE_READ,
-)
-from fides.api.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
 from fides.api.common_exceptions import ConnectionException
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionTestStatus
@@ -27,6 +21,12 @@ from fides.api.service.connectors.sql_connector import (
     MicrosoftSQLServerConnector,
     MySQLConnector,
 )
+from fides.common.api.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_READ,
+    STORAGE_READ,
+)
+from fides.common.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
 
 
 @pytest.mark.integration_postgres
@@ -829,7 +829,7 @@ class TestMicrosoftSQLServerConnection:
             == f"Secrets updated for ConnectionConfig with key: {connection_config_mssql.key}."
         )
         assert body["test_status"] == "failed"
-        assert "Connection error." == body["failure_reason"]
+        assert "Operational Error connecting to mssql db." == body["failure_reason"]
         db.refresh(connection_config_mssql)
 
         assert connection_config_mssql.secrets == {
@@ -895,7 +895,7 @@ class TestMicrosoftSQLServerConnection:
         connection_config_mssql,
     ) -> None:
         payload = {
-            "url": "mssql+pyodbc://sa:Mssql_pw1@mssql_example:1433/mssql_example?driver=ODBC+Driver+17+for+SQL+Server"
+            "url": "mssql+pymssql://sa:Mssql_pw1@mssql_example:1433/mssql_example"
         }
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
@@ -989,7 +989,7 @@ class TestMicrosoftSQLServerConnection:
         assert connection_config_mssql.last_test_timestamp is not None
         assert connection_config_mssql.last_test_succeeded is False
         assert body["test_status"] == "failed"
-        assert "Connection error." == body["failure_reason"]
+        assert "Operational Error connecting to mssql db." == body["failure_reason"]
         assert (
             body["msg"]
             == f"Test completed for ConnectionConfig with key: {connection_config_mssql.key}."

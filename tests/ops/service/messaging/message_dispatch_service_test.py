@@ -37,7 +37,7 @@ from fides.api.service.messaging.message_dispatch_service import (
     _twilio_sms_dispatcher,
     dispatch_message,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 @pytest.fixture
@@ -501,7 +501,7 @@ class TestMessageDispatchService:
                                 privacy_notice_history=PrivacyNoticeHistorySchema(
                                     name="Analytics",
                                     notice_key="analytics",
-                                    regions=["eu_fr"],
+                                    regions=["fr"],
                                     id="test_3",
                                     privacy_notice_id="39391",
                                     consent_mechanism=ConsentMechanism.opt_in,

@@ -40,7 +40,8 @@ from fides.api.util.saas_util import (
     replace_dataset_placeholders,
     replace_version,
 )
-from fides.core.config import CONFIG
+from fides.api.util.unsafe_file_util import verify_svg, verify_zip
+from fides.config import CONFIG
 
 
 class ConnectorTemplateLoader(ABC):
@@ -181,6 +182,9 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         custom connector template, registers the template, and saves it to the database.
         """
 
+        # verify the zip file before we use it
+        verify_zip(zip_file)
+
         config_contents = None
         dataset_contents = None
         icon_contents = None
@@ -210,6 +214,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                     )
             elif info.filename.endswith(".svg"):
                 if not icon_contents:
+                    verify_svg(file_contents)
                     icon_contents = str_to_b64_str(file_contents)
                 else:
                     raise ValidationError(
@@ -323,13 +328,16 @@ def create_connection_config_from_template_no_save(
     )
 
     data = {
-        "name": template_values.name,
-        "key": template_values.key,
+        "key": template_values.key
+        if template_values.key
+        else template_values.instance_key,
         "description": template_values.description,
         "connection_type": ConnectionType.saas,
         "access": AccessLevel.write,
         "saas_config": config_from_template,
     }
+    if template_values.name:
+        data["name"] = template_values.name
 
     if system_id:
         data["system_id"] = system_id

@@ -9,7 +9,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
-from fides.api.api.v1.scope_registry import SCOPE_REGISTRY as SCOPES
+from fides.common.api.scope_registry import SCOPE_REGISTRY as SCOPES
 
 
 class FidesopsException(Exception):
@@ -221,6 +221,10 @@ class NoSuchConnectionTypeSecretSchemaError(Exception):
 
 class SSHTunnelConfigNotFoundException(Exception):
     """Exception for when Fides is configured to use an SSH tunnel without config provided."""
+
+
+class MalisciousUrlException(Exception):
+    """Fides has detected a potentially maliscious URL."""
 
 
 class AuthenticationError(HTTPException):
