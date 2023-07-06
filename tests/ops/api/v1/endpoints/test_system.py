@@ -184,10 +184,8 @@ class TestPatchSystemConnections:
 
         if assign_system:
             assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
-            auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
-            api_client.put(assign_url, headers=auth_header, json=[system.fides_key])
-
-        if assign_system:
+            system_manager_auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+            api_client.put(assign_url, headers=system_manager_auth_header, json=[system.fides_key])
             auth_header = generate_system_manager_header([system.id])
         else:
             auth_header = generate_role_header_for_user(
@@ -295,10 +293,8 @@ class TestGetConnections:
 
         if assign_system:
             assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
-            auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
-            api_client.put(assign_url, headers=auth_header, json=[system.fides_key])
-
-        if assign_system:
+            system_manager_auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+            api_client.put(assign_url, headers=system_manager_auth_header, json=[system.fides_key])
             auth_header = generate_system_manager_header([system.id])
         else:
             auth_header = generate_role_header_for_user(
@@ -517,10 +513,8 @@ class TestDeleteSystemConnectionConfig:
 
         if assign_system:
             assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
-            auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
-            api_client.put(assign_url, headers=auth_header, json=[system.fides_key])
-
-        if assign_system:
+            system_manager_auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+            api_client.put(assign_url, headers=system_manager_auth_header, json=[system.fides_key])
             auth_header = generate_system_manager_header([system.id])
         else:
             auth_header = generate_role_header_for_user(
