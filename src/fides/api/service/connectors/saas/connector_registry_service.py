@@ -323,7 +323,9 @@ def create_connection_config_from_template_no_save(
     )
 
     data = {
-        "key": template_values.key if template_values.key else template_values.instance_key,
+        "key": template_values.key
+        if template_values.key
+        else template_values.instance_key,
         "description": template_values.description,
         "connection_type": ConnectionType.saas,
         "access": AccessLevel.write,

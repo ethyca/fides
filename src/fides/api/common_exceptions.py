@@ -223,6 +223,10 @@ class SSHTunnelConfigNotFoundException(Exception):
     """Exception for when Fides is configured to use an SSH tunnel without config provided."""
 
 
+class MalisciousUrlException(Exception):
+    """Fides has detected a potentially maliscious URL."""
+
+
 class AuthenticationError(HTTPException):
     """To be raised when attempting to fetch an access token using
     invalid credentials.
