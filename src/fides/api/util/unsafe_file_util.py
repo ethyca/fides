@@ -51,7 +51,7 @@ def verify_zip(zip_file: ZipFile, max_file_size: Optional[int] = None) -> None:
         with zip_file.open(file_info) as file:
             # wraps the file read in an iterator that stops once no bytes
             # are returned or the max file size is reached
-            for chunk in iter(lambda: file.read(CHUNK_SIZE), b""):
+            for chunk in iter(lambda f=file: f.read(CHUNK_SIZE), b""):  # type: ignore
                 file_size += len(chunk)
 
                 if file_size > max_file_size:
