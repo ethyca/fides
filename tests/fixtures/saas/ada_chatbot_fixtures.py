@@ -52,7 +52,7 @@ class AdaChatbotClient:
 
     def get_conversation(self, chatterid):
         return requests.get(
-            url=f"{self.base_url}/v2/users",
+            url=f"{self.base_url}/data_api/v1.2/conversations",
             headers=self.headers,
             params={"created_since": '2023-06-28T17:59:28.201000', "page_size": 100, "chatter_id": chatterid},
         )

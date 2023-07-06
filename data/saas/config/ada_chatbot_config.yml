@@ -66,12 +66,12 @@ saas_config:
             - strategy: filter
               configuration:
                 field: chatter_id
-                value: '={{$node["conversations"].json["chatter_id"]}}'
+                value: 649d4fb2da41d34da975c0d0
           pagination:
-            strategy: cursor
+            strategy: link
             configuration:
-              cursor_param: after
-              field: _id
+              source: body
+              path: next_page_uri
           param_values:
             - name: placeholder
               identity: email
