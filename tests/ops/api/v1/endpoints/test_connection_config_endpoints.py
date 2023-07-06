@@ -706,8 +706,9 @@ class TestPatchConnections:
         assert call_args[4] is None
         assert call_args[5] is None
 
-
-    def test_patch_connections_no_name(self, api_client, generate_auth_header, url, payload):
+    def test_patch_connections_no_name(
+        self, api_client, generate_auth_header, url, payload
+    ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         del payload[0]["name"]
         response = api_client.patch(url, headers=auth_header, json=payload)
