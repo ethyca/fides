@@ -19,7 +19,7 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore
-from fides.api.models.sql_models import System
+from fides.api.models.sql_models import System  # type: ignore
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.connection_configuration import (
     ConnectionConfigSecretsSchema,
