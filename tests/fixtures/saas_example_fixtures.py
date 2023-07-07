@@ -658,7 +658,7 @@ def planet_express_invalid_dataset() -> str:
 
 @pytest.fixture
 def planet_express_icon() -> str:
-    return encode_file_contents(
+    return load_as_string(
         "tests/fixtures/saas/test_data/planet_express/planet_express.svg"
     )
 
