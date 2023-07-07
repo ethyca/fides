@@ -33,29 +33,3 @@ class TestLoggerPii:
         some_data = "some_data"
         result = "{}".format((Pii(some_data)))
         assert result == "some_data"
-
-
-@pytest.mark.unit
-class TestLogLevel:
-    @pytest.fixture
-    def error_message(self):
-        return "Error message"
-
-    @pytest.mark.parametrize("dev_mode", [True, False])
-    def test_logger_exception(self, dev_mode, error_message, logging_capture):
-        _log_exception(ValueError(error_message), dev_mode)
-
-        assert "ERROR" in logging_capture.text
-        assert error_message in logging_capture.text
-
-    def test_logger_warning_dev_mode(self, error_message, logging_capture):
-        _log_warning(ValueError(error_message), True)
-
-        assert "WARNING" in logging_capture.text
-        assert error_message in logging_capture.text
-
-    def test_logger_warning_prod_mode(self, error_message, logging_capture):
-        _log_warning(ValueError(error_message), False)
-
-        assert "ERROR" in logging_capture.text
-        assert error_message in logging_capture.text

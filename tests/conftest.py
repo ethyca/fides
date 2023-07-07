@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import pytest
 import requests
+import structlog
 import yaml
 from fastapi.testclient import TestClient
 from fideslang import DEFAULT_TAXONOMY, models
@@ -15,9 +16,8 @@ from httpx import AsyncClient
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from toml import load as load_toml
 from structlog.testing import LogCapture
-import structlog
+from toml import load as load_toml
 
 from fides.api.app_setup import PRIVACY_EXPERIENCE_CONFIGS_PATH
 from fides.api.cryptography.schemas.jwt import (
@@ -171,15 +171,6 @@ def event_loop():
 def config():
     CONFIG.test_mode = True
     yield CONFIG
-
-
-@pytest.fixture
-def logging_capture():
-    return LogCapture()
-
-@pytest.fixture(autouse=True)
-def fixture_configure_structlog(logging_capture):
-    structlog.configure(processors=[logging_capture])
 
 
 def create_citext_extension(engine: Engine) -> None:

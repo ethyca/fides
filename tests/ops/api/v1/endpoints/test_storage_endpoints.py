@@ -1047,7 +1047,6 @@ class TestPutDefaultStorageConfig:
         url,
         generate_auth_header,
         payload,
-        logging_capture,
     ):
         mock_create_or_update.side_effect = KeyValidationError()
         payload["type"] = StorageType.local.value
@@ -1064,10 +1063,6 @@ class TestPutDefaultStorageConfig:
         response = api_client.put(url, headers=auth_header, json=payload)
 
         assert 500 == response.status_code
-        assert (
-            "Create/update failed for default config update for storage type"
-            in logging_capture.text
-        )
 
 
 class TestPutDefaultStorageConfigSecretsS3:

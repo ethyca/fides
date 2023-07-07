@@ -11,9 +11,9 @@ import toml
 from pydantic import Field
 from pydantic.class_validators import _FUNCS
 from pydantic.env_settings import SettingsSourceCallable
+from structlog import get_logger
 
 from fides.common.utils import echo_red
-from structlog import get_logger
 
 from .admin_ui_settings import AdminUISettings
 from .cli_settings import CLISettings
@@ -22,9 +22,9 @@ from .database_settings import DatabaseSettings
 from .execution_settings import ExecutionSettings
 from .fides_settings import FidesSettings
 from .helpers import (
+    configure_structlog,
     handle_deprecated_env_variables,
     handle_deprecated_fields,
-    configure_structlog,
 )
 from .logging_settings import LoggingSettings
 from .notification_settings import NotificationSettings
@@ -256,4 +256,4 @@ def check_required_webserver_config_values(config: FidesConfig) -> None:
 
 
 CONFIG = get_config()
-configure_structlog(CONFIG)
+configure_structlog(logging_config=CONFIG.logging, dev_mode=CONFIG.dev_mode)

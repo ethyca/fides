@@ -1,7 +1,7 @@
 """
 Provides functions that seed the application with data.
 """
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from fideslang import DEFAULT_TAXONOMY
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -342,7 +342,7 @@ def load_default_dsr_policies() -> None:
         log.info("All default policies & rules created")
 
 
-async def load_default_organization(async_session: AsyncSession) -> None:
+async def load_default_organization(async_session: AsyncSession) -> Tuple[int, int]:
     """
     Seed the database with a default organization unless
     one with a matching name already exists.
@@ -365,9 +365,11 @@ async def load_default_organization(async_session: AsyncSession) -> None:
                 inserted += 1
         except AlreadyExistsError:
             pass
+    skipped = len(organizations) - inserted
 
     log.debug(f"INSERTED {inserted} organization resource(s)")
-    log.debug(f"SKIPPED {len(organizations)-inserted} organization resource(s)")
+    log.debug(f"SKIPPED {skipped} organization resource(s)")
+    return (inserted, skipped)
 
 
 async def load_default_taxonomy(async_session: AsyncSession) -> None:

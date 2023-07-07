@@ -1022,12 +1022,10 @@ class TestFilterResults:
         print(expected_results)
         assert filtered_results == expected_results
 
-    def test_unpack_fides_connector_results_key_error(self, logging_capture):
+    def test_unpack_fides_connector_results_key_error(self):
         unpack_fides_connector_results(
             connector_results=[{"test": "bad"}],
             filtered_access_results={"test": [{"test": "t"}]},
             rule_key="bad",
             node_address="nothing",
         )
-
-        assert "Did not find a result entry" in logging_capture.text

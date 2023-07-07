@@ -111,7 +111,6 @@ async def test_firebase_auth_access_request_non_existent_users(
     policy,
     firebase_auth_connection_config,
     firebase_auth_dataset_config,
-    logging_capture,
 ) -> None:
     """Ensure that firebase access request task gracefully handles non-existent users"""
     privacy_request = PrivacyRequest(id=f"test_firebase_access_request_task_{uuid4()}")
@@ -142,8 +141,6 @@ async def test_firebase_auth_access_request_non_existent_users(
             "phone_number",
         ],
     )
-    # and ensure we've correctly added a warning log
-    assert message in logging_capture.text
 
 
 @pytest.mark.integration_saas

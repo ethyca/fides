@@ -1,14 +1,16 @@
 """This module contains logic related to loading/manipulation/writing the config."""
 import os
+from logging import getLevelName
 from os import environ
 from pathlib import Path
 from re import compile as regex
-from typing import Any, Dict, List, Union, TYPE_CHECKING
-from pydantic import BaseModel
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from click import echo
-from logging import getLevelName
 import structlog
+from click import echo
+from toml import dump, load
+
+from .logging_settings import LoggingSettings
 
 logger = structlog.get_logger()
 
@@ -147,25 +149,26 @@ def handle_deprecated_env_variables(settings: Dict[str, Any]) -> Dict[str, Any]:
     return settings
 
 
-def configure_structlog(config: BaseModel) -> None:
+def configure_structlog(
+    logging_config: LoggingSettings, dev_mode: bool = False
+) -> None:
     """
     Configures the application logger according to the application config.
     """
 
     # Configure Log Destination, defaults to stdout
-    file_destination = (
-        open(config.logging.destination, mode="a", encoding="utf8")
-        if config.logging.destination
-        else ""
-    )
-    structlog.configure(
-        logger_factory=structlog.WriteLoggerFactory(file=file_destination)
-    )
+
+    file_destination = logging_config.destination
+    if file_destination:
+        with open(file_destination, mode="a", encoding="utf8") as logging_file:
+            structlog.configure(
+                logger_factory=structlog.WriteLoggerFactory(file=logging_file)
+            )
 
     # Configure Level Filtering
     structlog.configure(
         wrapper_class=structlog.make_filtering_bound_logger(
-            getLevelName(config.logging.level)
+            getLevelName(logging_config.level)
         )
     )
 
@@ -194,7 +197,7 @@ def configure_structlog(config: BaseModel) -> None:
 
     # This would allow us to set it based on TTY
     # if sys.stderr.isatty():
-    if config.dev_mode:
+    if dev_mode:
         processors = shared_processors + [
             structlog.dev.ConsoleRenderer(),
         ]
