@@ -9,7 +9,6 @@ from fides.api.common_exceptions import (
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
 )
-from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.models.privacy_preference import (
     PrivacyPreferenceHistory,
     RequestOrigin,
@@ -245,6 +244,72 @@ class TestPrivacyPreferenceHistory:
 
         preference_history_record.delete(db)
         next_preference_history_record.delete(db)
+
+    def test_create_history_and_upsert_current_preferences(
+        self,
+        db,
+        privacy_notice,
+    ):
+        provided_identity_data = {
+            "privacy_request_id": None,
+            "field_name": "email",
+            "hashed_value": ProvidedIdentity.hash_value("test@email.com"),
+            "encrypted_value": {"value": "test@email.com"},
+        }
+        fides_user_provided_identity_data = {
+            "privacy_request_id": None,
+            "field_name": "fides_user_device_id",
+            "hashed_value": ProvidedIdentity.hash_value(
+                "test_fides_user_device_id_1234567"
+            ),
+            "encrypted_value": {"value": "test_fides_user_device_id_1234567"},
+        }
+        provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+        fides_user_provided_identity = ProvidedIdentity.create(
+            db, data=fides_user_provided_identity_data
+        )
+
+        privacy_notice_history = privacy_notice.histories[0]
+
+        email, hashed_email = extract_identity_from_provided_identity(
+            provided_identity, ProvidedIdentityType.email
+        )
+        phone_number, hashed_phone_number = extract_identity_from_provided_identity(
+            provided_identity, ProvidedIdentityType.phone_number
+        )
+        (
+            fides_user_device_id,
+            hashed_device_id,
+        ) = extract_identity_from_provided_identity(
+            fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
+        )
+
+        (
+            preference_history_record,
+            current_record,
+        ) = PrivacyPreferenceHistory.create_history_and_upsert_current_preference(
+            db=db,
+            data={
+                "email": email,
+                "fides_user_device": fides_user_device_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "hashed_email": hashed_email,
+                "hashed_fides_user_device": hashed_device_id,
+                "hashed_phone_number": hashed_phone_number,
+                "phone_number": phone_number,
+                "preference": "opt_out",
+                "privacy_notice_history_id": privacy_notice_history.id,
+                "provided_identity_id": provided_identity.id,
+                "request_origin": "privacy_center",
+                "secondary_user_ids": {"ga_client_id": "test"},
+                "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+                "user_geography": "us_ca",
+                "url_recorded": "example.com/privacy_center",
+            },
+            check_name=False,
+        )
+
+        assert current_record == preference_history_record.current_privacy_preference
 
     def test_cache_system_status(self, privacy_preference_history, db):
         assert privacy_preference_history.affected_system_status == {}
