@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.16.0...main)
 
+### Added
+
+- Prefetches API calls as part of Fides.js [#3698](https://github.com/ethyca/fides/pull/3698)
+
 ## [2.16.0](https://github.com/ethyca/fides/compare/2.15.1...2.16.0)
 
 ### Added
@@ -24,7 +28,6 @@ The types of changes are:
 - Empty state for when there are no relevant privacy notices in the privacy center [#3640](https://github.com/ethyca/fides/pull/3640)
 - GPC indicators in fides-js banner and modal [#3673](https://github.com/ethyca/fides/pull/3673)
 - Include `data_use` and `data_category` metadata in `upload` of access results [#3674](https://github.com/ethyca/fides/pull/3674)
-- Prefetches API calls as part of Fides.js [#3698](https://github.com/ethyca/fides/pull/3698)
 
 ### Fixed
 
