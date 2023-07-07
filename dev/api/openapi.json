@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.15.2b0.post0.dev7"
+    "version": "2.15.2b0.post0.dev8"
   },
   "paths": {
     "/api/v1/admin/db/{action}": {
@@ -3557,6 +3557,58 @@
         ]
       }
     },
+    "/api/v1/system/{fides_key}/connection/{connection_key}": {
+      "delete": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Delete Connection",
+        "operationId": "delete_connection_api_v1_system__fides_key__connection__connection_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Connection Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "connection_key",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:delete"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/system": {
       "get": {
         "tags": [
@@ -4430,7 +4482,6 @@
           "Connections"
         ],
         "summary": "Delete Connection",
-        "description": "Removes the connection configuration with matching key.",
         "operationId": "delete_connection_api_v1_connection__connection_key__delete",
         "parameters": [
           {
