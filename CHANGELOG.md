@@ -57,6 +57,7 @@ The types of changes are:
 
 ### Changed
 - Privacy center action cards are now able to expand to accommodate longer text [#3669](https://github.com/ethyca/fides/pull/3669)
+- Update integration endpoint permissions [#3707](https://github.com/ethyca/fides/pull/3707)
 
 ### Fixed
 - Handle names with a double underscore when processing access and erasure requests [#3688](https://github.com/ethyca/fides/pull/3688)

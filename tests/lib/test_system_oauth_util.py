@@ -14,7 +14,7 @@ from fides.api.cryptography.schemas.jwt import (
 )
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import OWNER, VIEWER
-from fides.api.util.system_manager_oauth_util import (
+from fides.api.oauth.system_manager_oauth_util import (
     SystemAuthContainer,
     _get_system_from_fides_key,
     _get_system_from_request_body,
