@@ -1,15 +1,19 @@
 import json
 from unittest import mock
+from uuid import uuid4
 
 import pytest
 from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.status import (
+    HTTP_200_OK,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
+    HTTP_204_NO_CONTENT,
 )
 from starlette.testclient import TestClient
+from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -17,13 +21,20 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.manual_webhook import AccessManualWebhook
+from fides.api.models.privacy_request import PrivacyRequestStatus
+from fides.api.models.sql_models import Dataset
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     SAAS_CONNECTION_INSTANTIATE,
     STORAGE_DELETE,
+    SYSTEM_MANAGER_UPDATE,
+    CONNECTION_DELETE,
 )
-from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from tests.conftest import generate_role_header_for_user
+from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
 page_size = Params().size
 
@@ -60,6 +71,46 @@ def payload():
     ]
 
 
+@pytest.fixture(scope="function")
+def connections():
+    return [
+        {
+            "name": "My Main Postgres DB",
+            "key": "postgres_db_1",
+            "connection_type": "postgres",
+            "access": "write",
+            "secrets": {
+                "url": None,
+                "host": "http://localhost",
+                "port": 5432,
+                "dbname": "test",
+                "db_schema": "test",
+                "username": "test",
+                "password": "test",
+            },
+        },
+        {
+            "name": "My Mongo DB",
+            "connection_type": "mongodb",
+            "access": "read",
+            "key": "mongo-db-key",
+        },
+        {
+            "secrets": {
+                "domain": "test_mailchimp_domain",
+                "username": "test_mailchimp_username",
+                "api_key": "test_mailchimp_api_key",
+            },
+            "name": "My Mailchimp Test",
+            "description": "Mailchimp ConnectionConfig description",
+            "key": "mailchimp-asdfasdf-asdftgg-dfgdfg",
+            "connection_type": "saas",
+            "saas_connector_type": "mailchimp",
+            "access": "read",
+        },
+    ]
+
+
 class TestPatchSystemConnections:
     def test_patch_connections_valid_system(
         self, api_client: TestClient, generate_auth_header, url, payload
@@ -67,7 +118,7 @@ class TestPatchSystemConnections:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.patch(url, headers=auth_header, json=payload)
 
-        assert resp.status_code == 200
+        assert resp.status_code == HTTP_200_OK
 
     def test_patch_connections_with_invalid_system(
         self, api_client: TestClient, generate_auth_header, url_invalid_system
@@ -80,6 +131,68 @@ class TestPatchSystemConnections:
             resp.json()["detail"]
             == "A valid system must be provided to create or update connections"
         )
+
+    @pytest.mark.parametrize(
+        "acting_user_role, expected_status_code",
+        [
+            ("owner_user", HTTP_200_OK),
+            ("contributor_user", HTTP_200_OK),
+            ("approver_user", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_patch_connections_role_check(
+        self,
+        api_client: TestClient,
+        payload,
+        request,
+        url,
+        acting_user_role: FidesUser,
+        expected_status_code,
+        system,
+        generate_auth_header,
+    ):
+        acting_user_role = request.getfixturevalue(acting_user_role)
+        auth_header = generate_role_header_for_user(
+            acting_user_role, roles=acting_user_role.permissions.roles
+        )
+        resp = api_client.patch(url, headers=auth_header, json=payload)
+        assert resp.status_code == expected_status_code
+
+    @pytest.mark.parametrize(
+        "acting_user_role, expected_status_code, assign_system",
+        [
+            ("viewer_user", HTTP_403_FORBIDDEN, False),
+            ("viewer_user", HTTP_200_OK, True),
+            ("viewer_and_approver_user", HTTP_403_FORBIDDEN, False),
+            ("viewer_and_approver_user", HTTP_200_OK, True),
+        ],
+    )
+    def test_patch_connections_role_check_viewer(
+        self,
+        api_client: TestClient,
+        payload,
+        request,
+        acting_user_role: FidesUser,
+        expected_status_code,
+        assign_system,
+        system,
+        generate_auth_header,
+        generate_system_manager_header,
+    ):
+        url = V1_URL_PREFIX + f"/system/{system.fides_key}/connection"
+        acting_user_role = request.getfixturevalue(acting_user_role)
+
+        if assign_system:
+            assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
+            system_manager_auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+            api_client.put(assign_url, headers=system_manager_auth_header, json=[system.fides_key])
+            auth_header = generate_system_manager_header([system.id])
+        else:
+            auth_header = generate_role_header_for_user(
+                acting_user_role, roles=acting_user_role.permissions.roles
+            )
+        resp = api_client.patch(url, headers=auth_header, json=payload)
+        assert resp.status_code == expected_status_code
 
 
 class TestGetConnections:
@@ -114,51 +227,15 @@ class TestGetConnections:
         generate_auth_header,
         connection_config,
         url,
+        connections,
         db: Session,
     ) -> None:
-        connections = [
-            {
-                "name": "My Main Postgres DB",
-                "key": "postgres_db_1",
-                "connection_type": "postgres",
-                "access": "write",
-                "secrets": {
-                    "url": None,
-                    "host": "http://localhost",
-                    "port": 5432,
-                    "dbname": "test",
-                    "db_schema": "test",
-                    "username": "test",
-                    "password": "test",
-                },
-            },
-            {
-                "name": "My Mongo DB",
-                "connection_type": "mongodb",
-                "access": "read",
-                "key": "mongo-db-key",
-            },
-            {
-                "secrets": {
-                    "domain": "test_mailchimp_domain",
-                    "username": "test_mailchimp_username",
-                    "api_key": "test_mailchimp_api_key",
-                },
-                "name": "My Mailchimp Test",
-                "description": "Mailchimp ConnectionConfig description",
-                "key": "mailchimp-asdfasdf-asdftgg-dfgdfg",
-                "connection_type": "saas",
-                "saas_connector_type": "mailchimp",
-                "access": "read",
-            },
-        ]
-
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         api_client.patch(url, headers=auth_header, json=connections)
 
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(url, headers=auth_header)
-        assert resp.status_code == 200
+        assert resp.status_code == HTTP_200_OK
 
         response_body = json.loads(resp.text)
         assert len(response_body["items"]) == 3
@@ -184,6 +261,310 @@ class TestGetConnections:
         assert response_body["total"] == 3
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
+
+    @pytest.mark.parametrize(
+        "acting_user_role, expected_status_code, assign_system",
+        [
+            ("viewer_user", HTTP_200_OK, False),
+            ("viewer_user", HTTP_200_OK, True),
+            ("viewer_and_approver_user", HTTP_200_OK, False),
+            ("viewer_and_approver_user", HTTP_200_OK, True),
+        ],
+    )
+    def test_get_connection_configs_role_viewer(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        generate_system_manager_header,
+        connection_config,
+        connections,
+        acting_user_role,
+        expected_status_code,
+        assign_system,
+        system,
+        request,
+        db: Session,
+    ) -> None:
+        url = V1_URL_PREFIX + f"/system/{system.fides_key}/connection"
+        patch_auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        api_client.patch(url, headers=patch_auth_header, json=connections)
+
+        acting_user_role = request.getfixturevalue(acting_user_role)
+
+        if assign_system:
+            assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
+            system_manager_auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+            api_client.put(assign_url, headers=system_manager_auth_header, json=[system.fides_key])
+            auth_header = generate_system_manager_header([system.id])
+        else:
+            auth_header = generate_role_header_for_user(
+                acting_user_role, roles=acting_user_role.permissions.roles
+            )
+
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == expected_status_code
+
+    @pytest.mark.parametrize(
+        "acting_user_role, expected_status_code",
+        [
+            ("owner_user", HTTP_200_OK),
+            ("contributor_user", HTTP_200_OK),
+            ("approver_user", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_get_connection_configs_role(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        connection_config,
+        connections,
+        acting_user_role,
+        expected_status_code,
+        system,
+        request,
+        db: Session,
+    ) -> None:
+        url = V1_URL_PREFIX + f"/system/{system.fides_key}/connection"
+        patch_auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        api_client.patch(url, headers=patch_auth_header, json=connections)
+
+        acting_user_role = request.getfixturevalue(acting_user_role)
+        auth_header = generate_role_header_for_user(
+            acting_user_role, roles=acting_user_role.permissions.roles
+        )
+
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == expected_status_code
+
+
+class TestDeleteSystemConnectionConfig:
+    @pytest.fixture(scope="function")
+    def url(self, connection_config, system) -> str:
+        return (
+            V1_URL_PREFIX
+            + f"/system/{system.fides_key}/connection/{connection_config.key}"
+        )
+
+    def test_delete_connection_config_not_authenticated(
+        self, url, api_client: TestClient, generate_auth_header, connection_config
+    ) -> None:
+        # Test not authenticated
+
+        resp = api_client.delete(url, headers={})
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_delete_connection_config_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header, connection_config
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+    def test_delete_connection_config_does_not_exist(
+        self, api_client: TestClient, generate_auth_header, system
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
+        url = (
+            V1_URL_PREFIX + f"/system/{system.fides_key}/connection/non_existent_config"
+        )
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == HTTP_404_NOT_FOUND
+
+    def test_delete_connection_config(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
+        # the key needs to be cached before the delete
+        key = connection_config.key
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == HTTP_204_NO_CONTENT
+        assert db.query(ConnectionConfig).filter_by(key=key).first() is None
+
+    @mock.patch("fides.api.util.connection_util.queue_privacy_request")
+    def test_delete_manual_webhook_connection_config(
+        self,
+        mock_queue,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        privacy_request_requires_input,
+        system,
+    ) -> None:
+        """Assert both the connection config and its webhook are deleted"""
+        assert (
+            db.query(AccessManualWebhook).filter_by(id=access_manual_webhook.id).first()
+            is not None
+        )
+
+        assert (
+            db.query(ConnectionConfig)
+            .filter_by(key=integration_manual_webhook_config.key)
+            .first()
+            is not None
+        )
+        url = (
+            V1_URL_PREFIX
+            + f"/system/{system.fides_key}/connection/{integration_manual_webhook_config.key}"
+        )
+        auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == HTTP_204_NO_CONTENT
+
+        assert (
+            db.query(AccessManualWebhook).filter_by(id=access_manual_webhook.id).first()
+            is None
+        )
+
+        assert (
+            db.query(ConnectionConfig)
+            .filter_by(key=integration_manual_webhook_config.key)
+            .first()
+            is None
+        )
+        assert (
+            mock_queue.called
+        ), "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+        assert (
+            mock_queue.call_args.kwargs["privacy_request_id"]
+            == privacy_request_requires_input.id
+        )
+        db.refresh(privacy_request_requires_input)
+        assert (
+            privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
+        )
+
+    def test_delete_saas_connection_config(
+        self, api_client: TestClient, db: Session, generate_auth_header, system
+    ) -> None:
+        secrets = {
+            "domain": "test_sendgrid_domain",
+            "api_key": "test_sendgrid_api_key",
+        }
+        connection_config, dataset_config = instantiate_connector(
+            db,
+            "sendgrid",
+            "secondary_sendgrid_instance",
+            "Sendgrid ConnectionConfig description",
+            secrets,
+        )
+        dataset = dataset_config.ctl_dataset
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
+
+        url = (
+            V1_URL_PREFIX
+            + f"/system/{system.fides_key}/connection/{connection_config.key}"
+        )
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == HTTP_204_NO_CONTENT
+        assert (
+            db.query(ConnectionConfig).filter_by(key=connection_config.key).first()
+            is None
+        )
+        assert db.query(DatasetConfig).filter_by(id=dataset_config.id).first() is None
+        assert db.query(Dataset).filter_by(id=dataset.id).first() is None
+
+    @pytest.mark.parametrize(
+        "acting_user_role, expected_status_code, assign_system",
+        [
+            ("viewer_user", HTTP_403_FORBIDDEN, False),
+            ("viewer_user", HTTP_204_NO_CONTENT, True),
+            ("viewer_and_approver_user", HTTP_403_FORBIDDEN, False),
+            ("viewer_and_approver_user", HTTP_204_NO_CONTENT, True),
+        ],
+    )
+    def test_delete_connection_configs_role_viewer(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        generate_system_manager_header,
+        acting_user_role,
+        expected_status_code,
+        assign_system,
+        system,
+        request,
+        db: Session,
+    ) -> None:
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": str(uuid4()),
+                "key": "my_postgres_db_1",
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.write,
+                "disabled": False,
+                "description": "Primary postgres connection",
+            },
+        )
+        url = (
+            V1_URL_PREFIX
+            + f"/system/{system.fides_key}/connection/{connection_config.key}"
+        )
+
+        acting_user_role = request.getfixturevalue(acting_user_role)
+
+        if assign_system:
+            assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
+            system_manager_auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+            api_client.put(assign_url, headers=system_manager_auth_header, json=[system.fides_key])
+            auth_header = generate_system_manager_header([system.id])
+        else:
+            auth_header = generate_role_header_for_user(
+                acting_user_role, roles=acting_user_role.permissions.roles
+            )
+
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == expected_status_code
+
+    @pytest.mark.parametrize(
+        "acting_user_role, expected_status_code",
+        [
+            ("owner_user", HTTP_204_NO_CONTENT),
+            ("contributor_user", HTTP_204_NO_CONTENT),
+            ("approver_user", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_delete_connection_configs_role_check(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        acting_user_role,
+        expected_status_code,
+        system,
+        request,
+        db: Session,
+    ) -> None:
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": str(uuid4()),
+                "key": "my_postgres_db_1",
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.write,
+                "disabled": False,
+                "description": "Primary postgres connection",
+            },
+        )
+        url = (
+            V1_URL_PREFIX
+            + f"/system/{system.fides_key}/connection/{connection_config.key}"
+        )
+
+        acting_user_role = request.getfixturevalue(acting_user_role)
+        auth_header = generate_role_header_for_user(
+            acting_user_role, roles=acting_user_role.permissions.roles
+        )
+
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == expected_status_code
 
 
 class TestInstantiateSystemConnectionFromTemplate:
@@ -338,7 +719,6 @@ class TestInstantiateSystemConnectionFromTemplate:
         )
         # names don't have to be unique
         assert resp.status_code == 200
-
 
     def test_create_connection_from_template_without_supplying_connection_key(
         self, db, generate_auth_header, api_client, base_url

@@ -292,6 +292,14 @@ describe("System management page", () => {
       cy.getByTestId("system-not-found");
     });
 
+    it("Can go to a system's edit page by clicking its card", () => {
+      cy.visit(SYSTEM_ROUTE);
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("system-box").click();
+      });
+      cy.url().should("contain", "/systems/configure/fidesctl_system");
+    });
+
     it("Can go through the edit flow", () => {
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("more-btn").click();

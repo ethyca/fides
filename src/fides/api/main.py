@@ -1,10 +1,12 @@
 """
 Contains the code that sets up the API.
 """
+import os
 import sys
 from datetime import datetime, timezone
 from logging import WARNING
 from typing import Callable, Optional
+from urllib.parse import unquote
 
 from fastapi import HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
@@ -20,6 +22,7 @@ from fides.api.app_setup import (
     log_startup,
     run_database_startup,
 )
+from fides.api.common_exceptions import MalisciousUrlException
 from fides.api.middleware import handle_audit_log_resource
 from fides.api.schemas.analytics import Event, ExtraData
 
@@ -151,6 +154,19 @@ def read_index() -> Response:
     return get_admin_index_as_response()
 
 
+def sanitise_url_path(path: str) -> str:
+    """Returns a URL path that does not contain any ../ or //"""
+    path = unquote(path)
+    path = os.path.normpath(path)
+    for token in path.split("/"):
+        if ".." in token:
+            logger.warning(
+                f"Potentially dangerous use of URL hierarchy in path: {path}"
+            )
+            raise MalisciousUrlException()
+    return path
+
+
 @app.get("/{catchall:path}", response_class=Response, tags=["Default"])
 def read_other_paths(request: Request) -> Response:
     """
@@ -158,6 +174,12 @@ def read_other_paths(request: Request) -> Response:
     """
     # check first if requested file exists (for frontend assets)
     path = request.path_params["catchall"]
+    logger.debug(f"Catch all path detected: {path}")
+    try:
+        path = sanitise_url_path(path)
+    except MalisciousUrlException:
+        # if a maliscious URL is detected, route the user to the index
+        return get_admin_index_as_response()
 
     # search for matching route in package (i.e. /dataset)
     ui_file = match_route(get_ui_file_map(), path)
