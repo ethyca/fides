@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from fastapi import Depends
 from fastapi.params import Query, Security
@@ -36,9 +36,11 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 )
 from fides.api.service.connectors import get_connector
 from fides.api.util.api_router import APIRouter
+from fides.api.util.connection_type import connection_type_secret_schema
 from fides.api.util.connection_util import (
     delete_connection_config,
     get_connection_config_or_error,
+    mask_sensitive_fields,
     patch_connection_configs,
     validate_secrets,
 )
@@ -268,6 +270,24 @@ def put_connection_config_secrets(
         return connection_status(connection_config, msg, db)
 
     return TestStatusMessage(msg=msg, test_status=None)
+
+
+@router.get(
+    CONNECTION_SECRETS,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
+)
+def get_connection_config_secrets(
+    connection_key: FidesKey,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> Dict[str, Any]:
+    connection_config = get_connection_config_or_error(db, connection_key)
+    connection_secrets = cast(dict, connection_config.secrets)
+    secret_schema = connection_type_secret_schema(
+        connection_type=connection_config.connection_type.value  # type: ignore
+    )
+    return mask_sensitive_fields(connection_secrets, secret_schema)
 
 
 @router.get(

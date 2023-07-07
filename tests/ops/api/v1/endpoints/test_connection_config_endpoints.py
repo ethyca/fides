@@ -1776,3 +1776,43 @@ class TestPutConnectionConfigSecrets:
             body["detail"]
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
+
+
+class TestGetConnectionConfigSecrets:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
+        return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
+
+    def test_get_connection_config_secrets_not_authenticated(
+        self, url, api_client: TestClient, generate_auth_header, connection_config
+    ) -> None:
+        resp = api_client.put(url, headers={})
+        assert resp.status_code == 401
+
+    def test_get_connection_config_secrets_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header, connection_config
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.put(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    def test_get_connection_config_secrets(
+        self, url, api_client: TestClient, generate_auth_header, connection_config
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        body = json.loads(resp.text)
+        assert body == {
+            "host": "postgres_example",
+            "port": 5432,
+            "dbname": "postgres_example",
+            "username": "postgres",
+            "password": "**********",
+        }

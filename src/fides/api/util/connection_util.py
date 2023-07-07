@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException
 from fideslang.validation import FidesKey
@@ -297,3 +297,32 @@ def delete_connection_config(db: Session, connection_key: FidesKey) -> None:
     # so we queue any privacy requests that are no longer blocked by webhooks
     if connection_type == ConnectionType.manual_webhook:
         requeue_requires_input_requests(db)
+
+
+def mask_sensitive_fields(
+    connection_secrets: Dict[str, Any], secret_schema: Dict[str, Any]
+) -> Dict[str, Any]:
+    """
+    Mask sensitive fields in the given secrets based on the provided schema.
+
+    This function traverses the given secrets dictionary and uses the provided schema to
+    identify fields that have been marked as sensitive. The function replaces the sensitive
+    field values with a mask string ('********').
+
+    Note: This function modifies the input dictionary in-place.
+
+    Args:
+        connection_secrets (Dict[str, Any]): The secrets to be masked.
+        secret_schema (Dict[str, Any]): The schema defining which fields are sensitive.
+
+    Returns:
+        Dict[str, Any]: The secrets dictionary with sensitive fields masked.
+    """
+    if isinstance(connection_secrets, dict):
+        for key, val in connection_secrets.items():
+            prop = secret_schema["properties"].get(key, {})
+            if isinstance(val, dict):
+                mask_sensitive_fields(val, prop)
+            elif prop.get("sensitive", False):
+                connection_secrets[key] = "**********"
+    return connection_secrets
