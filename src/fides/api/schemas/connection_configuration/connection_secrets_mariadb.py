@@ -16,7 +16,7 @@ class MariaDBSchema(ConnectionConfigSecretsSchema):
     port: int = Field(None, title="Port")  
     username: str = Field(None, title="Username") 
     password: str = Field(None, title="Password", sensitive=True)
-    dbname: Optional[str] = Field(None, title="DB Name")
+    dbname: Optional[str] = Field(None, title="Database")
 
 
     _required_components: List[str] = ["host","port","username","password"]
