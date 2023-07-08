@@ -16,6 +16,7 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
     username: str = Field(None, title="Username") 
     password: str = Field(None, title="Password", sensitive=True)
     dbname: Optional[str] = Field(None, title="DB Name")
+    db_schema: Optional[str] = Field(None, title="DB Schema")
 
 
     _required_components: List[str] = ["host","port","username","password"]
