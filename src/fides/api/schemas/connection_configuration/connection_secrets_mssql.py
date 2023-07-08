@@ -16,13 +16,13 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
 
     """
 
-    username: Optional[str] = None
-    password: Optional[str] = Field(None, sensitive=True)
-    host: Optional[str] = None
-    port: Optional[int] = None
+    host: str = Field(None, title="Host")  
+    port: int = Field(None, title="Port")  
+    username: str = Field(None, title="Username") 
+    password: str = Field(None, title="Password", sensitive=True)
     dbname: Optional[str] = Field(None, title="DB Name")
 
-    _required_components: List[str] = ["host"]
+    _required_components: List[str] = ["host","port","username","password"]
 
 
 class MSSQLDocsSchema(MicrosoftSQLServerSchema, NoValidationSchema):
