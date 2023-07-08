@@ -11,15 +11,15 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 class RedshiftSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to an Amazon Redshift cluster"""
 
-    host: Optional[str] = None  # Endpoint of the Amazon Redshift server
-    port: Optional[int] = None
-    database: Optional[str] = None
-    user: Optional[str] = None
-    password: Optional[str] = Field(None, sensitive=True)
+    host: str = Field(None, title="Host")  
+    port: int = Field(None, title="Port")  
+    username: str = Field(None, title="Username") 
+    password: str = Field(None, title="Password", sensitive=True)
+    dbname: Optional[str] = Field(None, title="DB Name")
     db_schema: Optional[str] = Field(None, title="DB Schema")
-    ssh_required: bool = Field(False, title="SSH Required")
 
-    _required_components: List[str] = ["host", "user", "password"]
+
+    _required_components: List[str] = ["host","port","username","password"]
 
 
 class RedshiftDocsSchema(RedshiftSchema, NoValidationSchema):
