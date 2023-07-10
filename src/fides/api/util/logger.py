@@ -43,7 +43,7 @@ def _log_warning(exc: BaseException, dev_mode: bool = False) -> None:
 
 def create_handler_dicts(
     level: str, sink: str, serialize: bool, colorize: bool
-) -> List[Dict, Dict]:
+) -> List[Dict]:
     """
     Returns only the fields required to pass a FidesAPIHandler
     as a handler kwarg in Loguru's logger.configure().
