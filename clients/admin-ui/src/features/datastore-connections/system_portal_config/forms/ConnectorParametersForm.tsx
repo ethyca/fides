@@ -27,6 +27,7 @@ import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import React from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
+import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
 import DatasetConfigField from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
   ConnectionConfigurationResponse,
@@ -38,7 +39,6 @@ import {
 import DeleteConnectionModal from "../DeleteConnectionModal";
 import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
-import DisableConnectionModal from "../../DisableConnectionModal";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
@@ -249,7 +249,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     const result = await trigger(connectionConfig!.key);
     onTestConnectionClick(result);
   };
-  
+
   const isDisabledConnection = connectionConfig?.disabled || false;
 
   return (
@@ -371,8 +371,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   connection_type={connectionConfig?.connection_type}
                   access_type={connectionConfig?.access}
                   name={connectionConfig?.name}
-                  isSwitch={true}
-              />
+                  isSwitch
+                />
               ) : null}
               {connectionConfig ? (
                 <DeleteConnectionModal

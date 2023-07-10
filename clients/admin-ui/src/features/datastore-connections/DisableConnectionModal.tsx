@@ -36,7 +36,7 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
   name,
   access_type,
   connection_type,
-  isSwitch
+  isSwitch,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [patchConnection, patchConnectionResult] =
@@ -44,16 +44,14 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
 
   const handleDisableConnection = async () => {
     const shouldDisable = !disabled;
-    patchConnection({
+    await patchConnection({
       key: connection_key,
       name,
       disabled: shouldDisable,
       access: access_type,
       connection_type,
-    }).then(() => {
-      disabled = !disabled;
-      onClose();
     });
+    onClose();
   };
 
   const closeIfComplete = () => {
@@ -64,18 +62,23 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
 
   return (
     <>
-    {isSwitch ? (
-      <><Spacer /><Text fontSize="md">{disabled ? "Enable" : "Disable"}</Text><Switch
-          colorScheme="secondary"
-          isChecked={disabled}
-          onChange={onOpen} /></>
-          ) : (
-      <MenuItem
-        _focus={{ color: "complimentary.500", bg: "gray.100" }}
-        onClick={onOpen}
-      >
-        <Text fontSize="sm">{disabled ? "Enable" : "Disable"}</Text>
-      </MenuItem>
+      {isSwitch ? (
+        <>
+          <Spacer />
+          <Text fontSize="md">{disabled ? "Enable" : "Disable"}</Text>
+          <Switch
+            colorScheme="secondary"
+            isChecked={!disabled}
+            onChange={onOpen}
+          />
+        </>
+      ) : (
+        <MenuItem
+          _focus={{ color: "complimentary.500", bg: "gray.100" }}
+          onClick={onOpen}
+        >
+          <Text fontSize="sm">{disabled ? "Enable" : "Disable"}</Text>
+        </MenuItem>
       )}
       <Modal isCentered isOpen={isOpen} onClose={closeIfComplete}>
         <ModalOverlay />
