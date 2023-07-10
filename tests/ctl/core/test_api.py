@@ -22,6 +22,8 @@ from starlette.testclient import TestClient
 
 from fides.api.api.v1.endpoints import health
 from fides.api.db.crud import get_resource
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.schemas.system import PrivacyDeclarationResponse
@@ -1641,6 +1643,51 @@ class TestSystemDelete:
         assert result.status_code == HTTP_200_OK
         assert result.json()["message"] == "resource deleted"
         assert result.json()["resource"]["fides_key"] == system.fides_key
+
+    def test_delete_system_deletes_connection_config_and_dataset(
+        self,
+        test_config,
+        db,
+        system,
+        generate_auth_header,
+        dataset_config: DatasetConfig,
+    ) -> None:
+        """
+        Ensure that deleting the system also deletes any associated
+        ConnectionConfig and DatasetConfig records
+        """
+        auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+
+        connection_config = dataset_config.connection_config
+        connection_config.system_id = (
+            system.id
+        )  # tie the connectionconfig to the system we will delete
+        connection_config.save(db)
+        # the keys are cached before the delete
+        connection_config_key = connection_config.key
+        dataset_config_key = dataset_config.fides_key
+
+        # delete the system via API
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type="system",
+            resource_id=system.fides_key,
+            headers=auth_header,
+        )
+        assert result.status_code == HTTP_200_OK
+
+        # ensure our system itself was deleted
+        assert db.query(System).filter_by(fides_key=system.fides_key).first() is None
+        # ensure our associated ConnectionConfig was deleted
+        assert (
+            db.query(ConnectionConfig).filter_by(key=connection_config_key).first()
+            is None
+        )
+        # and ensure our associated DatasetConfig was deleted
+        assert (
+            db.query(DatasetConfig).filter_by(fides_key=dataset_config_key).first()
+            is None
+        )
 
     def test_owner_role_gets_404_if_system_not_found(
         self,
