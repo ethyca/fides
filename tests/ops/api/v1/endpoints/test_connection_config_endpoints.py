@@ -706,14 +706,36 @@ class TestPatchConnections:
         assert call_args[4] is None
         assert call_args[5] is None
 
-    def test_patch_connections_no_name(
-        self, api_client, generate_auth_header, url, payload
-    ):
+    def test_patch_connections_no_name(self, api_client, generate_auth_header, url):
+        # two connection configs without names
+        payload = [
+            {
+                "key": "postgres_db_1",
+                "connection_type": "postgres",
+                "access": "write",
+                "secrets": {
+                    "url": None,
+                    "host": "http://localhost",
+                    "port": 5432,
+                    "dbname": "test",
+                    "db_schema": "test",
+                    "username": "test",
+                    "password": "test",
+                },
+            },
+            {
+                "key": "mongo_db_1",
+                "connection_type": "mongodb",
+                "access": "read",
+            },
+        ]
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        del payload[0]["name"]
         response = api_client.patch(url, headers=auth_header, json=payload)
+
         assert 200 == response.status_code
+        assert len(response.json()["succeeded"]) == 2
         assert response.json()["succeeded"][0]["name"] is None
+        assert response.json()["succeeded"][1]["name"] is None
 
 
 class TestGetConnections:
