@@ -12,9 +12,6 @@ from starlette.exceptions import HTTPException
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.api import deps
-from fides.api.api.v1.endpoints.connection_endpoints import (
-    get_connection_config_or_error,
-)
 from fides.api.api.v1.endpoints.policy_endpoints import get_policy_or_error
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, WebhookOrderException
 from fides.api.db.base_class import get_key_from_data
@@ -28,6 +25,7 @@ from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas import policy_webhooks as schemas
 from fides.api.schemas.policy_webhooks import PolicyWebhookDeleteResponse
 from fides.api.util.api_router import APIRouter
+from fides.api.util.connection_util import get_connection_config_or_error
 from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
 

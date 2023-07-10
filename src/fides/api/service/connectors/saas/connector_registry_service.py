@@ -40,6 +40,7 @@ from fides.api.util.saas_util import (
     replace_dataset_placeholders,
     replace_version,
 )
+from fides.api.util.unsafe_file_util import verify_svg, verify_zip
 from fides.config import CONFIG
 
 
@@ -181,6 +182,9 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         custom connector template, registers the template, and saves it to the database.
         """
 
+        # verify the zip file before we use it
+        verify_zip(zip_file)
+
         config_contents = None
         dataset_contents = None
         icon_contents = None
@@ -210,6 +214,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                     )
             elif info.filename.endswith(".svg"):
                 if not icon_contents:
+                    verify_svg(file_contents)
                     icon_contents = str_to_b64_str(file_contents)
                 else:
                     raise ValidationError(

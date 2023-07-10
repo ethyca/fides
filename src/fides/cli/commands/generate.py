@@ -39,7 +39,7 @@ def generate_dataset(ctx: click.Context) -> None:
     """
 
 
-@generate_dataset.command(name="db")
+@generate_dataset.command(name="db")  # type: ignore
 @click.pass_context
 @click.argument("output_filename", type=str)
 @credentials_id_option
@@ -77,7 +77,7 @@ def generate_dataset_gcp(ctx: click.Context) -> None:
     """
 
 
-@generate_dataset_gcp.command(name="bigquery")
+@generate_dataset_gcp.command(name="bigquery")  # type: ignore
 @click.pass_context
 @click.argument("dataset_name", type=str)
 @click.argument("output_filename", type=str)
@@ -119,7 +119,7 @@ def generate_dataset_aws(ctx: click.Context) -> None:
     """
 
 
-@generate_dataset_aws.command(name="dynamodb")
+@generate_dataset_aws.command(name="dynamodb")  # type: ignore
 @click.pass_context
 @click.argument("output_filename", type=str)
 @credentials_id_option
@@ -165,7 +165,7 @@ def generate_system(ctx: click.Context) -> None:
     """
 
 
-@generate_system.command(name="okta")
+@generate_system.command(name="okta")  # type: ignore
 @click.pass_context
 @click.argument("output_filename", type=str)
 @credentials_id_option
@@ -205,7 +205,7 @@ def generate_system_okta(
     )
 
 
-@generate_system.command(name="aws")
+@generate_system.command(name="aws")  # type: ignore
 @click.pass_context
 @click.argument("output_filename", type=str)
 @credentials_id_option

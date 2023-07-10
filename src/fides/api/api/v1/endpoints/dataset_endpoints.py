@@ -37,7 +37,7 @@ from fides.api.models.datasetconfig import (
     convert_dataset_to_graph,
     to_graph_field,
 )
-from fides.api.models.sql_models import ( # type: ignore[attr-defined]
+from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Dataset as CtlDataset,
 )
 from fides.api.oauth.utils import verify_oauth_client

@@ -30,7 +30,7 @@ def deploy(ctx: click.Context) -> None:
     """
 
 
-@deploy.command()
+@deploy.command()  # type: ignore
 @click.pass_context
 @click.option(
     "--no-pull",
