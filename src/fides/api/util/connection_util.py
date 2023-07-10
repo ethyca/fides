@@ -210,7 +210,9 @@ def patch_connection_configs(
             config_dict["system_id"] = system.id
 
         try:
-            connection_config = ConnectionConfig.create_or_update(db, data=config_dict)
+            connection_config = ConnectionConfig.create_or_update(
+                db, data=config_dict, check_name=False
+            )
             created_or_updated.append(
                 ConnectionConfigurationResponse(**connection_config.__dict__)
             )
