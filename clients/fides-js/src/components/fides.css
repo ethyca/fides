@@ -504,3 +504,7 @@ div#fides-modal .fides-modal-button-group {
   background: var(--fides-overlay-gpc-overridden-background-color);
   color: var(--fides-overlay-gpc-overridden-text-color);
 }
+
+.fides-tabs {
+  color: peachpuff;
+}
