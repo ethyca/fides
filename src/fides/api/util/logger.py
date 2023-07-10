@@ -60,7 +60,7 @@ class FidesAPIHandler(logging.Handler):
             "serialize": serialize == "json",
             "sink": sys.stdout if sink == "" else sink,
         }
-
+        # Serialize in JSON if not in DEV mode
         format_module = ""
         if level == logging.DEBUG or level == logging.getLevelName(logging.DEBUG):
             format_module = " (<c>{module}:{function}:{line}</c>)"
