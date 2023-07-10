@@ -249,17 +249,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     const result = await trigger(connectionConfig!.key);
     onTestConnectionClick(result);
   };
-
-  useEffect(() => {
-    mounted.current = true;
-    if (result.isSuccess) {
-      onTestConnectionClick(result);
-    }
-    return () => {
-      mounted.current = false;
-    };
-  }, [onTestConnectionClick, result]);
-
+  
   const isDisabledConnection = connectionConfig?.disabled || false;
 
   return (
