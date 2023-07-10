@@ -16,7 +16,7 @@ def view(ctx: click.Context) -> None:
     """
 
 
-@view.command(name="config")
+@view.command(name="config")  # type: ignore
 @click.pass_context
 @click.argument("section", default="", type=str)
 @click.option(
