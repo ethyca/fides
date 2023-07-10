@@ -67,7 +67,7 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
           <Spacer />
           <Text fontSize="md">{disabled ? "Enable" : "Disable"}</Text>
           <Switch
-            colorScheme="secondary"
+            colorScheme="complimentary"
             isChecked={!disabled}
             onChange={onOpen}
           />
