@@ -47,7 +47,10 @@ from fides.api.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeRegion,
 )
-from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.privacy_preference import (
+    PrivacyPreferenceHistory,
+    ServedNoticeHistory,
+)
 from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
@@ -1518,6 +1521,24 @@ def privacy_preference_history_us_ca_provide_for_fides_user(
         db=db,
         data={
             "preference": "opt_in",
+            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+            "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)
+
+
+@pytest.fixture(scope="function")
+def served_notice_history_us_ca_provide_for_fides_user(
+    db: Session, privacy_notice_us_ca_provide, fides_user_provided_identity
+) -> Generator:
+    pref_1 = ServedNoticeHistory.create(
+        db=db,
+        data={
+            "acknowledge_mode": False,
+            "serving_component": "overlay",
             "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
         },
