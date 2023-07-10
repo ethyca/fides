@@ -15,7 +15,13 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.15.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.16.0...main)
+
+### Changed
+
+- Bumped supported Python versions to `3.10.12`, `3.9.17`, and `3.8.17` [#3733](https://github.com/ethyca/fides/pull/3733)
+
+## [2.16.0](https://github.com/ethyca/fides/compare/2.15.1...2.16.0)
 
 ### Added
 
@@ -36,6 +42,8 @@ The types of changes are:
 - Reorganized some `api.api.v1` code to avoid circular dependencies on `quickstart` [#3692](https://github.com/ethyca/fides/pull/3692)
 - Treat underscores as special characters in user passwords [#3717](https://github.com/ethyca/fides/pull/3717)
 - Allow Privacy Notices banner and modal to scroll as needed [#3713](https://github.com/ethyca/fides/pull/3713)
+- Make malicious url test more robust to environmental differences [#3748](https://github.com/ethyca/fides/pull/3748)
+- Ignore type checker on click decorators to bypass known issue with `click` version `8.1.4` [#3746](https://github.com/ethyca/fides/pull/3746)
 
 ### Changed
 
@@ -47,7 +55,6 @@ The types of changes are:
 - Fields with default fields are now flagged as required in the front-end [#3694](https://github.com/ethyca/fides/pull/3694)
 - In "view systems", system cards can now be clicked and link to that system's `configure/[id]` page [#3734](https://github.com/ethyca/fides/pull/3734)
 
-
 ## [2.15.1](https://github.com/ethyca/fides/compare/2.15.0...2.15.1)
 
 ### Added
@@ -55,6 +62,7 @@ The types of changes are:
 
 ### Changed
 - Privacy center action cards are now able to expand to accommodate longer text [#3669](https://github.com/ethyca/fides/pull/3669)
+- Update integration endpoint permissions [#3707](https://github.com/ethyca/fides/pull/3707)
 
 ### Fixed
 - Handle names with a double underscore when processing access and erasure requests [#3688](https://github.com/ethyca/fides/pull/3688)

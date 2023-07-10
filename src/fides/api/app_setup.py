@@ -22,6 +22,12 @@ from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnect
 from fides.api.db.database import configure_db
 from fides.api.db.seed import create_or_update_parent_user
 from fides.api.models.application_config import ApplicationConfig
+from fides.api.oauth.system_manager_oauth_util import (
+    get_system_fides_key,
+    get_system_schema,
+    verify_oauth_client_for_system_from_fides_key_cli,
+    verify_oauth_client_for_system_from_request_body_cli,
+)
 from fides.api.oauth.utils import get_root_client, verify_oauth_client_prod
 from fides.api.service.connectors.saas.connector_registry_service import (
     update_saas_configs,
@@ -37,12 +43,6 @@ from fides.api.util.consent_util import (
 from fides.api.util.endpoint_utils import fides_limiter
 from fides.api.util.errors import FidesError
 from fides.api.util.logger import setup as setup_logging
-from fides.api.util.system_manager_oauth_util import (
-    get_system_fides_key,
-    get_system_schema,
-    verify_oauth_client_for_system_from_fides_key_cli,
-    verify_oauth_client_for_system_from_request_body_cli,
-)
 from fides.config import CONFIG
 
 VERSION = fides.__version__
