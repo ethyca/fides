@@ -25,7 +25,7 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
         title="Username",
         description="The user account used to authenticate and access the database.",
     )
-    password: str = Field(
+    password: Optional[str] = Field(
         None,
         title="Password",
         description="The password used to authenticate and access the database.",
