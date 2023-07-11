@@ -10,23 +10,26 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.manual_webhook import AccessManualWebhook
+from fides.api.models.privacy_request import PrivacyRequestStatus
+from fides.api.models.sql_models import Dataset
+from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
+from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
     STORAGE_DELETE,
 )
-from fides.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-    ConnectionType,
-)
-from fides.api.ops.models.manual_webhook import AccessManualWebhook
-from fides.api.ops.models.privacy_request import PrivacyRequestStatus
-from fides.api.ops.oauth.roles import APPROVER, OWNER, VIEWER
+from fides.common.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from tests.fixtures.application_fixtures import integration_secrets
+from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
 page_size = Params().size
 
@@ -167,6 +170,51 @@ class TestPatchConnections:
 
         config = ConnectionConfig.get_by(db, field="key", value=payload[0]["key"])
         assert config.secrets == payload[0]["secrets"]
+
+    def test_patch_connection_saas_with_secrets_exists_minimal_payload(
+        self, url, api_client, generate_auth_header, db, mailchimp_config
+    ):
+        payload = [
+            {
+                "key": f"mailchimp{uuid4()}",
+                "name": "My Mailchimp Test",
+                "description": "Mailchimp ConnectionConfig description",
+                "disabled": "true",
+                "connection_type": "saas",
+                "access": "read",
+            },
+        ]
+
+        ConnectionConfig.create(
+            db=db,
+            data={
+                "key": payload[0]["key"],
+                "name": payload[0]["name"],
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.write,
+                "secrets": {"domain": "test", "username": "test", "api_key": "test"},
+                "saas_config": mailchimp_config,
+                "description": "some description",
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        assert (
+            response.json()["succeeded"][0]["connection_type"]
+            == payload[0]["connection_type"]
+        )
+        assert (
+            response.json()["succeeded"][0]["description"] == payload[0]["description"]
+        )
+
+        config = ConnectionConfig.get_by(db, field="key", value=payload[0]["key"])
+        assert config.secrets == {
+            "domain": "test",
+            "username": "test",
+            "api_key": "test",
+        }
 
     def test_patch_connection_saas_with_secrets_new(
         self, url, api_client, generate_auth_header, db
@@ -330,7 +378,7 @@ class TestPatchConnections:
             == "ensure this value has at most 50 items"
         )
 
-    @mock.patch("fides.api.ops.util.connection_util.queue_privacy_request")
+    @mock.patch("fides.api.util.connection_util.queue_privacy_request")
     def test_disable_manual_webhook(
         self,
         mock_queue,
@@ -552,7 +600,7 @@ class TestPatchConnections:
         bigquery_resource.delete(db)
         manual_webhook_resource.delete(db)
 
-    @mock.patch("fides.api.ops.db.base_class.OrmWrappedFidesBase.create_or_update")
+    @mock.patch("fides.api.db.base_class.OrmWrappedFidesBase.create_or_update")
     def test_patch_connections_failed_response(
         self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
     ) -> None:
@@ -590,6 +638,7 @@ class TestPatchConnections:
             "access": "write",
             "disabled": False,
             "description": None,
+            "enabled_actions": None,
         }
         assert response_body["failed"][1]["data"] == {
             "name": "My Mongo DB",
@@ -598,6 +647,7 @@ class TestPatchConnections:
             "access": "read",
             "disabled": False,
             "description": None,
+            "enabled_actions": None,
         }
 
     @mock.patch("fides.api.main.prepare_and_log_request")
@@ -655,6 +705,37 @@ class TestPatchConnections:
         assert isinstance(call_args[3], datetime)
         assert call_args[4] is None
         assert call_args[5] is None
+
+    def test_patch_connections_no_name(self, api_client, generate_auth_header, url):
+        # two connection configs without names
+        payload = [
+            {
+                "key": "postgres_db_1",
+                "connection_type": "postgres",
+                "access": "write",
+                "secrets": {
+                    "url": None,
+                    "host": "http://localhost",
+                    "port": 5432,
+                    "dbname": "test",
+                    "db_schema": "test",
+                    "username": "test",
+                    "password": "test",
+                },
+            },
+            {
+                "key": "mongo_db_1",
+                "connection_type": "mongodb",
+                "access": "read",
+            },
+        ]
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+
+        assert 200 == response.status_code
+        assert len(response.json()["succeeded"]) == 2
+        assert response.json()["succeeded"][0]["name"] is None
+        assert response.json()["succeeded"][1]["name"] is None
 
 
 class TestGetConnections:
@@ -1162,7 +1243,7 @@ class TestDeleteConnection:
             is None
         )
 
-    @mock.patch("fides.api.ops.util.connection_util.queue_privacy_request")
+    @mock.patch("fides.api.util.connection_util.queue_privacy_request")
     def test_delete_manual_webhook_connection_config(
         self,
         mock_queue,
@@ -1214,6 +1295,38 @@ class TestDeleteConnection:
         assert (
             privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
         )
+
+    def test_delete_saas_connection_config(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ) -> None:
+        secrets = {
+            "domain": "test_sendgrid_domain",
+            "api_key": "test_sendgrid_api_key",
+        }
+        connection_config, dataset_config = instantiate_connector(
+            db,
+            "sendgrid",
+            "secondary_sendgrid_instance",
+            "Sendgrid ConnectionConfig description",
+            secrets,
+        )
+        dataset = dataset_config.ctl_dataset
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
+        resp = api_client.delete(
+            f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}", headers=auth_header
+        )
+        assert resp.status_code == 204
+        assert (
+            db.query(ConnectionConfig).filter_by(key=connection_config.key).first()
+            is None
+        )
+        assert db.query(DatasetConfig).filter_by(id=dataset_config.id).first() is None
+        assert db.query(Dataset).filter_by(id=dataset.id).first() is None
 
 
 class TestPutConnectionConfigSecrets:
@@ -1294,7 +1407,11 @@ class TestPutConnectionConfigSecrets:
     ) -> None:
         """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = {"host": "localhost", "port": "1234", "dbname": "my_test_db"}
+        payload = {
+            "host": "localhost",
+            "port": "1234",
+            "dbname": "my_test_db",
+        }
         resp = api_client.put(
             url + "?verify=False",
             headers=auth_header,
@@ -1314,6 +1431,7 @@ class TestPutConnectionConfigSecrets:
             "password": None,
             "url": None,
             "db_schema": None,
+            "ssh_required": False,
         }
 
         payload = {"url": "postgresql://test_user:test_pass@localhost:1234/my_test_db"}
@@ -1336,6 +1454,7 @@ class TestPutConnectionConfigSecrets:
             "password": None,
             "url": payload["url"],
             "db_schema": None,
+            "ssh_required": False,
         }
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
@@ -1396,6 +1515,10 @@ class TestPutConnectionConfigSecrets:
         generate_auth_header,
         sovrn_email_connection_config,
     ) -> None:
+        """
+        Test that the request uses default AdvancedSettings if none are provided
+        """
+
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{sovrn_email_connection_config.key}/secret"
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {
@@ -1407,9 +1530,7 @@ class TestPutConnectionConfigSecrets:
             headers=auth_header,
             json=payload,
         )
-        assert resp.status_code == 422
-        assert resp.json()["detail"][0]["loc"] == ["advanced_settings"]
-        assert resp.json()["detail"][0]["msg"] == "field required"
+        assert resp.status_code == 200
 
     def test_put_connection_config_redshift_secrets(
         self,
@@ -1428,6 +1549,7 @@ class TestPutConnectionConfigSecrets:
             "user": "awsuser",
             "password": "test_password",
             "db_schema": "test",
+            "ssh_required": False,
         }
         resp = api_client.put(
             url + "?verify=False",
@@ -1448,6 +1570,7 @@ class TestPutConnectionConfigSecrets:
             "password": "test_password",
             "db_schema": "test",
             "url": None,
+            "ssh_required": False,
         }
         assert redshift_connection_config.last_test_timestamp is None
         assert redshift_connection_config.last_test_succeeded is None

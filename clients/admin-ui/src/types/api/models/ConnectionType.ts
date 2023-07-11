@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * Supported types to which we can connect fidesops.
+ * Supported types to which we can connect Fides.
  */
 export enum ConnectionType {
   POSTGRES = "postgres",
@@ -23,4 +23,6 @@ export enum ConnectionType {
   MANUAL_WEBHOOK = "manual_webhook",
   TIMESCALE = "timescale",
   FIDES = "fides",
+  GENERIC_ERASURE_EMAIL = "generic_erasure_email",
+  GENERIC_CONSENT_EMAIL = "generic_consent_email",
 }

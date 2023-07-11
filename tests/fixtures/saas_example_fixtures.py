@@ -6,30 +6,30 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from toml import load as load_toml
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fides.api.ops.schemas.saas.saas_config import ParamValue
-from fides.api.ops.schemas.saas.strategy_configuration import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.policy import Policy, Rule, RuleTarget
+from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.schemas.saas.saas_config import ParamValue
+from fides.api.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,
 )
-from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
+from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
-from fides.api.ops.service.masking.strategy.masking_strategy_random_string_rewrite import (
+from fides.api.service.masking.strategy.masking_strategy_random_string_rewrite import (
     RandomStringRewriteMaskingStrategy,
 )
-from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite import (
+from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
-from fides.api.ops.util.data_category import DataCategory
-from fides.api.ops.util.saas_util import (
+from fides.api.util.data_category import DataCategory
+from fides.api.util.saas_util import (
     encode_file_contents,
     load_as_string,
     load_config,
@@ -658,7 +658,7 @@ def planet_express_invalid_dataset() -> str:
 
 @pytest.fixture
 def planet_express_icon() -> str:
-    return encode_file_contents(
+    return load_as_string(
         "tests/fixtures/saas/test_data/planet_express/planet_express.svg"
     )
 

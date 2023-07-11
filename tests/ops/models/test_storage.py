@@ -4,15 +4,15 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from fides.api.ops.db.base_class import KeyOrNameAlreadyExists
-from fides.api.ops.models.application_config import ApplicationConfig
-from fides.api.ops.models.storage import (
+from fides.api.db.base_class import KeyOrNameAlreadyExists
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.storage import (
     StorageConfig,
     default_storage_config_name,
     get_active_default_storage_config,
     get_default_storage_config_by_type,
 )
-from fides.api.ops.schemas.storage.storage import (
+from fides.api.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
     S3AuthMethod,
@@ -264,4 +264,37 @@ class TestStorageConfigModel:
         assert retrieved_config.is_default
         assert retrieved_config == get_default_storage_config_by_type(
             db, StorageType.local
+        )
+
+    def test_format_validator(self):
+        """
+        Test the custom root validator that restricts certain formats for local destinations.
+        """
+
+        # No exceptions should be raised for valid local destination
+        assert StorageDestination(
+            name="Local destination",
+            type=StorageType.local.value,
+            format=ResponseFormat.json.value,
+            details={StorageDetails.NAMING.value: FileNaming.request_id.value},
+        )
+
+        assert StorageDestination(
+            name="Local destination",
+            type=StorageType.local.value,
+            format=ResponseFormat.html.value,
+            details={StorageDetails.NAMING.value: FileNaming.request_id.value},
+        )
+
+        # Expect ValueError for invalid local destination
+        with pytest.raises(ValueError) as e:
+            StorageDestination(
+                name="Local destination",
+                type=StorageType.local.value,
+                format=ResponseFormat.csv.value,
+                details={StorageDetails.NAMING.value: FileNaming.request_id.value},
+            )
+        assert (
+            "Only JSON or HTML upload format are supported for local storage destinations."
+            in str(e)
         )

@@ -7,12 +7,22 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.messaging import MessagingConfig
+from fides.api.schemas.messaging.messaging import (
+    MessagingConfigStatus,
+    MessagingConfigStatusMessage,
+    MessagingServiceDetails,
+    MessagingServiceSecrets,
+    MessagingServiceType,
+)
+from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     MESSAGING_READ,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.common.api.v1.urn_registry import (
     MESSAGING_ACTIVE_DEFAULT,
     MESSAGING_BY_KEY,
     MESSAGING_CONFIG,
@@ -24,17 +34,7 @@ from fides.api.ops.api.v1.urn_registry import (
     MESSAGING_TEST,
     V1_URL_PREFIX,
 )
-from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.models.application_config import ApplicationConfig
-from fides.api.ops.models.messaging import MessagingConfig
-from fides.api.ops.schemas.messaging.messaging import (
-    MessagingConfigStatus,
-    MessagingConfigStatusMessage,
-    MessagingServiceDetails,
-    MessagingServiceSecrets,
-    MessagingServiceType,
-)
-from fides.core.config import get_config
+from fides.config import get_config
 
 PAGE_SIZE = Params().size
 CONFIG = get_config()
@@ -1286,7 +1286,7 @@ class TestPutDefaultMessagingConfigSecrets:
         assert "field required" in response.text
         assert "extra fields not permitted" in response.text
 
-    @mock.patch("fides.api.ops.models.messaging.MessagingConfig.set_secrets")
+    @mock.patch("fides.api.models.messaging.MessagingConfig.set_secrets")
     def test_update_default_set_secrets_error(
         self,
         set_secrets_mock: Mock,
@@ -1833,7 +1833,7 @@ class TestTestMesage:
         "info",
         [{"phone_number": "+19198675309"}, {"email": "some@email.com"}],
     )
-    @patch("fides.api.ops.api.v1.endpoints.messaging_endpoints.dispatch_message")
+    @patch("fides.api.api.v1.endpoints.messaging_endpoints.dispatch_message")
     def test_test_message(
         self, mock_dispatch_message, info, generate_auth_header, url, api_client
     ):
@@ -1863,7 +1863,7 @@ class TestTestMesage:
         assert response.status_code == 400
 
     @patch(
-        "fides.api.ops.api.v1.endpoints.messaging_endpoints.dispatch_message",
+        "fides.api.api.v1.endpoints.messaging_endpoints.dispatch_message",
         side_effect=MessageDispatchException("No service"),
     )
     def test_test_message_dispatch_error(

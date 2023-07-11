@@ -4,6 +4,7 @@
   "description_subtext": [],
   "addendum": [],
   "logo_path": "/logo.svg",
+  "favicon_path": "/favicon.ico",
   "actions": [
     {
       "policy_key": "default_access_policy",
@@ -13,7 +14,9 @@
       "description_subtext": [],
       "identity_inputs": {
         "email": "required"
-      }
+      },
+      "confirmButtonText": "Continue",
+      "cancelButtonText": "Cancel"
     },
     {
       "policy_key": "default_erasure_policy",
@@ -23,7 +26,9 @@
       "description_subtext": [],
       "identity_inputs": {
         "email": "required"
-      }
+      },
+      "confirmButtonText": "Continue",
+      "cancelButtonText": "Cancel"
     }
   ],
   "includeConsent": true,
@@ -37,12 +42,15 @@
       "identity_inputs": {
         "email": "optional"
       },
-      "title": "Manage your consent"
+      "title": "Manage your consent",
+      "modalTitle": "Manage your consent",
+      "confirmButtonText": "Continue",
+      "cancelButtonText": "Cancel"
     },
     "page": {
       "consentOptions": [
         {
-          "fidesDataUseKey": "advertising",
+          "fidesDataUseKey": "marketing.advertising",
           "name": "Data Sales or Sharing",
           "description": "We may use some of your personal information for behavioral advertising purposes, which may be interpreted as 'Data Sales' or 'Data Sharing' under regulations such as CCPA, CPRA, VCDPA, etc.",
           "url": "https://example.com/privacy#data-sales",
@@ -55,7 +63,7 @@
           "executable": false
         },
         {
-          "fidesDataUseKey": "advertising.first_party",
+          "fidesDataUseKey": "marketing.advertising.first_party",
           "name": "Email Marketing",
           "description": "We may use some of your personal information to contact you about our products & services.",
           "url": "https://example.com/privacy#email-marketing",

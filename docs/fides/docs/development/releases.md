@@ -182,6 +182,7 @@ From the release branch, confirm the following:
 
 * [ ] Quickstart works: `nox -s quickstart` (verify you can complete the interactive prompts from the command-line)
 * [ ] Test environment works: `nox -s "fides_env(test)"` (verify the admin UI on localhost:8080, privacy center on localhost:3001, CLI and webserver)
+* [ ] Have Roger run a QATouch automation run
 
 Next, run the following checks via the test environment:
 
@@ -217,6 +218,17 @@ Run these from within the test environment shell:
 
 * [ ] Verify that the CHANGELOG is formatted correctly and clean up verbiage where needed
 * [ ] Verify that the CHANGELOG is representative of the actual changes
+
+:warning: Note that any updates that need to be made to the CHANGELOG should **not** be commited directly to the release branch.
+Instead, they should be committed on a branch off of `main` and then PR'd and merged into `main`, before being cherry-picked
+over to the release branch. This ensures that the CHANGELOG stays consistent between the release branch and `main`.
+
+#### Publishing the release
+
+When publishing the release, be sure to include the following sections in the release description:
+
+* [ ] `## Release Pull Request` section that includes a link back to the release PR (i.e., this one!) for tracking purposes
+* [ ] `## QA Touch Test Run` section that includes a link to the QATouch test run (QA team should provide this)
 
 ### Post-Release Steps
 

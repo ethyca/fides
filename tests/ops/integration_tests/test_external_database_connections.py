@@ -5,12 +5,9 @@ import pytest
 from sqlalchemy import inspect
 from toml import load as load_toml
 
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.ops.schemas.connection_configuration import (
-    RedshiftSchema,
-    SnowflakeSchema,
-)
-from fides.api.ops.service.connectors import (
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.schemas.connection_configuration import RedshiftSchema, SnowflakeSchema
+from fides.api.service.connectors import (
     RedshiftConnector,
     SnowflakeConnector,
     get_connector,
@@ -64,6 +61,16 @@ def snowflake_test_engine() -> Generator:
     engine = connector.client()
     yield engine
     engine.dispose()
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_redshift
+def test_redshift_sslmode_default(redshift_test_engine):
+    """Confirm that sslmode is set to verify-full for non SSH connections"""
+    _, kwargs = redshift_test_engine.dialect.create_connect_args(
+        redshift_test_engine.url
+    )
+    assert kwargs["sslmode"] == "verify-full"
 
 
 @pytest.mark.integration_external

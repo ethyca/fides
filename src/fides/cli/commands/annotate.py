@@ -14,7 +14,7 @@ def annotate(ctx: click.Context) -> None:
     """
 
 
-@annotate.command(name="dataset")
+@annotate.command(name="dataset")  # type: ignore
 @click.pass_context
 @click.argument("input_filename", type=str)
 @click.option(

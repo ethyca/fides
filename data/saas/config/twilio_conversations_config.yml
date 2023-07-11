@@ -3,13 +3,15 @@ saas_config:
   name: Twilio Conversations
   type: twilio_conversations
   description: A sample schema representing the Twilio Conversations connector for Fides
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
       default_value: conversations.twilio.com
     - name: account_id
+      sensitive: True
     - name: password
+      sensitive: True
 
   external_references:
     - name: twilio_user_id

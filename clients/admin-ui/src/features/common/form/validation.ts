@@ -6,4 +6,4 @@ export const passwordValidation = Yup.string()
   .matches(/[0-9]/, "Password must have at least one number.")
   .matches(/[A-Z]/, "Password must have at least one capital letter.")
   .matches(/[a-z]/, "Password must have at least one lowercase letter.")
-  .matches(/[\W]/, "Password must have at least one symbol.");
+  .matches(/[\W_]/, "Password must have at least one symbol.");

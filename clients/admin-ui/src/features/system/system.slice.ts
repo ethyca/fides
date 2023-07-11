@@ -2,7 +2,12 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import { System } from "~/types/api";
+import {
+  BulkPutConnectionConfiguration,
+  ConnectionConfigurationResponse,
+  System,
+  SystemResponse,
+} from "~/types/api";
 
 interface SystemDeleteResponse {
   message: string;
@@ -17,11 +22,11 @@ interface UpsertResponse {
 
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getAllSystems: build.query<System[], void>({
+    getAllSystems: build.query<SystemResponse[], void>({
       query: () => ({ url: `system/` }),
       providesTags: () => ["System"],
     }),
-    getSystemByFidesKey: build.query<System, string>({
+    getSystemByFidesKey: build.query<SystemResponse, string>({
       query: (fides_key) => ({ url: `system/${fides_key}/` }),
       providesTags: ["System"],
     }),
@@ -33,7 +38,7 @@ const systemApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: () => ["Datamap", "System"],
+      invalidatesTags: () => ["Datamap", "System", "Datastore Connection"],
     }),
     deleteSystem: build.mutation<SystemDeleteResponse, string>({
       query: (key) => ({
@@ -41,7 +46,7 @@ const systemApi = baseApi.injectEndpoints({
         params: { resource_type: "system" },
         method: "DELETE",
       }),
-      invalidatesTags: ["System"],
+      invalidatesTags: ["System", "Datastore Connection", "Privacy Notices"],
     }),
     upsertSystems: build.mutation<UpsertResponse, System[]>({
       query: (systems) => ({
@@ -49,10 +54,10 @@ const systemApi = baseApi.injectEndpoints({
         method: "POST",
         body: systems,
       }),
-      invalidatesTags: ["Datamap", "System"],
+      invalidatesTags: ["Datamap", "System", "Datastore Connection"],
     }),
     updateSystem: build.mutation<
-      System,
+      SystemResponse,
       Partial<System> & Pick<System, "fides_key">
     >({
       query: ({ ...patch }) => ({
@@ -61,7 +66,39 @@ const systemApi = baseApi.injectEndpoints({
         method: "PUT",
         body: patch,
       }),
-      invalidatesTags: ["Datamap", "System", "Privacy Notices"],
+      invalidatesTags: [
+        "Datamap",
+        "System",
+        "Privacy Notices",
+        "Datastore Connection",
+      ],
+    }),
+    patchSystemConnectionConfigs: build.mutation<
+      BulkPutConnectionConfiguration,
+      {
+        systemFidesKey: string;
+        connectionConfigs: Omit<
+          ConnectionConfigurationResponse,
+          "created_at"
+        >[];
+      }
+    >({
+      query: ({ systemFidesKey, connectionConfigs }) => ({
+        url: `/system/${systemFidesKey}/connection`,
+        method: "PATCH",
+        body: connectionConfigs,
+      }),
+      invalidatesTags: ["Datamap", "System", "Datastore Connection"],
+    }),
+
+    getSystemConnectionConfigs: build.query<
+      ConnectionConfigurationResponse[],
+      string
+    >({
+      query: (systemFidesKey) => ({
+        url: `/system/${systemFidesKey}/connection`,
+      }),
+      providesTags: ["Datamap", "System", "Datastore Connection"],
     }),
   }),
 });
@@ -73,6 +110,8 @@ export const {
   useUpdateSystemMutation,
   useDeleteSystemMutation,
   useUpsertSystemsMutation,
+  usePatchSystemConnectionConfigsMutation,
+  useGetSystemConnectionConfigsQuery,
 } = systemApi;
 
 export interface State {

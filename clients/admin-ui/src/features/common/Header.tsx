@@ -1,6 +1,7 @@
 import {
   Button,
   Flex,
+  IconButton,
   Link,
   Menu,
   MenuButton,
@@ -8,6 +9,7 @@ import {
   MenuItem,
   MenuList,
   QuestionIcon,
+  SettingsIcon,
   Stack,
   Text,
   UserIcon,
@@ -20,6 +22,8 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { INDEX_ROUTE } from "~/constants";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
+
+import { USER_MANAGEMENT_ROUTE } from "./nav/v2/routes";
 
 const useHeader = () => {
   const { username } = useAppSelector(selectUser) ?? { username: "" };
@@ -59,6 +63,15 @@ const Header: React.FC = () => {
             <QuestionIcon color="gray.700" boxSize={4} />
           </Button>
         </Link>
+        <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
+          <IconButton
+            aria-label="Management"
+            size="sm"
+            variant="ghost"
+            icon={<SettingsIcon color="gray.700" boxSize={4} />}
+            data-testid="management-btn"
+          />
+        </NextLink>
         {username && (
           <Menu>
             <MenuButton

@@ -1,11 +1,13 @@
 from typing import Any, Dict
 from unittest import mock
+from uuid import uuid4
 
 import pytest
 from bson import ObjectId
+from fideslang.models import Dataset
 
-from fides.api.ops.common_exceptions import SkippingConsentPropagation
-from fides.api.ops.graph.config import (
+from fides.api.common_exceptions import SkippingConsentPropagation
+from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     Collection,
@@ -13,22 +15,31 @@ from fides.api.ops.graph.config import (
     FieldPath,
     GraphDataset,
 )
-from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.graph.traversal import Traversal, TraversalNode
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fides.api.ops.models.privacy_request import ExecutionLog, ExecutionLogStatus
-from fides.api.ops.task.graph_task import (
+from fides.api.graph.graph import DatasetGraph
+from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.policy import Policy, Rule, RuleTarget
+from fides.api.models.privacy_request import ExecutionLog, ExecutionLogStatus
+from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.schemas.policy import ActionType
+from fides.api.task.graph_task import (
     EMPTY_REQUEST,
     GraphTask,
     TaskResources,
     _evaluate_erasure_dependencies,
+    _format_data_use_map_for_caching,
     build_affected_field_logs,
     collect_queries,
     start_function,
     update_erasure_mapping_from_cache,
 )
-from fides.api.ops.util.consent_util import (
+from fides.api.task.task_resources import Connections
+from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
 )
 
@@ -585,9 +596,9 @@ class TestBuildAffectedFieldLogs:
 
 class TestUpdateErasureMappingFromCache:
     @pytest.fixture(scope="function")
-    def task_resource(self, privacy_request, policy, db):
+    def task_resource(self, privacy_request, policy, db, connection_config):
         tr = TaskResources(privacy_request, policy, [], db)
-        tr.get_connector = lambda x: True
+        tr.get_connector = lambda x: Connections.build_connector(connection_config)
         return tr
 
     @pytest.fixture(scope="function")
@@ -668,6 +679,211 @@ class TestUpdateErasureMappingFromCache:
         assert dsk[CollectionAddress("dr_1", "ds_1")] == 1
 
 
+class TestFormatDataUseMapForCaching:
+    def create_dataset(self, db, fides_key, connection_config):
+        """
+        Util to create dataset and dataset config used in fixtures
+        """
+        ds = Dataset(
+            fides_key=fides_key,
+            organization_fides_key="default_organization",
+            name="Postgres Example Subscribers Dataset",
+            collections=[
+                {
+                    "name": "subscriptions",
+                    "fields": [
+                        {
+                            "name": "email",
+                            "data_categories": ["user.contact.email"],
+                            "fidesops_meta": {
+                                "identity": "email",
+                            },
+                        },
+                    ],
+                },
+            ],
+        )
+        ctl_dataset = CtlDataset(**ds.dict())
+
+        db.add(ctl_dataset)
+        db.commit()
+        dataset_config = DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": fides_key,
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+        return ctl_dataset, dataset_config
+
+    @pytest.fixture(scope="function")
+    def connection_config_no_system(self, db):
+        """Connection config used for data_use_map testing, not associated with a system"""
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": str(uuid4()),
+                "key": "connection_config_data_use_map_no_system",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.write,
+                "disabled": False,
+            },
+        )
+
+        ctl_dataset, dataset_config = self.create_dataset(
+            db, "postgres_example_subscriptions_dataset_no_system", connection_config
+        )
+
+        yield connection_config
+        dataset_config.delete(db)
+        ctl_dataset.delete(db)
+        connection_config.delete(db)
+
+    @pytest.fixture(scope="function")
+    def connection_config_system(self, db, system):
+        """Connection config used for data_use_map testing, associated with a system"""
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": str(uuid4()),
+                "key": "connection_config_data_use_map",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.write,
+                "disabled": False,
+                "system_id": system.id,
+            },
+        )
+
+        ctl_dataset, dataset_config = self.create_dataset(
+            db, "postgres_example_subscriptions_dataset", connection_config
+        )
+
+        yield connection_config
+        dataset_config.delete(db)
+        ctl_dataset.delete(db)
+        connection_config.delete(db)
+
+    @pytest.fixture(scope="function")
+    def connection_config_system_multiple_decs(self, db, system_multiple_decs):
+        """
+        Connection config used for data_use_map testing, associated with a system
+        that has multiple privacy declarations and data uses
+        """
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": str(uuid4()),
+                "key": "connection_config_data_use_map_system_multiple_decs",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.write,
+                "disabled": False,
+                "system_id": system_multiple_decs.id,
+            },
+        )
+
+        ctl_dataset, dataset_config = self.create_dataset(
+            db,
+            "postgres_example_subscriptions_dataset_multiple_decs",
+            connection_config,
+        )
+
+        yield connection_config
+        dataset_config.delete(db)
+        ctl_dataset.delete(db)
+        connection_config.delete(db)
+
+    @pytest.mark.parametrize(
+        "connection_config_fixtures,expected_data_use_map",
+        [
+            (
+                [
+                    "connection_config_no_system"
+                ],  # connection config no system, no data uses
+                {"postgres_example_subscriptions_dataset_no_system:subscriptions": {}},
+            ),
+            (
+                [
+                    "connection_config_system"
+                ],  # connection config associated with system and therefore data uses
+                {
+                    "postgres_example_subscriptions_dataset:subscriptions": {
+                        "marketing.advertising"
+                    },
+                },
+            ),
+            (
+                [
+                    "connection_config_system_multiple_decs"
+                ],  # system has multiple declarations, multiple data uses
+                {
+                    "postgres_example_subscriptions_dataset_multiple_decs:subscriptions": {
+                        "marketing.advertising",
+                        "third_party_sharing",
+                    },
+                },
+            ),
+            (
+                [  # ensure map is populated correctly with multiple systems
+                    "connection_config_no_system",
+                    "connection_config_system_multiple_decs",
+                ],
+                {
+                    "postgres_example_subscriptions_dataset_no_system:subscriptions": {},
+                    "postgres_example_subscriptions_dataset_multiple_decs:subscriptions": {
+                        "marketing.advertising",
+                        "third_party_sharing",
+                    },
+                },
+            ),
+        ],
+    )
+    def test_data_use_map(
+        self,
+        connection_config_fixtures,
+        expected_data_use_map,
+        db,
+        privacy_request,
+        policy,
+        request,
+    ):
+        """
+        Unit tests that confirm the output from function used to generate
+        the `Collection` -> `DataUse` map that's cached during access request execution.
+        """
+
+        # load connection config fixtures
+        connection_configs = []
+        for config_fixture in connection_config_fixtures:
+            connection_configs.append(request.getfixturevalue(config_fixture))
+
+        # create a sample traversal with our current dataset state
+        datasets = DatasetConfig.all(db=db)
+        dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+        dataset_graph = DatasetGraph(*dataset_graphs)
+        traversal: Traversal = Traversal(
+            dataset_graph, {"email": {"test_user@example.com"}}
+        )
+        env: Dict[CollectionAddress, Any] = {}
+        task_resources = TaskResources(privacy_request, policy, connection_configs, db)
+
+        # perform the traversal to populate our `env` dict
+        def collect_tasks_fn(
+            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
+        ) -> None:
+            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
+            if not tn.is_root_node():
+                data[tn.address] = GraphTask(tn, task_resources)
+
+        traversal.traverse(
+            env,
+            collect_tasks_fn,
+        )
+
+        # ensure that the generated data_use_map looks as expected based on `env` dict
+        assert _format_data_use_map_for_caching(env) == expected_data_use_map
+
+
 class TestGraphTaskAffectedConsentSystems:
     @pytest.fixture()
     def mock_graph_task(
@@ -689,7 +905,7 @@ class TestGraphTaskAffectedConsentSystems:
         return GraphTask(tn, task_resources)
 
     @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.SaaSConnector.run_consent_request"
+        "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
     )
     def test_skipped_consent_task_for_connector(
         self,
@@ -738,7 +954,7 @@ class TestGraphTaskAffectedConsentSystems:
         assert logs.first().status == ExecutionLogStatus.skipped
 
     @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.SaaSConnector.run_consent_request"
+        "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
     )
     def test_errored_consent_task_for_connector_no_relevant_preferences(
         self,

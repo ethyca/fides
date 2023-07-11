@@ -2,50 +2,73 @@
 Contains utility functions that set up the application webserver.
 """
 from logging import DEBUG
+from os.path import dirname, join
 from typing import List, Optional, Pattern, Union
 
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from loguru import logger
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
-from slowapi.extension import Limiter, _rate_limit_exceeded_handler  # type: ignore
+from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
 from slowapi.middleware import SlowAPIMiddleware  # type: ignore
-from slowapi.util import get_remote_address  # type: ignore
 from starlette.middleware.cors import CORSMiddleware
 
 import fides
-from fides.api.ctl.database.database import configure_db
-from fides.api.ctl.database.seed import create_or_update_parent_user
-from fides.api.ctl.routes import CTL_ROUTER
-from fides.api.ctl.utils.errors import FidesError
-from fides.api.ctl.utils.logger import setup as setup_logging
-from fides.api.ops.api.deps import get_api_session
-from fides.api.ops.api.v1.api import api_router
-from fides.api.ops.api.v1.exception_handlers import ExceptionHandlers
-from fides.api.ops.common_exceptions import (
-    FunctionalityNotConfigured,
-    RedisConnectionError,
-)
-from fides.api.ops.models.application_config import ApplicationConfig
-from fides.api.ops.oauth.utils import get_root_client, verify_oauth_client_prod
-from fides.api.ops.service.connectors.saas.connector_registry_service import (
-    update_saas_configs,
-)
-
-# pylint: disable=wildcard-import, unused-wildcard-import
-from fides.api.ops.service.saas_request.override_implementations import *
-from fides.api.ops.util.cache import get_cache
-from fides.api.ops.util.system_manager_oauth_util import (
+from fides.api.api.deps import get_api_session
+from fides.api.api.v1 import CTL_ROUTER
+from fides.api.api.v1.api import api_router
+from fides.api.api.v1.endpoints.admin import ADMIN_ROUTER
+from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
+from fides.api.api.v1.exception_handlers import ExceptionHandlers
+from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
+from fides.api.db.database import configure_db
+from fides.api.db.seed import create_or_update_parent_user
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.oauth.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
-from fides.core.config import CONFIG
+from fides.api.oauth.utils import get_root_client, verify_oauth_client_prod
+from fides.api.service.connectors.saas.connector_registry_service import (
+    update_saas_configs,
+)
+
+# pylint: disable=wildcard-import, unused-wildcard-import
+from fides.api.service.saas_request.override_implementations import *
+from fides.api.util.cache import get_cache
+from fides.api.util.consent_util import (
+    load_default_experience_configs_on_startup,
+    load_default_notices_on_startup,
+)
+from fides.api.util.endpoint_utils import fides_limiter
+from fides.api.util.errors import FidesError
+from fides.api.util.logger import setup as setup_logging
+from fides.config import CONFIG
 
 VERSION = fides.__version__
 
-ROUTERS = [CTL_ROUTER, api_router]
+# DB_ROUTER holds routers that have direct DB dependencies.
+# these routers are initialized _outside_ of inner `api` module
+# to avoid cyclical dependency chains.
+# see https://github.com/ethyca/fides/issues/3652
+DB_ROUTER = APIRouter()
+DB_ROUTER.include_router(ADMIN_ROUTER)
+DB_ROUTER.include_router(HEALTH_ROUTER)
+
+
+ROUTERS = [CTL_ROUTER, api_router, DB_ROUTER]
+DEFAULT_PRIVACY_NOTICES_PATH = join(
+    dirname(__file__),
+    "../data/privacy_notices",
+    "privacy_notice_templates.yml",
+)
+PRIVACY_EXPERIENCE_CONFIGS_PATH = join(
+    dirname(__file__),
+    "../data/privacy_notices",
+    "privacy_experience_config_defaults.yml",
+)
 
 
 def create_fides_app(
@@ -53,8 +76,6 @@ def create_fides_app(
     cors_origin_regex: Optional[Pattern] = CONFIG.security.cors_origin_regex,
     routers: List = ROUTERS,
     app_version: str = VERSION,
-    request_rate_limit: str = CONFIG.security.request_rate_limit,
-    rate_limit_prefix: str = CONFIG.security.rate_limit_prefix,
     security_env: str = CONFIG.security.env,
 ) -> FastAPI:
     """Return a properly configured application."""
@@ -68,13 +89,7 @@ def create_fides_app(
     )
 
     fastapi_app = FastAPI(title="fides", version=app_version)
-    fastapi_app.state.limiter = Limiter(
-        default_limits=[request_rate_limit],
-        headers_enabled=True,
-        key_prefix=rate_limit_prefix,
-        key_func=get_remote_address,
-        retry_after="http-date",
-    )
+    fastapi_app.state.limiter = fides_limiter
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     for handler in ExceptionHandlers.get_handlers():
         fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)
@@ -173,18 +188,47 @@ async def run_database_startup() -> None:
         return
     finally:
         db.close()
+
+    load_default_experience_configs()  # Must occur before loading default privacy notices
+
+    if not CONFIG.test_mode:
+        # Default notices subject to change, so preventing these from
+        # loading in test mode to avoid interfering with unit tests.
+        load_default_privacy_notices()
     db.close()
 
 
 def check_redis() -> None:
     """Check that Redis is healthy."""
-
     logger.info("Running Cache connection test...")
-
     try:
-        get_cache()
+        get_cache(should_log=True)
     except (RedisConnectionError, RedisError, ResponseError) as e:
         logger.error("Connection to cache failed: {}", str(e))
         return
     else:
         logger.debug("Connection to cache succeeded")
+
+
+def load_default_privacy_notices() -> None:
+    """Load default templates into the db, and add new notices from those templates where applicable"""
+    logger.info("Loading default privacy notices")
+    try:
+        db = get_api_session()
+        load_default_notices_on_startup(db, DEFAULT_PRIVACY_NOTICES_PATH)
+    except Exception as e:
+        logger.error("Skipping loading default privacy notices: {}", str(e))
+    finally:
+        db.close()
+
+
+def load_default_experience_configs() -> None:
+    """Load default experience_configs into the db"""
+    logger.info("Loading default privacy experience configs")
+    try:
+        db = get_api_session()
+        load_default_experience_configs_on_startup(db, PRIVACY_EXPERIENCE_CONFIGS_PATH)
+    except Exception as e:
+        logger.error("Skipping loading default privacy experience configs: {}", str(e))
+    finally:
+        db.close()

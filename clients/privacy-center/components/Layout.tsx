@@ -15,7 +15,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <Head>
         <title>Privacy Center</title>
         <meta name="description" content="Privacy Center" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href={config.favicon_path || "/favicon.ico"} />
         {styles ? <style>{styles}</style> : null}
       </Head>
       <header>

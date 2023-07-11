@@ -1,14 +1,25 @@
+/* eslint-disable import/no-extraneous-dependencies */
+import alias from "@rollup/plugin-alias";
 import copy from "rollup-plugin-copy";
 import dts from "rollup-plugin-dts";
 import esbuild from "rollup-plugin-esbuild";
 import filesize from "rollup-plugin-filesize";
 import nodeResolve from "@rollup/plugin-node-resolve";
-import css from "rollup-plugin-import-css";
+import postcss from "rollup-plugin-postcss";
 
 const name = "fides";
 const isDev = process.env.NODE_ENV === "development";
 const GZIP_SIZE_ERROR_KB = 20; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
+
+const preactAliases = {
+  entries: [
+    { find: "react", replacement: "preact/compat" },
+    { find: "react-dom/test-utils", replacement: "preact/test-utils" },
+    { find: "react-dom", replacement: "preact/compat" },
+    { find: "react/jsx-runtime", replacement: "preact/jsx-runtime" },
+  ],
+};
 
 /**
  * @type {import('rollup').RollupOptions}
@@ -16,11 +27,12 @@ const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
 export default [
   {
     input: `src/${name}.ts`,
-    // DEFER: Add aliases for typical react imports (see https://preactjs.com/guide/v10/getting-started/#aliasing-in-rollup)
-    // This will be needed if & when we want to leverage other packages written for the React ecosystem
     plugins: [
+      alias(preactAliases),
       nodeResolve(),
-      css(),
+      postcss({
+        minimize: !isDev,
+      }),
       esbuild({
         minify: !isDev,
       }),
@@ -32,20 +44,12 @@ export default [
         verbose: true,
         hook: "writeBundle",
       }),
-      copy({
-        // Automatically add the built css to the privacy center's static files for bundling:
-        targets: [
-          { src: `dist/${name}.css`, dest: "../privacy-center/public/lib/" },
-        ],
-        verbose: true,
-        hook: "writeBundle",
-      }),
       filesize({
         reporter: [
           "boxen", // default reporter, which prints a nice CLI output
 
           // Add a defensive check to fail the build if our bundle size starts getting too big!
-          (options, bundle, { bundleSize, gzipSize, fileName }) => {
+          (options, bundle, { gzipSize, fileName }) => {
             const gzipSizeKb = Number(gzipSize.replace(" KB", ""));
             if (gzipSizeKb > GZIP_SIZE_ERROR_KB) {
               console.error(
@@ -82,7 +86,7 @@ export default [
   },
   {
     input: `src/${name}.ts`,
-    plugins: [nodeResolve(), css(), esbuild()],
+    plugins: [alias(preactAliases), nodeResolve(), postcss(), esbuild()],
     output: [
       {
         // Compatible with ES module imports. Apps in this repo may be able to share the code.
@@ -94,7 +98,7 @@ export default [
   },
   {
     input: `src/${name}.ts`,
-    plugins: [dts(), css()],
+    plugins: [dts(), postcss()],
     output: [
       {
         file: `dist/${name}.d.ts`,

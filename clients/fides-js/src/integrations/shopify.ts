@@ -33,6 +33,8 @@ const applyOptions = (options: ShopifyOptions) => {
  * Call Fides.shopify to configure Shopify customer privacy. Currently the only consent option
  * Shopify allows to be configured is user tracking.
  *
+ * DEFER: Update this integration to support async Fides events
+ *
  * @example
  * Fides.shopify({ tracking: Fides.consent.data_sales })
  */

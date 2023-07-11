@@ -8,10 +8,15 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
+import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
-import { System } from "~/types/api";
+import { System, SystemResponse } from "~/types/api";
 
-import { selectActiveSystem, setActiveSystem } from "./system.slice";
+import {
+  selectActiveSystem,
+  setActiveSystem,
+  useGetSystemByFidesKeyQuery,
+} from "./system.slice";
 import SystemInformationForm from "./SystemInformationForm";
 import UnmountWarning from "./UnmountWarning";
 
@@ -76,7 +81,18 @@ const SystemFormTabs = ({
   const router = useRouter();
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const activeSystem = useAppSelector(selectActiveSystem);
+  const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
+
+  // Once we have saved the system basics, subscribe to the query so that activeSystem
+  // stays up to date when redux invalidates the cache (for example, when we patch a connection config)
+  const { data: systemFromApi } = useGetSystemByFidesKeyQuery(
+    activeSystem?.fides_key,
+    { skip: !activeSystem }
+  );
+
+  useEffect(() => {
+    dispatch(setActiveSystem(systemFromApi));
+  }, [systemFromApi, dispatch]);
 
   const handleSuccess = (system: System) => {
     // show a save message if this is the first time the system was saved
@@ -124,7 +140,9 @@ const SystemFormTabs = ({
     if (
       index === 0 ||
       (index === 1 && tabIndex === 2) ||
-      (index === 2 && tabIndex === 1)
+      (index === 2 && tabIndex === 1) ||
+      index === 3 ||
+      tabIndex === 3
     ) {
       setTabIndex(index);
     } else {
@@ -182,7 +200,7 @@ const SystemFormTabs = ({
       label: "Data uses",
       content: activeSystem ? (
         <Box px={6} width={{ base: "100%", lg: "70%" }}>
-          <PrivacyDeclarationStep system={activeSystem as System} />
+          <PrivacyDeclarationStep system={activeSystem} />
         </Box>
       ) : null,
       isDisabled: !activeSystem,
@@ -209,6 +227,28 @@ const SystemFormTabs = ({
             </Text>
           </Box>
           <DataFlowAccordion system={activeSystem} isSystemTab />
+        </Box>
+      ) : null,
+      isDisabled: !activeSystem,
+    },
+    {
+      label: "Integrations",
+      content: activeSystem ? (
+        <Box width={{ base: "100%", lg: "70%" }}>
+          <Box px={6} paddingBottom={2}>
+            <Text fontSize="sm" lineHeight={5} fontWeight="medium">
+              Integrations are used to process privacy requests like access,
+              erasure, portability, rectification, and consent. Many common
+              systems have API integrations that we can use to automatically
+              process privacy requests. However, email and manual integrations
+              are also available for the systems & functions where API
+              integrations are not available or the preference.
+            </Text>
+          </Box>
+          <ConnectionForm
+            connectionConfig={activeSystem.connection_configs}
+            systemFidesKey={activeSystem.fides_key}
+          />
         </Box>
       ) : null,
       isDisabled: !activeSystem,

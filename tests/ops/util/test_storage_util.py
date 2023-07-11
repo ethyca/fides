@@ -1,7 +1,7 @@
 import pytest
 
-from fides.api.ops.schemas.storage.storage import StorageSecretsS3, StorageType
-from fides.api.ops.util.storage_util import get_schema_for_secrets
+from fides.api.schemas.storage.storage import StorageSecretsS3, StorageType
+from fides.api.util.storage_util import get_schema_for_secrets
 
 
 class TestStorageUtil:

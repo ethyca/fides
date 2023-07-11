@@ -7,12 +7,26 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.models.privacy_preference import (
+    ConsentMethod,
+    CurrentPrivacyPreference,
+    PrivacyPreferenceHistory,
+    RequestOrigin,
+    UserConsentPreference,
+)
+from fides.api.models.privacy_request import (
+    ConsentRequest,
+    ExecutionLogStatus,
+    PrivacyRequestStatus,
+    ProvidedIdentity,
+)
+from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
+from fides.common.api.scope_registry import (
     CONSENT_READ,
     CURRENT_PRIVACY_PREFERENCE_READ,
     PRIVACY_PREFERENCE_HISTORY_READ,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
     CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
     CURRENT_PRIVACY_PREFERENCES_REPORT,
@@ -20,21 +34,7 @@ from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_PREFERENCES,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.privacy_preference import (
-    ConsentMethod,
-    CurrentPrivacyPreference,
-    PrivacyPreferenceHistory,
-    RequestOrigin,
-    UserConsentPreference,
-)
-from fides.api.ops.models.privacy_request import (
-    ConsentRequest,
-    ExecutionLogStatus,
-    PrivacyRequestStatus,
-    ProvidedIdentity,
-)
-from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 class TestSavePrivacyPreferencesPrivacyCenter:
@@ -122,10 +122,10 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "subject_identity_verification_required", "automatically_approved", "system"
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
     def test_verify_then_set_privacy_preferences(
         self,
@@ -138,7 +138,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         request_body,
         privacy_notice,
     ):
-        """Verify code and then return privacy preferences"""
+        """Verify code, save, and then return privacy preferences
+        Privacy request also queued because a notice has system wide enforcement
+        """
         masked_ip = "12.214.31.0"  # Mocking because hostname for FastAPI TestClient is "testclient"
         mock_anonymize.return_value = masked_ip
 
@@ -194,17 +196,111 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             == PrivacyNoticeHistorySchema.from_orm(privacy_notice.histories[0]).dict()
         )
 
-        privacy_preference_history.delete(db=db)
+        assert privacy_preference_history.privacy_request_id is not None
         assert run_privacy_request_mock.called
+
+        privacy_preference_history.delete(db=db)
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required", "automatically_approved", "system"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+    )
+    def test_verify_then_set_privacy_preferences_but_no_privacy_request_created(
+        self,
+        mock_anonymize,
+        run_privacy_request_mock,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        db: Session,
+        privacy_notice_fr_provide_service_frontend_only,
+        privacy_experience_france_overlay,
+        consent_policy,
+    ):
+        """Verify code, save, and then return privacy preferences
+        Privacy request not queued because no notice has system wide enforcement
+        """
+        masked_ip = "12.214.31.0"  # Mocking because hostname for FastAPI TestClient is "testclient"
+        mock_anonymize.return_value = masked_ip
+
+        _, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY.format(consent_request_id=consent_request.id)}",
+            json={"code": verification_code},
+        )
+        assert response.status_code == 200
+        # Assert no existing privacy preferences exist for this identity
+        assert response.json() == {"items": [], "total": 0, "page": 1, "size": 50}
+
+        request_body = {
+            "browser_identity": {"ga_client_id": "test"},
+            "code": verification_code,
+            "preferences": [
+                {
+                    "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.histories[
+                        0
+                    ].id,
+                    "preference": "opt_out",
+                }
+            ],
+            "policy_key": consent_policy.key,
+            "user_geography": "fr_idg",
+            "privacy_experience_id": privacy_experience_france_overlay.id,
+            "method": "button",
+        }
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+
+        response_json = response.json()[0]
+        created_privacy_preference_history_id = response_json[
+            "privacy_preference_history_id"
+        ]
+        privacy_preference_history = (
+            db.query(PrivacyPreferenceHistory)
+            .filter(
+                PrivacyPreferenceHistory.id == created_privacy_preference_history_id
+            )
+            .first()
+        )
+        assert response_json["preference"] == "opt_out"
+
+        assert (
+            response_json["privacy_notice_history"]
+            == PrivacyNoticeHistorySchema.from_orm(
+                privacy_notice_fr_provide_service_frontend_only.histories[0]
+            ).dict()
+        )
+        db.refresh(consent_request)
+        # No privacy request created here
+        assert not consent_request.privacy_request_id
+
+        # Privacy request not created or queued
+        assert privacy_preference_history.privacy_request_id is None
+        assert not run_privacy_request_mock.called
+
+        assert privacy_preference_history.user_geography == "fr_idg"
+
+        privacy_preference_history.delete(db=db)
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_not_required", "automatically_approved"
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
     def test_set_privacy_preferences_privacy_center_fides_user_device_id_only(
         self,
@@ -291,7 +387,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         assert privacy_preference_history.request_origin is None
         assert privacy_preference_history.user_agent == "testclient"
         assert privacy_preference_history.privacy_experience_config_history_id is None
-        assert privacy_preference_history.privacy_experience_history_id is None
+        assert privacy_preference_history.privacy_experience_id is None
         assert mock_anonymize.call_args.args[0] == "testclient"
         assert privacy_preference_history.anonymized_ip_address == masked_ip
         assert privacy_preference_history.url_recorded is None
@@ -352,7 +448,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_set_privacy_preferences_no_email_provided(
         self,
         mock_verify_identity: MagicMock,
@@ -463,9 +559,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "consent_policy",
         "system",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_set_privacy_preferences(
         self,
@@ -584,9 +680,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required", "automatically_approved"
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_set_privacy_preferences_bad_policy_key(
         self,
@@ -645,9 +741,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         privacy_preference_history_created.delete(db)
 
     @pytest.mark.usefixtures("automatically_approved", "system")
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_set_privacy_preferences_without_verification_required(
         self,
@@ -712,7 +808,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "subject_identity_verification_required", "automatically_approved", "system"
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_verify_then_set_privacy_preferences_with_additional_fides_user_device_id(
         self,
@@ -728,9 +824,8 @@ class TestSavePrivacyPreferencesPrivacyCenter:
 
         Besides having a verified identity, we also have the fides_user_device_id from the browser
         """
-        request_body["browser_identity"][
-            "fides_user_device_id"
-        ] = "test_fides_user_device_id"
+        test_device_id = "2da1690a-65b6-447b-879b-d33089c04ba5"
+        request_body["browser_identity"]["fides_user_device_id"] = test_device_id
         _, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
 
@@ -782,12 +877,10 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             response_json["privacy_notice_history"]
             == PrivacyNoticeHistorySchema.from_orm(privacy_notice.histories[0]).dict()
         )
-        assert (
-            privacy_preference_history.fides_user_device == "test_fides_user_device_id"
-        )
+        assert privacy_preference_history.fides_user_device == test_device_id
         assert (
             privacy_preference_history.hashed_fides_user_device
-            == ProvidedIdentity.hash_value("test_fides_user_device_id")
+            == ProvidedIdentity.hash_value(test_device_id)
         )
         assert (
             privacy_preference_history.fides_user_device_provided_identity_id
@@ -802,11 +895,11 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert (
             fides_user_device_provided_identity.encrypted_value["value"]
-            == "test_fides_user_device_id"
+            == test_device_id
         )
         assert (
             fides_user_device_provided_identity.hashed_value
-            == ProvidedIdentity.hash_value("test_fides_user_device_id")
+            == ProvidedIdentity.hash_value(test_device_id)
         )
 
         privacy_preference_history.delete(db=db)
@@ -866,7 +959,7 @@ class TestPrivacyPreferenceVerify:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_verify_no_email_provided(
         self,
         mock_verify_identity: MagicMock,
@@ -900,7 +993,7 @@ class TestPrivacyPreferenceVerify:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_verify_no_privacy_preferences_present(
         self,
         mock_verify_identity: MagicMock,
@@ -967,13 +1060,11 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         return V1_URL_PREFIX + PRIVACY_PREFERENCES
 
     @pytest.fixture(scope="function")
-    def request_body(
-        self, privacy_notice, consent_policy, privacy_experience_overlay_banner
-    ):
+    def request_body(self, privacy_notice, consent_policy, privacy_experience_overlay):
         return {
             "browser_identity": {
                 "ga_client_id": "test",
-                "fides_user_device_id": "ABCDE_TEST_FIDES",
+                "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
             },
             "preferences": [
                 {
@@ -983,9 +1074,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             ],
             "policy_key": consent_policy.key,
             "user_geography": "us_ca",
-            "privacy_experience_history_id": privacy_experience_overlay_banner.histories[
-                0
-            ].id,
+            "privacy_experience_id": privacy_experience_overlay.id,
             "method": "button",
         }
 
@@ -998,6 +1087,22 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             url, json=request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 422
+
+    @pytest.mark.usefixtures(
+        "privacy_notice",
+    )
+    def test_bad_fides_user_device_id_supplied(self, api_client, url, request_body):
+        request_body["browser_identity"][
+            "fides_user_device_id"
+        ] = "bad_fides_user_device_id"
+        response = api_client.patch(
+            url, json=request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "badly formed hexadecimal UUID string"
+        )
 
     @pytest.mark.usefixtures(
         "privacy_notice",
@@ -1018,32 +1123,34 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         request_body,
     ):
         """Privacy experiences need to be valid when setting preferences"""
-        request_body["privacy_experience_history_id"] = "bad_id"
+        request_body["privacy_experience_id"] = "bad_id"
         response = api_client.patch(
             url, json=request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 404
-        assert (
-            response.json()["detail"]
-            == f"Privacy Experience History 'bad_id' not found."
-        )
+        assert response.json()["detail"] == f"Privacy Experience 'bad_id' not found."
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_save_privacy_preferences_with_respect_to_fides_user_device_id(
         self,
+        run_privacy_request_mock,
         mock_anonymize,
         db,
         api_client,
         url,
         request_body,
         privacy_notice,
-        privacy_experience_overlay_banner,
+        privacy_experience_overlay,
     ):
         """Assert CurrentPrivacyPreference records were updated and PrivacyPreferenceHistory records were created
         for recordkeeping with respect to the fides user device id in the request
         """
+        test_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
         masked_ip = "12.214.31.0"
         mock_anonymize.return_value = masked_ip
         response = api_client.patch(
@@ -1077,19 +1184,19 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         )
         assert (
             fides_user_device_provided_identity.hashed_value
-            == ProvidedIdentity.hash_value("ABCDE_TEST_FIDES")
+            == ProvidedIdentity.hash_value(test_device_id)
         )
         assert (
             fides_user_device_provided_identity.encrypted_value["value"]
-            == "ABCDE_TEST_FIDES"
+            == test_device_id
         )
         # Values also cached on the historical record for reporting
         assert (
             privacy_preference_history.hashed_fides_user_device
-            == ProvidedIdentity.hash_value("ABCDE_TEST_FIDES")
+            == ProvidedIdentity.hash_value(test_device_id)
         )  # Cached here for reporting
         assert (
-            privacy_preference_history.fides_user_device == "ABCDE_TEST_FIDES"
+            privacy_preference_history.fides_user_device == test_device_id
         )  # Cached here for reporting
 
         # Test items that are pulled from request headers or client
@@ -1101,17 +1208,88 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         )  # Retrieved from request headers
         assert (
             privacy_preference_history.privacy_experience_config_history_id
-            == privacy_experience_overlay_banner.histories[
-                0
-            ].experience_config_history_id
+            == privacy_experience_overlay.experience_config.experience_config_history_id
         )
         assert (
-            privacy_preference_history.privacy_experience_history_id
-            == privacy_experience_overlay_banner.histories[0].id
+            privacy_preference_history.privacy_experience_id
+            == privacy_experience_overlay.id
         )
         assert privacy_preference_history.anonymized_ip_address == masked_ip
         assert privacy_preference_history.url_recorded is None
         assert privacy_preference_history.method == ConsentMethod.button
+
+        # Privacy request created and queued because a privacy notice has system wide enforcement
+        assert privacy_preference_history.privacy_request_id is not None
+        assert run_privacy_request_mock.called
+
+        current_preference.delete(db)
+        privacy_preference_history.delete(db)
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_save_privacy_preferences_for_fides_user_device_id_no_notice_has_system_wide_enforcement(
+        self,
+        run_privacy_request_mock,
+        mock_anonymize,
+        db,
+        api_client,
+        url,
+        consent_policy,
+        privacy_notice_fr_provide_service_frontend_only,
+        privacy_experience_france_overlay,
+    ):
+        """PrivacyPreferences and CurrentPrivacyPreferences saved for the given fides user device id
+        but no privacy request created to propagate preferences, because all privacy notices
+        have frontend only enforcement
+        """
+        masked_ip = "12.214.31.0"
+        mock_anonymize.return_value = masked_ip
+
+        request_body = {
+            "browser_identity": {
+                "ga_client_id": "test",
+                "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
+            },
+            "preferences": [
+                {
+                    "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.histories[
+                        0
+                    ].id,
+                    "preference": "opt_out",
+                }
+            ],
+            "policy_key": consent_policy.key,
+            "user_geography": "us_ca",
+            "privacy_experience_id": privacy_experience_france_overlay.id,
+            "method": "button",
+        }
+
+        response = api_client.patch(
+            url, json=request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        response_json = response.json()[0]
+        assert response_json["preference"] == "opt_out"
+        assert (
+            response_json["privacy_notice_history"]["id"]
+            == privacy_notice_fr_provide_service_frontend_only.histories[0].id
+        )
+
+        # Fetch current privacy preference that was updated
+        current_preference = CurrentPrivacyPreference.get(
+            db, object_id=response_json["id"]
+        )
+        # Get corresponding historical preference that was just created
+        privacy_preference_history = current_preference.privacy_preference_history
+
+        assert (
+            privacy_preference_history.privacy_request_id is None
+        )  # Privacy request not created
+        assert not run_privacy_request_mock.called  # Privacy Request is not queued
 
         current_preference.delete(db)
         privacy_preference_history.delete(db)
@@ -1162,7 +1340,7 @@ class TestHistoricalPreferences:
         privacy_preference_history,
         privacy_request_with_consent_policy,
         system,
-        privacy_experience_privacy_center_link,
+        privacy_experience_privacy_center,
     ) -> None:
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
@@ -1226,14 +1404,37 @@ class TestHistoricalPreferences:
         assert response_body["truncated_ip_address"] == "92.158.1.0"
         assert (
             response_body["experience_config_history_id"]
-            == privacy_experience_privacy_center_link.histories[
-                0
-            ].experience_config_history_id
+            == privacy_experience_privacy_center.experience_config.experience_config_history_id
         )
         assert (
-            response_body["privacy_experience_history_id"]
-            == privacy_experience_privacy_center_link.histories[0].id
+            response_body["privacy_experience_id"]
+            == privacy_experience_privacy_center.id
         )
+
+    def test_get_historical_preferences_user_geography_unsupported(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_preference_history_fr_provide_service_frontend_only,
+    ) -> None:
+        """Just verifying it's fine if the user geography is not an official privacy notice region"""
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_PREFERENCE_HISTORY_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert len(response.json()["items"]) == 1
+        assert response.json()["total"] == 1
+        assert response.json()["page"] == 1
+        assert response.json()["size"] == 50
+
+        response_body = response.json()["items"][0]
+
+        assert (
+            response_body["id"]
+            == privacy_preference_history_fr_provide_service_frontend_only.id
+        )
+        assert response_body["user_geography"] == "fr_idg"
 
     def test_get_historical_preferences_ordering(
         self,
@@ -1242,7 +1443,7 @@ class TestHistoricalPreferences:
         generate_auth_header,
         privacy_preference_history,
         privacy_preference_history_us_ca_provide,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ) -> None:
         auth_header = generate_auth_header(scopes=[PRIVACY_PREFERENCE_HISTORY_READ])
         response = api_client.get(url, headers=auth_header)
@@ -1257,7 +1458,7 @@ class TestHistoricalPreferences:
         # Records ordered most recently created first
         assert (
             response_body[0]["id"]
-            == privacy_preference_history_eu_fr_provide_service_frontend_only.id
+            == privacy_preference_history_fr_provide_service_frontend_only.id
         )
         assert response_body[1]["id"] == privacy_preference_history_us_ca_provide.id
         assert response_body[2]["id"] == privacy_preference_history.id
@@ -1269,7 +1470,7 @@ class TestHistoricalPreferences:
         generate_auth_header,
         privacy_preference_history,
         privacy_preference_history_us_ca_provide,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ) -> None:
         auth_header = generate_auth_header(scopes=[PRIVACY_PREFERENCE_HISTORY_READ])
 
@@ -1285,7 +1486,7 @@ class TestHistoricalPreferences:
         # Filter for everything created before the last preference plus an hour
         response = api_client.get(
             url
-            + f"?request_timestamp_lt={(privacy_preference_history_eu_fr_provide_service_frontend_only.created_at + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%S.%f')}",
+            + f"?request_timestamp_lt={(privacy_preference_history_fr_provide_service_frontend_only.created_at + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%S.%f')}",
             headers=auth_header,
         )
         assert response.status_code == 200
@@ -1293,7 +1494,7 @@ class TestHistoricalPreferences:
 
         assert (
             response.json()["items"][0]["id"]
-            == privacy_preference_history_eu_fr_provide_service_frontend_only.id
+            == privacy_preference_history_fr_provide_service_frontend_only.id
         )
         assert (
             response.json()["items"][1]["id"]
@@ -1311,7 +1512,7 @@ class TestHistoricalPreferences:
         assert response.json()["total"] == 2
         assert (
             response.json()["items"][0]["id"]
-            == privacy_preference_history_eu_fr_provide_service_frontend_only.id
+            == privacy_preference_history_fr_provide_service_frontend_only.id
         )
         assert (
             response.json()["items"][1]["id"]
@@ -1321,7 +1522,7 @@ class TestHistoricalPreferences:
         # Invalid filter
         response = api_client.get(
             url
-            + f"?request_timestamp_lt={privacy_preference_history.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}&request_timestamp_gt={privacy_preference_history_eu_fr_provide_service_frontend_only.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
+            + f"?request_timestamp_lt={privacy_preference_history.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}&request_timestamp_gt={privacy_preference_history_fr_provide_service_frontend_only.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
             headers=auth_header,
         )
         assert response.status_code == 400
@@ -1402,7 +1603,7 @@ class TestCurrentPrivacyPreferences:
         generate_auth_header,
         privacy_preference_history,
         privacy_preference_history_us_ca_provide,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CURRENT_PRIVACY_PREFERENCE_READ])
         response = api_client.get(url, headers=auth_header)
@@ -1417,7 +1618,7 @@ class TestCurrentPrivacyPreferences:
         # Records ordered most recently created first
         assert (
             response_body[0]["id"]
-            == privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.id
+            == privacy_preference_history_fr_provide_service_frontend_only.current_privacy_preference.id
         )
         assert (
             response_body[1]["id"]
@@ -1435,7 +1636,7 @@ class TestCurrentPrivacyPreferences:
         generate_auth_header,
         privacy_preference_history,
         privacy_preference_history_us_ca_provide,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CURRENT_PRIVACY_PREFERENCE_READ])
 
@@ -1451,7 +1652,7 @@ class TestCurrentPrivacyPreferences:
         # Filter for everything updated before the last preference plus an hour
         response = api_client.get(
             url
-            + f"?updated_lt={(privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.updated_at + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%S.%f')}",
+            + f"?updated_lt={(privacy_preference_history_fr_provide_service_frontend_only.current_privacy_preference.updated_at + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%S.%f')}",
             headers=auth_header,
         )
         assert response.status_code == 200
@@ -1459,7 +1660,7 @@ class TestCurrentPrivacyPreferences:
 
         assert (
             response.json()["items"][0]["id"]
-            == privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.id
+            == privacy_preference_history_fr_provide_service_frontend_only.current_privacy_preference.id
         )
         assert (
             response.json()["items"][1]["id"]
@@ -1480,7 +1681,7 @@ class TestCurrentPrivacyPreferences:
         assert response.json()["total"] == 2
         assert (
             response.json()["items"][0]["id"]
-            == privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.id
+            == privacy_preference_history_fr_provide_service_frontend_only.current_privacy_preference.id
         )
         assert (
             response.json()["items"][1]["id"]
@@ -1490,7 +1691,7 @@ class TestCurrentPrivacyPreferences:
         # Invalid filter
         response = api_client.get(
             url
-            + f"?updated_lt={privacy_preference_history.current_privacy_preference.updated_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}&updated_gt={privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
+            + f"?updated_lt={privacy_preference_history.current_privacy_preference.updated_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}&updated_gt={privacy_preference_history_fr_provide_service_frontend_only.current_privacy_preference.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
             headers=auth_header,
         )
         assert response.status_code == 400

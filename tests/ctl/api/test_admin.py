@@ -2,9 +2,9 @@
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.ctl.routes.util import API_PREFIX
-from fides.api.ctl.utils import errors
-from fides.core.config import FidesConfig
+from fides.api.util import errors
+from fides.api.util.endpoint_utils import API_PREFIX
+from fides.config import FidesConfig
 
 
 def test_db_reset_dev_mode_enabled(
@@ -17,7 +17,9 @@ def test_db_reset_dev_mode_enabled(
         headers=test_config.user.auth_header,
     )
     assert response.status_code == 200
-    assert response.json() == {"data": {"message": "fides database reset"}}
+    assert response.json() == {
+        "data": {"message": "Fides database action performed successfully: reset"}
+    }
 
 
 def test_db_reset_dev_mode_disabled(

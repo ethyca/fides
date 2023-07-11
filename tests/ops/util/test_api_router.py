@@ -1,10 +1,13 @@
+from unittest import mock
+from unittest.mock import Mock
+
 import pytest
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ
-from fides.api.ops.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
-from fides.api.ops.models.client import ClientDetail
+from fides.api.models.client import ClientDetail
+from fides.common.api.scope_registry import PRIVACY_REQUEST_READ
+from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 
 
 class TestApiRouter:
@@ -45,3 +48,38 @@ class TestApiRouter:
             f"{V1_URL_PREFIX}/route/does/not/exist/", headers=auth_header
         )
         assert resp_4.status_code == HTTP_404_NOT_FOUND
+
+    @mock.patch("fides.api.main.get_admin_index_as_response")
+    def test_malicious_url(
+        self,
+        mock_admin_index_response: Mock,
+        api_client: TestClient,
+        url,
+    ) -> None:
+        """
+        Assert that malicious URLs that attempt path traversal attacks
+        are NOT treated as legitimate URLs, and instead the basic "admin" index
+        response is returned.
+        """
+
+        # admin index response changes depending on environment.
+        # we mock the value here to give ourselves a consistent response to evaluate against.
+        # what we want to ensure is that the admin index response is what gets returned,
+        # indicating that the attempted path traversal does not occur.
+        mock_admin_index_response.return_value = "<h1>Privacy is a Human Right!</h1>"
+
+        malicious_paths = [
+            "../../../../../../../../../etc/passwd",
+            "..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc/passwd",
+            "%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd",
+            "%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd",
+            "..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f/etc/passwd",
+            ".../...//.../...//.../...//.../...//.../...//.../...//.../...//.../...//.../...//etc/passwd",
+            "...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2fetc/passwd",
+            "%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//etc/passwd",
+            "%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2fetc/passwd",
+        ]
+        for path in malicious_paths:
+            resp = api_client.get(f"{url}/{path}")
+            assert resp.status_code == 200
+            assert resp.text == "<h1>Privacy is a Human Right!</h1>"

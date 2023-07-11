@@ -1,15 +1,21 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { constructFidesRegionString, UserGeolocation } from "fides-js";
 
 import type { RootState } from "~/app/store";
 import { VerificationType } from "~/components/modals/types";
 import { baseApi } from "~/features/common/api.slice";
 import {
+  ComponentType,
   ConsentPreferences,
   ConsentPreferencesWithVerificationCode,
+  CurrentPrivacyPreferenceSchema,
+  Page_PrivacyExperienceResponse_,
+  PrivacyNoticeRegion,
+  PrivacyPreferencesRequest,
 } from "~/types/api";
-import { ConfigConsentOption } from "~/types/config";
+import { selectSettings } from "../common/settings.slice";
 
-import { FidesKeyToConsent } from "./types";
+import { FidesKeyToConsent, NoticeHistoryIdToPreference } from "./types";
 
 export const consentApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -36,7 +42,11 @@ export const consentApi = baseApi.injectEndpoints({
     >({
       query: ({ id }) => `${VerificationType.ConsentRequest}/${id}/preferences`,
     }),
-    updateConsentRequestPreferences: build.mutation<
+    /**
+     * This endpoint is deprecated in favor of
+     * /consent-request/{id}/privacy-preferences
+     * */
+    updateConsentRequestPreferencesDeprecated: build.mutation<
       ConsentPreferences,
       { id: string; body: ConsentPreferencesWithVerificationCode }
     >({
@@ -47,13 +57,50 @@ export const consentApi = baseApi.injectEndpoints({
         credentials: "include",
       }),
     }),
+    getPrivacyExperience: build.query<
+      Page_PrivacyExperienceResponse_,
+      { region: PrivacyNoticeRegion; fides_user_device_id?: string }
+    >({
+      query: (payload) => ({
+        url: "privacy-experience/",
+        params: {
+          component: ComponentType.PRIVACY_CENTER,
+          has_notices: true,
+          show_disabled: false,
+          has_config: true,
+          systems_applicable: true,
+          ...payload,
+        },
+      }),
+      providesTags: ["Privacy Experience"],
+    }),
+    updatePrivacyPreferences: build.mutation<
+      CurrentPrivacyPreferenceSchema[],
+      { id: string; body: PrivacyPreferencesRequest }
+    >({
+      query: ({ id, body }) => ({
+        url: `${VerificationType.ConsentRequest}/${id}/privacy-preferences`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Privacy Experience"],
+    }),
+    getUserGeolocation: build.query<UserGeolocation, string>({
+      query: (url) => ({
+        url,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
 export const {
   usePostConsentRequestVerificationMutation,
   useLazyGetConsentRequestPreferencesQuery,
-  useUpdateConsentRequestPreferencesMutation,
+  useUpdateConsentRequestPreferencesDeprecatedMutation,
+  useGetPrivacyExperienceQuery,
+  useUpdatePrivacyPreferencesMutation,
+  useGetUserGeolocationQuery,
 } = consentApi;
 
 type State = {
@@ -61,11 +108,14 @@ type State = {
   fidesKeyToConsent: FidesKeyToConsent;
   /** The consent choices stored on the server (returned by the most recent API call). */
   persistedFidesKeyToConsent: FidesKeyToConsent;
+  /** User id based on the device */
+  fidesUserDeviceId: string | undefined;
 };
 
 const initialState: State = {
   fidesKeyToConsent: {},
   persistedFidesKeyToConsent: {},
+  fidesUserDeviceId: undefined,
 };
 
 export const consentSlice = createSlice({
@@ -75,10 +125,10 @@ export const consentSlice = createSlice({
     changeConsent(
       draftState,
       {
-        payload: { option, value },
-      }: PayloadAction<{ option: ConfigConsentOption; value: boolean }>
+        payload: { key, value },
+      }: PayloadAction<{ key: string; value: boolean }>
     ) {
-      draftState.fidesKeyToConsent[option.fidesDataUseKey] = value;
+      draftState.fidesKeyToConsent[key] = value;
     },
 
     /**
@@ -100,12 +150,22 @@ export const consentSlice = createSlice({
           consent.opt_in;
       });
     },
+
+    setFidesUserDeviceId(
+      draftState,
+      { payload }: PayloadAction<string | undefined>
+    ) {
+      draftState.fidesUserDeviceId = payload;
+    },
   },
 });
 
 export const { reducer } = consentSlice;
-export const { changeConsent, updateUserConsentPreferencesFromApi } =
-  consentSlice.actions;
+export const {
+  changeConsent,
+  updateUserConsentPreferencesFromApi,
+  setFidesUserDeviceId,
+} = consentSlice.actions;
 
 export const selectConsentState = (state: RootState) => state.consent;
 
@@ -117,4 +177,56 @@ export const selectFidesKeyToConsent = createSelector(
 export const selectPersistedFidesKeyToConsent = createSelector(
   selectConsentState,
   (state) => state.persistedFidesKeyToConsent
+);
+
+// Privacy experience
+export const selectFidesUserDeviceId = createSelector(
+  selectConsentState,
+  (state) => state.fidesUserDeviceId
+);
+
+export const selectUserRegion = createSelector(
+  [(RootState) => RootState, selectSettings],
+  (RootState, settingsState) => {
+    const { settings } = settingsState;
+    if (settings?.IS_GEOLOCATION_ENABLED && settings?.GEOLOCATION_API_URL) {
+      const geolocation = consentApi.endpoints.getUserGeolocation.select(
+        settings.GEOLOCATION_API_URL
+      )(RootState)?.data;
+      return constructFidesRegionString(geolocation) as PrivacyNoticeRegion;
+    }
+    return undefined;
+  }
+);
+
+export const selectPrivacyExperience = createSelector(
+  [(RootState) => RootState, selectUserRegion, selectFidesUserDeviceId],
+  (RootState, region, deviceId) => {
+    if (!region) {
+      return undefined;
+    }
+    return consentApi.endpoints.getPrivacyExperience.select({
+      region,
+      fides_user_device_id: deviceId,
+    })(RootState)?.data?.items[0];
+  }
+);
+
+const emptyConsentPreferences: NoticeHistoryIdToPreference = {};
+export const selectCurrentConsentPreferences = createSelector(
+  selectPrivacyExperience,
+  (experience) => {
+    if (
+      !experience ||
+      !experience.privacy_notices ||
+      !experience.privacy_notices.length
+    ) {
+      return emptyConsentPreferences;
+    }
+    const preferences: NoticeHistoryIdToPreference = {};
+    experience.privacy_notices.forEach((notice) => {
+      preferences[notice.privacy_notice_history_id] = notice.current_preference;
+    });
+    return preferences;
+  }
 );

@@ -4,7 +4,7 @@ import pydash
 import pytest
 import requests
 
-from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.models.connectionconfig import ConnectionConfig
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,

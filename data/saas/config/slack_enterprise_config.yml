@@ -3,13 +3,14 @@ saas_config:
   name: Slack Enterprise
   type: slack_enterprise
   description: A sample schema representing the Slack Enterprise connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: domain
       default_value: slack.com
     - name: user_oauth_token
       label: User OAuth Token
+      sensitive: True
 
   client_config:
     protocol: https
