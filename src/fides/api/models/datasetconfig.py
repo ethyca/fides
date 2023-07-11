@@ -121,7 +121,7 @@ class DatasetConfig(Base):
         return dataset
 
     @classmethod
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "DatasetConfig":
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "DatasetConfig":  # type: ignore[override]
         """
         Look up dataset by config and fides_key. If found, update this dataset, otherwise
         create a new one.
