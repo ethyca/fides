@@ -265,7 +265,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         <Form noValidate>
           <VStack align="stretch" gap="16px">
             {/* Connection Identifier */}
-            {connectionOption.type !== SystemType.MANUAL ? (
               <Field
                 id="instance_key"
                 name="instance_key"
@@ -312,7 +311,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   </FormControl>
                 )}
               </Field>
-            ) : null}
             {/* Dynamic connector secret fields */}
 
             {connectionOption.type !== SystemType.MANUAL && secretsSchema
@@ -346,8 +344,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               >
                 {testButtonLabel}
               </Button>
-              {connectionOption.type === SystemType.MANUAL &&
-              connectionConfig ? (
+              {connectionOption.type === SystemType.MANUAL ? (
                 <DSRCustomizationModal connectionConfig={connectionConfig} />
               ) : null}
               <Button

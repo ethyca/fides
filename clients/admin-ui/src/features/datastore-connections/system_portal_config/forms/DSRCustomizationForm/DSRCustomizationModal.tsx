@@ -11,6 +11,7 @@ import {
   Spinner,
   useDisclosure,
   VStack,
+  Tooltip,
 } from "@fidesui/react";
 import { useAlert, useAPIHelper } from "common/hooks";
 import {
@@ -30,7 +31,7 @@ import DSRCustomizationForm from "./DSRCustomizationForm";
 import { Field } from "./types";
 
 type Props = {
-  connectionConfig: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse;
 };
 
 const DSRCustomizationModal: React.FC<Props> = ({ connectionConfig }) => {
@@ -43,7 +44,10 @@ const DSRCustomizationModal: React.FC<Props> = ({ connectionConfig }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const { data, isFetching, isLoading, isSuccess } =
-    useGetAccessManualHookQuery(connectionConfig.key);
+    useGetAccessManualHookQuery(connectionConfig? connectionConfig.key: "", {
+      skip: !connectionConfig,
+    });
+
 
   const [createAccessManualWebhook] = useCreateAccessManualWebhookMutation();
   const [patchAccessManualWebhook] = usePatchAccessManualWebhookMutation();
@@ -55,7 +59,7 @@ const DSRCustomizationModal: React.FC<Props> = ({ connectionConfig }) => {
       const params:
         | CreateAccessManualWebhookRequest
         | PatchAccessManualWebhookRequest = {
-        connection_key: connectionConfig.key as string,
+        connection_key: connectionConfig!.key as string,
         body: { ...values } as any,
       };
       if (fields.length > 0) {
@@ -83,22 +87,31 @@ const DSRCustomizationModal: React.FC<Props> = ({ connectionConfig }) => {
     };
   }, [data, isSuccess]);
 
+
+  const DSRButton = <Button
+      bg="primary.800"
+      color="white"
+      isDisabled={!connectionConfig || isSubmitting}
+      isLoading={isSubmitting}
+      loadingText="Submitting"
+      size="sm"
+      variant="solid"
+      onClick={onOpen}
+      _active={{ bg: "primary.500" }}
+      _hover={{ bg: "primary.400" }}
+    >
+      Customize DSR
+    </Button>
+
   return (
     <>
-      <Button
-        bg="primary.800"
-        color="white"
-        isDisabled={isSubmitting}
-        isLoading={isSubmitting}
-        loadingText="Submitting"
-        size="sm"
-        variant="solid"
-        onClick={onOpen}
-        _active={{ bg: "primary.500" }}
-        _hover={{ bg: "primary.400" }}
-      >
-        Customize DSR
-      </Button>
+      {!connectionConfig ? (
+      <Tooltip label="Save an Integration first to customize the DSR">
+        {DSRButton}
+      </Tooltip>
+      ): (
+        DSRButton
+      )}
       <Modal isCentered isOpen={isOpen} size="lg" onClose={onClose}>
         <ModalOverlay />
         <ModalContent minWidth="775px">
