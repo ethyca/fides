@@ -1,0 +1,78 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Gong
+  type: gong
+  description: A sample schema representing the Gong connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: us-66708.api.gong.io
+    - name: token
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+          - name: Authorization
+            value: Basic <token>
+
+  test_request:
+    method: GET
+    path: /v2/users
+
+  endpoints:
+    - name: data_privacy(email)
+      requests:
+        read:
+          method: GET
+          path: /v2/data-privacy/data-for-email-address
+          query_params:
+            - name: emailAddress
+              value: <email>
+          param_values:
+            - name: email
+              identity: email
+        delete:
+          method: POST
+          path: /v2/data-privacy/erase-data-for-email-address
+          query_params:
+            - name: emailAddress
+              value: <email>
+          param_values:
+            - name: email
+              identity: email
+    - name: data_privacy(_phone)
+      requests:
+        read:
+          method: GET
+          path: /v2/data-privacy/data-for-phone-number
+          headers:
+            - name: Authorization
+              value: Basic <token>
+          query_params:
+            - name: phoneNumber
+              value: <phoneNumber>
+          param_values:
+            - name: token
+              connector_param: token
+            - name: phoneNumber
+              identity: phoneNumber
+        delete:
+          method: POST
+          path: /v2/data-privacy/erase-data-for-phone-number
+          headers:
+            - name: Authorization
+              value: Basic <token>
+          body: |
+            {
+              "phoneNumber": "<phoneNumber>"
+            }
+          param_values:
+            - name: token
+              connector_param: token
+            - name: phoneNumber
+              identity: phoneNumber
