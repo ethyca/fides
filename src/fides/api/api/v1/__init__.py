@@ -5,7 +5,6 @@ All routes should get imported here and added to the CTL_ROUTER
 """
 from fastapi import APIRouter
 
-from .endpoints.admin import ADMIN_ROUTER
 from .endpoints.generate import GENERATE_ROUTER
 from .endpoints.generic import (
     DATA_CATEGORY_ROUTER,
@@ -18,7 +17,6 @@ from .endpoints.generic import (
     POLICY_ROUTER,
     REGISTRY_ROUTER,
 )
-from .endpoints.health import HEALTH_ROUTER
 from .endpoints.system import (
     SYSTEM_CONNECTION_INSTANTIATE_ROUTER,
     SYSTEM_CONNECTIONS_ROUTER,
@@ -26,8 +24,11 @@ from .endpoints.system import (
 )
 from .endpoints.validate import VALIDATE_ROUTER
 
+# ADMIN and HEALTH routers are explicitly _excluded_ here.
+# those depend directly on database modules, and therefore
+# cause circular dependency problems when initialized as
+# part of this module. see https://github.com/ethyca/fides/issues/3652
 routers = [
-    ADMIN_ROUTER,
     DATA_CATEGORY_ROUTER,
     DATA_SUBJECT_ROUTER,
     DATA_QUALIFIER_ROUTER,
@@ -35,7 +36,6 @@ routers = [
     DATASET_ROUTER,
     EVALUATION_ROUTER,
     GENERATE_ROUTER,
-    HEALTH_ROUTER,
     ORGANIZATION_ROUTER,
     POLICY_ROUTER,
     REGISTRY_ROUTER,
