@@ -89,7 +89,9 @@ export const patchConnectionConfig = async (
   patchFunc: any
 ) => {
   const key =
-    [SystemType.DATABASE, SystemType.EMAIL].indexOf(connectionOption.type) > -1
+    [SystemType.DATABASE, SystemType.EMAIL, SystemType.MANUAL].indexOf(
+      connectionOption.type
+    ) > -1
       ? formatKey(values.instance_key as string)
       : connectionConfig?.key;
 
