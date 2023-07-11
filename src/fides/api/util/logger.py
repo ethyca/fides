@@ -77,7 +77,7 @@ def create_handler_dicts(
         "sink": sys.stdout if sink == "" else sink,
         "filter": lambda logRecord: not bool(logRecord["extra"]),
         "diagnose": False,
-        "backtrace": False,
+        "backtrace": True,
         "catch": True,
     }
     extra_dict = {
