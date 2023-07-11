@@ -343,7 +343,7 @@ class RedshiftConnector(SQLConnector):
     secrets_schema = RedshiftSchema
 
     def build_ssh_uri(self, local_address: tuple) -> str:
-        """Build SSH URI of format redshift+psycopg2://[username[:password]@][ssh_host][:ssh_port][/dbname]"""
+        """Build SSH URI of format redshift+psycopg2://[user[:password]@][ssh_host][:ssh_port][/dbname]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         local_host, local_port = local_address
@@ -356,7 +356,7 @@ class RedshiftConnector(SQLConnector):
 
     # Overrides BaseConnector.build_uri
     def build_uri(self) -> str:
-        """Build URI of format redshift+psycopg2://username:password@[host][:port][/database]"""
+        """Build URI of format redshift+psycopg2://user:password@[host][:port][/database]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
         port = f":{config.port}" if config.port else ""
         url = f"redshift+psycopg2://{config.user}:{config.password}@{config.host}:{port}/{config.database}"

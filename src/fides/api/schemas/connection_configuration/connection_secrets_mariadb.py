@@ -34,7 +34,7 @@ class MariaDBSchema(ConnectionConfigSecretsSchema):
         title="Database",
     )
 
-    _required_components: List[str] = ["host", "port", "username", "password"]
+    _required_components: List[str] = ["host", "port", "username", "password", "dbname"]
 
 
 class MariaDBDocsSchema(MariaDBSchema, NoValidationSchema):
