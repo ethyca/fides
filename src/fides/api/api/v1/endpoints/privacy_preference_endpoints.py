@@ -1,6 +1,6 @@
 import ipaddress
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Type, Union
 
 from fastapi import Depends, HTTPException, Request, Response
 from fastapi.params import Security
@@ -29,7 +29,9 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.privacy_preference import (
     CurrentPrivacyPreference,
+    LastServedNotice,
     PrivacyPreferenceHistory,
+    ServedNoticeHistory,
 )
 from fides.api.models.privacy_request import (
     ConsentRequest,
@@ -42,6 +44,9 @@ from fides.api.schemas.privacy_preference import (
     ConsentReportingSchema,
     CurrentPrivacyPreferenceReportingSchema,
     CurrentPrivacyPreferenceSchema,
+    LastServedNoticeSchema,
+    NoticesServedCreate,
+    NoticesServedRequest,
     PrivacyPreferencesCreate,
     PrivacyPreferencesRequest,
 )
@@ -65,6 +70,7 @@ from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
     CURRENT_PRIVACY_PREFERENCES_REPORT,
     HISTORICAL_PRIVACY_PREFERENCES_REPORT,
+    NOTICES_SERVED,
     PRIVACY_PREFERENCES,
     V1_URL_PREFIX,
 )
@@ -121,7 +127,7 @@ def consent_request_verify_for_privacy_preferences(
 
 
 def verify_privacy_notice_and_historical_records(
-    db: Session, data: PrivacyPreferencesRequest
+    db: Session, notice_history_list: List[str]
 ) -> None:
     """
     Used when saving privacy preferences: runs a check that makes sure all the privacy notice histories referenced by
@@ -138,18 +144,13 @@ def verify_privacy_notice_and_historical_records(
             PrivacyNoticeHistory.privacy_notice_id == PrivacyNotice.id,
         )
         .filter(
-            PrivacyNoticeHistory.id.in_(
-                [
-                    consent_option.privacy_notice_history_id
-                    for consent_option in data.preferences
-                ]
-            ),
+            PrivacyNoticeHistory.id.in_(notice_history_list),
         )
         .distinct()
         .count()
     )
 
-    if privacy_notice_count < len(data.preferences):
+    if privacy_notice_count < len(notice_history_list):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Invalid privacy notice histories in request",
@@ -231,12 +232,14 @@ def _get_request_origin_and_config(
     return origin, experience_config_history_id
 
 
-def supplement_privacy_preferences_with_user_and_experience_details(
-    db: Session, request: Request, data: PrivacyPreferencesRequest
-) -> PrivacyPreferencesCreate:
+def supplement_request_with_user_and_experience_details(
+    db: Session,
+    request: Request,
+    data: Union[PrivacyPreferencesRequest, NoticesServedRequest],
+    resource_type: Union[Type[PrivacyPreferencesCreate], Type[NoticesServedCreate]],
+) -> Union[PrivacyPreferencesCreate, NoticesServedCreate]:
     """
     Pull additional user information from request headers and experience to record for consent reporting purposes
-
     """
 
     request_headers = request.headers
@@ -247,7 +250,7 @@ def supplement_privacy_preferences_with_user_and_experience_details(
         db, data
     )
 
-    return PrivacyPreferencesCreate(
+    return resource_type(
         **data.dict(),
         anonymized_ip_address=anonymize_ip_address(ip_address),
         experience_config_history_id=experience_config_history_id,
@@ -278,7 +281,13 @@ def save_privacy_preferences_with_verified_identity(
     Creates historical records for these preferences for record keeping, and also updates current preferences.
     Creates a privacy request to propagate preferences to third party systems.
     """
-    verify_privacy_notice_and_historical_records(db=db, data=data)
+    verify_privacy_notice_and_historical_records(
+        db=db,
+        notice_history_list=[
+            consent_option.privacy_notice_history_id
+            for consent_option in data.preferences
+        ],
+    )
     consent_request, provided_identity = _get_consent_request_and_provided_identity(
         db=db,
         consent_request_id=consent_request_id,
@@ -311,8 +320,8 @@ def save_privacy_preferences_with_verified_identity(
         consent_request=consent_request,
         verified_provided_identity=provided_identity,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=supplement_privacy_preferences_with_user_and_experience_details(
-            db, request, data
+        request_data=supplement_request_with_user_and_experience_details(
+            db, request, data, resource_type=PrivacyPreferencesCreate
         ),
     )
 
@@ -429,6 +438,70 @@ def _save_privacy_preferences_for_identities(
     return upserted_current_preferences
 
 
+def _save_notices_served_for_identities(
+    db: Session,
+    verified_provided_identity: Optional[ProvidedIdentity],
+    fides_user_provided_identity: Optional[ProvidedIdentity],
+    request_data: NoticesServedCreate,
+) -> List[LastServedNotice]:
+    """
+    Common code to that saves that notices have been served (both historical and current records)
+    """
+    created_notices_served: List[ServedNoticeHistory] = []
+    upserted_last_served: List[LastServedNotice] = []
+
+    email, hashed_email = extract_identity_from_provided_identity(
+        verified_provided_identity, ProvidedIdentityType.email
+    )
+    phone_number, hashed_phone_number = extract_identity_from_provided_identity(
+        verified_provided_identity, ProvidedIdentityType.phone_number
+    )
+    fides_user_device_id, hashed_device_id = extract_identity_from_provided_identity(
+        fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
+    )
+
+    for notice_history_id in request_data.privacy_notice_history_ids:
+        (
+            historical_preference,
+            current_preference,
+        ) = ServedNoticeHistory.save_notice_served_and_last_notice_served(
+            db=db,
+            data={
+                "acknowledge_mode": request_data.acknowledge_mode,
+                "anonymized_ip_address": request_data.anonymized_ip_address,
+                "email": email,
+                "fides_user_device": fides_user_device_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id
+                if fides_user_provided_identity
+                else None,
+                "hashed_email": hashed_email,
+                "hashed_fides_user_device": hashed_device_id,
+                "hashed_phone_number": hashed_phone_number,
+                "phone_number": phone_number,
+                "privacy_experience_config_history_id": request_data.experience_config_history_id
+                if request_data.experience_config_history_id
+                else None,
+                "privacy_experience_id": request_data.privacy_experience_id
+                if request_data.privacy_experience_id
+                else None,
+                "privacy_notice_history_id": notice_history_id,
+                "provided_identity_id": verified_provided_identity.id
+                if verified_provided_identity
+                else None,
+                "request_origin": request_data.request_origin,
+                "serving_component": request_data.serving_component,
+                "url_recorded": request_data.url_recorded,
+                "user_agent": request_data.user_agent,
+                "user_geography": request_data.user_geography,
+            },
+            check_name=False,
+        )
+        created_notices_served.append(historical_preference)
+        upserted_last_served.append(current_preference)
+
+    return upserted_last_served
+
+
 @router.patch(
     PRIVACY_PREFERENCES,
     status_code=HTTP_200_OK,
@@ -447,7 +520,13 @@ def save_privacy_preferences(
     Creates historical records for these preferences for record keeping, and also updates current preferences.
     Creates a privacy request to propagate preferences to third party systems.
     """
-    verify_privacy_notice_and_historical_records(db=db, data=data)
+    verify_privacy_notice_and_historical_records(
+        db=db,
+        notice_history_list=[
+            consent_option.privacy_notice_history_id
+            for consent_option in data.preferences
+        ],
+    )
 
     fides_user_provided_identity = get_or_create_fides_user_device_id_provided_identity(
         db=db, identity_data=data.browser_identity
@@ -459,8 +538,8 @@ def save_privacy_preferences(
         consent_request=None,
         verified_provided_identity=None,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=supplement_privacy_preferences_with_user_and_experience_details(
-            db, request, data
+        request_data=supplement_request_with_user_and_experience_details(
+            db, request, data, resource_type=PrivacyPreferencesCreate
         ),
     )
 
@@ -569,3 +648,39 @@ def get_historical_consent_report(
     query = query.order_by(PrivacyPreferenceHistory.created_at.desc())
 
     return paginate(query, params)
+
+
+@router.patch(
+    NOTICES_SERVED,
+    status_code=HTTP_200_OK,
+    response_model=List[LastServedNoticeSchema],
+)
+@fides_limiter.limit(CONFIG.security.public_request_rate_limit)
+def save_notices_served(
+    *,
+    db: Session = Depends(get_db),
+    data: NoticesServedRequest,
+    request: Request,
+    response: Response,  # required for rate limiting
+) -> List[LastServedNotice]:
+    """Records what notices were served to a fides user device id.
+
+    All notices that were served in an experience should be included in the request body.
+    """
+    verify_privacy_notice_and_historical_records(
+        db=db, notice_history_list=data.privacy_notice_history_ids
+    )
+
+    fides_user_provided_identity = get_or_create_fides_user_device_id_provided_identity(
+        db=db, identity_data=data.browser_identity
+    )
+
+    logger.info("Recording notices served with respect to fides user device id")
+    return _save_notices_served_for_identities(
+        db=db,
+        verified_provided_identity=None,
+        fides_user_provided_identity=fides_user_provided_identity,
+        request_data=supplement_request_with_user_and_experience_details(
+            db, request, data, resource_type=NoticesServedCreate
+        ),
+    )
