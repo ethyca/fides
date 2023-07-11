@@ -265,52 +265,52 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         <Form noValidate>
           <VStack align="stretch" gap="16px">
             {/* Connection Identifier */}
-              <Field
-                id="instance_key"
-                name="instance_key"
-                validate={validateConnectionIdentifier}
-              >
-                {({ field }: { field: FieldInputProps<string> }) => (
-                  <FormControl
-                    display="flex"
-                    isRequired
-                    isInvalid={
-                      props.errors.instance_key && props.touched.instance_key
-                    }
+            <Field
+              id="instance_key"
+              name="instance_key"
+              validate={validateConnectionIdentifier}
+            >
+              {({ field }: { field: FieldInputProps<string> }) => (
+                <FormControl
+                  display="flex"
+                  isRequired
+                  isInvalid={
+                    props.errors.instance_key && props.touched.instance_key
+                  }
+                >
+                  {getFormLabel("instance_key", "Integration Identifier")}
+                  <VStack align="flex-start" w="inherit">
+                    <Input
+                      {...field}
+                      autoComplete="off"
+                      color="gray.700"
+                      isDisabled={!!connectionConfig?.key}
+                      placeholder={`A unique identifier for your new ${
+                        connectionOption!.human_readable
+                      } integration`}
+                      size="sm"
+                    />
+                    <FormErrorMessage>
+                      {props.errors.instance_key}
+                    </FormErrorMessage>
+                  </VStack>
+                  <Tooltip
+                    aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
+                    hasArrow
+                    label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
+                    placement="right-start"
+                    openDelay={500}
                   >
-                    {getFormLabel("instance_key", "Integration Identifier")}
-                    <VStack align="flex-start" w="inherit">
-                      <Input
-                        {...field}
-                        autoComplete="off"
-                        color="gray.700"
-                        isDisabled={!!connectionConfig?.key}
-                        placeholder={`A unique identifier for your new ${
-                          connectionOption!.human_readable
-                        } integration`}
-                        size="sm"
+                    <Flex alignItems="center" h="32px">
+                      <CircleHelpIcon
+                        marginLeft="8px"
+                        _hover={{ cursor: "pointer" }}
                       />
-                      <FormErrorMessage>
-                        {props.errors.instance_key}
-                      </FormErrorMessage>
-                    </VStack>
-                    <Tooltip
-                      aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
-                      hasArrow
-                      label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
-                      placement="right-start"
-                      openDelay={500}
-                    >
-                      <Flex alignItems="center" h="32px">
-                        <CircleHelpIcon
-                          marginLeft="8px"
-                          _hover={{ cursor: "pointer" }}
-                        />
-                      </Flex>
-                    </Tooltip>
-                  </FormControl>
-                )}
-              </Field>
+                    </Flex>
+                  </Tooltip>
+                </FormControl>
+              )}
+            </Field>
             {/* Dynamic connector secret fields */}
 
             {connectionOption.type !== SystemType.MANUAL && secretsSchema

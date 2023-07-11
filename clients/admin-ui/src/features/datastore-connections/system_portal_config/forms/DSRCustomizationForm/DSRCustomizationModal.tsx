@@ -9,9 +9,9 @@ import {
   ModalHeader,
   ModalOverlay,
   Spinner,
+  Tooltip,
   useDisclosure,
   VStack,
-  Tooltip,
 } from "@fidesui/react";
 import { useAlert, useAPIHelper } from "common/hooks";
 import {
@@ -44,10 +44,9 @@ const DSRCustomizationModal: React.FC<Props> = ({ connectionConfig }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const { data, isFetching, isLoading, isSuccess } =
-    useGetAccessManualHookQuery(connectionConfig? connectionConfig.key: "", {
+    useGetAccessManualHookQuery(connectionConfig ? connectionConfig.key : "", {
       skip: !connectionConfig,
     });
-
 
   const [createAccessManualWebhook] = useCreateAccessManualWebhookMutation();
   const [patchAccessManualWebhook] = usePatchAccessManualWebhookMutation();
@@ -87,8 +86,8 @@ const DSRCustomizationModal: React.FC<Props> = ({ connectionConfig }) => {
     };
   }, [data, isSuccess]);
 
-
-  const DSRButton = <Button
+  const DSRButton = (
+    <Button
       bg="primary.800"
       color="white"
       isDisabled={!connectionConfig || isSubmitting}
@@ -102,14 +101,15 @@ const DSRCustomizationModal: React.FC<Props> = ({ connectionConfig }) => {
     >
       Customize DSR
     </Button>
+  );
 
   return (
     <>
       {!connectionConfig ? (
-      <Tooltip label="Save an Integration first to customize the DSR">
-        {DSRButton}
-      </Tooltip>
-      ): (
+        <Tooltip label="Save an Integration first to customize the DSR">
+          {DSRButton}
+        </Tooltip>
+      ) : (
         DSRButton
       )}
       <Modal isCentered isOpen={isOpen} size="lg" onClose={onClose}>
