@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional, Union, Dict, Any, cast
+from typing import List, Optional, Dict, Any, cast
 
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
@@ -8,7 +8,6 @@ from pydantic import BaseModel, Extra, root_validator
 from fides.api.models.connectionconfig import AccessLevel, ConnectionType
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
-from fides.api.schemas.connection_configuration.connection_masked_secrets import ConnectionConfigMaskedSecrets
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfigBase
 from fides.api.util.connection_type import get_connection_type_secret_schema
@@ -94,22 +93,19 @@ class ConnectionConfigurationResponse(BaseModel):
     last_test_timestamp: Optional[datetime]
     last_test_succeeded: Optional[bool]
     saas_config: Optional[SaaSConfigBase]
-    # secrets: ConnectionConfigMaskedSecrets
+    secrets: Dict[str, Any]
 
 
 
 
-    # @root_validator(pre=True)
-    # def mask_sensitive_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-    #     """Mask sensitive values in the response."""
-    #     secrets = cast(dict, values.get("secrets"))
-    #     connection_secrets = secrets
-    #     from pprint import pprint
-    #     pprint(connection_secrets)
-    #     connection_type = values.get("connection_type").value
-    #     print(f"connection_Type: {connection_type}")
-    #     secret_schema = get_connection_type_secret_schema(connection_type=connection_type)
-    #     return mask_sensitive_fields(connection_secrets, secret_schema)
+    @root_validator()
+    def mask_sensitive_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Mask sensitive values in the response."""
+        connection_type = values["saas_config"].type if values.get("connection_type") == ConnectionType.saas else values.get("connection_type").value
+        secret_schema = get_connection_type_secret_schema(connection_type=connection_type)
+        values['secrets'] = mask_sensitive_fields(cast(dict, values.get("secrets")), secret_schema)
+        return values
+
     class Config:
         """Set orm_mode to support mapping to ConnectionConfig"""
 

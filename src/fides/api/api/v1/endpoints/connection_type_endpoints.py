@@ -76,7 +76,7 @@ def get_all_connection_types(
     CONNECTION_TYPE_SECRETS,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_TYPE_READ])],
 )
-def get_connection_type_secret_schema(
+def get_connection_type_secret_schema_route(
     *, connection_type: str
 ) -> Optional[Dict[str, Any]]:
     """Returns the secret fields that should be supplied to authenticate with a particular connection type
