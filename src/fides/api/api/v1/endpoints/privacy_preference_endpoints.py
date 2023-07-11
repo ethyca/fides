@@ -10,7 +10,12 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from sqlalchemy import literal
 from sqlalchemy.orm import Query, Session
-from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
 from fides.api.api.deps import get_db
 from fides.api.api.v1.endpoints.consent_request_endpoints import (
@@ -79,6 +84,25 @@ from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Privacy Preference"], prefix=V1_URL_PREFIX)
+
+
+def get_served_notice_history_id(
+    db: Session, served_notice_history_id: str
+) -> ServedNoticeHistory:
+    """
+    Helper method to load a ServedNoticeHistory record or throw a 404
+    """
+    logger.info("Finding ServedNoticeHistory with id '{}'", served_notice_history_id)
+    served_notice_history = ServedNoticeHistory.get(
+        db=db, object_id=served_notice_history_id
+    )
+    if not served_notice_history:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No ServedNoticeHistory record found for id {served_notice_history_id}.",
+        )
+
+    return served_notice_history
 
 
 @router.post(
@@ -156,6 +180,25 @@ def verify_privacy_notice_and_historical_records(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Invalid privacy notice histories in request",
         )
+
+
+def verify_valid_service_notice_history_records(
+    db: Session, data: PrivacyPreferencesRequest
+):
+    """Verify service notice history records specified in the request are valid before saving privacy preferences"""
+    for preference in data.preferences:
+        if preference.served_notice_history_id:
+            served_notice_history = get_served_notice_history_id(
+                db, preference.served_notice_history_id
+            )
+            if (
+                served_notice_history.privacy_notice_history_id
+                != preference.privacy_notice_history_id
+            ):
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"The ServedNoticeHistory record '{served_notice_history.id}' did not serve the PrivacyNoticeHistory record '{preference.privacy_notice_history_id}'.",
+                )
 
 
 def extract_identity_from_provided_identity(
@@ -289,6 +332,8 @@ def save_privacy_preferences_with_verified_identity(
             for consent_option in data.preferences
         ],
     )
+    verify_valid_service_notice_history_records(db, data)
+
     consent_request, provided_identity = _get_consent_request_and_provided_identity(
         db=db,
         consent_request_id=consent_request_id,
@@ -372,6 +417,7 @@ def _save_privacy_preferences_for_identities(
                 if verified_provided_identity
                 else None,
                 "request_origin": request_data.request_origin,
+                "served_notice_history_id": privacy_preference.served_notice_history_id,
                 "user_agent": request_data.user_agent,
                 "user_geography": request_data.user_geography,
                 "url_recorded": request_data.url_recorded,
@@ -517,6 +563,8 @@ def save_privacy_preferences(
             for consent_option in data.preferences
         ],
     )
+
+    verify_valid_service_notice_history_records(db, data)
 
     fides_user_provided_identity = get_or_create_fides_user_device_id_provided_identity(
         db=db, identity_data=data.browser_identity

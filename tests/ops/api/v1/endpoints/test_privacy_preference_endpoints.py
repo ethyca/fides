@@ -47,7 +47,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         return "abcd"
 
     @pytest.fixture(scope="function")
-    def request_body(self, privacy_notice, verification_code, consent_policy):
+    def request_body(
+        self, privacy_notice, verification_code, consent_policy, served_notice_history
+    ):
         return {
             "browser_identity": {"ga_client_id": "test"},
             "code": verification_code,
@@ -55,6 +57,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
                 {
                     "privacy_notice_history_id": privacy_notice.histories[0].id,
                     "preference": "opt_out",
+                    "served_notice_history_id": served_notice_history.id,
                 }
             ],
             "policy_key": consent_policy.key,
@@ -559,6 +562,35 @@ class TestSavePrivacyPreferencesPrivacyCenter:
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
+    )
+    def test_save_preferences_invalid_served_notice_history_id(
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        request_body,
+        privacy_notice,
+        served_notice_history_us_ca_provide_for_fides_user,
+    ):
+        _, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        request_body["preferences"][0][
+            "served_notice_history_id"
+        ] = served_notice_history_us_ca_provide_for_fides_user.id
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == f"The ServedNoticeHistory record '{served_notice_history_us_ca_provide_for_fides_user.id}' did not serve the PrivacyNoticeHistory record '{privacy_notice.histories[0].id}'."
+        )
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
         "automatically_approved",
         "consent_policy",
         "system",
@@ -578,6 +610,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         request_body,
         privacy_notice,
         privacy_notice_us_ca_provide,
+        served_notice_history,
     ):
         provided_identity, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
@@ -635,6 +668,14 @@ class TestSavePrivacyPreferencesPrivacyCenter:
 
         db.refresh(first_privacy_preference_history_created)
         db.refresh(second_privacy_preference_history_created)
+
+        assert (
+            first_privacy_preference_history_created.served_notice_history_id
+            == served_notice_history.id
+        )
+        assert (
+            second_privacy_preference_history_created.served_notice_history_id is None
+        )
 
         assert first_privacy_preference_history_created.privacy_request_id is not None
         assert second_privacy_preference_history_created.privacy_request_id is not None
@@ -1064,7 +1105,13 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         return V1_URL_PREFIX + PRIVACY_PREFERENCES
 
     @pytest.fixture(scope="function")
-    def request_body(self, privacy_notice, consent_policy, privacy_experience_overlay):
+    def request_body(
+        self,
+        privacy_notice,
+        consent_policy,
+        privacy_experience_overlay,
+        served_notice_history,
+    ):
         return {
             "browser_identity": {
                 "ga_client_id": "test",
@@ -1074,6 +1121,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
                 {
                     "privacy_notice_history_id": privacy_notice.histories[0].id,
                     "preference": "opt_out",
+                    "served_notice_history_id": served_notice_history.id,
                 }
             ],
             "policy_key": consent_policy.key,
@@ -1120,6 +1168,34 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         )
         assert response.status_code == 400
 
+    @pytest.mark.usefixtures(
+        "privacy_notice",
+    )
+    def test_save_privacy_preferences_with_invalid_served_notice_history(
+        self,
+        api_client,
+        url,
+        request_body,
+        served_notice_history_us_ca_provide_for_fides_user,
+    ):
+        request_body["preferences"][0][
+            "served_notice_history_id"
+        ] = served_notice_history_us_ca_provide_for_fides_user.id
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+
+    @pytest.mark.usefixtures(
+        "privacy_notice",
+    )
+    def test_save_privacy_preferences_with_served_notice_history_not_found(
+        self, api_client, url, request_body
+    ):
+        request_body["preferences"][0][
+            "served_notice_history_id"
+        ] = "bad_served_notice_history_id"
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 404
+
     def test_save_privacy_preferences_bad_experience_id(
         self,
         api_client,
@@ -1150,6 +1226,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         request_body,
         privacy_notice,
         privacy_experience_overlay,
+        served_notice_history,
     ):
         """Assert CurrentPrivacyPreference records were updated and PrivacyPreferenceHistory records were created
         for recordkeeping with respect to the fides user device id in the request
@@ -1221,6 +1298,10 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert privacy_preference_history.anonymized_ip_address == masked_ip
         assert privacy_preference_history.url_recorded is None
         assert privacy_preference_history.method == ConsentMethod.button
+        assert (
+            privacy_preference_history.served_notice_history_id
+            == served_notice_history.id
+        )
 
         # Privacy request created and queued because a privacy notice has system wide enforcement
         assert privacy_preference_history.privacy_request_id is not None

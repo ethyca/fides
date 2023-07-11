@@ -1466,6 +1466,24 @@ def privacy_notice(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def served_notice_history(
+    db: Session, privacy_notice, fides_user_provided_identity
+) -> Generator:
+    pref_1 = ServedNoticeHistory.create(
+        db=db,
+        data={
+            "acknowledge_mode": False,
+            "serving_component": "overlay",
+            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+            "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_notice_us_ca_provide(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
