@@ -29,8 +29,10 @@ class KeyfileCreds(BaseModel):
 class BigQuerySchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to BigQuery"""
 
-
-    keyfile_creds: KeyfileCreds = Field(sensitive=True)
+    keyfile_creds: KeyfileCreds = Field(
+        sensitive=True,
+        description="The contents of the key file that contains authentication credentials for a service account in GCP.",
+    )
 
     _required_components: List[str] = ["keyfile_creds"]
 

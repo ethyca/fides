@@ -11,12 +11,26 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 class MongoDBSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to a MongoDB Database"""
 
-    host: str = Field(None, title="Host")  
-    port: int = Field(None, title="Port")  
-    username: str = Field(None, title="Username") 
-    password: str = Field(None, title="Password", sensitive=True)
+    host: str = Field(
+        title="Host",
+        description="The hostname or IP address of the server where the database is running.",
+    )
+    port: int = Field(
+        27017,
+        title="Port",
+        description="The network port number on which the server is listening for incoming connections (default: 27017).",
+    )
+    username: str = Field(
+        title="Username",
+        description="The user account used to authenticate and access the database.",
+    )
+    password: str = Field(
+        title="Password",
+        description="The password used to authenticate and access the database.",
+        sensitive=True,
+    )
 
-    _required_components: List[str] = ["host","port","username","password"]
+    _required_components: List[str] = ["host", "port", "username", "password"]
 
 
 class MongoDBDocsSchema(MongoDBSchema, NoValidationSchema):
