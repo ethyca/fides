@@ -21,6 +21,7 @@ CONSENT_REQUEST_VERIFY = "/consent-request/{consent_request_id}/verify"
 CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID = (
     "/consent-request/{consent_request_id}/privacy-preferences"
 )
+CONSENT_REQUEST_NOTICES_SERVED = "/consent-request/{consent_request_id}/notices-served"
 CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY = (
     "/consent-request/{consent_request_id}/verify-for-privacy-preferences"
 )

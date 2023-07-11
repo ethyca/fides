@@ -66,6 +66,7 @@ from fides.common.api.scope_registry import (
     PRIVACY_PREFERENCE_HISTORY_READ,
 )
 from fides.common.api.v1.urn_registry import (
+    CONSENT_REQUEST_NOTICES_SERVED,
     CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
     CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
     CURRENT_PRIVACY_PREFERENCES_REPORT,
@@ -293,26 +294,15 @@ def save_privacy_preferences_with_verified_identity(
         consent_request_id=consent_request_id,
         verification_code=data.code,
     )
-    if not provided_identity.hashed_value:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
-        )
 
-    if provided_identity.field_name == ProvidedIdentityType.fides_user_device_id:
-        # If consent request was saved against a fides user device id only, this is our primary identity
-        # This workflow is for when customers don't want to collect email/phone number.
-        fides_user_provided_identity = provided_identity
-        provided_identity = None  # type: ignore[assignment]
-    else:
-        # Get the fides user device id from the dictionary of browser identifiers
-        try:
-            fides_user_provided_identity = (
-                get_or_create_fides_user_device_id_provided_identity(
-                    db=db, identity_data=data.browser_identity
-                )
-            )
-        except HTTPException:
-            fides_user_provided_identity = None
+    (
+        provided_identity,
+        fides_user_provided_identity,
+    ) = classify_identities_for_privacy_center_consent_reporting(
+        db=db,
+        provided_identity=provided_identity,
+        browser_identity=data.browser_identity,
+    )
 
     logger.info("Saving privacy preferences")
     return _save_privacy_preferences_for_identities(
@@ -663,7 +653,8 @@ def save_notices_served(
     request: Request,
     response: Response,  # required for rate limiting
 ) -> List[LastServedNotice]:
-    """Records what notices were served to a fides user device id.
+    """Records what notices were served to a fides user device id only.  Generally called by the banner
+    or an overlay.
 
     All notices that were served in an experience should be included in the request body.
     """
@@ -679,6 +670,90 @@ def save_notices_served(
     return _save_notices_served_for_identities(
         db=db,
         verified_provided_identity=None,
+        fides_user_provided_identity=fides_user_provided_identity,
+        request_data=supplement_request_with_user_and_experience_details(
+            db, request, data, resource_type=NoticesServedCreate
+        ),
+    )
+
+
+def classify_identities_for_privacy_center_consent_reporting(
+    db: Session,
+    provided_identity: ProvidedIdentity,
+    browser_identity: Optional[Identity],
+) -> Tuple[Optional[ProvidedIdentity], Optional[ProvidedIdentity]]:
+    """For consent reporting purposes, we separate out the type of identity that identifies the user
+
+    We want to classify the "provided_identity" as an identifier saved against an email or phone,
+    and the "fides_user_provided_identity" as an identifier saved against the fides user device id.
+    """
+    if not provided_identity.hashed_value:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
+        )
+
+    if provided_identity.field_name == ProvidedIdentityType.fides_user_device_id:
+        # If consent request was saved against a fides user device id only, this is our primary identity
+        # This workflow is for when customers don't want to collect email/phone number.
+        fides_user_provided_identity = provided_identity
+        provided_identity = None  # type: ignore[assignment]
+    else:
+        # Get the fides user device id from the dictionary of browser identifiers
+        try:
+            fides_user_provided_identity = (
+                get_or_create_fides_user_device_id_provided_identity(
+                    db=db, identity_data=browser_identity
+                )
+            )
+        except HTTPException:
+            fides_user_provided_identity = None
+
+    return provided_identity, fides_user_provided_identity
+
+
+@router.patch(
+    CONSENT_REQUEST_NOTICES_SERVED,
+    status_code=HTTP_200_OK,
+    response_model=List[LastServedNoticeSchema],
+)
+def save_notices_served_via_privacy_center(
+    *,
+    consent_request_id: str,
+    db: Session = Depends(get_db),
+    data: NoticesServedRequest,
+    request: Request,
+) -> List[LastServedNotice]:
+    """Saves that notices were served via a verified identity flow (privacy center)
+
+    Capable of saving that notices were served against a verified email/phone number and a fides user device id
+    simultaneously.
+
+    Creates a ServedNoticeHistory history record for every notice in the request and upserts
+    a LastServedNotice record.
+    """
+    verify_privacy_notice_and_historical_records(
+        db=db,
+        notice_history_list=data.privacy_notice_history_ids,
+    )
+    _, provided_identity = _get_consent_request_and_provided_identity(
+        db=db,
+        consent_request_id=consent_request_id,
+        verification_code=data.code,
+    )
+
+    (
+        provided_identity,
+        fides_user_provided_identity,
+    ) = classify_identities_for_privacy_center_consent_reporting(
+        db=db,
+        provided_identity=provided_identity,
+        browser_identity=data.browser_identity,
+    )
+
+    logger.info("Saving notices served for privacy center")
+    return _save_notices_served_for_identities(
+        db=db,
+        verified_provided_identity=provided_identity,
         fides_user_provided_identity=fides_user_provided_identity,
         request_data=supplement_request_with_user_and_experience_details(
             db, request, data, resource_type=NoticesServedCreate

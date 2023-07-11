@@ -59,8 +59,8 @@ class NoticesServedRequest(FidesSchema):
     """Request body when indicating that notices were served in the UI"""
 
     browser_identity: Identity
-    code: Optional[SafeStr]
-    privacy_notice_history_ids: List[str]
+    code: Optional[SafeStr]  # For verified identity workflow only
+    privacy_notice_history_ids: List[SafeStr]
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
     acknowledge_mode: Optional[bool]
