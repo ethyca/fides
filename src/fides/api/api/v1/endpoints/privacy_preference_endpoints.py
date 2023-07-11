@@ -24,6 +24,7 @@ from fides.api.api.v1.endpoints.consent_request_endpoints import (
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
+from fides.api.custom_types import SafeStr
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.privacy_experience import PrivacyExperience
@@ -152,7 +153,7 @@ def consent_request_verify_for_privacy_preferences(
 
 
 def verify_privacy_notice_and_historical_records(
-    db: Session, notice_history_list: List[str]
+    db: Session, notice_history_list: List[SafeStr]
 ) -> None:
     """
     Used when saving privacy preferences: runs a check that makes sure all the privacy notice histories referenced by
@@ -184,7 +185,7 @@ def verify_privacy_notice_and_historical_records(
 
 def verify_valid_service_notice_history_records(
     db: Session, data: PrivacyPreferencesRequest
-):
+) -> None:
     """Verify service notice history records specified in the request are valid before saving privacy preferences"""
     for preference in data.preferences:
         if preference.served_notice_history_id:
@@ -242,7 +243,7 @@ def anonymize_ip_address(ip_address: Optional[str]) -> Optional[str]:
 
 
 def _get_request_origin_and_config(
-    db: Session, data: PrivacyPreferencesRequest
+    db: Session, data: Union[PrivacyPreferencesRequest, NoticesServedRequest]
 ) -> Tuple[Optional[str], Optional[str]]:
     """
     Extract details to save with the privacy preferences preferences from the
@@ -341,7 +342,7 @@ def save_privacy_preferences_with_verified_identity(
     )
 
     (
-        provided_identity,
+        provided_identity_verified,
         fides_user_provided_identity,
     ) = classify_identities_for_privacy_center_consent_reporting(
         db=db,
@@ -350,14 +351,18 @@ def save_privacy_preferences_with_verified_identity(
     )
 
     logger.info("Saving privacy preferences")
+
+    request_data = supplement_request_with_user_and_experience_details(
+        db, request, data, resource_type=PrivacyPreferencesCreate
+    )
+    assert isinstance(request_data, PrivacyPreferencesCreate)  # For mypy
+
     return _save_privacy_preferences_for_identities(
         db=db,
         consent_request=consent_request,
-        verified_provided_identity=provided_identity,
+        verified_provided_identity=provided_identity_verified,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=supplement_request_with_user_and_experience_details(
-            db, request, data, resource_type=PrivacyPreferencesCreate
-        ),
+        request_data=request_data,
     )
 
 
@@ -571,14 +576,17 @@ def save_privacy_preferences(
     )
 
     logger.info("Saving privacy preferences with respect to fides user device id")
+    request_data = supplement_request_with_user_and_experience_details(
+        db, request, data, resource_type=PrivacyPreferencesCreate
+    )
+
+    assert isinstance(request_data, PrivacyPreferencesCreate)  # For mypy
     return _save_privacy_preferences_for_identities(
         db=db,
         consent_request=None,
         verified_provided_identity=None,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=supplement_request_with_user_and_experience_details(
-            db, request, data, resource_type=PrivacyPreferencesCreate
-        ),
+        request_data=request_data,
     )
 
 
@@ -718,20 +726,22 @@ def save_notices_served(
     )
 
     logger.info("Recording notices served with respect to fides user device id")
+    request_data = supplement_request_with_user_and_experience_details(
+        db, request, data, resource_type=NoticesServedCreate
+    )
+    assert isinstance(request_data, NoticesServedCreate)  # For mypy
     return _save_notices_served_for_identities(
         db=db,
         verified_provided_identity=None,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=supplement_request_with_user_and_experience_details(
-            db, request, data, resource_type=NoticesServedCreate
-        ),
+        request_data=request_data,
     )
 
 
 def classify_identities_for_privacy_center_consent_reporting(
     db: Session,
     provided_identity: ProvidedIdentity,
-    browser_identity: Optional[Identity],
+    browser_identity: Identity,
 ) -> Tuple[Optional[ProvidedIdentity], Optional[ProvidedIdentity]]:
     """For consent reporting purposes, we separate out the type of identity that identifies the user
 
@@ -793,7 +803,7 @@ def save_notices_served_via_privacy_center(
     )
 
     (
-        provided_identity,
+        provided_identity_verified,
         fides_user_provided_identity,
     ) = classify_identities_for_privacy_center_consent_reporting(
         db=db,
@@ -802,11 +812,13 @@ def save_notices_served_via_privacy_center(
     )
 
     logger.info("Saving notices served for privacy center")
+    request_data = supplement_request_with_user_and_experience_details(
+        db, request, data, resource_type=NoticesServedCreate
+    )
+    assert isinstance(request_data, NoticesServedCreate)
     return _save_notices_served_for_identities(
         db=db,
-        verified_provided_identity=provided_identity,
+        verified_provided_identity=provided_identity_verified,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=supplement_request_with_user_and_experience_details(
-            db, request, data, resource_type=NoticesServedCreate
-        ),
+        request_data=request_data,
     )

@@ -258,13 +258,16 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
             "fides_user_device_provided_identity_id": created_served_notice_history.fides_user_device_provided_identity_id,
         }
 
-        upserted_last_served_notice_record: LastServedNotice = upsert_last_saved_record(
+        upserted_last_served_notice_record = upsert_last_saved_record(
             db,
             created_historical_record=created_served_notice_history,
             current_record_class=LastServedNotice,
             privacy_notice_history=privacy_notice_history,
             current_record_data=last_served_data,
         )
+        assert isinstance(
+            upserted_last_served_notice_record, LastServedNotice
+        )  # For mypy
 
         return created_served_notice_history, upserted_last_served_notice_record
 
@@ -395,13 +398,15 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
             "fides_user_device_provided_identity_id": created_privacy_preference_history.fides_user_device_provided_identity_id,
         }
 
-        current_preference: CurrentPrivacyPreference = upsert_last_saved_record(
+        current_preference = upsert_last_saved_record(
             db,
             created_historical_record=created_privacy_preference_history,
             current_record_class=CurrentPrivacyPreference,
             privacy_notice_history=privacy_notice_history,
             current_record_data=current_privacy_preference_data,
         )
+        assert isinstance(current_preference, CurrentPrivacyPreference)  # For mypy
+
         return created_privacy_preference_history, current_preference
 
 
@@ -583,11 +588,13 @@ def upsert_last_saved_record(
     If we have historical records for multiple identities, and we determine they are the same identity,
     their preferences are consolidated into the same record.
     """
-    existing_record_for_provided_identity = None
+    existing_record_for_provided_identity: Optional[
+        Union[CurrentPrivacyPreference, LastServedNotice]
+    ] = None
     # Check if we have "current" records for the ProvidedIdentity (usu an email or phone)/Privacy Notice
     if created_historical_record.provided_identity_id:
         existing_record_for_provided_identity = (
-            db.query(current_record_class)
+            db.query(current_record_class)  # type: ignore[assignment]
             .filter(
                 current_record_class.provided_identity_id
                 == created_historical_record.provided_identity_id,
@@ -598,10 +605,12 @@ def upsert_last_saved_record(
         )
 
     # Check if we have "current" records for the Fides User Device ID and the Privacy Notice
-    existing_record_for_fides_user_device = None
+    existing_record_for_fides_user_device: Optional[
+        Union[CurrentPrivacyPreference, LastServedNotice]
+    ] = None
     if created_historical_record.fides_user_device_provided_identity_id:
         existing_record_for_fides_user_device = (
-            db.query(current_record_class)
+            db.query(current_record_class)  # type: ignore[assignment]
             .filter(
                 current_record_class.fides_user_device_provided_identity_id
                 == created_historical_record.fides_user_device_provided_identity_id,
