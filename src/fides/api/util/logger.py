@@ -76,8 +76,8 @@ def create_handler_dicts(
         "serialize": serialize,
         "sink": sys.stdout if sink == "" else sink,
         "filter": lambda logRecord: not bool(logRecord["extra"]),
-        "diagnose": True,
-        "backtrace": True,
+        "diagnose": False,
+        "backtrace": False,
         "catch": True,
     }
     extra_dict = {
