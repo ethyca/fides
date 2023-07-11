@@ -137,7 +137,7 @@ async def log_request(request: Request, call_next: Callable) -> Response:
     # If the request fails, we still want to log it
     try:
         response = await call_next(request)
-    except:
+    except:  # pylint: disable=bare-except
         response = Response(status_code=500)
 
     handler_time = datetime.now() - start
