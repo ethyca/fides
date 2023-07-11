@@ -42,7 +42,7 @@ def _log_warning(exc: BaseException, dev_mode: bool = False) -> None:
 
 
 def create_handler_dicts(
-    level: str, sink: str, serialize: bool, colorize: bool
+    level: str, sink: str, serialize: bool, colorize: bool, include_called_from: bool
 ) -> List[Dict]:
     """
     Returns only the fields required to pass a FidesAPIHandler
@@ -51,7 +51,9 @@ def create_handler_dicts(
     time_format = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green>"
     level_format = "<level>{level: <8}</level>"
     called_from_format = (
-        "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan>"
+        ("<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan>")
+        if include_called_from
+        else ""
     )
     message_format = "<level>{message}</level>"
 
@@ -97,8 +99,9 @@ def setup(config: FidesConfig) -> None:
 
     handlers = create_handler_dicts(
         level=config.logging.level,
+        include_called_from=config.dev_mode,
         sink=config.logging.destination,
-        serialize=bool(config.logging.serialization),
+        serialize=config.logging.serialization == "json",
         colorize=config.logging.colorize,
     )
     logger.configure(handlers=handlers)
