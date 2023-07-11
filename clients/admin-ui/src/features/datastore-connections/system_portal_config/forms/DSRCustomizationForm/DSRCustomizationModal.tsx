@@ -106,7 +106,11 @@ const DSRCustomizationModal: React.FC<Props> = ({ connectionConfig }) => {
   return (
     <>
       {!connectionConfig ? (
-        <Tooltip label="Save an Integration first to customize the DSR">
+        <Tooltip
+          label="Save an Integration first to customize the DSR"
+          placement="top"
+          shouldWrapChildren
+        >
           {DSRButton}
         </Tooltip>
       ) : (
