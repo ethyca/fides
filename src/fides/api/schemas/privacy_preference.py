@@ -139,6 +139,9 @@ class ConsentReportingSchema(FidesSchema):
     )
     truncated_ip_address: Optional[str] = Field(title="Truncated ip address")
     method: Optional[ConsentMethod] = Field(title="Method of consent preference")
+    served_notice_history_id: Optional[str] = Field(
+        title="The id of the record where the notice was served to the end user"
+    )
 
 
 class CurrentPrivacyPreferenceSchema(FidesSchema):

@@ -670,6 +670,9 @@ def get_historical_consent_report(
                 "truncated_ip_address"
             ),
             PrivacyPreferenceHistory.method.label("method"),
+            PrivacyPreferenceHistory.served_notice_history_id.label(
+                "served_notice_history_id"
+            ),
         )
         .outerjoin(
             PrivacyRequest,

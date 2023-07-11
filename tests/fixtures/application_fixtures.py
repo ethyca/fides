@@ -2159,6 +2159,7 @@ def privacy_preference_history(
     provided_identity_and_consent_request,
     privacy_notice,
     privacy_experience_privacy_center,
+    served_notice_history,
 ):
     provided_identity, consent_request = provided_identity_and_consent_request
     privacy_notice_history = privacy_notice.histories[0]
@@ -2178,6 +2179,7 @@ def privacy_preference_history(
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "us_ca",
             "url_recorded": "example.com/privacy_center",
+            "served_notice_history_id": served_notice_history.id,
         },
         check_name=False,
     )

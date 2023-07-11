@@ -1424,6 +1424,7 @@ class TestHistoricalPreferences:
         generate_auth_header,
         privacy_preference_history,
         privacy_request_with_consent_policy,
+        served_notice_history,
         system,
         privacy_experience_privacy_center,
     ) -> None:
@@ -1495,6 +1496,7 @@ class TestHistoricalPreferences:
             response_body["privacy_experience_id"]
             == privacy_experience_privacy_center.id
         )
+        assert response_body["served_notice_history_id"] == served_notice_history.id
 
     def test_get_historical_preferences_user_geography_unsupported(
         self,
