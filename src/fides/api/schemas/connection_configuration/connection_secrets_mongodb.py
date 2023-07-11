@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 from pydantic import Field
 
@@ -29,8 +29,18 @@ class MongoDBSchema(ConnectionConfigSecretsSchema):
         description="The password used to authenticate and access the database.",
         sensitive=True,
     )
+    defaultauthdb: str = Field(
+        title="Default Auth DB",
+        description="Used to specify the default authentication database.",
+    )
 
-    _required_components: List[str] = ["host", "port", "username", "password"]
+    _required_components: List[str] = [
+        "host",
+        "port",
+        "username",
+        "password",
+        "defaultauthdb",
+    ]
 
 
 class MongoDBDocsSchema(MongoDBSchema, NoValidationSchema):

@@ -24,18 +24,15 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         description="The password used to authenticate and access the database.",
         sensitive=True,
     )
-    warehouse_name: Optional[str] = Field(
-        None,
+    warehouse_name: str = Field(
         title="Warehouse",
         description="The name of the Snowflake warehouse where your queries will be executed.",
     )
-    database_name: Optional[str] = Field(
-        None,
+    database_name: str = Field(
         title="Database",
         description="The name of the Snowflake database you want to connect to.",
     )
-    schema_name: Optional[str] = Field(
-        None,
+    schema_name: str = Field(
         title="Schema",
         description="The name of the Snowflake schema within the selected database.",
     )
@@ -46,9 +43,12 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
     )
 
     _required_components: List[str] = [
+        "account_identifier",
         "user_login_name",
         "password",
-        "account_identifier",
+        "warehouse_name",
+        "database_name",
+        "schema_name",
     ]
 
 

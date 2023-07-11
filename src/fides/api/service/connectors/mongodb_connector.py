@@ -27,23 +27,14 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         """
 
         config = MongoDBSchema(**self.configuration.secrets or {})
-
-        user_pass: str = ""
-        default_auth_db: str = ""
-        if config.username and config.password:
-            user_pass = f"{config.username}:{config.password}@"
-
-            if config.defaultauthdb:
-                default_auth_db = f"/{config.defaultauthdb}"
-
-        port: str = f":{config.port}" if config.port else ""
-        url = f"mongodb://{user_pass}{config.host}{port}{default_auth_db}"
+        user_pass = f"{config.username}:{config.password}@"
+        default_auth_db = f"/{config.defaultauthdb}"
+        url = f"mongodb://{user_pass}{config.host}{config.port}{default_auth_db}"
         return url
 
     def create_client(self) -> MongoClient:
         """Returns a client for a MongoDB instance"""
-        config = MongoDBSchema(**self.configuration.secrets or {})
-        uri = config.url if config.url else self.build_uri()
+        uri = self.build_uri()
         try:
             return MongoClient(uri, serverSelectionTimeoutMS=5000)
         except ValueError:
@@ -55,17 +46,12 @@ class MongoDBConnector(BaseConnector[MongoClient]):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
-        Connects to the Mongo database and makes two trivial queries to ensure connection is valid.
+        Connects to the Mongo database and get the server info to ensure connection is valid.
         """
-        config = MongoDBSchema(**self.configuration.secrets or {})
         logger.info("Starting test connection to {}", self.configuration.key)
         client = self.client()
         try:
-            # Make a couple of trivial requests - getting server info and fetching the collection names
             client.server_info()
-            if config.defaultauthdb:
-                db = client[config.defaultauthdb]
-                db.collection_names()
         except ServerSelectionTimeoutError:
             raise ConnectionException(
                 "Server Selection Timeout Error connecting to MongoDB."

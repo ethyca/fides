@@ -179,8 +179,7 @@ class SQLConnector(BaseConnector[Engine]):
 
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
-        config = self.secrets_schema(**self.configuration.secrets or {})
-        uri = config.url or self.build_uri()
+        uri = self.build_uri()
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
@@ -255,12 +254,15 @@ class PostgreSQLConnector(SQLConnector):
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
         config = self.secrets_schema(**self.configuration.secrets or {})
-        if config.ssh_required and CONFIG.security.bastion_server_ssh_private_key:
+        if (
+            getattr(config, "ssh_required", False)
+            and CONFIG.security.bastion_server_ssh_private_key
+        ):
             self.create_ssh_tunnel(host=config.host, port=config.port)
             self.ssh_server.start()
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
         else:
-            uri = config.url or self.build_uri()
+            uri = self.build_uri()
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
@@ -341,7 +343,7 @@ class RedshiftConnector(SQLConnector):
     secrets_schema = RedshiftSchema
 
     def build_ssh_uri(self, local_address: tuple) -> str:
-        """Build SSH URI of format redshift+psycopg2://[user[:password]@][ssh_host][:ssh_port][/dbname]"""
+        """Build SSH URI of format redshift+psycopg2://[username[:password]@][ssh_host][:ssh_port][/dbname]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         local_host, local_port = local_address
@@ -349,18 +351,15 @@ class RedshiftConnector(SQLConnector):
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         port = f":{local_port}" if local_port else ""
-        database = f"/{config.database}" if config.database else ""
-        url = f"redshift+psycopg2://{config.user}:{config.password}@{local_host}{port}{database}"
+        url = f"redshift+psycopg2://{config.user}:{config.password}@{local_host}{port}/{config.database}"
         return url
 
     # Overrides BaseConnector.build_uri
     def build_uri(self) -> str:
-        """Build URI of format redshift+psycopg2://user:password@[host][:port][/database]"""
+        """Build URI of format redshift+psycopg2://username:password@[host][:port][/database]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
-
         port = f":{config.port}" if config.port else ""
-        database = f"/{config.database}" if config.database else ""
-        url = f"redshift+psycopg2://{config.user}:{config.password}@{config.host}{port}{database}"
+        url = f"redshift+psycopg2://{config.user}:{config.password}@{config.host}:{port}/{config.database}"
         return url
 
     # Overrides SQLConnector.create_client
@@ -368,13 +367,16 @@ class RedshiftConnector(SQLConnector):
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
         config = self.secrets_schema(**self.configuration.secrets or {})
         connect_args = {}
-        if config.ssh_required and CONFIG.security.bastion_server_ssh_private_key:
+        if (
+            getattr(config, "ssh_required", False)
+            and CONFIG.security.bastion_server_ssh_private_key
+        ):
             self.create_ssh_tunnel(host=config.host, port=config.port)
             self.ssh_server.start()
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
             connect_args["sslmode"] = "prefer"
         else:
-            uri = config.url or self.build_uri()
+            uri = self.build_uri()
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
@@ -406,8 +408,7 @@ class BigQueryConnector(SQLConnector):
     def build_uri(self) -> str:
         """Build URI of format"""
         config = self.secrets_schema(**self.configuration.secrets or {})
-        dataset = f"/{config.dataset}" if config.dataset else ""
-        return f"bigquery://{config.keyfile_creds.project_id}{dataset}"
+        return f"bigquery://{config.keyfile_creds.project_id}/{config.dataset}"
 
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
@@ -417,7 +418,7 @@ class BigQueryConnector(SQLConnector):
         Overrides to pass in credentials_info
         """
         config = self.secrets_schema(**self.configuration.secrets or {})
-        uri = config.url or self.build_uri()
+        uri = self.build_uri()
 
         return create_engine(
             uri,

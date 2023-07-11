@@ -29,8 +29,7 @@ class MariaDBSchema(ConnectionConfigSecretsSchema):
         description="The password used to authenticate and access the database.",
         sensitive=True,
     )
-    dbname: Optional[str] = Field(
-        None,
+    dbname: str = Field(
         description="The name of the specific database within the database server that you want to connect to.",
         title="Database",
     )
