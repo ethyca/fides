@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.16.0...main)
 
+### Developer Experience
+
+- Changed where db-dependent routers were imported to avoid dependency issues [#3741](https://github.com/ethyca/fides/pull/3741)
+
 ### Changed
 
 - Bumped supported Python versions to `3.10.12`, `3.9.17`, and `3.8.17` [#3733](https://github.com/ethyca/fides/pull/3733)
