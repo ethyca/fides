@@ -351,15 +351,18 @@ class RedshiftConnector(SQLConnector):
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         port = f":{local_port}" if local_port else ""
-        url = f"redshift+psycopg2://{config.user}:{config.password}@{local_host}{port}/{config.database}"
+        database = f"/{config.database}" if config.database else ""
+        url = f"redshift+psycopg2://{config.user}:{config.password}@{local_host}{port}{database}"
         return url
 
     # Overrides BaseConnector.build_uri
     def build_uri(self) -> str:
         """Build URI of format redshift+psycopg2://user:password@[host][:port][/database]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
+
         port = f":{config.port}" if config.port else ""
-        url = f"redshift+psycopg2://{config.user}:{config.password}@{config.host}:{port}/{config.database}"
+        database = f"/{config.database}" if config.database else ""
+        url = f"redshift+psycopg2://{config.user}:{config.password}@{config.host}{port}{database}"
         return url
 
     # Overrides SQLConnector.create_client
@@ -408,7 +411,8 @@ class BigQueryConnector(SQLConnector):
     def build_uri(self) -> str:
         """Build URI of format"""
         config = self.secrets_schema(**self.configuration.secrets or {})
-        return f"bigquery://{config.keyfile_creds.project_id}/{config.dataset}"
+        dataset = f"/{config.dataset}" if config.dataset else ""
+        return f"bigquery://{config.keyfile_creds.project_id}{dataset}"
 
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
