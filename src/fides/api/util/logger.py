@@ -45,8 +45,10 @@ def create_handler_dicts(
     level: str, sink: str, serialize: bool, colorize: bool, include_called_from: bool
 ) -> List[Dict]:
     """
-    Returns only the fields required to pass a FidesAPIHandler
-    as a handler kwarg in Loguru's logger.configure().
+    Creates dictionaries used for configuring loguru handlers.
+
+    Two dictionaries are returned, one for standard logs and another to handle
+    logs that include "extra" information.
     """
     time_format = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green>"
     level_format = "<level>{level: <8}</level>"
@@ -74,6 +76,9 @@ def create_handler_dicts(
         "serialize": serialize,
         "sink": sys.stdout if sink == "" else sink,
         "filter": lambda logRecord: not bool(logRecord["extra"]),
+        "diagnose": True,
+        "backtrace": True,
+        "catch": True,
     }
     extra_dict = {
         **standard_dict,

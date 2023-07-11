@@ -133,7 +133,13 @@ async def prepare_and_log_request(
 async def log_request(request: Request, call_next: Callable) -> Response:
     """Log basic information about every request handled by the server."""
     start = datetime.now()
-    response = await call_next(request)
+
+    # If the request fails, we still want to log it
+    try:
+        response = await call_next(request)
+    except:
+        response = Response(status_code=500)
+
     handler_time = datetime.now() - start
     logger.bind(
         method=request.method,
