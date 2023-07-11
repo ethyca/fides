@@ -1,16 +1,17 @@
 from datetime import datetime
-from enum import Enum
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict, Any, cast
 
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.models.connectionconfig import AccessLevel, ConnectionType
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
+from fides.api.schemas.connection_configuration.connection_masked_secrets import ConnectionConfigMaskedSecrets
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfigBase
+from fides.api.util.connection_type import get_connection_type_secret_schema
 
 
 class CreateConnectionConfiguration(BaseModel):
@@ -47,43 +48,32 @@ class CreateConnectionConfigurationWithSecrets(CreateConnectionConfiguration):
         extra = Extra.forbid
 
 
-class TestStatus(Enum):
-    passed = "passed"
-    failed = "failed"
-    untested = "untested"
-
-    def str_to_bool(self) -> Optional[bool]:
-        """Translates query param string to optional/bool value
-        for filtering ConnectionConfig.last_test_succeeded field"""
-        if self == self.passed:
-            return True
-        if self == self.failed:
-            return False
-        return None
 
 
-class SystemType(Enum):
-    saas = "saas"
-    database = "database"
-    manual = "manual"
-    email = "email"
 
-
-class ConnectionSystemTypeMap(BaseModel):
+def mask_sensitive_fields(
+        connection_secrets: Dict[str, Any], secret_schema: Dict[str, Any]
+) -> Dict[str, Any]:
     """
-    Describes the returned schema for connection types
+    Mask sensitive fields in the given secrets based on the provided schema.
+    This function traverses the given secrets dictionary and uses the provided schema to
+    identify fields that have been marked as sensitive. The function replaces the sensitive
+    field values with a mask string ('********').
+    Note: This function modifies the input dictionary in-place.
+    Args:
+        connection_secrets (Dict[str, Any]): The secrets to be masked.
+        secret_schema (Dict[str, Any]): The schema defining which fields are sensitive.
+    Returns:
+        Dict[str, Any]: The secrets dictionary with sensitive fields masked.
     """
-
-    identifier: Union[ConnectionType, str]
-    type: SystemType
-    human_readable: str
-    encoded_icon: Optional[str]
-
-    class Config:
-        """Use enum values and set orm mode"""
-
-        use_enum_values = True
-        orm_mode = True
+    if isinstance(connection_secrets, dict):
+        for key, val in connection_secrets.items():
+            prop = secret_schema["properties"].get(key, {})
+            if isinstance(val, dict):
+                mask_sensitive_fields(val, prop)
+            elif prop.get("sensitive", False):
+                connection_secrets[key] = "**********"
+    return connection_secrets
 
 
 class ConnectionConfigurationResponse(BaseModel):
@@ -104,7 +94,22 @@ class ConnectionConfigurationResponse(BaseModel):
     last_test_timestamp: Optional[datetime]
     last_test_succeeded: Optional[bool]
     saas_config: Optional[SaaSConfigBase]
+    # secrets: ConnectionConfigMaskedSecrets
 
+
+
+
+    # @root_validator(pre=True)
+    # def mask_sensitive_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    #     """Mask sensitive values in the response."""
+    #     secrets = cast(dict, values.get("secrets"))
+    #     connection_secrets = secrets
+    #     from pprint import pprint
+    #     pprint(connection_secrets)
+    #     connection_type = values.get("connection_type").value
+    #     print(f"connection_Type: {connection_type}")
+    #     secret_schema = get_connection_type_secret_schema(connection_type=connection_type)
+    #     return mask_sensitive_fields(connection_secrets, secret_schema)
     class Config:
         """Set orm_mode to support mapping to ConnectionConfig"""
 
@@ -124,15 +129,6 @@ class BulkPatchConnectionConfigurationWithSecrets(BulkResponse):
     succeeded: List[ConnectionConfigurationResponse]
     failed: List[BulkUpdateFailed]
 
-
-class SaasConnectionTemplateValues(BaseModel):
-    """Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template"""
-
-    name: Optional[str]  # For ConnectionConfig
-    key: Optional[FidesKey]  # For ConnectionConfig
-    description: Optional[str]  # For ConnectionConfig
-    secrets: connection_secrets_schemas  # For ConnectionConfig
-    instance_key: FidesKey  # For DatasetConfig.fides_key
 
 
 class SaasConnectionTemplateResponse(BaseModel):

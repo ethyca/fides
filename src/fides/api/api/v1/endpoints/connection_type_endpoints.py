@@ -8,14 +8,13 @@ from starlette.status import HTTP_404_NOT_FOUND
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.oauth.utils import verify_oauth_client
-from fides.api.schemas.connection_configuration.connection_config import (
-    ConnectionSystemTypeMap,
-    SystemType,
-)
+from fides.api.schemas.connection_configuration.connection_type_system_map import ConnectionSystemTypeMap
+from fides.api.schemas.connection_configuration.enums.system_type import SystemType
+
 from fides.api.schemas.policy import ActionType
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_type import (
-    connection_type_secret_schema,
+    get_connection_type_secret_schema,
     get_connection_types,
 )
 from fides.common.api.scope_registry import CONNECTION_TYPE_READ
@@ -86,7 +85,7 @@ def get_connection_type_secret_schema(
     to authenticate.
     """
     try:
-        return connection_type_secret_schema(connection_type=connection_type)
+        return get_connection_type_secret_schema(connection_type=connection_type)
     except NoSuchConnectionTypeSecretSchemaError:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

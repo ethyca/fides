@@ -28,9 +28,9 @@ from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfigurationWithSecrets,
-    SystemType,
-    TestStatus,
 )
+from fides.api.schemas.connection_configuration.enums.system_type import SystemType
+from fides.api.schemas.connection_configuration.enums.test_status import TestStatus
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )

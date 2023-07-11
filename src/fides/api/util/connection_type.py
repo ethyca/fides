@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Set
+from typing import Set, Any
 
 import yaml
 
@@ -10,10 +10,8 @@ from fides.api.schemas.connection_configuration import (
     SaaSSchemaFactory,
     secrets_schemas,
 )
-from fides.api.schemas.connection_configuration.connection_config import (
-    ConnectionSystemTypeMap,
-    SystemType,
-)
+from fides.api.schemas.connection_configuration.connection_type_system_map import ConnectionSystemTypeMap
+from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.schemas.policy import SUPPORTED_ACTION_TYPES, ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors.consent_email_connector import (
@@ -28,7 +26,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.util.saas_util import load_config_from_string
 
 
-def connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]:
+def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]:
     """Returns the secret fields that should be supplied to authenticate with a particular connection type.
 
     Note that this does not return actual secrets, instead we return the *types* of
@@ -70,7 +68,6 @@ def connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]:
         )
     }
     return schema
-
 
 def get_connection_types(
     search: str | None = None,
