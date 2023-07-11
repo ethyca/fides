@@ -30,7 +30,7 @@ class KeyfileCreds(BaseModel):
 class BigQuerySchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to BigQuery"""
 
-    keyfile_creds: Union[KeyfileCreds, str] = Field(
+    keyfile_creds: KeyfileCreds = Field(
         sensitive=True,
         description="The contents of the key file that contains authentication credentials for a service account in GCP.",
     )
@@ -41,7 +41,7 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
     _required_components: List[str] = ["keyfile_creds", "dataset"]
 
     @validator("keyfile_creds", pre=True)
-    def parse_keyfile_creds(cls, v: Union[KeyfileCreds, str]) -> KeyfileCreds:
+    def parse_keyfile_creds(cls, v: Union[str, dict]) -> KeyfileCreds:
         if isinstance(v, str):
             v = json.loads(v)
         return parse_obj_as(KeyfileCreds, v)

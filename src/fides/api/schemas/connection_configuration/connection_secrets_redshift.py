@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 from pydantic import Field
 
@@ -29,7 +29,7 @@ class RedshiftSchema(ConnectionConfigSecretsSchema):
         description="The password used to authenticate and access the database.",
         sensitive=True,
     )
-    dbname: str = Field(
+    database: str = Field(
         title="Database",
         description="The name of the specific database within the database server that you want to connect to.",
     )
@@ -49,7 +49,7 @@ class RedshiftSchema(ConnectionConfigSecretsSchema):
         "port",
         "user",
         "password",
-        "dbname",
+        "database",
         "db_schema",
         "ssh_required",
     ]
