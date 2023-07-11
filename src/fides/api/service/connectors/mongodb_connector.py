@@ -46,12 +46,16 @@ class MongoDBConnector(BaseConnector[MongoClient]):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
-        Connects to the Mongo database and get the server info to ensure connection is valid.
+        Connects to the Mongo database and makes two trivial queries to ensure connection is valid.
         """
+        config = MongoDBSchema(**self.configuration.secrets or {})
         logger.info("Starting test connection to {}", self.configuration.key)
         client = self.client()
         try:
+            # Make a couple of trivial requests - getting server info and fetching the collection names
             client.server_info()
+            db = client[config.defaultauthdb]
+            db.collection_names()
         except ServerSelectionTimeoutError:
             raise ConnectionException(
                 "Server Selection Timeout Error connecting to MongoDB."
