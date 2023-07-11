@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import Field
 
@@ -15,16 +15,18 @@ class MariaDBSchema(ConnectionConfigSecretsSchema):
         title="Host",
         description="The hostname or IP address of the server where the database is running.",
     )
-    port: int = Field(
-        3306,
+    port: Optional[int] = Field(
+        None,
         title="Port",
         description="The network port number on which the server is listening for incoming connections (default: 3306).",
     )
-    username: str = Field(
+    username: Optional[str] = Field(
+        None,
         title="Username",
         description="The user account used to authenticate and access the database.",
     )
-    password: str = Field(
+    password: Optional[str] = Field(
+        None,
         title="Password",
         description="The password used to authenticate and access the database.",
         sensitive=True,
@@ -34,7 +36,7 @@ class MariaDBSchema(ConnectionConfigSecretsSchema):
         title="Database",
     )
 
-    _required_components: List[str] = ["host", "port", "username", "password", "dbname"]
+    _required_components: List[str] = ["host", "dbname"]
 
 
 class MariaDBDocsSchema(MariaDBSchema, NoValidationSchema):
