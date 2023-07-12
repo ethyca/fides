@@ -235,10 +235,11 @@ def patch_connection_configs(
                     data=orig_data,
                 )
             )
-        except Exception:
+        except Exception as e:
             logger.warning(
                 "Create/update failed for connection config with key '{}'.", config.key
             )
+            logger.error(e)
             # remove secrets information from the return for security reasons.
             orig_data.pop("secrets", None)
             orig_data.pop("saas_connector_type", None)
