@@ -26,6 +26,10 @@ The types of changes are:
 - Bumped supported Python versions to `3.10.12`, `3.9.17`, and `3.8.17` [#3733](https://github.com/ethyca/fides/pull/3733)
 - Add polyfill service to fides-js route [#3759](https://github.com/ethyca/fides/pull/3759)
 
+### Removed
+
+- Removed "Custom field(s) successfully saved" toast [#3779](https://github.com/ethyca/fides/pull/3779)
+
 ## [2.16.0](https://github.com/ethyca/fides/compare/2.15.1...2.16.0)
 
 ### Added
