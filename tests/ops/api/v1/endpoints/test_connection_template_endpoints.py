@@ -849,7 +849,6 @@ class TestGetConnectionSecretSchema:
                 "port": {
                     "title": "Port",
                     "description": "The network port number on which the server is listening for incoming connections (default: 27017).",
-                    "default": 27017,
                     "type": "integer",
                 },
                 "username": {
@@ -893,7 +892,6 @@ class TestGetConnectionSecretSchema:
                 "port": {
                     "title": "Port",
                     "description": "The network port number on which the server is listening for incoming connections (default: 1433).",
-                    "default": 1433,
                     "type": "integer",
                 },
                 "username": {
@@ -1034,7 +1032,6 @@ class TestGetConnectionSecretSchema:
                 "port": {
                     "title": "Port",
                     "description": "The network port number on which the server is listening for incoming connections (default: 5439).",
-                    "default": 5439,
                     "type": "integer",
                 },
                 "user": {
@@ -1056,7 +1053,6 @@ class TestGetConnectionSecretSchema:
                 "db_schema": {
                     "title": "Schema",
                     "description": "The default schema to be used for the database connection (defaults to public).",
-                    "default": "public",
                     "type": "string",
                 },
                 "ssh_required": {

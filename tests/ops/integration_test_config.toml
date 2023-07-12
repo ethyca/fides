@@ -21,16 +21,35 @@ db="mysql_example"
 port=3306
 
 [redshift]
-external_uri=""
+host=""
+port=""
+user=""
+password=""
+database=""
 db_schema=""
 
 [snowflake]
-external_uri=""
+account_identifier=""
+user_login_name=""
+password=""
+warehouse_name=""
+database_name=""
+schema_name=""
 
 [bigquery]
 dataset=""
 
 [bigquery.keyfile_creds]
+type = ""
+project_id = ""
+private_key_id = ""
+private_key = ""
+client_email = ""
+client_id= ""
+auth_uri = ""
+token_uri = ""
+auth_provider_x509_cert_url = ""
+client_x509_cert_url = ""
 
 [mssql_example]
 server="mssql_example"

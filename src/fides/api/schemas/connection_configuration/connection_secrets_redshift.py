@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import Field
 
@@ -15,8 +15,8 @@ class RedshiftSchema(ConnectionConfigSecretsSchema):
         title="Host",
         description="The hostname or IP address of the server where the database is running.",
     )
-    port: int = Field(
-        5439,
+    port: Optional[int] = Field(
+        None,
         title="Port",
         description="The network port number on which the server is listening for incoming connections (default: 5439).",
     )
@@ -33,8 +33,8 @@ class RedshiftSchema(ConnectionConfigSecretsSchema):
         title="Database",
         description="The name of the specific database within the database server that you want to connect to.",
     )
-    db_schema: str = Field(
-        "public",
+    db_schema: Optional[str] = Field(
+        None,
         title="Schema",
         description="The default schema to be used for the database connection (defaults to public).",
     )
@@ -46,7 +46,6 @@ class RedshiftSchema(ConnectionConfigSecretsSchema):
 
     _required_components: List[str] = [
         "host",
-        "port",
         "user",
         "password",
         "database",

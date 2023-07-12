@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import Field
 
@@ -20,8 +20,8 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
         title="Host",
         description="The hostname or IP address of the server where the database is running.",
     )
-    port: int = Field(
-        1433,
+    port: Optional[int] = Field(
+        None,
         title="Port",
         description="The network port number on which the server is listening for incoming connections (default: 1433).",
     )
@@ -39,7 +39,7 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
         title="Database",
     )
 
-    _required_components: List[str] = ["host", "port", "username", "password", "dbname"]
+    _required_components: List[str] = ["host", "username", "password", "dbname"]
 
 
 class MSSQLDocsSchema(MicrosoftSQLServerSchema, NoValidationSchema):
