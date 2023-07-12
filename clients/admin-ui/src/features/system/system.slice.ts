@@ -25,6 +25,8 @@ const systemApi = baseApi.injectEndpoints({
     getAllSystems: build.query<SystemResponse[], void>({
       query: () => ({ url: `system/` }),
       providesTags: () => ["System"],
+      transformResponse: (systems: SystemResponse[]) =>
+        systems.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
     }),
     getSystemByFidesKey: build.query<SystemResponse, string>({
       query: (fides_key) => ({ url: `system/${fides_key}/` }),
