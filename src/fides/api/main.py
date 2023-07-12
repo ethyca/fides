@@ -258,7 +258,10 @@ async def setup_server() -> None:
         )
     )
 
-    logger.info(FIDES_ASCII_ART)
+    # It's just a random bunch of strings when serialized
+    if not CONFIG.logging.serialization:
+        logger.info(FIDES_ASCII_ART)
+
     logger.info(f"Fides startup complete! v{VERSION}")
 
 
