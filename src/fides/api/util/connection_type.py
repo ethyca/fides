@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Set, Any
+from typing import Any, Set
 
 import yaml
 

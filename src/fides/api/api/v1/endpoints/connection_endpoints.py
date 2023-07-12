@@ -29,11 +29,11 @@ from fides.api.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
     CreateConnectionConfigurationWithSecrets,
 )
-from fides.api.schemas.connection_configuration.enums.system_type import SystemType
-from fides.api.schemas.connection_configuration.enums.test_status import TestStatus
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
+from fides.api.schemas.connection_configuration.enums.system_type import SystemType
+from fides.api.schemas.connection_configuration.enums.test_status import TestStatus
 from fides.api.service.connectors import get_connector
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (

@@ -41,7 +41,6 @@ from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
     SaasConnectionTemplateResponse,
 )
-
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )

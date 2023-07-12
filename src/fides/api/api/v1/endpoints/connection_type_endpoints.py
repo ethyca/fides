@@ -12,7 +12,6 @@ from fides.api.schemas.connection_configuration.connection_type_system_map impor
     ConnectionSystemTypeMap,
 )
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
-
 from fides.api.schemas.policy import ActionType
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_type import (

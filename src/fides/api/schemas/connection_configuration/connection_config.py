@@ -1,8 +1,9 @@
 from datetime import datetime
-from typing import List, Optional, Dict, Any, cast
+from typing import Any, Dict, List, Optional, cast
 
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
+from loguru import logger
 from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
@@ -12,7 +13,7 @@ from fides.api.schemas.connection_configuration import connection_secrets_schema
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfigBase
 from fides.api.util.connection_type import get_connection_type_secret_schema
-from loguru import logger
+
 
 class CreateConnectionConfiguration(BaseModel):
     """
