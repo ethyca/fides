@@ -138,6 +138,7 @@ class ConnectionConfig(Base):
     datasets = relationship(  # type: ignore[misc]
         "DatasetConfig",
         back_populates="connection_config",
+        cascade="all, delete",
     )
 
     access_manual_webhook = relationship(  # type: ignore[misc]
