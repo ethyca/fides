@@ -38,7 +38,7 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
     class Config:
         """Only permit selected secret fields to be stored."""
 
-        extra = Extra.forbid
+        extra = Extra.ignore
         orm_mode = True
 
 

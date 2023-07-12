@@ -35,7 +35,7 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
         description="The contents of the key file that contains authentication credentials for a service account in GCP.",
     )
     dataset: str = Field(
-        description="The dataset within your project that contains the tables you want to access."
+        description="The dataset within your project that contains the tables you want to access.",
     )
 
     _required_components: List[str] = ["keyfile_creds", "dataset"]

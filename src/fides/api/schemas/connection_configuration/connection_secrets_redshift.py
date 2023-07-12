@@ -49,7 +49,6 @@ class RedshiftSchema(ConnectionConfigSecretsSchema):
         "user",
         "password",
         "database",
-        "db_schema",
     ]
 
 

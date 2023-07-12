@@ -716,7 +716,6 @@ class TestGetConnectionSecretSchema:
                 },
             },
             "required": ["keyfile_creds", "dataset"],
-            "additionalProperties": False,
             "definitions": {
                 "KeyfileCreds": {
                     "title": "KeyfileCreds",
@@ -783,7 +782,6 @@ class TestGetConnectionSecretSchema:
                 },
             },
             "required": ["region_name", "aws_access_key_id", "aws_secret_access_key"],
-            "additionalProperties": False,
         }
 
     def test_get_connection_secret_schema_mariadb(
@@ -826,7 +824,6 @@ class TestGetConnectionSecretSchema:
                 },
             },
             "required": ["host", "dbname"],
-            "additionalProperties": False,
         }
 
     def test_get_connection_secret_schema_mongodb(
@@ -869,7 +866,6 @@ class TestGetConnectionSecretSchema:
                 },
             },
             "required": ["host", "username", "password", "defaultauthdb"],
-            "additionalProperties": False,
         }
 
     def test_get_connection_secret_schema_mssql(
@@ -912,7 +908,6 @@ class TestGetConnectionSecretSchema:
                 },
             },
             "required": ["host", "username", "password", "dbname"],
-            "additionalProperties": False,
         }
 
     def test_get_connection_secret_schema_mysql(
@@ -955,7 +950,6 @@ class TestGetConnectionSecretSchema:
                 },
             },
             "required": ["host", "dbname"],
-            "additionalProperties": False,
         }
 
     def test_get_connection_secret_schema_postgres(
@@ -1009,7 +1003,6 @@ class TestGetConnectionSecretSchema:
                 },
             },
             "required": ["host", "dbname"],
-            "additionalProperties": False,
         }
 
     def test_get_connection_secret_schema_redshift(
@@ -1063,7 +1056,6 @@ class TestGetConnectionSecretSchema:
                 },
             },
             "required": ["host", "user", "password", "database"],
-            "additionalProperties": False,
         }
 
     def test_get_connection_secret_schema_snowflake(
@@ -1123,7 +1115,6 @@ class TestGetConnectionSecretSchema:
                 "database_name",
                 "schema_name",
             ],
-            "additionalProperties": False,
         }
 
     def test_get_connection_secret_schema_hubspot(

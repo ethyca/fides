@@ -1,6 +1,6 @@
 import io
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, cast
 
 import paramiko
 import sshtunnel  # type: ignore
@@ -179,7 +179,11 @@ class SQLConnector(BaseConnector[Engine]):
 
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
-        uri = self.build_uri()
+        uri = (
+            self.configuration.secrets.get("url", None)
+            if self.configuration.secrets
+            else self.build_uri()
+        )
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
@@ -253,16 +257,21 @@ class PostgreSQLConnector(SQLConnector):
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
-        config = self.secrets_schema(**self.configuration.secrets or {})
         if (
-            getattr(config, "ssh_required", False)
+            self.configuration.secrets
+            and self.configuration.secrets.get("ssh_required", False)
             and CONFIG.security.bastion_server_ssh_private_key
         ):
+            config = self.secrets_schema(**self.configuration.secrets or {})
             self.create_ssh_tunnel(host=config.host, port=config.port)
             self.ssh_server.start()
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
         else:
-            uri = self.build_uri()
+            uri = (
+                self.configuration.secrets.get("url", None)
+                if self.configuration.secrets
+                else self.build_uri()
+            )
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
@@ -368,18 +377,23 @@ class RedshiftConnector(SQLConnector):
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
-        config = self.secrets_schema(**self.configuration.secrets or {})
         connect_args = {}
         if (
-            getattr(config, "ssh_required", False)
+            self.configuration.secrets
+            and self.configuration.secrets.get("ssh_required", False)
             and CONFIG.security.bastion_server_ssh_private_key
         ):
+            config = self.secrets_schema(**self.configuration.secrets or {})
             self.create_ssh_tunnel(host=config.host, port=config.port)
             self.ssh_server.start()
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
             connect_args["sslmode"] = "prefer"
         else:
-            uri = self.build_uri()
+            uri = (
+                self.configuration.secrets.get("url", None)
+                if self.configuration.secrets
+                else self.build_uri()
+            )
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
@@ -421,12 +435,15 @@ class BigQueryConnector(SQLConnector):
 
         Overrides to pass in credentials_info
         """
-        config = self.secrets_schema(**self.configuration.secrets or {})
-        uri = self.build_uri()
+        secrets = self.configuration.secrets or {}
+        uri = secrets.get("url", None) or self.build_uri()
+
+        keyfile_creds = secrets.get("keyfile_creds", {})
+        credentials_info = keyfile_creds.dict() if keyfile_creds else {}
 
         return create_engine(
             uri,
-            credentials_info=config.keyfile_creds.dict(),
+            credentials_info=credentials_info,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
         )

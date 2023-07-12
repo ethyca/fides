@@ -36,7 +36,6 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
         description="The name of the specific database within the database server that you want to connect to.",
     )
     db_schema: Optional[str] = Field(
-        None,
         title="Schema",
         description="The default schema to be used for the database connection (defaults to public).",
     )

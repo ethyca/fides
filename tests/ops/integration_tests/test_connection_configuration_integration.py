@@ -2,7 +2,7 @@ import json
 
 import pytest
 from pymongo import MongoClient
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import URL, Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -235,12 +235,28 @@ class TestPostgresConnector:
         generate_auth_header,
         connection_config,
         postgres_integration_db,
+        postgres_example_secrets,
     ) -> None:
         connector = get_connector(connection_config)
         assert connector.__class__ == PostgreSQLConnector
 
         client = connector.client()
         assert client.__class__ == Engine
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        connection_config.secrets = {
+            "url": str(
+                URL.create(
+                    "postgresql",
+                    username=postgres_example_secrets["username"],
+                    password=postgres_example_secrets["password"],
+                    host=postgres_example_secrets["host"],
+                    database=postgres_example_secrets["dbname"],
+                )
+            )
+        }
+        connection_config.save(db)
+        connector = get_connector(connection_config)
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
         connection_config.secrets = {"host": "bad_host"}
@@ -448,12 +464,28 @@ class TestMySQLConnector:
         db: Session,
         generate_auth_header,
         connection_config_mysql,
+        mysql_example_secrets,
     ) -> None:
         connector = get_connector(connection_config_mysql)
         assert connector.__class__ == MySQLConnector
 
         client = connector.client()
         assert client.__class__ == Engine
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        connection_config_mysql.secrets = {
+            "url": str(
+                URL.create(
+                    "mysql+pymysql",
+                    username=mysql_example_secrets["username"],
+                    password=mysql_example_secrets["password"],
+                    host=mysql_example_secrets["host"],
+                    database=mysql_example_secrets["dbname"],
+                )
+            )
+        }
+        connection_config_mysql.save(db)
+        connector = get_connector(connection_config_mysql)
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
         connection_config_mysql.secrets = {"host": "bad_host"}
@@ -658,12 +690,28 @@ class TestMariaDBConnector:
         db: Session,
         generate_auth_header,
         connection_config_mariadb,
+        mariadb_example_secrets,
     ) -> None:
         connector = get_connector(connection_config_mariadb)
         assert connector.__class__ == MariaDBConnector
 
         client = connector.client()
         assert client.__class__ == Engine
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        connection_config_mariadb.secrets = {
+            "url": str(
+                URL.create(
+                    "mariadb+pymysql",
+                    username=mariadb_example_secrets["username"],
+                    password=mariadb_example_secrets["password"],
+                    host=mariadb_example_secrets["host"],
+                    database=mariadb_example_secrets["dbname"],
+                )
+            )
+        }
+        connection_config_mariadb.save(db)
+        connector = get_connector(connection_config_mariadb)
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
         connection_config_mariadb.secrets = {"host": "bad_host"}
@@ -872,12 +920,28 @@ class TestMicrosoftSQLServerConnection:
         db: Session,
         generate_auth_header,
         connection_config_mssql,
+        mssql_example_secrets,
     ) -> None:
         connector = get_connector(connection_config_mssql)
         assert connector.__class__ == MicrosoftSQLServerConnector
 
         client = connector.client()
         assert client.__class__ == Engine
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        connection_config_mssql.secrets = {
+            "url": str(
+                URL.create(
+                    "mssql+pymssql",
+                    username=mssql_example_secrets["username"],
+                    password=mssql_example_secrets["password"],
+                    host=mssql_example_secrets["host"],
+                    database=mssql_example_secrets["dbname"],
+                )
+            )
+        }
+        connection_config_mssql.save(db)
+        connector = get_connector(connection_config_mssql)
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
         connection_config_mssql.secrets = {"host": "bad_host"}
@@ -896,12 +960,28 @@ class TestMongoConnector:
         db: Session,
         generate_auth_header,
         mongo_connection_config,
+        mongo_example_secrets,
     ) -> None:
         connector = get_connector(mongo_connection_config)
         assert connector.__class__ == MongoDBConnector
 
         client = connector.client()
         assert client.__class__ == MongoClient
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        mongo_connection_config.secrets = {
+            "url": str(
+                URL.create(
+                    "mongodb",
+                    username=mongo_example_secrets["username"],
+                    password=mongo_example_secrets["password"],
+                    host=mongo_example_secrets["host"],
+                    database=mongo_example_secrets["defaultauthdb"],
+                )
+            )
+        }
+        mongo_connection_config.save(db)
+        connector = get_connector(mongo_connection_config)
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
         mongo_connection_config.secrets = {

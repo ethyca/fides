@@ -42,7 +42,11 @@ class MongoDBConnector(BaseConnector[MongoClient]):
 
     def create_client(self) -> MongoClient:
         """Returns a client for a MongoDB instance"""
-        uri = self.build_uri()
+        uri = (
+            self.configuration.secrets.get("url", None)
+            if self.configuration.secrets
+            else self.build_uri()
+        )
         try:
             return MongoClient(uri, serverSelectionTimeoutMS=5000)
         except ValueError:
