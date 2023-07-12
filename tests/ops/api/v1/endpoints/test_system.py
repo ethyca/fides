@@ -184,8 +184,12 @@ class TestPatchSystemConnections:
 
         if assign_system:
             assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
-            system_manager_auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
-            api_client.put(assign_url, headers=system_manager_auth_header, json=[system.fides_key])
+            system_manager_auth_header = generate_auth_header(
+                scopes=[SYSTEM_MANAGER_UPDATE]
+            )
+            api_client.put(
+                assign_url, headers=system_manager_auth_header, json=[system.fides_key]
+            )
             auth_header = generate_system_manager_header([system.id])
         else:
             auth_header = generate_role_header_for_user(
@@ -245,6 +249,7 @@ class TestGetConnections:
             "access",
             "updated_at",
             "saas_config",
+            "secrets",
             "name",
             "last_test_timestamp",
             "last_test_succeeded",
@@ -293,8 +298,12 @@ class TestGetConnections:
 
         if assign_system:
             assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
-            system_manager_auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
-            api_client.put(assign_url, headers=system_manager_auth_header, json=[system.fides_key])
+            system_manager_auth_header = generate_auth_header(
+                scopes=[SYSTEM_MANAGER_UPDATE]
+            )
+            api_client.put(
+                assign_url, headers=system_manager_auth_header, json=[system.fides_key]
+            )
             auth_header = generate_system_manager_header([system.id])
         else:
             auth_header = generate_role_header_for_user(
@@ -513,8 +522,12 @@ class TestDeleteSystemConnectionConfig:
 
         if assign_system:
             assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
-            system_manager_auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
-            api_client.put(assign_url, headers=system_manager_auth_header, json=[system.fides_key])
+            system_manager_auth_header = generate_auth_header(
+                scopes=[SYSTEM_MANAGER_UPDATE]
+            )
+            api_client.put(
+                assign_url, headers=system_manager_auth_header, json=[system.fides_key]
+            )
             auth_header = generate_system_manager_header([system.id])
         else:
             auth_header = generate_role_header_for_user(
@@ -860,7 +873,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         connection_data = resp.json()["connection"]
         assert connection_data["key"] == "mailchimp_connection_config"
         assert connection_data["name"] == "Mailchimp Connector"
-        assert "secrets" not in connection_data
+        assert connection_data["secrets"]["api_key"] == "**********"
 
         dataset_data = resp.json()["dataset"]
         assert dataset_data["fides_key"] == "secondary_mailchimp_instance"
