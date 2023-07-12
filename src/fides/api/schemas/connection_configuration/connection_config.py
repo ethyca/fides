@@ -48,11 +48,8 @@ class CreateConnectionConfigurationWithSecrets(CreateConnectionConfiguration):
         extra = Extra.forbid
 
 
-
-
-
 def mask_sensitive_fields(
-        connection_secrets: Dict[str, Any], secret_schema: Dict[str, Any]
+    connection_secrets: Dict[str, Any], secret_schema: Dict[str, Any]
 ) -> Dict[str, Any]:
     """
     Mask sensitive fields in the given secrets based on the provided schema.
@@ -96,19 +93,21 @@ class ConnectionConfigurationResponse(BaseModel):
     saas_config: Optional[SaaSConfigBase]
     secrets: Optional[Dict[str, Any]]
 
-
-
-
     @root_validator()
     def mask_sensitive_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Mask sensitive values in the response."""
         if values.get("secrets") is None:
             return values
 
-        connection_type = values["saas_config"].type if values.get("connection_type") == ConnectionType.saas else values.get("connection_type").value
+        connection_type = (
+            values["saas_config"].type
+            if values.get("connection_type") == ConnectionType.saas
+            else values.get("connection_type").value
+        )
         try:
-
-            secret_schema = get_connection_type_secret_schema(connection_type=connection_type)
+            secret_schema = get_connection_type_secret_schema(
+                connection_type=connection_type
+            )
         except NoSuchConnectionTypeSecretSchemaError as e:
             logger.error(e)
             # if there is no scehma, we don't know what values to mask.
@@ -116,7 +115,9 @@ class ConnectionConfigurationResponse(BaseModel):
             values["secrets"] = None
             return values
 
-        values['secrets'] = mask_sensitive_fields(cast(dict, values.get("secrets")), secret_schema)
+        values["secrets"] = mask_sensitive_fields(
+            cast(dict, values.get("secrets")), secret_schema
+        )
         return values
 
     class Config:
@@ -137,7 +138,6 @@ class BulkPatchConnectionConfigurationWithSecrets(BulkResponse):
 
     succeeded: List[ConnectionConfigurationResponse]
     failed: List[BulkUpdateFailed]
-
 
 
 class SaasConnectionTemplateResponse(BaseModel):

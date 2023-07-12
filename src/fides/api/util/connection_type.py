@@ -10,7 +10,9 @@ from fides.api.schemas.connection_configuration import (
     SaaSSchemaFactory,
     secrets_schemas,
 )
-from fides.api.schemas.connection_configuration.connection_type_system_map import ConnectionSystemTypeMap
+from fides.api.schemas.connection_configuration.connection_type_system_map import (
+    ConnectionSystemTypeMap,
+)
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.schemas.policy import SUPPORTED_ACTION_TYPES, ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
@@ -68,6 +70,7 @@ def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]
         )
     }
     return schema
+
 
 def get_connection_types(
     search: str | None = None,

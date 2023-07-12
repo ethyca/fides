@@ -21,4 +21,3 @@ class ConnectionSystemTypeMap(BaseModel):
 
         use_enum_values = True
         orm_mode = True
-

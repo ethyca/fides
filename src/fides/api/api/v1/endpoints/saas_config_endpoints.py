@@ -26,7 +26,9 @@ from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateResponse,
 )
-from fides.api.schemas.connection_configuration.saas_config_template_values import SaasConnectionTemplateValues
+from fides.api.schemas.connection_configuration.saas_config_template_values import (
+    SaasConnectionTemplateValues,
+)
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import (
     SaaSConfig,

@@ -14,4 +14,3 @@ class SaasConnectionTemplateValues(BaseModel):
     description: Optional[str]  # For ConnectionConfig
     secrets: connection_secrets_schemas  # For ConnectionConfig
     instance_key: FidesKey  # For DatasetConfig.fides_key
-

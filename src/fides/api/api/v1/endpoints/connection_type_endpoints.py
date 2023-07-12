@@ -8,7 +8,9 @@ from starlette.status import HTTP_404_NOT_FOUND
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.oauth.utils import verify_oauth_client
-from fides.api.schemas.connection_configuration.connection_type_system_map import ConnectionSystemTypeMap
+from fides.api.schemas.connection_configuration.connection_type_system_map import (
+    ConnectionSystemTypeMap,
+)
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 
 from fides.api.schemas.policy import ActionType

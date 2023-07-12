@@ -25,7 +25,9 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.schemas.connection_configuration.saas_config_template_values import SaasConnectionTemplateValues
+from fides.api.schemas.connection_configuration.saas_config_template_values import (
+    SaasConnectionTemplateValues,
+)
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.util.saas_util import (

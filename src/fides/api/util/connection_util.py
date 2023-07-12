@@ -32,7 +32,9 @@ from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
 )
 
-from fides.api.schemas.connection_configuration.saas_config_template_values import SaasConnectionTemplateValues
+from fides.api.schemas.connection_configuration.saas_config_template_values import (
+    SaasConnectionTemplateValues,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_saas import (
     validate_saas_secrets_external_references,
 )

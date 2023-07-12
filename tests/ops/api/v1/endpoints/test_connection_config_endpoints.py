@@ -516,7 +516,7 @@ class TestPatchConnections:
         postgres_connection = response_body["succeeded"][0]
         assert postgres_connection["access"] == "read"
         assert postgres_connection["disabled"] is True
-        assert postgres_connection["secrets"]["password"] =="**********"
+        assert postgres_connection["secrets"]["password"] == "**********"
         assert postgres_connection["secrets"]["url"] == "**********"
         assert postgres_connection["updated_at"] is not None
         postgres_resource = (
@@ -532,7 +532,7 @@ class TestPatchConnections:
         assert mongo_connection["updated_at"] is not None
         mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
         assert mongo_resource.access.value == "write"
-        assert mongo_connection['secrets'] is None
+        assert mongo_connection["secrets"] is None
         assert not mongo_resource.disabled
 
         mysql_connection = response_body["succeeded"][2]
@@ -540,14 +540,14 @@ class TestPatchConnections:
         assert mysql_connection["updated_at"] is not None
         mysql_resource = db.query(ConnectionConfig).filter_by(key="my_mysql_db").first()
         assert mysql_resource.access.value == "read"
-        assert mysql_connection['secrets'] is None
+        assert mysql_connection["secrets"] is None
 
         mssql_connection = response_body["succeeded"][3]
         assert mssql_connection["access"] == "write"
         assert mssql_connection["updated_at"] is not None
         mssql_resource = db.query(ConnectionConfig).filter_by(key="my_mssql_db").first()
         assert mssql_resource.access.value == "write"
-        assert mssql_connection['secrets'] is None
+        assert mssql_connection["secrets"] is None
 
         mariadb_connection = response_body["succeeded"][4]
         assert mariadb_connection["access"] == "write"
@@ -556,7 +556,7 @@ class TestPatchConnections:
             db.query(ConnectionConfig).filter_by(key="my_mariadb_db").first()
         )
         assert mariadb_resource.access.value == "write"
-        assert mariadb_connection['secrets'] is None
+        assert mariadb_connection["secrets"] is None
 
         bigquery_connection = response_body["succeeded"][5]
         assert bigquery_connection["access"] == "write"
@@ -565,7 +565,7 @@ class TestPatchConnections:
             db.query(ConnectionConfig).filter_by(key="my_bigquery_db").first()
         )
         assert bigquery_resource.access.value == "write"
-        assert bigquery_connection['secrets'] is None
+        assert bigquery_connection["secrets"] is None
 
         redshift_connection = response_body["succeeded"][6]
         assert redshift_connection["access"] == "read"
@@ -574,7 +574,7 @@ class TestPatchConnections:
             db.query(ConnectionConfig).filter_by(key="my_redshift_cluster").first()
         )
         assert redshift_resource.access.value == "read"
-        assert redshift_connection['secrets'] is None
+        assert redshift_connection["secrets"] is None
 
         snowflake_connection = response_body["succeeded"][7]
         assert snowflake_connection["access"] == "write"
@@ -585,7 +585,7 @@ class TestPatchConnections:
         )
         assert snowflake_resource.access.value == "write"
         assert snowflake_resource.description == "Backup snowflake db"
-        assert snowflake_connection['secrets'] is None
+        assert snowflake_connection["secrets"] is None
 
         manual_webhook_connection = response_body["succeeded"][8]
         assert manual_webhook_connection["access"] == "read"
@@ -595,7 +595,7 @@ class TestPatchConnections:
         )
         assert manual_webhook_resource.access.value == "read"
         assert manual_webhook_resource.connection_type == ConnectionType.manual_webhook
-        assert manual_webhook_connection['secrets'] is None
+        assert manual_webhook_connection["secrets"] is None
 
         postgres_resource.delete(db)
         mongo_resource.delete(db)
@@ -1197,7 +1197,7 @@ class TestGetConnection:
             "disabled",
             "description",
             "saas_config",
-            "secrets"
+            "secrets",
         }
 
         assert response_body["key"] == "my_postgres_db_1"

@@ -15,4 +15,3 @@ class TestStatus(Enum):
         if self == self.failed:
             return False
         return None
-
