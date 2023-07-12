@@ -1,6 +1,6 @@
 import io
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional, Type, cast
+from typing import Any, Dict, List, Optional, Type
 
 import paramiko
 import sshtunnel  # type: ignore
