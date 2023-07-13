@@ -48,7 +48,7 @@ def redshift_test_engine() -> Generator:
 
     schema = RedshiftSchema(
         host=host,
-        port=port,
+        port=int(port) if port and port.isdigit() else None,
         user=user,
         password=password,
         database=database,

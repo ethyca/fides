@@ -631,7 +631,10 @@ class TestMariaDBConnectionTestSecretsAPI:
         connection_config_mariadb,
     ) -> None:
         assert connection_config_mariadb.last_test_timestamp is None
-        connection_config_mariadb.secrets = {"host": "invalid_host"}
+        connection_config_mariadb.secrets = {
+            "host": "invalid_host",
+            "dbname": "mariadb_example",
+        }
         connection_config_mariadb.save(db)
 
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])

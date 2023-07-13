@@ -53,7 +53,7 @@ def redshift_connection_config(db: Session) -> Generator:
     if all([host, port, user, password, database, db_schema]):
         schema = RedshiftSchema(
             host=host,
-            port=port,
+            port=int(port) if port and port.isdigit() else None,
             user=user,
             password=password,
             database=database,
