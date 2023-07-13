@@ -196,9 +196,6 @@ def delete_connection(
     delete_connection_config(db, connection_key)
 
 
-
-
-
 @router.put(
     CONNECTION_SECRETS,
     status_code=HTTP_200_OK,

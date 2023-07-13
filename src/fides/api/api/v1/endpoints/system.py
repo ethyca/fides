@@ -146,12 +146,11 @@ def patch_connections(
     response_model=TestStatusMessage,
 )
 def patch_connection_secrets(
-        fides_key: FidesKey,
-        *,
-        db: Session = Depends(deps.get_db),
-        unvalidated_secrets: connection_secrets_schemas,
-        verify: Optional[bool] = True,
-
+    fides_key: FidesKey,
+    *,
+    db: Session = Depends(deps.get_db),
+    unvalidated_secrets: connection_secrets_schemas,
+    verify: Optional[bool] = True,
 ) -> TestStatusMessage:
     """
     Patch secrets that will be used to connect to a specified connection_type.
@@ -161,13 +160,17 @@ def patch_connection_secrets(
     """
 
     system = get_system(db, fides_key)
-    connection_config = get_connection_config_or_error(db, system.connection_configs.key)
+    connection_config = get_connection_config_or_error(
+        db, system.connection_configs.key
+    )
     # Inserts unchanged sensitive values. The FE does not send masked values sensitive secrets.
     for key, value in connection_config.secrets.items():
         if key not in unvalidated_secrets:
             unvalidated_secrets[key] = value
 
-    validated_secrets = validate_secrets(db, unvalidated_secrets, connection_config).dict()
+    validated_secrets = validate_secrets(
+        db, unvalidated_secrets, connection_config
+    ).dict()
 
     for key, value in validated_secrets.items():
         connection_config.secrets[key] = value
@@ -181,7 +184,6 @@ def patch_connection_secrets(
         return connection_status(connection_config, msg, db)
 
     return TestStatusMessage(msg=msg, test_status=None)
-
 
 
 @SYSTEM_CONNECTIONS_ROUTER.delete(

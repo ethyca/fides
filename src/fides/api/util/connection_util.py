@@ -319,7 +319,7 @@ def delete_connection_config(db: Session, connection_key: FidesKey) -> None:
 
 
 def connection_status(
-        connection_config: ConnectionConfig, msg: str, db: Session = Depends(deps.get_db)
+    connection_config: ConnectionConfig, msg: str, db: Session = Depends(deps.get_db)
 ) -> TestStatusMessage:
     """Connect, verify with a trivial query or API request, and report the status."""
 
