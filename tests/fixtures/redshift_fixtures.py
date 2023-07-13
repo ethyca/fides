@@ -50,16 +50,17 @@ def redshift_connection_config(db: Session) -> Generator:
         "db_schema"
     ) or os.environ.get("REDSHIFT_TEST_DB_SCHEMA")
 
-    schema = RedshiftSchema(
-        host=host,
-        port=port,
-        user=user,
-        password=password,
-        database=database,
-        db_schema=db_schema,
-    )
-    connection_config.secrets = schema.dict()
-    connection_config.save(db=db)
+    if all([host, port, user, password, database, db_schema]):
+        schema = RedshiftSchema(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            database=database,
+            db_schema=db_schema,
+        )
+        connection_config.secrets = schema.dict()
+        connection_config.save(db=db)
 
     yield connection_config
     connection_config.delete(db)

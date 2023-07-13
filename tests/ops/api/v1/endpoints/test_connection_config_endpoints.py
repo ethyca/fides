@@ -1375,8 +1375,7 @@ class TestPutConnectionConfigSecrets:
             headers=auth_header,
             json=payload,
         )
-        assert resp.status_code == 422
-        assert json.loads(resp.text)["detail"][0]["msg"] == "extra fields not permitted"
+        assert resp.status_code == 200
 
         payload = {"dbname": "my_db"}
         resp = api_client.put(

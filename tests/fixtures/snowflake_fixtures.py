@@ -48,6 +48,8 @@ def snowflake_connection_config(
     Returns a Snowflake ConectionConfig with secrets attached if secrets are present
     in the configuration.
     """
+    connection_config = snowflake_connection_config_without_secrets
+
     account_identifier = integration_config.get("snowflake", {}).get(
         "account_identifier"
     ) or os.environ.get("SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER")
@@ -67,18 +69,29 @@ def snowflake_connection_config(
         "schema_name"
     ) or os.environ.get("SNOWFLAKE_TEST_SCHEMA_NAME")
 
-    schema = SnowflakeSchema(
-        account_identifier=account_identifier,
-        user_login_name=user_login_name,
-        password=password,
-        warehouse_name=warehouse_name,
-        database_name=database_name,
-        schema_name=schema_name,
-    )
-    snowflake_connection_config = snowflake_connection_config_without_secrets
-    snowflake_connection_config.secrets = schema.dict()
-    snowflake_connection_config.save(db=db)
-    yield snowflake_connection_config
+    if all(
+        [
+            account_identifier,
+            user_login_name,
+            password,
+            warehouse_name,
+            database_name,
+            schema_name,
+        ]
+    ):
+        schema = SnowflakeSchema(
+            account_identifier=account_identifier,
+            user_login_name=user_login_name,
+            password=password,
+            warehouse_name=warehouse_name,
+            database_name=database_name,
+            schema_name=schema_name,
+        )
+        connection_config.secrets = schema.dict()
+        connection_config.save(db=db)
+
+    yield connection_config
+    connection_config.delete(db)
 
 
 @pytest.fixture
