@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.15.2b0.post0.dev21"
+    "version": "2.15.2b0.post0.dev22"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8683,6 +8683,109 @@
         ]
       }
     },
+    "/api/v1/notices-served": {
+      "patch": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Save Notices Served",
+        "description": "Records what notices were served to a fides user device id only.  Generally called by the banner\nor an overlay.\n\nAll notices that were served in an experience should be included in the request body.",
+        "operationId": "save_notices_served_api_v1_notices_served_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoticesServedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Save Notices Served Api V1 Notices Served Patch",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LastServedNoticeSchema"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consent-request/{consent_request_id}/notices-served": {
+      "patch": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Save Notices Served Via Privacy Center",
+        "description": "Saves that notices were served via a verified identity flow (privacy center)\n\nCapable of saving that notices were served against a verified email/phone number and a fides user device id\nsimultaneously.\n\nCreates a ServedNoticeHistory history record for every notice in the request and upserts\na LastServedNotice record.",
+        "operationId": "save_notices_served_via_privacy_center_api_v1_consent_request__consent_request_id__notices_served_patch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Consent Request Id",
+              "type": "string"
+            },
+            "name": "consent_request_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoticesServedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Save Notices Served Via Privacy Center Api V1 Consent Request  Consent Request Id  Notices Served Patch",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LastServedNoticeSchema"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/privacy-request": {
       "get": {
         "tags": [
@@ -13789,6 +13892,10 @@
           },
           "preference": {
             "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "served_notice_history_id": {
+            "title": "Served Notice History Id",
+            "type": "string"
           }
         },
         "description": "Schema for saving the user's preference for a given notice"
@@ -14023,6 +14130,10 @@
                 "$ref": "#/components/schemas/ConsentMethod"
               }
             ]
+          },
+          "served_notice_history_id": {
+            "title": "The id of the record where the notice was served to the end user",
+            "type": "string"
           }
         },
         "description": "Schema for consent reporting - largely a join of PrivacyPreferenceHistory and PrivacyRequest"
@@ -16200,6 +16311,35 @@
         "type": "string",
         "description": "Determine whether or not defined rights are\nbeing included or excluded."
       },
+      "LastServedNoticeSchema": {
+        "title": "LastServedNoticeSchema",
+        "required": [
+          "id",
+          "updated_at",
+          "privacy_notice_history",
+          "served_notice_history_id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "privacy_notice_history": {
+            "$ref": "#/components/schemas/PrivacyNoticeHistorySchema"
+          },
+          "served_notice_history_id": {
+            "title": "Served Notice History Id",
+            "type": "string"
+          }
+        },
+        "description": "Schema that surfaces the last version of a notice that was shown to a user"
+      },
       "LegalBasisEnum": {
         "title": "LegalBasisEnum",
         "enum": [
@@ -16826,6 +16966,47 @@
         },
         "additionalProperties": false,
         "description": "MySQL Secrets Schema for API Docs"
+      },
+      "NoticesServedRequest": {
+        "title": "NoticesServedRequest",
+        "required": [
+          "browser_identity",
+          "privacy_notice_history_ids",
+          "serving_component"
+        ],
+        "type": "object",
+        "properties": {
+          "browser_identity": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "privacy_notice_history_ids": {
+            "title": "Privacy Notice History Ids",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "privacy_experience_id": {
+            "title": "Privacy Experience Id",
+            "type": "string"
+          },
+          "user_geography": {
+            "title": "User Geography",
+            "type": "string"
+          },
+          "acknowledge_mode": {
+            "title": "Acknowledge Mode",
+            "type": "boolean"
+          },
+          "serving_component": {
+            "$ref": "#/components/schemas/ServingComponent"
+          }
+        },
+        "description": "Request body when indicating that notices were served in the UI"
       },
       "NotificationApplicationConfig": {
         "title": "NotificationApplicationConfig",
@@ -18700,6 +18881,14 @@
           },
           "outdated_preference": {
             "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "current_served": {
+            "title": "Current Served",
+            "type": "boolean"
+          },
+          "outdated_served": {
+            "title": "Outdated Served",
+            "type": "boolean"
           }
         },
         "additionalProperties": false,
@@ -20069,6 +20258,15 @@
           "webhook:create_or_update",
           "webhook:delete",
           "webhook:read"
+        ],
+        "description": "An enumeration."
+      },
+      "ServingComponent": {
+        "title": "ServingComponent",
+        "enum": [
+          "overlay",
+          "banner",
+          "privacy_center"
         ],
         "description": "An enumeration."
       },
