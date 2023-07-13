@@ -7,6 +7,7 @@ import {
   ConnectionConfigurationResponse,
   System,
   SystemResponse,
+  TestStatusMessage
 } from "~/types/api";
 
 interface SystemDeleteResponse {
@@ -19,6 +20,14 @@ interface UpsertResponse {
   inserted: number;
   updated: number;
 }
+
+export type ConnectionConfigSecretsRequest = {
+  systemFidesKey: string;
+  secrets: {
+    [key: string]: any;
+  };
+};
+
 
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -90,7 +99,17 @@ const systemApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Datamap", "System", "Datastore Connection"],
     }),
-
+    patchSystemConnectionSecrets: build.mutation<
+      TestStatusMessage,
+      ConnectionConfigSecretsRequest
+    >({
+      query: ({secrets, systemFidesKey}) => ({
+        url: `/system/${systemFidesKey}/connection/secrets?verify=false`,
+        method: "PATCH",
+        body: secrets,
+      }),
+      invalidatesTags: () => ["Datastore Connection"],
+    }),
     getSystemConnectionConfigs: build.query<
       ConnectionConfigurationResponse[],
       string
@@ -112,6 +131,7 @@ export const {
   useUpsertSystemsMutation,
   usePatchSystemConnectionConfigsMutation,
   useGetSystemConnectionConfigsQuery,
+  usePatchSystemConnectionSecretsMutation,
 } = systemApi;
 
 export interface State {

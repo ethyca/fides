@@ -146,9 +146,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     item: ConnectionTypeSecretSchemaProperty
   ): JSX.Element => (
     <Field
-      id={key}
-      name={key}
-      key={key}
+      id={`secrets.${key}`}
+      name={`secrets.${key}`}
+      key={`secrets.${key}`}
       validate={
         isRequiredSecretValue(key) || item.type === "integer"
           ? (value: string) =>
@@ -219,6 +219,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         connectionConfig.connection_type === ConnectionType.SAAS
           ? (connectionConfig.saas_config?.fides_key as string)
           : connectionConfig.key;
+      initialValues.secrets = connectionConfig.secrets;
     }
     return fillInDefaults(initialValues, secretsSchema);
   };
