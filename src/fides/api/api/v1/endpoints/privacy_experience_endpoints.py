@@ -80,12 +80,19 @@ def _filter_experiences_by_region_or_country(
     ) or PrivacyExperience.get_experience_by_region_and_component(
         db, country, ComponentType.privacy_center
     )
+    tcf_overlay = PrivacyExperience.get_experience_by_region_and_component(
+        db, region, ComponentType.tcf_overlay
+    ) or PrivacyExperience.get_experience_by_region_and_component(
+        db, country, ComponentType.tcf_overlay
+    )
 
     experience_ids: List[str] = []
     if overlay:
         experience_ids.append(overlay.id)
     if privacy_center:
         experience_ids.append(privacy_center.id)
+    if tcf_overlay:
+        experience_ids.append(tcf_overlay.id)
 
     if experience_ids:
         return experience_query.filter(PrivacyExperience.id.in_(experience_ids))

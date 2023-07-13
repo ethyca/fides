@@ -12,6 +12,13 @@ from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel
 from fides.api.models.privacy_notice import PrivacyNoticeRegion, UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
 
+non_tcf_notice_required_fields: List[str] = [
+    "consent_mechanism",
+    "enforcement_level",
+    "has_gpc_flag",
+    "notice_key",
+]
+
 
 class PrivacyNotice(FidesSchema):
     """
@@ -28,13 +35,15 @@ class PrivacyNotice(FidesSchema):
     origin: Optional[str]
     regions: Optional[conlist(PrivacyNoticeRegion, min_items=1)]  # type: ignore
     consent_mechanism: Optional[ConsentMechanism]
-    data_uses: Optional[conlist(str, min_items=1)]  # type: ignore
+    data_uses: Optional[List[str]]  # type: ignore
     enforcement_level: Optional[EnforcementLevel]
     disabled: Optional[bool] = False
-    has_gpc_flag: Optional[bool] = False
+    has_gpc_flag: Optional[bool]
     displayed_in_privacy_center: Optional[bool] = False
     displayed_in_overlay: Optional[bool] = False
+    displayed_in_tcf_overlay: Optional[bool] = False
     displayed_in_api: Optional[bool] = False
+    is_tcf: Optional[bool] = False
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -72,20 +81,34 @@ class PrivacyNoticeCreation(PrivacyNotice):
 
     name: str
     regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
-    consent_mechanism: ConsentMechanism
-    data_uses: conlist(str, min_items=1)  # type: ignore
-    enforcement_level: EnforcementLevel
 
     @root_validator(pre=True)
     def validate_notice_key(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
         Generate the notice_key from the name if not supplied
         """
-        if not values.get("notice_key"):
+        if not values.get("notice_key") and not values.get("is_tcf"):
             values["notice_key"] = PrivacyNoticeModel.generate_notice_key(
                 values.get("name")
             )
 
+        return values
+
+    @root_validator()
+    def validate_required_fields_based_on_notice_type(
+        cls, values: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Validate required fields for tcf notices versus non tcf notices
+        """
+        is_tcf: Optional[bool] = values.get("is_tcf")
+        for field in non_tcf_notice_required_fields:
+            field_val = values.get(field, None)
+            if field_val and is_tcf:
+                raise ValueError(f"Field {field} not expected for a TCF Notice.")
+
+            if field_val is None and not is_tcf:
+                raise ValueError(f"Missing field {field} for created Privacy Notice.")
         return values
 
     @root_validator
@@ -100,25 +123,33 @@ class PrivacyNoticeCreation(PrivacyNotice):
         displayed_in_privacy_center: Optional[bool] = values.get(
             "displayed_in_privacy_center"
         )
+        displayed_in_tcf_overlay: Optional[bool] = values.get(
+            "displayed_in_tcf_overlay"
+        )
+        is_tcf: Optional[bool] = values.get("is_tcf")
 
-        if (
-            consent_mechanism == ConsentMechanism.opt_in.value
-            and not displayed_in_overlay
-        ):
-            raise ValueError("Opt-in notices must be served in an overlay.")
+        if is_tcf:
+            if not displayed_in_tcf_overlay:
+                raise ValueError("TCF Notices must be displayed in a TCF Overlay.")
+        else:
+            if (
+                consent_mechanism == ConsentMechanism.opt_in.value
+                and not displayed_in_overlay
+            ):
+                raise ValueError("Opt-in notices must be served in an overlay.")
 
-        if consent_mechanism == ConsentMechanism.opt_out.value and not (
-            displayed_in_privacy_center or displayed_in_overlay
-        ):
-            raise ValueError(
-                "Opt-out notices must be served in an overlay or the privacy center."
-            )
+            if consent_mechanism == ConsentMechanism.opt_out.value and not (
+                displayed_in_privacy_center or displayed_in_overlay
+            ):
+                raise ValueError(
+                    "Opt-out notices must be served in an overlay or the privacy center."
+                )
 
-        if (
-            consent_mechanism == ConsentMechanism.notice_only.value
-            and not displayed_in_overlay
-        ):
-            raise ValueError("Notice-only notices must be served in an overlay.")
+            if (
+                consent_mechanism == ConsentMechanism.notice_only.value
+                and not displayed_in_overlay
+            ):
+                raise ValueError("Notice-only notices must be served in an overlay.")
 
         return values
 
@@ -150,7 +181,7 @@ class PrivacyNoticeResponseWithUserPreferences(PrivacyNoticeResponse):
     and any saved preferences.
     """
 
-    default_preference: UserConsentPreference  # The default preference for this notice
+    default_preference: Optional[UserConsentPreference]  # The default preference for this notice
     current_preference: Optional[
         UserConsentPreference
     ]  # The current saved preference for the given user if it exists

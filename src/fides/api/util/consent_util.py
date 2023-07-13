@@ -529,10 +529,10 @@ def load_default_notices_on_startup(
             if template.id
             not in [origin for (origin,) in db.query(PrivacyNotice.origin).all()]
         ]
-
         # Link Privacy Notice Schemas to the Privacy Notice Templates
         notice_schemas: List[PrivacyNoticeCreation] = []
         for template in new_templates:
+
             privacy_notice_schema = PrivacyNoticeCreation.from_orm(template)
             privacy_notice_schema.origin = SafeStr(template.id)
             notice_schemas.append(privacy_notice_schema)

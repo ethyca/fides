@@ -9,7 +9,6 @@ from fides.api.common_exceptions import (
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
 )
-from fides.api.models.privacy_experience import PrivacyExperienceConfig
 from fides.api.models.privacy_preference import (
     LastServedNotice,
     PrivacyPreferenceHistory,

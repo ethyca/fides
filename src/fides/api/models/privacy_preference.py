@@ -115,9 +115,7 @@ class ConsentReportingMixin:
     # Minimal information stored here, mostly just region and component type
     @declared_attr
     def privacy_experience_id(cls) -> Column:
-        return Column(
-            String, ForeignKey("privacyexperience.id"), nullable=True, index=True
-        )
+        return Column(String, ForeignKey("privacyexperience.id"), index=True)
 
     # The specific historical record the user consented to
     @declared_attr
@@ -145,6 +143,14 @@ class ConsentReportingMixin:
     )
 
     user_geography = Column(String, index=True)
+
+    data_use = Column(
+        String, index=True
+    )  # Only applicable when embedded in a TCF notice
+    vendor = Column(String, index=True)  # Only applicable when embedded in a TCF notice
+    feature = Column(
+        String, index=True
+    )  # Only applicable when embedded in a TCF notice
 
     # Relationships
     @declared_attr
@@ -459,17 +465,37 @@ class LastSavedMixin:
         return relationship(PrivacyNoticeHistory)
 
 
-class CurrentPrivacyPreference(LastSavedMixin, Base):
-    """Stores only the user's most recently saved preference for a given privacy notice
-
-    The specific privacy notice history and privacy preference history record are linked as well.
-    """
-
+class CurrentSavedPreferenceMixin(LastSavedMixin):
     preference = Column(EnumColumn(UserConsentPreference), nullable=False, index=True)
 
-    privacy_preference_history_id = Column(
-        String, ForeignKey(PrivacyPreferenceHistory.id), nullable=False, index=True
-    )
+    @declared_attr
+    def privacy_preference_history_id(cls) -> Column:
+        return Column(
+            String, ForeignKey(PrivacyPreferenceHistory.id), nullable=False, index=True
+        )
+
+    @declared_attr
+    def privacy_preference_history(cls) -> relationship:
+        return relationship(
+            PrivacyPreferenceHistory,
+            cascade="delete, delete-orphan",
+            single_parent=True,
+        )
+
+    @property
+    def preference_matches_latest_version(self) -> bool:
+        """Returns True if the latest saved preference corresponds to the
+        latest version for this Notice"""
+        return (
+            self.privacy_notice.privacy_notice_history_id
+            == self.privacy_notice_history_id
+        )
+
+
+class CurrentPrivacyPreference(CurrentSavedPreferenceMixin, Base):
+    """Stores the user's most recently saved preference for a given privacy notice
+    Preferences for TCF Notices are not applicable here.
+    """
 
     __table_args__ = (
         UniqueConstraint(
@@ -481,20 +507,6 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
             name="fides_user_device_identity_privacy_notice",
         ),
     )
-
-    # Relationships
-    privacy_preference_history = relationship(
-        PrivacyPreferenceHistory, cascade="delete, delete-orphan", single_parent=True
-    )
-
-    @property
-    def preference_matches_latest_version(self) -> bool:
-        """Returns True if the latest saved preference corresponds to the
-        latest version for this Notice"""
-        return (
-            self.privacy_notice.privacy_notice_history_id
-            == self.privacy_notice_history_id
-        )
 
     @classmethod
     def get_preference_for_notice_and_fides_user_device(
@@ -516,15 +528,127 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
         )
 
 
-class LastServedNotice(LastSavedMixin, Base):
-    """Stores the last time a notice was served for a given user
+class CurrentDataUsePreference(CurrentSavedPreferenceMixin, Base):
+    """Stores the user's most recently saved preference for a *data use* (TCF only)"""
+
+    data_use = Column(String, nullable=False, index=True)
+
+    __table_args__ = (
+        UniqueConstraint("provided_identity_id", "data_use", name="identity_data_use"),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "data_use",
+            name="fides_user_device_identity_data_use",
+        ),
+    )
+
+    @classmethod
+    def get_data_use_preference_for_notice_and_fides_user_device(
+        cls,
+        db: Session,
+        fides_user_provided_identity: ProvidedIdentity,
+        data_use: str,
+    ) -> Optional[CurrentDataUsePreference]:
+        """Retrieves the CurrentDataUsePreference for the user with the given identity
+        for the given notice"""
+        return (
+            db.query(CurrentDataUsePreference)
+            .filter(
+                CurrentDataUsePreference.fides_user_device_provided_identity_id
+                == fides_user_provided_identity.id,
+                CurrentDataUsePreference.data_use == data_use,
+            )
+            .first()
+        )
+
+
+class CurrentVendorPreference(CurrentSavedPreferenceMixin, Base):
+    """Stores the user's most recently saved preference for a *vendor* (TCF only)"""
+
+    vendor = Column(String, nullable=False, index=True)
+
+    __table_args__ = (
+        UniqueConstraint("provided_identity_id", "vendor", name="identity_vendor"),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "vendor",
+            name="fides_user_device_identity_vendor",
+        ),
+    )
+
+    @classmethod
+    def get_vendor_preference_for_notice_and_fides_user_device(
+        cls,
+        db: Session,
+        fides_user_provided_identity: ProvidedIdentity,
+        vendor: str,
+    ) -> Optional[CurrentVendorPreference]:
+        """Retrieves the CurrentVendorPreference for the user with the given identity
+        for the given notice"""
+        return (
+            db.query(CurrentVendorPreference)
+            .filter(
+                CurrentVendorPreference.fides_user_device_provided_identity_id
+                == fides_user_provided_identity.id,
+                CurrentVendorPreference.vendor == vendor,
+            )
+            .first()
+        )
+
+
+class CurrentFeaturePreference(CurrentSavedPreferenceMixin, Base):
+    """Stores the user's most recently saved preference for a *feature* (TCF only)"""
+
+    feature = Column(String, nullable=False, index=True)
+
+    __table_args__ = (
+        UniqueConstraint("provided_identity_id", "feature", name="identity_feature"),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "feature",
+            name="fides_user_device_identity_feature",
+        ),
+    )
+
+    @classmethod
+    def get_preference_for_feature_and_fides_user_device(
+        cls,
+        db: Session,
+        fides_user_provided_identity: ProvidedIdentity,
+        feature: str,
+    ) -> Optional[CurrentFeaturePreference]:
+        """Retrieves the CurrentFeaturePreference for the user with the given identity
+        for the given notice"""
+        return (
+            db.query(CurrentFeaturePreference)
+            .filter(
+                CurrentFeaturePreference.fides_user_device_provided_identity_id
+                == fides_user_provided_identity.id,
+                CurrentFeaturePreference.feature == feature,
+            )
+            .first()
+        )
+
+
+class LastServedMixin(LastSavedMixin):
+    @declared_attr
+    def served_notice_history_id(cls) -> Column:
+        return Column(
+            String, ForeignKey(ServedNoticeHistory.id), index=True, nullable=False
+        )
+
+    @declared_attr
+    def served_notice_history(cls) -> relationship:
+        return relationship(
+            ServedNoticeHistory, cascade="delete, delete-orphan", single_parent=True
+        )
+
+
+class LastServedNotice(LastServedMixin, Base):
+    """Stores the last time a notice was served for a given user (TCF Notices excluded)
 
     Also consolidates serving notices among various user identities.
     """
-
-    served_notice_history_id = Column(
-        String, ForeignKey(ServedNoticeHistory.id), nullable=False, index=True
-    )
 
     __table_args__ = (
         UniqueConstraint(
@@ -537,11 +661,6 @@ class LastServedNotice(LastSavedMixin, Base):
             "privacy_notice_id",
             name="last_served_fides_user_device_identity_privacy_notice",
         ),
-    )
-
-    # Relationships
-    served_notice_history = relationship(
-        ServedNoticeHistory, cascade="delete, delete-orphan", single_parent=True
     )
 
     @property
@@ -567,6 +686,120 @@ class LastServedNotice(LastSavedMixin, Base):
                 LastServedNotice.fides_user_device_provided_identity_id
                 == fides_user_provided_identity.id,
                 LastServedNotice.privacy_notice_id == privacy_notice.id,
+            )
+            .first()
+        )
+
+
+class LastServedDataUse(LastServedMixin, Base):
+    """Stores the last time a data use was served for a given user (TCF)"""
+
+    data_use = Column(String, nullable=False, index=True)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "provided_identity_id",
+            "data_use",
+            name="last_served_identity_data_use",
+        ),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "data_use",
+            name="last_served_fides_user_device_identity_data_use",
+        ),
+    )
+
+    @classmethod
+    def get_last_served_for_data_use_and_fides_user_device(
+        cls,
+        db: Session,
+        fides_user_provided_identity: ProvidedIdentity,
+        data_use: str,
+    ) -> Optional[LastServedDataUse]:
+        """Retrieves the LastServedDataUse record for the user with the given identity
+        for the given data use"""
+        return (
+            db.query(LastServedDataUse)
+            .filter(
+                LastServedDataUse.fides_user_device_provided_identity_id
+                == fides_user_provided_identity.id,
+                LastServedDataUse.data_use == data_use,
+            )
+            .first()
+        )
+
+
+class LastServedVendor(LastServedMixin, Base):
+    """Stores the last time a vendor was served for a given user (TCF)"""
+
+    vendor = Column(String, nullable=False, index=True)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "provided_identity_id",
+            "vendor",
+            name="last_served_identity_vendor",
+        ),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "vendor",
+            name="last_served_fides_user_device_identity_vendor",
+        ),
+    )
+
+    @classmethod
+    def get_last_served_for_vendor_and_fides_user_device(
+        cls,
+        db: Session,
+        fides_user_provided_identity: ProvidedIdentity,
+        vendor: str,
+    ) -> Optional[LastServedVendor]:
+        """Retrieves the LastServedVendor record for the user with the given identity
+        for the given data use"""
+        return (
+            db.query(LastServedVendor)
+            .filter(
+                LastServedVendor.fides_user_device_provided_identity_id
+                == fides_user_provided_identity.id,
+                LastServedVendor.vendor == vendor,
+            )
+            .first()
+        )
+
+
+class LastServedFeature(LastServedMixin, Base):
+    """Stores the last time a feature was served for a given user (TCF)"""
+
+    feature = Column(String, nullable=False, index=True)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "provided_identity_id",
+            "feature",
+            name="last_served_identity_feature",
+        ),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "feature",
+            name="last_served_fides_user_device_identity_feature",
+        ),
+    )
+
+    @classmethod
+    def get_last_served_for_feature_and_fides_user_device(
+        cls,
+        db: Session,
+        fides_user_provided_identity: ProvidedIdentity,
+        feature: str,
+    ) -> Optional[LastServedFeature]:
+        """Retrieves the LastServedFeature record for the user with the given identity
+        for the given data use"""
+        return (
+            db.query(LastServedFeature)
+            .filter(
+                LastServedFeature.fides_user_device_provided_identity_id
+                == fides_user_provided_identity.id,
+                LastServedFeature.feature == feature,
             )
             .first()
         )

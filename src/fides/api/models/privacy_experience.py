@@ -37,6 +37,7 @@ class ComponentType(Enum):
 
     overlay = "overlay"
     privacy_center = "privacy_center"
+    tcf_overlay = "tcf_overlay"
 
 
 class BannerEnabled(Enum):
@@ -219,6 +220,9 @@ class PrivacyExperience(Base):
 
         Relevant privacy notices are queried at runtime.
         """
+        if self.component == ComponentType.tcf_overlay:
+            return True
+
         if self.component != ComponentType.overlay:
             return False
 
@@ -329,7 +333,7 @@ class PrivacyExperience(Base):
     @staticmethod
     def get_experiences_by_region(
         db: Session, region: str
-    ) -> Tuple[Optional[PrivacyExperience], Optional[PrivacyExperience]]:
+    ) -> Tuple[Optional[PrivacyExperience], Optional[PrivacyExperience], Optional[PrivacyExperience]]:
         """Load both the overlay and privacy center experience for a given region"""
         overlay_experience: Optional[
             PrivacyExperience
@@ -343,7 +347,13 @@ class PrivacyExperience(Base):
             db=db, region=region, component=ComponentType.privacy_center
         )
 
-        return overlay_experience, privacy_center_experience
+        tcf_overlay_experience: Optional[
+            PrivacyExperience
+        ] = PrivacyExperience.get_experience_by_region_and_component(
+            db=db, region=region, component=ComponentType.tcf_overlay
+        )
+
+        return overlay_experience, privacy_center_experience, tcf_overlay_experience
 
     def unlink_experience_config(self, db: Session) -> PrivacyExperience:
         """Removes the experience config
@@ -397,6 +407,10 @@ def get_privacy_notices_by_region_and_component(
                     component == ComponentType.privacy_center,
                     PrivacyNotice.displayed_in_privacy_center,
                 ),
+                and_(
+                    component == ComponentType.tcf_overlay,
+                    PrivacyNotice.displayed_in_tcf_overlay,
+                ),
             )
         )
     )
@@ -424,6 +438,7 @@ def upsert_privacy_experiences_after_notice_update(
         (
             overlay_experience,
             privacy_center_experience,
+            tcf_overlay_experience
         ) = PrivacyExperience.get_experiences_by_region(db=db, region=region.value)
 
         privacy_center_notices: Query = get_privacy_notices_by_region_and_component(
@@ -431,6 +446,10 @@ def upsert_privacy_experiences_after_notice_update(
         )
         overlay_notices: Query = get_privacy_notices_by_region_and_component(
             db, region, ComponentType.overlay
+        )
+
+        tcf_overlay_notices: Query = get_privacy_notices_by_region_and_component(
+            db, region, ComponentType.tcf_overlay
         )
 
         # See if we need to create a Privacy Center Experience for the Privacy Center Notices
@@ -453,6 +472,15 @@ def upsert_privacy_experiences_after_notice_update(
                 db, region, ComponentType.overlay
             )
             added_experiences.append(overlay_experience)
+
+        # See if we need to create a new TCF Overlay Experience for TCF overlay Notices.
+        if new_experience_needed(
+            existing_experience=tcf_overlay_experience, related_notices=tcf_overlay_notices
+        ):
+            tcf_overlay_experience = PrivacyExperience.create_default_experience_for_region(
+                db, region, ComponentType.tcf_overlay
+            )
+            added_experiences.append(tcf_overlay_experience)
 
     return added_experiences
 
@@ -509,13 +537,16 @@ def upsert_privacy_experiences_after_config_update(
         (
             overlay_experience,
             privacy_center_experience,
+            tcf_overlay_experience
         ) = PrivacyExperience.get_experiences_by_region(db, region.value)
 
-        existing_experience: Optional[PrivacyExperience] = (
-            overlay_experience
-            if experience_config.component == ComponentType.overlay
-            else privacy_center_experience
-        )
+        existing_experience = None
+        if experience_config.component == ComponentType.overlay:
+            existing_experience = overlay_experience
+        if experience_config.component == ComponentType.tcf_overlay:
+            existing_experience = tcf_overlay_experience
+        if experience_config.component == ComponentType.privacy_center:
+            existing_experience = privacy_center_experience
 
         data = {
             "component": experience_config.component,

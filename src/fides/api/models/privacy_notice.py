@@ -150,17 +150,19 @@ class PrivacyNoticeBase:
         index=True,
         nullable=False,
     )
-    consent_mechanism = Column(EnumColumn(ConsentMechanism), nullable=False)
+    consent_mechanism = Column(EnumColumn(ConsentMechanism), nullable=True)
     data_uses = Column(
         ARRAY(String), nullable=False
     )  # a list of `fides_key`s of `DataUse` records
-    enforcement_level = Column(EnumColumn(EnforcementLevel), nullable=False)
+    enforcement_level = Column(EnumColumn(EnforcementLevel), nullable=True)
     disabled = Column(Boolean, nullable=False, default=False)
-    has_gpc_flag = Column(Boolean, nullable=False, default=False)
+    has_gpc_flag = Column(Boolean, nullable=True, default=False)
     displayed_in_privacy_center = Column(Boolean, nullable=False, default=False)
     displayed_in_overlay = Column(Boolean, nullable=False, default=False)
     displayed_in_api = Column(Boolean, nullable=False, default=False)
-    notice_key = Column(String, nullable=False)
+    displayed_in_tcf_overlay = Column(Boolean, nullable=False, default=False)
+    notice_key = Column(String, nullable=True)
+    is_tcf = Column(Boolean, default=False)
 
     # Attribute that can be temporarily cached as the result of "get_related_privacy_notices"
     # for a given user, for surfacing CurrentPrivacyPreferences for the user.
@@ -244,7 +246,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         return history.id if history else None
 
     @hybridproperty
-    def default_preference(self) -> UserConsentPreference:
+    def default_preference(self) -> Optional[UserConsentPreference]:
         """Returns the user's default consent preference given the consent
         mechanism of this notice, or "what is granted to the user"
 
@@ -252,6 +254,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         that they should be granted the opportunity to opt in, but by
         default, they *should be opted out*
         """
+        if not self.consent_mechanism:
+            return None
+
         if self.consent_mechanism == ConsentMechanism.opt_in:
             return UserConsentPreference.opt_out  # Intentional
         if self.consent_mechanism == ConsentMechanism.opt_out:
@@ -331,6 +336,8 @@ def check_conflicting_notice_keys(
     for privacy_notice in existing_privacy_notices:
         if privacy_notice.disabled and ignore_disabled:
             continue
+        if not privacy_notice.notice_key:
+            continue
         for region in privacy_notice.regions:
             notice_keys_by_region[PrivacyNoticeRegion(region)].append(
                 (privacy_notice.notice_key, privacy_notice.name)
@@ -339,6 +346,8 @@ def check_conflicting_notice_keys(
     for privacy_notice in new_privacy_notices:
         if privacy_notice.disabled and ignore_disabled:
             # Skip validation if the notice is disabled
+            continue
+        if not privacy_notice.notice_key:
             continue
         # check each of the incoming notice's regions
         for region in privacy_notice.regions:

@@ -218,3 +218,52 @@ privacy_notices:
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
+- name: TCF Notice
+  notice_key: null
+  id: pri_738b-806c-4550-9324-0e9daf1c05c9
+  description: We use cookies and similar methods to recognize visitors and remember their preferences. We also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. You can opt in or opt out of hte processing of this data for individual purposes below or opt in or opt out of all processing.
+  regions:
+    - be
+    - bg
+    - cz
+    - dk
+    - de
+    - ee
+    - ie
+    - gr
+    - es
+    - fr
+    - hr
+    - it
+    - cy
+    - lv
+    - lt
+    - lu
+    - hu
+    - mt
+    - nl
+    - at
+    - pl
+    - pt
+    - ro
+    - si
+    - sk
+    - fi
+    - se
+    - gb_eng
+    - gb_sct
+    - gb_wls
+    - gb_nir
+    - is
+    - "no"
+    - li
+  consent_mechanism: null
+  data_uses: []
+  enforcement_level: null
+  disabled: False
+  has_gpc_flag: null
+  displayed_in_privacy_center: False
+  displayed_in_overlay: False
+  displayed_in_api: False
+  displayed_in_tcf_overlay: True
+  is_tcf: True

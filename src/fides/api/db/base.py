@@ -29,8 +29,15 @@ from fides.api.models.privacy_preference import (
     LastServedNotice,
     PrivacyPreferenceHistory,
     ServedNoticeHistory,
+    LastServedVendor,
+    LastServedDataUse,
+    LastServedFeature,
+    CurrentVendorPreference,
+    CurrentDataUsePreference,
+    CurrentFeaturePreference,
 )
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.registration import UserRegistration
 from fides.api.models.storage import StorageConfig
 from fides.api.models.system_manager import SystemManager
+from fides.api.models.tcf_data_uses import TCFDataUse
