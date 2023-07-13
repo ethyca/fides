@@ -7,13 +7,12 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_204_NO_CONTENT,
 )
 from starlette.testclient import TestClient
-from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -27,12 +26,13 @@ from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.models.sql_models import Dataset
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_DELETE,
     CONNECTION_READ,
     SAAS_CONNECTION_INSTANTIATE,
     STORAGE_DELETE,
     SYSTEM_MANAGER_UPDATE,
-    CONNECTION_DELETE,
 )
+from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from tests.conftest import generate_role_header_for_user
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
@@ -184,8 +184,12 @@ class TestPatchSystemConnections:
 
         if assign_system:
             assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
-            system_manager_auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
-            api_client.put(assign_url, headers=system_manager_auth_header, json=[system.fides_key])
+            system_manager_auth_header = generate_auth_header(
+                scopes=[SYSTEM_MANAGER_UPDATE]
+            )
+            api_client.put(
+                assign_url, headers=system_manager_auth_header, json=[system.fides_key]
+            )
             auth_header = generate_system_manager_header([system.id])
         else:
             auth_header = generate_role_header_for_user(
@@ -293,8 +297,12 @@ class TestGetConnections:
 
         if assign_system:
             assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
-            system_manager_auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
-            api_client.put(assign_url, headers=system_manager_auth_header, json=[system.fides_key])
+            system_manager_auth_header = generate_auth_header(
+                scopes=[SYSTEM_MANAGER_UPDATE]
+            )
+            api_client.put(
+                assign_url, headers=system_manager_auth_header, json=[system.fides_key]
+            )
             auth_header = generate_system_manager_header([system.id])
         else:
             auth_header = generate_role_header_for_user(
@@ -513,8 +521,12 @@ class TestDeleteSystemConnectionConfig:
 
         if assign_system:
             assign_url = V1_URL_PREFIX + f"/user/{acting_user_role.id}/system-manager"
-            system_manager_auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
-            api_client.put(assign_url, headers=system_manager_auth_header, json=[system.fides_key])
+            system_manager_auth_header = generate_auth_header(
+                scopes=[SYSTEM_MANAGER_UPDATE]
+            )
+            api_client.put(
+                assign_url, headers=system_manager_auth_header, json=[system.fides_key]
+            )
             auth_header = generate_system_manager_header([system.id])
         else:
             auth_header = generate_role_header_for_user(
