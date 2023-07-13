@@ -87,7 +87,7 @@ from fides.config.config_proxy import ConfigProxy
 router = APIRouter(tags=["Privacy Preference"], prefix=V1_URL_PREFIX)
 
 
-def get_served_notice_history_id(
+def get_served_notice_history(
     db: Session, served_notice_history_id: str
 ) -> ServedNoticeHistory:
     """
@@ -186,10 +186,12 @@ def verify_privacy_notice_and_historical_records(
 def verify_valid_service_notice_history_records(
     db: Session, data: PrivacyPreferencesRequest
 ) -> None:
-    """Verify service notice history records specified in the request are valid before saving privacy preferences"""
+    """Verify service notice history records specified in the request (that link an event that a notice was
+    served to the event that saved the preference) are valid before saving privacy preferences
+    """
     for preference in data.preferences:
         if preference.served_notice_history_id:
-            served_notice_history = get_served_notice_history_id(
+            served_notice_history = get_served_notice_history(
                 db, preference.served_notice_history_id
             )
             if (
@@ -246,8 +248,8 @@ def _get_request_origin_and_config(
     db: Session, data: Union[PrivacyPreferencesRequest, NoticesServedRequest]
 ) -> Tuple[Optional[str], Optional[str]]:
     """
-    Extract details to save with the privacy preferences preferences from the
-    Experience history if applicable: request origin (privacy center, overlay)
+    Extract details to save with the privacy preferences or notices
+    served from the Experience history if applicable: request origin (privacy center, overlay)
     and the Experience Config history.
 
     Additionally validate that the experience config history is valid if supplied.
@@ -486,7 +488,9 @@ def _save_notices_served_for_identities(
     request_data: NoticesServedCreate,
 ) -> List[LastServedNotice]:
     """
-    Common code to that saves that notices have been served (both historical and current records)
+    Common code that saves that notices have been served (both historical and current records).
+    We store a historical record for every single time a notice was served to the user in the frontend,
+    and a separate "last served notice" for just the last time a notice was served to a given user.
     """
     created_notices_served: List[ServedNoticeHistory] = []
     upserted_last_served: List[LastServedNotice] = []
@@ -743,7 +747,8 @@ def classify_identities_for_privacy_center_consent_reporting(
     provided_identity: ProvidedIdentity,
     browser_identity: Identity,
 ) -> Tuple[Optional[ProvidedIdentity], Optional[ProvidedIdentity]]:
-    """For consent reporting purposes, we separate out the type of identity that identifies the user
+    """For consent reporting purposes, we distinguish which type of identities we have that
+    identity the user.
 
     We want to classify the "provided_identity" as an identifier saved against an email or phone,
     and the "fides_user_provided_identity" as an identifier saved against the fides user device id.

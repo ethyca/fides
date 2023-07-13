@@ -288,7 +288,7 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
     # Whether the user wants to opt in, opt out, or has acknowledged the notice
     preference = Column(EnumColumn(UserConsentPreference), nullable=False, index=True)
 
-    # The privacy request created to propage the preferences
+    # The privacy request created to propagate the preferences
     privacy_request_id = Column(
         String, ForeignKey(PrivacyRequest.id, ondelete="SET NULL"), index=True
     )

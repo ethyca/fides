@@ -542,7 +542,7 @@ def upsert_privacy_experiences_after_config_update(
 def cache_saved_preference_on_notice(
     db: Session, notice: PrivacyNotice, fides_user_provided_identity: ProvidedIdentity
 ) -> None:
-    """At runtime, cache any saved preference values on the privacy notice"""
+    """At runtime, cache any previously saved preference values for the given user on the privacy notice"""
     saved_preference: Optional[
         CurrentPrivacyPreference
     ] = CurrentPrivacyPreference.get_preference_for_notice_and_fides_user_device(
@@ -563,8 +563,8 @@ def cache_saved_preference_on_notice(
 def cache_notice_served(
     db: Session, notice: PrivacyNotice, fides_user_provided_identity: ProvidedIdentity
 ) -> None:
-    """At runtime, cache if the current notice was served to the user, or a previous version
-    of the notice, if applicable"""
+    """At runtime, cache if the current notice or a previous version of the notice was served to the user
+    if applicable"""
     served_notice: Optional[
         LastServedNotice
     ] = LastServedNotice.get_last_served_for_notice_and_fides_user_device(
@@ -573,7 +573,7 @@ def cache_notice_served(
         privacy_notice=notice,
     )
     if served_notice:
-        # Temporarily cache the preference for the given fides user device id in memory.
+        # Temporarily cache that the notice was served for the given fides user device id in memory.
         if served_notice.served_latest_version:
             notice.current_served = True
             notice.outdated_served = None

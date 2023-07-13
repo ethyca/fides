@@ -69,7 +69,7 @@ class NoticesServedRequest(FidesSchema):
 
 
 class NoticesServedCreate(NoticesServedRequest):
-    """Schema used on the backend only where we supplement the NoticesServedRequest requets body
+    """Schema used on the backend only where we supplement the NoticesServedRequest request body
     with information obtained from the request headers and the experience"""
 
     anonymized_ip_address: Optional[str]

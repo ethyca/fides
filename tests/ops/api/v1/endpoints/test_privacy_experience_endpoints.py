@@ -591,10 +591,11 @@ class TestGetPrivacyExperiences:
         )
         assert resp.status_code == 200
         data = resp.json()["items"][0]
-        # Assert current preference is displayed for fides user device id
+        # Assert outdated preference is displayed for fides user device id
         assert data["privacy_notices"][0]["consent_mechanism"] == "opt_in"
         assert data["privacy_notices"][0]["default_preference"] == "opt_out"
         assert data["privacy_notices"][0]["current_preference"] is None
         assert data["privacy_notices"][0]["outdated_preference"] == "opt_in"
+        # Assert outdated served is displayed for fides user device id
         assert data["privacy_notices"][0]["current_served"] is None
         assert data["privacy_notices"][0]["outdated_served"] is True
