@@ -16,10 +16,7 @@ from sqlalchemy_utils import escape_like
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 
 from fides.api.api import deps
-from fides.api.models.connectionconfig import (
-    ConnectionConfig,
-    ConnectionType,
-)
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -34,11 +31,11 @@ from fides.api.schemas.connection_configuration.enums.system_type import SystemT
 from fides.api.schemas.connection_configuration.enums.test_status import TestStatus
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
+    connection_status,
     delete_connection_config,
     get_connection_config_or_error,
     patch_connection_configs,
     validate_secrets,
-    connection_status
 )
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,

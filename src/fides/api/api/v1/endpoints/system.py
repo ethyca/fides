@@ -6,6 +6,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
+from loguru import logger
 from pydantic.types import conlist
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
@@ -42,16 +43,20 @@ from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
     SaasConnectionTemplateResponse,
 )
-from fides.api.schemas.connection_configuration.connection_secrets import TestStatusMessage
+from fides.api.schemas.connection_configuration.connection_secrets import (
+    TestStatusMessage,
+)
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
 from fides.api.schemas.system import SystemResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
+    connection_status,
     delete_connection_config,
-    patch_connection_configs, get_connection_config_or_error, validate_secrets,
-    connection_status
+    get_connection_config_or_error,
+    patch_connection_configs,
+    validate_secrets,
 )
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
@@ -68,8 +73,6 @@ from fides.common.api.v1.urn_registry import (
     SYSTEM_CONNECTIONS,
     V1_URL_PREFIX,
 )
-from loguru import logger
-
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
 SYSTEM_CONNECTIONS_ROUTER = APIRouter(
