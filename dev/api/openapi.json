@@ -2,60 +2,9 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.16.0"
+    "version": "2.15.2b0.post0.dev19"
   },
   "paths": {
-    "/api/v1/admin/db/{action}": {
-      "post": {
-        "tags": [
-          "Admin",
-          "Admin"
-        ],
-        "summary": "Db Action",
-        "description": "Initiate one of the enumerated DBActions.",
-        "operationId": "db_action_api_v1_admin_db__action__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/DBActions"
-            },
-            "name": "action",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Db Action Api V1 Admin Db  Action  Post",
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "database:reset"
-            ]
-          }
-        ]
-      }
-    },
     "/api/v1/data_category": {
       "get": {
         "tags": [
@@ -2239,57 +2188,6 @@
         ]
       }
     },
-    "/health": {
-      "get": {
-        "tags": [
-          "Health"
-        ],
-        "summary": "Health",
-        "description": "Confirm that the API is running and healthy.",
-        "operationId": "health_health_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CoreHealthCheck"
-                },
-                "example": {
-                  "webserver": "healthy",
-                  "version": "1.0.0",
-                  "database": "healthy",
-                  "cache": "healthy",
-                  "workers_enabled": "True",
-                  "workers": [
-                    "celery@c606808353b5"
-                  ]
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Service Unavailable",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "webserver": "healthy",
-                    "version": "1.0.0",
-                    "database": "unhealthy",
-                    "cache": "healthy",
-                    "workers_enabled": "True",
-                    "workers": [
-                      "celery@c606808353b5"
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/organization": {
       "get": {
         "tags": [
@@ -3557,6 +3455,58 @@
         ]
       }
     },
+    "/api/v1/system/{fides_key}/connection/{connection_key}": {
+      "delete": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Delete Connection",
+        "operationId": "delete_connection_api_v1_system__fides_key__connection__connection_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Connection Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "connection_key",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:delete"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/system": {
       "get": {
         "tags": [
@@ -4430,7 +4380,6 @@
           "Connections"
         ],
         "summary": "Delete Connection",
-        "description": "Removes the connection configuration with matching key.",
         "operationId": "delete_connection_api_v1_connection__connection_key__delete",
         "parameters": [
           {
@@ -12789,6 +12738,108 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/db/{action}": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Admin"
+        ],
+        "summary": "Db Action",
+        "description": "Initiate one of the enumerated DBActions.",
+        "operationId": "db_action_api_v1_admin_db__action__post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/DBActions"
+            },
+            "name": "action",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Db Action Api V1 Admin Db  Action  Post",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "database:reset"
+            ]
+          }
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health",
+        "description": "Confirm that the API is running and healthy.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoreHealthCheck"
+                },
+                "example": {
+                  "webserver": "healthy",
+                  "version": "1.0.0",
+                  "database": "healthy",
+                  "cache": "healthy",
+                  "workers_enabled": "True",
+                  "workers": [
+                    "celery@c606808353b5"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "webserver": "healthy",
+                    "version": "1.0.0",
+                    "database": "unhealthy",
+                    "cache": "healthy",
+                    "workers_enabled": "True",
+                    "workers": [
+                      "celery@c606808353b5"
+                    ]
+                  }
                 }
               }
             }
