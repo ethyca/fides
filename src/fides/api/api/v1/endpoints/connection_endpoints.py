@@ -16,10 +16,8 @@ from sqlalchemy_utils import escape_like
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 
 from fides.api.api import deps
-from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fides.api.models.connectionconfig import (
     ConnectionConfig,
-    ConnectionTestStatus,
     ConnectionType,
 )
 from fides.api.oauth.utils import verify_oauth_client
@@ -34,15 +32,14 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 )
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.schemas.connection_configuration.enums.test_status import TestStatus
-from fides.api.service.connectors import get_connector
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     delete_connection_config,
     get_connection_config_or_error,
     patch_connection_configs,
     validate_secrets,
+    connection_status
 )
-from fides.api.util.logger import Pii
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -202,37 +199,7 @@ def delete_connection(
     delete_connection_config(db, connection_key)
 
 
-def connection_status(
-    connection_config: ConnectionConfig, msg: str, db: Session = Depends(deps.get_db)
-) -> TestStatusMessage:
-    """Connect, verify with a trivial query or API request, and report the status."""
 
-    connector = get_connector(connection_config)
-    try:
-        status: ConnectionTestStatus | None = connector.test_connection()
-
-    except (ConnectionException, ClientUnsuccessfulException) as exc:
-        logger.warning(
-            "Connection test failed on {}: {}",
-            connection_config.key,
-            Pii(str(exc)),
-        )
-        connection_config.update_test_status(
-            test_status=ConnectionTestStatus.failed, db=db
-        )
-        return TestStatusMessage(
-            msg=msg,
-            test_status=ConnectionTestStatus.failed,
-            failure_reason=str(exc),
-        )
-
-    logger.info("Connection test {} on {}", status.value, connection_config.key)  # type: ignore
-    connection_config.update_test_status(test_status=status, db=db)  # type: ignore
-
-    return TestStatusMessage(
-        msg=msg,
-        test_status=status,
-    )
 
 
 @router.put(
