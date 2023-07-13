@@ -19,7 +19,7 @@ import "../../src/components/fides.css";
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
-
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { mount } from "cypress/react";
 
 // Augment the Cypress namespace to include type definitions for
