@@ -23,7 +23,7 @@ export const useCustomFields = ({
   resourceFidesKey,
   resourceType,
 }: UseCustomFieldsOptions) => {
-  const { errorAlert, successAlert } = useAlert();
+  const { errorAlert } = useAlert();
   const { plus: isEnabled } = useFeatures();
 
   // This keeps track of the fides key that was initially passed in. If that key started out blank,
@@ -149,7 +149,10 @@ export const useCustomFields = ({
 
       // This will be undefined if the form never rendered a `CustomFieldList` that would assign
       // form values.
-      if (!customFieldValuesFromForm) {
+      if (
+        !customFieldValuesFromForm ||
+        Object.keys(customFieldValuesFromForm).length === 0
+      ) {
         return;
       }
 
@@ -184,10 +187,6 @@ export const useCustomFields = ({
             return upsertCustomFieldMutationTrigger(body);
           })
         );
-
-        successAlert(
-          `Custom field(s) successfully saved and added to this ${resourceType} form.`
-        );
       } catch (e) {
         errorAlert(
           `One or more custom fields have failed to save, please try again.`
@@ -202,9 +201,7 @@ export const useCustomFields = ({
       deleteCustomFieldMutationTrigger,
       errorAlert,
       resourceFidesKey,
-      resourceType,
       sortedCustomFieldDefinitionIds,
-      successAlert,
       upsertCustomFieldMutationTrigger,
     ]
   );
