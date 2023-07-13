@@ -103,7 +103,7 @@ class ConnectionConfigurationResponse(BaseModel):
         connection_type = (
             values["saas_config"].type
             if values.get("connection_type") == ConnectionType.saas
-            else values.get("connection_type").value
+            else values.get("connection_type").value  # type: ignore
         )
         try:
             secret_schema = get_connection_type_secret_schema(
