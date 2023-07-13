@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.16.0...main)
 
+### Added
+
+- Tab component for `fides-js` [#3782](https://github.com/ethyca/fides/pull/3782)
+
 ### Changed
 
 - Bumped supported Python versions to `3.10.12`, `3.9.17`, and `3.8.17` [#3733](https://github.com/ethyca/fides/pull/3733)
