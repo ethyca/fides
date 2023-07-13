@@ -26,7 +26,13 @@ const systemApi = baseApi.injectEndpoints({
       query: () => ({ url: `system/` }),
       providesTags: () => ["System"],
       transformResponse: (systems: SystemResponse[]) =>
-        systems.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
+        systems.sort((a, b) => {
+          const displayName = (system: SystemResponse) =>
+            system.name === "" || system.name == null
+              ? system.fides_key
+              : system.name;
+          return displayName(a).localeCompare(displayName(b));
+        }),
     }),
     getSystemByFidesKey: build.query<SystemResponse, string>({
       query: (fides_key) => ({ url: `system/${fides_key}/` }),
