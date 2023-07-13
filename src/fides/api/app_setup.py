@@ -79,11 +79,7 @@ def create_fides_app(
     security_env: str = CONFIG.security.env,
 ) -> FastAPI:
     """Return a properly configured application."""
-    setup_logging(
-        CONFIG.logging.level,
-        serialize=CONFIG.logging.serialization,
-        desination=CONFIG.logging.destination,
-    )
+    setup_logging(CONFIG)
     logger.bind(api_config=CONFIG.logging.json()).debug(
         "Logger configuration options in use"
     )
