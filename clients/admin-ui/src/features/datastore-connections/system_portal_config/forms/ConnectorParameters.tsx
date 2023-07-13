@@ -14,7 +14,7 @@ import {
   CreateSaasConnectionConfigResponse,
   DatastoreConnectionSecretsResponse,
 } from "datastore-connections/types";
-import { useMemo,useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
