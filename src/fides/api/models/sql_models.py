@@ -342,6 +342,7 @@ class System(Base, FidesBase):
     connection_configs = relationship(
         "ConnectionConfig",
         back_populates="system",
+        cascade="all, delete",
         uselist=False,
         lazy="selectin",
     )

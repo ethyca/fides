@@ -15,9 +15,7 @@ class AuthenticationRequest(Base):
     state = Column(String, index=True, unique=True, nullable=False)
 
     @classmethod
-    def create_or_update(
-        cls, db: Session, *, data: Dict[str, Any]
-    ) -> "AuthenticationRequest":
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "AuthenticationRequest":  # type: ignore[override]
         """
         Look up authentication request by connection_key. If found, update this authentication request, otherwise
         create a new one.
