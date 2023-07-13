@@ -7,12 +7,11 @@ from __future__ import annotations
 
 import logging
 import sys
-from types import FrameType
-from typing import Dict, List, Optional, Union
+from typing import Dict, List
 
 from loguru import logger
 
-from fides.config import CONFIG
+from fides.config import CONFIG, FidesConfig
 
 MASKED = "MASKED"
 
@@ -42,77 +41,54 @@ def _log_warning(exc: BaseException, dev_mode: bool = False) -> None:
         logger.error(exc)
 
 
-class FidesAPIHandler(logging.Handler):
+def create_handler_dicts(
+    level: str, sink: str, serialize: bool, colorize: bool, include_called_from: bool
+) -> List[Dict]:
     """
-    The logging.Handler used by the api logger.
+    Creates dictionaries used for configuring loguru handlers.
+
+    Two dictionaries are returned, one for standard logs and another to handle
+    logs that include "extra" information.
     """
+    time_format = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green>"
+    level_format = "<level>{level: <8}</level>"
+    called_from_format = (
+        ("<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan>")
+        if include_called_from
+        else ""
+    )
+    message_format = "<level>{message}</level>"
 
-    def __init__(
-        self,
-        level: Union[int, str],
-        include_extra: bool = False,
-        serialize: str = "",
-        sink: str = "",
-    ) -> None:
-        super().__init__(level=level)
-        self.loguru_vals: Dict = {
-            "level": level,
-            "serialize": serialize == "json",
-            "sink": sys.stdout if sink == "" else sink,
-        }
+    log_format = (
+        time_format
+        + " | "
+        + level_format
+        + " | "
+        + called_from_format
+        + " - "
+        + message_format
+    )
 
-        format_module = ""
-        if level == logging.DEBUG or level == logging.getLevelName(logging.DEBUG):
-            format_module = " (<c>{module}:{function}:{line}</c>)"
-
-        format_extra = ""
-        self.loguru_vals["filter"] = "lambda logRecord: not bool(logRecord['extra'])"
-        if include_extra:
-            format_extra = " | {extra}"
-            self.loguru_vals["filter"] = "lambda logRecord: bool(logRecord['extra'])"
-
-        self.loguru_vals["format"] = (
-            "<d>{time:YYYY-MM-DD HH:mm:ss.SSS}</d> [<lvl>{level}</lvl>]%s: {message}%s"
-            % (format_module, format_extra)
-        )
-
-    def emit(self, record: logging.LogRecord) -> None:
-        """
-        Log the specified record.
-        """
-        # Get corresponding Loguru level if it exists
-        level: Union[int, str]
-        try:
-            level = logger.level(record.levelname).name
-        except ValueError:
-            level = record.levelno
-
-        # Determine the caller that originated the log entry
-        frame: Optional[FrameType] = logging.currentframe()
-        depth = 2
-        while frame is not None and frame.f_code.co_filename == logging.__file__:
-            frame = frame.f_back
-            depth += 1
-
-        logger.opt(depth=depth, exception=record.exc_info).log(
-            level, record.getMessage()
-        )
-
-    def loguru_config(self) -> Dict:
-        """
-        Returns only the fields required to pass a FidesAPIHandler
-        as a handler kwarg in Loguru's logger.configure().
-        """
-        return {
-            "level": self.loguru_vals["level"],
-            "filter": eval(self.loguru_vals["filter"]),
-            "format": self.loguru_vals["format"],
-            "serialize": self.loguru_vals["serialize"],
-            "sink": self.loguru_vals["sink"],
-        }
+    standard_dict = {
+        "colorize": colorize,
+        "format": log_format,
+        "level": level,
+        "serialize": serialize,
+        "sink": sys.stdout if sink == "" else sink,
+        "filter": lambda logRecord: not bool(logRecord["extra"]),
+        "diagnose": False,
+        "backtrace": True,
+        "catch": True,
+    }
+    extra_dict = {
+        **standard_dict,
+        "format": log_format + " | {extra}",
+        "filter": lambda logRecord: bool(logRecord["extra"]),
+    }
+    return [standard_dict, extra_dict]
 
 
-def setup(level: str, serialize: str = "", desination: str = "") -> None:
+def setup(config: FidesConfig) -> None:
     """
     Removes all handlers from all loggers, and sets those
     loggers to propagate log entries to the root logger.
@@ -126,16 +102,14 @@ def setup(level: str, serialize: str = "", desination: str = "") -> None:
         logging.getLogger(name).handlers = []
         logging.getLogger(name).propagate = True
 
-    logger.configure(
-        handlers=[
-            FidesAPIHandler(
-                level, sink=desination, serialize=serialize
-            ).loguru_config(),
-            FidesAPIHandler(
-                level, include_extra=True, sink=desination, serialize=serialize
-            ).loguru_config(),
-        ]
+    handlers = create_handler_dicts(
+        level=config.logging.level,
+        include_called_from=config.dev_mode,
+        sink=config.logging.destination,
+        serialize=config.logging.serialization == "json",
+        colorize=config.logging.colorize,
     )
+    logger.configure(handlers=handlers)
 
 
 def obfuscate_message(message: str) -> str:

@@ -14,11 +14,7 @@ fides_config = CONFIG
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 fileConfig(alembic_config.config_file_name)
-setup_fidesapi_logger(
-    fides_config.logging.level,
-    serialize=fides_config.logging.serialization,
-    desination=fides_config.logging.destination,
-)
+setup_fidesapi_logger(CONFIG)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
