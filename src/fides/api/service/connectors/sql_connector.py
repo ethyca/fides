@@ -179,11 +179,7 @@ class SQLConnector(BaseConnector[Engine]):
 
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
-        uri = (
-            self.configuration.secrets.get("url", None)
-            if self.configuration.secrets
-            else self.build_uri()
-        )
+        uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
@@ -267,11 +263,7 @@ class PostgreSQLConnector(SQLConnector):
             self.ssh_server.start()
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
         else:
-            uri = (
-                self.configuration.secrets.get("url", None)
-                if self.configuration.secrets
-                else self.build_uri()
-            )
+            uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
@@ -389,11 +381,7 @@ class RedshiftConnector(SQLConnector):
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
             connect_args["sslmode"] = "prefer"
         else:
-            uri = (
-                self.configuration.secrets.get("url", None)
-                if self.configuration.secrets
-                else self.build_uri()
-            )
+            uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
@@ -436,10 +424,10 @@ class BigQueryConnector(SQLConnector):
         Overrides to pass in credentials_info
         """
         secrets = self.configuration.secrets or {}
-        uri = secrets.get("url", None) or self.build_uri()
+        uri = secrets.get("url") or self.build_uri()
 
         keyfile_creds = secrets.get("keyfile_creds", {})
-        credentials_info = keyfile_creds.dict() if keyfile_creds else {}
+        credentials_info = dict(keyfile_creds) if keyfile_creds else {}
 
         return create_engine(
             uri,
