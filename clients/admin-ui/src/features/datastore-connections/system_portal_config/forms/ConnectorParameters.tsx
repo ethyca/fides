@@ -14,7 +14,7 @@ import {
   CreateSaasConnectionConfigResponse,
   DatastoreConnectionSecretsResponse,
 } from "datastore-connections/types";
-import { useState, useMemo } from "react";
+import { useMemo,useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
@@ -27,7 +27,7 @@ import {
   selectActiveSystem,
   setActiveSystem,
   usePatchSystemConnectionConfigsMutation,
-  usePatchSystemConnectionSecretsMutation
+  usePatchSystemConnectionSecretsMutation,
 } from "~/features/system/system.slice";
 import {
   AccessLevel,
@@ -134,10 +134,13 @@ const upsertConnectionConfigSecrets = async (
   };
   Object.entries(secretsSchema!.properties).forEach((key) => {
     /*
-      * Only patch secrets that have changed. Otherwise, sensitive secrets
-      * would get overwritten with "**********" strings
+     * Only patch secrets that have changed. Otherwise, sensitive secrets
+     * would get overwritten with "**********" strings
      */
-    if (!(key[0] in originalSecrets) || values.secrets[key[0]] !== originalSecrets[key[0]]) {
+    if (
+      !(key[0] in originalSecrets) ||
+      values.secrets[key[0]] !== originalSecrets[key[0]]
+    ) {
       params2.secrets[key[0]] = values.secrets[key[0]];
     }
   });
@@ -191,7 +194,8 @@ export const useConnectorForm = ({
   });
 
   const [createSassConnectionConfig] = useCreateSassConnectionConfigMutation();
-  const [updateSystemConnectionSecrets] = usePatchSystemConnectionSecretsMutation();
+  const [updateSystemConnectionSecrets] =
+    usePatchSystemConnectionSecretsMutation();
   const [patchDatastoreConnection] = usePatchSystemConnectionConfigsMutation();
   const [deleteDatastoreConnection, deleteDatastoreConnectionResult] =
     useDeleteDatastoreConnectionMutation();
@@ -199,7 +203,10 @@ export const useConnectorForm = ({
     connectionConfig?.key || ""
   );
 
-  const originalSecrets = useMemo(() => connectionConfig ? {...connectionConfig.secrets}: {},[connectionConfig])
+  const originalSecrets = useMemo(
+    () => (connectionConfig ? { ...connectionConfig.secrets } : {}),
+    [connectionConfig]
+  );
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
 
   const handleDelete = async (id: string) => {

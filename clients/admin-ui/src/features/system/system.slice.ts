@@ -7,7 +7,7 @@ import {
   ConnectionConfigurationResponse,
   System,
   SystemResponse,
-  TestStatusMessage
+  TestStatusMessage,
 } from "~/types/api";
 
 interface SystemDeleteResponse {
@@ -27,7 +27,6 @@ export type ConnectionConfigSecretsRequest = {
     [key: string]: any;
   };
 };
-
 
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -103,7 +102,7 @@ const systemApi = baseApi.injectEndpoints({
       TestStatusMessage,
       ConnectionConfigSecretsRequest
     >({
-      query: ({secrets, systemFidesKey}) => ({
+      query: ({ secrets, systemFidesKey }) => ({
         url: `/system/${systemFidesKey}/connection/secrets?verify=false`,
         method: "PATCH",
         body: secrets,
