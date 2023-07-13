@@ -505,14 +505,14 @@ div#fides-modal .fides-modal-button-group {
   color: var(--fides-overlay-gpc-overridden-text-color);
 }
 
-.fides-tabs {
-  border: 1px solid tomato;
-}
-
 .fides-tab-list {
   padding: 0;
   display: flex;
   list-style-type: none;
+}
+
+.fides-tab-list > li {
+  width: 100%;
 }
 
 .fides-tab-button {
@@ -522,8 +522,8 @@ div#fides-modal .fides-modal-button-group {
   color: var(--fides-overlay-body-font-color);
   font-weight: 500;
   padding: 0.6em 1.2em;
-
   cursor: pointer;
+  width: 100%;
 }
 
 .fides-tab-button[aria-selected="true"] {
