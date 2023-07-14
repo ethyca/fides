@@ -30,7 +30,6 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from tests.fixtures.application_fixtures import integration_secrets
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
-from pprint import pprint
 
 page_size = Params().size
 
@@ -122,7 +121,6 @@ class TestPatchConnections:
         ]
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
-        pprint(response.json())
         body = json.loads(response.text)
         assert body["succeeded"][0]["connection_type"] == "https"
         http_config = ConnectionConfig.get_by(db, field="key", value="webhook_key")
@@ -326,8 +324,6 @@ class TestPatchConnections:
         assert mongo_connection["created_at"] is not None
         assert mongo_connection["updated_at"] is not None
         assert mongo_connection["last_test_timestamp"] is None
-        pprint(mongo_connection)
-        pprint(mongo_connection["secrets"])
         assert mongo_connection["secrets"] is None
 
         assert response_body["failed"] == []  # No failures
