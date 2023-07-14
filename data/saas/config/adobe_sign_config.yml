@@ -9,9 +9,16 @@ saas_config:
     - name: domain
       default_value: api.na3.adobesign.com
     - name: client_id
+      label: Client ID
+      sensitive: True
     - name: client_secret
+      sensitive: True
     - name: redirect_uri
+      label: Redirect URI
     - name: scope
+    - name: web_domain
+      default_value: secure.na3.adobesign.com
+    - name: api_token
 
   client_config:
     protocol: https
@@ -19,7 +26,6 @@ saas_config:
     authentication:
       strategy: oauth2_authorization_code
       configuration:
-        expires_in: 7200
         authorization_request:
           method: GET
           client_config:
@@ -102,3 +108,24 @@ saas_config:
                 field: displayParticipantSetInfos.0.displayUserSetMemberInfos.0.email
                 value: 
                   identity: email
+    - name: userinfo
+      requests:
+        delete:
+          method: DELETE
+          path: /api/rest/v6/users/<users_id>/userInfo
+          client_config:
+            protocol: https
+            host: <web_domain>
+            authentication:
+              strategy: bearer
+              configuration:
+                token: <api_token>
+          query_params:
+            - name: keepAgreements
+              value: 'true'
+          param_values:
+            - name: users_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: users.id
+                  direction: from

@@ -1,19 +1,20 @@
-from typing import Any, Dict, Generator
+from typing import Any, Dict, Generator, cast
 
 import pydash
 import pytest
 import requests
+from requests import Response
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ops.cryptography import cryptographic_util
-from fides.api.ops.models.connectionconfig import (
+from fides.api.cryptography import cryptographic_util
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.util.saas_util import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
@@ -34,6 +35,7 @@ def adobe_sign_secrets(saas_config) -> Dict[str, Any]:
         "client_id": pydash.get(saas_config, "adobe_sign.client_id") or secrets["client_id"],
         "client_secret": pydash.get(saas_config, "adobe_sign.client_secret") or secrets["client_secret"],
         "redirect_uri": pydash.get(saas_config, "adobe_sign.redirect_uri") or secrets["redirect_uri"],
+        "access_token": pydash.get(saas_config, "adobe_sign.access_token") or secrets["access_token"],
         "scope": pydash.get(saas_config, "adobe_sign.scope") or secrets["scope"]
         # add the rest of your secrets here
     }
@@ -44,6 +46,11 @@ def adobe_sign_identity_email(saas_config) -> str:
     return (
         pydash.get(saas_config, "adobe_sign.identity_email") or secrets["identity_email"]
     )
+
+
+@pytest.fixture(scope="function")
+def adobe_sign_erasure_identity_email() -> str:
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
 @pytest.fixture
@@ -109,57 +116,52 @@ def adobe_sign_dataset_config(
     dataset.delete(db=db)
     ctl_dataset.delete(db=db)
 
+class AdobeSignClient:
+    def __init__(self, secrets: Dict[str, Any]):
+        self.base_url = f"https://{secrets['domain']}"
+        self.headers = {
+            "Authorization": f"Basic {secrets['access_token']}",
+        }
+
+    def create_user(self, email):
+        return requests.post(
+            url=f"{self.base_url}/api/rest/v6/users",
+            headers=self.headers,
+            json={
+                "accountType": "PRO",
+                "email": email,
+                "company": "Test company",
+                "firstName": "Test",
+                "initials": "T",
+                "lastName": "name",
+                "title": "Php"
+            },
+        )
+
+    def get_user(self, email):
+        return requests.get(
+            url=f"{self.base_url}/api/rest/v6/users",
+            headers=self.headers,
+            params={"email": email},
+        )
+
+@pytest.fixture(scope="function")
+def adobe_sign_test_client(adobe_sign_secrets) -> Generator:
+    yield AdobeSignClient(adobe_sign_secrets)
+
+
 @pytest.fixture
-def adobe_sign_erasure_identity_email() -> str:
-    return generate_random_email()
-
-# class AdobeSignClient:
-#     def __init__(self, secrets: Dict[str, Any]):
-#         self.base_url = f"https://{secrets['domain']}"
-#         self.headers = {
-#             "Authorization": f"Basic {secrets['access_token']}",
-#         }
-
-#     def create_user(self, email):
-#         return requests.post(
-#             url=f"{self.base_url}/api/rest/v6/users",
-#             headers=self.headers,
-#             json={
-#                 "accountType": "PRO",
-#                 "email": email,
-#                 "company": "Test company",
-#                 "firstName": "Test",
-#                 "initials": "T",
-#                 "lastName": "name",
-#                 "title": "Php"
-#             },
-#         )
-
-#     def get_user(self, email):
-#         return requests.get(
-#             url=f"{self.base_url}/api/rest/v6/users",
-#             headers=self.headers,
-#             params={"email": email},
-#         )
-
-
-# @pytest.fixture
-# def adobe_sign_client(adobe_sign_secrets) -> Generator:
-#     yield AdobeSignClient(adobe_sign_secrets)
-
-
-# @pytest.fixture
-# def adobe_sign_erasure_data(
-#     adobe_sign_client: AdobeSignClient,
-#     adobe_sign_erasure_identity_email: str,
-# ) -> Generator:
+def adobe_sign_erasure_data(
+    adobe_sign_test_client: AdobeSignClient,
+    adobe_sign_erasure_identity_email: str,
+) -> Generator:
     
-#     # user
-#     response = adobe_sign_client.create_user(adobe_sign_erasure_identity_email)
-#     assert response.ok
-#     user = response.json()["userId"]
+    # user
+    response = adobe_sign_test_client.create_user(adobe_sign_erasure_identity_email)
+    assert response.ok
+    user = response.json()["userId"]
 
-#     yield {user}
+    yield {user}
 
 
 @pytest.fixture
