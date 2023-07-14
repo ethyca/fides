@@ -69,7 +69,7 @@ const createSaasConnector = async (
   };
 
   Object.entries(secretsSchema!.properties).forEach((key) => {
-    params.connectionConfig.secrets[key[0]] = values[key[0]];
+    params.connectionConfig.secrets[key[0]] = values.secrets[key[0]];
   });
   return (await createSaasConnectorFunc(
     params

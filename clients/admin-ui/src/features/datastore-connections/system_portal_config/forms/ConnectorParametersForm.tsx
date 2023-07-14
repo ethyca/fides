@@ -177,7 +177,10 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               <NumberInput
                 allowMouseWheel
                 color="gray.700"
-                defaultValue={0}
+                onChange={(value) => {
+                  form.setFieldValue(field.name, value);
+                }}
+                defaultValue={field.value ?? 0}
                 min={0}
                 size="sm"
               >
@@ -219,7 +222,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         connectionConfig.connection_type === ConnectionType.SAAS
           ? (connectionConfig.saas_config?.fides_key as string)
           : connectionConfig.key;
+      // @ts-ignore
       initialValues.secrets = connectionConfig.secrets;
+      return initialValues
     }
     return fillInDefaults(initialValues, secretsSchema);
   };
