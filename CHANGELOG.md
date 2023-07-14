@@ -26,6 +26,7 @@ The types of changes are:
 - Bumped supported Python versions to `3.10.12`, `3.9.17`, and `3.8.17` [#3733](https://github.com/ethyca/fides/pull/3733)
 - Logging Updates [#3758](https://github.com/ethyca/fides/pull/3758)
 - Add polyfill service to fides-js route [#3759](https://github.com/ethyca/fides/pull/3759)
+- Show/hide integration values [#3775](https://github.com/ethyca/fides/pull/3775)
 - Sort system cards alphabetically by name on "View systems" page [#3781](https://github.com/ethyca/fides/pull/3781)
 
 ### Removed

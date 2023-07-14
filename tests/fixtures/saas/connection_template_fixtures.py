@@ -6,7 +6,7 @@ import pytest
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.schemas.connection_configuration.connection_config import (
+from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
 from fides.api.service.connectors.saas.connector_registry_service import (
