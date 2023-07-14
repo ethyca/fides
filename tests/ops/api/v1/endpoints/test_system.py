@@ -267,6 +267,45 @@ class TestGetConnections:
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
+    def test_get_connection_configs_masks_secrets(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        connection_config,
+        url,
+        connections,
+        db: Session,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        api_client.patch(url, headers=auth_header, json=connections)
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+
+        response_body = json.loads(resp.text)
+        assert len(response_body["items"]) == 3
+        connection_1 = response_body["items"][0]["secrets"]
+        connection_2 = response_body["items"][1]["secrets"]
+        connection_3 = response_body["items"][2]["secrets"]
+        assert connection_1 == {
+            "api_key": "**********",
+            "domain": "test_mailchimp_domain",
+            "username": "test_mailchimp_username",
+        }
+
+        assert connection_2 == {
+            "db_schema": "test",
+            "dbname": "test",
+            "host": "http://localhost",
+            "password": "**********",
+            "port": 5432,
+            "url": "**********",
+            "username": "test",
+        }
+
+        assert connection_3 == None
+
     @pytest.mark.parametrize(
         "acting_user_role, expected_status_code, assign_system",
         [
