@@ -164,9 +164,12 @@ def patch_connection_secrets(
         db, system.connection_configs.key
     )
     # Inserts unchanged sensitive values. The FE does not send masked values sensitive secrets.
-    for key, value in connection_config.secrets.items():  # type: ignore
-        if key not in unvalidated_secrets:
-            unvalidated_secrets[key] = value  # type: ignore
+    if connection_config.secrets is not None:
+        for key, value in connection_config.secrets.items():
+            if key not in unvalidated_secrets:
+                unvalidated_secrets[key] = value  # type: ignore
+    else:
+        connection_config.secrets = {}
 
     validated_secrets = validate_secrets(
         db, unvalidated_secrets, connection_config
