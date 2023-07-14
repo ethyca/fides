@@ -1864,6 +1864,114 @@ class TestDefaultTaxonomyCrud:
 
 
 @pytest.mark.integration
+class TestCrudActiveProperty:
+    """
+    Ensure `active` property is exposed properly via CRUD endpoints.
+    Specific tests for this property since it was a later addition
+    to the taxonomy model.
+    """
+
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_can_update_active_on_default(
+        self, test_config: FidesConfig, endpoint: str
+    ) -> None:
+        """Ensure we can toggle `active` property on default taxonomy elements"""
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        resource.active = False
+        json_resource = resource.json(exclude_none=True)
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 200
+        assert result.json()["active"] is False
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is False
+
+        resource.active = True
+        json_resource = resource.json(exclude_none=True)
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 200
+        assert result.json()["active"] is True
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is True
+
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_can_create_with_active_property(
+        self,
+        test_config: FidesConfig,
+        endpoint: str,
+        generate_auth_header,
+    ) -> None:
+        """Ensure we can create taxonomy elements with `active` property set"""
+        # get a default taxonomy element as a sample resource
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        resource.fides_key = resource.fides_key + "_test_create_active_false"
+        resource.is_default = False
+        resource.active = False
+        json_resource = resource.json(exclude_none=True)
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 201
+        assert result.json()["active"] is False
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is False
+
+        resource.fides_key = resource.fides_key + "_test_create_active_true"
+        resource.active = True
+        json_resource = resource.json(exclude_none=True)
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 201
+        assert result.json()["active"] is True
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is True
+
+
+@pytest.mark.integration
 def test_static_sink(test_config: FidesConfig) -> None:
     """Make sure we are hosting something at / and not getting a 404"""
     response = requests.get(f"{test_config.cli.server_url}")

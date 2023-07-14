@@ -152,6 +152,7 @@ class DataCategory(Base, FidesBase):
 
     parent_key = Column(Text)
     is_default = Column(BOOLEAN, default=False)
+    active = Column(BOOLEAN, default=True, nullable=False)
 
     @classmethod
     def from_fideslang_obj(
@@ -177,6 +178,7 @@ class DataQualifier(Base, FidesBase):
 
     parent_key = Column(Text)
     is_default = Column(BOOLEAN, default=False)
+    active = Column(BOOLEAN, default=True, nullable=False)
 
 
 class DataSubject(Base, FidesBase):
@@ -188,6 +190,7 @@ class DataSubject(Base, FidesBase):
     rights = Column(JSON, nullable=True)
     automated_decisions_or_profiling = Column(BOOLEAN, nullable=True)
     is_default = Column(BOOLEAN, default=False)
+    active = Column(BOOLEAN, default=True, nullable=False)
 
 
 class DataUse(Base, FidesBase):
@@ -204,6 +207,7 @@ class DataUse(Base, FidesBase):
     legitimate_interest = Column(BOOLEAN, nullable=True)
     legitimate_interest_impact_assessment = Column(String, nullable=True)
     is_default = Column(BOOLEAN, default=False)
+    active = Column(BOOLEAN, default=True, nullable=False)
 
     @staticmethod
     def get_parent_uses_from_key(data_use_key: str) -> Set[str]:
