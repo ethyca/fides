@@ -1,8 +1,67 @@
 # Privacy Center
 
+A web application built in Next.js to collect privacy requests from users: access, erasure, consent, and more!
+
 ---
 
-Privacy Center for Fides, A web application built in Next.js to collect privacy requests from users: access, erasure, consent, and more!
+## Development
+
+To serve this application locally, first install your local dependencies at the root `client` directory level:
+
+In `/clients`:
+
+```bash
+npm install
+```
+
+Then, run:
+
+```bash
+cd privacy-center
+turbo run dev
+```
+
+This will automatically build and run the project.
+
+### Building
+
+To build this application directly, run:
+
+```bash
+turbo run build
+```
+
+As a Next application, it will output build artifacts to the `.next` directory.
+
+## API
+
+The Privacy Center is a full-stack webserver but generally makes all it's API calls to the connected Fides server. However, it does host a small API of it's own that enables some basic "edge" functions like hosting a customized bundle of the `fides.js` script.
+
+To view the OpenAPI documentation, run the application locally and visit the `/docs` page for details: <http://localhost:3000/docs>
+
+## Testing
+
+To run the interactive test interface, run:
+
+```bash
+turbo run test
+```
+
+For a fully-loaded development & test setup of both the Privacy Center, run the following commands in two separate terminals:
+
+```bash
+cd privacy-center && turbo run dev
+cd privacy-center && turbo run cy:open
+```
+
+There are two ways to test Fides consent components:
+
+1. Navigate to `http://localhost:3000/fides-js-components-demo.html`. This page comes pre-packaged with some default configurations to get up and running quickly with the consent components, and is also the page used by cypress e2e tests. To test other configurations, edit the fidesConfig object passed into `Fides.init()` in `privacy-center/public/fides-js-components-demo.html`.
+2. Navigate to `http://localhost:3000/fides-js-demo.html`. This page, unlike the above, calls the `/api/fides-js` Privacy Center endpoint. This endpoint loads config from the privacy center's legacy `config.json`, so it's closer to how a customer would actually use the `fides-js` package. In addition, we inject only the minimal config into `fides-js`. The overlay is not enabled by default on this page.
+
+## Deployment
+
+To deploy this site, typically you should use the published `ethyca/fides-privacy-center` Docker image which is production-built Next.js image. See <https://docs.ethyca.com> for more!
 
 ## Configuration
 
@@ -63,62 +122,3 @@ Our recommendation is that you do so by using selector specificity, as in the fo
 ```
 
 Not exactly the most appealing color scheme – but note that wherever those variables are used, they have been replaced. This allows you to modify the theme of the application consistently and with a single source of truth, adhering to modern CSS best practices.
-
-## Development
-
-To serve this application locally, first install your local dependencies by installing at the root `client` directory level:
-
-In `/clients`:
-
-```bash
-npm install
-```
-
-Then, run:
-
-```bash
-cd privacy-center
-turbo run dev
-```
-
-This will automatically build and run the project.
-
-### Building
-
-To build this application directly, run:
-
-```bash
-turbo run build
-```
-
-As a Next application, it will output build artifacts to the `.next` directory.
-
-## API
-
-The Privacy Center is a full-stack webserver but generally makes all it's API calls to the connected Fides server. However, it does host a small API of it's own that enables some basic "edge" functions like hosting a customized bundle of the `fides.js` script.
-
-To view the OpenAPI documentation, run the application locally and visit the `/docs` page for details: <http://localhost:3000/docs>
-
-## Testing
-
-To run the interactive test interface, run:
-
-```bash
-turbo run test
-```
-
-For a fully-loaded development & test setup of both the Privacy Center, run the following commands in two separate terminals:
-
-```bash
-cd privacy-center && turbo run dev
-cd privacy-center && turbo run cy:open
-```
-
-There are two ways to test Fides consent components:
-
-1. Navigate to `http://localhost:3000/fides-js-components-demo.html`. This page comes pre-packaged with some default configurations to get up and running quickly with the consent components, and is also the page used by cypress e2e tests. To test other configurations, edit the fidesConfig object passed into `Fides.init()` in `privacy-center/public/fides-js-components-demo.html`.
-2. Navigate to `http://localhost:3000/fides-js-demo.html`. This page, unlike the above, calls the `/api/fides-js` Privacy Center endpoint. This endpoint loads config from the privacy center's legacy `config.json`, so it's closer to how a customer would actually use the `fides-js` package. In addition, we inject only the minimal config into `fides-js`. The overlay is not enabled by default on this page.
-
-## Deployment
-
-To deploy this site, typically you should use the published `ethyca/fides-privacy-center` Docker image which is production-built Next.js image. See <https://docs.ethyca.com> for more!

@@ -1,6 +1,8 @@
-# Clients
+# UI Development Overview
 
-The clients directory houses all front-end packages and shared code amongst clients, and also includes e2e tests.
+The `/clients` directory houses all front-end packages and shared code amongst clients, and also includes e2e tests.
+
+---
 
 ## Prerequisites
 
@@ -18,8 +20,6 @@ Dependencies within this directory are managed by Turborepo. Our root `package.j
 3. fides-js
 
 ## Running Locally
-
-Correct:
 
 ```sh
 turbo run dev
@@ -47,4 +47,4 @@ Example:
 npm install react --workspace=admin-ui
 ```
 
-See https://turbo.build/repo/docs/handbook/package-installation#addingremovingupgrading-packages for more details
+See <https://turbo.build/repo/docs/handbook/package-installation#addingremovingupgrading-packages> for more details
