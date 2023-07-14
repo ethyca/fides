@@ -64,6 +64,11 @@ def mask_sensitive_fields(
     Returns:
         Dict[str, Any]: The secrets dictionary with sensitive fields masked.
     """
+    from pprint import pprint
+    pprint(connection_secrets)
+
+    print("secret_schema\n\n")
+    pprint(secret_schema)
     if isinstance(connection_secrets, dict):
         for key, val in connection_secrets.items():
             prop = secret_schema["properties"].get(key, {})
@@ -111,8 +116,8 @@ class ConnectionConfigurationResponse(BaseModel):
             )
         except NoSuchConnectionTypeSecretSchemaError as e:
             logger.error(e)
-            # if there is no scehma, we don't know what values to mask.
-            # so all of the secrets are removed.
+            # if there is no schema, we don't know what values to mask.
+            # so all the secrets are removed.
             values["secrets"] = None
             return values
 
