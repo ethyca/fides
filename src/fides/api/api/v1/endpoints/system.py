@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from fastapi import Depends, Response, Security
+from fastapi import Depends, Response, Security, HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -10,7 +10,7 @@ from pydantic.types import conlist
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette import status
-from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
+from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
@@ -125,7 +125,7 @@ def patch_connections(
 
 
 @SYSTEM_CONNECTIONS_ROUTER.delete(
-    "/{connection_key}",
+    "",
     dependencies=[
         Security(
             verify_oauth_client_for_system_from_fides_key, scopes=[CONNECTION_DELETE]
@@ -134,10 +134,15 @@ def patch_connections(
     status_code=HTTP_204_NO_CONTENT,
     response_model=None,
 )
-def delete_connection(
-    connection_key: FidesKey, *, db: Session = Depends(deps.get_db)
-) -> None:
-    delete_connection_config(db, connection_key)
+def delete_connection(fides_key: str, *, db: Session = Depends(deps.get_db)) -> None:
+    system = get_system(db, fides_key)
+    if system.connection_configs is None:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="No integration found linked to this system",
+        )
+
+    delete_connection_config(db, system.connection_configs.key)
 
 
 @SYSTEM_ROUTER.put(
