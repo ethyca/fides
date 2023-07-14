@@ -235,12 +235,12 @@ def get_fides_user_device_id_provided_identity(
 
 def get_or_create_fides_user_device_id_provided_identity(
     db: Session,
-    identity_data: Identity,
+    identity_data: Optional[Identity],
 ) -> ProvidedIdentity:
     """Gets an existing fides user device id provided identity or creates one if it doesn't exist.
     Raises an error if no fides user device id is supplied.
     """
-    if not identity_data.fides_user_device_id:
+    if not identity_data or not identity_data.fides_user_device_id:
         raise HTTPException(
             HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Fides user device id not found in identity data",

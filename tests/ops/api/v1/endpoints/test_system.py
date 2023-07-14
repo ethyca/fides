@@ -7,13 +7,12 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_204_NO_CONTENT,
 )
 from starlette.testclient import TestClient
-from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -27,12 +26,13 @@ from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.models.sql_models import Dataset
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_DELETE,
     CONNECTION_READ,
     SAAS_CONNECTION_INSTANTIATE,
     STORAGE_DELETE,
     SYSTEM_MANAGER_UPDATE,
-    CONNECTION_DELETE,
 )
+from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from tests.conftest import generate_role_header_for_user
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
