@@ -32,6 +32,9 @@ The types of changes are:
 
 - Removed "Custom field(s) successfully saved" toast [#3779](https://github.com/ethyca/fides/pull/3779)
 
+### Added
+- Record when consent is served [#3777](https://github.com/ethyca/fides/pull/3777)
+
 ## [2.16.0](https://github.com/ethyca/fides/compare/2.15.1...2.16.0)
 
 ### Added

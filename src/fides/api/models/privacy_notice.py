@@ -164,8 +164,12 @@ class PrivacyNoticeBase:
 
     # Attribute that can be temporarily cached as the result of "get_related_privacy_notices"
     # for a given user, for surfacing CurrentPrivacyPreferences for the user.
-    current_preference = None
-    outdated_preference = None
+    current_preference: Optional[str] = None
+    outdated_preference: Optional[str] = None
+    # Attributes that can be temporarily cached on the notice to see if the most
+    # recent version or a previous version of a notice have ever been served to the user
+    current_served: Optional[bool] = None
+    outdated_served: Optional[bool] = None
 
     def applies_to_system(self, system: System) -> bool:
         """Privacy Notice applies to System if a data use matches or the Privacy Notice
