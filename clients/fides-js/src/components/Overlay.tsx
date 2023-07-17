@@ -193,6 +193,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
             }}
           />
         }
+        options={options}
       />
     </div>
   );
