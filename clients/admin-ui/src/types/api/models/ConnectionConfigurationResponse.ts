@@ -12,7 +12,7 @@ import type { SaaSConfigBase } from "./SaaSConfigBase";
  * Do *NOT* add "secrets" to this schema.
  */
 export type ConnectionConfigurationResponse = {
-  name: string;
+  name?: string;
   key: string;
   description?: string;
   connection_type: ConnectionType;

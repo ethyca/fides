@@ -25,7 +25,7 @@ import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
  * Schema for creating a connection configuration including secrets.
  */
 export type CreateConnectionConfigurationWithSecrets = {
-  name: string;
+  name?: string;
   key?: string;
   connection_type: ConnectionType;
   access: AccessLevel;

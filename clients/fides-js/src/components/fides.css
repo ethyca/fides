@@ -504,3 +504,39 @@ div#fides-modal .fides-modal-button-group {
   background: var(--fides-overlay-gpc-overridden-background-color);
   color: var(--fides-overlay-gpc-overridden-text-color);
 }
+
+.fides-tab-list {
+  padding: 0;
+  display: flex;
+  list-style-type: none;
+}
+
+.fides-tab-list > li {
+  width: 100%;
+}
+
+.fides-tab-button {
+  background: none;
+  border-width: 0 0 1px 0;
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+  color: var(--fides-overlay-body-font-color);
+  font-weight: 500;
+  padding: 0.6em 1.2em;
+  cursor: pointer;
+  width: 100%;
+}
+
+.fides-tab-button[aria-selected="true"] {
+  color: var(--fides-overlay-primary-active-color);
+  border-bottom-width: 2px;
+  border-color: var(--fides-overlay-primary-active-color);
+  font-weight: 600;
+}
+
+.fides-tab-button::focus-visible {
+  outline: 1px auto Highlight;
+  outline: 1px auto -webkit-focus-ring-color;
+}
+.fides-tab-button:focus:not(:focus-visible) {
+  outline: 0;
+}
