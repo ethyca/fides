@@ -116,54 +116,6 @@ def adobe_sign_dataset_config(
     dataset.delete(db=db)
     ctl_dataset.delete(db=db)
 
-class AdobeSignClient:
-    def __init__(self, secrets: Dict[str, Any]):
-        self.base_url = f"https://{secrets['domain']}"
-        self.headers = {
-            "Authorization": f"Basic {secrets['access_token']}",
-        }
-
-    def create_user(self, email):
-        return requests.post(
-            url=f"{self.base_url}/api/rest/v6/users",
-            headers=self.headers,
-            json={
-                "accountType": "PRO",
-                "email": email,
-                "company": "Test company",
-                "firstName": "Test",
-                "initials": "T",
-                "lastName": "name",
-                "title": "Php"
-            },
-        )
-
-    def get_user(self, email):
-        return requests.get(
-            url=f"{self.base_url}/api/rest/v6/users",
-            headers=self.headers,
-            params={"email": email},
-        )
-
-@pytest.fixture(scope="function")
-def adobe_sign_test_client(adobe_sign_secrets) -> Generator:
-    yield AdobeSignClient(adobe_sign_secrets)
-
-
-@pytest.fixture
-def adobe_sign_erasure_data(
-    adobe_sign_test_client: AdobeSignClient,
-    adobe_sign_erasure_identity_email: str,
-) -> Generator:
-    
-    # user
-    response = adobe_sign_test_client.create_user(adobe_sign_erasure_identity_email)
-    assert response.ok
-    user = response.json()["userId"]
-
-    yield {user}
-
-
 @pytest.fixture
 def adobe_sign_runner(
     db,
