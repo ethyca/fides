@@ -58,7 +58,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
         <ConnectionMenu
           connection_key={connectionData.key}
           disabled={!!connectionData.disabled}
-          name={connectionData.name}
+          name={connectionData.name ?? connectionData.key}
           connection_type={connectionData.connection_type}
           access_type={connectionData.access}
         />
