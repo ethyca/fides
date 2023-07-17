@@ -64,19 +64,26 @@ def mask_sensitive_fields(
     Returns:
         Dict[str, Any]: The secrets dictionary with sensitive fields masked.
     """
-    from pprint import pprint
-    pprint(connection_secrets)
+    if connection_secrets is None:
+        return connection_secrets
 
-    print("secret_schema\n\n")
-    pprint(secret_schema)
-    if isinstance(connection_secrets, dict):
-        for key, val in connection_secrets.items():
-            prop = secret_schema["properties"].get(key, {})
-            if isinstance(val, dict):
-                mask_sensitive_fields(val, prop)
-            elif prop.get("sensitive", False):
-                connection_secrets[key] = "**********"
-    return connection_secrets
+    connection_secret_keys = connection_secrets.keys()
+    secret_schema_keys = secret_schema["properties"].keys()
+    new_connection_secrets = {}
+
+    for key in connection_secret_keys:
+        if key in secret_schema_keys:
+            new_connection_secrets[key] = connection_secrets[key]
+
+    for key, val in new_connection_secrets.items():
+        prop = secret_schema["properties"].get(key, {})
+
+        if isinstance(val, dict):
+            mask_sensitive_fields(val, prop)
+        elif prop.get("sensitive", False):
+            new_connection_secrets[key] = "**********"
+
+    return new_connection_secrets
 
 
 class ConnectionConfigurationResponse(BaseModel):
