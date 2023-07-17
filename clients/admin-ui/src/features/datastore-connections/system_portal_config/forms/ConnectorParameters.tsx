@@ -26,8 +26,8 @@ import TestData from "~/features/datastore-connections/TestData";
 import {
   selectActiveSystem,
   setActiveSystem,
+  useDeleteSystemConnectionConfigMutation,
   usePatchSystemConnectionConfigsMutation,
-  useDeleteSystemConnectionConfigMutation
 } from "~/features/system/system.slice";
 import {
   AccessLevel,
