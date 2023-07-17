@@ -12,6 +12,7 @@
   --fides-overlay-gpc-applied-text-color: white;
   --fides-overlay-gpc-overridden-background-color: #e53e3e;
   --fides-overlay-gpc-overridden-text-color: white;
+  --fides-overlay-background-dark-color: #e2e8f0;
   /* Buttons */
   --fides-overlay-primary-button-background-color: var(
     --fides-overlay-primary-color
@@ -540,4 +541,8 @@ div#fides-modal .fides-modal-button-group {
 }
 .fides-tab-button:focus:not(:focus-visible) {
   outline: 0;
+}
+
+.fides-background-dark {
+  background-color: var(--fides-overlay-background-dark-color);
 }

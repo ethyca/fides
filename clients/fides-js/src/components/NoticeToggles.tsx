@@ -6,7 +6,7 @@ import Divider from "./Divider";
 import { useDisclosure } from "../lib/hooks";
 import { GpcBadgeForNotice } from "./GpcBadge";
 
-const NoticeToggle = ({
+export const NoticeToggle = ({
   notice,
   checked,
   onToggle,
