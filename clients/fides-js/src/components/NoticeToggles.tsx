@@ -11,11 +11,13 @@ export const NoticeToggle = ({
   checked,
   onToggle,
   children,
+  badge,
 }: {
   notice: PrivacyNotice;
   checked: boolean;
   onToggle: (noticeKey: PrivacyNotice["notice_key"]) => void;
   children: ComponentChildren;
+  badge?: string;
 }) => {
   const {
     isOpen,
@@ -48,7 +50,10 @@ export const NoticeToggle = ({
           {...getButtonProps()}
           className="fides-notice-toggle-trigger"
         >
-          {notice.name}
+          <span className="fides-flex-center">
+            {notice.name}
+            {badge ? <span className="fides-notice-badge">{badge}</span> : null}
+          </span>
           <GpcBadgeForNotice notice={notice} value={checked} />
         </span>
 

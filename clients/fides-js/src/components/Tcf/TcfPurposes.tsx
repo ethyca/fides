@@ -9,7 +9,12 @@ const TcfPurposes = ({ notices }: { notices: Array<PrivacyNotice> }) => {
   return (
     <NoticeToggle notice={notices[0]} checked onToggle={handleToggle}>
       <div style={{ padding: "0.5em" }}>
-        <NoticeToggle notice={notices[1]} checked onToggle={handleToggle}>
+        <NoticeToggle
+          notice={notices[1]}
+          checked
+          onToggle={handleToggle}
+          badge="gvl"
+        >
           <div style={{ padding: "0.5em" }}>
             <p>
               Advertising presented to you on this service can be based on
