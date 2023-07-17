@@ -30,6 +30,7 @@ The types of changes are:
 - Logging Updates [#3758](https://github.com/ethyca/fides/pull/3758)
 - Add polyfill service to fides-js route [#3759](https://github.com/ethyca/fides/pull/3759)
 - Sort system cards alphabetically by name on "View systems" page [#3781](https://github.com/ethyca/fides/pull/3781)
+- Update admin ui to use new integration delete route [#3785](https://github.com/ethyca/fides/pull/3785)
 
 ### Removed
 
