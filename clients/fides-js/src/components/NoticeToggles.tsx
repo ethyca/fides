@@ -1,4 +1,4 @@
-import { h } from "preact";
+import { ComponentChildren, h } from "preact";
 
 import { ConsentMechanism, PrivacyNotice } from "../lib/consent-types";
 import Toggle from "./Toggle";
@@ -10,10 +10,12 @@ const NoticeToggle = ({
   notice,
   checked,
   onToggle,
+  children,
 }: {
   notice: PrivacyNotice;
   checked: boolean;
   onToggle: (noticeKey: PrivacyNotice["notice_key"]) => void;
+  children: ComponentChildren;
 }) => {
   const {
     isOpen,
@@ -58,7 +60,7 @@ const NoticeToggle = ({
           disabled={notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY}
         />
       </div>
-      <p {...getDisclosureProps()}>{notice.description}</p>
+      <div {...getDisclosureProps()}>{children}</div>
     </div>
   );
 };
@@ -94,7 +96,9 @@ const NoticeToggles = ({
               notice={notice}
               checked={checked}
               onToggle={handleToggle}
-            />
+            >
+              {notice.description}
+            </NoticeToggle>
             {!isLast ? <Divider /> : null}
           </div>
         );

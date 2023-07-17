@@ -433,10 +433,9 @@ div#fides-modal .fides-modal-button-group {
 }
 
 .fides-notice-toggle .fides-notice-toggle-title {
-  padding: 0.5em;
+  padding-inline: 0.5em 0;
   display: flex;
   justify-content: space-between;
-  min-height: 40px;
   align-items: center;
 }
 
@@ -445,6 +444,8 @@ div#fides-modal .fides-modal-button-group {
   display: flex;
   justify-content: space-between;
   margin-right: 0.5em;
+  min-height: 40px;
+  align-items: center;
 }
 
 .fides-notice-toggle .fides-notice-toggle-title:hover {
