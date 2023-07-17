@@ -565,3 +565,25 @@ div#fides-modal .fides-modal-button-group {
   display: flex;
   align-items: center;
 }
+
+/* Filter button */
+
+.fides-filter-button-group {
+  background-color: var(
+    --fides-overlay-secondary-button-background-hover-color
+  );
+  border-radius: var(--fides-overlay-button-border-radius);
+  width: fit-content;
+  padding: 0.3em;
+}
+
+.fides-filter-button {
+  background-color: transparent;
+  border: none;
+  padding: 0.3em 1em;
+}
+.fides-filter-button[aria-checked="true"] {
+  background-color: var(--fides-overlay-primary-button-background-color);
+  color: var(--fides-overlay-primary-button-text-color);
+  border-radius: var(--fides-overlay-button-border-radius);
+}
