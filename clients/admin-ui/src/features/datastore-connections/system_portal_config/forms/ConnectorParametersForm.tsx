@@ -216,7 +216,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   const getInitialValues = () => {
     const initialValues = { ...defaultValues };
     if (connectionConfig?.key) {
-      initialValues.name = connectionConfig.name;
+      initialValues.name = connectionConfig.name ?? "";
       initialValues.description = connectionConfig.description as string;
       initialValues.instance_key =
         connectionConfig.connection_type === ConnectionType.SAAS
@@ -373,7 +373,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   disabled={isDisabledConnection}
                   connection_type={connectionConfig?.connection_type}
                   access_type={connectionConfig?.access}
-                  name={connectionConfig?.name}
+                  name={connectionConfig?.name ?? connectionConfig.key}
                   isSwitch
                 />
               ) : null}

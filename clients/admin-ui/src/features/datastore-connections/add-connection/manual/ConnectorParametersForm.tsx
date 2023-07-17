@@ -30,7 +30,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   );
   const getInitialValues = () => {
     if (connection?.key) {
-      defaultValues.name = connection.name;
+      defaultValues.name = connection.name ?? "";
       defaultValues.description = connection.description as string;
     }
     return defaultValues;
