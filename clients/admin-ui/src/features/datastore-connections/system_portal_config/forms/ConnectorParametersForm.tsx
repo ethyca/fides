@@ -101,7 +101,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const validateField = (label: string, value: string, type?: string) => {
     let error;
-    if (typeof value === "undefined" || value === "") {
+    if (typeof value === "undefined" || (value === "" || value === undefined)) {
       error = `${label} is required`;
     }
     if (type === FIDES_DATASET_REFERENCE) {
@@ -156,11 +156,15 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           : false
       }
     >
-      {({ field, form }: { field: FieldInputProps<string>; form: any }) => (
+      {({ field, form }: { field: FieldInputProps<string>; form: any }) => {
+        const error = form.errors.secrets && form.errors.secrets[key];
+        const touch = form.touched.secrets? form.touched.secrets[key]: false
+
+        return (
         <FormControl
           display="flex"
           isRequired={isRequiredSecretValue(key)}
-          isInvalid={form.errors[key] && form.touched[key]}
+          isInvalid={error && touch}
         >
           {getFormLabel(key, item.title)}
           <VStack align="flex-start" w="inherit">
@@ -191,7 +195,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                 </NumberInputStepper>
               </NumberInput>
             )}
-            <FormErrorMessage>{form.errors[key]}</FormErrorMessage>
+            <FormErrorMessage>{error}</FormErrorMessage>
           </VStack>
           <Tooltip
             aria-label={item.description}
@@ -209,7 +213,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             </Flex>
           </Tooltip>
         </FormControl>
-      )}
+      )}}
     </Field>
   );
 
