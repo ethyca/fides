@@ -7,6 +7,9 @@ const TCF_TABS = [
   { name: "Vendors", content: "three" },
 ];
 
+const KEY_ARROW_RIGHT = "ArrowRight";
+const KEY_ARROW_LEFT = "ArrowLeft";
+
 const TcfTabs = () => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const inputRefs = [
@@ -16,12 +19,12 @@ const TcfTabs = () => {
   ];
   const handleKeyDown = (event: KeyboardEvent) => {
     let newActiveTab;
-    if (event.code === "ArrowRight") {
+    if (event.code === KEY_ARROW_RIGHT) {
       event.preventDefault();
       newActiveTab =
         activeTabIndex === TCF_TABS.length - 1 ? 0 : activeTabIndex + 1;
     }
-    if (event.code === "ArrowLeft") {
+    if (event.code === KEY_ARROW_LEFT) {
       event.preventDefault();
       newActiveTab =
         activeTabIndex === 0 ? TCF_TABS.length - 1 : activeTabIndex - 1;
