@@ -23,7 +23,7 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequestStatus
-from fides.api.models.sql_models import Dataset
+from fides.api.models.sql_models import Dataset, System
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -347,11 +347,18 @@ class TestGetConnections:
 
 class TestDeleteSystemConnectionConfig:
     @pytest.fixture(scope="function")
-    def url(self, connection_config, system) -> str:
+    def url(self, system) -> str:
         return (
             V1_URL_PREFIX
-            + f"/system/{system.fides_key}/connection/{connection_config.key}"
+            + f"/system/{system.fides_key}/connection"
         )
+
+    @pytest.fixture(scope="function")
+    def system_linked_with_connection_config(self, system: System, connection_config, db: Session):
+        system.connection_configs = connection_config
+        db.commit()
+        return system
+
 
     def test_delete_connection_config_not_authenticated(
         self, url, api_client: TestClient, generate_auth_header, connection_config
@@ -369,14 +376,12 @@ class TestDeleteSystemConnectionConfig:
         assert resp.status_code == HTTP_403_FORBIDDEN
 
     def test_delete_connection_config_does_not_exist(
-        self, api_client: TestClient, generate_auth_header, system
+        self, api_client: TestClient, generate_auth_header, url
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
-        url = (
-            V1_URL_PREFIX + f"/system/{system.fides_key}/connection/non_existent_config"
-        )
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == HTTP_404_NOT_FOUND
+        assert resp.json()["detail"] == "No integration found linked to this system"
 
     def test_delete_connection_config(
         self,
@@ -384,11 +389,11 @@ class TestDeleteSystemConnectionConfig:
         api_client: TestClient,
         db: Session,
         generate_auth_header,
-        connection_config,
+        system_linked_with_connection_config
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
         # the key needs to be cached before the delete
-        key = connection_config.key
+        key = system_linked_with_connection_config.connection_configs.key
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == HTTP_204_NO_CONTENT
         assert db.query(ConnectionConfig).filter_by(key=key).first() is None
@@ -397,18 +402,21 @@ class TestDeleteSystemConnectionConfig:
     def test_delete_manual_webhook_connection_config(
         self,
         mock_queue,
-        url,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
         integration_manual_webhook_config,
         access_manual_webhook,
         privacy_request_requires_input,
-        system,
+        system
     ) -> None:
         """Assert both the connection config and its webhook are deleted"""
+        access_manual_webhook_id = access_manual_webhook.id
+        integration_manual_webhook_config_id = integration_manual_webhook_config.id
+        system.connection_configs = integration_manual_webhook_config
+        db.commit()
         assert (
-            db.query(AccessManualWebhook).filter_by(id=access_manual_webhook.id).first()
+            db.query(AccessManualWebhook).filter_by(id=access_manual_webhook_id).first()
             is not None
         )
 
@@ -420,26 +428,25 @@ class TestDeleteSystemConnectionConfig:
         )
         url = (
             V1_URL_PREFIX
-            + f"/system/{system.fides_key}/connection/{integration_manual_webhook_config.key}"
+            + f"/system/{system.fides_key}/connection"
         )
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == HTTP_204_NO_CONTENT
 
         assert (
-            db.query(AccessManualWebhook).filter_by(id=access_manual_webhook.id).first()
+           db.query(AccessManualWebhook).filter_by(id=access_manual_webhook_id).first()
             is None
         )
 
         assert (
             db.query(ConnectionConfig)
-            .filter_by(key=integration_manual_webhook_config.key)
+            .filter_by(key=integration_manual_webhook_config_id)
             .first()
             is None
         )
         assert (
-            mock_queue.called
-        ), "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+            mock_queue.called == True), "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
         assert (
             mock_queue.call_args.kwargs["privacy_request_id"]
             == privacy_request_requires_input.id
@@ -462,6 +469,7 @@ class TestDeleteSystemConnectionConfig:
             "secondary_sendgrid_instance",
             "Sendgrid ConnectionConfig description",
             secrets,
+            system,
         )
         dataset = dataset_config.ctl_dataset
 
@@ -469,7 +477,7 @@ class TestDeleteSystemConnectionConfig:
 
         url = (
             V1_URL_PREFIX
-            + f"/system/{system.fides_key}/connection/{connection_config.key}"
+            + f"/system/{connection_config.system.fides_key}/connection"
         )
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == HTTP_204_NO_CONTENT
@@ -497,24 +505,13 @@ class TestDeleteSystemConnectionConfig:
         acting_user_role,
         expected_status_code,
         assign_system,
-        system,
+        system_linked_with_connection_config,
         request,
         db: Session,
     ) -> None:
-        connection_config = ConnectionConfig.create(
-            db=db,
-            data={
-                "name": str(uuid4()),
-                "key": "my_postgres_db_1",
-                "connection_type": ConnectionType.postgres,
-                "access": AccessLevel.write,
-                "disabled": False,
-                "description": "Primary postgres connection",
-            },
-        )
         url = (
             V1_URL_PREFIX
-            + f"/system/{system.fides_key}/connection/{connection_config.key}"
+            + f"/system/{system_linked_with_connection_config.fides_key}/connection"
         )
 
         acting_user_role = request.getfixturevalue(acting_user_role)
@@ -525,9 +522,9 @@ class TestDeleteSystemConnectionConfig:
                 scopes=[SYSTEM_MANAGER_UPDATE]
             )
             api_client.put(
-                assign_url, headers=system_manager_auth_header, json=[system.fides_key]
+                assign_url, headers=system_manager_auth_header, json=[system_linked_with_connection_config.fides_key]
             )
-            auth_header = generate_system_manager_header([system.id])
+            auth_header = generate_system_manager_header([system_linked_with_connection_config.id])
         else:
             auth_header = generate_role_header_for_user(
                 acting_user_role, roles=acting_user_role.permissions.roles
@@ -550,24 +547,13 @@ class TestDeleteSystemConnectionConfig:
         generate_auth_header,
         acting_user_role,
         expected_status_code,
-        system,
+        system_linked_with_connection_config,
         request,
         db: Session,
     ) -> None:
-        connection_config = ConnectionConfig.create(
-            db=db,
-            data={
-                "name": str(uuid4()),
-                "key": "my_postgres_db_1",
-                "connection_type": ConnectionType.postgres,
-                "access": AccessLevel.write,
-                "disabled": False,
-                "description": "Primary postgres connection",
-            },
-        )
         url = (
             V1_URL_PREFIX
-            + f"/system/{system.fides_key}/connection/{connection_config.key}"
+            + f"/system/{system_linked_with_connection_config.fides_key}/connection"
         )
 
         acting_user_role = request.getfixturevalue(acting_user_role)
