@@ -5,7 +5,6 @@ import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import {
   CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
-  useDeleteDatastoreConnectionMutation,
   useGetConnectionConfigDatasetConfigsQuery,
   useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
@@ -28,6 +27,7 @@ import {
   selectActiveSystem,
   setActiveSystem,
   usePatchSystemConnectionConfigsMutation,
+  useDeleteSystemConnectionConfigMutation
 } from "~/features/system/system.slice";
 import {
   AccessLevel,
@@ -184,16 +184,16 @@ export const useConnectorForm = ({
     useUpdateDatastoreConnectionSecretsMutation();
   const [patchDatastoreConnection] = usePatchSystemConnectionConfigsMutation();
   const [deleteDatastoreConnection, deleteDatastoreConnectionResult] =
-    useDeleteDatastoreConnectionMutation();
+    useDeleteSystemConnectionConfigMutation();
   const { data: allDatasetConfigs } = useGetConnectionConfigDatasetConfigsQuery(
     connectionConfig?.key || ""
   );
 
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
     try {
-      await deleteDatastoreConnection(id);
+      await deleteDatastoreConnection(systemFidesKey);
       // @ts-ignore connection_configs isn't on the type yet but will be in the future
       dispatch(setActiveSystem({ ...activeSystem, connection_configs: null }));
       setSelectedConnectionOption(undefined);

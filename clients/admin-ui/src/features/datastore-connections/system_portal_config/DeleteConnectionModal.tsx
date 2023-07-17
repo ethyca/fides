@@ -15,20 +15,18 @@ import {
 import React from "react";
 
 type DataConnectionProps = {
-  connectionKey: string;
-  onDelete: (connection_key: string) => void;
+  onDelete: () => void;
   deleteResult: any;
 };
 
 const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
-  connectionKey,
   onDelete,
   deleteResult,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleDeleteConnection = () => {
-    onDelete(connectionKey);
+    onDelete();
   };
 
   const closeIfComplete = () => {

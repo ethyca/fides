@@ -67,7 +67,7 @@ type ConnectorParametersFormProps = {
   connectionOption: ConnectionSystemTypeMap;
   isCreatingConnectionConfig: boolean;
   datasetDropdownOptions: Option[];
-  onDelete: (id: string) => void;
+  onDelete: () => void;
   deleteResult: any;
 };
 
@@ -373,7 +373,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               ) : null}
               {connectionConfig ? (
                 <DeleteConnectionModal
-                  connectionKey={connectionConfig.key}
                   onDelete={onDelete}
                   deleteResult={deleteResult}
                 />
