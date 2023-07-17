@@ -93,7 +93,7 @@ def instantiate_connector(
     fides_key,
     description,
     secrets,
-    system = None,
+    system=None,
 ) -> tuple[ConnectionConfig, DatasetConfig]:
     """
     Helper to genericize instantiation of a SaaS connector
@@ -143,7 +143,6 @@ def instantiate_connector(
         conditions=(DatasetConfig.fides_key == fides_key),
     ).first()
     assert dataset_config is not None
-
 
     if system:
         system.connection_configs = connection_config

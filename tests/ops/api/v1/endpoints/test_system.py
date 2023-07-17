@@ -348,17 +348,15 @@ class TestGetConnections:
 class TestDeleteSystemConnectionConfig:
     @pytest.fixture(scope="function")
     def url(self, system) -> str:
-        return (
-            V1_URL_PREFIX
-            + f"/system/{system.fides_key}/connection"
-        )
+        return V1_URL_PREFIX + f"/system/{system.fides_key}/connection"
 
     @pytest.fixture(scope="function")
-    def system_linked_with_connection_config(self, system: System, connection_config, db: Session):
+    def system_linked_with_connection_config(
+        self, system: System, connection_config, db: Session
+    ):
         system.connection_configs = connection_config
         db.commit()
         return system
-
 
     def test_delete_connection_config_not_authenticated(
         self, url, api_client: TestClient, generate_auth_header, connection_config
@@ -389,7 +387,7 @@ class TestDeleteSystemConnectionConfig:
         api_client: TestClient,
         db: Session,
         generate_auth_header,
-        system_linked_with_connection_config
+        system_linked_with_connection_config,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
         # the key needs to be cached before the delete
@@ -408,7 +406,7 @@ class TestDeleteSystemConnectionConfig:
         integration_manual_webhook_config,
         access_manual_webhook,
         privacy_request_requires_input,
-        system
+        system,
     ) -> None:
         """Assert both the connection config and its webhook are deleted"""
         access_manual_webhook_id = access_manual_webhook.id
@@ -426,16 +424,13 @@ class TestDeleteSystemConnectionConfig:
             .first()
             is not None
         )
-        url = (
-            V1_URL_PREFIX
-            + f"/system/{system.fides_key}/connection"
-        )
+        url = V1_URL_PREFIX + f"/system/{system.fides_key}/connection"
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == HTTP_204_NO_CONTENT
 
         assert (
-           db.query(AccessManualWebhook).filter_by(id=access_manual_webhook_id).first()
+            db.query(AccessManualWebhook).filter_by(id=access_manual_webhook_id).first()
             is None
         )
 
@@ -446,7 +441,8 @@ class TestDeleteSystemConnectionConfig:
             is None
         )
         assert (
-            mock_queue.called == True), "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+            mock_queue.called == True
+        ), "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
         assert (
             mock_queue.call_args.kwargs["privacy_request_id"]
             == privacy_request_requires_input.id
@@ -475,10 +471,7 @@ class TestDeleteSystemConnectionConfig:
 
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
 
-        url = (
-            V1_URL_PREFIX
-            + f"/system/{connection_config.system.fides_key}/connection"
-        )
+        url = V1_URL_PREFIX + f"/system/{connection_config.system.fides_key}/connection"
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == HTTP_204_NO_CONTENT
         assert (
@@ -522,9 +515,13 @@ class TestDeleteSystemConnectionConfig:
                 scopes=[SYSTEM_MANAGER_UPDATE]
             )
             api_client.put(
-                assign_url, headers=system_manager_auth_header, json=[system_linked_with_connection_config.fides_key]
+                assign_url,
+                headers=system_manager_auth_header,
+                json=[system_linked_with_connection_config.fides_key],
             )
-            auth_header = generate_system_manager_header([system_linked_with_connection_config.id])
+            auth_header = generate_system_manager_header(
+                [system_linked_with_connection_config.id]
+            )
         else:
             auth_header = generate_role_header_for_user(
                 acting_user_role, roles=acting_user_role.permissions.roles

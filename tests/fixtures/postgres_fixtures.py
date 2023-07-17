@@ -160,6 +160,7 @@ def connection_config(
     except ObjectDeletedError:
         pass
 
+
 @pytest.fixture(scope="function")
 def disabled_connection_config(
     db: Session,
