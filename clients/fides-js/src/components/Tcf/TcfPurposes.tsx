@@ -2,6 +2,7 @@ import { h } from "preact";
 import { NoticeToggle } from "../NoticeToggles";
 import { PrivacyNotice } from "../../lib/consent-types";
 import FilterButtons from "./FilterButtons";
+import CookiesTable from "./CookiesTable";
 
 const TcfPurposes = ({ notices }: { notices: Array<PrivacyNotice> }) => {
   const handleToggle = () => {
@@ -38,6 +39,7 @@ const TcfPurposes = ({ notices }: { notices: Array<PrivacyNotice> }) => {
           </NoticeToggle>
         </div>
       </NoticeToggle>
+      <CookiesTable />
     </div>
   );
 };

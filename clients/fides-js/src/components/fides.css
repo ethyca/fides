@@ -587,3 +587,22 @@ div#fides-modal .fides-modal-button-group {
   color: var(--fides-overlay-primary-button-text-color);
   border-radius: var(--fides-overlay-button-border-radius);
 }
+
+/* Table */
+
+.fides-cookies-table {
+  border-collapse: collapse;
+  width: 100%;
+  text-align: left;
+}
+
+.fides-cookies-table th {
+  text-transform: uppercase;
+}
+
+.fides-cookies-table td,
+.fides-cookies-table th {
+  border: 1px solid var(--fides-overlay-row-divider-color);
+  padding-left: 1.1em;
+  padding-right: 0.6em;
+}
