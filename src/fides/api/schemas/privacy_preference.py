@@ -26,12 +26,23 @@ class ConsentOptionCreate(FidesSchema):
     served_notice_history_id: Optional[str]
 
 
+class TCFPreferenceSave(FidesSchema):
+    """Schema for saving a user's preference with respect to a TCF Data use, vendor, or feature"""
+
+    key: str  # Identifier for the data use, vendor, or feature
+    preference: UserConsentPreference
+    served_notice_history_id: Optional[str]
+
+
 class PrivacyPreferencesRequest(FidesSchema):
     """Request body for creating PrivacyPreferences."""
 
     browser_identity: Identity
     code: Optional[SafeStr]
     preferences: conlist(ConsentOptionCreate, max_items=50)  # type: ignore
+    data_use_preferences: conlist(TCFPreferenceSave, max_items=50)  # type: ignore
+    vendor_preferences: conlist(TCFPreferenceSave, max_items=50)  # type: ignore
+    feature_preferences: conlist(TCFPreferenceSave, max_items=50)  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
@@ -62,6 +73,9 @@ class NoticesServedRequest(FidesSchema):
     browser_identity: Identity
     code: Optional[SafeStr]  # For verified identity workflow only
     privacy_notice_history_ids: List[SafeStr]
+    data_uses: List[SafeStr] = []
+    vendors: List[SafeStr] = []
+    features: List[SafeStr] = []
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
     acknowledge_mode: Optional[bool]
@@ -84,8 +98,11 @@ class LastServedNoticeSchema(FidesSchema):
 
     id: str
     updated_at: datetime
-    privacy_notice_history: PrivacyNoticeHistorySchema
+    privacy_notice_history: Optional[PrivacyNoticeHistorySchema]
     served_notice_history_id: str
+    data_use: Optional[str]
+    vendor: Optional[str]
+    feature: Optional[str]
 
 
 class ConsentReportingSchema(FidesSchema):
@@ -114,7 +131,7 @@ class ConsentReportingSchema(FidesSchema):
     approver_id: Optional[str] = Field(
         title="The username of the user who approved the Privacy Request if applicable"
     )
-    privacy_notice_history_id: str = Field(
+    privacy_notice_history_id: Optional[str] = Field(
         title="The id of the specific Privacy Notice History that the user consented to"
     )
     preference: UserConsentPreference = Field(
@@ -142,6 +159,15 @@ class ConsentReportingSchema(FidesSchema):
     served_notice_history_id: Optional[str] = Field(
         title="The id of the record where the notice was served to the end user"
     )
+    data_use: Optional[str] = Field(
+        title="The TCF data use this preference was saved against"
+    )
+    vendor: Optional[str] = Field(
+        title="The TCF vendor this preference was saved against"
+    )
+    feature: Optional[str] = Field(
+        title="The TCF feature this preference was saved against"
+    )
 
 
 class CurrentPrivacyPreferenceSchema(FidesSchema):
@@ -152,8 +178,11 @@ class CurrentPrivacyPreferenceSchema(FidesSchema):
 
     id: str
     preference: UserConsentPreference
-    privacy_notice_history: PrivacyNoticeHistorySchema
-    privacy_preference_history_id: str
+    privacy_notice_history: Optional[PrivacyNoticeHistorySchema]
+    privacy_preference_history_id: Optional[str]
+    data_use: Optional[str]
+    vendor: Optional[str]
+    feature: Optional[str]
 
 
 class CurrentPrivacyPreferenceReportingSchema(FidesSchema):
@@ -164,7 +193,10 @@ class CurrentPrivacyPreferenceReportingSchema(FidesSchema):
 
     id: str
     preference: UserConsentPreference
-    privacy_notice_history_id: str
+    privacy_notice_history_id: Optional[str]
     privacy_preference_history_id: str
     provided_identity_id: Optional[str]
     created_at: datetime
+    data_use: Optional[str]
+    vendor: Optional[str]
+    feature: Optional[str]

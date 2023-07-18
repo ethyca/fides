@@ -13,7 +13,16 @@ from fides.api.models.privacy_notice import PrivacyNoticeRegion, UserConsentPref
 from fides.api.schemas.base_class import FidesSchema
 
 
-class PrivacyNotice(FidesSchema):
+class BaseConsentSchema(FidesSchema):
+    name: Optional[str]
+    description: Optional[str]
+    internal_description: Optional[str]
+    consent_mechanism: Optional[ConsentMechanism]
+    enforcement_level: Optional[EnforcementLevel]
+    has_gpc_flag: Optional[bool] = False
+
+
+class PrivacyNotice(BaseConsentSchema):
     """
     Base for PrivacyNotice API objects
 
@@ -21,17 +30,11 @@ class PrivacyNotice(FidesSchema):
     stricter but not less strict
     """
 
-    name: Optional[str]
     notice_key: Optional[FidesKey]
-    description: Optional[str]
-    internal_description: Optional[str]
     origin: Optional[str]
     regions: Optional[conlist(PrivacyNoticeRegion, min_items=1)]  # type: ignore
-    consent_mechanism: Optional[ConsentMechanism]
     data_uses: Optional[conlist(str, min_items=1)]  # type: ignore
-    enforcement_level: Optional[EnforcementLevel]
     disabled: Optional[bool] = False
-    has_gpc_flag: Optional[bool] = False
     displayed_in_privacy_center: Optional[bool] = False
     displayed_in_overlay: Optional[bool] = False
     displayed_in_api: Optional[bool] = False
@@ -144,13 +147,10 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
     cookies: List[CookieSchema]
 
 
-class PrivacyNoticeResponseWithUserPreferences(PrivacyNoticeResponse):
-    """
-    If retrieving notices for a given user, also return the default preferences for that notice
-    and any saved preferences.
-    """
-
-    default_preference: UserConsentPreference  # The default preference for this notice
+class UserSpecificConsentDetails(FidesSchema):
+    default_preference: Optional[
+        UserConsentPreference
+    ]  # The default preference for this notice
     current_preference: Optional[
         UserConsentPreference
     ]  # The current saved preference for the given user if it exists
@@ -163,6 +163,44 @@ class PrivacyNoticeResponseWithUserPreferences(PrivacyNoticeResponse):
     outdated_served: Optional[
         bool
     ]  # Have we served an older version of this notice to the user?
+
+
+class PrivacyNoticeResponseWithUserPreferences(
+    PrivacyNoticeResponse, UserSpecificConsentDetails
+):
+    """
+    If retrieving notices for a given user, also return the default preferences for that notice
+    and any saved preferences.
+    """
+
+
+class TCFConsentRecord(BaseConsentSchema, UserSpecificConsentDetails):
+    """Contents of a TCF Item generated at runtime"""
+
+    key: str
+    illustration: Optional[str]
+    legal_basis: Optional[str]
+
+    @root_validator
+    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        consent_mechanism = values.get("consent_mechanism")
+        if consent_mechanism == ConsentMechanism.opt_in:
+            values["default_preference"] = UserConsentPreference.opt_out  # Intentional
+        if consent_mechanism == ConsentMechanism.opt_out:
+            values["default_preference"] = UserConsentPreference.opt_in  # Intentional
+        if consent_mechanism == ConsentMechanism.notice_only:
+            values["default_preference"] = UserConsentPreference.acknowledge
+
+        return values
+
+    class Config:
+        use_enum_values = True
+
+
+class TCFVendorConsentRecord(TCFConsentRecord):
+    """Contents of a TCF Item generated at runtime"""
+
+    data_uses: List[TCFConsentRecord] = []
 
 
 class PrivacyNoticeHistorySchema(PrivacyNoticeCreation, PrivacyNoticeWithId):

@@ -8,7 +8,11 @@ from pydantic import Extra, Field, root_validator, validator
 from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.privacy_notice import PrivacyNoticeResponseWithUserPreferences
+from fides.api.schemas.privacy_notice import (
+    PrivacyNoticeResponseWithUserPreferences,
+    TCFConsentRecord,
+    TCFVendorConsentRecord,
+)
 from fides.api.util.endpoint_utils import human_friendly_list
 
 
@@ -190,4 +194,7 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
     updated_at: datetime
     show_banner: Optional[bool]
     privacy_notices: Optional[List[PrivacyNoticeResponseWithUserPreferences]]
+    tcf_data_uses: Optional[List[TCFConsentRecord]]
+    tcf_vendors: Optional[List[TCFVendorConsentRecord]]
+    tcf_features: Optional[List[TCFConsentRecord]]
     experience_config: Optional[ExperienceConfigResponse]

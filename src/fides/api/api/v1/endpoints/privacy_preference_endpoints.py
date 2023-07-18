@@ -1,6 +1,6 @@
 import ipaddress
 from datetime import datetime
-from typing import List, Optional, Tuple, Type, Union
+from typing import Dict, List, Optional, Tuple, Type, Union
 
 from fastapi import Depends, HTTPException, Request, Response
 from fastapi.params import Security
@@ -27,7 +27,7 @@ from fides.api.api.v1.endpoints.privacy_request_endpoints import (
 from fides.api.custom_types import SafeStr
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.privacy_experience import PrivacyExperience
+from fides.api.models.privacy_experience import CURRENT_TCF_VERSION, PrivacyExperience
 from fides.api.models.privacy_notice import (
     EnforcementLevel,
     PrivacyNotice,
@@ -55,6 +55,7 @@ from fides.api.schemas.privacy_preference import (
     NoticesServedRequest,
     PrivacyPreferencesCreate,
     PrivacyPreferencesRequest,
+    TCFPreferenceSave,
 )
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -67,6 +68,7 @@ from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, validate_start_and_end_filters
+from fides.api.util.tcf_util import load_tcf_data_uses
 from fides.common.api.scope_registry import (
     CURRENT_PRIVACY_PREFERENCE_READ,
     PRIVACY_PREFERENCE_HISTORY_READ,
@@ -201,6 +203,39 @@ def verify_valid_service_notice_history_records(
                 raise HTTPException(
                     status_code=HTTP_422_UNPROCESSABLE_ENTITY,
                     detail=f"The ServedNoticeHistory record '{served_notice_history.id}' did not serve the PrivacyNoticeHistory record '{preference.privacy_notice_history_id}'.",
+                )
+
+    for preference in data.data_use_preferences:
+        if preference.served_notice_history_id:
+            served_notice_history = get_served_notice_history(
+                db, preference.served_notice_history_id
+            )
+            if served_notice_history.data_use != preference.key:
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"The ServedNoticeHistory record '{served_notice_history.id}' did not serve the following data use '{preference.key}'.",
+                )
+
+    for preference in data.vendor_preferences:
+        if preference.served_notice_history_id:
+            served_notice_history = get_served_notice_history(
+                db, preference.served_notice_history_id
+            )
+            if served_notice_history.vendor != preference.key:
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"The ServedNoticeHistory record '{served_notice_history.id}' did not serve the following vendor '{preference.key}'.",
+                )
+
+    for preference in data.feature_preferences:
+        if preference.served_notice_history_id:
+            served_notice_history = get_served_notice_history(
+                db, preference.served_notice_history_id
+            )
+            if served_notice_history.feature != preference.key:
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"The ServedNoticeHistory record '{served_notice_history.id}' did not serve the following feature '{preference.key}'.",
                 )
 
 
@@ -368,6 +403,49 @@ def save_privacy_preferences_with_verified_identity(
     )
 
 
+def save_individual_tcf_preferences(
+    db: Session,
+    user_data: Dict[str, str],
+    preference: TCFPreferenceSave,
+    field_type: str,
+):
+    data_uses, vendors = load_tcf_data_uses(db)
+
+    relevant_data = []
+    if field_type == "data_use":
+        relevant_data = data_uses
+    elif field_type == "vendor":
+        relevant_data = vendors
+    logger.info("Saving preferences with respect to TCF {}.", field_type)
+    (
+        _,
+        current_preference,
+    ) = PrivacyPreferenceHistory.create_history_and_upsert_current_preference(
+        db=db,
+        data={
+            **user_data,
+            **{
+                "preference": preference.preference,
+                field_type: preference.key,
+                "served_notice_history_id": preference.served_notice_history_id,
+                "tcf_version": CURRENT_TCF_VERSION,
+                "tcf_details": next(
+                    (
+                        record.dict()
+                        for record in relevant_data
+                        if record.key == preference.key
+                    ),
+                    {},
+                )
+                if relevant_data
+                else {},
+            },
+        },
+        check_name=False,
+    )
+    return current_preference
+
+
 def _save_privacy_preferences_for_identities(
     db: Session,
     consent_request: Optional[ConsentRequest],
@@ -394,6 +472,35 @@ def _save_privacy_preferences_for_identities(
     )
 
     needs_server_side_propagation: bool = False
+    common_data = {
+        "anonymized_ip_address": request_data.anonymized_ip_address,
+        "email": email,
+        "privacy_experience_config_history_id": request_data.experience_config_history_id
+        if request_data.experience_config_history_id
+        else None,
+        "privacy_experience_id": request_data.privacy_experience_id
+        if request_data.privacy_experience_id
+        else None,
+        "fides_user_device": fides_user_device_id,
+        "fides_user_device_provided_identity_id": fides_user_provided_identity.id
+        if fides_user_provided_identity
+        else None,
+        "hashed_email": hashed_email,
+        "hashed_fides_user_device": hashed_device_id,
+        "hashed_phone_number": hashed_phone_number,
+        "method": request_data.method,
+        "phone_number": phone_number,
+        "provided_identity_id": verified_provided_identity.id
+        if verified_provided_identity
+        else None,
+        "request_origin": request_data.request_origin,
+        "user_agent": request_data.user_agent,
+        "user_geography": request_data.user_geography,
+        "url_recorded": request_data.url_recorded,
+    }
+
+    if request_data.preferences:
+        logger.info("Saving preferences with respect to privacy notice.")
     for privacy_preference in request_data.preferences:
         (
             historical_preference,
@@ -401,36 +508,16 @@ def _save_privacy_preferences_for_identities(
         ) = PrivacyPreferenceHistory.create_history_and_upsert_current_preference(
             db=db,
             data={
-                "anonymized_ip_address": request_data.anonymized_ip_address,
-                "email": email,
-                "privacy_experience_config_history_id": request_data.experience_config_history_id
-                if request_data.experience_config_history_id
-                else None,
-                "privacy_experience_id": request_data.privacy_experience_id
-                if request_data.privacy_experience_id
-                else None,
-                "fides_user_device": fides_user_device_id,
-                "fides_user_device_provided_identity_id": fides_user_provided_identity.id
-                if fides_user_provided_identity
-                else None,
-                "hashed_email": hashed_email,
-                "hashed_fides_user_device": hashed_device_id,
-                "hashed_phone_number": hashed_phone_number,
-                "method": request_data.method,
-                "phone_number": phone_number,
-                "preference": privacy_preference.preference,
-                "privacy_notice_history_id": privacy_preference.privacy_notice_history_id,
-                "provided_identity_id": verified_provided_identity.id
-                if verified_provided_identity
-                else None,
-                "request_origin": request_data.request_origin,
-                "served_notice_history_id": privacy_preference.served_notice_history_id,
-                "user_agent": request_data.user_agent,
-                "user_geography": request_data.user_geography,
-                "url_recorded": request_data.url_recorded,
+                **common_data,
+                **{
+                    "preference": privacy_preference.preference,
+                    "privacy_notice_history_id": privacy_preference.privacy_notice_history_id,
+                    "served_notice_history_id": privacy_preference.served_notice_history_id,
+                },
             },
             check_name=False,
         )
+
         created_historical_preferences.append(historical_preference)
         upserted_current_preferences.append(current_preference)
 
@@ -440,6 +527,38 @@ def _save_privacy_preferences_for_identities(
         ):
             # At least one privacy notice has expected system wide enforcement
             needs_server_side_propagation = True
+
+    # Save TCF preferences separately with respect to data use, vendor, and/or feature.
+    # Currently, we don't attempt to propagate these preferences to third party systems.
+    for data_use_preference in request_data.data_use_preferences:
+        upserted_current_preferences.append(
+            save_individual_tcf_preferences(
+                db=db,
+                user_data=common_data,
+                preference=data_use_preference,
+                field_type="data_use",
+            )
+        )
+
+    for vendor_preference in request_data.vendor_preferences:
+        upserted_current_preferences.append(
+            save_individual_tcf_preferences(
+                db=db,
+                user_data=common_data,
+                preference=vendor_preference,
+                field_type="vendor",
+            )
+        )
+
+    for feature_preference in request_data.feature_preferences:
+        upserted_current_preferences.append(
+            save_individual_tcf_preferences(
+                db=db,
+                user_data=common_data,
+                preference=feature_preference,
+                field_type="feature",
+            )
+        )
 
     identity = (
         request_data.browser_identity if request_data.browser_identity else Identity()
@@ -505,44 +624,101 @@ def _save_notices_served_for_identities(
         fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
     )
 
+    common_data = {
+        "anonymized_ip_address": request_data.anonymized_ip_address,
+        "email": email,
+        "fides_user_device": fides_user_device_id,
+        "fides_user_device_provided_identity_id": fides_user_provided_identity.id
+        if fides_user_provided_identity
+        else None,
+        "hashed_email": hashed_email,
+        "hashed_fides_user_device": hashed_device_id,
+        "hashed_phone_number": hashed_phone_number,
+        "phone_number": phone_number,
+        "privacy_experience_config_history_id": request_data.experience_config_history_id
+        if request_data.experience_config_history_id
+        else None,
+        "privacy_experience_id": request_data.privacy_experience_id
+        if request_data.privacy_experience_id
+        else None,
+        "provided_identity_id": verified_provided_identity.id
+        if verified_provided_identity
+        else None,
+        "request_origin": request_data.request_origin,
+        "serving_component": request_data.serving_component,
+        "url_recorded": request_data.url_recorded,
+        "user_agent": request_data.user_agent,
+        "user_geography": request_data.user_geography,
+    }
+
     for notice_history_id in request_data.privacy_notice_history_ids:
         (
-            historical_preference,
-            current_preference,
+            historical_served,
+            current_served,
         ) = ServedNoticeHistory.save_notice_served_and_last_notice_served(
             db=db,
             data={
-                "acknowledge_mode": request_data.acknowledge_mode,
-                "anonymized_ip_address": request_data.anonymized_ip_address,
-                "email": email,
-                "fides_user_device": fides_user_device_id,
-                "fides_user_device_provided_identity_id": fides_user_provided_identity.id
-                if fides_user_provided_identity
-                else None,
-                "hashed_email": hashed_email,
-                "hashed_fides_user_device": hashed_device_id,
-                "hashed_phone_number": hashed_phone_number,
-                "phone_number": phone_number,
-                "privacy_experience_config_history_id": request_data.experience_config_history_id
-                if request_data.experience_config_history_id
-                else None,
-                "privacy_experience_id": request_data.privacy_experience_id
-                if request_data.privacy_experience_id
-                else None,
-                "privacy_notice_history_id": notice_history_id,
-                "provided_identity_id": verified_provided_identity.id
-                if verified_provided_identity
-                else None,
-                "request_origin": request_data.request_origin,
-                "serving_component": request_data.serving_component,
-                "url_recorded": request_data.url_recorded,
-                "user_agent": request_data.user_agent,
-                "user_geography": request_data.user_geography,
+                **common_data,
+                **{
+                    "acknowledge_mode": request_data.acknowledge_mode,
+                    "privacy_notice_history_id": notice_history_id,
+                },
             },
             check_name=False,
         )
-        created_notices_served.append(historical_preference)
-        upserted_last_served.append(current_preference)
+        created_notices_served.append(historical_served)
+        upserted_last_served.append(current_served)
+
+    for data_use in request_data.data_uses:
+        (
+            historical_served,
+            current_served,
+        ) = ServedNoticeHistory.save_notice_served_and_last_notice_served(
+            db=db,
+            data={
+                **common_data,
+                **{
+                    "acknowledge_mode": request_data.acknowledge_mode,
+                    "data_use": data_use,
+                },
+            },
+            check_name=False,
+        )
+        created_notices_served.append(historical_served)
+        upserted_last_served.append(current_served)
+
+    for vendor in request_data.vendors:
+        (
+            historical_served,
+            current_served,
+        ) = ServedNoticeHistory.save_notice_served_and_last_notice_served(
+            db=db,
+            data={
+                **common_data,
+                **{"acknowledge_mode": request_data.acknowledge_mode, "vendor": vendor},
+            },
+            check_name=False,
+        )
+        created_notices_served.append(historical_served)
+        upserted_last_served.append(current_served)
+
+    for feature in request_data.features:
+        (
+            historical_served,
+            current_served,
+        ) = ServedNoticeHistory.save_notice_served_and_last_notice_served(
+            db=db,
+            data={
+                **common_data,
+                **{
+                    "acknowledge_mode": request_data.acknowledge_mode,
+                    "feature": feature,
+                },
+            },
+            check_name=False,
+        )
+        created_notices_served.append(historical_served)
+        upserted_last_served.append(current_served)
 
     return upserted_last_served
 
@@ -685,6 +861,9 @@ def get_historical_consent_report(
             PrivacyPreferenceHistory.served_notice_history_id.label(
                 "served_notice_history_id"
             ),
+            PrivacyPreferenceHistory.data_use.label("data_use"),
+            PrivacyPreferenceHistory.vendor.label("vendor"),
+            PrivacyPreferenceHistory.feature.label("feature"),
         )
         .outerjoin(
             PrivacyRequest,

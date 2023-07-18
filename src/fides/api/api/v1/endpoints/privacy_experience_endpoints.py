@@ -15,12 +15,16 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
+from fides.api.models.consent_settings import ConsentSettings
 from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
     PrivacyExperienceConfig,
+    cache_saved_preference_on_tcf_consent_record,
+    cache_tcf_resource_served,
 )
 from fides.api.models.privacy_notice import PrivacyNotice
+from fides.api.models.privacy_preference import PreferenceType
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
 from fides.api.util.api_router import APIRouter
@@ -31,6 +35,7 @@ from fides.api.util.consent_util import (
     get_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, transform_fields
+from fides.api.util.tcf_util import load_tcf_data_uses
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 
@@ -58,8 +63,9 @@ def _filter_experiences_by_region_or_country(
     db: Session, region: Optional[str], experience_query: Query
 ) -> Query:
     """
-    Return at most two privacy experiences, one overlay and one privacy center experience matching the given region.
-    Experiences are looked up by supplied region first.  If nothing is found, we attempt to look up by country code.
+    Return at most three privacy experiences, one overlay, one privacy center experience, and one tcf_overlay experience
+    matching the given region. Experiences are looked up by supplied region first.  If nothing is found, we attempt to
+    look up by country code.
 
     For example, if region was "fr_idg" and no experiences were saved under this code, we'd look again for experiences
     saved with "fr".
@@ -80,12 +86,23 @@ def _filter_experiences_by_region_or_country(
     ) or PrivacyExperience.get_experience_by_region_and_component(
         db, country, ComponentType.privacy_center
     )
+    tcf_overlay = PrivacyExperience.get_experience_by_region_and_component(
+        db, region, ComponentType.tcf_overlay
+    ) or PrivacyExperience.get_experience_by_region_and_component(
+        db, country, ComponentType.tcf_overlay
+    )
 
     experience_ids: List[str] = []
-    if overlay:
-        experience_ids.append(overlay.id)
+    consent_settings = ConsentSettings.get_or_create(db)
+
     if privacy_center:
         experience_ids.append(privacy_center.id)
+
+    if consent_settings.tcf_enabled and tcf_overlay:
+        experience_ids.append(tcf_overlay.id)
+
+    if overlay:
+        experience_ids.append(overlay.id)
 
     if experience_ids:
         return experience_query.filter(PrivacyExperience.id.in_(experience_ids))
@@ -196,7 +213,40 @@ def privacy_experience_list(
         privacy_experience.show_banner = privacy_experience.get_should_show_banner(
             db, show_disabled
         )
-        if not (has_notices and not privacy_notices):
+        data_uses, vendors = load_tcf_data_uses(db)
+        for record in data_uses:
+            cache_saved_preference_on_tcf_consent_record(
+                db,
+                record,
+                fides_user_provided_identity=fides_user_provided_identity,
+                preference_type=PreferenceType.data_use,
+            )
+            cache_tcf_resource_served(
+                db,
+                record,
+                fides_user_provided_identity=fides_user_provided_identity,
+                preference_type=PreferenceType.data_use,
+            )
+        for record in vendors:
+            cache_saved_preference_on_tcf_consent_record(
+                db,
+                record,
+                fides_user_provided_identity=fides_user_provided_identity,
+                preference_type=PreferenceType.vendor,
+            )
+            cache_tcf_resource_served(
+                db,
+                record,
+                fides_user_provided_identity=fides_user_provided_identity,
+                preference_type=PreferenceType.vendor,
+            )
+
+        privacy_experience.tcf_data_uses = data_uses
+        privacy_experience.tcf_vendors = vendors
+        if (
+            not (has_notices and not privacy_notices)
+            or privacy_experience.component == ComponentType.tcf_overlay
+        ):
             results.append(privacy_experience)
 
     return fastapi_paginate(results, params=params)

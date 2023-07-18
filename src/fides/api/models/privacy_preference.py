@@ -32,17 +32,27 @@ from fides.api.models.privacy_request import (
 )
 from fides.config import CONFIG
 
+CURRENT_TCF_VERSION = "2.2"
+
 
 class RequestOrigin(Enum):
     privacy_center = "privacy_center"
     overlay = "overlay"
     api = "api"
+    tcf_overlay = "tcf_overlay"
 
 
 class ConsentMethod(Enum):
     button = "button"
     gpc = "gpc"
     individual_notice = "individual_notice"
+
+
+class PreferenceType(Enum):
+    privacy_notice = "privacy_notice"
+    data_use = "data_use"
+    vendor = "vendor"
+    feature = "feature"
 
 
 class ConsentReportingMixin:
@@ -60,6 +70,10 @@ class ConsentReportingMixin:
         ),
     )
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+    data_use = Column(
+        String, index=True
+    )  # When saving privacy preferences with respect to a data use directly
     # Encrypted email, for reporting
     email = Column(
         StringEncryptedType(
@@ -69,6 +83,11 @@ class ConsentReportingMixin:
             padding="pkcs5",
         ),
     )
+
+    feature = Column(
+        String, index=True
+    )  # When saving privacy preferences with respect to a feature directly
+
     # Encrypted fides user device id, for reporting
     fides_user_device = Column(
         StringEncryptedType(
@@ -119,11 +138,14 @@ class ConsentReportingMixin:
             String, ForeignKey("privacyexperience.id"), nullable=True, index=True
         )
 
-    # The specific historical record the user consented to
     @declared_attr
     def privacy_notice_history_id(cls) -> Column:
+        """
+        The specific historical record the user consented to - applicable when
+        saving preferences with respect to a privacy notice directly
+        """
         return Column(
-            String, ForeignKey(PrivacyNoticeHistory.id), nullable=False, index=True
+            String, ForeignKey(PrivacyNoticeHistory.id), nullable=True, index=True
         )
 
     # Optional FK to a verified provided identity (like email or phone), if applicable
@@ -146,6 +168,16 @@ class ConsentReportingMixin:
 
     user_geography = Column(String, index=True)
 
+    vendor = Column(
+        String, index=True
+    )  # When saving privacy preferences with respect to a vendor directly
+
+    tcf_version = Column(String)
+
+    tcf_details = Column(
+        MutableDict.as_mutable(JSONB), server_default="{}", default=dict
+    )
+
     # Relationships
     @declared_attr
     def privacy_notice_history(cls) -> relationship:
@@ -161,27 +193,42 @@ class ConsentReportingMixin:
             ProvidedIdentity, foreign_keys=[cls.fides_user_device_provided_identity_id]
         )
 
+    @property
+    def preference_type(self) -> Optional[PreferenceType]:
+        if self.privacy_notice_history_id:
+            return PreferenceType.privacy_notice
+        if self.data_use:
+            return PreferenceType.data_use
+        if self.vendor:
+            return PreferenceType.vendor
+        if self.feature:
+            return PreferenceType.feature
+        return None
+
 
 class ServingComponent(Enum):
     overlay = "overlay"
     banner = "banner"
     privacy_center = "privacy_center"
+    tcf_overlay = "tcf_overlay"
 
 
 def _validate_notice_and_identity(
     db: Session, data: dict[str, Any]
-) -> PrivacyNoticeHistory:
+) -> Optional[PrivacyNoticeHistory]:
     """Validates that the PrivacyNoticeHistory specified in the data dictionary
     exists and that at least one provided identity type is supplied in the data
 
     Shares some common checks we run before saving PrivacyPreferenceHistory
     or ServedPreferenceHistory
     """
-    privacy_notice_history = PrivacyNoticeHistory.get(
-        db=db, object_id=data.get("privacy_notice_history_id")
-    )
-    if not privacy_notice_history:
-        raise PrivacyNoticeHistoryNotFound()
+    privacy_notice_history = None
+    if data.get("privacy_notice_history_id"):
+        privacy_notice_history = PrivacyNoticeHistory.get(
+            db=db, object_id=data.get("privacy_notice_history_id")
+        )
+        if not privacy_notice_history:
+            raise PrivacyNoticeHistoryNotFound()
 
     if not data.get("provided_identity_id") and not data.get(
         "fides_user_device_provided_identity_id"
@@ -244,7 +291,9 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
 
         There is only one LastServedNotice for each PrivacyNotice/ProvidedIdentity.
         """
-        privacy_notice_history = _validate_notice_and_identity(db, data)
+        privacy_notice_history: Optional[
+            PrivacyNoticeHistory
+        ] = _validate_notice_and_identity(db, data)
 
         created_served_notice_history = super().create(
             db=db, data=data, check_name=check_name
@@ -252,17 +301,30 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
 
         last_served_data = {
             "provided_identity_id": created_served_notice_history.provided_identity_id,
-            "privacy_notice_id": privacy_notice_history.privacy_notice_id,
-            "privacy_notice_history_id": privacy_notice_history.id,
             "served_notice_history_id": created_served_notice_history.id,
             "fides_user_device_provided_identity_id": created_served_notice_history.fides_user_device_provided_identity_id,
         }
+
+        if privacy_notice_history:
+            last_served_data["privacy_notice_history_id"] = privacy_notice_history.id
+            last_served_data[
+                "privacy_notice_id"
+            ] = privacy_notice_history.privacy_notice_id
+
+        data_use = data.get("data_use", None)
+        vendor = data.get("vendor", None)
+        feature = data.get("feature", None)
+
+        last_served_data["data_use"] = data_use
+        last_served_data["vendor"] = vendor
+        last_served_data["feature"] = feature
+        if any([data_use, vendor, feature]):
+            last_served_data["tcf_version"] = CURRENT_TCF_VERSION
 
         upserted_last_served_notice_record = upsert_last_saved_record(
             db,
             created_historical_record=created_served_notice_history,
             current_record_class=LastServedNotice,
-            privacy_notice_history=privacy_notice_history,
             current_record_data=last_served_data,
         )
         assert isinstance(
@@ -325,6 +387,12 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
         uselist=False,
     )
 
+    @property
+    def privacy_notice_id(self) -> Optional[str]:
+        if self.privacy_notice_history:
+            return self.privacy_notice_history.privacy_notice_id
+        return None
+
     def cache_system_status(
         self, db: Session, system: str, status: ExecutionLogStatus
     ) -> None:
@@ -382,9 +450,15 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
 
         There is only one CurrentPrivacyPreference for each PrivacyNotice/ProvidedIdentity.
         """
-        privacy_notice_history = _validate_notice_and_identity(db, data)
+        privacy_notice_history: Optional[
+            PrivacyNoticeHistory
+        ] = _validate_notice_and_identity(db, data)
 
-        data["relevant_systems"] = privacy_notice_history.calculate_relevant_systems(db)
+        if privacy_notice_history:
+            data[
+                "relevant_systems"
+            ] = privacy_notice_history.calculate_relevant_systems(db)
+
         created_privacy_preference_history = super().create(
             db=db, data=data, check_name=check_name
         )
@@ -392,17 +466,32 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
         current_privacy_preference_data = {
             "preference": created_privacy_preference_history.preference,
             "provided_identity_id": created_privacy_preference_history.provided_identity_id,
-            "privacy_notice_id": privacy_notice_history.privacy_notice_id,
-            "privacy_notice_history_id": privacy_notice_history.id,
             "privacy_preference_history_id": created_privacy_preference_history.id,
             "fides_user_device_provided_identity_id": created_privacy_preference_history.fides_user_device_provided_identity_id,
         }
+        if privacy_notice_history:
+            current_privacy_preference_data[
+                "privacy_notice_id"
+            ] = privacy_notice_history.privacy_notice_id
+            current_privacy_preference_data[
+                "privacy_notice_history_id"
+            ] = privacy_notice_history.id
+
+        data_use = data.get("data_use")
+        vendor = data.get("vendor")
+        feature = data.get("feature")
+
+        current_privacy_preference_data["data_use"] = data_use
+        current_privacy_preference_data["vendor"] = vendor
+        current_privacy_preference_data["feature"] = feature
+
+        if any([data_use, vendor, feature]):
+            current_privacy_preference_data["tcf_version"] = CURRENT_TCF_VERSION
 
         current_preference = upsert_last_saved_record(
             db,
             created_historical_record=created_privacy_preference_history,
             current_record_class=CurrentPrivacyPreference,
-            privacy_notice_history=privacy_notice_history,
             current_record_data=current_privacy_preference_data,
         )
         assert isinstance(current_preference, CurrentPrivacyPreference)  # For mypy
@@ -414,12 +503,21 @@ class LastSavedMixin:
     """Stores common fields for the last saved preference or last served notice"""
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+    data_use = Column(String, index=True)  # When a data use was served directly (TCF)
+
+    feature = Column(String, index=True)  # When a feature was served directly (TCF)
+
     updated_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),
         onupdate=func.now(),
         index=True,
     )
+
+    tcf_version = Column(String)
+
+    vendor = Column(String, index=True)  # When a vendor was served directly (TCF)
 
     @declared_attr
     def provided_identity_id(cls) -> Column:
@@ -431,12 +529,13 @@ class LastSavedMixin:
 
     @declared_attr
     def privacy_notice_id(cls) -> Column:
-        return Column(String, ForeignKey(PrivacyNotice.id), nullable=False, index=True)
+        """When saving a notice was served directly"""
+        return Column(String, ForeignKey(PrivacyNotice.id), nullable=True, index=True)
 
     @declared_attr
     def privacy_notice_history_id(cls) -> Column:
         return Column(
-            String, ForeignKey(PrivacyNoticeHistory.id), nullable=False, index=True
+            String, ForeignKey(PrivacyNoticeHistory.id), nullable=True, index=True
         )
 
     # Relationships
@@ -480,6 +579,24 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
             "privacy_notice_id",
             name="fides_user_device_identity_privacy_notice",
         ),
+        UniqueConstraint("provided_identity_id", "data_use", name="identity_data_use"),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "data_use",
+            name="fides_user_device_identity_data_use",
+        ),
+        UniqueConstraint("provided_identity_id", "vendor", name="identity_vendor"),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "vendor",
+            name="fides_user_device_identity_vendor",
+        ),
+        UniqueConstraint("provided_identity_id", "feature", name="identity_feature"),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "feature",
+            name="fides_user_device_identity_feature",
+        ),
     )
 
     # Relationships
@@ -511,6 +628,27 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
                 CurrentPrivacyPreference.fides_user_device_provided_identity_id
                 == fides_user_provided_identity.id,
                 CurrentPrivacyPreference.privacy_notice_id == privacy_notice.id,
+            )
+            .first()
+        )
+
+    @classmethod
+    def get_preference_for_tcf_preference_type_and_fides_user_device(
+        cls,
+        db: Session,
+        fides_user_provided_identity: ProvidedIdentity,
+        tcf_preference_type: PreferenceType,
+        preference_value: str,
+    ) -> Optional[CurrentPrivacyPreference]:
+        """Retrieves the CurrentPrivacyPreference for the user with the given identity
+        for the given notice"""
+        return (
+            db.query(CurrentPrivacyPreference)
+            .filter(
+                CurrentPrivacyPreference.fides_user_device_provided_identity_id
+                == fides_user_provided_identity.id,
+                CurrentPrivacyPreference.__table__.c[tcf_preference_type.value]
+                == preference_value,
             )
             .first()
         )
@@ -571,12 +709,32 @@ class LastServedNotice(LastSavedMixin, Base):
             .first()
         )
 
+    @classmethod
+    def get_last_served_for_tcf_preference_type_and_fides_user_device(
+        cls,
+        db: Session,
+        fides_user_provided_identity: ProvidedIdentity,
+        tcf_preference_type: PreferenceType,
+        preference_value: str,
+    ) -> Optional[LastServedNotice]:
+        """Retrieves the CurrentPrivacyPreference for the user with the given identity
+        for the given notice"""
+        return (
+            db.query(LastServedNotice)
+            .filter(
+                LastServedNotice.fides_user_device_provided_identity_id
+                == fides_user_provided_identity.id,
+                LastServedNotice.__table__.c[tcf_preference_type.value]
+                == preference_value,
+            )
+            .first()
+        )
+
 
 def upsert_last_saved_record(
     db: Session,
     created_historical_record: Union[PrivacyPreferenceHistory, ServedNoticeHistory],
     current_record_class: Union[Type[CurrentPrivacyPreference], Type[LastServedNotice]],
-    privacy_notice_history: PrivacyNoticeHistory,
     current_record_data: Dict[str, str],
 ) -> Union[CurrentPrivacyPreference, LastServedNotice]:
     """
@@ -591,6 +749,18 @@ def upsert_last_saved_record(
     existing_record_for_provided_identity: Optional[
         Union[CurrentPrivacyPreference, LastServedNotice]
     ] = None
+
+    record_type_mapping = {
+        PreferenceType.privacy_notice: "privacy_notice_id",
+        PreferenceType.data_use: "data_use",
+        PreferenceType.vendor: "vendor",
+        PreferenceType.feature: "feature",
+    }
+    constraint_field = record_type_mapping.get(
+        created_historical_record.preference_type
+    )
+    field_val = getattr(created_historical_record, constraint_field)
+
     # Check if we have "current" records for the ProvidedIdentity (usu an email or phone)/Privacy Notice
     if created_historical_record.provided_identity_id:
         existing_record_for_provided_identity = (
@@ -598,8 +768,7 @@ def upsert_last_saved_record(
             .filter(
                 current_record_class.provided_identity_id
                 == created_historical_record.provided_identity_id,
-                current_record_class.privacy_notice_id
-                == privacy_notice_history.privacy_notice_id,
+                current_record_class.__table__.c[constraint_field] == field_val,
             )
             .first()
         )
@@ -614,8 +783,7 @@ def upsert_last_saved_record(
             .filter(
                 current_record_class.fides_user_device_provided_identity_id
                 == created_historical_record.fides_user_device_provided_identity_id,
-                current_record_class.privacy_notice_id
-                == privacy_notice_history.privacy_notice_id,
+                current_record_class.__table__.c[constraint_field] == field_val,
             )
             .first()
         )
