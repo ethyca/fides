@@ -1,8 +1,8 @@
+import pytest
+
 from fides.api.schemas.connection_configuration.connection_config import (
     mask_sensitive_fields,
 )
-
-import pytest
 
 
 class TestMaskSenstiveValues:

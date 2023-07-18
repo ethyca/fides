@@ -31,7 +31,7 @@ def load_tcf_data_uses(
     )
 
     relevant_data_uses = system_data_uses.intersection(
-        set([record["key"] for record in raw_tcf_data_uses])
+        {[record["key"] for record in raw_tcf_data_uses]}
     )
 
     if not relevant_data_uses:

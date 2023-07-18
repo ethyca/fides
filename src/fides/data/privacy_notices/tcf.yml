@@ -1,5 +1,5 @@
 tcf_data_uses:
-- name: analytics.reporting.content_performance
+- name:
   key: analytics.reporting.content_performance
   consent_mechanism: opt_out
   enforcement_level: frontend
@@ -7,23 +7,23 @@ tcf_data_uses:
   description:
   illustration:
   legal_basis:
-- name: Analytics for Advertising Performance
+- name:
   key: analytics.reporting.ad_performance
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
-  description: Analytics for reporting of advertising performance.
+  description:
   illustration:
-  legal_basis: Consent, Legitimate Interests
-- name: Apply market research to generate audience insights
+  legal_basis:
+- name:
   key: analytics.reporting.campaign_insights
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
-  description: Market research can be used to learn more about the audiences who visit sites/apps and view ads.
-  illustration: "The owner of an online bookstore wants commercial reporting showing the proportion of visitors who consulted and left its site without buying, or consulted and bought the last celebrity autobiography of the month, as well as the average age and the male/female distribution of each category. Data relating to your navigation on its site and to your personal characteristics is then used and combined with other such data to produce these statistics. An advertiser wants to better understand the type of audience interacting with its adverts. It calls upon a research institute to compare the characteristics of users who interacted with the ad with typical attributes of users of similar platforms, across different devices. This comparison reveals to the advertiser that its ad audience is mainly accessing the adverts through mobile devices and is likely in the 45-60 age range."
-  legal_basis: Consent, Legitimate Interests
-- name: essential.fraud_detection
+  description:
+  illustration:
+  legal_basis:
+- name:
   key: essential.fraud_detection
   consent_mechanism: opt_out
   enforcement_level: frontend
@@ -31,7 +31,7 @@ tcf_data_uses:
   description:
   illustration:
   legal_basis:
-- name: essential.service.security
+- name:
   key: essential.service.security
   consent_mechanism: opt_out
   enforcement_level: frontend
@@ -39,7 +39,7 @@ tcf_data_uses:
   description:
   illustration:
   legal_basis:
-- name: functional.improve_service
+- name:
   key: functional.improve_service
   consent_mechanism: opt_out
   enforcement_level: frontend
@@ -47,7 +47,7 @@ tcf_data_uses:
   description:
   illustration:
   legal_basis:
-- name: functional.storage
+- name:
   key: functional.storage
   consent_mechanism: opt_out
   enforcement_level: frontend
@@ -55,7 +55,7 @@ tcf_data_uses:
   description:
   illustration:
   legal_basis:
-- name: marketing.advertising.first_party.contextual
+- name:
   key: marketing.advertising.first_party.contextual
   consent_mechanism: opt_out
   enforcement_level: frontend
@@ -63,7 +63,7 @@ tcf_data_uses:
   description:
   illustration:
   legal_basis:
-- name: marketing.advertising.first_party.targeted
+- name:
   key: marketing.advertising.first_party.targeted
   consent_mechanism: opt_out
   enforcement_level: frontend
@@ -71,7 +71,7 @@ tcf_data_uses:
   description:
   illustration:
   legal_basis:
-- name: marketing.advertising.frequency_capping
+- name:
   key: marketing.advertising.frequency_capping
   consent_mechanism: opt_out
   enforcement_level: frontend
@@ -79,7 +79,7 @@ tcf_data_uses:
   description:
   illustration:
   legal_basis:
-- name: marketing.advertising.negative_targeting
+- name:
   key: marketing.advertising.negative_targeting
   consent_mechanism: opt_out
   enforcement_level: frontend
@@ -87,7 +87,7 @@ tcf_data_uses:
   description:
   illustration:
   legal_basis:
-- name: marketing.advertising.ad_serving
+- name:
   key: marketing.advertising.ad_serving
   consent_mechanism: opt_out
   enforcement_level: frontend
@@ -95,7 +95,7 @@ tcf_data_uses:
   description:
   illustration:
   legal_basis:
-- name: marketing.advertising.profiling
+- name:
   key: marketing.advertising.profiling
   consent_mechanism: opt_out
   enforcement_level: frontend
@@ -103,7 +103,7 @@ tcf_data_uses:
   description:
   illustration:
   legal_basis:
-- name: marketing.advertising.third_party.targeted
+- name:
   key: marketing.advertising.third_party.targeted
   consent_mechanism: opt_out
   enforcement_level: frontend
@@ -111,7 +111,7 @@ tcf_data_uses:
   description:
   illustration:
   legal_basis:
-- name: personalize.profiling
+- name:
   key: personalize.profiling
   consent_mechanism: opt_out
   enforcement_level: frontend
@@ -119,7 +119,7 @@ tcf_data_uses:
   description:
   illustration:
   legal_basis:
-- name: personalize.content
+- name:
   key: personalize.content
   consent_mechanism: opt_out
   enforcement_level: frontend

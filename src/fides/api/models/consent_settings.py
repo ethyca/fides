@@ -11,7 +11,10 @@ class ConsentSettings(Base):
 
     @classmethod
     def get_or_create(cls, db: Session) -> "ConsentSettings":
+        """We only have one organization-wide ConsentSettings record - fetch this if it
+        exists, or create it and return if not.
+        """
         consent_settings = db.query(ConsentSettings).first()
         if not consent_settings:
-            ConsentSettings.create(db=db, data={"tcf_enabled": False})
+            return ConsentSettings.create(db=db, data={"tcf_enabled": False})
         return consent_settings

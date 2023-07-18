@@ -39,10 +39,10 @@ class PrivacyPreferencesRequest(FidesSchema):
 
     browser_identity: Identity
     code: Optional[SafeStr]
-    preferences: conlist(ConsentOptionCreate, max_items=50)  # type: ignore
-    data_use_preferences: conlist(TCFPreferenceSave, max_items=50)  # type: ignore
-    vendor_preferences: conlist(TCFPreferenceSave, max_items=50)  # type: ignore
-    feature_preferences: conlist(TCFPreferenceSave, max_items=50)  # type: ignore
+    preferences: conlist(ConsentOptionCreate, max_items=50) = []  # type: ignore
+    data_use_preferences: conlist(TCFPreferenceSave, max_items=50) = []  # type: ignore
+    vendor_preferences: conlist(TCFPreferenceSave, max_items=50) = []  # type: ignore
+    feature_preferences: conlist(TCFPreferenceSave, max_items=50) = []  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]

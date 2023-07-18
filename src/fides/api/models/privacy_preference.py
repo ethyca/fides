@@ -751,7 +751,7 @@ def upsert_last_saved_record(
     ] = None
 
     record_type_mapping = {
-        PreferenceType.privacy_notice: "privacy_notice_id",
+        PreferenceType.privacy_notice: "privacy_notice_history_id",
         PreferenceType.data_use: "data_use",
         PreferenceType.vendor: "vendor",
         PreferenceType.feature: "feature",
