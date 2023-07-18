@@ -43,7 +43,6 @@ ENV PATH="/opt/fides/bin:${PATH}"
 RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools wheel
 
 COPY requirements.txt .
-RUN pip install "Cython<3.0" "pyyaml>=5,<6" --no-build-isolation
 RUN pip install --no-cache-dir install -r requirements.txt
 
 COPY dev-requirements.txt .
