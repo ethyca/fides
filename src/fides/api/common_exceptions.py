@@ -107,6 +107,10 @@ class PrivacyNoticeHistoryNotFound(BaseException):
     """PrivacyNoticeHistory Not Found"""
 
 
+class PrivacyPreferenceSaveError(BaseException):
+    """PrivacyPreference Save Error"""
+
+
 class IdentityNotFoundException(BaseException):
     """Identity Not Found"""
 

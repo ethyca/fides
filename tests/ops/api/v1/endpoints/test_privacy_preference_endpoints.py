@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
+from fides.api.models.consent_settings import ConsentSettings
 from fides.api.models.privacy_preference import (
     ConsentMethod,
     CurrentPrivacyPreference,
@@ -586,7 +587,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         assert response.status_code == 422
         assert (
             response.json()["detail"]
-            == f"The ServedNoticeHistory record '{served_notice_history_us_ca_provide_for_fides_user.id}' did not serve the PrivacyNoticeHistory record '{privacy_notice.histories[0].id}'."
+            == f"The ServedNoticeHistory record '{served_notice_history_us_ca_provide_for_fides_user.id}' did not serve the Privacy Notice History '{privacy_notice.histories[0].id}'."
         )
 
     @pytest.mark.usefixtures(
@@ -1130,6 +1131,35 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             "method": "button",
         }
 
+    @pytest.fixture(scope="function")
+    def tcf_request_body(
+        self,
+        privacy_notice,
+        consent_policy,
+        privacy_experience_france_tcf_overlay,
+        served_notice_history_for_data_use,
+    ):
+        return {
+            "browser_identity": {
+                "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
+            },
+            "data_use_preferences": [
+                {
+                    "id": "analytics.reporting.content_performance",
+                    "preference": "opt_out",
+                    "served_notice_history_id": served_notice_history_for_data_use.id,
+                }
+            ],
+            "vendor_preferences": [
+                {
+                    "id": "amplitude",
+                    "preference": "opt_in",
+                }
+            ],
+            "user_geography": "fr",
+            "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
+        }
+
     @pytest.mark.usefixtures(
         "privacy_notice",
     )
@@ -1309,6 +1339,174 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
 
         current_preference.delete(db)
         privacy_preference_history.delete(db)
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_save_tcf_privacy_preferences(
+        self,
+        run_privacy_request_mock,
+        mock_anonymize,
+        db,
+        api_client,
+        url,
+        tcf_request_body,
+        privacy_experience_france_tcf_overlay,
+        served_notice_history_for_data_use,
+    ):
+        """Assert CurrentPrivacyPreference records were updated and PrivacyPreferenceHistory records were created
+        for recordkeeping with respect to the fides user device id in the request
+        """
+        consent_settings = ConsentSettings.get_or_create(db)
+        consent_settings.tcf_enabled = True
+        consent_settings.save(db=db)
+
+        test_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+        masked_ip = "12.214.31.0"
+        mock_anonymize.return_value = masked_ip
+        response = api_client.patch(
+            url, json=tcf_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 2
+
+        data_use_response = response.json()[0]
+        assert data_use_response["preference"] == "opt_out"
+        assert (
+            data_use_response["data_use"] == "analytics.reporting.content_performance"
+        )
+
+        data_use_privacy_preference_history_id = data_use_response[
+            "privacy_preference_history_id"
+        ]
+        current_data_use_preference = CurrentPrivacyPreference.get(
+            db, object_id=data_use_response["id"]
+        )
+
+        # Assert details saved with respect to data use
+        data_use_privacy_preference_history = (
+            current_data_use_preference.privacy_preference_history
+        )
+        assert (
+            data_use_privacy_preference_history.id
+            == data_use_privacy_preference_history_id
+        )
+        assert data_use_privacy_preference_history.vendor is None
+        assert data_use_privacy_preference_history.privacy_notice_history_id is None
+        assert data_use_privacy_preference_history.feature is None
+
+        fides_user_device_provided_identity = (
+            data_use_privacy_preference_history.fides_user_device_provided_identity
+        )
+        assert (
+            current_data_use_preference.fides_user_device_provided_identity
+            == fides_user_device_provided_identity
+        )
+        assert (
+            fides_user_device_provided_identity.hashed_value
+            == ProvidedIdentity.hash_value(test_device_id)
+        )
+        assert (
+            fides_user_device_provided_identity.encrypted_value["value"]
+            == test_device_id
+        )
+        assert (
+            data_use_privacy_preference_history.hashed_fides_user_device
+            == ProvidedIdentity.hash_value(test_device_id)
+        )
+        assert data_use_privacy_preference_history.fides_user_device == test_device_id
+        assert (
+            data_use_privacy_preference_history.data_use
+            == data_use_response["data_use"]
+        )
+
+        assert (
+            data_use_privacy_preference_history.request_origin
+            == RequestOrigin.tcf_overlay
+        )
+        assert data_use_privacy_preference_history.user_agent == "testclient"
+        assert (
+            data_use_privacy_preference_history.privacy_experience_config_history_id
+            is None
+        )
+        assert (
+            data_use_privacy_preference_history.privacy_experience_id
+            == privacy_experience_france_tcf_overlay.id
+        )
+        assert data_use_privacy_preference_history.anonymized_ip_address == masked_ip
+        assert data_use_privacy_preference_history.url_recorded is None
+        assert (
+            data_use_privacy_preference_history.served_notice_history_id
+            == served_notice_history_for_data_use.id
+        )
+
+        # Assert details saved w.r.t vendor
+
+        vendor_response = response.json()[1]
+        assert vendor_response["preference"] == "opt_in"
+        assert vendor_response["vendor"] == "amplitude"
+
+        current_vendor_preference = CurrentPrivacyPreference.get(
+            db, object_id=vendor_response["id"]
+        )
+        vendor_privacy_preference_history = (
+            current_vendor_preference.privacy_preference_history
+        )
+        assert vendor_privacy_preference_history.data_use is None
+        assert vendor_privacy_preference_history.privacy_notice_history_id is None
+        assert vendor_privacy_preference_history.feature is None
+
+        fides_user_device_provided_identity = (
+            vendor_privacy_preference_history.fides_user_device_provided_identity
+        )
+        assert (
+            current_data_use_preference.fides_user_device_provided_identity
+            == fides_user_device_provided_identity
+        )
+        assert (
+            fides_user_device_provided_identity.hashed_value
+            == ProvidedIdentity.hash_value(test_device_id)
+        )
+        assert (
+            fides_user_device_provided_identity.encrypted_value["value"]
+            == test_device_id
+        )
+        assert (
+            vendor_privacy_preference_history.hashed_fides_user_device
+            == ProvidedIdentity.hash_value(test_device_id)
+        )
+        assert vendor_privacy_preference_history.fides_user_device == test_device_id
+        assert vendor_privacy_preference_history.vendor == vendor_response["vendor"]
+
+        assert (
+            vendor_privacy_preference_history.request_origin
+            == RequestOrigin.tcf_overlay
+        )
+        assert vendor_privacy_preference_history.user_agent == "testclient"
+        assert (
+            vendor_privacy_preference_history.privacy_experience_config_history_id
+            is None
+        )
+        assert (
+            vendor_privacy_preference_history.privacy_experience_id
+            == privacy_experience_france_tcf_overlay.id
+        )
+        assert vendor_privacy_preference_history.anonymized_ip_address == masked_ip
+        assert vendor_privacy_preference_history.url_recorded is None
+        assert vendor_privacy_preference_history.served_notice_history_id is None
+
+        # Privacy request not created for TCF
+        assert data_use_privacy_preference_history.privacy_request_id is None
+        assert vendor_privacy_preference_history.privacy_request_id is None
+        assert not run_privacy_request_mock.called
+
+        current_data_use_preference.delete(db)
+        data_use_privacy_preference_history.delete(db)
+        current_vendor_preference.delete(db)
+        vendor_privacy_preference_history.delete(db)
 
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"

@@ -1,129 +1,81 @@
 tcf_data_uses:
 - name:
   id: analytics.reporting.content_performance
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: analytics.reporting.ad_performance
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: analytics.reporting.campaign_insights
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: essential.fraud_detection
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: essential.service.security
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: functional.improve_service
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: functional.storage
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: marketing.advertising.first_party.contextual
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: marketing.advertising.first_party.targeted
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: marketing.advertising.frequency_capping
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: marketing.advertising.negative_targeting
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: marketing.advertising.ad_serving
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: marketing.advertising.profiling
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: marketing.advertising.third_party.targeted
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: personalize.profiling
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:
 - name:
   id: personalize.content
-  consent_mechanism: opt_out
-  enforcement_level: frontend
-  has_gpc_flag: false
   description:
   illustration:
   legal_basis:

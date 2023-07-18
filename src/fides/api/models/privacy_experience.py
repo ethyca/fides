@@ -18,7 +18,6 @@ from fides.api.models.privacy_notice import (
     update_if_modified,
 )
 from fides.api.models.privacy_preference import (
-    CURRENT_TCF_VERSION,
     CurrentPrivacyPreference,
     LastServedNotice,
     PreferenceType,

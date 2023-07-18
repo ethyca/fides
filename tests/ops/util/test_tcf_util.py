@@ -1,5 +1,4 @@
 import pytest
-from sqlalchemy.orm import Session
 
 from fides.api.models.sql_models import PrivacyDeclaration
 from fides.api.util.tcf_util import load_tcf_data_uses

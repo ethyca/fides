@@ -18,6 +18,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 from fides.api.common_exceptions import (
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
+    PrivacyPreferenceSaveError,
 )
 from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.models.privacy_notice import (
@@ -174,10 +175,6 @@ class ConsentReportingMixin:
 
     tcf_version = Column(String)
 
-    tcf_details = Column(
-        MutableDict.as_mutable(JSONB), server_default="{}", default=dict
-    )
-
     # Relationships
     @declared_attr
     def privacy_notice_history(cls) -> relationship:
@@ -213,14 +210,16 @@ class ServingComponent(Enum):
     tcf_overlay = "tcf_overlay"
 
 
-def _validate_notice_and_identity(
+def _validate_before_saving_consent_history(
     db: Session, data: dict[str, Any]
-) -> Optional[PrivacyNoticeHistory]:
-    """Validates that the PrivacyNoticeHistory specified in the data dictionary
-    exists and that at least one provided identity type is supplied in the data
+) -> Tuple[Optional[PrivacyNoticeHistory], Optional[str], Optional[str], Optional[str]]:
+    """
+    Runs some final validation checks before saving that a user was served
+    consent preferences or saved consent preferences
 
-    Shares some common checks we run before saving PrivacyPreferenceHistory
-    or ServedPreferenceHistory
+    - Validates that a notice history exists if supplied
+    - Validates that at least one provided identity type is supplied
+    - Validates that only one of a data use, vendor, or feature exists in request body
     """
     privacy_notice_history = None
     if data.get("privacy_notice_history_id"):
@@ -237,7 +236,24 @@ def _validate_notice_and_identity(
             "Must supply a verified provided identity id or a fides_user_device_provided_identity_id"
         )
 
-    return privacy_notice_history
+    data_use = data.get("data_use")
+    vendor = data.get("vendor")
+    feature = data.get("feature")
+
+    if (
+        sum(
+            [
+                item is not None
+                for item in [privacy_notice_history, data_use, vendor, feature]
+            ]
+        )
+        != 1
+    ):
+        raise PrivacyPreferenceSaveError(
+            "Can only save record against one of a privacy notice, data use, vendor, or feature."
+        )
+
+    return privacy_notice_history, data_use, vendor, feature
 
 
 class ServedNoticeHistory(ConsentReportingMixin, Base):
@@ -294,9 +310,15 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
 
         There is only one LastServedNotice for each PrivacyNotice/ProvidedIdentity.
         """
-        privacy_notice_history: Optional[
-            PrivacyNoticeHistory
-        ] = _validate_notice_and_identity(db, data)
+        (
+            privacy_notice_history,
+            data_use,
+            vendor,
+            feature,
+        ) = _validate_before_saving_consent_history(db, data)
+
+        if any([data_use, vendor, feature]):
+            data["tcf_version"] = CURRENT_TCF_VERSION
 
         created_served_notice_history = super().create(
             db=db, data=data, check_name=check_name
@@ -313,10 +335,6 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
             last_served_data[
                 "privacy_notice_id"
             ] = privacy_notice_history.privacy_notice_id
-
-        data_use = data.get("data_use", None)
-        vendor = data.get("vendor", None)
-        feature = data.get("feature", None)
 
         last_served_data["data_use"] = data_use
         last_served_data["vendor"] = vendor
@@ -453,14 +471,20 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
 
         There is only one CurrentPrivacyPreference for each PrivacyNotice/ProvidedIdentity.
         """
-        privacy_notice_history: Optional[
-            PrivacyNoticeHistory
-        ] = _validate_notice_and_identity(db, data)
+        (
+            privacy_notice_history,
+            data_use,
+            vendor,
+            feature,
+        ) = _validate_before_saving_consent_history(db, data)
 
         if privacy_notice_history:
             data[
                 "relevant_systems"
             ] = privacy_notice_history.calculate_relevant_systems(db)
+
+        if any([data_use, vendor, feature]):
+            data["tcf_version"] = CURRENT_TCF_VERSION
 
         created_privacy_preference_history = super().create(
             db=db, data=data, check_name=check_name
@@ -479,10 +503,6 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
             current_privacy_preference_data[
                 "privacy_notice_history_id"
             ] = privacy_notice_history.id
-
-        data_use = data.get("data_use")
-        vendor = data.get("vendor")
-        feature = data.get("feature")
 
         current_privacy_preference_data["data_use"] = data_use
         current_privacy_preference_data["vendor"] = vendor

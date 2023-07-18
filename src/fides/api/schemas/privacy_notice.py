@@ -17,9 +17,6 @@ class BaseConsentSchema(FidesSchema):
     name: Optional[str]
     description: Optional[str]
     internal_description: Optional[str]
-    consent_mechanism: Optional[ConsentMechanism]
-    enforcement_level: Optional[EnforcementLevel]
-    has_gpc_flag: Optional[bool] = False
 
 
 class PrivacyNotice(BaseConsentSchema):
@@ -34,6 +31,9 @@ class PrivacyNotice(BaseConsentSchema):
     origin: Optional[str]
     regions: Optional[conlist(PrivacyNoticeRegion, min_items=1)]  # type: ignore
     data_uses: Optional[conlist(str, min_items=1)]  # type: ignore
+    consent_mechanism: Optional[ConsentMechanism]
+    enforcement_level: Optional[EnforcementLevel]
+    has_gpc_flag: Optional[bool] = False
     disabled: Optional[bool] = False
     displayed_in_privacy_center: Optional[bool] = False
     displayed_in_overlay: Optional[bool] = False

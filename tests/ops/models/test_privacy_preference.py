@@ -75,7 +75,7 @@ class TestPrivacyPreferenceHistory:
                 check_name=False,
             )
 
-    def test_create_privacy_preference(
+    def test_create_privacy_preference_for_notice(
         self, db, privacy_notice, system, privacy_request
     ):
         provided_identity_data = {
@@ -234,6 +234,254 @@ class TestPrivacyPreferenceHistory:
         assert (
             current_privacy_preference.privacy_notice_history == privacy_notice_history
         )
+        assert (
+            next_preference_history_record.current_privacy_preference
+            == current_privacy_preference
+        )
+        assert current_privacy_preference.id == current_privacy_preference_id
+
+        db.refresh(preference_history_record)
+        assert (
+            next_preference_history_record.current_privacy_preference
+            == current_privacy_preference
+        )
+        assert preference_history_record.current_privacy_preference is None
+
+        preference_history_record.delete(db)
+        next_preference_history_record.delete(db)
+
+    def test_create_privacy_preference_for_data_use(
+        self, db, system, fides_user_provided_identity
+    ):
+        (
+            fides_user_device_id,
+            hashed_device_id,
+        ) = extract_identity_from_provided_identity(
+            fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
+        )
+
+        preference_history_record = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "data_use": "marketing.advertising.third_party.targeted",
+                "email": None,
+                "fides_user_device": fides_user_device_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "hashed_email": None,
+                "hashed_fides_user_device": hashed_device_id,
+                "hashed_phone_number": None,
+                "phone_number": None,
+                "preference": "opt_out",
+                "privacy_notice_history_id": None,
+                "provided_identity_id": None,
+                "request_origin": "tcf_overlay",
+                "secondary_user_ids": {"ga_client_id": "test"},
+                "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+                "user_geography": "fr",
+                "url_recorded": "example.com",
+            },
+            check_name=False,
+        )
+        assert preference_history_record.affected_system_status == {}
+        assert preference_history_record.email is None
+        assert preference_history_record.hashed_email is None
+        assert (
+            preference_history_record.fides_user_device
+            == fides_user_device_id
+            is not None
+        )
+        assert (
+            preference_history_record.hashed_fides_user_device
+            == hashed_device_id
+            is not None
+        )
+        assert (
+            preference_history_record.fides_user_device_provided_identity
+            == fides_user_provided_identity
+        )
+        assert (
+            preference_history_record.data_use
+            == "marketing.advertising.third_party.targeted"
+        )
+        assert preference_history_record.tcf_version == "2.2"
+
+        assert preference_history_record.phone_number is None
+        assert preference_history_record.hashed_phone_number is None
+        assert preference_history_record.preference == UserConsentPreference.opt_out
+        assert preference_history_record.privacy_notice_history is None
+        assert preference_history_record.privacy_request is None
+        assert preference_history_record.provided_identity is None
+        assert preference_history_record.relevant_systems is None
+        assert preference_history_record.request_origin == RequestOrigin.tcf_overlay
+        assert preference_history_record.secondary_user_ids == {"ga_client_id": "test"}
+        assert (
+            preference_history_record.user_agent
+            == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24"
+        )
+        assert preference_history_record.user_geography == "fr"
+        assert preference_history_record.url_recorded == "example.com"
+
+        # Assert CurrentPrivacyPreference record upserted
+        current_privacy_preference = (
+            preference_history_record.current_privacy_preference
+        )
+        current_privacy_preference_id = current_privacy_preference.id
+        assert current_privacy_preference.preference == UserConsentPreference.opt_out
+        assert current_privacy_preference.privacy_notice_history is None
+        assert (
+            current_privacy_preference.data_use
+            == "marketing.advertising.third_party.targeted"
+        )
+        assert current_privacy_preference.tcf_version == "2.2"
+
+        # Save preferences again with an "opt in" preference for this privacy notice
+        next_preference_history_record = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "preference": "opt_in",
+                "data_use": "marketing.advertising.third_party.targeted",
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "request_origin": "tcf_overlay",
+                "secondary_user_ids": {"ga_client_id": "test"},
+                "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+                "user_geography": "fr",
+            },
+            check_name=False,
+        )
+
+        assert next_preference_history_record.preference == UserConsentPreference.opt_in
+        assert next_preference_history_record.privacy_notice_history is None
+        assert (
+            next_preference_history_record.data_use
+            == "marketing.advertising.third_party.targeted"
+        )
+
+        # Assert CurrentPrivacyPreference record upserted
+        db.refresh(current_privacy_preference)
+        assert current_privacy_preference.preference == UserConsentPreference.opt_in
+        assert current_privacy_preference.privacy_notice_history is None
+        assert (
+            current_privacy_preference.data_use
+            == "marketing.advertising.third_party.targeted"
+        )
+        assert (
+            next_preference_history_record.current_privacy_preference
+            == current_privacy_preference
+        )
+        assert current_privacy_preference.id == current_privacy_preference_id
+
+        db.refresh(preference_history_record)
+        assert (
+            next_preference_history_record.current_privacy_preference
+            == current_privacy_preference
+        )
+        assert preference_history_record.current_privacy_preference is None
+
+        preference_history_record.delete(db)
+        next_preference_history_record.delete(db)
+
+    def test_create_privacy_preference_for_vendor(
+        self, db, system, fides_user_provided_identity
+    ):
+        (
+            fides_user_device_id,
+            hashed_device_id,
+        ) = extract_identity_from_provided_identity(
+            fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
+        )
+
+        preference_history_record = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "vendor": "sendgrid",
+                "email": None,
+                "fides_user_device": fides_user_device_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "hashed_email": None,
+                "hashed_fides_user_device": hashed_device_id,
+                "hashed_phone_number": None,
+                "phone_number": None,
+                "preference": "opt_out",
+                "privacy_notice_history_id": None,
+                "provided_identity_id": None,
+                "request_origin": "tcf_overlay",
+                "secondary_user_ids": {"ga_client_id": "test"},
+                "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+                "user_geography": "fr",
+                "url_recorded": "example.com",
+            },
+            check_name=False,
+        )
+        assert preference_history_record.affected_system_status == {}
+        assert preference_history_record.email is None
+        assert preference_history_record.hashed_email is None
+        assert (
+            preference_history_record.fides_user_device
+            == fides_user_device_id
+            is not None
+        )
+        assert (
+            preference_history_record.hashed_fides_user_device
+            == hashed_device_id
+            is not None
+        )
+        assert (
+            preference_history_record.fides_user_device_provided_identity
+            == fides_user_provided_identity
+        )
+        assert preference_history_record.vendor == "sendgrid"
+        assert preference_history_record.tcf_version == "2.2"
+
+        assert preference_history_record.phone_number is None
+        assert preference_history_record.hashed_phone_number is None
+        assert preference_history_record.preference == UserConsentPreference.opt_out
+        assert preference_history_record.privacy_notice_history is None
+        assert preference_history_record.privacy_request is None
+        assert preference_history_record.provided_identity is None
+        assert preference_history_record.relevant_systems is None
+        assert preference_history_record.request_origin == RequestOrigin.tcf_overlay
+        assert preference_history_record.secondary_user_ids == {"ga_client_id": "test"}
+        assert (
+            preference_history_record.user_agent
+            == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24"
+        )
+        assert preference_history_record.user_geography == "fr"
+        assert preference_history_record.url_recorded == "example.com"
+
+        # Assert CurrentPrivacyPreference record upserted
+        current_privacy_preference = (
+            preference_history_record.current_privacy_preference
+        )
+        current_privacy_preference_id = current_privacy_preference.id
+        assert current_privacy_preference.preference == UserConsentPreference.opt_out
+        assert current_privacy_preference.privacy_notice_history is None
+        assert current_privacy_preference.vendor == "sendgrid"
+        assert current_privacy_preference.tcf_version == "2.2"
+
+        # Save preferences again with an "opt in" preference for this privacy notice
+        next_preference_history_record = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "preference": "opt_in",
+                "vendor": "sendgrid",
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "request_origin": "tcf_overlay",
+                "secondary_user_ids": {"ga_client_id": "test"},
+                "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+                "user_geography": "fr",
+            },
+            check_name=False,
+        )
+
+        assert next_preference_history_record.preference == UserConsentPreference.opt_in
+        assert next_preference_history_record.privacy_notice_history is None
+        assert next_preference_history_record.vendor == "sendgrid"
+
+        # Assert CurrentPrivacyPreference record upserted
+        db.refresh(current_privacy_preference)
+        assert current_privacy_preference.preference == UserConsentPreference.opt_in
+        assert current_privacy_preference.privacy_notice_history is None
+        assert current_privacy_preference.vendor == "sendgrid"
         assert (
             next_preference_history_record.current_privacy_preference
             == current_privacy_preference

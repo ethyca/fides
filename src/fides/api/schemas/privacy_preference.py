@@ -29,7 +29,7 @@ class ConsentOptionCreate(FidesSchema):
 class TCFPreferenceSave(FidesSchema):
     """Schema for saving a user's preference with respect to a TCF Data use, vendor, or feature"""
 
-    key: str  # Identifier for the data use, vendor, or feature
+    id: str  # Identifier for the data use, vendor, or feature
     preference: UserConsentPreference
     served_notice_history_id: Optional[str]
 
