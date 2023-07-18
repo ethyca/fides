@@ -581,6 +581,7 @@ div#fides-modal .fides-modal-button-group {
   background-color: transparent;
   border: none;
   padding: 0.3em 1em;
+  cursor: pointer;
 }
 
 .fides-filter-button[aria-checked="true"] {
