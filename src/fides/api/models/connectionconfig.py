@@ -4,7 +4,6 @@ import enum
 from datetime import datetime
 from typing import Any, Dict, Optional, Type
 
-from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableDict
@@ -181,8 +180,6 @@ class ConnectionConfig(Base):
         # hard-coding to avoid cyclic dependency
         if authentication.strategy != "oauth2_authorization_code":
             return False
-
-        logger.info(self.secrets)
 
         return bool(self.secrets and self.secrets.get("access_token"))
 

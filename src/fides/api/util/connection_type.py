@@ -85,8 +85,8 @@ def get_connection_types(
         """If a search query param was included, is it a substring of an available connector type?"""
         return search.lower() in elem.lower() if search else True
 
-    def oauth_required(connector_template: Optional[ConnectorTemplate]) -> bool:
-        """Determines if the config for the given connector template requires OAuth."""
+    def authorization_required(connector_template: Optional[ConnectorTemplate]) -> bool:
+        """Determines if the auth strategy for the given connector template requires authorization."""
         if connector_template is None:
             return False
 
@@ -202,7 +202,7 @@ def get_connection_types(
                     encoded_icon=connector_template.icon
                     if connector_template is not None
                     else None,
-                    authorization_required=oauth_required(connector_template),
+                    authorization_required=authorization_required(connector_template),
                 )
             )
 
