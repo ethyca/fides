@@ -41,7 +41,7 @@ PyMySQL==1.0.2
 python-jose[cryptography]==3.3.0
 pyyaml>=5,<7
 redis==3.5.3
-RestrictedPython==6.0.0
+RestrictedPython==6.1
 rich-click==1.6.1
 sendgrid==6.9.7
 slowapi==0.1.8
