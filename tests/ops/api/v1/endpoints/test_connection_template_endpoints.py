@@ -710,8 +710,8 @@ class TestGetConnectionSecretSchema:
                     "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
                 },
                 "dataset": {
-                    "title": "Dataset",
-                    "description": "The dataset within your project that contains the tables you want to access.",
+                    "title": "BigQuery Dataset",
+                    "description": "The dataset within your BigQuery project that contains the tables you want to access.",
                     "type": "string",
                 },
             },
@@ -802,6 +802,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "port": {
+                    "default": 3306,
                     "title": "Port",
                     "description": "The network port number on which the server is listening for incoming connections (default: 3306).",
                     "type": "integer",
@@ -844,6 +845,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "port": {
+                    "default": 27017,
                     "title": "Port",
                     "description": "The network port number on which the server is listening for incoming connections (default: 27017).",
                     "type": "integer",
@@ -886,6 +888,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "port": {
+                    "default": 1433,
                     "title": "Port",
                     "description": "The network port number on which the server is listening for incoming connections (default: 1433).",
                     "type": "integer",
@@ -928,6 +931,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "port": {
+                    "default": 3306,
                     "title": "Port",
                     "description": "The network port number on which the server is listening for incoming connections (default: 3306).",
                     "type": "integer",
@@ -970,6 +974,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "port": {
+                    "default": 5432,
                     "title": "Port",
                     "description": "The network port number on which the server is listening for incoming connections (default: 5432).",
                     "type": "integer",
@@ -1023,6 +1028,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "port": {
+                    "default": 5439,
                     "title": "Port",
                     "description": "The network port number on which the server is listening for incoming connections (default: 5439).",
                     "type": "integer",

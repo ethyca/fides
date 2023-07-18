@@ -15,8 +15,8 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         title="Host",
         description="The hostname or IP address of the server where the database is running.",
     )
-    port: Optional[int] = Field(
-        None,
+    port: int = Field(
+        3306,
         title="Port",
         description="The network port number on which the server is listening for incoming connections (default: 3306).",
     )
