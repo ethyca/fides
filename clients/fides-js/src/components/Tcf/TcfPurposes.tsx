@@ -5,9 +5,7 @@ import FilterButtons from "./FilterButtons";
 import CookiesTable from "./CookiesTable";
 
 const TcfPurposes = ({ notices }: { notices: Array<PrivacyNotice> }) => {
-  const handleToggle = () => {
-    console.log("test");
-  };
+  const handleToggle = () => {};
   return (
     <div>
       <FilterButtons />
