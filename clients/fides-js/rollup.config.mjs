@@ -27,7 +27,6 @@ const preactAliases = {
 export default [
   {
     input: `src/${name}.ts`,
-    external: ['src/lib/tcf.ts'],
     plugins: [
       alias(preactAliases),
       nodeResolve(),
@@ -86,7 +85,7 @@ export default [
     ],
   },
   {
-    input: `src/${name}.ts`,
+    input: `src/${name}-tcf.ts`,
     plugins: [
       alias(preactAliases),
       nodeResolve(),
@@ -146,7 +145,6 @@ export default [
   },
   {
     input: `src/${name}.ts`,
-    external: ['src/lib/tcf.ts'],
     plugins: [alias(preactAliases), nodeResolve(), postcss(), esbuild()],
     output: [
       {
@@ -158,7 +156,7 @@ export default [
     ],
   },
   {
-    input: `src/${name}.ts`,
+    input: `src/${name}-tcf.ts`,
     plugins: [alias(preactAliases), nodeResolve(), postcss(), esbuild()],
     output: [
       {
@@ -171,7 +169,6 @@ export default [
   },
   {
     input: `src/${name}.ts`,
-    external: ['src/lib/tcf.ts'],
     plugins: [dts(), postcss()],
     output: [
       {
@@ -180,7 +177,7 @@ export default [
     ],
   },
   {
-    input: `src/${name}.ts`,
+    input: `src/${name}-tcf.ts`,
     plugins: [dts(), postcss()],
     output: [
       {
