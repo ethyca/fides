@@ -13,12 +13,10 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Textarea,
   Tooltip,
   VStack,
 } from "@fidesui/react";
 import { Option } from "common/form/inputs";
-import { useAPIHelper } from "common/hooks";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaReponse,
@@ -26,8 +24,10 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
-import React, { useEffect, useRef } from "react";
+import React from "react";
+import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
+import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
 import DatasetConfigField from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
   ConnectionConfigurationResponse,
@@ -42,6 +42,11 @@ import { fillInDefaults } from "./helpers";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
+export interface TestConnectionResponse {
+  data?: DatastoreConnectionStatus;
+  fulfilledTimeStamp?: number;
+}
+
 type ConnectorParametersFormProps = {
   secretsSchema?: ConnectionTypeSecretSchemaReponse;
   defaultValues: ConnectionConfigFormValues;
@@ -53,7 +58,7 @@ type ConnectorParametersFormProps = {
   /**
    * Parent callback when Test Connection is clicked
    */
-  onTestConnectionClick: (value: any) => void;
+  onTestConnectionClick: (value: TestConnectionResponse) => void;
   /**
    * Text for the test button. Defaults to "Test connection"
    */
@@ -80,10 +85,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   onDelete,
   deleteResult,
 }) => {
-  const mounted = useRef(false);
-  const { handleError } = useAPIHelper();
-
-  const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
+  const [trigger, { isLoading, isFetching }] =
+    useLazyGetDatastoreConnectionStatusQuery();
 
   const validateConnectionIdentifier = (value: string) => {
     let error;
@@ -98,7 +101,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const validateField = (label: string, value: string, type?: string) => {
     let error;
-    if (typeof value === "undefined" || value === "") {
+    if (typeof value === "undefined" || value === "" || value === undefined) {
       error = `${label} is required`;
     }
     if (type === FIDES_DATASET_REFERENCE) {
@@ -133,84 +136,103 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     return undefined;
   };
 
+  const isRequiredSecretValue = (key: string): boolean =>
+    secretsSchema?.required?.includes(key) ||
+    (secretsSchema?.properties?.[key] !== undefined &&
+      "default" in secretsSchema.properties[key]);
+
   const getFormField = (
     key: string,
     item: ConnectionTypeSecretSchemaProperty
   ): JSX.Element => (
     <Field
-      id={key}
-      name={key}
-      key={key}
+      id={`secrets.${key}`}
+      name={`secrets.${key}`}
+      key={`secrets.${key}`}
       validate={
-        secretsSchema?.required?.includes(key) || item.type === "integer"
+        isRequiredSecretValue(key) || item.type === "integer"
           ? (value: string) =>
               validateField(item.title, value, item.allOf?.[0].$ref)
           : false
       }
     >
-      {({ field, form }: { field: FieldInputProps<string>; form: any }) => (
-        <FormControl
-          display="flex"
-          isRequired={secretsSchema?.required?.includes(key)}
-          isInvalid={form.errors[key] && form.touched[key]}
-        >
-          {getFormLabel(key, item.title)}
-          <VStack align="flex-start" w="inherit">
-            {item.type !== "integer" && (
-              <Input
-                {...field}
-                placeholder={getPlaceholder(item)}
-                autoComplete="off"
-                color="gray.700"
-                size="sm"
-              />
-            )}
-            {item.type === "integer" && (
-              <NumberInput
-                allowMouseWheel
-                color="gray.700"
-                defaultValue={0}
-                min={0}
-                size="sm"
-              >
-                <NumberInputField {...field} autoComplete="off" />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-            )}
-            <FormErrorMessage>{form.errors[key]}</FormErrorMessage>
-          </VStack>
-          <Tooltip
-            aria-label={item.description}
-            hasArrow
-            label={item.description}
-            placement="right-start"
-            openDelay={500}
+      {({ field, form }: { field: FieldInputProps<string>; form: any }) => {
+        const error = form.errors.secrets && form.errors.secrets[key];
+        const touch = form.touched.secrets ? form.touched.secrets[key] : false;
+
+        return (
+          <FormControl
+            display="flex"
+            isRequired={isRequiredSecretValue(key)}
+            isInvalid={error && touch}
           >
-            <Flex
-              alignItems="center"
-              h="32px"
-              visibility={item.description ? "visible" : "hidden"}
+            {getFormLabel(key, item.title)}
+            <VStack align="flex-start" w="inherit">
+              {item.type !== "integer" && (
+                <Input
+                  {...field}
+                  placeholder={getPlaceholder(item)}
+                  autoComplete="off"
+                  color="gray.700"
+                  size="sm"
+                />
+              )}
+              {item.type === "integer" && (
+                <NumberInput
+                  allowMouseWheel
+                  color="gray.700"
+                  onChange={(value) => {
+                    form.setFieldValue(field.name, value);
+                  }}
+                  defaultValue={field.value ?? 0}
+                  min={0}
+                  size="sm"
+                >
+                  <NumberInputField {...field} autoComplete="off" />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              )}
+              <FormErrorMessage>{error}</FormErrorMessage>
+            </VStack>
+            <Tooltip
+              aria-label={item.description}
+              hasArrow
+              label={item.description}
+              placement="right-start"
+              openDelay={500}
             >
-              <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />
-            </Flex>
-          </Tooltip>
-        </FormControl>
-      )}
+              <Flex
+                alignItems="center"
+                h="32px"
+                visibility={item.description ? "visible" : "hidden"}
+              >
+                <CircleHelpIcon
+                  marginLeft="8px"
+                  _hover={{ cursor: "pointer" }}
+                />
+              </Flex>
+            </Tooltip>
+          </FormControl>
+        );
+      }}
     </Field>
   );
 
   const getInitialValues = () => {
     const initialValues = { ...defaultValues };
     if (connectionConfig?.key) {
-      initialValues.name = connectionConfig.name;
+      initialValues.name = connectionConfig.name ?? "";
       initialValues.description = connectionConfig.description as string;
       initialValues.instance_key =
         connectionConfig.connection_type === ConnectionType.SAAS
           ? (connectionConfig.saas_config?.fides_key as string)
           : connectionConfig.key;
+      // @ts-ignore
+      initialValues.secrets = connectionConfig.secrets;
+      return initialValues;
     }
     return fillInDefaults(initialValues, secretsSchema);
   };
@@ -238,22 +260,11 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   };
 
   const handleTestConnectionClick = async () => {
-    try {
-      await trigger(connectionConfig!.key).unwrap();
-    } catch (error) {
-      handleError(error);
-    }
+    const result = await trigger(connectionConfig!.key);
+    onTestConnectionClick(result);
   };
 
-  useEffect(() => {
-    mounted.current = true;
-    if (result.isSuccess) {
-      onTestConnectionClick(result);
-    }
-    return () => {
-      mounted.current = false;
-    };
-  }, [onTestConnectionClick, result]);
+  const isDisabledConnection = connectionConfig?.disabled || false;
 
   return (
     <Formik
@@ -267,108 +278,53 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {(props: FormikProps<Values>) => (
         <Form noValidate>
           <VStack align="stretch" gap="16px">
+            {/* Connection Identifier */}
             <Field
-              id="name"
-              name="name"
-              validate={(value: string) => validateField("Name", value)}
+              id="instance_key"
+              name="instance_key"
+              validate={validateConnectionIdentifier}
             >
               {({ field }: { field: FieldInputProps<string> }) => (
                 <FormControl
                   display="flex"
                   isRequired
-                  isInvalid={props.errors.name && props.touched.name}
+                  isInvalid={
+                    props.errors.instance_key && props.touched.instance_key
+                  }
                 >
-                  {getFormLabel("name", "Name")}
+                  {getFormLabel("instance_key", "Integration Identifier")}
                   <VStack align="flex-start" w="inherit">
                     <Input
                       {...field}
                       autoComplete="off"
-                      autoFocus
                       color="gray.700"
-                      placeholder={`Enter a friendly name for your new ${
+                      isDisabled={!!connectionConfig?.key}
+                      placeholder={`A unique identifier for your new ${
                         connectionOption!.human_readable
                       } integration`}
                       size="sm"
-                      data-testid="input-name"
                     />
-                    <FormErrorMessage>{props.errors.name}</FormErrorMessage>
+                    <FormErrorMessage>
+                      {props.errors.instance_key}
+                    </FormErrorMessage>
                   </VStack>
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
-                </FormControl>
-              )}
-            </Field>
-            {/* Description */}
-            <Field id="description" name="description">
-              {({ field }: { field: FieldInputProps<string> }) => (
-                <FormControl display="flex">
-                  {getFormLabel("description", "Description")}
-                  <Textarea
-                    {...field}
-                    color="gray.700"
-                    placeholder={`Enter a description for your new ${
-                      connectionOption!.human_readable
-                    } integration`}
-                    resize="none"
-                    size="sm"
-                    value={field.value || ""}
-                  />
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
-                </FormControl>
-              )}
-            </Field>
-            {/* Connection Identifier */}
-            {connectionOption.type !== SystemType.MANUAL ? (
-              <Field
-                id="instance_key"
-                name="instance_key"
-                validate={validateConnectionIdentifier}
-              >
-                {({ field }: { field: FieldInputProps<string> }) => (
-                  <FormControl
-                    display="flex"
-                    isRequired
-                    isInvalid={
-                      props.errors.instance_key && props.touched.instance_key
-                    }
+                  <Tooltip
+                    aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
+                    hasArrow
+                    label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
+                    placement="right-start"
+                    openDelay={500}
                   >
-                    {getFormLabel("instance_key", "Integration Identifier")}
-                    <VStack align="flex-start" w="inherit">
-                      <Input
-                        {...field}
-                        autoComplete="off"
-                        color="gray.700"
-                        isDisabled={!!connectionConfig?.key}
-                        placeholder={`A unique identifier for your new ${
-                          connectionOption!.human_readable
-                        } integration`}
-                        size="sm"
+                    <Flex alignItems="center" h="32px">
+                      <CircleHelpIcon
+                        marginLeft="8px"
+                        _hover={{ cursor: "pointer" }}
                       />
-                      <FormErrorMessage>
-                        {props.errors.instance_key}
-                      </FormErrorMessage>
-                    </VStack>
-                    <Tooltip
-                      aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
-                      hasArrow
-                      label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
-                      placement="right-start"
-                      openDelay={500}
-                    >
-                      <Flex alignItems="center" h="32px">
-                        <CircleHelpIcon
-                          marginLeft="8px"
-                          _hover={{ cursor: "pointer" }}
-                        />
-                      </Flex>
-                    </Tooltip>
-                  </FormControl>
-                )}
-              </Field>
-            ) : null}
+                    </Flex>
+                  </Tooltip>
+                </FormControl>
+              )}
+            </Field>
             {/* Dynamic connector secret fields */}
 
             {connectionOption.type !== SystemType.MANUAL && secretsSchema
@@ -395,15 +351,14 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   isSubmitting ||
                   deleteResult.isLoading
                 }
-                isLoading={result.isLoading || result.isFetching}
+                isLoading={isLoading || isFetching}
                 loadingText="Testing"
                 onClick={handleTestConnectionClick}
                 variant="outline"
               >
                 {testButtonLabel}
               </Button>
-              {connectionOption.type === SystemType.MANUAL &&
-              connectionConfig ? (
+              {connectionOption.type === SystemType.MANUAL ? (
                 <DSRCustomizationModal connectionConfig={connectionConfig} />
               ) : null}
               <Button
@@ -420,6 +375,16 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               >
                 Save
               </Button>
+              {connectionConfig ? (
+                <DisableConnectionModal
+                  connection_key={connectionConfig?.key}
+                  disabled={isDisabledConnection}
+                  connection_type={connectionConfig?.connection_type}
+                  access_type={connectionConfig?.access}
+                  name={connectionConfig?.name ?? connectionConfig.key}
+                  isSwitch
+                />
+              ) : null}
               {connectionConfig ? (
                 <DeleteConnectionModal
                   connectionKey={connectionConfig.key}

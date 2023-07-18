@@ -20,6 +20,10 @@ class LoggingSettings(FidesSettings):
         default="",
         description="The output location for log files. Accepts any valid file path. If left unset, log entries are printed to stdout and log files are not produced.",
     )
+    colorize: bool = Field(
+        default=False,
+        description="Force colored logs. Any value set via environment variables is considered 'True'.",
+    )
     level: str = Field(
         default="INFO",
         description="The minimum log entry level to produce. Also accepts TRACE, DEBUG, WARNING, ERROR, or CRITICAL (case insensitive).",

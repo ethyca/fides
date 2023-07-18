@@ -85,6 +85,7 @@ div#fides-banner-container {
   display: flex;
   justify-content: center;
   visibility: visible;
+  max-height: 100%;
 }
 
 div#fides-banner {
@@ -93,6 +94,7 @@ div#fides-banner {
   color: var(--fides-overlay-body-font-color);
   box-sizing: border-box;
   padding: var(--fides-overlay-padding);
+  overflow-y: scroll;
 
   display: flex;
   flex-direction: row;
@@ -250,6 +252,7 @@ div.fides-modal-content {
   border-radius: var(--fides-overlay-component-border-radius);
   max-height: 100%;
   max-width: 100%;
+  overflow-y: scroll;
 
   z-index: 2;
   position: fixed;
@@ -500,4 +503,40 @@ div#fides-modal .fides-modal-button-group {
 .fides-gpc-badge-overridden {
   background: var(--fides-overlay-gpc-overridden-background-color);
   color: var(--fides-overlay-gpc-overridden-text-color);
+}
+
+.fides-tab-list {
+  padding: 0;
+  display: flex;
+  list-style-type: none;
+}
+
+.fides-tab-list > li {
+  width: 100%;
+}
+
+.fides-tab-button {
+  background: none;
+  border-width: 0 0 1px 0;
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+  color: var(--fides-overlay-body-font-color);
+  font-weight: 500;
+  padding: 0.6em 1.2em;
+  cursor: pointer;
+  width: 100%;
+}
+
+.fides-tab-button[aria-selected="true"] {
+  color: var(--fides-overlay-primary-active-color);
+  border-bottom-width: 2px;
+  border-color: var(--fides-overlay-primary-active-color);
+  font-weight: 600;
+}
+
+.fides-tab-button::focus-visible {
+  outline: 1px auto Highlight;
+  outline: 1px auto -webkit-focus-ring-color;
+}
+.fides-tab-button:focus:not(:focus-visible) {
+  outline: 0;
 }

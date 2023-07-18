@@ -24,16 +24,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.urn_registry import (
-    CONNECTION_DATASETS,
-    DATASET_BY_KEY,
-    DATASET_CONFIGS,
-    DATASET_VALIDATE,
-    DATASETCONFIG_BY_KEY,
-    DATASETS,
-    V1_URL_PREFIX,
-    YAML_DATASETS,
-)
 from fides.api.common_exceptions import (
     SaaSConfigNotFoundException,
     TraversalError,
@@ -46,9 +36,6 @@ from fides.api.models.datasetconfig import (
     DatasetConfig,
     convert_dataset_to_graph,
     to_graph_field,
-)
-from fides.api.models.sql_models import (  # type: ignore[attr-defined]
-    Dataset as CtlDataset,
 )
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
@@ -67,6 +54,20 @@ from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    CONNECTION_DATASETS,
+    DATASET_BY_KEY,
+    DATASET_CONFIGS,
+    DATASET_VALIDATE,
+    DATASETCONFIG_BY_KEY,
+    DATASETS,
+    V1_URL_PREFIX,
+    YAML_DATASETS,
+)
+
+from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
+    Dataset as CtlDataset,
 )
 
 X_YAML = "application/x-yaml"

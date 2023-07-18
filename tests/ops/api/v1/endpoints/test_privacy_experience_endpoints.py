@@ -4,8 +4,8 @@ import pytest
 from starlette.status import HTTP_200_OK
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import PRIVACY_EXPERIENCE, V1_URL_PREFIX
 from fides.api.models.privacy_notice import ConsentMechanism
+from fides.common.api.v1.urn_registry import PRIVACY_EXPERIENCE, V1_URL_PREFIX
 
 
 class TestGetPrivacyExperiences:
@@ -549,16 +549,18 @@ class TestGetPrivacyExperiences:
         assert resp["privacy_notices"][0]["current_preference"] is None
         assert resp["privacy_notices"][0]["outdated_preference"] is None
 
+        assert resp["privacy_notices"][0]["current_served"] is None
+        assert resp["privacy_notices"][0]["outdated_served"] is None
+
     @pytest.mark.usefixtures(
         "privacy_notice_us_ca_provide",
         "fides_user_provided_identity",
         "privacy_preference_history_us_ca_provide_for_fides_user",
+        "served_notice_history_us_ca_provide_for_fides_user",
         "privacy_experience_overlay",
     )
     def test_get_privacy_experiences_fides_user_device_id_filter(
-        self,
-        api_client: TestClient,
-        url,
+        self, db, api_client: TestClient, url, privacy_notice_us_ca_provide
     ):
         resp = api_client.get(
             url + "?fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f",
@@ -572,7 +574,28 @@ class TestGetPrivacyExperiences:
         assert data["privacy_notices"][0]["default_preference"] == "opt_out"
         assert data["privacy_notices"][0]["current_preference"] == "opt_in"
         assert data["privacy_notices"][0]["outdated_preference"] is None
+        # Assert that the notice was served is surfaced
+        assert data["privacy_notices"][0]["current_served"] is True
+        assert data["privacy_notices"][0]["outdated_served"] is None
+
         assert (
             data["privacy_notices"][0]["notice_key"]
             == "example_privacy_notice_us_ca_provide"
         )
+
+        privacy_notice_us_ca_provide.update(db, data={"description": "new_description"})
+        assert privacy_notice_us_ca_provide.version == 2.0
+        assert privacy_notice_us_ca_provide.description == "new_description"
+        resp = api_client.get(
+            url + "?fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f",
+        )
+        assert resp.status_code == 200
+        data = resp.json()["items"][0]
+        # Assert outdated preference is displayed for fides user device id
+        assert data["privacy_notices"][0]["consent_mechanism"] == "opt_in"
+        assert data["privacy_notices"][0]["default_preference"] == "opt_out"
+        assert data["privacy_notices"][0]["current_preference"] is None
+        assert data["privacy_notices"][0]["outdated_preference"] == "opt_in"
+        # Assert outdated served is displayed for fides user device id
+        assert data["privacy_notices"][0]["current_served"] is None
+        assert data["privacy_notices"][0]["outdated_served"] is True

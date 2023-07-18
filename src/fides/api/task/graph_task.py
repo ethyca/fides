@@ -46,7 +46,13 @@ from fides.api.task.filter_element_match import filter_element_match
 from fides.api.task.refine_target_path import FieldPathNodeInput
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.cache import get_cache
-from fides.api.util.collection_util import NodeInput, Row, append, partition
+from fides.api.util.collection_util import (
+    NodeInput,
+    Row,
+    append,
+    extract_key_for_address,
+    partition,
+)
 from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
@@ -771,7 +777,11 @@ def get_cached_data_for_erasures(
     value_dict = cache.get_encoded_objects_by_prefix(
         f"PLACEHOLDER_RESULTS__{privacy_request_id}"
     )
-    return {k.split("__")[-1]: v for k, v in value_dict.items()}
+    number_of_leading_strings_to_exclude = 3
+    return {
+        extract_key_for_address(k, number_of_leading_strings_to_exclude): v
+        for k, v in value_dict.items()
+    }
 
 
 def update_erasure_mapping_from_cache(

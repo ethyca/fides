@@ -7,7 +7,6 @@ from starlette.testclient import TestClient
 from fides.api.api.v1.endpoints.privacy_experience_config_endpoints import (
     get_experience_config_or_error,
 )
-from fides.api.api.v1.urn_registry import EXPERIENCE_CONFIG, V1_URL_PREFIX
 from fides.api.models.privacy_experience import (
     BannerEnabled,
     ComponentType,
@@ -17,6 +16,7 @@ from fides.api.models.privacy_experience import (
 )
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.common.api import scope_registry as scopes
+from fides.common.api.v1.urn_registry import EXPERIENCE_CONFIG, V1_URL_PREFIX
 
 
 class TestGetExperienceConfigList:

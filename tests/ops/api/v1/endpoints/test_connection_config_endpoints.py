@@ -10,7 +10,6 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -28,6 +27,7 @@ from fides.common.api.scope_registry import (
     CONNECTION_READ,
     STORAGE_DELETE,
 )
+from fides.common.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from tests.fixtures.application_fixtures import integration_secrets
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
@@ -310,7 +310,9 @@ class TestPatchConnections:
         assert postgres_connection["updated_at"] is not None
         assert postgres_connection["last_test_timestamp"] is None
         assert postgres_connection["disabled"] is False
-        assert "secrets" not in postgres_connection
+        assert postgres_connection["secrets"]["password"] == "**********"
+        assert postgres_connection["secrets"]["url"] == "**********"
+        # assert "secrets" not in postgres_connection
 
         mongo_connection = response_body["succeeded"][1]
         mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
@@ -322,7 +324,7 @@ class TestPatchConnections:
         assert mongo_connection["created_at"] is not None
         assert mongo_connection["updated_at"] is not None
         assert mongo_connection["last_test_timestamp"] is None
-        assert "secrets" not in mongo_connection
+        assert mongo_connection["secrets"] is None
 
         assert response_body["failed"] == []  # No failures
 
@@ -510,7 +512,8 @@ class TestPatchConnections:
         postgres_connection = response_body["succeeded"][0]
         assert postgres_connection["access"] == "read"
         assert postgres_connection["disabled"] is True
-        assert "secrets" not in postgres_connection
+        assert postgres_connection["secrets"]["password"] == "**********"
+        assert postgres_connection["secrets"]["url"] == "**********"
         assert postgres_connection["updated_at"] is not None
         postgres_resource = (
             db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
@@ -525,7 +528,7 @@ class TestPatchConnections:
         assert mongo_connection["updated_at"] is not None
         mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
         assert mongo_resource.access.value == "write"
-        assert "secrets" not in mongo_connection
+        assert mongo_connection["secrets"] is None
         assert not mongo_resource.disabled
 
         mysql_connection = response_body["succeeded"][2]
@@ -533,14 +536,14 @@ class TestPatchConnections:
         assert mysql_connection["updated_at"] is not None
         mysql_resource = db.query(ConnectionConfig).filter_by(key="my_mysql_db").first()
         assert mysql_resource.access.value == "read"
-        assert "secrets" not in mysql_connection
+        assert mysql_connection["secrets"] is None
 
         mssql_connection = response_body["succeeded"][3]
         assert mssql_connection["access"] == "write"
         assert mssql_connection["updated_at"] is not None
         mssql_resource = db.query(ConnectionConfig).filter_by(key="my_mssql_db").first()
         assert mssql_resource.access.value == "write"
-        assert "secrets" not in mssql_connection
+        assert mssql_connection["secrets"] is None
 
         mariadb_connection = response_body["succeeded"][4]
         assert mariadb_connection["access"] == "write"
@@ -549,7 +552,7 @@ class TestPatchConnections:
             db.query(ConnectionConfig).filter_by(key="my_mariadb_db").first()
         )
         assert mariadb_resource.access.value == "write"
-        assert "secrets" not in mariadb_connection
+        assert mariadb_connection["secrets"] is None
 
         bigquery_connection = response_body["succeeded"][5]
         assert bigquery_connection["access"] == "write"
@@ -558,7 +561,7 @@ class TestPatchConnections:
             db.query(ConnectionConfig).filter_by(key="my_bigquery_db").first()
         )
         assert bigquery_resource.access.value == "write"
-        assert "secrets" not in bigquery_connection
+        assert bigquery_connection["secrets"] is None
 
         redshift_connection = response_body["succeeded"][6]
         assert redshift_connection["access"] == "read"
@@ -567,7 +570,7 @@ class TestPatchConnections:
             db.query(ConnectionConfig).filter_by(key="my_redshift_cluster").first()
         )
         assert redshift_resource.access.value == "read"
-        assert "secrets" not in redshift_connection
+        assert redshift_connection["secrets"] is None
 
         snowflake_connection = response_body["succeeded"][7]
         assert snowflake_connection["access"] == "write"
@@ -578,7 +581,7 @@ class TestPatchConnections:
         )
         assert snowflake_resource.access.value == "write"
         assert snowflake_resource.description == "Backup snowflake db"
-        assert "secrets" not in snowflake_connection
+        assert snowflake_connection["secrets"] is None
 
         manual_webhook_connection = response_body["succeeded"][8]
         assert manual_webhook_connection["access"] == "read"
@@ -588,7 +591,7 @@ class TestPatchConnections:
         )
         assert manual_webhook_resource.access.value == "read"
         assert manual_webhook_resource.connection_type == ConnectionType.manual_webhook
-        assert "secrets" not in manual_webhook_connection
+        assert manual_webhook_connection["secrets"] is None
 
         postgres_resource.delete(db)
         mongo_resource.delete(db)
@@ -706,6 +709,37 @@ class TestPatchConnections:
         assert call_args[4] is None
         assert call_args[5] is None
 
+    def test_patch_connections_no_name(self, api_client, generate_auth_header, url):
+        # two connection configs without names
+        payload = [
+            {
+                "key": "postgres_db_1",
+                "connection_type": "postgres",
+                "access": "write",
+                "secrets": {
+                    "url": None,
+                    "host": "http://localhost",
+                    "port": 5432,
+                    "dbname": "test",
+                    "db_schema": "test",
+                    "username": "test",
+                    "password": "test",
+                },
+            },
+            {
+                "key": "mongo_db_1",
+                "connection_type": "mongodb",
+                "access": "read",
+            },
+        ]
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+
+        assert 200 == response.status_code
+        assert len(response.json()["succeeded"]) == 2
+        assert response.json()["succeeded"][0]["name"] is None
+        assert response.json()["succeeded"][1]["name"] is None
+
 
 class TestGetConnections:
     @pytest.fixture(scope="function")
@@ -741,6 +775,7 @@ class TestGetConnections:
             "access",
             "updated_at",
             "saas_config",
+            "secrets",
             "name",
             "last_test_timestamp",
             "last_test_succeeded",
@@ -1158,6 +1193,7 @@ class TestGetConnection:
             "disabled",
             "description",
             "saas_config",
+            "secrets",
         }
 
         assert response_body["key"] == "my_postgres_db_1"
@@ -1279,7 +1315,6 @@ class TestDeleteConnection:
         connection_config, dataset_config = instantiate_connector(
             db,
             "sendgrid",
-            "sendgrid_connection_config_secondary",
             "secondary_sendgrid_instance",
             "Sendgrid ConnectionConfig description",
             secrets,

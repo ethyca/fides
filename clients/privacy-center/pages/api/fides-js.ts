@@ -81,6 +81,7 @@ export default async function handler(
       modalLinkId: environment.settings.MODAL_LINK_ID,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
       fidesApiUrl: environment.settings.FIDES_API_URL,
+      tcfEnabled: environment.settings.TCF_ENABLED,
     },
     geolocation,
   };
@@ -96,6 +97,11 @@ export default async function handler(
   }
   const script = `
   (function () {
+    // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request 
+    var script = document.createElement('script');
+    script.src = 'https://polyfill.io/v3/polyfill.min.js?features=fetch';
+    document.head.appendChild(script);
+    
     // Include generic fides.js script
     ${fidesJS}
 

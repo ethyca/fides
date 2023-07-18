@@ -4,12 +4,6 @@ from unittest import mock
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import (
-    CONNECTION_TYPE_SECRETS,
-    CONNECTION_TYPES,
-    SAAS_CONNECTOR_FROM_TEMPLATE,
-    V1_URL_PREFIX,
-)
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -18,7 +12,7 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import ActionType
-from fides.api.schemas.connection_configuration.connection_config import SystemType
+from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
@@ -26,6 +20,12 @@ from fides.common.api.scope_registry import (
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
     SAAS_CONNECTION_INSTANTIATE,
+)
+from fides.common.api.v1.urn_registry import (
+    CONNECTION_TYPE_SECRETS,
+    CONNECTION_TYPES,
+    SAAS_CONNECTOR_FROM_TEMPLATE,
+    V1_URL_PREFIX,
 )
 
 
@@ -1143,18 +1143,16 @@ class TestInstantiateConnectionFromTemplate:
             headers=auth_header,
             json=request_body,
         )
-        assert resp.status_code == 400
-        assert (
-            f"Name {connection_config.name} already exists in ConnectionConfig"
-            in resp.json()["detail"]
-        )
+        # names don't have to be unique
+        assert resp.status_code == 200
 
     def test_create_connection_from_template_without_supplying_connection_key(
         self, db, generate_auth_header, api_client, base_url
     ):
         auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+        instance_key = "secondary_mailchimp_instance"
         request_body = {
-            "instance_key": "secondary_mailchimp_instance",
+            "instance_key": instance_key,
             "secrets": {
                 "domain": "test_mailchimp_domain",
                 "username": "test_mailchimp_username",
@@ -1181,7 +1179,7 @@ class TestInstantiateConnectionFromTemplate:
         assert connection_config is not None
         assert dataset_config is not None
 
-        assert connection_config.key == "mailchimp_connector"
+        assert connection_config.key == instance_key
         dataset_config.delete(db)
         connection_config.delete(db)
 
@@ -1288,7 +1286,7 @@ class TestInstantiateConnectionFromTemplate:
         connection_data = resp.json()["connection"]
         assert connection_data["key"] == "mailchimp_connection_config"
         assert connection_data["name"] == "Mailchimp Connector"
-        assert "secrets" not in connection_data
+        assert connection_data["secrets"]["api_key"] == "**********"
 
         dataset_data = resp.json()["dataset"]
         assert dataset_data["fides_key"] == "secondary_mailchimp_instance"

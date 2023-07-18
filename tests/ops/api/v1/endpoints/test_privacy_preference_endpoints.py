@@ -7,19 +7,13 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import (
-    CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
-    CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
-    CURRENT_PRIVACY_PREFERENCES_REPORT,
-    HISTORICAL_PRIVACY_PREFERENCES_REPORT,
-    PRIVACY_PREFERENCES,
-    V1_URL_PREFIX,
-)
 from fides.api.models.privacy_preference import (
     ConsentMethod,
     CurrentPrivacyPreference,
+    LastServedNotice,
     PrivacyPreferenceHistory,
     RequestOrigin,
+    ServingComponent,
     UserConsentPreference,
 )
 from fides.api.models.privacy_request import (
@@ -34,6 +28,16 @@ from fides.common.api.scope_registry import (
     CURRENT_PRIVACY_PREFERENCE_READ,
     PRIVACY_PREFERENCE_HISTORY_READ,
 )
+from fides.common.api.v1.urn_registry import (
+    CONSENT_REQUEST_NOTICES_SERVED,
+    CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
+    CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
+    CURRENT_PRIVACY_PREFERENCES_REPORT,
+    HISTORICAL_PRIVACY_PREFERENCES_REPORT,
+    NOTICES_SERVED,
+    PRIVACY_PREFERENCES,
+    V1_URL_PREFIX,
+)
 from fides.config import CONFIG
 
 
@@ -43,7 +47,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         return "abcd"
 
     @pytest.fixture(scope="function")
-    def request_body(self, privacy_notice, verification_code, consent_policy):
+    def request_body(
+        self, privacy_notice, verification_code, consent_policy, served_notice_history
+    ):
         return {
             "browser_identity": {"ga_client_id": "test"},
             "code": verification_code,
@@ -51,6 +57,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
                 {
                     "privacy_notice_history_id": privacy_notice.histories[0].id,
                     "preference": "opt_out",
+                    "served_notice_history_id": served_notice_history.id,
                 }
             ],
             "policy_key": consent_policy.key,
@@ -555,6 +562,35 @@ class TestSavePrivacyPreferencesPrivacyCenter:
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
+    )
+    def test_save_preferences_invalid_served_notice_history_id(
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        request_body,
+        privacy_notice,
+        served_notice_history_us_ca_provide_for_fides_user,
+    ):
+        _, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        request_body["preferences"][0][
+            "served_notice_history_id"
+        ] = served_notice_history_us_ca_provide_for_fides_user.id
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == f"The ServedNoticeHistory record '{served_notice_history_us_ca_provide_for_fides_user.id}' did not serve the PrivacyNoticeHistory record '{privacy_notice.histories[0].id}'."
+        )
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
         "automatically_approved",
         "consent_policy",
         "system",
@@ -574,6 +610,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         request_body,
         privacy_notice,
         privacy_notice_us_ca_provide,
+        served_notice_history,
     ):
         provided_identity, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
@@ -631,6 +668,14 @@ class TestSavePrivacyPreferencesPrivacyCenter:
 
         db.refresh(first_privacy_preference_history_created)
         db.refresh(second_privacy_preference_history_created)
+
+        assert (
+            first_privacy_preference_history_created.served_notice_history_id
+            == served_notice_history.id
+        )
+        assert (
+            second_privacy_preference_history_created.served_notice_history_id is None
+        )
 
         assert first_privacy_preference_history_created.privacy_request_id is not None
         assert second_privacy_preference_history_created.privacy_request_id is not None
@@ -1060,7 +1105,13 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         return V1_URL_PREFIX + PRIVACY_PREFERENCES
 
     @pytest.fixture(scope="function")
-    def request_body(self, privacy_notice, consent_policy, privacy_experience_overlay):
+    def request_body(
+        self,
+        privacy_notice,
+        consent_policy,
+        privacy_experience_overlay,
+        served_notice_history,
+    ):
         return {
             "browser_identity": {
                 "ga_client_id": "test",
@@ -1070,6 +1121,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
                 {
                     "privacy_notice_history_id": privacy_notice.histories[0].id,
                     "preference": "opt_out",
+                    "served_notice_history_id": served_notice_history.id,
                 }
             ],
             "policy_key": consent_policy.key,
@@ -1116,6 +1168,34 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         )
         assert response.status_code == 400
 
+    @pytest.mark.usefixtures(
+        "privacy_notice",
+    )
+    def test_save_privacy_preferences_with_invalid_served_notice_history(
+        self,
+        api_client,
+        url,
+        request_body,
+        served_notice_history_us_ca_provide_for_fides_user,
+    ):
+        request_body["preferences"][0][
+            "served_notice_history_id"
+        ] = served_notice_history_us_ca_provide_for_fides_user.id
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+
+    @pytest.mark.usefixtures(
+        "privacy_notice",
+    )
+    def test_save_privacy_preferences_with_served_notice_history_not_found(
+        self, api_client, url, request_body
+    ):
+        request_body["preferences"][0][
+            "served_notice_history_id"
+        ] = "bad_served_notice_history_id"
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 404
+
     def test_save_privacy_preferences_bad_experience_id(
         self,
         api_client,
@@ -1146,6 +1226,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         request_body,
         privacy_notice,
         privacy_experience_overlay,
+        served_notice_history,
     ):
         """Assert CurrentPrivacyPreference records were updated and PrivacyPreferenceHistory records were created
         for recordkeeping with respect to the fides user device id in the request
@@ -1217,6 +1298,10 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert privacy_preference_history.anonymized_ip_address == masked_ip
         assert privacy_preference_history.url_recorded is None
         assert privacy_preference_history.method == ConsentMethod.button
+        assert (
+            privacy_preference_history.served_notice_history_id
+            == served_notice_history.id
+        )
 
         # Privacy request created and queued because a privacy notice has system wide enforcement
         assert privacy_preference_history.privacy_request_id is not None
@@ -1339,6 +1424,7 @@ class TestHistoricalPreferences:
         generate_auth_header,
         privacy_preference_history,
         privacy_request_with_consent_policy,
+        served_notice_history,
         system,
         privacy_experience_privacy_center,
     ) -> None:
@@ -1410,6 +1496,7 @@ class TestHistoricalPreferences:
             response_body["privacy_experience_id"]
             == privacy_experience_privacy_center.id
         )
+        assert response_body["served_notice_history_id"] == served_notice_history.id
 
     def test_get_historical_preferences_user_geography_unsupported(
         self,
@@ -1697,3 +1784,628 @@ class TestCurrentPrivacyPreferences:
         assert response.status_code == 400
         assert "Value specified for updated_lt" in response.json()["detail"]
         assert "must be after updated_gt" in response.json()["detail"]
+
+
+class TestSaveNoticesServedForFidesDeviceId:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + NOTICES_SERVED
+
+    @pytest.fixture(scope="function")
+    def request_body(self, privacy_notice, privacy_experience_overlay):
+        return {
+            "browser_identity": {
+                "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
+            },
+            "privacy_notice_history_ids": [privacy_notice.histories[0].id],
+            "privacy_experience_id": privacy_experience_overlay.id,
+            "user_geography": "us_ca",
+            "acknowledge_mode": False,
+            "serving_component": ServingComponent.banner.value,
+        }
+
+    @pytest.mark.usefixtures(
+        "privacy_notice",
+    )
+    def test_no_fides_user_device_id_supplied(self, api_client, url, request_body):
+        """We need a fides user device id in the request body to save that consent was served"""
+        del request_body["browser_identity"]["fides_user_device_id"]
+        response = api_client.patch(
+            url, json=request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 422
+
+    @pytest.mark.usefixtures(
+        "privacy_notice",
+    )
+    def test_bad_fides_user_device_id_supplied(self, api_client, url, request_body):
+        """Testing validation that fides user device id must be in expected uuid format"""
+        request_body["browser_identity"][
+            "fides_user_device_id"
+        ] = "bad_fides_user_device_id"
+        response = api_client.patch(
+            url, json=request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "badly formed hexadecimal UUID string"
+        )
+
+    def test_record_notices_served_with_bad_notice(self, api_client, url, request_body):
+        """Every notice history in request body needs to be valid"""
+        request_body["privacy_notice_history_ids"] = ["bad_history"]
+        response = api_client.patch(
+            url, json=request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 400
+
+    def test_record_notices_served_bad_experience_id(
+        self,
+        api_client,
+        url,
+        request_body,
+    ):
+        """Privacy experiences need to be valid when recording notices served"""
+        request_body["privacy_experience_id"] = "bad_id"
+        response = api_client.patch(
+            url, json=request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 404
+        assert response.json()["detail"] == f"Privacy Experience 'bad_id' not found."
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+    )
+    def test_record_notices_served_with_respect_to_fides_user_device_id(
+        self,
+        mock_anonymize,
+        db,
+        api_client,
+        url,
+        request_body,
+        privacy_notice,
+        privacy_experience_overlay,
+    ):
+        """Test recording that a notice was served to the given user with this fides user device id
+
+        We create a ServedNoticeHistory record for every single time a notice is served.
+        Separately, we upsert a LastServedNotice record whose intent is to capture the last saved
+        notice across versions and across time, consolidating known user identities
+
+        """
+        test_device_id = "f7e54703-cd57-495e-866d-042e67c81734"
+        masked_ip = "12.214.31.0"
+        mock_anonymize.return_value = masked_ip
+        response = api_client.patch(
+            url, json=request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        response_json = response.json()[0]
+        assert (
+            response_json["privacy_notice_history"]["id"]
+            == privacy_notice.histories[0].id
+        )
+
+        served_notice_history_id = response_json["served_notice_history_id"]
+
+        # Fetch last served notice record that was updated
+        last_served_notice = LastServedNotice.get(db, object_id=response_json["id"])
+        assert last_served_notice.created_at is not None
+        assert last_served_notice.updated_at is not None
+        assert last_served_notice.provided_identity_id is None
+        assert last_served_notice.fides_user_device_provided_identity_id is not None
+        assert last_served_notice.privacy_notice_id == privacy_notice.id
+        assert (
+            last_served_notice.privacy_notice_history_id
+            == privacy_notice.histories[0].id
+        )
+
+        # Get corresponding historical record that was just created
+        served_notice_history = last_served_notice.served_notice_history
+
+        assert served_notice_history.id == served_notice_history_id
+        assert served_notice_history.updated_at is not None
+        assert served_notice_history.anonymized_ip_address == masked_ip
+        assert served_notice_history.created_at is not None
+        assert served_notice_history.email is None
+        assert (
+            served_notice_history.fides_user_device == test_device_id
+        )  # Cached here for reporting
+        assert served_notice_history.hashed_email is None
+        assert (
+            served_notice_history.hashed_fides_user_device
+            == ProvidedIdentity.hash_value(test_device_id)
+        )  # Cached here for reporting
+        assert served_notice_history.hashed_phone_number is None
+        assert served_notice_history.phone_number is None
+        assert (
+            served_notice_history.request_origin == RequestOrigin.overlay
+        )  # Retrieved from privacy experience history
+        assert served_notice_history.url_recorded is None
+        assert (
+            served_notice_history.user_agent == "testclient"
+        )  # Retrieved from request headers
+        assert served_notice_history.user_geography == "us_ca"
+        assert served_notice_history.acknowledge_mode is False
+        assert served_notice_history.serving_component == ServingComponent.banner
+
+        fides_user_device_provided_identity = (
+            served_notice_history.fides_user_device_provided_identity
+        )
+        # Same fides user device identity added to both the historical and current record
+        assert (
+            last_served_notice.fides_user_device_provided_identity
+            == fides_user_device_provided_identity
+        )
+        assert (
+            fides_user_device_provided_identity.hashed_value
+            == ProvidedIdentity.hash_value(test_device_id)
+        )
+        assert (
+            fides_user_device_provided_identity.encrypted_value["value"]
+            == test_device_id
+        )
+
+        assert (
+            served_notice_history.privacy_experience_config_history_id
+            == privacy_experience_overlay.experience_config.experience_config_history_id
+        )
+        assert (
+            served_notice_history.privacy_experience_id == privacy_experience_overlay.id
+        )
+        assert (
+            served_notice_history.privacy_notice_history_id
+            == privacy_notice.histories[0].id
+        )
+        assert served_notice_history.provided_identity_id is None
+
+        last_served_notice.delete(db)
+        served_notice_history.delete(db)
+
+
+class TestSaveNoticesServedPrivacyCenter:
+    @pytest.fixture(scope="function")
+    def verification_code(self) -> str:
+        return "abcd"
+
+    @pytest.fixture(scope="function")
+    def request_body(
+        self, privacy_notice, verification_code, privacy_experience_privacy_center
+    ):
+        return {
+            "browser_identity": {
+                "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734"
+            },
+            "code": verification_code,
+            "privacy_notice_history_ids": [privacy_notice.histories[0].id],
+            "privacy_experience_id": privacy_experience_privacy_center.id,
+            "user_geography": "us_co",
+            "serving_component": ServingComponent.privacy_center.value,
+        }
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    def test_save_notices_served_no_matching_consent_request_id(
+        self, api_client, request_body
+    ):
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_NOTICES_SERVED.format(consent_request_id='non_existent_consent_id')}",
+            json=request_body,
+        )
+        assert response.status_code == 404
+        assert "not found" in response.json()["detail"]
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    def test_save_notices_served_code_expired(
+        self, provided_identity_and_consent_request, api_client, request_body
+    ):
+        _, consent_request = provided_identity_and_consent_request
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_NOTICES_SERVED.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+        assert response.status_code == 400
+        assert "code expired" in response.json()["detail"]
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    def test_save_notices_served_invalid_code(
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        request_body,
+    ):
+        _, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        request_body["code"] = "non_matching_code"
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_NOTICES_SERVED.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+        assert response.status_code == 403
+        assert "Incorrect identification" in response.json()["detail"]
+
+    @pytest.mark.usefixtures("subject_identity_verification_required", "system")
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+    )
+    def test_save_notices_served(
+        self,
+        mock_anonymize,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        db: Session,
+        request_body,
+        privacy_notice,
+        privacy_experience_privacy_center,
+    ):
+        """Verify code, save notices served, and return.
+
+        The fact that notices were served is saved with respect to two provided identities -
+        one for the email and one for the fides user device id
+        """
+        masked_ip = "12.214.31.0"  # Mocking because hostname for FastAPI TestClient is "testclient"
+        mock_anonymize.return_value = masked_ip
+
+        provided_identity, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        test_device_id = "f7e54703-cd57-495e-866d-042e67c81734"
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_NOTICES_SERVED.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        response_json = response.json()[0]
+
+        assert (
+            response_json["privacy_notice_history"]["id"]
+            == privacy_notice.histories[0].id
+        )
+
+        served_notice_history_id = response_json["served_notice_history_id"]
+
+        # Fetch last served notice record that was updated
+        last_served_notice = LastServedNotice.get(db, object_id=response_json["id"])
+        assert last_served_notice.created_at is not None
+        assert last_served_notice.updated_at is not None
+        assert last_served_notice.provided_identity_id == provided_identity.id
+        assert last_served_notice.fides_user_device_provided_identity_id is not None
+        assert last_served_notice.privacy_notice_id == privacy_notice.id
+        assert (
+            last_served_notice.privacy_notice_history_id
+            == privacy_notice.histories[0].id
+        )
+
+        # Get corresponding historical record that was just created
+        served_notice_history = last_served_notice.served_notice_history
+
+        assert served_notice_history.id == served_notice_history_id
+        assert served_notice_history.updated_at is not None
+        assert served_notice_history.anonymized_ip_address == masked_ip
+        assert served_notice_history.created_at is not None
+        assert served_notice_history.email == "test@email.com"
+        assert (
+            served_notice_history.fides_user_device == test_device_id
+        )  # Cached here for reporting
+        assert served_notice_history.hashed_email == ProvidedIdentity.hash_value(
+            "test@email.com"
+        )
+        assert (
+            served_notice_history.hashed_fides_user_device
+            == ProvidedIdentity.hash_value(test_device_id)
+        )  # Cached here for reporting
+        assert served_notice_history.hashed_phone_number is None
+        assert served_notice_history.phone_number is None
+        assert (
+            served_notice_history.request_origin == RequestOrigin.privacy_center
+        )  # Retrieved from privacy experience history
+        assert served_notice_history.url_recorded is None
+        assert (
+            served_notice_history.user_agent == "testclient"
+        )  # Retrieved from request headers
+        assert served_notice_history.user_geography == "us_co"
+        assert served_notice_history.acknowledge_mode is False
+        assert (
+            served_notice_history.serving_component == ServingComponent.privacy_center
+        )
+
+        fides_user_device_provided_identity = (
+            served_notice_history.fides_user_device_provided_identity
+        )
+        # Same fides user device identity added to both the historical and current record
+        assert (
+            last_served_notice.fides_user_device_provided_identity
+            == fides_user_device_provided_identity
+        )
+        assert (
+            fides_user_device_provided_identity.hashed_value
+            == ProvidedIdentity.hash_value(test_device_id)
+        )
+        assert (
+            fides_user_device_provided_identity.encrypted_value["value"]
+            == test_device_id
+        )
+
+        assert (
+            served_notice_history.privacy_experience_config_history_id
+            == privacy_experience_privacy_center.experience_config.experience_config_history_id
+        )
+        assert (
+            served_notice_history.privacy_experience_id
+            == privacy_experience_privacy_center.id
+        )
+        assert (
+            served_notice_history.privacy_notice_history_id
+            == privacy_notice.histories[0].id
+        )
+        assert served_notice_history.provided_identity_id == provided_identity.id
+
+        last_served_notice.delete(db)
+        served_notice_history.delete(db)
+
+    @pytest.mark.usefixtures("subject_identity_verification_required", "system")
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+    )
+    def test_save_notices_served_device_id_only(
+        self,
+        mock_anonymize,
+        fides_user_provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        db: Session,
+        request_body,
+        privacy_notice,
+        privacy_experience_privacy_center,
+    ):
+        """Verify code, save notices served, and return.
+
+        This tests when someone has set up their privacy center so we're not actually collecting
+        email/phone number there.  The original consent request was saved against a fides user
+        device id only
+        """
+        masked_ip = "12.214.31.0"  # Mocking because hostname for FastAPI TestClient is "testclient"
+        mock_anonymize.return_value = masked_ip
+
+        (
+            fides_user_provided_identity,
+            consent_request,
+        ) = fides_user_provided_identity_and_consent_request
+
+        consent_request.cache_identity_verification_code(verification_code)
+
+        test_device_id = "051b219f-20e4-45df-82f7-5eb68a00889f"
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_NOTICES_SERVED.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        response_json = response.json()[0]
+
+        assert (
+            response_json["privacy_notice_history"]["id"]
+            == privacy_notice.histories[0].id
+        )
+
+        served_notice_history_id = response_json["served_notice_history_id"]
+
+        # Fetch last served notice record that was updated
+        last_served_notice = LastServedNotice.get(db, object_id=response_json["id"])
+        assert last_served_notice.created_at is not None
+        assert last_served_notice.updated_at is not None
+        assert last_served_notice.provided_identity_id is None
+        assert (
+            last_served_notice.fides_user_device_provided_identity_id
+            == fides_user_provided_identity.id
+        )
+        assert last_served_notice.privacy_notice_id == privacy_notice.id
+        assert (
+            last_served_notice.privacy_notice_history_id
+            == privacy_notice.histories[0].id
+        )
+
+        # Get corresponding historical record that was just created
+        served_notice_history = last_served_notice.served_notice_history
+
+        assert served_notice_history.id == served_notice_history_id
+        assert served_notice_history.updated_at is not None
+        assert served_notice_history.anonymized_ip_address == masked_ip
+        assert served_notice_history.created_at is not None
+        assert served_notice_history.email is None
+        assert (
+            served_notice_history.fides_user_device == test_device_id
+        )  # Cached here for reporting
+        assert served_notice_history.hashed_email is None
+        assert (
+            served_notice_history.hashed_fides_user_device
+            == ProvidedIdentity.hash_value(test_device_id)
+        )  # Cached here for reporting
+        assert served_notice_history.hashed_phone_number is None
+        assert served_notice_history.phone_number is None
+        assert (
+            served_notice_history.request_origin == RequestOrigin.privacy_center
+        )  # Retrieved from privacy experience history
+        assert served_notice_history.url_recorded is None
+        assert (
+            served_notice_history.user_agent == "testclient"
+        )  # Retrieved from request headers
+        assert served_notice_history.user_geography == "us_co"
+        assert served_notice_history.acknowledge_mode is False
+        assert (
+            served_notice_history.serving_component == ServingComponent.privacy_center
+        )
+
+        fides_user_device_provided_identity = (
+            served_notice_history.fides_user_device_provided_identity
+        )
+        # Same fides user device identity added to both the historical and current record
+        assert (
+            last_served_notice.fides_user_device_provided_identity
+            == fides_user_provided_identity
+            == fides_user_device_provided_identity
+        )
+        assert (
+            fides_user_device_provided_identity.hashed_value
+            == ProvidedIdentity.hash_value(test_device_id)
+        )
+        assert (
+            fides_user_device_provided_identity.encrypted_value["value"]
+            == test_device_id
+        )
+
+        assert (
+            served_notice_history.privacy_experience_config_history_id
+            == privacy_experience_privacy_center.experience_config.experience_config_history_id
+        )
+        assert (
+            served_notice_history.privacy_experience_id
+            == privacy_experience_privacy_center.id
+        )
+        assert (
+            served_notice_history.privacy_notice_history_id
+            == privacy_notice.histories[0].id
+        )
+        assert served_notice_history.provided_identity_id is None
+
+        last_served_notice.delete(db)
+        served_notice_history.delete(db)
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    def test_save_notices_served_invalid_code_respects_attempt_count(
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        request_body,
+    ):
+        _, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        request_body["code"] = "987632"  # Bad code
+
+        for _ in range(0, CONFIG.security.identity_verification_attempt_limit):
+            response = api_client.patch(
+                f"{V1_URL_PREFIX}{CONSENT_REQUEST_NOTICES_SERVED.format(consent_request_id=consent_request.id)}",
+                json=request_body,
+            )
+            assert response.status_code == 403
+            assert "Incorrect identification" in response.json()["detail"]
+
+        assert (
+            consent_request._get_cached_verification_code_attempt_count()
+            == CONFIG.security.identity_verification_attempt_limit
+        )
+
+        request_body["code"] = verification_code
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_NOTICES_SERVED.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+        assert response.status_code == 403
+        assert (
+            response.json()["detail"] == f"Attempt limit hit for '{consent_request.id}'"
+        )
+        assert consent_request.get_cached_verification_code() is None
+        assert consent_request._get_cached_verification_code_attempt_count() == 0
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
+    def test_save_notices_served_missing_identity_data(
+        self,
+        mock_verify_identity: MagicMock,
+        db,
+        api_client,
+        verification_code,
+        request_body,
+    ):
+        provided_identity_data = {
+            "privacy_request_id": None,
+            "field_name": "email",
+            "hashed_value": None,
+            "encrypted_value": None,
+        }
+        provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+        consent_request_data = {
+            "provided_identity_id": provided_identity.id,
+        }
+        consent_request = ConsentRequest.create(db, data=consent_request_data)
+        consent_request.cache_identity_verification_code(verification_code)
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_NOTICES_SERVED.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+
+        assert response.status_code == 404
+        assert mock_verify_identity.called
+        assert "missing" in response.json()["detail"]
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    def test_save_privacy_notices_served_invalid_privacy_notice_history_id(
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        request_body,
+    ):
+        _, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        request_body["privacy_notice_history_ids"] = ["bad_id"]
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_NOTICES_SERVED.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+        assert (
+            response.status_code == 400
+        ), "Gets picked up by the duplicate privacy notice check"
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    def test_save_notices_viewed_for_the_same_notice_in_one_request(
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        request_body,
+        privacy_notice,
+    ):
+        _, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        request_body["privacy_notice_history_ids"] = [
+            privacy_notice.histories[0].id,
+            privacy_notice.histories[0].id,
+        ]
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_NOTICES_SERVED.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+        assert (
+            response.status_code == 400
+        ), "Gets picked up by the duplicate privacy notice check"

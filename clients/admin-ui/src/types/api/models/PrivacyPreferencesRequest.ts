@@ -5,7 +5,6 @@
 import type { ConsentMethod } from "./ConsentMethod";
 import type { ConsentOptionCreate } from "./ConsentOptionCreate";
 import type { Identity } from "./Identity";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
  * Request body for creating PrivacyPreferences.
@@ -16,6 +15,6 @@ export type PrivacyPreferencesRequest = {
   preferences: Array<ConsentOptionCreate>;
   policy_key?: string;
   privacy_experience_id?: string;
-  user_geography?: PrivacyNoticeRegion;
+  user_geography?: string;
   method?: ConsentMethod;
 };

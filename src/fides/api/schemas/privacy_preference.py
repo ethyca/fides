@@ -6,7 +6,11 @@ from pydantic import Field, conlist
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.privacy_notice import UserConsentPreference
-from fides.api.models.privacy_preference import ConsentMethod, RequestOrigin
+from fides.api.models.privacy_preference import (
+    ConsentMethod,
+    RequestOrigin,
+    ServingComponent,
+)
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
@@ -19,6 +23,7 @@ class ConsentOptionCreate(FidesSchema):
 
     privacy_notice_history_id: str
     preference: UserConsentPreference
+    served_notice_history_id: Optional[str]
 
 
 class PrivacyPreferencesRequest(FidesSchema):
@@ -49,6 +54,38 @@ class MinimalPrivacyPreferenceHistorySchema(FidesSchema):
 
     preference: UserConsentPreference
     privacy_notice_history: PrivacyNoticeHistorySchema
+
+
+class NoticesServedRequest(FidesSchema):
+    """Request body when indicating that notices were served in the UI"""
+
+    browser_identity: Identity
+    code: Optional[SafeStr]  # For verified identity workflow only
+    privacy_notice_history_ids: List[SafeStr]
+    privacy_experience_id: Optional[SafeStr]
+    user_geography: Optional[SafeStr]
+    acknowledge_mode: Optional[bool]
+    serving_component: ServingComponent
+
+
+class NoticesServedCreate(NoticesServedRequest):
+    """Schema used on the backend only where we supplement the NoticesServedRequest request body
+    with information obtained from the request headers and the experience"""
+
+    anonymized_ip_address: Optional[str]
+    experience_config_history_id: Optional[SafeStr]
+    request_origin: Optional[RequestOrigin]
+    url_recorded: Optional[SafeStr]
+    user_agent: Optional[SafeStr]
+
+
+class LastServedNoticeSchema(FidesSchema):
+    """Schema that surfaces the last version of a notice that was shown to a user"""
+
+    id: str
+    updated_at: datetime
+    privacy_notice_history: PrivacyNoticeHistorySchema
+    served_notice_history_id: str
 
 
 class ConsentReportingSchema(FidesSchema):
@@ -102,6 +139,9 @@ class ConsentReportingSchema(FidesSchema):
     )
     truncated_ip_address: Optional[str] = Field(title="Truncated ip address")
     method: Optional[ConsentMethod] = Field(title="Method of consent preference")
+    served_notice_history_id: Optional[str] = Field(
+        title="The id of the record where the notice was served to the end user"
+    )
 
 
 class CurrentPrivacyPreferenceSchema(FidesSchema):
