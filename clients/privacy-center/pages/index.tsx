@@ -24,13 +24,18 @@ import PrivacyCard from "~/components/PrivacyCard";
 import ConsentCard from "~/components/consent/ConsentCard";
 import { useConfig } from "~/features/common/config.slice";
 import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
-import { useAppSelector } from "~/app/hooks";
-import { selectPrivacyExperience } from "~/features/consent/consent.slice";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import {
+  clearLocation,
+  selectPrivacyExperience,
+  setLocation,
+} from "~/features/consent/consent.slice";
 import NoticeEmptyStateModal from "~/components/modals/NoticeEmptyStateModal";
 import { selectIsNoticeDriven } from "~/features/common/settings.slice";
 
 const Home: NextPage = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const config = useConfig();
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
@@ -64,6 +69,21 @@ const Home: NextPage = () => {
   // The subscription automatically handles skipping if overlay is not enabled
   useSubscribeToPrivacyExperienceQuery();
   const noticeEmptyStateModal = useDisclosure();
+
+  useEffect(() => {
+    if (router.query.geolocation) {
+      // Ensure the query parameter is a string
+      const geolocation = Array.isArray(router.query.geolocation)
+        ? router.query.geolocation[0]
+        : router.query.geolocation;
+
+      dispatch(setLocation(geolocation));
+    } else {
+      // clear the location override if the geolocation query param isn't provided
+      dispatch(clearLocation());
+    }
+  }, [router.query.geolocation, dispatch]);
+
   const experience = useAppSelector(selectPrivacyExperience);
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
   const emptyNotices =
