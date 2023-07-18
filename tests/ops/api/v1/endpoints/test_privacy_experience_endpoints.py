@@ -4,8 +4,14 @@ import pytest
 from starlette.status import HTTP_200_OK
 from starlette.testclient import TestClient
 
+from fides.api.api.v1.endpoints.privacy_experience_endpoints import (
+    _filter_experiences_by_region_or_country,
+)
+from fides.api.models.consent_settings import ConsentSettings
+from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import ConsentMechanism
 from fides.common.api.v1.urn_registry import PRIVACY_EXPERIENCE, V1_URL_PREFIX
+from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
 
 class TestGetPrivacyExperiences:
@@ -599,3 +605,175 @@ class TestGetPrivacyExperiences:
         # Assert outdated served is displayed for fides user device id
         assert data["privacy_notices"][0]["current_served"] is None
         assert data["privacy_notices"][0]["outdated_served"] is True
+
+
+class TestGetTCFPrivacyExperiences:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + PRIVACY_EXPERIENCE
+
+    @pytest.mark.usefixtures("privacy_experience_france_tcf_overlay")
+    def test_tcf_not_enabled(
+        self,
+        api_client,
+        url,
+        privacy_experience_france_overlay,
+        privacy_notice_fr_provide_service_frontend_only,
+    ):
+        resp = api_client.get(
+            url + "?region=fr",
+        )
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        assert resp.json()["items"][0]["id"] == privacy_experience_france_overlay.id
+        assert resp.json()["items"][0]["component"] == ComponentType.overlay.value
+        assert len(resp.json()["items"][0]["privacy_notices"]) == 1
+        assert (
+            resp.json()["items"][0]["privacy_notices"][0]["id"]
+            == privacy_notice_fr_provide_service_frontend_only.id
+        )
+        assert resp.json()["items"][0]["tcf_data_uses"] == []
+        assert resp.json()["items"][0]["tcf_vendors"] == []
+        assert resp.json()["items"][0]["tcf_features"] == []
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_france_overlay",
+        "privacy_notice_fr_provide_service_frontend_only",
+    )
+    def test_tcf_enabled(
+        self, db, api_client, url, privacy_experience_france_tcf_overlay
+    ):
+        settings = ConsentSettings.get_or_create(db)
+        settings.update(db=db, data={"tcf_enabled": True})
+        resp = api_client.get(
+            url + "?region=fr",
+        )
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
+        assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
+        assert resp.json()["items"][0]["privacy_notices"] == []
+        assert resp.json()["items"][0]["tcf_data_uses"] == []
+        assert resp.json()["items"][0]["tcf_vendors"] == []
+        assert resp.json()["items"][0]["tcf_features"] == []
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_france_overlay",
+        "privacy_preference_history_for_tcf_data_use",
+        "served_notice_history_for_data_use",
+    )
+    def test_tcf_enabled_with_overlapping_systems(
+        self,
+        db,
+        api_client,
+        url,
+        privacy_experience_france_tcf_overlay,
+        tcf_system,
+        fides_user_provided_identity,
+    ):
+        secrets = {
+            "domain": "test_sendgrid_domain",
+            "api_key": "test_sendgrid_api_key",
+        }
+        connection_config, dataset_config = instantiate_connector(
+            db,
+            "sendgrid",
+            "secondary_sendgrid_instance",
+            "Sendgrid ConnectionConfig description",
+            secrets,
+        )
+        connection_config.system_id = tcf_system.id
+        connection_config.save(db)
+
+        settings = ConsentSettings.get_or_create(db)
+        settings.update(db=db, data={"tcf_enabled": True})
+        resp = api_client.get(
+            url
+            + "?region=fr&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f",
+        )
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
+        assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
+        assert resp.json()["items"][0]["privacy_notices"] == []
+        assert len(resp.json()["items"][0]["tcf_data_uses"]) == 1
+        assert (
+            resp.json()["items"][0]["tcf_data_uses"][0]["id"]
+            == "analytics.reporting.content_performance"
+        )
+        assert (
+            resp.json()["items"][0]["tcf_data_uses"][0]["current_preference"]
+            == "opt_out"
+        )
+        assert (
+            resp.json()["items"][0]["tcf_data_uses"][0]["outdated_preference"] is None
+        )
+        assert resp.json()["items"][0]["tcf_data_uses"][0]["current_served"] is True
+        assert resp.json()["items"][0]["tcf_data_uses"][0]["outdated_served"] is None
+
+        assert len(resp.json()["items"][0]["tcf_vendors"]) == 1
+        assert resp.json()["items"][0]["tcf_vendors"][0]["id"] == "sendgrid"
+        assert (
+            resp.json()["items"][0]["tcf_vendors"][0]["data_uses"][0]["id"]
+            == "analytics.reporting.content_performance"
+        )
+        assert resp.json()["items"][0]["tcf_features"] == []
+
+
+class TestFilterExperiencesByRegionOrCountry:
+    def test_region_exact_match(self, db, privacy_experience_france_overlay):
+        resp = _filter_experiences_by_region_or_country(
+            db, region="fr", experience_query=db.query(PrivacyExperience)
+        )
+        assert resp.count() == 1
+        assert resp.all()[0].id == privacy_experience_france_overlay.id
+
+    def test_drop_back_to_country(self, db, privacy_experience_france_overlay):
+        resp = _filter_experiences_by_region_or_country(
+            db, region="fr_idg", experience_query=db.query(PrivacyExperience)
+        )
+        assert resp.count() == 1
+        assert resp.all()[0].id == privacy_experience_france_overlay.id
+
+    @pytest.mark.usefixtures("privacy_experience_france_overlay")
+    def test_region_does_not_exist(self, db):
+        resp = _filter_experiences_by_region_or_country(
+            db, region="bad_region", experience_query=db.query(PrivacyExperience)
+        )
+        assert resp.count() == 0
+
+    @pytest.mark.usefixtures("privacy_experience_france_tcf_overlay")
+    def test_regular_overlay_returned_when_tcf_disabled(
+        self, db, privacy_experience_france_overlay
+    ):
+        resp = _filter_experiences_by_region_or_country(
+            db, region="fr", experience_query=db.query(PrivacyExperience)
+        )
+        assert resp.count() == 1
+        assert resp.first().id == privacy_experience_france_overlay.id
+
+    @pytest.mark.usefixtures("privacy_experience_france_overlay")
+    def test_tcf_overlay_returned_when_tcf_enabled(
+        self, db, privacy_experience_france_tcf_overlay
+    ):
+        consent_settings = ConsentSettings.get_or_create(db)
+        consent_settings.update(db=db, data={"tcf_enabled": True})
+
+        resp = _filter_experiences_by_region_or_country(
+            db, region="fr", experience_query=db.query(PrivacyExperience)
+        )
+        assert resp.count() == 1
+        assert resp.first().id == privacy_experience_france_tcf_overlay.id
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_france_overlay", "privacy_experience_france_tcf_overlay"
+    )
+    def test_tcf_enabled_but_we_are_not_in_eea(self, db, privacy_experience_overlay):
+        consent_settings = ConsentSettings.get_or_create(db)
+        consent_settings.update(db=db, data={"tcf_enabled": True})
+
+        resp = _filter_experiences_by_region_or_country(
+            db, region="us_ca", experience_query=db.query(PrivacyExperience)
+        )
+        assert resp.count() == 1
+        assert resp.first().id == privacy_experience_overlay.id

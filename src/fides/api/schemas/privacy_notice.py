@@ -177,7 +177,7 @@ class PrivacyNoticeResponseWithUserPreferences(
 class TCFConsentRecord(BaseConsentSchema, UserSpecificConsentDetails):
     """Contents of a TCF Item generated at runtime"""
 
-    key: str
+    id: str
     illustration: Optional[str]
     legal_basis: Optional[str]
 
@@ -198,7 +198,7 @@ class TCFConsentRecord(BaseConsentSchema, UserSpecificConsentDetails):
 
 
 class TCFVendorConsentRecord(TCFConsentRecord):
-    """Contents of a TCF Item generated at runtime"""
+    """Contents of a TCF Vendor Consent record - generated at runtime"""
 
     data_uses: List[TCFConsentRecord] = []
 

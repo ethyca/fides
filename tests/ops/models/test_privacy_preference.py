@@ -10,7 +10,9 @@ from fides.api.common_exceptions import (
     PrivacyNoticeHistoryNotFound,
 )
 from fides.api.models.privacy_preference import (
+    CurrentPrivacyPreference,
     LastServedNotice,
+    PreferenceType,
     PrivacyPreferenceHistory,
     RequestOrigin,
     ServedNoticeHistory,
@@ -623,6 +625,86 @@ class TestPrivacyPreferenceHistory:
         preference_history_record_for_device.delete(db)
 
 
+class TestCurrentPrivacyPreference:
+    def test_get_preference_by_notice_and_fides_user_device(
+        self,
+        db,
+        empty_provided_identity,
+        privacy_preference_history_us_ca_provide_for_fides_user,
+        privacy_notice,
+        privacy_notice_us_ca_provide,
+        fides_user_provided_identity,
+    ):
+        pref = CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+            db=db,
+            fides_user_provided_identity=fides_user_provided_identity,
+            preference_type=PreferenceType.privacy_notice_id,
+            preference_value=privacy_notice_us_ca_provide.id,
+        )
+        assert (
+            pref
+            == privacy_preference_history_us_ca_provide_for_fides_user.current_privacy_preference
+        )
+
+        assert (
+            CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+                db=db,
+                fides_user_provided_identity=empty_provided_identity,
+                preference_type=PreferenceType.privacy_notice_id,
+                preference_value=privacy_notice.id,
+            )
+            is None
+        )
+
+        assert (
+            CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+                db=db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                preference_type=PreferenceType.privacy_notice_id,
+                preference_value=privacy_notice.id,
+            )
+            is None
+        )
+
+    def test_get_preference_by_data_use_and_fides_user_device(
+        self,
+        db,
+        empty_provided_identity,
+        privacy_preference_history_for_tcf_data_use,
+        fides_user_provided_identity,
+    ):
+        pref = CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+            db=db,
+            fides_user_provided_identity=fides_user_provided_identity,
+            preference_type=PreferenceType.data_use,
+            preference_value="analytics.reporting.content_performance",
+        )
+        assert (
+            pref
+            == privacy_preference_history_for_tcf_data_use.current_privacy_preference
+        )
+
+        assert (
+            CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+                db=db,
+                fides_user_provided_identity=empty_provided_identity,
+                preference_type=PreferenceType.data_use,
+                preference_value="analytics.reporting.content_performanceg",
+            )
+            is None
+        )
+
+        assert (
+            CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+                db=db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                preference_type=PreferenceType.data_use,
+                preference_value="other_use",
+            )
+            is None
+        )
+
+
 class TestAnonymizeIpAddress:
     def test_anonymize_ip_address_empty_string(self):
         assert anonymize_ip_address("") is None
@@ -753,7 +835,7 @@ class TestServedNoticeHistory:
         assert served_notice_history_record.url_recorded == "example.com/privacy_center"
 
         # Assert ServedNoticeHistory record upserted
-        last_served_notice = served_notice_history_record.last_served_notice
+        last_served_notice = served_notice_history_record.last_served_record
         assert last_served_notice.privacy_notice_history == privacy_notice_history
         assert last_served_notice.privacy_notice_id == privacy_notice.id
         assert last_served_notice.provided_identity_id == provided_identity.id
@@ -778,15 +860,15 @@ class TestLastServedNotice:
         privacy_notice_us_ca_provide,
     ):
         last_served = (
-            served_notice_history_us_ca_provide_for_fides_user.last_served_notice
+            served_notice_history_us_ca_provide_for_fides_user.last_served_record
         )
-        assert last_served.served_latest_version is True
+        assert last_served.record_matches_latest_version is True
 
         privacy_notice_us_ca_provide.update(db, data={"description": "new_description"})
         assert privacy_notice_us_ca_provide.version == 2.0
         assert privacy_notice_us_ca_provide.description == "new_description"
 
-        assert last_served.served_latest_version is False
+        assert last_served.record_matches_latest_version is False
 
     def test_get_last_served_for_notice_and_fides_user_device(
         self,
@@ -798,30 +880,69 @@ class TestLastServedNotice:
         privacy_notice,
     ):
         retrieved_record = (
-            LastServedNotice.get_last_served_for_notice_and_fides_user_device(
+            LastServedNotice.get_last_served_for_preference_type_and_fides_user_device(
                 db,
                 fides_user_provided_identity=fides_user_provided_identity,
-                privacy_notice=privacy_notice_us_ca_provide,
+                tcf_preference_type=PreferenceType.privacy_notice_id,
+                preference_value=privacy_notice_us_ca_provide.id,
             )
         )
         assert (
             retrieved_record
-            == served_notice_history_us_ca_provide_for_fides_user.last_served_notice
+            == served_notice_history_us_ca_provide_for_fides_user.last_served_record
         )
 
         assert (
-            LastServedNotice.get_last_served_for_notice_and_fides_user_device(
+            LastServedNotice.get_last_served_for_preference_type_and_fides_user_device(
                 db,
                 fides_user_provided_identity=empty_provided_identity,
-                privacy_notice=privacy_notice_us_ca_provide,
+                tcf_preference_type=PreferenceType.privacy_notice_id,
+                preference_value=privacy_notice_us_ca_provide.id,
             )
             is None
         )
         assert (
-            LastServedNotice.get_last_served_for_notice_and_fides_user_device(
+            LastServedNotice.get_last_served_for_preference_type_and_fides_user_device(
                 db,
                 fides_user_provided_identity=fides_user_provided_identity,
-                privacy_notice=privacy_notice,
+                tcf_preference_type=PreferenceType.privacy_notice_id,
+                preference_value=privacy_notice.id,
+            )
+            is None
+        )
+
+    def test_get_last_served_for_data_use_and_fides_user_device(
+        self,
+        db,
+        fides_user_provided_identity,
+        empty_provided_identity,
+        served_notice_history_for_data_use,
+    ):
+        retrieved_record = (
+            LastServedNotice.get_last_served_for_preference_type_and_fides_user_device(
+                db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                tcf_preference_type=PreferenceType.data_use,
+                preference_value="analytics.reporting.content_performance",
+            )
+        )
+        assert retrieved_record == served_notice_history_for_data_use.last_served_record
+
+        assert (
+            LastServedNotice.get_last_served_for_preference_type_and_fides_user_device(
+                db,
+                fides_user_provided_identity=empty_provided_identity,
+                tcf_preference_type=PreferenceType.data_use,
+                preference_value="analytics.reporting.content_performance",
+            )
+            is None
+        )
+        assert (
+            LastServedNotice.get_last_served_for_preference_type_and_fides_user_device(
+                db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                tcf_preference_type=PreferenceType.data_use,
+                preference_value="not_this_use",
             )
             is None
         )

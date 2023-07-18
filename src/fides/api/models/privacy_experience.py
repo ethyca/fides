@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple, Type
+from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
@@ -286,15 +286,11 @@ class PrivacyExperience(Base):
 
         notices: List[PrivacyNotice] = []
         for notice in privacy_notice_query.order_by(PrivacyNotice.created_at.desc()):
-            cache_saved_preference_on_notice(
+            cache_saved_and_served_on_consent_record(
                 db=db,
-                notice=notice,
+                consent_record=notice,
                 fides_user_provided_identity=fides_user_provided_identity,
-            )
-            cache_notice_served(
-                db=db,
-                notice=notice,
-                fides_user_provided_identity=fides_user_provided_identity,
+                preference_type=PreferenceType.privacy_notice_id,
             )
             notices.append(notice)
 
@@ -549,105 +545,48 @@ def upsert_privacy_experiences_after_config_update(
     return linked_regions, unlinked_regions
 
 
-def cache_saved_preference_on_notice(
+def cache_saved_and_served_on_consent_record(
     db: Session,
-    notice: PrivacyNotice,
-    fides_user_provided_identity: ProvidedIdentity,
-) -> None:
-    """At runtime, cache any previously saved preference values for the given user on the privacy notice"""
-    saved_preference: Optional[
-        CurrentPrivacyPreference
-    ] = CurrentPrivacyPreference.get_preference_for_notice_and_fides_user_device(
-        db=db,
-        fides_user_provided_identity=fides_user_provided_identity,
-        privacy_notice=notice,
-    )
-    if saved_preference:
-        # Temporarily cache the preference for the given fides user device id in memory.
-        if saved_preference.preference_matches_latest_version:
-            notice.current_preference = saved_preference.preference
-            notice.outdated_preference = None
-        else:
-            notice.current_preference = None
-            notice.outdated_preference = saved_preference.preference
-
-
-def cache_notice_served(
-    db: Session, notice: PrivacyNotice, fides_user_provided_identity: ProvidedIdentity
-) -> None:
-    """At runtime, cache if the current notice or a previous version of the notice was served to the user
-    if applicable"""
-    served_notice: Optional[
-        LastServedNotice
-    ] = LastServedNotice.get_last_served_for_notice_and_fides_user_device(
-        db=db,
-        fides_user_provided_identity=fides_user_provided_identity,
-        privacy_notice=notice,
-    )
-    if served_notice:
-        # Temporarily cache that the notice was served for the given fides user device id in memory.
-        if served_notice.served_latest_version:
-            notice.current_served = True
-            notice.outdated_served = None
-        else:
-            notice.current_served = None
-            notice.outdated_served = True
-
-
-def cache_saved_preference_on_tcf_consent_record(
-    db: Session,
-    tcf_record: TCFConsentRecord,
+    consent_record: Union[PrivacyNotice, TCFConsentRecord],
     fides_user_provided_identity: ProvidedIdentity,
     preference_type: PreferenceType,
-):
-    """Cache any previously saved preferences for the given identity on the TCF Consent Record for display"""
+) -> None:
+    """For display purposes, cache whether the resource was served to the given user and/or the user has saved
+    preferences for that resource.
+    """
     if not fides_user_provided_identity:
         return
 
-    preference_value = tcf_record.key
-    saved_preference: Optional[CurrentPrivacyPreference] = None
-    if preference_value:
-        saved_preference = CurrentPrivacyPreference.get_preference_for_tcf_preference_type_and_fides_user_device(
+    consent_record.current_preference = None
+    consent_record.outdated_preference = None
+    consent_record.current_served = None
+    consent_record.outdated_served = None
+
+    saved_preference = (
+        CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
             db=db,
             fides_user_provided_identity=fides_user_provided_identity,
-            tcf_preference_type=preference_type,
-            preference_value=preference_value,
+            preference_type=preference_type,
+            preference_value=consent_record.id,
         )
+    )
     if saved_preference:
-        if saved_preference.tcf_version == CURRENT_TCF_VERSION:
-            tcf_record.current_preference = saved_preference.preference
-            tcf_record.outdated_preference = None
+        if saved_preference.record_matches_latest_version:
+            consent_record.current_preference = saved_preference.preference
         else:
-            tcf_record.current_preference = None
-            tcf_record.outdated_preference = saved_preference.preference
+            consent_record.outdated_preference = saved_preference.preference
 
-
-def cache_tcf_resource_served(
-    db: Session,
-    tcf_record: TCFConsentRecord,
-    fides_user_provided_identity: ProvidedIdentity,
-    preference_type: PreferenceType,
-) -> None:
-    """At runtime, cache if the current notice or a previous version of the notice was served to the user
-    if applicable"""
-    if not fides_user_provided_identity:
-        return
-
-    preference_value = tcf_record.key
-
-    served_tcf_detail: Optional[
+    served_record: Optional[
         LastServedNotice
-    ] = LastServedNotice.get_last_served_for_tcf_preference_type_and_fides_user_device(
+    ] = LastServedNotice.get_last_served_for_preference_type_and_fides_user_device(
         db=db,
         fides_user_provided_identity=fides_user_provided_identity,
         tcf_preference_type=preference_type,
-        preference_value=preference_value,
+        preference_value=consent_record.id,
     )
-    if served_tcf_detail:
-        # Temporarily cache that the notice was served for the given fides user device id in memory.
-        if served_tcf_detail.tcf_version == CURRENT_TCF_VERSION:
-            tcf_record.current_served = True
-            tcf_record.outdated_served = None
+
+    if served_record:
+        if served_record.record_matches_latest_version:
+            consent_record.current_served = True
         else:
-            tcf_record.current_served = None
-            tcf_record.outdated_served = True
+            consent_record.outdated_served = True

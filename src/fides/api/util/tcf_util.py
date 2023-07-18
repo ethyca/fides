@@ -1,8 +1,9 @@
 from functools import lru_cache
 from os.path import dirname, join
-from typing import List, Tuple
+from typing import Dict, List, Set, Tuple
 
 import yaml
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -19,10 +20,14 @@ TCF_PATH = join(
 )
 
 
-@lru_cache(maxsize=1)
+@lru_cache()
 def load_tcf_data_uses(
     db,
 ) -> Tuple[List[TCFConsentRecord], List[TCFVendorConsentRecord]]:
+    """
+    Load TCF Data uses from TCF_PATH and then return data uses that are parents/exact matches
+    of data uses on systems, and vendors that contain these data uses.
+    """
     with open(load_file([TCF_PATH]), "r", encoding="utf-8") as file:
         raw_tcf_data_uses = yaml.safe_load(file).get("tcf_data_uses", [])
 
@@ -30,54 +35,58 @@ def load_tcf_data_uses(
         System.all(db), include_parents=True
     )
 
-    relevant_data_uses = system_data_uses.intersection(
-        {[record["key"] for record in raw_tcf_data_uses]}
+    relevant_data_uses: set[str] = system_data_uses.intersection(
+        {record["id"] for record in raw_tcf_data_uses}
     )
 
     if not relevant_data_uses:
         return [], []
 
     systems = (
-        db.query(System)
+        db.query(System, PrivacyDeclaration)
         .join(
             PrivacyDeclaration,
             PrivacyDeclaration.system_id == System.id,
         )
-        .filter(PrivacyDeclaration.data_use.in_(relevant_data_uses))
+        .filter(
+            or_(
+                *[
+                    PrivacyDeclaration.data_use.like(data_use_parent + "%")
+                    for data_use_parent in relevant_data_uses
+                ]
+            )
+        )
     )
 
-    data_use_records = [
+    system_map: Dict[str, TCFVendorConsentRecord] = {}
+
+    for system, privacy_declaration in systems:
+        if not system.connection_configs:
+            continue
+
+        if system.id not in system_map:
+            for connection in system.connection_configs.filter(
+                db, conditions=(ConnectionConfig.system_id == system.id)
+            ):
+                if (
+                    connection.connection_type == ConnectionType.saas
+                    and connection.saas_config.get("type")
+                ):
+                    system_map[system.id] = TCFVendorConsentRecord(
+                        **{"id": connection.saas_config.get("type")}
+                    )
+
+        for record in raw_tcf_data_uses:
+            if privacy_declaration.data_use.startswith(record["id"]) and record[
+                "id"
+            ] not in [use.id for use in system_map[system.id].data_uses]:
+                system_map[system.id].data_uses.append(TCFConsentRecord(**record))
+
+    return [
         TCFConsentRecord(**record)
         for record in raw_tcf_data_uses
-        if record["key"] in relevant_data_uses
-    ]
-    vendors = []
-    for system in systems:
-        for connection in system.connection_configs.filter(
-            db, conditions=(ConnectionConfig.system_id == system.id)
-        ):
-            if (
-                connection.connection_type == ConnectionType.saas
-                and connection.saas_config.get("type")
-            ):
-                vendor_consent_record = TCFVendorConsentRecord(
-                    **{"key": connection.saas_config.get("type")}
-                )
-                individual_system_data_uses = System.get_data_uses(
-                    [system], include_parents=True
-                )
-                relevant_system_data_uses = [
-                    use
-                    for use in individual_system_data_uses
-                    if use in relevant_data_uses
-                ]
-                for record in raw_tcf_data_uses:
-                    if record["key"] in relevant_system_data_uses:
-                        vendor_consent_record.data_uses.append(
-                            TCFConsentRecord(**record)
-                        )
-                vendors.append(vendor_consent_record)
-    return data_use_records, vendors
+        if record["id"] in relevant_data_uses
+    ], list(system_map.values())
 
 
 EEA_COUNTRIES = [

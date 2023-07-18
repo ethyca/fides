@@ -61,7 +61,7 @@ from fides.api.models.privacy_request import (
 from fides.api.models.registration import UserRegistration
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.models.sql_models import System
+from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.models.storage import (
     ResponseFormat,
     StorageConfig,
@@ -1484,6 +1484,24 @@ def served_notice_history(
 
 
 @pytest.fixture(scope="function")
+def served_notice_history_for_data_use(
+    db: Session, fides_user_provided_identity
+) -> Generator:
+    pref_1 = ServedNoticeHistory.create(
+        db=db,
+        data={
+            "acknowledge_mode": False,
+            "serving_component": "tcf_overlay",
+            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+            "data_use": "analytics.reporting.content_performance",
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_notice_us_ca_provide(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
@@ -1606,6 +1624,20 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
     )
 
     yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def privacy_experience_france_tcf_overlay(db: Session) -> Generator:
+    privacy_experience = PrivacyExperience.create(
+        db=db,
+        data={
+            "component": ComponentType.tcf_overlay,
+            "region": PrivacyNoticeRegion.fr,
+        },
+    )
+
+    yield privacy_experience
+    privacy_experience.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -2188,6 +2220,36 @@ def privacy_preference_history(
 
 
 @pytest.fixture(scope="function")
+def privacy_preference_history_for_tcf_data_use(
+    db,
+    provided_identity_and_consent_request,
+    privacy_experience_france_overlay,
+    fides_user_provided_identity,
+):
+    """Fixture that saves a privacy preference against a data use directly"""
+    preference_history_record = PrivacyPreferenceHistory.create(
+        db=db,
+        data={
+            "anonymized_ip_address": "92.158.1.0",
+            "email": "test@email.com",
+            "method": "button",
+            "data_use": "analytics.reporting.content_performance",
+            "privacy_experience_config_history_id": None,
+            "privacy_experience_id": privacy_experience_france_overlay.id,
+            "preference": "opt_out",
+            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+            "request_origin": "tcf_overlay",
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+            "user_geography": "fr_idg",
+            "url_recorded": "example.com/",
+        },
+        check_name=False,
+    )
+    yield preference_history_record
+    preference_history_record.delete(db)
+
+
+@pytest.fixture(scope="function")
 def anonymous_consent_records(
     db,
     fides_user_provided_identity_and_consent_request,
@@ -2370,3 +2432,41 @@ def privacy_notice_france(db: Session) -> Generator:
     )
 
     yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def tcf_system(db: Session) -> System:
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"tcf-system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "tcf_relevant_system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "data_responsibility_title": "Processor",
+            "data_protection_impact_assessment": {
+                "is_required": False,
+                "progress": None,
+                "link": None,
+            },
+        },
+    )
+
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for content performance",
+            "system_id": system.id,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "analytics.reporting.content_performance",
+            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+            "data_subjects": ["customer"],
+            "dataset_references": None,
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
+    db.refresh(system)
+    return system

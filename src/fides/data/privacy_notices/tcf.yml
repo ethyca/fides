@@ -1,6 +1,6 @@
 tcf_data_uses:
 - name:
-  key: analytics.reporting.content_performance
+  id: analytics.reporting.content_performance
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -8,7 +8,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: analytics.reporting.ad_performance
+  id: analytics.reporting.ad_performance
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -16,7 +16,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: analytics.reporting.campaign_insights
+  id: analytics.reporting.campaign_insights
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -24,7 +24,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: essential.fraud_detection
+  id: essential.fraud_detection
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -32,7 +32,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: essential.service.security
+  id: essential.service.security
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -40,7 +40,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: functional.improve_service
+  id: functional.improve_service
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -48,7 +48,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: functional.storage
+  id: functional.storage
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -56,7 +56,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: marketing.advertising.first_party.contextual
+  id: marketing.advertising.first_party.contextual
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -64,7 +64,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: marketing.advertising.first_party.targeted
+  id: marketing.advertising.first_party.targeted
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -72,7 +72,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: marketing.advertising.frequency_capping
+  id: marketing.advertising.frequency_capping
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -80,7 +80,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: marketing.advertising.negative_targeting
+  id: marketing.advertising.negative_targeting
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -88,7 +88,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: marketing.advertising.ad_serving
+  id: marketing.advertising.ad_serving
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -96,7 +96,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: marketing.advertising.profiling
+  id: marketing.advertising.profiling
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -104,7 +104,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: marketing.advertising.third_party.targeted
+  id: marketing.advertising.third_party.targeted
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -112,7 +112,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: personalize.profiling
+  id: personalize.profiling
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false
@@ -120,7 +120,7 @@ tcf_data_uses:
   illustration:
   legal_basis:
 - name:
-  key: personalize.content
+  id: personalize.content
   consent_mechanism: opt_out
   enforcement_level: frontend
   has_gpc_flag: false

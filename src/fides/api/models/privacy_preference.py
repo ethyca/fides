@@ -49,7 +49,7 @@ class ConsentMethod(Enum):
 
 
 class PreferenceType(Enum):
-    privacy_notice = "privacy_notice"
+    privacy_notice_id = "privacy_notice_id"
     data_use = "data_use"
     vendor = "vendor"
     feature = "feature"
@@ -196,7 +196,7 @@ class ConsentReportingMixin:
     @property
     def preference_type(self) -> Optional[PreferenceType]:
         if self.privacy_notice_history_id:
-            return PreferenceType.privacy_notice
+            return PreferenceType.privacy_notice_id
         if self.data_use:
             return PreferenceType.data_use
         if self.vendor:
@@ -241,7 +241,10 @@ def _validate_notice_and_identity(
 
 
 class ServedNoticeHistory(ConsentReportingMixin, Base):
-    """A historical record of every time a notice was served in the UI to an end user"""
+    """A historical record of every time a resource was served in the UI to which an end user could consent
+
+    This might be a privacy notice, a data use, a vendor, or a feature.
+    """
 
     acknowledge_mode = Column(
         Boolean,
@@ -249,7 +252,7 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
     )
     serving_component = Column(EnumColumn(ServingComponent), nullable=False, index=True)
 
-    last_served_notice = (
+    last_served_record = (
         relationship(  # Only exists if this is the same as the Last Served Notice
             "LastServedNotice",
             back_populates="served_notice_history",
@@ -557,6 +560,22 @@ class LastSavedMixin:
     def privacy_notice_history(cls) -> relationship:
         return relationship(PrivacyNoticeHistory)
 
+    @property
+    def record_matches_latest_version(self) -> bool:
+        """Returns True if the latest saved preference corresponds to the
+        latest version for this notice or TCF standard"""
+
+        if self.privacy_notice and self.privacy_notice_history_id:
+            return (
+                self.privacy_notice.privacy_notice_history_id
+                == self.privacy_notice_history_id
+            )
+
+        if self.tcf_version:
+            return self.tcf_version == CURRENT_TCF_VERSION
+
+        return False
+
 
 class CurrentPrivacyPreference(LastSavedMixin, Base):
     """Stores only the user's most recently saved preference for a given privacy notice
@@ -604,50 +623,24 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
         PrivacyPreferenceHistory, cascade="delete, delete-orphan", single_parent=True
     )
 
-    @property
-    def preference_matches_latest_version(self) -> bool:
-        """Returns True if the latest saved preference corresponds to the
-        latest version for this Notice"""
-        return (
-            self.privacy_notice.privacy_notice_history_id
-            == self.privacy_notice_history_id
-        )
-
     @classmethod
-    def get_preference_for_notice_and_fides_user_device(
+    def get_preference_by_type_and_fides_user_device(
         cls,
         db: Session,
         fides_user_provided_identity: ProvidedIdentity,
-        privacy_notice: PrivacyNotice,
-    ) -> Optional[CurrentPrivacyPreference]:
-        """Retrieves the CurrentPrivacyPreference for the user with the given identity
-        for the given notice"""
-        return (
-            db.query(CurrentPrivacyPreference)
-            .filter(
-                CurrentPrivacyPreference.fides_user_device_provided_identity_id
-                == fides_user_provided_identity.id,
-                CurrentPrivacyPreference.privacy_notice_id == privacy_notice.id,
-            )
-            .first()
-        )
-
-    @classmethod
-    def get_preference_for_tcf_preference_type_and_fides_user_device(
-        cls,
-        db: Session,
-        fides_user_provided_identity: ProvidedIdentity,
-        tcf_preference_type: PreferenceType,
+        preference_type: PreferenceType,
         preference_value: str,
     ) -> Optional[CurrentPrivacyPreference]:
-        """Retrieves the CurrentPrivacyPreference for the user with the given identity
-        for the given notice"""
+        """Retrieves the CurrentPrivacyPreference saved against a notice, data use,
+        vendor, or feature for a given fides user device id
+        """
+
         return (
             db.query(CurrentPrivacyPreference)
             .filter(
                 CurrentPrivacyPreference.fides_user_device_provided_identity_id
                 == fides_user_provided_identity.id,
-                CurrentPrivacyPreference.__table__.c[tcf_preference_type.value]
+                CurrentPrivacyPreference.__table__.c[preference_type.value]
                 == preference_value,
             )
             .first()
@@ -682,35 +675,8 @@ class LastServedNotice(LastSavedMixin, Base):
         ServedNoticeHistory, cascade="delete, delete-orphan", single_parent=True
     )
 
-    @property
-    def served_latest_version(self) -> bool:
-        """Returns True if the user was last served the latest version of this Notice"""
-        return (
-            self.privacy_notice.privacy_notice_history_id
-            == self.privacy_notice_history_id
-        )
-
     @classmethod
-    def get_last_served_for_notice_and_fides_user_device(
-        cls,
-        db: Session,
-        fides_user_provided_identity: ProvidedIdentity,
-        privacy_notice: PrivacyNotice,
-    ) -> Optional[LastServedNotice]:
-        """Retrieves the LastServedNotice record for the user with the given identity
-        for the given notice"""
-        return (
-            db.query(LastServedNotice)
-            .filter(
-                LastServedNotice.fides_user_device_provided_identity_id
-                == fides_user_provided_identity.id,
-                LastServedNotice.privacy_notice_id == privacy_notice.id,
-            )
-            .first()
-        )
-
-    @classmethod
-    def get_last_served_for_tcf_preference_type_and_fides_user_device(
+    def get_last_served_for_preference_type_and_fides_user_device(
         cls,
         db: Session,
         fides_user_provided_identity: ProvidedIdentity,
@@ -718,7 +684,7 @@ class LastServedNotice(LastSavedMixin, Base):
         preference_value: str,
     ) -> Optional[LastServedNotice]:
         """Retrieves the CurrentPrivacyPreference for the user with the given identity
-        for the given notice"""
+        and the served preference type/value"""
         return (
             db.query(LastServedNotice)
             .filter(
@@ -751,7 +717,7 @@ def upsert_last_saved_record(
     ] = None
 
     record_type_mapping = {
-        PreferenceType.privacy_notice: "privacy_notice_history_id",
+        PreferenceType.privacy_notice_id: "privacy_notice_history_id",
         PreferenceType.data_use: "data_use",
         PreferenceType.vendor: "vendor",
         PreferenceType.feature: "feature",
