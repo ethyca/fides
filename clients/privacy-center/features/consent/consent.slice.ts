@@ -199,7 +199,7 @@ export const selectFidesUserDeviceId = createSelector(
 );
 
 export const selectUserRegion = createSelector(
-  [(state: RootState) => state, selectConsentState, selectSettings],
+  [(RootState) => RootState, selectConsentState, selectSettings],
   (RootState, consentState, settingsState) => {
     const { settings } = settingsState;
     if (settings?.IS_GEOLOCATION_ENABLED && settings?.GEOLOCATION_API_URL) {
