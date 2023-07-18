@@ -12,7 +12,7 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import ActionType
-from fides.api.schemas.connection_configuration.connection_config import SystemType
+from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
@@ -1464,7 +1464,7 @@ class TestInstantiateConnectionFromTemplate:
         connection_data = resp.json()["connection"]
         assert connection_data["key"] == "mailchimp_connection_config"
         assert connection_data["name"] == "Mailchimp Connector"
-        assert "secrets" not in connection_data
+        assert connection_data["secrets"]["api_key"] == "**********"
 
         dataset_data = resp.json()["dataset"]
         assert dataset_data["fides_key"] == "secondary_mailchimp_instance"

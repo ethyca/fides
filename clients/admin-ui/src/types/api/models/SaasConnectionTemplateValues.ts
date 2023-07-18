@@ -22,7 +22,7 @@ import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
  * Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template
  */
 export type SaasConnectionTemplateValues = {
-  name: string;
+  name?: string;
   key?: string;
   description?: string;
   secrets:
