@@ -4,6 +4,7 @@ import enum
 from datetime import datetime
 from typing import Any, Dict, Optional, Type
 
+from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableDict
@@ -163,6 +164,27 @@ class ConnectionConfig(Base):
         # TODO: Remove this fallback once all connection configs are linked to systems
         # This will always be None in the future. `self.system` will always be set.
         return self.name
+
+    @property
+    def authorized(self) -> bool:
+        """Returns True if the connection config has an access token, used for OAuth2 connections"""
+
+        saas_config = self.get_saas_config()
+
+        if not saas_config:
+            return False
+
+        authentication = saas_config.client_config.authentication
+        if not authentication:
+            return False
+
+        # hard-coding to avoid cyclic dependency
+        if authentication.strategy != "oauth2_authorization_code":
+            return False
+
+        logger.info(self.secrets)
+
+        return bool(self.secrets and self.secrets.get("access_token"))
 
     @classmethod
     def create_without_saving(

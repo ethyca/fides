@@ -5,15 +5,18 @@ import {
   Heading,
   Spinner,
   Text,
+  toast,
+  useToast,
 } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   setActiveSystem,
   useGetSystemByFidesKeyQuery,
@@ -21,8 +24,10 @@ import {
 import EditSystemFlow from "~/features/system/EditSystemFlow";
 
 const ConfigureSystem: NextPage = () => {
+  const toast = useToast();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const [initialTabIndex, setInitialTabIndex] = useState(0);
   let systemId = "";
   if (router.query.id) {
     systemId = Array.isArray(router.query.id)
@@ -37,6 +42,30 @@ const ConfigureSystem: NextPage = () => {
   useEffect(() => {
     dispatch(setActiveSystem(system));
   }, [system, dispatch]);
+
+  useEffect(() => {
+    const status = router.query.status;
+
+    if (status) {
+      if (status === "succeeded") {
+        toast(successToastParams(`Integration successfully authorized.`));
+      } else {
+        toast(errorToastParams(`Failed to authorize integration.`));
+      }
+      // create a new url without the status query param
+      let newQuery = { ...router.query };
+      delete newQuery.status;
+      const newUrl = {
+        pathname: router.pathname,
+        query: newQuery,
+      };
+
+      // replace the current history entry
+      router.replace(newUrl, undefined, { shallow: true });
+
+      setInitialTabIndex(3);
+    }
+  }, [router.query]);
 
   if (isLoading) {
     return (
@@ -66,7 +95,7 @@ const ConfigureSystem: NextPage = () => {
           Could not find a system with id {systemId}
         </Text>
       ) : (
-        <EditSystemFlow />
+        <EditSystemFlow initialTabIndex={initialTabIndex} />
       )}
     </Layout>
   );

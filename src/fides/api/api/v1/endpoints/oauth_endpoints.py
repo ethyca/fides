@@ -1,6 +1,7 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
-from fastapi import Body, Depends, HTTPException, Request, Security
+from fastapi import Body, Depends, HTTPException, Request, Response, Security
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.security import HTTPBasic
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -11,6 +12,7 @@ from starlette.status import (
 )
 
 from fides.api.api.deps import get_db
+from fides.api.api.v1.endpoints.connection_endpoints import connection_status
 from fides.api.api.v1.endpoints.saas_config_endpoints import (
     verify_oauth_connection_config,
 )
@@ -32,6 +34,7 @@ from fides.api.service.authentication.authentication_strategy import (
 from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
+from fides.api.service.connectors import get_connector
 from fides.api.util.api_router import APIRouter
 from fides.common.api.scope_registry import (
     CLIENT_CREATE,
@@ -208,8 +211,8 @@ def read_roles_to_scopes_mapping() -> Dict[str, List]:
     return ROLES_TO_SCOPES_MAPPING
 
 
-@router.get(OAUTH_CALLBACK, response_model=None)
-def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None:
+@router.get(OAUTH_CALLBACK)
+def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Response:
     """
     Uses the passed in code to generate the token access request
     for the connection associated with the given state.
@@ -240,5 +243,18 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
         )
         connection_config.secrets = {**connection_config.secrets, "code": code}  # type: ignore
         auth_strategy.get_access_token(connection_config, db)
+
+        msg = f"Test completed for ConnectionConfig with key: {connection_config.key}."
+        status_message = connection_status(connection_config, msg, db)
+
+        if authentication_request.referer:
+            return RedirectResponse(
+                url=f"{authentication_request.referer}?status={status_message.test_status.value}"
+            )
+        else:
+            return PlainTextResponse(
+                content=f"Test status: {status_message.test_status.value}. No referer URL available. Please navigate back to the Fides Admin UI.",
+                status_code=200,
+            )
     except (OAuth2TokenException, FidesopsException) as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))

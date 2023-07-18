@@ -175,6 +175,10 @@ def patch_connection_secrets(
         db, unvalidated_secrets, connection_config
     ).dict()
 
+    # invalidate the access token for OAuth connections if the user is updating the secrets
+    if connection_config.authorized:
+        del connection_config.secrets["access_token"]
+
     for key, value in validated_secrets.items():
         connection_config.secrets[key] = value  # type: ignore
 

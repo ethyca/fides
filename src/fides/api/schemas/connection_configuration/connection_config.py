@@ -88,8 +88,6 @@ def mask_sensitive_fields(
 class ConnectionConfigurationResponse(BaseModel):
     """
     Describes the returned schema for a ConnectionConfiguration.
-
-    Do *NOT* add "secrets" to this schema.
     """
 
     name: Optional[str]
@@ -104,6 +102,7 @@ class ConnectionConfigurationResponse(BaseModel):
     last_test_succeeded: Optional[bool]
     saas_config: Optional[SaaSConfigBase]
     secrets: Optional[Dict[str, Any]]
+    authorized: Optional[bool] = False
 
     @root_validator()
     def mask_sensitive_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:

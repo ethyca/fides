@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Set
+from typing import Any, Optional, Set
 
 import yaml
 
@@ -15,7 +15,11 @@ from fides.api.schemas.connection_configuration.connection_type_system_map impor
 )
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.schemas.policy import SUPPORTED_ACTION_TYPES, ActionType
+from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import SaaSConfig
+from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
+    OAuth2AuthorizationCodeAuthenticationStrategy,
+)
 from fides.api.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
 )
@@ -80,6 +84,20 @@ def get_connection_types(
     def is_match(elem: str) -> bool:
         """If a search query param was included, is it a substring of an available connector type?"""
         return search.lower() in elem.lower() if search else True
+
+    def oauth_required(connector_template: Optional[ConnectorTemplate]) -> bool:
+        """Determines if the config for the given connector template requires OAuth."""
+        if connector_template is None:
+            return False
+
+        config = SaaSConfig(**load_config_from_string(connector_template.config))
+        authentication = config.client_config.authentication
+        return (
+            authentication.strategy
+            == OAuth2AuthorizationCodeAuthenticationStrategy.name
+            if authentication
+            else False
+        )
 
     def saas_request_type_filter(connection_type: str) -> bool:
         """
@@ -184,6 +202,7 @@ def get_connection_types(
                     encoded_icon=connector_template.icon
                     if connector_template is not None
                     else None,
+                    authorization_required=oauth_required(connector_template),
                 )
             )
 
