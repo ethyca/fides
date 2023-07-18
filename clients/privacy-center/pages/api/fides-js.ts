@@ -90,7 +90,9 @@ export default async function handler(
   console.log(
     "Bundling generic fides.js & Privacy Center configuration together..."
   );
-  const fidesJSBuffer = await fsPromises.readFile("public/lib/fides.js");
+  const tcf_enabled = true; // todo- replace with env var
+  const fides_js_file = tcf_enabled ? "public/lib/fides-tcf.js" : "public/lib/fides.js"
+  const fidesJSBuffer = await fsPromises.readFile(fides_js_file);
   const fidesJS: string = fidesJSBuffer.toString();
   if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");

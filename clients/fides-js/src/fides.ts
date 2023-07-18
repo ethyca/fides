@@ -81,6 +81,7 @@ import { getGeolocation } from "./services/external/geolocation";
 import { OverlayProps } from "./components/Overlay";
 import { updateConsentPreferences } from "./lib/preferences";
 import { resolveConsentValue } from "./lib/consent-value";
+import {load_tcf} from "./lib/tcf";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -187,6 +188,11 @@ const init = async ({
   geolocation,
   options,
 }: FidesConfig) => {
+  const tcf_enabled = true // todo- replace with env var
+  if (tcf_enabled) {
+    load_tcf();
+  }
+
   // Configure the default legacy consent values
   const context = getConsentContext();
   const consentDefaults = makeConsentDefaultsLegacy(
