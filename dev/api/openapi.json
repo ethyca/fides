@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.15.2b0.post0.dev25"
+    "version": "2.16.1b0.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3455,6 +3455,123 @@
         ]
       }
     },
+    "/api/v1/system/{fides_key}/connection/secrets": {
+      "patch": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Patch Connection Secrets",
+        "description": "Patch secrets that will be used to connect to a specified connection_type.\n\nThe specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB\nwill differ from Dynamo DB.",
+        "operationId": "patch_connection_secrets_api_v1_system__fides_key__connection_secrets_patch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Verify",
+              "type": "boolean",
+              "default": true
+            },
+            "name": "verify",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Unvalidated Secrets",
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/MongoDBDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MySQLDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RedshiftDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SnowflakeDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MSSQLDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MariaDBDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/BigQueryDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SaaSSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ManualWebhookSchemaforDocs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TimescaleDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FidesDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SovrnDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestStatusMessage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/system/{fides_key}/connection/{connection_key}": {
       "delete": {
         "tags": [
@@ -4108,9 +4225,9 @@
         "tags": [
           "Connection Types"
         ],
-        "summary": "Get Connection Type Secret Schema",
+        "summary": "Get Connection Type Secret Schema Route",
         "description": "Returns the secret fields that should be supplied to authenticate with a particular connection type\n\nNote that this endpoint should never return actual secrets, we return the *types* of secret fields needed\nto authenticate.",
-        "operationId": "get_connection_type_secret_schema_api_v1_connection_type__connection_type__secret_get",
+        "operationId": "get_connection_type_secret_schema_route_api_v1_connection_type__connection_type__secret_get",
         "parameters": [
           {
             "required": true,
@@ -4128,7 +4245,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Get Connection Type Secret Schema Api V1 Connection Type  Connection Type  Secret Get",
+                  "title": "Response Get Connection Type Secret Schema Route Api V1 Connection Type  Connection Type  Secret Get",
                   "type": "object"
                 }
               }
@@ -13702,6 +13819,10 @@
           },
           "saas_config": {
             "$ref": "#/components/schemas/SaaSConfigBase"
+          },
+          "secrets": {
+            "title": "Secrets",
+            "type": "object"
           }
         },
         "description": "Describes the returned schema for a ConnectionConfiguration.\n\nDo *NOT* add \"secrets\" to this schema."
