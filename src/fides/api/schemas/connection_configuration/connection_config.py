@@ -57,7 +57,6 @@ def mask_sensitive_fields(
     This function traverses the given secrets dictionary and uses the provided schema to
     identify fields that have been marked as sensitive. The function replaces the sensitive
     field values with a mask string ('********').
-    Note: This function modifies the input dictionary in-place.
     Args:
         connection_secrets (Dict[str, Any]): The secrets to be masked.
         secret_schema (Dict[str, Any]): The schema defining which fields are sensitive.
