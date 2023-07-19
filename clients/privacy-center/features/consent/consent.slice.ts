@@ -110,12 +110,15 @@ type State = {
   persistedFidesKeyToConsent: FidesKeyToConsent;
   /** User id based on the device */
   fidesUserDeviceId: string | undefined;
+  /** Location (ex: US-CA) */
+  location: string | undefined;
 };
 
 const initialState: State = {
   fidesKeyToConsent: {},
   persistedFidesKeyToConsent: {},
   fidesUserDeviceId: undefined,
+  location: undefined,
 };
 
 export const consentSlice = createSlice({
@@ -157,6 +160,14 @@ export const consentSlice = createSlice({
     ) {
       draftState.fidesUserDeviceId = payload;
     },
+
+    setLocation(draftState, action: PayloadAction<string | undefined>) {
+      draftState.location = action.payload;
+    },
+
+    clearLocation(draftState) {
+      draftState.location = undefined;
+    },
   },
 });
 
@@ -165,6 +176,8 @@ export const {
   changeConsent,
   updateUserConsentPreferencesFromApi,
   setFidesUserDeviceId,
+  setLocation,
+  clearLocation,
 } = consentSlice.actions;
 
 export const selectConsentState = (state: RootState) => state.consent;
@@ -186,13 +199,18 @@ export const selectFidesUserDeviceId = createSelector(
 );
 
 export const selectUserRegion = createSelector(
-  [(RootState) => RootState, selectSettings],
-  (RootState, settingsState) => {
+  [(RootState) => RootState, selectConsentState, selectSettings],
+  (RootState, consentState, settingsState) => {
     const { settings } = settingsState;
     if (settings?.IS_GEOLOCATION_ENABLED && settings?.GEOLOCATION_API_URL) {
-      const geolocation = consentApi.endpoints.getUserGeolocation.select(
-        settings.GEOLOCATION_API_URL
-      )(RootState)?.data;
+      let geolocation: UserGeolocation | undefined = {
+        location: consentState.location,
+      };
+      if (!geolocation.location) {
+        geolocation = consentApi.endpoints.getUserGeolocation.select(
+          settings.GEOLOCATION_API_URL
+        )(RootState)?.data;
+      }
       return constructFidesRegionString(geolocation) as PrivacyNoticeRegion;
     }
     return undefined;

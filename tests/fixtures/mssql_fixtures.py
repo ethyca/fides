@@ -18,6 +18,11 @@ from fides.config import CONFIG
 from .application_fixtures import integration_secrets
 
 
+@pytest.fixture(scope="function")
+def mssql_example_secrets():
+    return integration_secrets["mssql_example"]
+
+
 @pytest.fixture
 def mssql_example_test_dataset_config(
     connection_config_mssql: ConnectionConfig,

@@ -185,7 +185,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   onChange={(value) => {
                     form.setFieldValue(field.name, value);
                   }}
-                  defaultValue={field.value ?? 0}
+                  value={field.value ?? 0}
                   min={0}
                   size="sm"
                 >

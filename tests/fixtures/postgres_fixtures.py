@@ -28,6 +28,11 @@ from tests.ops.test_helpers.db_utils import seed_postgres_data
 from .application_fixtures import integration_secrets
 
 
+@pytest.fixture(scope="function")
+def postgres_example_secrets():
+    return integration_secrets["postgres_example"]
+
+
 @pytest.fixture
 def postgres_example_test_dataset_config(
     connection_config: ConnectionConfig,
