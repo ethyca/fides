@@ -79,7 +79,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
         ) : null}
         <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
           <Button
-            colorScheme="primary"
+            variant="outline"
             type="submit"
             minWidth="auto"
             data-testid="upload-btn"

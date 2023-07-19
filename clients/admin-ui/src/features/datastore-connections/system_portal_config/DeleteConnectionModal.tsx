@@ -1,5 +1,7 @@
 import {
   Button,
+  Flex,
+  IconButton,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -13,6 +15,8 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 import React from "react";
+
+import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 
 type DataConnectionProps = {
   connectionKey: string;
@@ -44,20 +48,18 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
     <>
       <>
         <Spacer />
-        <Button
-          bg="red.500"
-          color="white"
-          isDisabled={deleteResult.isLoading}
-          isLoading={deleteResult.isLoading}
-          loadingText="Deleting"
-          size="sm"
-          variant="solid"
-          onClick={onOpen}
-          _active={{ bg: "red.400" }}
-          _hover={{ bg: "red.300" }}
-        >
-          Delete
-        </Button>
+        <Flex alignItems="center">
+          <Text fontSize="sm">Delete Integration</Text>
+          <IconButton
+            marginLeft="8px"
+            aria-label="Delete integration"
+            variant="outline"
+            icon={<TrashCanSolidIcon />}
+            isDisabled={deleteResult.isLoading}
+            onClick={onOpen}
+            size="sm"
+          />
+        </Flex>
       </>
 
       <Modal isCentered isOpen={isOpen} onClose={closeIfComplete}>

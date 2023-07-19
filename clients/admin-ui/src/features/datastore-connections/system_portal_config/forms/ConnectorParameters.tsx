@@ -373,7 +373,15 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 
   return (
     <>
-      <Box color="gray.700" fontSize="14px" mb={4} h="80px">
+      <Box
+        borderRadius="6px"
+        border="1px"
+        borderColor="gray.200"
+        backgroundColor="gray.50"
+        fontSize="14px"
+        p={4}
+        mb={4}
+      >
         Connect to your {connectionOption!.human_readable} environment by
         providing credential information below. Once you have saved your
         integration credentials, you can review what data is included when
