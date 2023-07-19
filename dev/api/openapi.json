@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.16.1b0.post0.dev9"
+    "version": "2.16.1b0.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13353,19 +13353,11 @@
       "BigQueryDocsSchema": {
         "title": "BigQueryDocsSchema",
         "required": [
-          "keyfile_creds"
+          "keyfile_creds",
+          "dataset"
         ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
-            "type": "string",
-            "sensitive": true
-          },
-          "dataset": {
-            "title": "Dataset",
-            "type": "string"
-          },
           "keyfile_creds": {
             "title": "Keyfile Creds",
             "allOf": [
@@ -13373,10 +13365,15 @@
                 "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds"
               }
             ],
+            "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
             "sensitive": true
+          },
+          "dataset": {
+            "title": "BigQuery Dataset",
+            "type": "string",
+            "description": "The dataset within your BigQuery project that contains the tables you want to access."
           }
         },
-        "additionalProperties": false,
         "description": "BigQuery Secrets Schema for API Docs"
       },
       "Body_acquire_access_token_api_v1_oauth_token_post": {
@@ -15468,26 +15465,23 @@
         ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
-            "type": "string",
-            "sensitive": true
-          },
           "region_name": {
-            "title": "Region Name",
-            "type": "string"
+            "title": "Region",
+            "type": "string",
+            "description": "The AWS region where your DynamoDB table is located (ex. us-west-2)."
           },
           "aws_access_key_id": {
-            "title": "AWS Access Key ID",
-            "type": "string"
+            "title": "Access Key ID",
+            "type": "string",
+            "description": "Part of the credentials that provide access to your AWS account."
           },
           "aws_secret_access_key": {
-            "title": "AWS Secret Access Key",
+            "title": "Secret Access Key",
             "type": "string",
+            "description": "Part of the credentials that provide access to your AWS account.",
             "sensitive": true
           }
         },
-        "additionalProperties": false,
         "description": "DynamoDB Secrets Schema for API Docs"
       },
       "EdgeDirection": {
@@ -16129,11 +16123,6 @@
         ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
-            "type": "string",
-            "sensitive": true
-          },
           "uri": {
             "title": "Uri",
             "type": "string"
@@ -16156,7 +16145,6 @@
             "type": "integer"
           }
         },
-        "additionalProperties": false,
         "description": "Fides Child Secrets Schema for API docs"
       },
       "FidesMeta": {
@@ -16488,36 +16476,42 @@
       },
       "MSSQLDocsSchema": {
         "title": "MSSQLDocsSchema",
+        "required": [
+          "host",
+          "username",
+          "password",
+          "dbname"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "host": {
+            "title": "Host",
             "type": "string",
-            "sensitive": true
+            "description": "The hostname or IP address of the server where the database is running."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 1433).",
+            "default": 1433
           },
           "username": {
             "title": "Username",
-            "type": "string"
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
-          "host": {
-            "title": "Host",
-            "type": "string"
-          },
-          "port": {
-            "title": "Port",
-            "type": "integer"
-          },
           "dbname": {
-            "title": "DB Name",
-            "type": "string"
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the specific database within the database server that you want to connect to."
           }
         },
-        "additionalProperties": false,
         "description": "MS SQL Secrets Schema for API Docs"
       },
       "ManualAction": {
@@ -16601,36 +16595,40 @@
       },
       "MariaDBDocsSchema": {
         "title": "MariaDBDocsSchema",
+        "required": [
+          "host",
+          "dbname"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "host": {
+            "title": "Host",
             "type": "string",
-            "sensitive": true
+            "description": "The hostname or IP address of the server where the database is running."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 3306).",
+            "default": 3306
           },
           "username": {
             "title": "Username",
-            "type": "string"
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
           "dbname": {
-            "title": "DB Name",
-            "type": "string"
-          },
-          "host": {
-            "title": "Host",
-            "type": "string"
-          },
-          "port": {
-            "title": "Port",
-            "type": "integer"
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the specific database within the database server that you want to connect to."
           }
         },
-        "additionalProperties": false,
         "description": "MariaDB Secrets Schema for API Docs"
       },
       "MaskingAPIRequest": {
@@ -17034,70 +17032,80 @@
       },
       "MongoDBDocsSchema": {
         "title": "MongoDBDocsSchema",
+        "required": [
+          "host",
+          "username",
+          "password",
+          "defaultauthdb"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "host": {
+            "title": "Host",
             "type": "string",
-            "sensitive": true
+            "description": "The hostname or IP address of the server where the database is running."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 27017).",
+            "default": 27017
           },
           "username": {
             "title": "Username",
-            "type": "string"
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
-          },
-          "host": {
-            "title": "Host",
-            "type": "string"
-          },
-          "port": {
-            "title": "Port",
-            "type": "integer"
           },
           "defaultauthdb": {
             "title": "Default Auth DB",
-            "type": "string"
+            "type": "string",
+            "description": "Used to specify the default authentication database."
           }
         },
-        "additionalProperties": false,
         "description": "Mongo DB Secrets Schema for API docs"
       },
       "MySQLDocsSchema": {
         "title": "MySQLDocsSchema",
+        "required": [
+          "host",
+          "dbname"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "host": {
+            "title": "Host",
             "type": "string",
-            "sensitive": true
+            "description": "The hostname or IP address of the server where the database is running."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 3306).",
+            "default": 3306
           },
           "username": {
             "title": "Username",
-            "type": "string"
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
           "dbname": {
-            "title": "DB Name",
-            "type": "string"
-          },
-          "host": {
-            "title": "Host",
-            "type": "string"
-          },
-          "port": {
-            "title": "Port",
-            "type": "integer"
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the specific database within the database server that you want to connect to."
           }
         },
-        "additionalProperties": false,
         "description": "MySQL Secrets Schema for API Docs"
       },
       "NoticesServedRequest": {
@@ -18255,45 +18263,51 @@
       },
       "PostgreSQLDocsSchema": {
         "title": "PostgreSQLDocsSchema",
+        "required": [
+          "host",
+          "dbname"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "host": {
+            "title": "Host",
             "type": "string",
-            "sensitive": true
+            "description": "The hostname or IP address of the server where the database is running."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 5432).",
+            "default": 5432
           },
           "username": {
             "title": "Username",
-            "type": "string"
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
           "dbname": {
-            "title": "DB Name",
-            "type": "string"
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the specific database within the database server that you want to connect to."
           },
           "db_schema": {
-            "title": "DB Schema",
-            "type": "string"
-          },
-          "host": {
-            "title": "Host",
-            "type": "string"
-          },
-          "port": {
-            "title": "Port",
-            "type": "integer"
+            "title": "Schema",
+            "type": "string",
+            "description": "The default schema to be used for the database connection (defaults to public)."
           },
           "ssh_required": {
             "title": "SSH Required",
             "type": "boolean",
+            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
           }
         },
-        "additionalProperties": false,
         "description": "Postgres Secrets Schema for API Docs"
       },
       "PrivacyDeclaration": {
@@ -19608,45 +19622,53 @@
       },
       "RedshiftDocsSchema": {
         "title": "RedshiftDocsSchema",
+        "required": [
+          "host",
+          "user",
+          "password",
+          "database"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
-            "type": "string",
-            "sensitive": true
-          },
           "host": {
             "title": "Host",
-            "type": "string"
+            "type": "string",
+            "description": "The hostname or IP address of the server where the database is running."
           },
           "port": {
             "title": "Port",
-            "type": "integer"
-          },
-          "database": {
-            "title": "Database",
-            "type": "string"
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 5439).",
+            "default": 5439
           },
           "user": {
-            "title": "User",
-            "type": "string"
+            "title": "Username",
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
+          "database": {
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the specific database within the database server that you want to connect to."
+          },
           "db_schema": {
-            "title": "DB Schema",
-            "type": "string"
+            "title": "Schema",
+            "type": "string",
+            "description": "The default schema to be used for the database connection (defaults to public)."
           },
           "ssh_required": {
             "title": "SSH Required",
             "type": "boolean",
+            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your Redshift database is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
           }
         },
-        "additionalProperties": false,
         "description": "Redshift Secrets Schema for API Docs"
       },
       "Registration": {
@@ -20405,44 +20427,53 @@
       },
       "SnowflakeDocsSchema": {
         "title": "SnowflakeDocsSchema",
+        "required": [
+          "account_identifier",
+          "user_login_name",
+          "password",
+          "warehouse_name",
+          "database_name",
+          "schema_name"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "account_identifier": {
+            "title": "Account Name",
             "type": "string",
-            "sensitive": true
+            "description": "The unique identifier for your Snowflake account."
           },
           "user_login_name": {
-            "title": "User Login Name",
-            "type": "string"
+            "title": "Username",
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
-          "account_identifier": {
-            "title": "Account Identifier",
-            "type": "string"
+          "warehouse_name": {
+            "title": "Warehouse",
+            "type": "string",
+            "description": "The name of the Snowflake warehouse where your queries will be executed."
           },
           "database_name": {
-            "title": "Database Name",
-            "type": "string"
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the Snowflake database you want to connect to."
           },
           "schema_name": {
-            "title": "Schema Name",
-            "type": "string"
-          },
-          "warehouse_name": {
-            "title": "Warehouse Name",
-            "type": "string"
+            "title": "Schema",
+            "type": "string",
+            "description": "The name of the Snowflake schema within the selected database."
           },
           "role_name": {
-            "title": "Role Name",
-            "type": "string"
+            "title": "Role",
+            "type": "string",
+            "description": "The Snowflake role to assume for the session, if different than Username."
           }
         },
-        "additionalProperties": false,
         "description": "Snowflake Secrets Schema for API Docs"
       },
       "SovrnDocsSchema": {
@@ -21133,45 +21164,51 @@
       },
       "TimescaleDocsSchema": {
         "title": "TimescaleDocsSchema",
+        "required": [
+          "host",
+          "dbname"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "host": {
+            "title": "Host",
             "type": "string",
-            "sensitive": true
+            "description": "The hostname or IP address of the server where the database is running."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 5432).",
+            "default": 5432
           },
           "username": {
             "title": "Username",
-            "type": "string"
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
           "dbname": {
-            "title": "DB Name",
-            "type": "string"
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the specific database within the database server that you want to connect to."
           },
           "db_schema": {
-            "title": "DB Schema",
-            "type": "string"
-          },
-          "host": {
-            "title": "Host",
-            "type": "string"
-          },
-          "port": {
-            "title": "Port",
-            "type": "integer"
+            "title": "Schema",
+            "type": "string",
+            "description": "The default schema to be used for the database connection (defaults to public)."
           },
           "ssh_required": {
             "title": "SSH Required",
             "type": "boolean",
+            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
           }
         },
-        "additionalProperties": false,
         "description": "TimescaleDB Secrets Schema for API Docs"
       },
       "UserConsentPreference": {
