@@ -292,7 +292,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               ) : null}
               {connectionConfig ? (
                 <DeleteConnectionModal
-                  connectionKey={connectionConfig.key}
                   onDelete={onDelete}
                   deleteResult={deleteResult}
                 />

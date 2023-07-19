@@ -44,6 +44,7 @@ The types of changes are:
 
 ### Fixed
 - Privacy notice UI's list of possible regions now matches the backend's list [#3787](https://github.com/ethyca/fides/pull/3787)
+- Admin UI "property does not existing" build issue [#3831](https://github.com/ethyca/fides/pull/3831)
 
 ## [2.16.0](https://github.com/ethyca/fides/compare/2.15.1...2.16.0)
 
