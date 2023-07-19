@@ -210,7 +210,6 @@ const CytoscapeGraph = ({
               datamapGraphRef.current = cy;
             }
           }}
-          maxZoom={1}
           elements={elements}
           style={{ height: "100%", width: "100%", backgroundColor }}
           stylesheet={styleSheet}
