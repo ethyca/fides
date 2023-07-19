@@ -38,6 +38,7 @@ from fides.api.models.privacy_preference import (
     CURRENT_TCF_VERSION,
     CurrentPrivacyPreference,
     LastServedNotice,
+    PreferenceType,
     PrivacyPreferenceHistory,
     ServedNoticeHistory,
 )
@@ -122,7 +123,7 @@ def consent_request_verify_for_privacy_preferences(
     db: Session = Depends(get_db),
     data: VerificationCode,
 ) -> AbstractPage[CurrentPrivacyPreference]:
-    """Allows retrieving Current Privacy Preferences through the Privacy Center
+    """Allows retrieving the most recently saved privacy preferences through the Privacy Center
 
     Verifies the verification code and retrieves CurrentPrivacyPreferences, which are the latest
     preferences saved for each PrivacyNotice
@@ -160,9 +161,10 @@ def verify_privacy_notice_and_historical_records(
     db: Session, notice_history_list: List[SafeStr]
 ) -> None:
     """
-    Used when saving privacy preferences: runs a check that makes sure all the privacy notice histories referenced by
-    the provided `preferences` exist in the database, and also makes sure the provided `preferences` do not specify
-    the same privacy notice.
+    Runs validation prior to saving privacy preferences with respect to notices.
+
+    Ensures that all the privacy notice histories referenced by the provided `preferences` exist in the
+    database, and that the provided `preferences` do not specify the same privacy notice.
 
     For example, we want to avoid having two preferences saved for the same version of a *historical privacy notice*,
     or two preferences saved for different versions of the same *privacy notice*.
@@ -187,11 +189,12 @@ def verify_privacy_notice_and_historical_records(
         )
 
 
-def verify_valid_service_notice_history_records(
+def verify_previously_served_records(
     db: Session, data: PrivacyPreferencesRequest
 ) -> None:
-    """Verify service notice history records specified in the request (that link an event that a consent item was
-    served to the event that saved the preference) are valid before saving privacy preferences
+    """
+    Verifies that records indicating consent was *served* are valid
+    before saving a preference alongside the previously served record.
     """
 
     def validate_served_record(
@@ -270,58 +273,54 @@ def anonymize_ip_address(ip_address: Optional[str]) -> Optional[str]:
         return None
 
 
-def _get_request_origin_and_config(
-    db: Session, data: Union[PrivacyPreferencesRequest, NoticesServedRequest]
-) -> Tuple[Optional[str], Optional[str]]:
-    """
-    Extract details to save with the privacy preferences or notices
-    served from the Experience history if applicable: request origin (privacy center, overlay)
-    and the Experience Config history.
-
-    Additionally validate that the experience config history is valid if supplied.
-    """
-    privacy_experience: Optional[PrivacyExperience] = None
-    experience_config_history_id: Optional[str] = None
-    if data.privacy_experience_id:
-        privacy_experience = PrivacyExperience.get(
-            db=db, object_id=data.privacy_experience_id
-        )
-        if not privacy_experience:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail=f"Privacy Experience '{data.privacy_experience_id}' not found.",
-            )
-        experience_config_id = privacy_experience.experience_config_id
-        if experience_config_id:
-            experience_config_history_id = (
-                privacy_experience.experience_config.experience_config_history_id
-            )
-
-    origin: Optional[str] = (
-        privacy_experience.component.value  # type: ignore[attr-defined]
-        if privacy_experience
-        else None
-    )
-    return origin, experience_config_history_id
-
-
-def supplement_request_with_user_and_experience_details(
+def _supplement_request_data_from_request_headers(
     db: Session,
     request: Request,
     data: Union[PrivacyPreferencesRequest, NoticesServedRequest],
     resource_type: Union[Type[PrivacyPreferencesCreate], Type[NoticesServedCreate]],
 ) -> Union[PrivacyPreferencesCreate, NoticesServedCreate]:
     """
-    Pull additional user information from request headers and experience to record for consent reporting purposes
+    Supplement the request body with information pulled from the request headers and the
+    experience itself to save for consent reporting purposes.
     """
+
+    def get_request_origin_and_config() -> Tuple[Optional[str], Optional[str]]:
+        """
+        Extract user details from request headers and request body to save for consent
+        reporting where applicable: request origin (privacy center, overlay, tcf_overlay)
+        and the Experience Config history.
+
+        Additionally validate that the experience config history is valid if supplied.
+        """
+        privacy_experience: Optional[PrivacyExperience] = None
+        experience_config_history_identifier: Optional[str] = None
+        if data.privacy_experience_id:
+            privacy_experience = PrivacyExperience.get(
+                db=db, object_id=data.privacy_experience_id
+            )
+            if not privacy_experience:
+                raise HTTPException(
+                    status_code=HTTP_404_NOT_FOUND,
+                    detail=f"Privacy Experience '{data.privacy_experience_id}' not found.",
+                )
+            experience_config_id = privacy_experience.experience_config_id
+            if experience_config_id:
+                experience_config_history_identifier = (
+                    privacy_experience.experience_config.experience_config_history_id
+                )
+
+        origin: Optional[str] = (
+            privacy_experience.component.value  # type: ignore[attr-defined]
+            if privacy_experience
+            else None
+        )
+        return origin, experience_config_history_identifier
 
     request_headers = request.headers
     ip_address: Optional[str] = request.client.host if request.client else None
     user_agent: Optional[str] = request_headers.get("User-Agent")
     url_recorded: Optional[str] = request_headers.get("Referer")
-    request_origin, experience_config_history_id = _get_request_origin_and_config(
-        db, data
-    )
+    request_origin, experience_config_history_id = get_request_origin_and_config()
 
     return resource_type(
         **data.dict(),
@@ -352,7 +351,7 @@ def save_privacy_preferences_with_verified_identity(
     with the ConsentRequest and the fides user device id is passed in with this secondary request.
 
     Creates historical records for these preferences for record keeping, and also updates current preferences.
-    Creates a privacy request to propagate preferences to third party systems.
+    Creates a privacy request to propagate preferences to third party systems where applicable.
     """
     verify_privacy_notice_and_historical_records(
         db=db,
@@ -361,7 +360,7 @@ def save_privacy_preferences_with_verified_identity(
             for consent_option in data.preferences
         ],
     )
-    verify_valid_service_notice_history_records(db, data)
+    verify_previously_served_records(db, data)
 
     consent_request, provided_identity = _get_consent_request_and_provided_identity(
         db=db,
@@ -380,36 +379,34 @@ def save_privacy_preferences_with_verified_identity(
 
     logger.info("Saving privacy preferences")
 
-    request_data = supplement_request_with_user_and_experience_details(
-        db, request, data, resource_type=PrivacyPreferencesCreate
-    )
-    assert isinstance(request_data, PrivacyPreferencesCreate)  # For mypy
-
-    return _save_privacy_preferences_for_identities(
+    return save_privacy_preferences_for_identities(
         db=db,
         consent_request=consent_request,
         verified_provided_identity=provided_identity_verified,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=request_data,
+        request=request,
+        original_request_data=data,
     )
 
 
 def persist_tcf_preferences(
     db: Session,
     user_data: Dict[str, str],
-    request_data: PrivacyPreferencesCreate,
+    request_data: PrivacyPreferencesRequest,
     upserted_current_preferences: List[CurrentPrivacyPreference],
 ):
     """Save TCF preferences with respect to data use, vendor, or feature if applicable.
 
-    All TCF Preferences have frontend only enforcement at the moment, so no Privacy Requests
+    All TCF Preferences have frontend-only enforcement at the moment, so no Privacy Requests
     are created to propagate consent.
     """
     consent_settings = ConsentSettings.get_or_create(db)
     if not consent_settings.tcf_enabled:
         return
 
-    def save_tcf_preference(field_type: str, preference: TCFPreferenceSave):
+    def save_tcf_preference(
+        field_type: str, preference: TCFPreferenceSave
+    ) -> CurrentPrivacyPreference:
         (
             _,
             current_preference,
@@ -457,20 +454,19 @@ def persist_tcf_preferences(
     return upserted_current_preferences
 
 
-def _save_privacy_preferences_for_identities(
+def update_request_body_for_consent_served_or_saved(
     db: Session,
-    consent_request: Optional[ConsentRequest],
     verified_provided_identity: Optional[ProvidedIdentity],
     fides_user_provided_identity: Optional[ProvidedIdentity],
-    request_data: PrivacyPreferencesCreate,
-) -> List[CurrentPrivacyPreference]:
-    """
-    Saves privacy preferences (both historical and current records) and creates a privacy request to propagate those
-    preferences for when we have a verified user identity (like email/phone number), just a fides user device from
-    the browser, or both.
-    """
-    created_historical_preferences: List[PrivacyPreferenceHistory] = []
-    upserted_current_preferences: List[CurrentPrivacyPreference] = []
+    request: Request,
+    original_request_data: Union[PrivacyPreferencesRequest, NoticesServedRequest],
+    resource_type: Union[Type[PrivacyPreferencesCreate], Type[NoticesServedCreate]],
+) -> Dict[str, str]:
+    """Build a starting payload to save that consent was served or saved for a given user"""
+
+    request_data = _supplement_request_data_from_request_headers(
+        db, request, original_request_data, resource_type=resource_type
+    )
 
     email, hashed_email = extract_identity_from_provided_identity(
         verified_provided_identity, ProvidedIdentityType.email
@@ -481,9 +477,7 @@ def _save_privacy_preferences_for_identities(
     fides_user_device_id, hashed_device_id = extract_identity_from_provided_identity(
         fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
     )
-
-    needs_server_side_propagation: bool = False
-    common_user_data: Dict[str, Optional[str]] = {
+    return {
         "anonymized_ip_address": request_data.anonymized_ip_address,
         "email": email,
         "privacy_experience_config_history_id": request_data.experience_config_history_id
@@ -499,7 +493,6 @@ def _save_privacy_preferences_for_identities(
         "hashed_email": hashed_email,
         "hashed_fides_user_device": hashed_device_id,
         "hashed_phone_number": hashed_phone_number,
-        "method": request_data.method,
         "phone_number": phone_number,
         "provided_identity_id": verified_provided_identity.id
         if verified_provided_identity
@@ -510,7 +503,48 @@ def _save_privacy_preferences_for_identities(
         "url_recorded": request_data.url_recorded,
     }
 
-    for privacy_preference in request_data.preferences:
+
+def save_privacy_preferences_for_identities(
+    db: Session,
+    consent_request: Optional[ConsentRequest],
+    verified_provided_identity: Optional[ProvidedIdentity],
+    fides_user_provided_identity: Optional[ProvidedIdentity],
+    request: Request,
+    original_request_data: PrivacyPreferencesRequest,
+) -> List[CurrentPrivacyPreference]:
+    """
+    Saves privacy preferences for an end user.
+
+    Saves preferences for either a privacy notice, or individual TCF items like data uses, vendors, or features.
+
+    Creates both a detailed historical record and upserts a current record with just the most recently saved changes
+    for each preference type.
+
+    Creates a privacy request to propagate preferences to third-party systems if applicable.
+
+    """
+    created_historical_preferences: List[PrivacyPreferenceHistory] = []
+    upserted_current_preferences: List[CurrentPrivacyPreference] = []
+
+    common_user_data: Dict = update_request_body_for_consent_served_or_saved(
+        db=db,
+        verified_provided_identity=verified_provided_identity,
+        fides_user_provided_identity=fides_user_provided_identity,
+        request=request,
+        original_request_data=original_request_data,
+        resource_type=PrivacyPreferencesCreate,
+    )
+    common_user_data["method"] = original_request_data.method
+
+    persist_tcf_preferences(
+        db=db,
+        user_data=common_user_data,
+        request_data=original_request_data,
+        upserted_current_preferences=upserted_current_preferences,
+    )
+
+    needs_server_side_propagation: bool = False
+    for privacy_preference in original_request_data.preferences:
         (
             historical_preference,
             current_preference,
@@ -536,18 +570,22 @@ def _save_privacy_preferences_for_identities(
             # At least one privacy notice has expected system wide enforcement
             needs_server_side_propagation = True
 
-    identity = (
-        request_data.browser_identity if request_data.browser_identity else Identity()
-    )
-    if verified_provided_identity:
-        # Pull the information on the ProvidedIdentity for the ConsentRequest to pass along to create a PrivacyRequest
-        setattr(
-            identity,
-            verified_provided_identity.field_name.value,  # type:ignore[attr-defined]
-            verified_provided_identity.encrypted_value["value"],  # type:ignore[index]
-        )
-
     if needs_server_side_propagation:
+        identity = (
+            original_request_data.browser_identity
+            if original_request_data.browser_identity
+            else Identity()
+        )
+        if verified_provided_identity:
+            # Pull the information on the ProvidedIdentity for the ConsentRequest to pass along to create a PrivacyRequest
+            setattr(
+                identity,
+                verified_provided_identity.field_name.value,  # type:ignore[attr-defined]
+                verified_provided_identity.encrypted_value[
+                    "value"
+                ],  # type:ignore[index]
+            )
+
         # Privacy Request needs to be created with respect to the *historical* privacy preferences.
         # Note that we only contact third party services for consent saved for Privacy Notices at the moment.
         # TCF settings are frontend only.
@@ -557,7 +595,8 @@ def _save_privacy_preferences_for_identities(
             data=[
                 PrivacyRequestCreate(
                     identity=identity,
-                    policy_key=request_data.policy_key or DEFAULT_CONSENT_POLICY,
+                    policy_key=original_request_data.policy_key
+                    or DEFAULT_CONSENT_POLICY,
                 )
             ],
             authenticated=True,
@@ -575,135 +614,63 @@ def _save_privacy_preferences_for_identities(
             consent_request.privacy_request_id = privacy_request_results.succeeded[0].id
             consent_request.save(db=db)
 
-    persist_tcf_preferences(
-        db=db,
-        user_data=common_user_data,
-        request_data=request_data,
-        upserted_current_preferences=upserted_current_preferences,
-    )
-
     return upserted_current_preferences
 
 
-def _save_notices_served_for_identities(
+def save_consent_served_for_identities(
     db: Session,
     verified_provided_identity: Optional[ProvidedIdentity],
     fides_user_provided_identity: Optional[ProvidedIdentity],
-    request_data: NoticesServedCreate,
+    request: Request,
+    original_request_data: NoticesServedRequest,
 ) -> List[LastServedNotice]:
     """
-    Common code that saves that notices have been served (both historical and current records).
-    We store a historical record for every single time a notice was served to the user in the frontend,
-    and a separate "last served notice" for just the last time a notice was served to a given user.
+    Saves that consent was served to the end user.
+
+    Saves that either a privacy notice, or individual TCF items like data uses, vendors, or features
+    were served.
+
+    We save a historical record every time a consent item was served to the user in the frontend,
+    and a separate "last served notice" for just the last time a consent item was served to a given user.
     """
-    created_notices_served: List[ServedNoticeHistory] = []
     upserted_last_served: List[LastServedNotice] = []
-
-    email, hashed_email = extract_identity_from_provided_identity(
-        verified_provided_identity, ProvidedIdentityType.email
+    common_data: Dict = update_request_body_for_consent_served_or_saved(
+        db=db,
+        verified_provided_identity=verified_provided_identity,
+        fides_user_provided_identity=fides_user_provided_identity,
+        request=request,
+        original_request_data=original_request_data,
+        resource_type=NoticesServedCreate,
     )
-    phone_number, hashed_phone_number = extract_identity_from_provided_identity(
-        verified_provided_identity, ProvidedIdentityType.phone_number
+    common_data["serving_component"] = original_request_data.serving_component
+
+    def save_consent_served(identifiers: List[str], field_name: PreferenceType):
+        """Internal helper for creating a ServedNoticeHistory record for various types
+        of preferences"""
+        for identifier in identifiers:
+            (
+                _,
+                current_served,
+            ) = ServedNoticeHistory.save_notice_served_and_last_notice_served(
+                db=db,
+                data={
+                    **common_data,
+                    **{
+                        "acknowledge_mode": original_request_data.acknowledge_mode,
+                        field_name.value: identifier,
+                    },
+                },
+                check_name=False,
+            )
+            upserted_last_served.append(current_served)
+
+    save_consent_served(
+        original_request_data.privacy_notice_history_ids,
+        PreferenceType.privacy_notice_history_id,
     )
-    fides_user_device_id, hashed_device_id = extract_identity_from_provided_identity(
-        fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
-    )
-
-    common_data = {
-        "anonymized_ip_address": request_data.anonymized_ip_address,
-        "email": email,
-        "fides_user_device": fides_user_device_id,
-        "fides_user_device_provided_identity_id": fides_user_provided_identity.id
-        if fides_user_provided_identity
-        else None,
-        "hashed_email": hashed_email,
-        "hashed_fides_user_device": hashed_device_id,
-        "hashed_phone_number": hashed_phone_number,
-        "phone_number": phone_number,
-        "privacy_experience_config_history_id": request_data.experience_config_history_id
-        if request_data.experience_config_history_id
-        else None,
-        "privacy_experience_id": request_data.privacy_experience_id
-        if request_data.privacy_experience_id
-        else None,
-        "provided_identity_id": verified_provided_identity.id
-        if verified_provided_identity
-        else None,
-        "request_origin": request_data.request_origin,
-        "serving_component": request_data.serving_component,
-        "url_recorded": request_data.url_recorded,
-        "user_agent": request_data.user_agent,
-        "user_geography": request_data.user_geography,
-    }
-
-    for notice_history_id in request_data.privacy_notice_history_ids:
-        (
-            historical_served,
-            current_served,
-        ) = ServedNoticeHistory.save_notice_served_and_last_notice_served(
-            db=db,
-            data={
-                **common_data,
-                **{
-                    "acknowledge_mode": request_data.acknowledge_mode,
-                    "privacy_notice_history_id": notice_history_id,
-                },
-            },
-            check_name=False,
-        )
-        created_notices_served.append(historical_served)
-        upserted_last_served.append(current_served)
-
-    for data_use in request_data.data_uses:
-        (
-            historical_served,
-            current_served,
-        ) = ServedNoticeHistory.save_notice_served_and_last_notice_served(
-            db=db,
-            data={
-                **common_data,
-                **{
-                    "acknowledge_mode": request_data.acknowledge_mode,
-                    "data_use": data_use,
-                },
-            },
-            check_name=False,
-        )
-        created_notices_served.append(historical_served)
-        upserted_last_served.append(current_served)
-
-    for vendor in request_data.vendors:
-        (
-            historical_served,
-            current_served,
-        ) = ServedNoticeHistory.save_notice_served_and_last_notice_served(
-            db=db,
-            data={
-                **common_data,
-                **{"acknowledge_mode": request_data.acknowledge_mode, "vendor": vendor},
-            },
-            check_name=False,
-        )
-        created_notices_served.append(historical_served)
-        upserted_last_served.append(current_served)
-
-    for feature in request_data.features:
-        (
-            historical_served,
-            current_served,
-        ) = ServedNoticeHistory.save_notice_served_and_last_notice_served(
-            db=db,
-            data={
-                **common_data,
-                **{
-                    "acknowledge_mode": request_data.acknowledge_mode,
-                    "feature": feature,
-                },
-            },
-            check_name=False,
-        )
-        created_notices_served.append(historical_served)
-        upserted_last_served.append(current_served)
+    save_consent_served(original_request_data.tcf_data_uses, PreferenceType.data_use)
+    save_consent_served(original_request_data.tcf_vendors, PreferenceType.vendor)
+    save_consent_served(original_request_data.tcf_features, PreferenceType.feature)
 
     return upserted_last_served
 
@@ -724,7 +691,7 @@ def save_privacy_preferences(
     """Saves privacy preferences with respect to a fides user device id.
 
     Creates historical records for these preferences for record keeping, and also updates current preferences.
-    Creates a privacy request to propagate preferences to third party systems.
+    Creates a privacy request to propagate preferences to third party systems if applicable.
     """
     verify_privacy_notice_and_historical_records(
         db=db,
@@ -734,24 +701,21 @@ def save_privacy_preferences(
         ],
     )
 
-    verify_valid_service_notice_history_records(db, data)
+    verify_previously_served_records(db, data)
 
     fides_user_provided_identity = get_or_create_fides_user_device_id_provided_identity(
         db=db, identity_data=data.browser_identity
     )
 
     logger.info("Saving privacy preferences with respect to fides user device id")
-    request_data = supplement_request_with_user_and_experience_details(
-        db, request, data, resource_type=PrivacyPreferencesCreate
-    )
 
-    assert isinstance(request_data, PrivacyPreferencesCreate)  # For mypy
-    return _save_privacy_preferences_for_identities(
+    return save_privacy_preferences_for_identities(
         db=db,
         consent_request=None,
         verified_provided_identity=None,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=request_data,
+        request=request,
+        original_request_data=data,
     )
 
 
@@ -770,7 +734,7 @@ def get_current_privacy_preferences_report(
     updated_lt: Optional[datetime] = None,
     updated_gt: Optional[datetime] = None,
 ) -> AbstractPage[CurrentPrivacyPreference]:
-    """Returns the most recently saved privacy preferences for a given privacy notice"""
+    """Returns the most recently saved privacy preferences for a particular consent item"""
 
     validate_start_and_end_filters([(updated_lt, updated_gt, "updated")])
 
@@ -873,17 +837,17 @@ def get_historical_consent_report(
     response_model=List[LastServedNoticeSchema],
 )
 @fides_limiter.limit(CONFIG.security.public_request_rate_limit)
-def save_notices_served(
+def save_consent_served_to_user(
     *,
     db: Session = Depends(get_db),
     data: NoticesServedRequest,
     request: Request,
     response: Response,  # required for rate limiting
 ) -> List[LastServedNotice]:
-    """Records what notices were served to a fides user device id only.  Generally called by the banner
-    or an overlay.
+    """Records that consent was served to a user with a given fides user device id.
+    Generally called by the banner or an overlay.
 
-    All notices that were served in an experience should be included in the request body.
+    All items that were served in the same experience should be included in this request body.
     """
     verify_privacy_notice_and_historical_records(
         db=db, notice_history_list=data.privacy_notice_history_ids
@@ -893,16 +857,14 @@ def save_notices_served(
         db=db, identity_data=data.browser_identity
     )
 
-    logger.info("Recording notices served with respect to fides user device id")
-    request_data = supplement_request_with_user_and_experience_details(
-        db, request, data, resource_type=NoticesServedCreate
-    )
-    assert isinstance(request_data, NoticesServedCreate)  # For mypy
-    return _save_notices_served_for_identities(
+    logger.info("Recording consent served with respect to fides user device id")
+
+    return save_consent_served_for_identities(
         db=db,
         verified_provided_identity=None,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=request_data,
+        request=request,
+        original_request_data=data,
     )
 
 
@@ -911,8 +873,7 @@ def classify_identities_for_privacy_center_consent_reporting(
     provided_identity: ProvidedIdentity,
     browser_identity: Identity,
 ) -> Tuple[Optional[ProvidedIdentity], Optional[ProvidedIdentity]]:
-    """For consent reporting purposes, we distinguish which type of identities we have that
-    identity the user.
+    """Distinguish the type of identity we have for the user for consent reporting purposes.
 
     We want to classify the "provided_identity" as an identifier saved against an email or phone,
     and the "fides_user_provided_identity" as an identifier saved against the fides user device id.
@@ -946,19 +907,19 @@ def classify_identities_for_privacy_center_consent_reporting(
     status_code=HTTP_200_OK,
     response_model=List[LastServedNoticeSchema],
 )
-def save_notices_served_via_privacy_center(
+def save_consent_served_via_privacy_center(
     *,
     consent_request_id: str,
     db: Session = Depends(get_db),
     data: NoticesServedRequest,
     request: Request,
 ) -> List[LastServedNotice]:
-    """Saves that notices were served via a verified identity flow (privacy center)
+    """Saves that consent was served via a verified identity flow (privacy center)
 
-    Capable of saving that notices were served against a verified email/phone number and a fides user device id
+    Capable of saving that consent was served against a verified email/phone number and a fides user device id
     simultaneously.
 
-    Creates a ServedNoticeHistory history record for every notice in the request and upserts
+    Creates a ServedNoticeHistory history record for every consent item in the request and upserts
     a LastServedNotice record.
     """
     verify_privacy_notice_and_historical_records(
@@ -981,13 +942,11 @@ def save_notices_served_via_privacy_center(
     )
 
     logger.info("Saving notices served for privacy center")
-    request_data = supplement_request_with_user_and_experience_details(
-        db, request, data, resource_type=NoticesServedCreate
-    )
-    assert isinstance(request_data, NoticesServedCreate)
-    return _save_notices_served_for_identities(
+
+    return save_consent_served_for_identities(
         db=db,
         verified_provided_identity=provided_identity_verified,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=request_data,
+        request=request,
+        original_request_data=data,
     )

@@ -72,10 +72,10 @@ class NoticesServedRequest(FidesSchema):
 
     browser_identity: Identity
     code: Optional[SafeStr]  # For verified identity workflow only
-    privacy_notice_history_ids: List[SafeStr]
-    data_uses: List[SafeStr] = []
-    vendors: List[SafeStr] = []
-    features: List[SafeStr] = []
+    privacy_notice_history_ids: List[SafeStr] = []
+    tcf_data_uses: List[SafeStr] = []
+    tcf_vendors: List[SafeStr] = []
+    tcf_features: List[SafeStr] = []
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
     acknowledge_mode: Optional[bool]

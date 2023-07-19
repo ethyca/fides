@@ -92,19 +92,17 @@ def _filter_experiences_by_region_or_country(
     )
 
     experience_ids: List[str] = []
-    consent_settings = ConsentSettings.get_or_create(db)
 
     if privacy_center:
         experience_ids.append(privacy_center.id)
 
-    # Only return TCF Overlay or regular overlay here; not both
-    tcf_overlay_returned: bool = False
+    # Only return TCF overlay or a regular overlay here; not both
+    consent_settings = ConsentSettings.get_or_create(db)
     if consent_settings.tcf_enabled and tcf_overlay:
         experience_ids.append(tcf_overlay.id)
-        tcf_overlay_returned = True
-
-    if overlay and not tcf_overlay_returned:
-        experience_ids.append(overlay.id)
+    else:
+        if overlay:
+            experience_ids.append(overlay.id)
 
     if experience_ids:
         return experience_query.filter(PrivacyExperience.id.in_(experience_ids))
@@ -203,6 +201,7 @@ def privacy_experience_list(
         )
 
         if should_unescape:
+            # Unescape the experience config details
             privacy_experience.experience_config = transform_fields(
                 transformation=unescape,
                 model=privacy_experience.experience_config,

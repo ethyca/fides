@@ -51,6 +51,7 @@ class ConsentMethod(Enum):
 
 class PreferenceType(Enum):
     privacy_notice_id = "privacy_notice_id"
+    privacy_notice_history_id = "privacy_notice_history_id"
     data_use = "data_use"
     vendor = "vendor"
     feature = "feature"
