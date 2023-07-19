@@ -240,9 +240,6 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                   onBlur={handleBlur}
                   value={values.email}
                   isInvalid={touched.email && Boolean(errors.email)}
-                  isDisabled={Boolean(
-                    typeof values.phone !== "undefined" && values.phone
-                  )}
                 />
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
@@ -252,9 +249,6 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                 id="phone"
                 isInvalid={touched.phone && Boolean(errors.phone)}
                 isRequired={identityInputs.phone === "required"}
-                isDisabled={Boolean(
-                  typeof values.email !== "undefined" && values.email
-                )}
               >
                 <FormLabel fontSize="sm">Phone</FormLabel>
                 <PhoneInput

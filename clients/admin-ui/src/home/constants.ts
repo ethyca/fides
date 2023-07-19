@@ -1,7 +1,6 @@
 import {
   ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
-  DATASTORE_CONNECTION_ROUTE,
   PRIVACY_REQUESTS_ROUTE,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/v2/routes";
@@ -15,9 +14,8 @@ import { ModuleCardConfig } from "./types";
 export enum ModuleCardKeys {
   ADD_SYSTEMS = 1,
   VIEW_SYSTEMS = 2,
-  CONFIGURE_PRIVACY_REQUESTS = 3,
-  REVIEW_PRIVACY_REQUESTS = 4,
-  VIEW_MAP = 5,
+  REVIEW_PRIVACY_REQUESTS = 3,
+  VIEW_MAP = 4,
 }
 
 export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
@@ -57,18 +55,6 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     scopes: [ScopeRegistryEnum.SYSTEM_READ],
     requiresSystems: true,
   },
-  {
-    color: "teal",
-    description:
-      "Connect your systems and configure privacy request processing for DSRs (access and erasure).",
-    href: `${DATASTORE_CONNECTION_ROUTE}/new?step=1`,
-    key: ModuleCardKeys.CONFIGURE_PRIVACY_REQUESTS,
-    name: "Configure privacy requests",
-    sortOrder: 3,
-    title: "PR",
-    scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
-  },
-
   {
     color: "pink",
     description:

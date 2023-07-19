@@ -39,8 +39,10 @@ module = [
   "botocore.*",
   "bson.*",
   "celery.*",
+  "citext.*",
   "dask.*",
   "deepdiff.*",
+  "defusedxml.ElementTree.*",
   "fideslang.*",
   "fideslog.*",
   "firebase_admin.*",
@@ -62,7 +64,6 @@ module = [
   "twilio.*",
   "uvicorn.*",
   "validators.*",
-  "citext.*",
 ]
 ignore_missing_imports = true
 
@@ -215,4 +216,4 @@ markers = [
 asyncio_mode = "auto"
 
 [tool.coverage.run]
-omit = ["src/fides/api/ctl/migrations/*"]
+omit = ["src/fides/api/alembic/migrations/*"]

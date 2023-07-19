@@ -3,11 +3,12 @@ saas_config:
   name: Friendbuy
   type: friendbuy
   description: A sample schema representing the Friendbuy connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: domain
     - name: token
+      sensitive: True
 
   external_references:
     - name: friendbuy_user_id

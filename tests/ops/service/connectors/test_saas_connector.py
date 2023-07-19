@@ -479,14 +479,14 @@ class TestSaasConnectorRunConsentRequest:
         db,
         consent_policy,
         privacy_request_with_consent_policy,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
         mailchimp_transactional_connection_config_no_secrets,
     ):
         """Can only propagate preferences that have a system wide enforcement level"""
-        privacy_preference_history_eu_fr_provide_service_frontend_only.privacy_request_id = (
+        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
-        privacy_preference_history_eu_fr_provide_service_frontend_only.save(db)
+        privacy_preference_history_fr_provide_service_frontend_only.save(db)
 
         connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
         with pytest.raises(SkippingConsentPropagation) as exc:
@@ -499,9 +499,9 @@ class TestSaasConnectorRunConsentRequest:
             )
         assert "no actionable consent preferences to propagate" in str(exc)
 
-        db.refresh(privacy_preference_history_eu_fr_provide_service_frontend_only)
+        db.refresh(privacy_preference_history_fr_provide_service_frontend_only)
         assert (
-            privacy_preference_history_eu_fr_provide_service_frontend_only.affected_system_status
+            privacy_preference_history_fr_provide_service_frontend_only.affected_system_status
             == {}
         )  # This is updated elsewhere, in graph task, not tested here
 

@@ -1,6 +1,7 @@
 from typing import List, Optional
 
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
+from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import ValidationError
 from pydantic.types import conlist
@@ -11,13 +12,23 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
-from fides.api.common_exceptions import KeyOrNameAlreadyExists
+from fides.api.api import deps
+from fides.api.common_exceptions import (
+    ClientUnsuccessfulException,
+    ConnectionException,
+    KeyOrNameAlreadyExists,
+)
 from fides.api.common_exceptions import ValidationError as FidesValidationError
-from fides.api.ctl.sql_models import System  # type: ignore
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.models.connectionconfig import (
+    ConnectionConfig,
+    ConnectionTestStatus,
+    ConnectionType,
+)
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore
+from fides.api.models.sql_models import System  # type: ignore
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.connection_configuration import (
     ConnectionConfigSecretsSchema,
@@ -28,11 +39,17 @@ from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfigurationWithSecrets,
-    SaasConnectionTemplateValues,
+)
+from fides.api.schemas.connection_configuration.connection_secrets import (
+    TestStatusMessage,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_saas import (
     validate_saas_secrets_external_references,
 )
+from fides.api.schemas.connection_configuration.saas_config_template_values import (
+    SaasConnectionTemplateValues,
+)
+from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     create_connection_config_from_template_no_save,
@@ -40,6 +57,8 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
+from fides.api.util.logger import Pii
+from fides.common.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
 
 # pylint: disable=too-many-nested-blocks,too-many-branches,too-many-statements
 
@@ -210,7 +229,9 @@ def patch_connection_configs(
             config_dict["system_id"] = system.id
 
         try:
-            connection_config = ConnectionConfig.create_or_update(db, data=config_dict)
+            connection_config = ConnectionConfig.create_or_update(
+                db, data=config_dict, check_name=False
+            )
             created_or_updated.append(
                 ConnectionConfigurationResponse(**connection_config.__dict__)
             )
@@ -229,10 +250,11 @@ def patch_connection_configs(
                     data=orig_data,
                 )
             )
-        except Exception:
+        except Exception as e:
             logger.warning(
                 "Create/update failed for connection config with key '{}'.", config.key
             )
+            logger.error(e)
             # remove secrets information from the return for security reasons.
             orig_data.pop("secrets", None)
             orig_data.pop("saas_connector_type", None)
@@ -249,4 +271,81 @@ def patch_connection_configs(
     return BulkPutConnectionConfiguration(
         succeeded=created_or_updated,
         failed=failed,
+    )
+
+
+def get_connection_config_or_error(
+    db: Session, connection_key: FidesKey
+) -> ConnectionConfig:
+    """Helper to load the ConnectionConfig object or throw a 404"""
+    connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
+    logger.info("Finding connection configuration with key '{}'", connection_key)
+    if not connection_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No connection configuration found with key '{connection_key}'.",
+        )
+    return connection_config
+
+
+def delete_connection_config(db: Session, connection_key: FidesKey) -> None:
+    """Removes the connection configuration with matching key."""
+    connection_config = get_connection_config_or_error(db, connection_key)
+    connection_type = connection_config.connection_type
+    logger.info("Deleting connection config with key '{}'.", connection_key)
+    if connection_config.saas_config:
+        saas_dataset_fides_key = connection_config.saas_config.get("fides_key")
+
+        dataset_config = db.query(DatasetConfig).filter(
+            DatasetConfig.connection_config_id == connection_config.id
+        )
+        dataset_config.delete(synchronize_session="evaluate")
+
+        if saas_dataset_fides_key:
+            logger.info("Deleting saas dataset with key '{}'.", saas_dataset_fides_key)
+            saas_dataset = (
+                db.query(CtlDataset)
+                .filter(CtlDataset.fides_key == saas_dataset_fides_key)
+                .first()
+            )
+            saas_dataset.delete(db)  # type: ignore[union-attr]
+
+    connection_config.delete(db)
+
+    # Access Manual Webhooks are cascade deleted if their ConnectionConfig is deleted,
+    # so we queue any privacy requests that are no longer blocked by webhooks
+    if connection_type == ConnectionType.manual_webhook:
+        requeue_requires_input_requests(db)
+
+
+def connection_status(
+    connection_config: ConnectionConfig, msg: str, db: Session = Depends(deps.get_db)
+) -> TestStatusMessage:
+    """Connect, verify with a trivial query or API request, and report the status."""
+
+    connector = get_connector(connection_config)
+    try:
+        status: ConnectionTestStatus | None = connector.test_connection()
+
+    except (ConnectionException, ClientUnsuccessfulException) as exc:
+        logger.warning(
+            "Connection test failed on {}: {}",
+            connection_config.key,
+            Pii(str(exc)),
+        )
+        connection_config.update_test_status(
+            test_status=ConnectionTestStatus.failed, db=db
+        )
+        return TestStatusMessage(
+            msg=msg,
+            test_status=ConnectionTestStatus.failed,
+            failure_reason=str(exc),
+        )
+
+    logger.info("Connection test {} on {}", status.value, connection_config.key)  # type: ignore
+    connection_config.update_test_status(test_status=status, db=db)  # type: ignore
+
+    return TestStatusMessage(
+        msg=msg,
+        test_status=status,
     )

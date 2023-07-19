@@ -1,18 +1,19 @@
 AccessControl==6.0
 alembic==1.8.1
 APScheduler==3.9.1.post1
-asyncpg==0.25.0
+asyncpg==0.27.0
 boto3==1.26.1
 celery[pytest]==5.2.7
 colorama>=0.4.3
 cryptography==38.0.3
 dask==2022.9.2
 deepdiff==6.3.0
+defusedxml==0.7.1
 expandvars==0.9.0
 fastapi[all]==0.89.1
 fastapi-caching[redis]==0.3.0
 fastapi-pagination[sqlalchemy]~= 0.10.0
-fideslang==1.4.1
+fideslang==1.4.3
 fideslog==1.2.10
 firebase-admin==5.3.0
 GitPython==3.1.31
@@ -26,17 +27,19 @@ okta==2.7.0
 openpyxl==3.0.9
 packaging==23.0
 pandas==1.4.3
+paramiko==3.1.0
 passlib[bcrypt]==1.7.4
 plotly==5.13.1
 pyarrow==6.0.0
 psycopg2-binary==2.9.6
-pydantic<1.10.2
+pydantic==1.10.9
 pydash==6.0.2
 PyJWT==2.4.0
 pymongo==3.13.0
+# pymssql==2.2.7 -- temporarily commented out due to what seems like cython 3.0 issues - see https://github.com/ethyca/fides/issues/3800
 PyMySQL==1.0.2
 python-jose[cryptography]==3.3.0
-pyyaml>=5,<6
+pyyaml>=5,<7
 redis==3.5.3
 RestrictedPython==6.0.0
 rich-click==1.6.1
@@ -49,6 +52,7 @@ sqlalchemy-bigquery==1.4.4
 sqlalchemy-redshift==0.8.11
 sqlalchemy-stubs==0.4
 SQLAlchemy-Utils==0.38.3
+sshtunnel==0.4.0
 toml>=0.10.1
 twilio==7.15.0
 typing_extensions==4.5.0 # pinned to work around https://github.com/pydantic/pydantic/issues/5821

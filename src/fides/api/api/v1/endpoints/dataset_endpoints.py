@@ -11,6 +11,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import conlist
+from sqlalchemy import and_, not_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -23,26 +24,11 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.scope_registry import (
-    DATASET_CREATE_OR_UPDATE,
-    DATASET_DELETE,
-    DATASET_READ,
-)
-from fides.api.api.v1.urn_registry import (
-    DATASET_BY_KEY,
-    DATASET_CONFIGS,
-    DATASET_VALIDATE,
-    DATASETCONFIG_BY_KEY,
-    DATASETS,
-    V1_URL_PREFIX,
-    YAML_DATASETS,
-)
 from fides.api.common_exceptions import (
     SaaSConfigNotFoundException,
     TraversalError,
     ValidationError,
 )
-from fides.api.ctl.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -64,6 +50,25 @@ from fides.api.schemas.dataset import (
 from fides.api.util.api_router import APIRouter
 from fides.api.util.data_category import get_data_categories_from_db
 from fides.api.util.saas_util import merge_datasets
+from fides.common.api.scope_registry import (
+    DATASET_CREATE_OR_UPDATE,
+    DATASET_DELETE,
+    DATASET_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    CONNECTION_DATASETS,
+    DATASET_BY_KEY,
+    DATASET_CONFIGS,
+    DATASET_VALIDATE,
+    DATASETCONFIG_BY_KEY,
+    DATASETS,
+    V1_URL_PREFIX,
+    YAML_DATASETS,
+)
+
+from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
+    Dataset as CtlDataset,
+)
 
 X_YAML = "application/x-yaml"
 
@@ -234,7 +239,7 @@ def patch_dataset_configs(
 
 
 @router.patch(
-    DATASETS,
+    CONNECTION_DATASETS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
     status_code=HTTP_200_OK,
     response_model=BulkPutDataset,
@@ -417,7 +422,7 @@ def _validate_saas_dataset(
 
 
 @router.get(
-    DATASETS,
+    CONNECTION_DATASETS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
     response_model=Page[Dataset],
 )
@@ -573,3 +578,47 @@ def delete_dataset(
         "Deleting dataset '{}' for connection '{}'", fides_key, connection_config.key
     )
     dataset_config.delete(db)
+
+
+@router.get(
+    f"/filter{DATASETS}",
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=List[Dataset],
+)
+def get_ctl_datasets(
+    db: Session = Depends(deps.get_db),
+    remove_saas_datasets: bool = True,
+    only_unlinked_datasets: bool = False,
+) -> List[Dataset]:
+    """
+    Returns all CTL datasets .
+    """
+
+    logger.info(
+        f"Finding all datasets {remove_saas_datasets=} {only_unlinked_datasets=}"
+    )
+    filters = []
+    if only_unlinked_datasets:
+        unlinked_subquery = select([DatasetConfig.ctl_dataset_id])
+        filters.append(not_(CtlDataset.id.in_(unlinked_subquery)))
+
+    if remove_saas_datasets:
+        saas_subquery = (
+            select([ConnectionConfig.saas_config["fides_key"].astext])
+            .select_from(ConnectionConfig)  # type: ignore[arg-type]
+            .where(ConnectionConfig.saas_config.is_not(None))  # type: ignore[attr-defined]
+        )
+        filters.append(not_(CtlDataset.fides_key.in_(saas_subquery)))
+
+    conditions = []
+
+    if len(filters) > 0:
+        if len(filters) == 1:
+            conditions.append(filters[0])
+        else:
+            conditions.append(and_(*filters))
+
+    query = db.query(CtlDataset).filter(*conditions).order_by(CtlDataset.name.desc())
+    datasets = query.all()
+
+    return datasets

@@ -13,4 +13,5 @@ export type TimescaleDocsSchema = {
   db_schema?: string;
   host?: string;
   port?: number;
+  ssh_required?: boolean;
 };

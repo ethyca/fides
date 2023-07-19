@@ -28,7 +28,7 @@ from fides.api.util.saas_util import (
     load_yaml_as_string,
     replace_version,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
 
 

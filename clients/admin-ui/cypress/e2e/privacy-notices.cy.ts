@@ -227,23 +227,41 @@ describe("Privacy notices", () => {
     });
 
     it("can make an edit", () => {
-      cy.visit(`${PRIVACY_NOTICES_ROUTE}/${ESSENTIAL_NOTICE_ID}`);
-      cy.wait("@getNoticeDetail");
-      const newName = "new name";
-      cy.getByTestId("input-name").clear().type(newName);
-      // should not reflect the new name since this is the edit form
-      cy.getByTestId("input-notice_key").should("have.value", "essential");
-      // but we can still update it
-      const newKey = "custom_key";
-      cy.getByTestId("input-notice_key").clear().type(newKey);
+      cy.fixture("privacy-notices/notice.json").then((notice) => {
+        cy.visit(`${PRIVACY_NOTICES_ROUTE}/${ESSENTIAL_NOTICE_ID}`);
+        cy.wait("@getNoticeDetail");
+        const newName = "new name";
+        cy.getByTestId("input-name").clear().type(newName);
+        // should not reflect the new name since this is the edit form
+        cy.getByTestId("input-notice_key").should("have.value", "essential");
+        // but we can still update it
+        const newKey = "custom_key";
+        cy.getByTestId("input-notice_key").clear().type(newKey);
 
-      cy.getByTestId("save-btn").click();
-      cy.wait("@patchNotices").then((interception) => {
-        const { body } = interception.request;
-        expect(body[0].name).to.eql(newName);
-        expect(body[0].notice_key).to.eql(newKey);
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchNotices").then((interception) => {
+          const { body } = interception.request;
+          const expected = {
+            name: newName,
+            notice_key: newKey,
+            consent_mechanism: notice.consent_mechanism,
+            data_uses: notice.data_uses,
+            description: notice.description,
+            disabled: notice.disabled,
+            displayed_in_api: notice.displayed_in_api,
+            displayed_in_overlay: notice.displayed_in_overlay,
+            displayed_in_privacy_center: notice.displayed_in_privacy_center,
+            enforcement_level: notice.enforcement_level,
+            has_gpc_flag: notice.has_gpc_flag,
+            id: notice.id,
+            internal_description: notice.internal_description,
+            origin: notice.origin,
+            regions: notice.regions,
+          };
+          expect(body[0]).to.eql(expected);
+        });
+        cy.wait("@getNoticeDetail");
       });
-      cy.wait("@getNoticeDetail");
     });
   });
 

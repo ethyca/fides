@@ -7,12 +7,22 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
+from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.messaging import MessagingConfig
+from fides.api.schemas.messaging.messaging import (
+    MessagingConfigStatus,
+    MessagingConfigStatusMessage,
+    MessagingServiceDetails,
+    MessagingServiceSecrets,
+    MessagingServiceType,
+)
+from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     MESSAGING_READ,
 )
-from fides.api.api.v1.urn_registry import (
+from fides.common.api.v1.urn_registry import (
     MESSAGING_ACTIVE_DEFAULT,
     MESSAGING_BY_KEY,
     MESSAGING_CONFIG,
@@ -24,17 +34,7 @@ from fides.api.api.v1.urn_registry import (
     MESSAGING_TEST,
     V1_URL_PREFIX,
 )
-from fides.api.common_exceptions import MessageDispatchException
-from fides.api.models.application_config import ApplicationConfig
-from fides.api.models.messaging import MessagingConfig
-from fides.api.schemas.messaging.messaging import (
-    MessagingConfigStatus,
-    MessagingConfigStatusMessage,
-    MessagingServiceDetails,
-    MessagingServiceSecrets,
-    MessagingServiceType,
-)
-from fides.core.config import get_config
+from fides.config import get_config
 
 PAGE_SIZE = Params().size
 CONFIG = get_config()
@@ -1459,19 +1459,23 @@ class TestGetActiveDefaultMessagingConfig:
         url,
         api_client: TestClient,
         generate_auth_header,
+        loguru_caplog,
     ):
         """
         This is contrived and should not be able to occur, but here we test what happens
         if somehow the `notifications.notification_service_type` config property is set
         to an invalid value.
         """
+
+        error_message = "Unknown notification_service_type"
         auth_header = generate_auth_header([MESSAGING_READ])
-        with pytest.raises(ValueError) as e:
-            api_client.get(
-                url,
-                headers=auth_header,
-            )
-        assert "Unknown notification_service_type" in str(e)
+        api_client.get(
+            url,
+            headers=auth_header,
+        )
+
+        assert "ERROR" in loguru_caplog.text
+        assert error_message in loguru_caplog.text
 
     @pytest.mark.usefixtures("notification_service_type_mailgun")
     def test_get_active_default_config(

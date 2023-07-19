@@ -2,9 +2,9 @@
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.ctl.routes.util import API_PREFIX
-from fides.api.ctl.utils import errors
-from fides.core.config import FidesConfig
+from fides.api.util import errors
+from fides.api.util.endpoint_utils import API_PREFIX
+from fides.config import FidesConfig
 
 
 def test_db_reset_dev_mode_enabled(
@@ -26,12 +26,13 @@ def test_db_reset_dev_mode_disabled(
     test_config: FidesConfig,
     test_config_dev_mode_disabled: FidesConfig,  # temporarily switches off config.dev_mode
     test_client: TestClient,
+    loguru_caplog,
 ) -> None:
-    with pytest.raises(
-        errors.FunctionalityNotConfigured,
-        match="unable to reset fides database outside of dev_mode.",
-    ):
-        test_client.post(
-            test_config.cli.server_url + API_PREFIX + "/admin/db/reset/",
-            headers=test_config.user.auth_header,
-        )
+    error_message = "unable to reset fides database outside of dev_mode."
+    test_client.post(
+        test_config.cli.server_url + API_PREFIX + "/admin/db/reset/",
+        headers=test_config.user.auth_header,
+    )
+
+    assert "ERROR" in loguru_caplog.text
+    assert error_message in loguru_caplog.text

@@ -5,8 +5,11 @@ import {
   CookieKeyConsent,
   getConsentContext,
   getOrMakeFidesCookie,
+  removeCookiesFromBrowser,
   saveFidesCookie,
   transformUserPreferenceToBoolean,
+  getGpcStatusFromNotice,
+  PrivacyNotice,
 } from "fides-js";
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -15,9 +18,9 @@ import {
   selectPrivacyExperience,
   useUpdatePrivacyPreferencesMutation,
 } from "~/features/consent/consent.slice";
-import { getGpcStatusFromNotice } from "~/features/consent/helpers";
 
 import {
+  ConsentMechanism,
   ConsentMethod,
   ConsentOptionCreate,
   PrivacyNoticeResponseWithUserPreferences,
@@ -98,7 +101,7 @@ const NoticeDrivenConsent = () => {
       const value = transformUserPreferenceToBoolean(preference);
       const gpcStatus = getGpcStatusFromNotice({
         value,
-        notice,
+        notice: notice as PrivacyNotice,
         consentContext,
       });
 
@@ -111,6 +114,7 @@ const NoticeDrivenConsent = () => {
         url: undefined,
         value,
         gpcStatus,
+        disabled: notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
       };
     });
   }, [consentContext, experience, draftPreferences]);
@@ -119,19 +123,44 @@ const NoticeDrivenConsent = () => {
     router.push("/");
   };
 
+  /**
+   * When saving, we need to:
+   * 1. Send PATCH to Fides backend
+   * 2. Save to cookie and window object
+   * 3. Delete any cookies that have been opted out of
+   */
   const handleSave = async () => {
     const browserIdentities = inspectForBrowserIdentities();
     const deviceIdentity = { fides_user_device_id: fidesUserDeviceId };
     const identities = browserIdentities
       ? { ...deviceIdentity, ...browserIdentities }
       : deviceIdentity;
+    const notices = experience?.privacy_notices ?? [];
 
-    const preferences: ConsentOptionCreate[] = Object.entries(
-      draftPreferences
-    ).map(([key, value]) => ({
-      privacy_notice_history_id: key,
-      preference: value ?? UserConsentPreference.OPT_OUT,
-    }));
+    // Reconnect preferences to notices
+    const noticePreferences = Object.entries(draftPreferences).map(
+      ([historyKey, preference]) => {
+        const notice = notices.find(
+          (n) => n.privacy_notice_history_id === historyKey
+        );
+        return { historyKey, preference, notice };
+      }
+    );
+
+    const preferences: ConsentOptionCreate[] = noticePreferences.map(
+      ({ historyKey, preference, notice }) => {
+        if (notice?.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
+          return {
+            privacy_notice_history_id: historyKey,
+            preference: UserConsentPreference.ACKNOWLEDGE,
+          };
+        }
+        return {
+          privacy_notice_history_id: historyKey,
+          preference: preference ?? UserConsentPreference.OPT_OUT,
+        };
+      }
+    );
 
     const payload: PrivacyPreferencesRequest = {
       browser_identity: identities,
@@ -142,6 +171,7 @@ const NoticeDrivenConsent = () => {
       code: verificationCode,
     };
 
+    // 1. Send PATCH to Fides backend
     const result = await updatePrivacyPreferencesMutationTrigger({
       id: consentRequestId,
       body: payload,
@@ -154,6 +184,8 @@ const NoticeDrivenConsent = () => {
       });
       return;
     }
+
+    // 2. Save the cookie and window obj on success
     const noticeKeyMap = new Map<string, boolean>(
       result.data.map((preference) => [
         preference.privacy_notice_history.notice_key || "",
@@ -161,21 +193,31 @@ const NoticeDrivenConsent = () => {
       ])
     );
     const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeKeyMap);
+    window.Fides.consent = consentCookieKey;
+    const updatedCookie = { ...cookie, consent: consentCookieKey };
+    saveFidesCookie(updatedCookie);
     toast({
       title: "Your consent preferences have been saved",
       ...SuccessToastOptions,
     });
-    // Save the cookie and window obj on success
-    window.Fides.consent = consentCookieKey;
-    const updatedCookie = { ...cookie, consent: consentCookieKey };
-    saveFidesCookie(updatedCookie);
+
+    // 3. Delete any cookies that have been opted out of
+    noticePreferences.forEach((noticePreference) => {
+      if (
+        noticePreference.preference === UserConsentPreference.OPT_OUT &&
+        noticePreference.notice
+      ) {
+        removeCookiesFromBrowser(noticePreference.notice.cookies);
+      }
+    });
     router.push("/");
   };
 
   return (
     <Stack spacing={6} paddingX={12}>
       {items.map((item, index) => {
-        const { id, highlight, url, name, description, historyId } = item;
+        const { id, highlight, url, name, description, historyId, disabled } =
+          item;
         const handleChange = (value: boolean) => {
           const pref = value
             ? UserConsentPreference.OPT_IN
@@ -197,6 +239,7 @@ const NoticeDrivenConsent = () => {
               value={item.value}
               gpcStatus={item.gpcStatus}
               onChange={handleChange}
+              disabled={disabled}
             />
           </React.Fragment>
         );

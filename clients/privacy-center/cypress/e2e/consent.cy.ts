@@ -1,5 +1,4 @@
-import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
-import { GpcStatus } from "~/features/consent/types";
+import { CONSENT_COOKIE_NAME, FidesCookie, GpcStatus } from "fides-js";
 import { ConsentPreferencesWithVerificationCode } from "~/types/api";
 import { API_URL } from "../support/constants";
 
@@ -7,6 +6,7 @@ describe("Consent modal deeplink", () => {
   beforeEach(() => {
     cy.visit("/?showConsentModal=true");
     cy.loadConfigFixture("config/config_consent.json").as("config");
+    cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
     cy.intercept("POST", `${API_URL}/consent-request`, {
       body: {
         consent_request_id: "consent-request-id",
@@ -56,6 +56,7 @@ describe("Consent settings", () => {
   beforeEach(() => {
     cy.visit("/");
     cy.loadConfigFixture("config/config_consent.json").as("config");
+    cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
   });
 
   describe("when the user isn't verified", () => {
@@ -203,7 +204,7 @@ describe("Consent settings", () => {
       cy.visit("/consent");
       cy.getByTestId("consent");
       cy.loadConfigFixture("config/config_consent.json").as("config");
-      cy.overrideSettings({ IS_OVERLAY_DISABLED: true });
+      cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
     });
 
     it("populates its header and description from config", () => {
@@ -336,7 +337,7 @@ describe("Consent settings", () => {
         cy.visit("/consent?globalPrivacyControl=true");
         cy.getByTestId("consent");
         cy.loadConfigFixture("config/config_consent.json").as("config");
-        cy.overrideSettings({ IS_OVERLAY_DISABLED: true });
+        cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
       });
 
       it("applies the GPC defaults", () => {

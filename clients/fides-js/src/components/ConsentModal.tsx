@@ -1,60 +1,37 @@
-import { h } from "preact";
-import { useMemo, useState } from "preact/hooks";
+import { h, VNode } from "preact";
 import { Attributes } from "../lib/a11y-dialog";
-import Button from "./Button";
 import {
-  ButtonType,
   PrivacyNotice,
   ExperienceConfig,
+  FidesOptions,
 } from "../lib/consent-types";
 import NoticeToggles from "./NoticeToggles";
 import CloseButton from "./CloseButton";
+import GpcInfo from "./GpcInfo";
+import TcfTabs from "./TcfTabs";
+
+type NoticeKeys = Array<PrivacyNotice["notice_key"]>;
 
 const ConsentModal = ({
   attributes,
   experience,
   notices,
-  onClose,
-  onSave,
-  onAcceptAll,
-  onRejectAll,
+  enabledNoticeKeys,
+  onChange,
+  buttonGroup,
+  options,
 }: {
   attributes: Attributes;
   experience: ExperienceConfig;
   notices: PrivacyNotice[];
+  enabledNoticeKeys: NoticeKeys;
   onClose: () => void;
-  onSave: (enabledNoticeKeys: Array<PrivacyNotice["notice_key"]>) => void;
-  onAcceptAll: () => void;
-  onRejectAll: () => void;
+  onChange: (enabledNoticeKeys: NoticeKeys) => void;
+  buttonGroup: VNode;
+  options: FidesOptions;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
-
-  const initialEnabledNoticeKeys = useMemo(
-    () =>
-      Object.keys(window.Fides.consent).filter(
-        (key) => window.Fides.consent[key]
-      ),
-    []
-  );
-
-  const [enabledNoticeKeys, setEnabledNoticeKeys] = useState<
-    Array<PrivacyNotice["notice_key"]>
-  >(initialEnabledNoticeKeys);
-
-  const handleSave = () => {
-    onSave(enabledNoticeKeys);
-    onClose();
-  };
-
-  const handleAcceptAll = () => {
-    onAcceptAll();
-    onClose();
-  };
-
-  const handleRejectAll = () => {
-    onRejectAll();
-    onClose();
-  };
+  const showTcf = options.tcfEnabled;
 
   return (
     // @ts-ignore A11yDialog ref obj type isn't quite the same
@@ -83,30 +60,19 @@ const ConsentModal = ({
         >
           {experience.description}
         </p>
-        <div className="fides-modal-notices">
-          <NoticeToggles
-            notices={notices}
-            enabledNoticeKeys={enabledNoticeKeys}
-            onChange={setEnabledNoticeKeys}
-          />
-        </div>
-        <div className="fides-modal-button-group">
-          <Button
-            label={experience.save_button_label}
-            buttonType={ButtonType.SECONDARY}
-            onClick={handleSave}
-          />
-          <Button
-            label={experience.reject_button_label}
-            buttonType={ButtonType.PRIMARY}
-            onClick={handleRejectAll}
-          />
-          <Button
-            label={experience.accept_button_label}
-            buttonType={ButtonType.PRIMARY}
-            onClick={handleAcceptAll}
-          />
-        </div>
+        <GpcInfo />
+        {showTcf ? (
+          <TcfTabs />
+        ) : (
+          <div className="fides-modal-notices">
+            <NoticeToggles
+              notices={notices}
+              enabledNoticeKeys={enabledNoticeKeys}
+              onChange={onChange}
+            />
+          </div>
+        )}
+        {buttonGroup}
         {experience.privacy_policy_link_label &&
         experience.privacy_policy_url ? (
           <a

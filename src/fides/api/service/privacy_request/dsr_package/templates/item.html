@@ -1,0 +1,37 @@
+<html>
+
+<head>
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600">
+   <link rel="stylesheet" href="../../main.css">
+</head>
+
+<body>
+   <div class="container">
+      <div class="header"></div>
+      <div class="content">
+         <div class="button-container">
+            <a href="index.html">
+               <div class="button"><img src="../../back.svg"></div>
+               <span>Back to list</span>
+            </a>
+         </div>
+         <h1>{{ heading }}</h1>
+         <div class="table">
+            <div class="table-row">
+               <div class="table-cell">Field</div>
+               <div class="table-cell">Value</div>
+            </div>
+            {% for field, value in data.items() %}
+            <div class="table-row">
+               <div class="table-cell">{{ field }}</div>
+               <div class="table-cell">
+                  <pre>{{ value | pretty_print }}</pre>
+               </div>
+            </div>
+            {% endfor %}
+         </div>
+      </div>
+   </div>
+</body>
+
+</html>

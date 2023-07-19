@@ -1,4 +1,5 @@
 import pytest
+from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
@@ -10,8 +11,10 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeRegion,
     UserConsentPreference,
     check_conflicting_data_uses,
+    check_conflicting_notice_keys,
     new_data_use_conflicts_with_existing_use,
 )
+from fides.api.models.sql_models import Cookies
 
 
 class TestPrivacyNoticeModel:
@@ -287,7 +290,7 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -306,7 +309,7 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising", "third_party_sharing"],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -314,7 +317,7 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -328,7 +331,7 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.first_party.contextual",
                             "third_party_sharing",
                         ],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -336,7 +339,7 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -347,7 +350,7 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising", "third_party_sharing"],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -358,7 +361,7 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.first_party.contextual",
                             "personalize",
                         ],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -369,7 +372,7 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising", "third_party_sharing"],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -377,7 +380,7 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -391,7 +394,7 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.third_party.targeted",
                             "third_party_sharing",
                         ],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -399,7 +402,7 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -418,7 +421,7 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -429,13 +432,13 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising", "third_party_sharing"],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     ),
                     PrivacyNotice(
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     ),
                 ],
                 [],
@@ -560,7 +563,7 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.first_party.contextual",
                             "third_party_sharing",
                         ],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -569,7 +572,7 @@ class TestPrivacyNoticeModel:
                         notice_key="pn_2",
                         disabled=True,
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -584,7 +587,7 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.first_party.contextual",
                             "third_party_sharing",
                         ],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -592,7 +595,7 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -607,7 +610,7 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.first_party.contextual",
                             "third_party_sharing",
                         ],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     )
                 ],
                 [
@@ -616,7 +619,7 @@ class TestPrivacyNoticeModel:
                         notice_key="pn_2",
                         disabled=True,
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     )
                 ],
             ),
@@ -631,13 +634,13 @@ class TestPrivacyNoticeModel:
                             "marketing.advertising.first_party.contextual",
                             "third_party_sharing",
                         ],
-                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.be],
                     ),
                     PrivacyNotice(
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["marketing.advertising.first_party", "personalize"],
-                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu_be],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.be],
                     ),
                 ],
                 [],
@@ -697,6 +700,171 @@ class TestPrivacyNoticeModel:
                 existing_privacy_notices=existing_privacy_notices,
             )
 
+    @pytest.mark.parametrize(
+        "should_error,new_privacy_notices,existing_privacy_notices",
+        [
+            (
+                True,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        notice_key="pn_1",
+                        data_uses=["marketing.advertising"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        notice_key="pn_1",
+                        data_uses=["improve"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+            ),
+            (
+                True,
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        notice_key="pn_2",
+                        data_uses=["improve"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    ),
+                    PrivacyNotice(
+                        name="pn_2",
+                        notice_key="pn_2",
+                        data_uses=["essential.service"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    ),
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        notice_key="pn_1",
+                        data_uses=["marketing.advertising"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+            ),
+            (
+                False,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        notice_key="pn_1",
+                        data_uses=["marketing.advertising"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        notice_key="pn_2",
+                        data_uses=["improve"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+            ),
+            (
+                False,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        notice_key="pn_1",
+                        data_uses=["marketing.advertising"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        notice_key="pn_1",
+                        data_uses=["improve"],
+                        regions=[PrivacyNoticeRegion.us_va],
+                    )
+                ],
+            ),
+        ],
+    )
+    def test_check_conflicting_privacy_notice_keys(
+        self, should_error, new_privacy_notices, existing_privacy_notices
+    ):
+        if should_error:
+            with pytest.raises(ValidationError):
+                check_conflicting_notice_keys(
+                    new_privacy_notices=new_privacy_notices,
+                    existing_privacy_notices=existing_privacy_notices,
+                )
+        else:
+            check_conflicting_notice_keys(
+                new_privacy_notices=new_privacy_notices,
+                existing_privacy_notices=existing_privacy_notices,
+            )
+
+    @pytest.mark.parametrize(
+        "privacy_notice_data_use,declaration_cookies,expected_cookies,description",
+        [
+            (
+                ["marketing.advertising", "third_party_sharing"],
+                [{"name": "test_cookie"}],
+                [CookieSchema(name="test_cookie")],
+                "Data uses overlap exactly",
+            ),
+            (
+                ["marketing.advertising.first_party", "third_party_sharing"],
+                [{"name": "test_cookie"}],
+                [],
+                "Privacy notice use more specific than system's.  Too big a leap to assume system should be adjusted here.",
+            ),
+            (
+                ["marketing", "third_party_sharing"],
+                [{"name": "test_cookie"}],
+                [CookieSchema(name="test_cookie")],
+                "Privacy notice use more general than system's, so system's data use is under the scope of the notice",
+            ),
+            (
+                ["marketing.advertising", "third_party_sharing"],
+                [{"name": "test_cookie"}, {"name": "another_cookie"}],
+                [CookieSchema(name="test_cookie"), CookieSchema(name="another_cookie")],
+                "Test multiple cookies",
+            ),
+            (["marketing.advertising"], [], [], "No cookies returns an empty set"),
+        ],
+    )
+    def test_relevant_cookies(
+        self,
+        privacy_notice_data_use,
+        declaration_cookies,
+        expected_cookies,
+        description,
+        privacy_notice,
+        db,
+        system,
+    ):
+        """Test different combinations of data uses and cookies between the Privacy Notice and the Privacy Declaration"""
+        db.query(Cookies).delete()
+        privacy_notice.data_uses = privacy_notice_data_use
+        privacy_notice.save(db)
+
+        privacy_declaration = system.privacy_declarations[0]
+        assert privacy_declaration.data_use == "marketing.advertising"
+
+        for cookie in declaration_cookies:
+            Cookies.create(
+                db,
+                data={
+                    "name": cookie["name"],
+                    "privacy_declaration_id": privacy_declaration.id,
+                    "system_id": system.id,
+                },
+                check_name=False,
+            )
+
+        assert [
+            CookieSchema.from_orm(cookie) for cookie in privacy_notice.cookies
+        ] == expected_cookies, description
+
     def test_calculate_relevant_systems(
         self,
         db,
@@ -704,13 +872,13 @@ class TestPrivacyNoticeModel:
         privacy_notice,
         privacy_notice_us_ca_provide,
         privacy_notice_us_co_provide_service_operations,
-        privacy_notice_eu_fr_provide_service_frontend_only,
+        privacy_notice_fr_provide_service_frontend_only,
     ):
         """
         privacy_notice fixture: marketing.advertising/third party sharing
         privacy_notice_us_ca_provide fixture: essential
         privacy_notice_us_co_provide_service_operations: essential.service.operations
-        privacy_notice_eu_fr_provide_service_frontend_only:  essential.service but fe only
+        privacy_notice_fr_provide_service_frontend_only:  essential.service but fe only
         """
 
         # Only system's data use is advertising
@@ -728,7 +896,7 @@ class TestPrivacyNoticeModel:
             == []
         )
         assert (
-            privacy_notice_eu_fr_provide_service_frontend_only.histories[
+            privacy_notice_fr_provide_service_frontend_only.histories[
                 0
             ].calculate_relevant_systems(db)
             == []
@@ -748,7 +916,7 @@ class TestPrivacyNoticeModel:
             == []
         ), "Privacy notice data use is a child of the system: N/A"
         assert (
-            privacy_notice_eu_fr_provide_service_frontend_only.histories[
+            privacy_notice_fr_provide_service_frontend_only.histories[
                 0
             ].calculate_relevant_systems(db)
             == []

@@ -5,9 +5,9 @@ from fastapi.testclient import TestClient
 from slowapi.extension import Limiter
 from slowapi.util import get_remote_address
 
-from fides.api.api.v1.urn_registry import HEALTH
 from fides.api.main import app
-from fides.core.config import CONFIG, SecuritySettings
+from fides.common.api.v1.urn_registry import HEALTH
+from fides.config import CONFIG, SecuritySettings
 
 LIMIT = 2
 

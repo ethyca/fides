@@ -1,10 +1,12 @@
 """
 Contains the code that sets up the API.
 """
+import os
 import sys
 from datetime import datetime, timezone
 from logging import WARNING
 from typing import Callable, Optional
+from urllib.parse import unquote
 
 from fastapi import HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
@@ -14,25 +16,13 @@ from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 
 import fides
-from fides.api.analytics import (
-    accessed_through_local_host,
-    in_docker_container,
-    send_analytics_event,
-)
 from fides.api.app_setup import (
     check_redis,
     create_fides_app,
     log_startup,
     run_database_startup,
 )
-from fides.api.ctl.routes.util import API_PREFIX
-from fides.api.ctl.ui import (
-    get_admin_index_as_response,
-    get_path_to_admin_ui_file,
-    get_ui_file_map,
-    match_route,
-    path_is_in_ui_directory,
-)
+from fides.api.common_exceptions import MalisciousUrlException
 from fides.api.middleware import handle_audit_log_resource
 from fides.api.schemas.analytics import Event, ExtraData
 
@@ -41,9 +31,17 @@ from fides.api.service.privacy_request.email_batch_service import (
     initiate_scheduled_batch_email_send,
 )
 from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.api.ui import (
+    get_admin_index_as_response,
+    get_path_to_admin_ui_file,
+    get_ui_file_map,
+    match_route,
+    path_is_in_ui_directory,
+)
+from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
-from fides.core.config import CONFIG, check_required_webserver_config_values
+from fides.config import CONFIG, check_required_webserver_config_values
 
 IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 
@@ -105,6 +103,12 @@ async def prepare_and_log_request(
     """
     Prepares and sends analytics event provided the user is not opted out of analytics.
     """
+    # Avoid circular imports
+    from fides.api.analytics import (
+        accessed_through_local_host,
+        in_docker_container,
+        send_analytics_event,
+    )
 
     # this check prevents AnalyticsEvent from being called with invalid endpoint during unit tests
     if CONFIG.user.analytics_opt_out:
@@ -129,7 +133,13 @@ async def prepare_and_log_request(
 async def log_request(request: Request, call_next: Callable) -> Response:
     """Log basic information about every request handled by the server."""
     start = datetime.now()
-    response = await call_next(request)
+
+    # If the request fails, we still want to log it
+    try:
+        response = await call_next(request)
+    except:  # pylint: disable=bare-except
+        response = Response(status_code=500)
+
     handler_time = datetime.now() - start
     logger.bind(
         method=request.method,
@@ -150,6 +160,19 @@ def read_index() -> Response:
     return get_admin_index_as_response()
 
 
+def sanitise_url_path(path: str) -> str:
+    """Returns a URL path that does not contain any ../ or //"""
+    path = unquote(path)
+    path = os.path.normpath(path)
+    for token in path.split("/"):
+        if ".." in token:
+            logger.warning(
+                f"Potentially dangerous use of URL hierarchy in path: {path}"
+            )
+            raise MalisciousUrlException()
+    return path
+
+
 @app.get("/{catchall:path}", response_class=Response, tags=["Default"])
 def read_other_paths(request: Request) -> Response:
     """
@@ -157,6 +180,12 @@ def read_other_paths(request: Request) -> Response:
     """
     # check first if requested file exists (for frontend assets)
     path = request.path_params["catchall"]
+    logger.debug(f"Catch all path detected: {path}")
+    try:
+        path = sanitise_url_path(path)
+    except MalisciousUrlException:
+        # if a maliscious URL is detected, route the user to the index
+        return get_admin_index_as_response()
 
     # search for matching route in package (i.e. /dataset)
     ui_file = match_route(get_ui_file_map(), path)
@@ -218,6 +247,9 @@ async def setup_server() -> None:
     initiate_scheduled_batch_email_send()
 
     logger.debug("Sending startup analytics events...")
+    # Avoid circular imports
+    from fides.api.analytics import in_docker_container, send_analytics_event
+
     await send_analytics_event(
         AnalyticsEvent(
             docker=in_docker_container(),
@@ -226,7 +258,10 @@ async def setup_server() -> None:
         )
     )
 
-    logger.info(FIDES_ASCII_ART)
+    # It's just a random bunch of strings when serialized
+    if not CONFIG.logging.serialization:
+        logger.info(FIDES_ASCII_ART)
+
     logger.info(f"Fides startup complete! v{VERSION}")
 
 

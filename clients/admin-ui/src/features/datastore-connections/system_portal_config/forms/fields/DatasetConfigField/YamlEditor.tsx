@@ -40,6 +40,10 @@ const YamlEditor: React.FC<YamlEditorFormProps> = ({
   );
   const [isTouched, setIsTouched] = useState(false);
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
+  /*
+  We need to get all the datasets, including saas datasets, so that we can verify that
+  the fides_key is not already in use.
+   */
   const { data: allDatasets } = useGetAllDatasetsQuery();
   const [overWrittenKeys, setOverWrittenKeys] = useState<string[]>([]);
 
