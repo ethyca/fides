@@ -1,5 +1,6 @@
 import {
   Button,
+  Flex,
   MenuItem,
   Modal,
   ModalBody,
@@ -8,7 +9,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Spacer,
   Stack,
   Switch,
   Text,
@@ -63,15 +63,15 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
   return (
     <>
       {isSwitch ? (
-        <>
-          <Spacer />
-          <Text fontSize="md">{disabled ? "Enable" : "Disable"}</Text>
-          <Switch
-            colorScheme="complimentary"
-            isChecked={!disabled}
-            onChange={onOpen}
-          />
-        </>
+        <Flex justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm">Enable integration</Text>
+            <Switch
+              marginLeft="8px"
+              colorScheme="complimentary"
+              isChecked={!disabled}
+              onChange={onOpen}
+            />
+          </Flex>
       ) : (
         <MenuItem
           _focus={{ color: "complimentary.500", bg: "gray.100" }}
