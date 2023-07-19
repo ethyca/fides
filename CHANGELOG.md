@@ -43,6 +43,7 @@ The types of changes are:
 
 - Record when consent is served [#3777](https://github.com/ethyca/fides/pull/3777)
 - Add an `active` property to taxonomy elements [#3784](https://github.com/ethyca/fides/pull/3784)
+- Erasure support for Heap [#3599](https://github.com/ethyca/fides/pull/3599)
 
 ### Fixed
 - Privacy notice UI's list of possible regions now matches the backend's list [#3787](https://github.com/ethyca/fides/pull/3787)
