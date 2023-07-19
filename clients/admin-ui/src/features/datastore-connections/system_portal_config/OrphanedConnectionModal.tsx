@@ -94,8 +94,6 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
           patchDatastoreConnection
         );
 
-        console.log(response);
-
         if (response.succeeded[0]) {
           successAlert(`Integration successfully linked!`);
         }
