@@ -5,7 +5,6 @@ import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import {
   CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
-  useDeleteDatastoreConnectionMutation,
   useGetConnectionConfigDatasetConfigsQuery,
 } from "datastore-connections/datastore-connection.slice";
 import { useDatasetConfigField } from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
@@ -26,6 +25,7 @@ import {
   ConnectionConfigSecretsRequest,
   selectActiveSystem,
   setActiveSystem,
+  useDeleteSystemConnectionConfigMutation,
   usePatchSystemConnectionConfigsMutation,
   usePatchSystemConnectionSecretsMutation,
 } from "~/features/system/system.slice";
@@ -198,7 +198,7 @@ export const useConnectorForm = ({
     usePatchSystemConnectionSecretsMutation();
   const [patchDatastoreConnection] = usePatchSystemConnectionConfigsMutation();
   const [deleteDatastoreConnection, deleteDatastoreConnectionResult] =
-    useDeleteDatastoreConnectionMutation();
+    useDeleteSystemConnectionConfigMutation();
   const { data: allDatasetConfigs } = useGetConnectionConfigDatasetConfigsQuery(
     connectionConfig?.key || ""
   );
@@ -209,9 +209,9 @@ export const useConnectorForm = ({
   );
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
     try {
-      await deleteDatastoreConnection(id);
+      await deleteDatastoreConnection(systemFidesKey);
       // @ts-ignore connection_configs isn't on the type yet but will be in the future
       dispatch(setActiveSystem({ ...activeSystem, connection_configs: null }));
       setSelectedConnectionOption(undefined);
@@ -373,7 +373,15 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 
   return (
     <>
-      <Box color="gray.700" fontSize="14px" mb={4} h="80px">
+      <Box
+        borderRadius="6px"
+        border="1px"
+        borderColor="gray.200"
+        backgroundColor="gray.50"
+        fontSize="14px"
+        p={4}
+        mb={4}
+      >
         Connect to your {connectionOption!.human_readable} environment by
         providing credential information below. Once you have saved your
         integration credentials, you can review what data is included when
