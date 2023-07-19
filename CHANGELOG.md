@@ -20,6 +20,8 @@ The types of changes are:
 ### Added
 
 - Tab component for `fides-js` [#3782](https://github.com/ethyca/fides/pull/3782)
+- Prefetches API calls as part of Fides.js [#3698](https://github.com/ethyca/fides/pull/3698)
+
 ### Developer Experience
 
 - Changed where db-dependent routers were imported to avoid dependency issues [#3741](https://github.com/ethyca/fides/pull/3741)
@@ -41,6 +43,7 @@ The types of changes are:
 
 - Record when consent is served [#3777](https://github.com/ethyca/fides/pull/3777)
 - Add an `active` property to taxonomy elements [#3784](https://github.com/ethyca/fides/pull/3784)
+- Erasure support for Heap [#3599](https://github.com/ethyca/fides/pull/3599)
 
 ### Fixed
 - Privacy notice UI's list of possible regions now matches the backend's list [#3787](https://github.com/ethyca/fides/pull/3787)
