@@ -5,7 +5,7 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
 @pytest.mark.integration_saas
-class Testsimon_dataConnector:
+class TestSimonDataConnector:
     def test_connection(self, simon_data_runner: ConnectorRunner):
         simon_data_runner.test_connection()
 
