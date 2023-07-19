@@ -1,6 +1,7 @@
-from typing import List, Optional
+import json
+from typing import List, Optional, Union
 
-from pydantic import EmailStr, Field
+from pydantic import EmailStr, Field, parse_obj_as, validator
 from pydantic.main import BaseModel
 
 from fides.api.schemas.base_class import NoValidationSchema
@@ -29,10 +30,22 @@ class KeyfileCreds(BaseModel):
 class BigQuerySchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to BigQuery"""
 
-    dataset: Optional[str] = None
-    keyfile_creds: KeyfileCreds = Field(sensitive=True)
+    keyfile_creds: KeyfileCreds = Field(
+        sensitive=True,
+        description="The contents of the key file that contains authentication credentials for a service account in GCP.",
+    )
+    dataset: str = Field(
+        title="BigQuery Dataset",
+        description="The dataset within your BigQuery project that contains the tables you want to access.",
+    )
 
-    _required_components: List[str] = ["keyfile_creds"]
+    _required_components: List[str] = ["keyfile_creds", "dataset"]
+
+    @validator("keyfile_creds", pre=True)
+    def parse_keyfile_creds(cls, v: Union[str, dict]) -> KeyfileCreds:
+        if isinstance(v, str):
+            v = json.loads(v)
+        return parse_obj_as(KeyfileCreds, v)
 
 
 class BigQueryDocsSchema(BigQuerySchema, NoValidationSchema):

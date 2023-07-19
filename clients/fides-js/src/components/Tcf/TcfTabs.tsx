@@ -1,16 +1,17 @@
 import { h } from "preact";
 import { useRef, useState } from "preact/hooks";
-
-const TCF_TABS = [
-  { name: "Purposes", content: "one" },
-  { name: "Features", content: "two" },
-  { name: "Vendors", content: "three" },
-];
+import TcfPurposes from "./TcfPurposes";
+import { PrivacyNotice } from "~/fides";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
 
-const TcfTabs = () => {
+const TcfTabs = ({ notices }: { notices: Array<PrivacyNotice> }) => {
+  const tcfTabs = [
+    { name: "Purposes", content: <TcfPurposes notices={notices} /> },
+    { name: "Features", content: "two" },
+    { name: "Vendors", content: "three" },
+  ];
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const inputRefs = [
     useRef<HTMLButtonElement>(null),
@@ -22,12 +23,12 @@ const TcfTabs = () => {
     if (event.code === KEY_ARROW_RIGHT) {
       event.preventDefault();
       newActiveTab =
-        activeTabIndex === TCF_TABS.length - 1 ? 0 : activeTabIndex + 1;
+        activeTabIndex === tcfTabs.length - 1 ? 0 : activeTabIndex + 1;
     }
     if (event.code === KEY_ARROW_LEFT) {
       event.preventDefault();
       newActiveTab =
-        activeTabIndex === 0 ? TCF_TABS.length - 1 : activeTabIndex - 1;
+        activeTabIndex === 0 ? tcfTabs.length - 1 : activeTabIndex - 1;
     }
     if (newActiveTab != null) {
       setActiveTabIndex(newActiveTab);
@@ -37,7 +38,7 @@ const TcfTabs = () => {
   return (
     <div className="fides-tabs">
       <ul role="tablist" className="fides-tab-list">
-        {TCF_TABS.map(({ name }, idx) => (
+        {tcfTabs.map(({ name }, idx) => (
           <li role="presentation" key={name}>
             <button
               id={`fides-tab-${name}`}
@@ -58,7 +59,7 @@ const TcfTabs = () => {
         ))}
       </ul>
       <div className="tabpanel-container">
-        {TCF_TABS.map(({ name, content }, idx) => (
+        {tcfTabs.map(({ name, content }, idx) => (
           <section
             role="tabpanel"
             id={`fides-panel-${name}`}

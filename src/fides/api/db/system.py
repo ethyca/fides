@@ -37,7 +37,7 @@ def get_system(db: Session, fides_key: str) -> System:
     if system is None:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail="A valid system must be provided to create or update connections",
+            detail="A valid system must be provided to create, update, and delete connections",
         )
     return system
 
