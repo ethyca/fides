@@ -199,39 +199,54 @@ def verify_previously_served_records(
     """
 
     def validate_served_record(
-        preference_item: Union[ConsentOptionCreate, TCFPreferenceSave],
-        notice_field_name: str,
-        preference_field_name: str,
+        preference_record: Union[ConsentOptionCreate, TCFPreferenceSave],
+        served_record_field: str,
+        saved_preference_field: str,
         name_for_log: str,
     ) -> None:
-        if preference_item.served_notice_history_id:
+        if preference_record.served_notice_history_id:
             served_notice_history: ServedNoticeHistory = get_served_notice_history(
-                db, preference_item.served_notice_history_id
+                db, preference_record.served_notice_history_id
             )
-            if getattr(served_notice_history, notice_field_name) != getattr(
-                preference_item, preference_field_name
+            if getattr(served_notice_history, served_record_field) != getattr(
+                preference_record, saved_preference_field
             ):
                 raise HTTPException(
                     status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=f"The ServedNoticeHistory record '{served_notice_history.id}' did not serve the {name_for_log} '{getattr(preference_item, preference_field_name)}'.",
+                    detail=f"The ServedNoticeHistory record '{served_notice_history.id}' did not serve the {name_for_log} '{getattr(preference_record, saved_preference_field)}'.",
                 )
 
     for preference in data.preferences:
         validate_served_record(
-            preference,
-            "privacy_notice_history_id",
-            "privacy_notice_history_id",
-            "Privacy Notice History",
+            preference_record=preference,
+            served_record_field="privacy_notice_history_id",
+            saved_preference_field="privacy_notice_history_id",
+            name_for_log="Privacy Notice History",
         )
 
     for preference in data.data_use_preferences:
-        validate_served_record(preference, "data_use", "id", "data use")
+        validate_served_record(
+            preference_record=preference,
+            served_record_field="data_use",
+            saved_preference_field="id",
+            name_for_log="data use",
+        )
 
     for preference in data.vendor_preferences:
-        validate_served_record(preference, "vendor", "id", "vendor")
+        validate_served_record(
+            preference_record=preference,
+            served_record_field="vendor",
+            saved_preference_field="id",
+            name_for_log="vendor",
+        )
 
     for preference in data.vendor_preferences:
-        validate_served_record(preference, "feature", "id", "feature")
+        validate_served_record(
+            preference_record=preference,
+            served_record_field="feature",
+            saved_preference_field="id",
+            name_for_log="feature",
+        )
 
 
 def extract_identity_from_provided_identity(
