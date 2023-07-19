@@ -35,4 +35,5 @@ export type ConsentReportingSchema = {
   privacy_experience_id?: string;
   truncated_ip_address?: string;
   method?: ConsentMethod;
+  served_notice_history_id?: string;
 };
