@@ -1,4 +1,11 @@
-import { Flex, Heading, Text, Stack, useToast } from "@fidesui/react";
+import {
+  Flex,
+  Heading,
+  Text,
+  Stack,
+  useToast,
+  useDisclosure,
+} from "@fidesui/react";
 import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -16,9 +23,19 @@ import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import PrivacyCard from "~/components/PrivacyCard";
 import ConsentCard from "~/components/consent/ConsentCard";
 import { useConfig } from "~/features/common/config.slice";
+import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import {
+  clearLocation,
+  selectPrivacyExperience,
+  setLocation,
+} from "~/features/consent/consent.slice";
+import NoticeEmptyStateModal from "~/components/modals/NoticeEmptyStateModal";
+import { selectIsNoticeDriven } from "~/features/common/settings.slice";
 
 const Home: NextPage = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const config = useConfig();
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
@@ -47,6 +64,39 @@ const Home: NextPage = () => {
   } = useConsentRequestModal();
   let isConsentModalOpen = isConsentModalOpenConst;
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
+
+  // Subscribe to experiences just to see if there are any notices.
+  // The subscription automatically handles skipping if overlay is not enabled
+  useSubscribeToPrivacyExperienceQuery();
+  const noticeEmptyStateModal = useDisclosure();
+
+  useEffect(() => {
+    if (router.query.geolocation) {
+      // Ensure the query parameter is a string
+      const geolocation = Array.isArray(router.query.geolocation)
+        ? router.query.geolocation[0]
+        : router.query.geolocation;
+
+      dispatch(setLocation(geolocation));
+    } else {
+      // clear the location override if the geolocation query param isn't provided
+      dispatch(clearLocation());
+    }
+  }, [router.query.geolocation, dispatch]);
+
+  const experience = useAppSelector(selectPrivacyExperience);
+  const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
+  const emptyNotices =
+    experience?.privacy_notices == null ||
+    experience.privacy_notices.length === 0;
+
+  const handleConsentCardOpen = () => {
+    if (isNoticeDriven && emptyNotices) {
+      noticeEmptyStateModal.onOpen();
+    } else {
+      onConsentModalOpen();
+    }
+  };
 
   useEffect(() => {
     if (getIdVerificationConfigQuery.isError) {
@@ -88,7 +138,7 @@ const Home: NextPage = () => {
         title={config.consent.button.title}
         iconPath={config.consent.button.icon_path}
         description={config.consent.button.description}
-        onOpen={onConsentModalOpen}
+        onOpen={handleConsentCardOpen}
       />
     );
     if (router.query?.showConsentModal === "true") {
@@ -177,6 +227,11 @@ const Home: NextPage = () => {
         setConsentRequestId={setConsentRequestId}
         isVerificationRequired={isVerificationRequired}
         successHandler={consentModalSuccessHandler}
+      />
+
+      <NoticeEmptyStateModal
+        isOpen={noticeEmptyStateModal.isOpen}
+        onClose={noticeEmptyStateModal.onClose}
       />
     </main>
   );

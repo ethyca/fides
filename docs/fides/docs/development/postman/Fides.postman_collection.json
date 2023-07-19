@@ -4923,6 +4923,145 @@
 			]
 		},
 		{
+			"name": "Systems",
+			"item": [
+				{
+					"name": "Get System",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/system/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"system",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create System",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"data_responsibility_title\":\"Processor\",\n   \"description\":\"Collect data about our users for marketing.\",\n   \"egress\":[\n      {\n         \"fides_key\":\"demo_analytics_system\",\n         \"type\":\"system\",\n         \"data_categories\":null\n      }\n   ],\n   \"fides_key\":\"test_system\",\n   \"ingress\":null,\n   \"name\":\"Test system\",\n   \"organization_fides_key\":\"default_organization\",\n   \"privacy_declarations\":[\n      {\n         \"name\":\"Collect data for marketing\",\n         \"data_categories\":[\n            \"user.device.cookie_id\"\n         ],\n         \"data_use\":\"personalize\",\n         \"data_qualifier\":\"aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified\",\n         \"data_subjects\":[\n            \"customer\"\n         ],\n         \"dataset_references\":null,\n         \"egress\":null,\n         \"ingress\":null,\n         \"cookies\":[\n            {\n               \"name\":\"test_cookie\",\n               \"path\":\"/\"\n            }\n         ]\n      }\n   ],\n   \"system_dependencies\":[\n      \"demo_analytics_system\"\n   ],\n   \"system_type\":\"Service\",\n   \"tags\":null,\n   \"third_country_transfers\":null,\n   \"administrating_department\":\"Marketing\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/system",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"system"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update System",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"data_responsibility_title\":\"Processor\",\n   \"description\":\"Collect data about our users for marketing.\",\n   \"egress\":[\n      {\n         \"fides_key\":\"demo_analytics_system\",\n         \"type\":\"system\",\n         \"data_categories\":null\n      }\n   ],\n   \"fides_key\":\"test_system\",\n   \"ingress\":null,\n   \"name\":\"Test system\",\n   \"organization_fides_key\":\"default_organization\",\n   \"privacy_declarations\":[\n      {\n         \"name\":\"Collect data for marketing\",\n         \"data_categories\":[\n            \"user.device.cookie_id\"\n         ],\n         \"data_use\":\"marketing.advertising\",\n         \"data_qualifier\":\"aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified\",\n         \"data_subjects\":[\n            \"customer\"\n         ],\n         \"dataset_references\":null,\n         \"egress\":null,\n         \"ingress\":null,\n         \"cookies\":[\n            {\n               \"name\":\"another_cookie\",\n               \"path\":\"/\"\n            }\n         ]\n      }\n   ],\n   \"system_dependencies\":[\n      \"demo_analytics_system\"\n   ],\n   \"system_type\":\"Service\",\n   \"tags\":null,\n   \"third_country_transfers\":null,\n   \"administrating_department\":\"Marketing\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/system?",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"system"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete System",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/system/test_system",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"system",
+								"test_system"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Roles",
 			"item": [
 				{
@@ -5491,7 +5630,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"accept_button_label\": \"Accept\",\n    \"reject_button_label\": \"Reject\",\n    \"save_button_label\": \"Save all\",\n    \"title\": \"Here is where you manage your consent!\",\n    \"regions\": [\"us_ca\", \"eu_de\"]\n}",
+							"raw": "{\n    \"accept_button_label\": \"Accept\",\n    \"reject_button_label\": \"Reject\",\n    \"save_button_label\": \"Save all\",\n    \"title\": \"Here is where you manage your consent!\",\n    \"regions\": [\"us_ca\", \"de\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"

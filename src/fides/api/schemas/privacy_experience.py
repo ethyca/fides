@@ -5,12 +5,11 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import Extra, Field, root_validator, validator
 
-from fides.api.api.v1.endpoints.utils import human_friendly_list
-from fides.api.custom_types import SafeStr
 from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_notice import PrivacyNoticeResponseWithUserPreferences
+from fides.api.util.endpoint_utils import human_friendly_list
 
 
 class ExperienceConfigSchema(FidesSchema):
@@ -22,14 +21,14 @@ class ExperienceConfigSchema(FidesSchema):
     but cannot be updated later.
     """
 
-    accept_button_label: Optional[SafeStr] = Field(
+    accept_button_label: Optional[str] = Field(
         description="Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'"
     )
-    acknowledge_button_label: Optional[SafeStr] = Field(
+    acknowledge_button_label: Optional[str] = Field(
         description="Overlay 'Acknowledge button label for notice only banner'"
     )
     banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
-    description: Optional[SafeStr] = Field(
+    description: Optional[str] = Field(
         description="Overlay 'Banner Description' or Privacy Center 'Description'"
     )
     disabled: Optional[bool] = Field(
@@ -39,25 +38,25 @@ class ExperienceConfigSchema(FidesSchema):
         default=False,
         description="Whether the given ExperienceConfig is a global default",
     )
-    privacy_policy_link_label: Optional[SafeStr] = Field(
+    privacy_policy_link_label: Optional[str] = Field(
         description="Overlay and Privacy Center 'Privacy policy link label'"
     )
-    privacy_policy_url: Optional[SafeStr] = Field(
+    privacy_policy_url: Optional[str] = Field(
         description="Overlay and Privacy Center 'Privacy policy URl'"
     )
-    privacy_preferences_link_label: Optional[SafeStr] = Field(
+    privacy_preferences_link_label: Optional[str] = Field(
         description="Overlay 'Privacy preferences link label'"
     )
     regions: Optional[List[PrivacyNoticeRegion]] = Field(
         description="Regions using this ExperienceConfig"
     )
-    reject_button_label: Optional[SafeStr] = Field(
+    reject_button_label: Optional[str] = Field(
         description="Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'"
     )
-    save_button_label: Optional[SafeStr] = Field(
+    save_button_label: Optional[str] = Field(
         description="Overlay 'Privacy preferences 'Save' button label"
     )
-    title: Optional[SafeStr] = Field(
+    title: Optional[str] = Field(
         description="Overlay 'Banner title' or Privacy Center 'title'"
     )
 
@@ -79,12 +78,12 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
     It also establishes some fields _required_ for creation
     """
 
-    accept_button_label: SafeStr
+    accept_button_label: str
     component: ComponentType
-    description: SafeStr
-    reject_button_label: SafeStr
-    save_button_label: SafeStr
-    title: SafeStr
+    description: str
+    reject_button_label: str
+    save_button_label: str
+    title: str
 
     @root_validator
     def validate_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:

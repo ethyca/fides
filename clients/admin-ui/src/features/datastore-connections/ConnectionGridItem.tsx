@@ -3,7 +3,6 @@ import { formatDate } from "common/utils";
 import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import ConnectedCircle from "~/features/common/ConnectedCircle";
 import { selectConnectionTypeState } from "~/features/connection-type";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
@@ -11,33 +10,7 @@ import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import ConnectionTypeLogo from "./ConnectionTypeLogo";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
-
-type TestDataProps = {
-  succeeded?: boolean;
-  timestamp: string;
-};
-
-const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
-  const date = timestamp ? formatDate(timestamp) : "";
-  const testText = timestamp
-    ? `Last tested on ${date}`
-    : "This connection has not been tested yet";
-
-  return (
-    <>
-      <ConnectedCircle connected={succeeded} />
-      <Text
-        color="gray.500"
-        fontSize="xs"
-        fontWeight="semibold"
-        lineHeight="16px"
-        ml="10px"
-      >
-        {testText}
-      </Text>
-    </>
-  );
-};
+import TestData from "./TestData";
 
 type ConnectionGridItemProps = {
   connectionData: ConnectionConfigurationResponse;
@@ -85,7 +58,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
         <ConnectionMenu
           connection_key={connectionData.key}
           disabled={!!connectionData.disabled}
-          name={connectionData.name}
+          name={connectionData.name ?? connectionData.key}
           connection_type={connectionData.connection_type}
           access_type={connectionData.access}
         />

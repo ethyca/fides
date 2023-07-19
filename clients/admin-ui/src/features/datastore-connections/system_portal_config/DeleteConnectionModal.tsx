@@ -1,5 +1,7 @@
 import {
   Button,
+  Flex,
+  IconButton,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -14,21 +16,21 @@ import {
 } from "@fidesui/react";
 import React from "react";
 
+import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
+
 type DataConnectionProps = {
-  connectionKey: string;
-  onDelete: (connection_key: string) => void;
+  onDelete: () => void;
   deleteResult: any;
 };
 
 const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
-  connectionKey,
   onDelete,
   deleteResult,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleDeleteConnection = () => {
-    onDelete(connectionKey);
+    onDelete();
   };
 
   const closeIfComplete = () => {
@@ -44,26 +46,24 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
     <>
       <>
         <Spacer />
-        <Button
-          bg="red.500"
-          color="white"
-          isDisabled={deleteResult.isLoading}
-          isLoading={deleteResult.isLoading}
-          loadingText="Deleting"
-          size="sm"
-          variant="solid"
-          onClick={onOpen}
-          _active={{ bg: "red.400" }}
-          _hover={{ bg: "red.300" }}
-        >
-          Delete
-        </Button>
+        <Flex alignItems="center">
+          <Text fontSize="sm">Delete Integration</Text>
+          <IconButton
+            marginLeft="8px"
+            aria-label="Delete integration"
+            variant="outline"
+            icon={<TrashCanSolidIcon />}
+            isDisabled={deleteResult.isLoading}
+            onClick={onOpen}
+            size="sm"
+          />
+        </Flex>
       </>
 
       <Modal isCentered isOpen={isOpen} onClose={closeIfComplete}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Delete Connection</ModalHeader>
+          <ModalHeader>Delete Integration</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <Stack direction="column" spacing="15px">
@@ -73,7 +73,7 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
                 fontWeight="sm"
                 lineHeight="20px"
               >
-                Deleting a connection may impact any privacy request that is
+                Deleting an integration may impact any privacy request that is
                 currently in progress. Do you wish to proceed?
               </Text>
             </Stack>
@@ -108,7 +108,7 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
                 color: "gray.600",
               }}
             >
-              Delete connection
+              Delete integration
             </Button>
           </ModalFooter>
         </ModalContent>

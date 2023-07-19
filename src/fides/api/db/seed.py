@@ -29,6 +29,8 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
 from fides.api.oauth.roles import OWNER
 from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
+)
+from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
 from fides.api.schemas.dataset import DatasetConfigCtlDataset
@@ -36,7 +38,7 @@ from fides.api.schemas.policy import ActionType, DrpAction
 from fides.api.util.connection_util import patch_connection_configs
 from fides.api.util.errors import AlreadyExistsError, QueryError
 from fides.api.util.text import to_snake_case
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 from .crud import create_resource, get_resource, list_resource, upsert_resources
 from .samples import (

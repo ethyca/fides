@@ -8,14 +8,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from requests import Session
 
-from fides.api.api.v1.scope_registry import CONNECTION_READ, CONSENT_READ
-from fides.api.api.v1.urn_registry import (
-    CONSENT_REQUEST,
-    CONSENT_REQUEST_PREFERENCES,
-    CONSENT_REQUEST_PREFERENCES_WITH_ID,
-    CONSENT_REQUEST_VERIFY,
-    V1_URL_PREFIX,
-)
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.privacy_request import (
     Consent,
@@ -25,7 +17,15 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.util.consent_util import get_fides_user_device_id_provided_identity
-from fides.core.config import CONFIG
+from fides.common.api.scope_registry import CONNECTION_READ, CONSENT_READ
+from fides.common.api.v1.urn_registry import (
+    CONSENT_REQUEST,
+    CONSENT_REQUEST_PREFERENCES,
+    CONSENT_REQUEST_PREFERENCES_WITH_ID,
+    CONSENT_REQUEST_VERIFY,
+    V1_URL_PREFIX,
+)
+from fides.config import CONFIG
 
 
 @pytest.fixture

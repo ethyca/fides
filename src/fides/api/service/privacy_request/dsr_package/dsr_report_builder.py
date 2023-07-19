@@ -155,7 +155,10 @@ class DsrReportBuilder:
             # pre-process data to split the dataset:collection keys
             datasets: Dict[str, Any] = defaultdict(lambda: defaultdict(list))
             for key, rows in self.dsr_data.items():
-                [dataset_name, collection_name] = key.split(":")
+                parts = key.split(":", 1)
+                dataset_name, collection_name = (
+                    parts if len(parts) > 1 else ("manual", parts[0])
+                )
                 datasets[dataset_name][collection_name].extend(rows)
 
             for dataset_name, collections in datasets.items():

@@ -17,7 +17,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.db.base_class import JSONTypeOverride
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 # revision identifiers, used by Alembic.
 revision = "c9ee230fa6da"

@@ -32,7 +32,7 @@ from fides.api.tasks.storage import (
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     decrypt_combined_nonce_and_message,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
@@ -78,6 +78,8 @@ def test_uploader_s3_success_secrets_auth(
         "json",
         privacy_request,
         S3AuthMethod.SECRET_KEYS.value,
+        None,
+        None,
     )
 
     storage_config.delete(db)
@@ -183,6 +185,8 @@ def test_uploader_s3_success_automatic_auth(
         "json",
         privacy_request,
         S3AuthMethod.AUTOMATIC.value,
+        None,
+        None,
     )
 
     storage_config.delete(db)
@@ -354,6 +358,7 @@ class TestWriteToInMemoryBuffer:
                 {"uuid": "xyz-122-333", "name": "foo1", "email": "foo@bar1"},
             ],
             "mongo:foobar": [{"_id": 1, "customer": {"x": 1, "y": [1, 2]}}],
+            "filing_cabinet": [{"id": "123"}],  # represents manual data
         }
 
     def test_json_data(self, data, privacy_request):
@@ -370,6 +375,7 @@ class TestWriteToInMemoryBuffer:
             "mongo:address.csv",
             "mysql:customer.csv",
             "mongo:foobar.csv",
+            "filing_cabinet.csv",
         ]
 
         with zipfile.open("mongo:address.csv") as address_csv:
@@ -445,6 +451,9 @@ class TestWriteToInMemoryBuffer:
             "/mysql/customer/2.html",
             "/mysql/customer/index.html",
             "/mysql/index.html",
+            "/manual/filing_cabinet/1.html",
+            "/manual/filing_cabinet/index.html",
+            "/manual/index.html",
             "/index.html",
         ]
 

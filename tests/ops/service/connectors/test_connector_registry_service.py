@@ -19,7 +19,7 @@ from fides.api.util.saas_util import (
     replace_config_placeholders,
     replace_dataset_placeholders,
 )
-from fides.core.config.helpers import load_file
+from fides.config.helpers import load_file
 
 NEW_CONFIG_DESCRIPTION = "new test config description"
 NEW_DATASET_DESCRIPTION = "new test dataset description"

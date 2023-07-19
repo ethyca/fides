@@ -64,7 +64,8 @@
         "updated_at": "2023-04-24T21:29:08.870351+00:00",
         "version": 1.0,
         "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
-        "notice_key": "advertising"
+        "notice_key": "advertising",
+        "cookies": []
       },
       {
         "name": "Essential",
@@ -85,7 +86,8 @@
         "updated_at": "2023-04-24T21:29:08.870351+00:00",
         "version": 1.0,
         "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
-        "notice_key": "essential"
+        "notice_key": "essential",
+        "cookies": []
       }
     ]
   },

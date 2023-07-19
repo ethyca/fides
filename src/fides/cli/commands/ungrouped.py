@@ -19,7 +19,14 @@ from fides.cli.utils import (
     send_init_analytics,
     with_analytics,
 )
-from fides.common.utils import handle_cli_response, pretty_echo, print_divider
+from fides.common.utils import (
+    echo_green,
+    echo_red,
+    handle_cli_response,
+    pretty_echo,
+    print_divider,
+)
+from fides.config.create import create_and_update_config_file
 from fides.core import api as _api
 from fides.core import audit as _audit
 from fides.core import evaluate as _evaluate
@@ -27,11 +34,10 @@ from fides.core import parse as _parse
 from fides.core import pull as _pull
 from fides.core import push as _push
 from fides.core.api_helpers import get_server_resource, list_server_resources
-from fides.core.config.create import create_and_update_config_file
-from fides.core.utils import echo_green, echo_red, git_is_dirty
+from fides.core.utils import git_is_dirty
 
 
-@click.command()
+@click.command()  # type: ignore
 @click.pass_context
 @resource_type_argument
 @fides_key_argument
@@ -55,7 +61,7 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     )
 
 
-@click.command(name="get")
+@click.command(name="get")  # type: ignore
 @click.pass_context
 @resource_type_argument
 @fides_key_argument
@@ -76,7 +82,7 @@ def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None
     echo_green(yaml.dump({resource_type: [resource]}))
 
 
-@click.command(name="ls")
+@click.command(name="ls")  # type: ignore
 @click.pass_context
 @resource_type_argument
 @with_analytics
@@ -111,7 +117,7 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
             echo_red(f"No {resource_type.capitalize()} resources found!")
 
 
-@click.command()
+@click.command()  # type: ignore
 @click.pass_context
 @click.argument("fides_dir", default=".", type=click.Path(exists=True))
 @click.option(
@@ -156,7 +162,7 @@ def status(ctx: click.Context) -> None:
     )
 
 
-@click.command()
+@click.command()  # type: ignore
 @click.pass_context
 @click.option("--port", "-p", type=int, default=8080)
 def webserver(ctx: click.Context, port: int = 8080) -> None:
@@ -184,7 +190,7 @@ def worker(ctx: click.Context) -> None:
     start_worker()
 
 
-@click.command()
+@click.command()  # type: ignore
 @click.pass_context
 @dry_flag
 @click.option(
@@ -210,7 +216,7 @@ def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     )
 
 
-@click.command()
+@click.command()  # type: ignore
 @click.pass_context
 @manifests_dir_argument
 @click.option(
@@ -304,7 +310,7 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
         pretty_echo(taxonomy.dict(), color="green")
 
 
-@click.command()
+@click.command()  # type: ignore
 @click.pass_context
 @manifests_dir_argument
 @click.option(

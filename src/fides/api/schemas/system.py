@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fideslang.models import PrivacyDeclaration, System
+from fideslang.models import Cookies, PrivacyDeclaration, System
 from pydantic import Field
 
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -14,6 +14,7 @@ class PrivacyDeclarationResponse(PrivacyDeclaration):
     id: str = Field(
         description="The database-assigned ID of the privacy declaration on the system. This is meant to be a read-only field, returned only in API responses"
     )
+    cookies: Optional[List[Cookies]] = []
 
 
 class SystemResponse(System):
@@ -26,3 +27,5 @@ class SystemResponse(System):
     connection_configs: Optional[ConnectionConfigurationResponse] = Field(
         description=ConnectionConfigurationResponse.__doc__,
     )
+
+    cookies: Optional[List[Cookies]] = []

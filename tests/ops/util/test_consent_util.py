@@ -27,11 +27,11 @@ from fides.api.util.consent_util import (
     add_complete_system_status_for_consent_reporting,
     add_errored_system_status_for_consent_reporting,
     cache_initial_status_and_identities_for_consent_reporting,
+    create_default_experience_config,
     create_privacy_notices_util,
     get_fides_user_device_id_provided_identity,
     load_default_notices_on_startup,
     should_opt_in_to_service,
-    upsert_default_experience_config,
     upsert_privacy_notice_templates_util,
     validate_notice_data_uses,
 )
@@ -173,7 +173,7 @@ class TestShouldOptIntoService:
         db,
         system,
         privacy_request_with_consent_policy,
-        privacy_notice_eu_fr_provide_service_frontend_only,
+        privacy_notice_fr_provide_service_frontend_only,
         fides_user_provided_identity,
     ):
         """
@@ -185,7 +185,7 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": preference,
-                "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.privacy_notice_history_id,
+                "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.privacy_notice_history_id,
                 "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             },
             check_name=False,
@@ -321,14 +321,14 @@ class TestCacheSystemStatusesForConsentReporting:
         privacy_request_with_consent_policy,
         connection_config,
         privacy_preference_history,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ):
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
 
-        privacy_preference_history_eu_fr_provide_service_frontend_only.privacy_request_id = (
+        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
@@ -338,21 +338,21 @@ class TestCacheSystemStatusesForConsentReporting:
             privacy_request_with_consent_policy,
             connection_config,
             relevant_preferences=[
-                privacy_preference_history_eu_fr_provide_service_frontend_only
+                privacy_preference_history_fr_provide_service_frontend_only
             ],
             relevant_user_identities={"email": "customer-1@example.com"},
         )
 
         db.refresh(privacy_preference_history)
-        db.refresh(privacy_preference_history_eu_fr_provide_service_frontend_only)
+        db.refresh(privacy_preference_history_fr_provide_service_frontend_only)
 
         # Relevant systems
         assert (
-            privacy_preference_history_eu_fr_provide_service_frontend_only.affected_system_status
+            privacy_preference_history_fr_provide_service_frontend_only.affected_system_status
             == {connection_config.name: "pending"}
         )
         assert (
-            privacy_preference_history_eu_fr_provide_service_frontend_only.secondary_user_ids
+            privacy_preference_history_fr_provide_service_frontend_only.secondary_user_ids
             == {"email": "customer-1@example.com"}
         )
 
@@ -368,14 +368,14 @@ class TestCacheSystemStatusesForConsentReporting:
         privacy_request_with_consent_policy,
         connection_config,
         privacy_preference_history,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ):
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
 
-        privacy_preference_history_eu_fr_provide_service_frontend_only.privacy_request_id = (
+        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
@@ -385,7 +385,7 @@ class TestCacheSystemStatusesForConsentReporting:
             privacy_request_with_consent_policy,
             connection_config,
             relevant_preferences=[
-                privacy_preference_history_eu_fr_provide_service_frontend_only
+                privacy_preference_history_fr_provide_service_frontend_only
             ],
             relevant_user_identities={"email": "customer-1@example.com"},
         )
@@ -395,15 +395,15 @@ class TestCacheSystemStatusesForConsentReporting:
         )
 
         db.refresh(privacy_preference_history)
-        db.refresh(privacy_preference_history_eu_fr_provide_service_frontend_only)
+        db.refresh(privacy_preference_history_fr_provide_service_frontend_only)
 
         # Relevant systems
         assert (
-            privacy_preference_history_eu_fr_provide_service_frontend_only.affected_system_status
+            privacy_preference_history_fr_provide_service_frontend_only.affected_system_status
             == {connection_config.name: "complete"}
         )
         assert (
-            privacy_preference_history_eu_fr_provide_service_frontend_only.secondary_user_ids
+            privacy_preference_history_fr_provide_service_frontend_only.secondary_user_ids
             == {"email": "customer-1@example.com"}
         )
 
@@ -419,14 +419,14 @@ class TestCacheSystemStatusesForConsentReporting:
         privacy_request_with_consent_policy,
         connection_config,
         privacy_preference_history,
-        privacy_preference_history_eu_fr_provide_service_frontend_only,
+        privacy_preference_history_fr_provide_service_frontend_only,
     ):
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
 
-        privacy_preference_history_eu_fr_provide_service_frontend_only.privacy_request_id = (
+        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
@@ -436,7 +436,7 @@ class TestCacheSystemStatusesForConsentReporting:
             privacy_request_with_consent_policy,
             connection_config,
             relevant_preferences=[
-                privacy_preference_history_eu_fr_provide_service_frontend_only
+                privacy_preference_history_fr_provide_service_frontend_only
             ],
             relevant_user_identities={"email": "customer-1@example.com"},
         )
@@ -446,15 +446,15 @@ class TestCacheSystemStatusesForConsentReporting:
         )
 
         db.refresh(privacy_preference_history)
-        db.refresh(privacy_preference_history_eu_fr_provide_service_frontend_only)
+        db.refresh(privacy_preference_history_fr_provide_service_frontend_only)
 
         # Relevant systems
         assert (
-            privacy_preference_history_eu_fr_provide_service_frontend_only.affected_system_status
+            privacy_preference_history_fr_provide_service_frontend_only.affected_system_status
             == {connection_config.name: "error"}
         )
         assert (
-            privacy_preference_history_eu_fr_provide_service_frontend_only.secondary_user_ids
+            privacy_preference_history_fr_provide_service_frontend_only.secondary_user_ids
             == {"email": "customer-1@example.com"}
         )
 
@@ -492,7 +492,7 @@ class TestCreatePrivacyNoticeUtils:
             notice_key="test_notice",
             description="test description",
             internal_description="internal description",
-            regions=["eu_it"],
+            regions=["it"],
             consent_mechanism="opt_out",
             data_uses=["train_ai_system"],
             enforcement_level=EnforcementLevel.not_applicable,
@@ -500,7 +500,7 @@ class TestCreatePrivacyNoticeUtils:
         )
 
         privacy_notices, affected_regions = create_privacy_notices_util(db, [schema])
-        assert affected_regions == {PrivacyNoticeRegion.eu_it}
+        assert affected_regions == {PrivacyNoticeRegion.it}
 
         assert len(privacy_notices) == 1
         notice = privacy_notices[0]
@@ -508,7 +508,7 @@ class TestCreatePrivacyNoticeUtils:
         assert notice.notice_key == "test_notice"
         assert notice.description == "test description"
         assert notice.internal_description == "internal description"
-        assert notice.regions == [PrivacyNoticeRegion.eu_it]
+        assert notice.regions == [PrivacyNoticeRegion.it]
         assert notice.consent_mechanism == ConsentMechanism.opt_out
         assert notice.enforcement_level == EnforcementLevel.not_applicable
         assert notice.disabled is False
@@ -524,7 +524,7 @@ class TestCreatePrivacyNoticeUtils:
         assert history.notice_key == "test_notice"
         assert history.description == "test description"
         assert history.internal_description == "internal description"
-        assert history.regions == [PrivacyNoticeRegion.eu_it]
+        assert history.regions == [PrivacyNoticeRegion.it]
         assert history.consent_mechanism == ConsentMechanism.opt_out
         assert history.enforcement_level == EnforcementLevel.not_applicable
         assert history.disabled is False
@@ -559,6 +559,10 @@ class TestLoadDefaultNotices:
             unescape(notice.internal_description)
             == "This is a contrived template for testing.  This field's for internal testing!"
         )
+        assert (
+            notice.internal_description
+            == "This is a contrived template for testing.  This field&#x27;s for internal testing!"
+        )  # Stored escaped
         assert notice.regions == [PrivacyNoticeRegion.us_ak]
         assert notice.consent_mechanism == ConsentMechanism.opt_in
         assert notice.enforcement_level == EnforcementLevel.system_wide
@@ -792,7 +796,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     PrivacyNoticeWithId(
                         id="test_id_1",
                         name="A",
-                        regions=["eu_it"],
+                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["essential"],
                         enforcement_level=EnforcementLevel.system_wide,
@@ -801,7 +805,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     PrivacyNoticeWithId(
                         id="test_id_1",
                         name="A",
-                        regions=["eu_it"],
+                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_out,
                         data_uses=["essential"],
                         enforcement_level=EnforcementLevel.frontend,
@@ -825,7 +829,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         id="test_id_1",
                         notice_key="a",
                         name="A",
-                        regions=["eu_it"],
+                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["essential"],
                         enforcement_level=EnforcementLevel.system_wide,
@@ -835,7 +839,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         id="test_id_2",
                         notice_key="b",
                         name="B",
-                        regions=["eu_it"],
+                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["essential.service"],
                         enforcement_level=EnforcementLevel.frontend,
@@ -847,7 +851,42 @@ class TestUpsertPrivacyNoticeTemplates:
         assert exc._excinfo[1].status_code == 422
         assert (
             exc._excinfo[1].detail
-            == "Privacy Notice 'A' has already assigned data use 'essential' to region 'eu_it'"
+            == "Privacy Notice 'A' has already assigned data use 'essential' to region 'it'"
+        )
+
+    def test_overlapping_notice_keys(self, db, load_default_data_uses):
+        """Can't have overlapping notice keys on incoming templates, and we also check these for disabled templates"""
+        with pytest.raises(HTTPException) as exc:
+            upsert_privacy_notice_templates_util(
+                db,
+                [
+                    PrivacyNoticeWithId(
+                        id="test_id_1",
+                        notice_key="a",
+                        name="A",
+                        regions=["it"],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["essential"],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        displayed_in_overlay=True,
+                    ),
+                    PrivacyNoticeWithId(
+                        id="test_id_2",
+                        notice_key="a",
+                        name="B",
+                        regions=["it"],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["marketing"],
+                        enforcement_level=EnforcementLevel.frontend,
+                        disabled=True,
+                        displayed_in_overlay=True,
+                    ),
+                ],
+            )
+        assert exc._excinfo[1].status_code == 422
+        assert (
+            exc._excinfo[1].detail
+            == "Privacy Notice 'A' has already assigned notice key 'a' to region 'it'"
         )
 
     def test_bad_data_uses(self, db, load_default_data_uses):
@@ -860,7 +899,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         id="test_id_1",
                         name="A",
                         notice_key="a",
-                        regions=["eu_it"],
+                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["bad use"],
                         enforcement_level=EnforcementLevel.system_wide,
@@ -880,7 +919,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     id="test_id_1",
                     notice_key="a",
                     name="A",
-                    regions=["eu_it"],
+                    regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_in,
                     data_uses=["essential"],
                     enforcement_level=EnforcementLevel.system_wide,
@@ -890,7 +929,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     id="test_id_2",
                     notice_key="b",
                     name="B",
-                    regions=["eu_it"],
+                    regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_in,
                     data_uses=["improve"],
                     enforcement_level=EnforcementLevel.frontend,
@@ -907,14 +946,14 @@ class TestUpsertPrivacyNoticeTemplates:
 
         assert first_template.id == "test_id_1"
         assert first_template.name == "A"
-        assert first_template.regions == [PrivacyNoticeRegion.eu_it]
+        assert first_template.regions == [PrivacyNoticeRegion.it]
         assert first_template.consent_mechanism == ConsentMechanism.opt_in
         assert first_template.data_uses == ["essential"]
         assert first_template.enforcement_level == EnforcementLevel.system_wide
 
         assert second_template.id == "test_id_2"
         assert second_template.name == "B"
-        assert second_template.regions == [PrivacyNoticeRegion.eu_it]
+        assert second_template.regions == [PrivacyNoticeRegion.it]
         assert second_template.consent_mechanism == ConsentMechanism.opt_in
         assert second_template.data_uses == ["improve"]
         assert second_template.enforcement_level == EnforcementLevel.frontend
@@ -927,7 +966,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     id="test_id_2",
                     notice_key="b",
                     name="B",
-                    regions=["eu_it"],
+                    regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_out,
                     data_uses=["marketing.advertising"],
                     enforcement_level=EnforcementLevel.frontend,
@@ -938,7 +977,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     id="test_id_3",
                     notice_key="c",
                     name="C",
-                    regions=["eu_it"],
+                    regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_out,
                     data_uses=["improve"],
                     enforcement_level=EnforcementLevel.system_wide,
@@ -960,7 +999,7 @@ class TestUpsertPrivacyNoticeTemplates:
         # First template didn't change
         assert first_template.id == "test_id_1"
         assert first_template.name == "A"
-        assert first_template.regions == [PrivacyNoticeRegion.eu_it]
+        assert first_template.regions == [PrivacyNoticeRegion.it]
         assert first_template.consent_mechanism == ConsentMechanism.opt_in
         assert first_template.data_uses == ["essential"]
         assert first_template.enforcement_level == EnforcementLevel.system_wide
@@ -968,7 +1007,7 @@ class TestUpsertPrivacyNoticeTemplates:
         # Second template updated data use and consent mechanism
         assert second_template.id == "test_id_2"
         assert second_template.name == "B"
-        assert second_template.regions == [PrivacyNoticeRegion.eu_it]
+        assert second_template.regions == [PrivacyNoticeRegion.it]
         assert second_template.consent_mechanism == ConsentMechanism.opt_out
         assert second_template.data_uses == ["marketing.advertising"]
         assert second_template.enforcement_level == EnforcementLevel.frontend
@@ -977,7 +1016,7 @@ class TestUpsertPrivacyNoticeTemplates:
         # Third template is new
         assert third_template.id == "test_id_3"
         assert third_template.name == "C"
-        assert third_template.regions == [PrivacyNoticeRegion.eu_it]
+        assert third_template.regions == [PrivacyNoticeRegion.it]
         assert third_template.consent_mechanism == ConsentMechanism.opt_out
         assert third_template.data_uses == ["improve"]
         assert third_template.enforcement_level == EnforcementLevel.system_wide
@@ -997,7 +1036,7 @@ class TestUpsertDefaultExperienceConfig:
             "is_default": True,
             "id": "test_id",
             "privacy_preferences_link_label": "D",
-            "privacy_policy_link_label": "E",
+            "privacy_policy_link_label": "E's label",
             "privacy_policy_url": "F",
             "reject_button_label": "G",
             "save_button_label": "H",
@@ -1005,10 +1044,9 @@ class TestUpsertDefaultExperienceConfig:
         }
 
     def test_create_default_experience_config(self, db, default_overlay_config_data):
-        created, experience_config = upsert_default_experience_config(
+        experience_config = create_default_experience_config(
             db, default_overlay_config_data
         )
-        assert created
 
         assert experience_config.accept_button_label == "A"
         assert experience_config.acknowledge_button_label == "B"
@@ -1020,7 +1058,9 @@ class TestUpsertDefaultExperienceConfig:
         assert experience_config.is_default is True
         assert experience_config.id == "test_id"
         assert experience_config.privacy_preferences_link_label == "D"
-        assert experience_config.privacy_policy_link_label == "E"
+        assert (
+            experience_config.privacy_policy_link_label == "E&#x27;s label"
+        )  # Escaped
         assert experience_config.privacy_policy_url == "F"
         assert experience_config.regions == []
         assert experience_config.reject_button_label == "G"
@@ -1046,7 +1086,7 @@ class TestUpsertDefaultExperienceConfig:
         assert history.is_default is True
         assert history.id != "test_id"
         assert history.privacy_preferences_link_label == "D"
-        assert history.privacy_policy_link_label == "E"
+        assert history.privacy_policy_link_label == "E&#x27;s label"
         assert history.privacy_policy_url == "F"
         assert history.reject_button_label == "G"
         assert history.save_button_label == "H"
@@ -1057,18 +1097,19 @@ class TestUpsertDefaultExperienceConfig:
         db.delete(history)
         db.delete(experience_config)
 
-    def test_update_default_experience_config_no_change(
+    def test_create_default_experience_config_config_already_exists_no_change(
         self, db, default_overlay_config_data
     ):
-        created, experience_config = upsert_default_experience_config(
+        """Experience config is not changed in any way"""
+        experience_config = create_default_experience_config(
             db, default_overlay_config_data
         )
-        assert created
+        assert experience_config is not None
 
-        created, experience_config = upsert_default_experience_config(
-            db, default_overlay_config_data
-        )
-        assert not created
+        resp = create_default_experience_config(db, default_overlay_config_data)
+        assert resp is None
+
+        db.refresh(experience_config)
 
         # Nothing changed so we don't want to update the version
         assert experience_config.version == 1.0
@@ -1077,36 +1118,34 @@ class TestUpsertDefaultExperienceConfig:
         db.delete(experience_config.histories[0])
         db.delete(experience_config)
 
-    def test_update_default_experience_config(self, db, default_overlay_config_data):
-        created, experience_config = upsert_default_experience_config(
+    def test_default_experience_config_data_has_changed(
+        self, db, default_overlay_config_data
+    ):
+        """Even though data has changed, we don't update existing experience config"""
+        experience_config = create_default_experience_config(
             db, default_overlay_config_data
         )
-        assert created
+        assert experience_config is not None
 
         default_overlay_config_data["privacy_policy_url"] = "example.com/privacy_policy"
 
-        created, experience_config = upsert_default_experience_config(
-            db, default_overlay_config_data
-        )
-        assert not created
+        resp = create_default_experience_config(db, default_overlay_config_data)
+        assert resp is None
 
-        # Data has changed so we want to update the version
-        assert experience_config.version == 2.0
-        assert experience_config.privacy_policy_url == "example.com/privacy_policy"
-        assert experience_config.histories.count() == 2
+        db.refresh(experience_config)
+
+        # Data has changed but we didn't update existing config
+        assert experience_config.version == 1.0
+        assert experience_config.privacy_policy_url != "example.com/privacy_policy"
+        assert experience_config.histories.count() == 1
 
         assert experience_config.experience_config_history_id is not None
         assert experience_config.experience_config_history_id != "test_id"
-        history = experience_config.histories[1]
+        history = experience_config.histories[0]
 
-        assert history.version == 2.0
-        assert experience_config.privacy_policy_url == "example.com/privacy_policy"
+        assert history.version == 1.0
+        assert experience_config.privacy_policy_url != "example.com/privacy_policy"
 
-        old_history = experience_config.histories[0]
-        assert old_history.version == 1.0
-        assert old_history.privacy_policy_url == "F"
-
-        old_history.delete(db)
         history.delete(db)
         experience_config.delete(db)
 
@@ -1116,7 +1155,7 @@ class TestUpsertDefaultExperienceConfig:
         default_overlay_config_data["is_default"] = False
 
         with pytest.raises(Exception):
-            upsert_default_experience_config(db, default_overlay_config_data)
+            create_default_experience_config(db, default_overlay_config_data)
 
     def test_create_default_experience_config_validation_error(
         self, db, default_overlay_config_data
@@ -1126,34 +1165,7 @@ class TestUpsertDefaultExperienceConfig:
         ] = None  # Marking required field as None
 
         with pytest.raises(ValueError) as exc:
-            upsert_default_experience_config(db, default_overlay_config_data)
-
-        assert (
-            str(exc.value.args[0][0].exc)
-            == "The following additional fields are required when defining an overlay: acknowledge_button_label, banner_enabled, and privacy_preferences_link_label."
-        )
-
-    def test_update_default_experience_config_validation_error(
-        self, db, default_overlay_config_data
-    ):
-        created, experience_config = upsert_default_experience_config(
-            db, default_overlay_config_data
-        )
-        assert created
-
-        default_overlay_config_data["privacy_policy_url"] = "example.com/privacy_policy"
-
-        created, experience_config = upsert_default_experience_config(
-            db, default_overlay_config_data
-        )
-        assert not created
-
-        default_overlay_config_data[
-            "privacy_preferences_link_label"
-        ] = None  # Marking required field as None
-
-        with pytest.raises(ValueError) as exc:
-            upsert_default_experience_config(db, default_overlay_config_data)
+            create_default_experience_config(db, default_overlay_config_data)
 
         assert (
             str(exc.value.args[0][0].exc)

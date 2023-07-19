@@ -16,26 +16,6 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
-    PRIVACY_REQUEST_READ,
-    SCOPE_REGISTRY,
-    STORAGE_READ,
-    SYSTEM_MANAGER_DELETE,
-    SYSTEM_MANAGER_READ,
-    SYSTEM_MANAGER_UPDATE,
-    USER_CREATE,
-    USER_DELETE,
-    USER_PASSWORD_RESET,
-    USER_READ,
-    USER_UPDATE,
-)
-from fides.api.api.v1.urn_registry import (
-    LOGIN,
-    LOGOUT,
-    USER_DETAIL,
-    USERS,
-    V1_URL_PREFIX,
-)
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -50,7 +30,27 @@ from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
 from fides.api.oauth.utils import extract_payload
-from fides.core.config import CONFIG
+from fides.common.api.scope_registry import (
+    PRIVACY_REQUEST_READ,
+    SCOPE_REGISTRY,
+    STORAGE_READ,
+    SYSTEM_MANAGER_DELETE,
+    SYSTEM_MANAGER_READ,
+    SYSTEM_MANAGER_UPDATE,
+    USER_CREATE,
+    USER_DELETE,
+    USER_PASSWORD_RESET,
+    USER_READ,
+    USER_UPDATE,
+)
+from fides.common.api.v1.urn_registry import (
+    LOGIN,
+    LOGOUT,
+    USER_DETAIL,
+    USERS,
+    V1_URL_PREFIX,
+)
+from fides.config import CONFIG
 from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size
@@ -162,6 +162,19 @@ class TestCreateUser:
         assert user.permissions.roles == [
             VIEWER
         ], "User given viewer role by default on create"
+
+    def test_underscore_in_password(
+        self,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+        body = {"username": "test_user", "password": str_to_b64_str("Test_passw0rd")}
+
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        assert HTTP_201_CREATED == response.status_code
 
     def test_create_user_as_root(
         self,

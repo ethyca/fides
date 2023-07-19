@@ -4,8 +4,8 @@ import pytest
 from starlette.status import HTTP_200_OK
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import PRIVACY_EXPERIENCE, V1_URL_PREFIX
 from fides.api.models.privacy_notice import ConsentMechanism
+from fides.common.api.v1.urn_registry import PRIVACY_EXPERIENCE, V1_URL_PREFIX
 
 
 class TestGetPrivacyExperiences:
@@ -43,9 +43,9 @@ class TestGetPrivacyExperiences:
         privacy_notice,
         privacy_experience_privacy_center,
     ):
-        resp = api_client.get(
-            url,
-        )
+        unescape_header = {"Unescape-Safestr": "true"}
+
+        resp = api_client.get(url, headers=unescape_header)
         assert resp.status_code == 200
         data = resp.json()
 
@@ -62,6 +62,7 @@ class TestGetPrivacyExperiences:
         # Assert experience config is nested
         experience_config = resp["experience_config"]
         assert experience_config["title"] == "Control your privacy"
+        assert experience_config["description"] == "user's description <script />"
         assert experience_config["banner_enabled"] is None
         assert experience_config["accept_button_label"] == "Accept all"
         assert experience_config["reject_button_label"] == "Reject all"
@@ -78,6 +79,29 @@ class TestGetPrivacyExperiences:
         assert resp["privacy_notices"][0]["default_preference"] == "opt_out"
         assert resp["privacy_notices"][0]["current_preference"] is None
         assert resp["privacy_notices"][0]["outdated_preference"] is None
+        assert (
+            resp["privacy_notices"][0]["description"] == "user's description <script />"
+        )
+
+    def test_get_experiences_unescaped(
+        self,
+        api_client,
+        url,
+        privacy_notice,
+        privacy_experience_privacy_center,
+    ):
+        # Assert not escaped without proper request header
+        resp = api_client.get(url)
+        resp = resp.json()["items"][0]
+        experience_config = resp["experience_config"]
+        assert (
+            experience_config["description"]
+            == "user&#x27;s description &lt;script /&gt;"
+        )
+        assert (
+            resp["privacy_notices"][0]["description"]
+            == "user&#x27;s description &lt;script /&gt;"
+        )
 
     def test_get_privacy_experiences_show_disabled_filter(
         self,
@@ -126,6 +150,8 @@ class TestGetPrivacyExperiences:
         url,
         privacy_experience_privacy_center,
         privacy_experience_overlay,
+        privacy_notice_france,
+        privacy_experience_privacy_center_france,
     ):
         resp = api_client.get(
             url + "?region=us_co",
@@ -152,13 +178,22 @@ class TestGetPrivacyExperiences:
         resp = api_client.get(
             url + "?region=bad_region",
         )
-        assert resp.status_code == 422
-
-        resp = api_client.get(
-            url + "?region=eu_it",
-        )
         assert resp.status_code == 200
         assert resp.json()["total"] == 0
+
+        resp = api_client.get(
+            url + "?region=fr_idg",
+        )  # There are no experiences with "fr_idg" so we fell back to searching for "fr"
+        assert resp.status_code == 200
+        assert resp.json()["total"] == 1
+        data = resp.json()
+        assert len(data["items"]) == 1
+        assert {exp["id"] for exp in data["items"]} == {
+            privacy_experience_privacy_center_france.id
+        }
+        assert len(data["items"][0]["privacy_notices"]) == 1
+        assert data["items"][0]["privacy_notices"][0]["regions"] == ["fr"]
+        assert data["items"][0]["privacy_notices"][0]["id"] == privacy_notice_france.id
 
     def test_get_privacy_experiences_components_filter(
         self,
@@ -228,7 +263,7 @@ class TestGetPrivacyExperiences:
     @pytest.mark.usefixtures(
         "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
         "privacy_notice_eu_cy_provide_service_frontend_only",  # doesn't overlap with any regions
-        "privacy_notice_eu_fr_provide_service_frontend_only",
+        "privacy_notice_fr_provide_service_frontend_only",
     )
     def test_get_privacy_experiences_has_notices(
         self,
@@ -309,7 +344,7 @@ class TestGetPrivacyExperiences:
         "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
         "privacy_notice_eu_cy_provide_service_frontend_only",  # doesn't overlap with any regions,
         "privacy_experience_overlay",  # us_ca
-        "privacy_notice_eu_fr_provide_service_frontend_only",  # eu_fr
+        "privacy_notice_fr_provide_service_frontend_only",  # fr
         "privacy_notice_us_ca_provide",  # us_ca
     )
     def test_filter_on_notices_and_region(
@@ -346,8 +381,64 @@ class TestGetPrivacyExperiences:
     @pytest.mark.usefixtures(
         "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
         "privacy_notice_eu_cy_provide_service_frontend_only",  # doesn't overlap with any regions,
+        "privacy_experience_overlay",  # us_ca
+        "privacy_notice_fr_provide_service_frontend_only",  # eu_fr
+        "privacy_notice_us_ca_provide",  # us_ca
         "privacy_experience_privacy_center",
-        "privacy_notice_eu_fr_provide_service_frontend_only",  # eu_fr
+    )
+    def test_filter_on_systems_applicable(
+        self,
+        api_client: TestClient,
+        url,
+        privacy_experience_privacy_center,
+        privacy_notice,
+        system,
+        privacy_notice_us_co_third_party_sharing,
+    ):
+        """For systems applicable filter, notices are only embedded if they are relevant to a system"""
+        resp = api_client.get(
+            url + "?region=us_co",
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
+
+        notices = data["items"][0]["privacy_notices"]
+        assert len(notices) == 2
+        assert notices[0]["regions"] == ["us_co"]
+        assert notices[0]["id"] == privacy_notice_us_co_third_party_sharing.id
+        assert notices[0]["displayed_in_privacy_center"]
+        assert notices[0]["data_uses"] == ["third_party_sharing"]
+
+        assert notices[1]["regions"] == ["us_ca", "us_co"]
+        assert notices[1]["id"] == privacy_notice.id
+        assert notices[1]["displayed_in_privacy_center"]
+        assert notices[1]["data_uses"] == [
+            "marketing.advertising",
+            "third_party_sharing",
+        ]
+
+        resp = api_client.get(
+            url + "?region=us_co&systems_applicable=True",
+        )
+        notices = resp.json()["items"][0]["privacy_notices"]
+        assert len(notices) == 1
+        assert notices[0]["regions"] == ["us_ca", "us_co"]
+        assert notices[0]["id"] == privacy_notice.id
+        assert notices[0]["displayed_in_privacy_center"]
+        assert notices[0]["data_uses"] == [
+            "marketing.advertising",
+            "third_party_sharing",
+        ]
+        assert system.privacy_declarations[0].data_use == "marketing.advertising"
+
+    @pytest.mark.usefixtures(
+        "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
+        "privacy_notice_eu_cy_provide_service_frontend_only",  # doesn't overlap with any regions,
+        "privacy_experience_privacy_center",
+        "privacy_notice_fr_provide_service_frontend_only",  # fr
         "privacy_notice_us_co_third_party_sharing",  # us_co
     )
     def test_filter_on_notices_and_region_and_show_disabled_is_false(
@@ -458,16 +549,18 @@ class TestGetPrivacyExperiences:
         assert resp["privacy_notices"][0]["current_preference"] is None
         assert resp["privacy_notices"][0]["outdated_preference"] is None
 
+        assert resp["privacy_notices"][0]["current_served"] is None
+        assert resp["privacy_notices"][0]["outdated_served"] is None
+
     @pytest.mark.usefixtures(
         "privacy_notice_us_ca_provide",
         "fides_user_provided_identity",
         "privacy_preference_history_us_ca_provide_for_fides_user",
+        "served_notice_history_us_ca_provide_for_fides_user",
         "privacy_experience_overlay",
     )
     def test_get_privacy_experiences_fides_user_device_id_filter(
-        self,
-        api_client: TestClient,
-        url,
+        self, db, api_client: TestClient, url, privacy_notice_us_ca_provide
     ):
         resp = api_client.get(
             url + "?fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f",
@@ -481,7 +574,28 @@ class TestGetPrivacyExperiences:
         assert data["privacy_notices"][0]["default_preference"] == "opt_out"
         assert data["privacy_notices"][0]["current_preference"] == "opt_in"
         assert data["privacy_notices"][0]["outdated_preference"] is None
+        # Assert that the notice was served is surfaced
+        assert data["privacy_notices"][0]["current_served"] is True
+        assert data["privacy_notices"][0]["outdated_served"] is None
+
         assert (
             data["privacy_notices"][0]["notice_key"]
             == "example_privacy_notice_us_ca_provide"
         )
+
+        privacy_notice_us_ca_provide.update(db, data={"description": "new_description"})
+        assert privacy_notice_us_ca_provide.version == 2.0
+        assert privacy_notice_us_ca_provide.description == "new_description"
+        resp = api_client.get(
+            url + "?fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f",
+        )
+        assert resp.status_code == 200
+        data = resp.json()["items"][0]
+        # Assert outdated preference is displayed for fides user device id
+        assert data["privacy_notices"][0]["consent_mechanism"] == "opt_in"
+        assert data["privacy_notices"][0]["default_preference"] == "opt_out"
+        assert data["privacy_notices"][0]["current_preference"] is None
+        assert data["privacy_notices"][0]["outdated_preference"] == "opt_in"
+        # Assert outdated served is displayed for fides user device id
+        assert data["privacy_notices"][0]["current_served"] is None
+        assert data["privacy_notices"][0]["outdated_served"] is True

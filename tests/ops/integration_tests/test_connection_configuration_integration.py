@@ -6,12 +6,6 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
-    CONNECTION_CREATE_OR_UPDATE,
-    CONNECTION_READ,
-    STORAGE_READ,
-)
-from fides.api.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
 from fides.api.common_exceptions import ConnectionException
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionTestStatus
@@ -27,6 +21,12 @@ from fides.api.service.connectors.sql_connector import (
     MicrosoftSQLServerConnector,
     MySQLConnector,
 )
+from fides.common.api.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_READ,
+    STORAGE_READ,
+)
+from fides.common.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
 
 
 @pytest.mark.integration_postgres

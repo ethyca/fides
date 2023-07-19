@@ -35,22 +35,18 @@ export type FidesOptions = {
 
   // URL for the Fides API, used to fetch and save consent preferences. Required.
   fidesApiUrl: string;
+
+  // Whether we should show the TCF modal
+  tcfEnabled: boolean;
 };
 
 export class SaveConsentPreference {
   consentPreference: UserConsentPreference;
 
-  noticeHistoryId: string;
+  notice: PrivacyNotice;
 
-  noticeKey: string;
-
-  constructor(
-    noticeKey: string,
-    noticeHistoryId: string,
-    consentPreference: UserConsentPreference
-  ) {
-    this.noticeKey = noticeKey;
-    this.noticeHistoryId = noticeHistoryId;
+  constructor(notice: PrivacyNotice, consentPreference: UserConsentPreference) {
+    this.notice = notice;
     this.consentPreference = consentPreference;
   }
 }
@@ -88,6 +84,12 @@ export type ExperienceConfig = {
   regions: Array<string>;
 };
 
+export type Cookies = {
+  name: string;
+  path?: string;
+  domain?: string;
+};
+
 export type PrivacyNotice = {
   name?: string;
   notice_key: string;
@@ -108,6 +110,7 @@ export type PrivacyNotice = {
   updated_at: string;
   version: number;
   privacy_notice_history_id: string;
+  cookies: Array<Cookies>;
   default_preference: UserConsentPreference;
   current_preference?: UserConsentPreference;
   outdated_preference?: UserConsentPreference;
@@ -194,6 +197,15 @@ export enum RequestOrigin {
   privacy_center = "privacy_center",
   overlay = "overlay",
   api = "api",
+}
+
+export enum GpcStatus {
+  /** GPC is not relevant for the consent option. */
+  NONE = "none",
+  /** GPC is enabled and consent matches the configured default. */
+  APPLIED = "applied",
+  /** GPC is enabled but consent has been set to override the configured default. */
+  OVERRIDDEN = "overridden",
 }
 
 // ------------------LEGACY TYPES BELOW -------------------

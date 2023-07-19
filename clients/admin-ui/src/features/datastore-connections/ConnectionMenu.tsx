@@ -65,6 +65,7 @@ const ConnectionMenu: React.FC<ConnectionMenuProps> = ({
           connection_type={connection_type}
           access_type={access_type}
           name={name}
+          isSwitch={false}
         />
         <DeleteConnectionModal connection_key={connection_key} />
       </MenuList>

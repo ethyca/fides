@@ -9,10 +9,6 @@ from redis.exceptions import DataError
 from sqlalchemy.orm import Query, Session
 
 from fides.api import common_exceptions
-from fides.api.api.v1.urn_registry import (
-    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
-    V1_URL_PREFIX,
-)
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     IdentityNotFoundException,
@@ -83,8 +79,12 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.wrappers import sync
-from fides.core.config import CONFIG
-from fides.core.config.config_proxy import ConfigProxy
+from fides.common.api.v1.urn_registry import (
+    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
+    V1_URL_PREFIX,
+)
+from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 
 class ManualWebhookResults(FidesSchema):
@@ -231,6 +231,8 @@ def upload_access_results(  # pylint: disable=R0912
                 privacy_request=privacy_request,
                 data=filtered_results,
                 storage_key=storage_destination.key,  # type: ignore
+                data_category_field_mapping=dataset_graph.data_category_field_mapping,
+                data_use_map=privacy_request.get_cached_data_use_map(),
             )
             if download_url:
                 download_urls.append(download_url)
