@@ -101,7 +101,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const validateField = (label: string, value: string, type?: string) => {
     let error;
-    if (typeof value === "undefined" || value === "") {
+    if (typeof value === "undefined" || value === "" || value === undefined) {
       error = `${label} is required`;
     }
     if (type === FIDES_DATASET_REFERENCE) {
@@ -146,9 +146,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     item: ConnectionTypeSecretSchemaProperty
   ): JSX.Element => (
     <Field
-      id={key}
-      name={key}
-      key={key}
+      id={`secrets.${key}`}
+      name={`secrets.${key}`}
+      key={`secrets.${key}`}
       validate={
         isRequiredSecretValue(key) || item.type === "integer"
           ? (value: string) =>
@@ -156,57 +156,68 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           : false
       }
     >
-      {({ field, form }: { field: FieldInputProps<string>; form: any }) => (
-        <FormControl
-          display="flex"
-          isRequired={isRequiredSecretValue(key)}
-          isInvalid={form.errors[key] && form.touched[key]}
-        >
-          {getFormLabel(key, item.title)}
-          <VStack align="flex-start" w="inherit">
-            {item.type !== "integer" && (
-              <Input
-                {...field}
-                placeholder={getPlaceholder(item)}
-                autoComplete="off"
-                color="gray.700"
-                size="sm"
-              />
-            )}
-            {item.type === "integer" && (
-              <NumberInput
-                allowMouseWheel
-                color="gray.700"
-                defaultValue={0}
-                min={0}
-                size="sm"
-              >
-                <NumberInputField {...field} autoComplete="off" />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-            )}
-            <FormErrorMessage>{form.errors[key]}</FormErrorMessage>
-          </VStack>
-          <Tooltip
-            aria-label={item.description}
-            hasArrow
-            label={item.description}
-            placement="right-start"
-            openDelay={500}
+      {({ field, form }: { field: FieldInputProps<string>; form: any }) => {
+        const error = form.errors.secrets && form.errors.secrets[key];
+        const touch = form.touched.secrets ? form.touched.secrets[key] : false;
+
+        return (
+          <FormControl
+            display="flex"
+            isRequired={isRequiredSecretValue(key)}
+            isInvalid={error && touch}
           >
-            <Flex
-              alignItems="center"
-              h="32px"
-              visibility={item.description ? "visible" : "hidden"}
+            {getFormLabel(key, item.title)}
+            <VStack align="flex-start" w="inherit">
+              {item.type !== "integer" && (
+                <Input
+                  {...field}
+                  placeholder={getPlaceholder(item)}
+                  autoComplete="off"
+                  color="gray.700"
+                  size="sm"
+                />
+              )}
+              {item.type === "integer" && (
+                <NumberInput
+                  allowMouseWheel
+                  color="gray.700"
+                  onChange={(value) => {
+                    form.setFieldValue(field.name, value);
+                  }}
+                  defaultValue={field.value ?? 0}
+                  min={0}
+                  size="sm"
+                >
+                  <NumberInputField {...field} autoComplete="off" />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              )}
+              <FormErrorMessage>{error}</FormErrorMessage>
+            </VStack>
+            <Tooltip
+              aria-label={item.description}
+              hasArrow
+              label={item.description}
+              placement="right-start"
+              openDelay={500}
             >
-              <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />
-            </Flex>
-          </Tooltip>
-        </FormControl>
-      )}
+              <Flex
+                alignItems="center"
+                h="32px"
+                visibility={item.description ? "visible" : "hidden"}
+              >
+                <CircleHelpIcon
+                  marginLeft="8px"
+                  _hover={{ cursor: "pointer" }}
+                />
+              </Flex>
+            </Tooltip>
+          </FormControl>
+        );
+      }}
     </Field>
   );
 
@@ -219,6 +230,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         connectionConfig.connection_type === ConnectionType.SAAS
           ? (connectionConfig.saas_config?.fides_key as string)
           : connectionConfig.key;
+      // @ts-ignore
+      initialValues.secrets = connectionConfig.secrets;
+      return initialValues;
     }
     return fillInDefaults(initialValues, secretsSchema);
   };
