@@ -16,20 +16,13 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.tcf import TCFPreferenceSave
 
 
 class ConsentOptionCreate(FidesSchema):
     """Schema for saving the user's preference for a given notice"""
 
     privacy_notice_history_id: str
-    preference: UserConsentPreference
-    served_notice_history_id: Optional[str]
-
-
-class TCFPreferenceSave(FidesSchema):
-    """Schema for saving a user's preference with respect to a TCF Data use, vendor, or feature"""
-
-    id: str  # Identifier for the data use, vendor, or feature
     preference: UserConsentPreference
     served_notice_history_id: Optional[str]
 
@@ -67,8 +60,8 @@ class MinimalPrivacyPreferenceHistorySchema(FidesSchema):
     privacy_notice_history: PrivacyNoticeHistorySchema
 
 
-class NoticesServedRequest(FidesSchema):
-    """Request body when indicating that notices were served in the UI"""
+class RecordConsentServedRequest(FidesSchema):
+    """Request body to use when saving that consent was served"""
 
     browser_identity: Identity
     code: Optional[SafeStr]  # For verified identity workflow only
@@ -82,8 +75,8 @@ class NoticesServedRequest(FidesSchema):
     serving_component: ServingComponent
 
 
-class NoticesServedCreate(NoticesServedRequest):
-    """Schema used on the backend only where we supplement the NoticesServedRequest request body
+class RecordConsentServedCreate(RecordConsentServedRequest):
+    """Schema used on the backend only where we supplement the RecordConsentServedRequest request body
     with information obtained from the request headers and the experience"""
 
     anonymized_ip_address: Optional[str]
@@ -93,13 +86,13 @@ class NoticesServedCreate(NoticesServedRequest):
     user_agent: Optional[SafeStr]
 
 
-class LastServedNoticeSchema(FidesSchema):
-    """Schema that surfaces the last version of a notice that was shown to a user"""
+class LastServedConsentSchema(FidesSchema):
+    """Schema that surfaces the the last time a consent item that was shown to a user"""
 
     id: str
     updated_at: datetime
-    privacy_notice_history: Optional[PrivacyNoticeHistorySchema]
     served_notice_history_id: str
+    privacy_notice_history: Optional[PrivacyNoticeHistorySchema]
     data_use: Optional[str]
     vendor: Optional[str]
     feature: Optional[str]

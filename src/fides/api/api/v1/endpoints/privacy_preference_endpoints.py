@@ -55,12 +55,11 @@ from fides.api.schemas.privacy_preference import (
     ConsentReportingSchema,
     CurrentPrivacyPreferenceReportingSchema,
     CurrentPrivacyPreferenceSchema,
-    LastServedNoticeSchema,
-    NoticesServedCreate,
-    NoticesServedRequest,
+    LastServedConsentSchema,
     PrivacyPreferencesCreate,
     PrivacyPreferencesRequest,
-    TCFPreferenceSave,
+    RecordConsentServedCreate,
+    RecordConsentServedRequest,
 )
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -68,6 +67,7 @@ from fides.api.schemas.privacy_request import (
     VerificationCode,
 )
 from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.tcf import TCFPreferenceSave
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
@@ -292,9 +292,11 @@ def anonymize_ip_address(ip_address: Optional[str]) -> Optional[str]:
 def _supplement_request_data_from_request_headers(
     db: Session,
     request: Request,
-    data: Union[PrivacyPreferencesRequest, NoticesServedRequest],
-    resource_type: Union[Type[PrivacyPreferencesCreate], Type[NoticesServedCreate]],
-) -> Union[PrivacyPreferencesCreate, NoticesServedCreate]:
+    data: Union[PrivacyPreferencesRequest, RecordConsentServedRequest],
+    resource_type: Union[
+        Type[PrivacyPreferencesCreate], Type[RecordConsentServedCreate]
+    ],
+) -> Union[PrivacyPreferencesCreate, RecordConsentServedCreate]:
     """
     Supplement the request body with information pulled from the request headers and the
     experience itself to save for consent reporting purposes.
@@ -473,8 +475,10 @@ def update_request_body_for_consent_served_or_saved(
     verified_provided_identity: Optional[ProvidedIdentity],
     fides_user_provided_identity: Optional[ProvidedIdentity],
     request: Request,
-    original_request_data: Union[PrivacyPreferencesRequest, NoticesServedRequest],
-    resource_type: Union[Type[PrivacyPreferencesCreate], Type[NoticesServedCreate]],
+    original_request_data: Union[PrivacyPreferencesRequest, RecordConsentServedRequest],
+    resource_type: Union[
+        Type[PrivacyPreferencesCreate], Type[RecordConsentServedCreate]
+    ],
 ) -> Dict[str, Union[Optional[RequestOrigin], Optional[str]]]:
     """Build a starting payload to save that consent was served or saved for a given user"""
 
@@ -636,7 +640,7 @@ def save_consent_served_for_identities(
     verified_provided_identity: Optional[ProvidedIdentity],
     fides_user_provided_identity: Optional[ProvidedIdentity],
     request: Request,
-    original_request_data: NoticesServedRequest,
+    original_request_data: RecordConsentServedRequest,
 ) -> List[LastServedNotice]:
     """
     Saves that consent was served to the end user.
@@ -654,7 +658,7 @@ def save_consent_served_for_identities(
         fides_user_provided_identity=fides_user_provided_identity,
         request=request,
         original_request_data=original_request_data,
-        resource_type=NoticesServedCreate,
+        resource_type=RecordConsentServedCreate,
     )
     common_data["serving_component"] = original_request_data.serving_component
 
@@ -850,13 +854,13 @@ def get_historical_consent_report(
 @router.patch(
     NOTICES_SERVED,
     status_code=HTTP_200_OK,
-    response_model=List[LastServedNoticeSchema],
+    response_model=List[LastServedConsentSchema],
 )
 @fides_limiter.limit(CONFIG.security.public_request_rate_limit)
 def save_consent_served_to_user(
     *,
     db: Session = Depends(get_db),
-    data: NoticesServedRequest,
+    data: RecordConsentServedRequest,
     request: Request,
     response: Response,  # required for rate limiting
 ) -> List[LastServedNotice]:
@@ -921,13 +925,13 @@ def classify_identities_for_privacy_center_consent_reporting(
 @router.patch(
     CONSENT_REQUEST_NOTICES_SERVED,
     status_code=HTTP_200_OK,
-    response_model=List[LastServedNoticeSchema],
+    response_model=List[LastServedConsentSchema],
 )
 def save_consent_served_via_privacy_center(
     *,
     consent_request_id: str,
     db: Session = Depends(get_db),
-    data: NoticesServedRequest,
+    data: RecordConsentServedRequest,
     request: Request,
 ) -> List[LastServedNotice]:
     """Saves that consent was served via a verified identity flow (privacy center)

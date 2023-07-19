@@ -174,35 +174,6 @@ class PrivacyNoticeResponseWithUserPreferences(
     """
 
 
-class TCFConsentRecord(BaseConsentSchema, UserSpecificConsentDetails):
-    """Contents of a TCF Item generated at runtime"""
-
-    id: str
-    illustration: Optional[str]
-    legal_basis: Optional[str]
-
-    @root_validator
-    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        consent_mechanism = values.get("consent_mechanism")
-        if consent_mechanism == ConsentMechanism.opt_in:
-            values["default_preference"] = UserConsentPreference.opt_out  # Intentional
-        if consent_mechanism == ConsentMechanism.opt_out:
-            values["default_preference"] = UserConsentPreference.opt_in  # Intentional
-        if consent_mechanism == ConsentMechanism.notice_only:
-            values["default_preference"] = UserConsentPreference.acknowledge
-
-        return values
-
-    class Config:
-        use_enum_values = True
-
-
-class TCFVendorConsentRecord(TCFConsentRecord):
-    """Contents of a TCF Vendor Consent record - generated at runtime"""
-
-    data_uses: List[TCFConsentRecord] = []
-
-
 class PrivacyNoticeHistorySchema(PrivacyNoticeCreation, PrivacyNoticeWithId):
     """
     An API representation of a PrivacyNoticeHistory used for response payloads

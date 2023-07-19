@@ -8,6 +8,7 @@ from fides.api.api.v1.endpoints.privacy_preference_endpoints import (
 from fides.api.common_exceptions import (
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
+    PrivacyPreferenceSaveError,
 )
 from fides.api.models.privacy_preference import (
     CurrentPrivacyPreference,
@@ -249,6 +250,31 @@ class TestPrivacyPreferenceHistory:
 
         preference_history_record.delete(db)
         next_preference_history_record.delete(db)
+
+    def test_create_privacy_preference_for_multiple_preference_types(
+        self, db, system, fides_user_provided_identity
+    ):
+        (
+            fides_user_device_id,
+            hashed_device_id,
+        ) = extract_identity_from_provided_identity(
+            fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
+        )
+
+        with pytest.raises(PrivacyPreferenceSaveError):
+            PrivacyPreferenceHistory.create(
+                db=db,
+                data={
+                    "data_use": "marketing.advertising.third_party.targeted",
+                    "vendor": "amplitude",
+                    "fides_user_device": fides_user_device_id,
+                    "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                    "hashed_fides_user_device": hashed_device_id,
+                    "preference": "opt_out",
+                    "request_origin": "tcf_overlay",
+                },
+                check_name=False,
+            )
 
     def test_create_privacy_preference_for_data_use(
         self, db, system, fides_user_provided_identity

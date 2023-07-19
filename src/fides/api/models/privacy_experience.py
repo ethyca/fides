@@ -24,7 +24,7 @@ from fides.api.models.privacy_preference import (
 )
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.schemas.privacy_notice import TCFConsentRecord
+from fides.api.schemas.tcf import TCFConsentRecord
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
     ConsentMechanism.notice_only,

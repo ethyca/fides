@@ -14,6 +14,7 @@ from fides.api.models.privacy_preference import (
     LastServedNotice,
     PrivacyPreferenceHistory,
     RequestOrigin,
+    ServedNoticeHistory,
     ServingComponent,
     UserConsentPreference,
 )
@@ -2002,6 +2003,20 @@ class TestSaveNoticesServedForFidesDeviceId:
             "serving_component": ServingComponent.banner.value,
         }
 
+    @pytest.fixture(scope="function")
+    def tcf_request_body(self, privacy_notice, privacy_experience_france_tcf_overlay):
+        return {
+            "browser_identity": {
+                "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
+            },
+            "tcf_data_uses": ["personalize.profiling"],
+            "tcf_vendors": ["amplitude"],
+            "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
+            "user_geography": "fr",
+            "acknowledge_mode": False,
+            "serving_component": ServingComponent.tcf_overlay.value,
+        }
+
     @pytest.mark.usefixtures(
         "privacy_notice",
     )
@@ -2161,6 +2176,96 @@ class TestSaveNoticesServedForFidesDeviceId:
 
         last_served_notice.delete(db)
         served_notice_history.delete(db)
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+    )
+    def test_record_tcf_items_served_with_respect_to_fides_user_device_id(
+        self,
+        mock_anonymize,
+        db,
+        api_client,
+        url,
+        tcf_request_body,
+        privacy_experience_france_tcf_overlay,
+    ):
+        """Test recording that TCF vendors and data uses were served to the given user with this fides user device id
+        There was one vendor and one data use in this request body, so two ServedNoticeHistory records were created
+        along with two LastServedNotice records.
+
+        """
+        test_device_id = "f7e54703-cd57-495e-866d-042e67c81734"
+        masked_ip = "12.214.31.0"
+        mock_anonymize.return_value = masked_ip
+        response = api_client.patch(
+            url, json=tcf_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 2
+        data_use_served = response.json()[0]
+        vendor_served = response.json()[1]
+
+        assert data_use_served["data_use"] == "personalize.profiling"
+        assert data_use_served["vendor"] is None
+        assert data_use_served["feature"] is None
+        assert data_use_served["privacy_notice_history"] is None
+        data_use_served_id = data_use_served["id"]
+        data_use_served_history_id = data_use_served["served_notice_history_id"]
+
+        assert vendor_served["data_use"] is None
+        assert vendor_served["vendor"] == "amplitude"
+        assert vendor_served["feature"] is None
+        assert vendor_served["privacy_notice_history"] is None
+        vendor_served_id = vendor_served["id"]
+        vendor_served_history_id = vendor_served["served_notice_history_id"]
+
+        last_served_use = LastServedNotice.get(db, object_id=data_use_served_id)
+        assert last_served_use.data_use == "personalize.profiling"
+        assert last_served_use.privacy_notice_id is None
+        assert last_served_use.privacy_notice_history_id is None
+        assert last_served_use.vendor is None
+        assert last_served_use.feature is None
+        assert last_served_use.created_at is not None
+        assert last_served_use.updated_at is not None
+        assert last_served_use.tcf_version == "2.2"
+        assert last_served_use.served_notice_history_id == data_use_served_history_id
+        use_served_history = ServedNoticeHistory.get(
+            db, object_id=data_use_served_history_id
+        )
+        assert (
+            use_served_history.fides_user_device_provided_identity_id
+            == last_served_use.fides_user_device_provided_identity_id
+        )
+        assert use_served_history.data_use == "personalize.profiling"
+        assert (
+            use_served_history.privacy_experience_id
+            == privacy_experience_france_tcf_overlay.id
+        )
+
+        last_served_vendor = LastServedNotice.get(db, object_id=vendor_served_id)
+        assert last_served_vendor.data_use is None
+        assert last_served_vendor.privacy_notice_id is None
+        assert last_served_vendor.privacy_notice_history_id is None
+        assert last_served_vendor.vendor == "amplitude"
+        assert last_served_vendor.feature is None
+        assert last_served_vendor.created_at is not None
+        assert last_served_vendor.updated_at is not None
+        assert last_served_vendor.served_notice_history_id == vendor_served_history_id
+        vendor_served_history = ServedNoticeHistory.get(
+            db, object_id=vendor_served_history_id
+        )
+        assert (
+            vendor_served_history.fides_user_device_provided_identity_id
+            == last_served_vendor.fides_user_device_provided_identity_id
+        )
+        assert vendor_served_history.vendor == "amplitude"
+        assert (
+            vendor_served_history.privacy_experience_id
+            == privacy_experience_france_tcf_overlay.id
+        )
+
+        last_served_vendor.delete(db)
+        last_served_use.delete(db)
 
 
 class TestSaveNoticesServedPrivacyCenter:

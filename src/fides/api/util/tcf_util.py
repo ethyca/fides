@@ -13,7 +13,7 @@ from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     PrivacyDeclaration,
     System,
 )
-from fides.api.schemas.privacy_notice import TCFConsentRecord, TCFVendorConsentRecord
+from fides.api.schemas.tcf import TCFConsentRecord, TCFVendorConsentRecord
 from fides.config.helpers import load_file
 
 TCF_PATH = join(

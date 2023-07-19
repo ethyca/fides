@@ -20,7 +20,7 @@ from fides.api.models.privacy_notice import (
     UserConsentPreference,
 )
 from fides.api.models.privacy_preference import PreferenceType
-from fides.api.schemas.privacy_notice import TCFConsentRecord
+from fides.api.schemas.tcf import TCFConsentRecord
 
 
 class TestExperienceConfig:
