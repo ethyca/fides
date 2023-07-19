@@ -27,6 +27,12 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.schemas.system import PrivacyDeclarationResponse
+from fides.api.schemas.taxonomy_extensions import (
+    DataCategory,
+    DataQualifier,
+    DataSubject,
+    DataUse,
+)
 from fides.api.util.endpoint_utils import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
 from fides.common.api.scope_registry import (
     CREATE,
@@ -49,6 +55,12 @@ from fides.core import api as _api
 CONFIG = get_config()
 
 TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
+TAXONOMY_EXTENSIONS = {
+    "data_category": DataCategory,
+    "data_subject": DataSubject,
+    "data_use": DataUse,
+    "data_qualifier": DataQualifier,
+}
 
 
 # Helper Functions
@@ -1867,8 +1879,8 @@ class TestDefaultTaxonomyCrud:
 class TestCrudActiveProperty:
     """
     Ensure `active` property is exposed properly via CRUD endpoints.
-    Specific tests for this property since it was a later addition
-    to the taxonomy model.
+    Specific tests for this property since it's a fides-specific
+    extension to the underlying fideslang taxonomy models.
     """
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
@@ -1877,6 +1889,9 @@ class TestCrudActiveProperty:
     ) -> None:
         """Ensure we can toggle `active` property on default taxonomy elements"""
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        resource = TAXONOMY_EXTENSIONS[endpoint](
+            **resource.dict()
+        )  # cast resource to extended model
         resource.active = False
         json_resource = resource.json(exclude_none=True)
         result = _api.update(
@@ -1925,6 +1940,9 @@ class TestCrudActiveProperty:
         """Ensure we can create taxonomy elements with `active` property set"""
         # get a default taxonomy element as a sample resource
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        resource = TAXONOMY_EXTENSIONS[endpoint](
+            **resource.dict()
+        )  # cast resource to extended model
         resource.fides_key = resource.fides_key + "_test_create_active_false"
         resource.is_default = False
         resource.active = False
