@@ -311,7 +311,6 @@ class TestPatchConnections:
         assert postgres_connection["last_test_timestamp"] is None
         assert postgres_connection["disabled"] is False
         assert postgres_connection["secrets"]["password"] == "**********"
-        assert postgres_connection["secrets"]["url"] == "**********"
         # assert "secrets" not in postgres_connection
 
         mongo_connection = response_body["succeeded"][1]
@@ -513,7 +512,6 @@ class TestPatchConnections:
         assert postgres_connection["access"] == "read"
         assert postgres_connection["disabled"] is True
         assert postgres_connection["secrets"]["password"] == "**********"
-        assert postgres_connection["secrets"]["url"] == "**********"
         assert postgres_connection["updated_at"] is not None
         postgres_resource = (
             db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()

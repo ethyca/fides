@@ -300,7 +300,6 @@ class TestGetConnections:
             "host": "http://localhost",
             "password": "**********",
             "port": 5432,
-            "url": "**********",
             "username": "test",
         }
 

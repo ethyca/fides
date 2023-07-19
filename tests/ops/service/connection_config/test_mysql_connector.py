@@ -32,7 +32,7 @@ def test_mysql_connector_build_uri(connection_config_mysql, db: Session):
     connection_config_mysql.save(db)
     assert (
         connector.build_uri()
-        == "mysql+pymysql://mysql_user:mysql_pw@host.docker.internal/mysql_example"
+        == "mysql+pymysql://mysql_user:mysql_pw@host.docker.internal:3306/mysql_example"
     )
 
     connection_config_mysql.secrets = {
@@ -43,11 +43,14 @@ def test_mysql_connector_build_uri(connection_config_mysql, db: Session):
     connection_config_mysql.save(db)
     assert (
         connector.build_uri()
-        == "mysql+pymysql://mysql_user@host.docker.internal/mysql_example"
+        == "mysql+pymysql://mysql_user@host.docker.internal:3306/mysql_example"
     )
 
     connection_config_mysql.secrets = {
         "host": "host.docker.internal",
         "dbname": "mysql_example",
     }
-    assert connector.build_uri() == "mysql+pymysql://host.docker.internal/mysql_example"
+    assert (
+        connector.build_uri()
+        == "mysql+pymysql://host.docker.internal:3306/mysql_example"
+    )

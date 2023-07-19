@@ -108,7 +108,7 @@ class TestPostgresConnectionPutSecretsAPI:
         db.refresh(connection_config)
         assert connection_config.secrets == {
             "host": "postgres_example",
-            "port": None,
+            "port": 5432,
             "dbname": "postgres_example",
             "username": "postgres",
             "password": "postgres",
@@ -344,7 +344,7 @@ class TestMySQLConnectionPutSecretsAPI:
             "dbname": "mysql_example",
             "username": "mysql_user",
             "password": "mysql_pw",
-            "port": None,
+            "port": 3306,
         }
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is True
@@ -573,7 +573,7 @@ class TestMariaDBConnectionPutSecretsAPI:
             "dbname": "mariadb_example",
             "username": "mariadb_user",
             "password": "mariadb_pw",
-            "port": None,
+            "port": 3306,
         }
         assert connection_config_mariadb.last_test_timestamp is not None
         assert connection_config_mariadb.last_test_succeeded is True
@@ -1086,7 +1086,7 @@ class TestMongoConnectionPutSecretsAPI:
             "defaultauthdb": "mongo_test",
             "username": "mongo_user",
             "password": "mongo_pass",
-            "port": None,
+            "port": 27017,
         }
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is True
