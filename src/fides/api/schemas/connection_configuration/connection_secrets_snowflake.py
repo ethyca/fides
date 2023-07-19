@@ -11,20 +11,44 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 class SnowflakeSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to Snowflake"""
 
-    user_login_name: Optional[str] = None
-    password: Optional[str] = Field(None, sensitive=True)
-    account_identifier: Optional[
-        str
-    ] = None  # Do not include the snowflakecomputing.com domain name as part of your account identifier.
-    database_name: Optional[str] = None
-    schema_name: Optional[str] = None
-    warehouse_name: Optional[str] = None
-    role_name: Optional[str] = None
+    account_identifier: str = Field(
+        title="Account Name",
+        description="The unique identifier for your Snowflake account.",
+    )
+    user_login_name: str = Field(
+        title="Username",
+        description="The user account used to authenticate and access the database.",
+    )
+    password: str = Field(
+        title="Password",
+        description="The password used to authenticate and access the database.",
+        sensitive=True,
+    )
+    warehouse_name: str = Field(
+        title="Warehouse",
+        description="The name of the Snowflake warehouse where your queries will be executed.",
+    )
+    database_name: str = Field(
+        title="Database",
+        description="The name of the Snowflake database you want to connect to.",
+    )
+    schema_name: str = Field(
+        title="Schema",
+        description="The name of the Snowflake schema within the selected database.",
+    )
+    role_name: Optional[str] = Field(
+        None,
+        title="Role",
+        description="The Snowflake role to assume for the session, if different than Username.",
+    )
 
     _required_components: List[str] = [
+        "account_identifier",
         "user_login_name",
         "password",
-        "account_identifier",
+        "warehouse_name",
+        "database_name",
+        "schema_name",
     ]
 
 

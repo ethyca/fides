@@ -297,14 +297,23 @@ jobs:
 
       - name: Integration Tests (External)
         env:
-          REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
-          REDSHIFT_TEST_DB_SCHEMA: fidesops_test
           BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
           BIGQUERY_DATASET: fidesopstest
-          SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
           DYNAMODB_REGION: ${{ secrets.DYNAMODB_REGION }}
           DYNAMODB_ACCESS_KEY_ID: ${{ secrets.DYNAMODB_ACCESS_KEY_ID }}
           DYNAMODB_ACCESS_KEY: ${{ secrets.DYNAMODB_ACCESS_KEY }}
+          REDSHIFT_TEST_HOST: ${{ secrets.REDSHIFT_TEST_HOST }}
+          REDSHIFT_TEST_PORT: ${{ secrets.REDSHIFT_TEST_PORT }}
+          REDSHIFT_TEST_USER: ${{ secrets.REDSHIFT_TEST_USER }}
+          REDSHIFT_TEST_PASSWORD: ${{ secrets.REDSHIFT_TEST_PASSWORD }}
+          REDSHIFT_TEST_DATABASE: ${{ secrets.REDSHIFT_TEST_DATABASE }}
+          REDSHIFT_TEST_DB_SCHEMA: ${{ secrets.REDSHIFT_TEST_DB_SCHEMA }}
+          SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER: ${{ secrets.SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER }}
+          SNOWFLAKE_TEST_USER_LOGIN_NAME: ${{ secrets.SNOWFLAKE_TEST_USER_LOGIN_NAME }}
+          SNOWFLAKE_TEST_PASSWORD: ${{ secrets.SNOWFLAKE_TEST_PASSWORD }}
+          SNOWFLAKE_TEST_WAREHOUSE_NAME: ${{ secrets.SNOWFLAKE_TEST_WAREHOUSE_NAME }}
+          SNOWFLAKE_TEST_DATABASE_NAME: ${{ secrets.SNOWFLAKE_TEST_DATABASE_NAME }}
+          SNOWFLAKE_TEST_SCHEMA_NAME: ${{ secrets.SNOWFLAKE_TEST_SCHEMA_NAME }}
 
         run: nox -s "pytest(ops-external-datastores)"
 
