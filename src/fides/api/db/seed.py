@@ -29,6 +29,8 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
 from fides.api.oauth.roles import OWNER
 from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
+)
+from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
 from fides.api.schemas.dataset import DatasetConfigCtlDataset
