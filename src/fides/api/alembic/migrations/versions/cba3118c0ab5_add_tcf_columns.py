@@ -1,7 +1,7 @@
 """add_tcf_columns
 
 Revision ID: cba3118c0ab5
-Revises: 7c562441c589
+Revises: 5abb65a8cb91
 Create Date: 2023-07-18 21:13:24.855078
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "cba3118c0ab5"
-down_revision = "7c562441c589"
+down_revision = "5abb65a8cb91"
 branch_labels = None
 depends_on = None
 
