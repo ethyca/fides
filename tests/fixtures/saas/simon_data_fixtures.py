@@ -15,16 +15,16 @@ secrets = get_secrets("simon_data")
 @pytest.fixture(scope="session")
 def simon_data_secrets(saas_config) -> Dict[str, Any]:
     return {
-        "domain": pydash.get(saas_config, "simon_data.domain")
-        or secrets["domain"]
-        # add the rest of your secrets here
+        "domain": pydash.get(saas_config, "simon_data.domain") or secrets["domain"],
+        "api_key": pydash.get(saas_config, "simon_data.api_key") or secrets["api_key"],
     }
 
 
 @pytest.fixture(scope="session")
 def simon_data_identity_email(saas_config) -> str:
     return (
-        pydash.get(saas_config, "simon_data.identity_email") or secrets["identity_email"]
+        pydash.get(saas_config, "simon_data.identity_email")
+        or secrets["identity_email"]
     )
 
 
