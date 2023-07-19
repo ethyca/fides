@@ -38,7 +38,9 @@ The types of changes are:
 - Removed "Custom field(s) successfully saved" toast [#3779](https://github.com/ethyca/fides/pull/3779)
 
 ### Added
+
 - Record when consent is served [#3777](https://github.com/ethyca/fides/pull/3777)
+- Add an `active` property to taxonomy elements [#3784](https://github.com/ethyca/fides/pull/3784)
 
 ### Fixed
 - Privacy notice UI's list of possible regions now matches the backend's list [#3787](https://github.com/ethyca/fides/pull/3787)
