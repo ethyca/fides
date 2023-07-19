@@ -13,6 +13,7 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
+  Spacer,
   Tooltip,
   VStack,
 } from "@fidesui/react";
@@ -24,7 +25,7 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
@@ -68,15 +69,11 @@ type ConnectorParametersFormProps = {
    * Parent callback when Authorize Connection is clicked
    */
   onAuthorizeConnectionClick: (values: ConnectionConfigFormValues) => void;
-  /**
-   * Text for the test button. Defaults to "Test connection"
-   */
-  authorizeButtonLabel?: string;
   connectionConfig?: ConnectionConfigurationResponse;
   connectionOption: ConnectionSystemTypeMap;
   isCreatingConnectionConfig: boolean;
   datasetDropdownOptions: Option[];
-  onDelete: (id: string) => void;
+  onDelete: () => void;
   deleteResult: any;
 };
 
@@ -283,13 +280,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     onAuthorizeConnectionClick(values); // this part needs values
   };
 
-  const handleTestConnectionClick = async (props: FormikProps<Values>) => {
-    const errors = await props.validateForm();
-
-    if (Object.keys(errors).length > 0) {
-      return;
-    }
-
+  const handleTestConnectionClick = async () => {
     const result = await trigger(connectionConfig!.key);
     onTestConnectionClick(result);
   };
@@ -308,144 +299,143 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {(props: FormikProps<Values>) => {
         const authorized = !props.dirty && connectionConfig?.authorized;
         return (
-          <Form noValidate>
-            <VStack align="stretch" gap="16px">
-              {/* Connection Identifier */}
-              <Field
-                id="instance_key"
-                name="instance_key"
-                validate={validateConnectionIdentifier}
-              >
-                {({ field }: { field: FieldInputProps<string> }) => (
-                  <FormControl
-                    display="flex"
-                    isRequired
-                    isInvalid={
-                      props.errors.instance_key && props.touched.instance_key
-                    }
-                  >
-                    {getFormLabel("instance_key", "Integration Identifier")}
-                    <VStack align="flex-start" w="inherit">
-                      <Input
-                        {...field}
-                        autoComplete="off"
-                        color="gray.700"
-                        isDisabled={!!connectionConfig?.key}
-                        placeholder={`A unique identifier for your new ${
-                          connectionOption!.human_readable
-                        } integration`}
-                        size="sm"
-                      />
-                      <FormErrorMessage>
-                        {props.errors.instance_key}
-                      </FormErrorMessage>
-                    </VStack>
-                    <Tooltip
-                      aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
-                      hasArrow
-                      label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
-                      placement="right-start"
-                      openDelay={500}
-                    >
-                      <Flex alignItems="center" h="32px">
-                        <CircleHelpIcon
-                          marginLeft="8px"
-                          _hover={{ cursor: "pointer" }}
-                        />
-                      </Flex>
-                    </Tooltip>
-                  </FormControl>
-                )}
-              </Field>
-              {/* Dynamic connector secret fields */}
-
-              {connectionOption.type !== SystemType.MANUAL && secretsSchema
-                ? Object.entries(secretsSchema.properties).map(
-                    ([key, item]) => {
-                      if (key === "advanced_settings") {
-                        // TODO: advanced settings
-                        return null;
-                      }
-                      return getFormField(key, item);
-                    }
-                  )
-                : null}
-              {SystemType.DATABASE === connectionOption.type &&
-              !isCreatingConnectionConfig ? (
-                <DatasetConfigField
-                  dropdownOptions={datasetDropdownOptions}
-                  connectionConfig={connectionConfig}
+        <Form noValidate>
+          <VStack align="stretch" gap="16px">
+            <ButtonGroup size="sm" spacing="8px" variant="outline">
+              {connectionConfig ? (
+                <DisableConnectionModal
+                  connection_key={connectionConfig?.key}
+                  disabled={isDisabledConnection}
+                  connection_type={connectionConfig?.connection_type}
+                  access_type={connectionConfig?.access}
+                  name={connectionConfig?.name ?? connectionConfig.key}
+                  isSwitch
                 />
               ) : null}
-              <ButtonGroup size="sm" spacing="8px" variant="outline">
-                {!connectionOption.authorization_required || authorized ? (
-                  <Button
-                    colorScheme="gray.700"
-                    isDisabled={
-                      !connectionConfig?.key ||
-                      isSubmitting ||
-                      deleteResult.isLoading
-                    }
-                    isLoading={isLoading || isFetching}
-                    loadingText="Testing"
-                    onClick={() => handleTestConnectionClick(props)}
-                    variant="outline"
-                  >
-                    {testButtonLabel}
-                  </Button>
-                ) : null}
-                {connectionOption.authorization_required && !authorized ? (
-                  <Button
-                    colorScheme="gray.700"
-                    isLoading={isAuthorizing}
-                    loadingText="Authorizing"
-                    onClick={() =>
-                      handleAuthorizeConnectionClick(props.values, props)
-                    }
-                    variant="outline"
-                  >
-                    Authorize integration
-                  </Button>
-                ) : null}
-                {connectionOption.type === SystemType.MANUAL ? (
-                  <DSRCustomizationModal connectionConfig={connectionConfig} />
-                ) : null}
-                <Button
-                  bg="primary.800"
-                  color="white"
-                  isDisabled={deleteResult.isLoading || isSubmitting}
-                  isLoading={isSubmitting}
-                  loadingText="Submitting"
-                  size="sm"
-                  variant="solid"
-                  type="submit"
-                  _active={{ bg: "primary.500" }}
-                  _hover={{ bg: "primary.400" }}
+              {connectionConfig ? (
+                <DeleteConnectionModal
+                  onDelete={onDelete}
+                  deleteResult={deleteResult}
+                />
+              ) : null}
+            </ButtonGroup>
+            {/* Connection Identifier */}
+            <Field
+              id="instance_key"
+              name="instance_key"
+              validate={validateConnectionIdentifier}
+            >
+              {({ field }: { field: FieldInputProps<string> }) => (
+                <FormControl
+                  display="flex"
+                  isRequired
+                  isInvalid={
+                    props.errors.instance_key && props.touched.instance_key
+                  }
                 >
-                  Save
+                  {getFormLabel("instance_key", "Integration Identifier")}
+                  <VStack align="flex-start" w="inherit">
+                    <Input
+                      {...field}
+                      autoComplete="off"
+                      color="gray.700"
+                      isDisabled={!!connectionConfig?.key}
+                      placeholder={`A unique identifier for your new ${
+                        connectionOption!.human_readable
+                      } integration`}
+                      size="sm"
+                    />
+                    <FormErrorMessage>
+                      {props.errors.instance_key}
+                    </FormErrorMessage>
+                  </VStack>
+                  <Tooltip
+                    aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
+                    hasArrow
+                    label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
+                    placement="right-start"
+                    openDelay={500}
+                  >
+                    <Flex alignItems="center" h="32px">
+                      <CircleHelpIcon
+                        marginLeft="8px"
+                        _hover={{ cursor: "pointer" }}
+                      />
+                    </Flex>
+                  </Tooltip>
+                </FormControl>
+              )}
+            </Field>
+            {/* Dynamic connector secret fields */}
+
+            {connectionOption.type !== SystemType.MANUAL && secretsSchema
+              ? Object.entries(secretsSchema.properties).map(([key, item]) => {
+                  if (key === "advanced_settings") {
+                    // TODO: advanced settings
+                    return null;
+                  }
+                  return getFormField(key, item);
+                })
+              : null}
+            {SystemType.DATABASE === connectionOption.type &&
+            !isCreatingConnectionConfig ? (
+              <DatasetConfigField
+                dropdownOptions={datasetDropdownOptions}
+                connectionConfig={connectionConfig}
+              />
+            ) : null}
+            <ButtonGroup size="sm" spacing="8px" variant="outline">
+              {!connectionOption.authorization_required || authorized ? (
+                <Button
+                  colorScheme="gray.700"
+                  isDisabled={
+                    !connectionConfig?.key ||
+                    isSubmitting ||
+                    deleteResult.isLoading
+                  }
+                  isLoading={isLoading || isFetching}
+                  loadingText="Testing"
+                  onClick={() => handleTestConnectionClick(props)}
+                  variant="outline"
+                >
+                  {testButtonLabel}
                 </Button>
-                {connectionConfig ? (
-                  <DisableConnectionModal
-                    connection_key={connectionConfig?.key}
-                    disabled={isDisabledConnection}
-                    connection_type={connectionConfig?.connection_type}
-                    access_type={connectionConfig?.access}
-                    name={connectionConfig?.name ?? connectionConfig.key}
-                    isSwitch
-                  />
-                ) : null}
-                {connectionConfig ? (
-                  <DeleteConnectionModal
-                    connectionKey={connectionConfig.key}
-                    onDelete={onDelete}
-                    deleteResult={deleteResult}
-                  />
-                ) : null}
-              </ButtonGroup>
-            </VStack>
-          </Form>
-        );
-      }}
+              ) : null}
+              {connectionOption.authorization_required && !authorized ? (
+                <Button
+                  colorScheme="gray.700"
+                  isLoading={isAuthorizing}
+                  loadingText="Authorizing"
+                  onClick={() =>
+                    handleAuthorizeConnectionClick(props.values, props)
+                  }
+                  variant="outline"
+                >
+                  Authorize integration
+                </Button>
+              ) : null}
+              {connectionOption.type === SystemType.MANUAL ? (
+                <DSRCustomizationModal connectionConfig={connectionConfig} />
+              ) : null}
+              <Spacer />
+              <Button
+                bg="primary.800"
+                color="white"
+                isDisabled={deleteResult.isLoading || isSubmitting}
+                isLoading={isSubmitting}
+                loadingText="Submitting"
+                size="sm"
+                variant="solid"
+                type="submit"
+                _active={{ bg: "primary.500" }}
+                _hover={{ bg: "primary.400" }}
+              >
+                Save
+              </Button>
+            </ButtonGroup>
+          </VStack>
+        </Form>
+      );}}
     </Formik>
   );
 };

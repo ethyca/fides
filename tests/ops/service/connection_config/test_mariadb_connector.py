@@ -32,7 +32,7 @@ def test_mariadb_connector_build_uri(connection_config_mariadb, db: Session):
     connection_config_mariadb.save(db)
     assert (
         connector.build_uri()
-        == "mariadb+pymysql://mariadb_user:mariadb_pw@host.docker.internal/mariadb_example"
+        == "mariadb+pymysql://mariadb_user:mariadb_pw@host.docker.internal:3306/mariadb_example"
     )
 
     connection_config_mariadb.secrets = {
@@ -43,7 +43,7 @@ def test_mariadb_connector_build_uri(connection_config_mariadb, db: Session):
     connection_config_mariadb.save(db)
     assert (
         connector.build_uri()
-        == "mariadb+pymysql://mariadb_user@host.docker.internal/mariadb_example"
+        == "mariadb+pymysql://mariadb_user@host.docker.internal:3306/mariadb_example"
     )
 
     connection_config_mariadb.secrets = {
@@ -52,5 +52,5 @@ def test_mariadb_connector_build_uri(connection_config_mariadb, db: Session):
     }
     assert (
         connector.build_uri()
-        == "mariadb+pymysql://host.docker.internal/mariadb_example"
+        == "mariadb+pymysql://host.docker.internal:3306/mariadb_example"
     )

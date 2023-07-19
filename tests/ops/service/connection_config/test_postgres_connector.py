@@ -34,7 +34,7 @@ def test_postgres_connector_build_uri(connection_config: ConnectionConfig, db: S
     connection_config.save(db)
     assert (
         connector.build_uri()
-        == "postgresql://postgres:postgres@host.docker.internal/postgres_example"
+        == "postgresql://postgres:postgres@host.docker.internal:5432/postgres_example"
     )
 
     connection_config.secrets = {
@@ -45,11 +45,14 @@ def test_postgres_connector_build_uri(connection_config: ConnectionConfig, db: S
     connection_config.save(db)
     assert (
         connector.build_uri()
-        == "postgresql://postgres@host.docker.internal/postgres_example"
+        == "postgresql://postgres@host.docker.internal:5432/postgres_example"
     )
 
     connection_config.secrets = {
         "host": "host.docker.internal",
         "dbname": "postgres_example",
     }
-    assert connector.build_uri() == "postgresql://host.docker.internal/postgres_example"
+    assert (
+        connector.build_uri()
+        == "postgresql://host.docker.internal:5432/postgres_example"
+    )
