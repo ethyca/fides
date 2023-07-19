@@ -1,5 +1,6 @@
 import {
   Center,
+  HStack,
   SimpleGrid,
   Spinner,
   Stack,
@@ -28,13 +29,28 @@ const CustomTag = ({ node }: { node: TaxonomyEntityNode }) => {
   const { is_default: isDefault } = node;
   return !isDefault ? (
     <Tag
+      backgroundColor="purple.500"
+      color="white"
+      size="sm"
+      height="fit-content"
+      data-testid={`custom-tag-${node.label}`}
+    >
+      CUSTOM
+    </Tag>
+  ) : null;
+};
+
+const DisabledTag = ({ node }: { node: TaxonomyEntityNode }) => {
+  const { active: isEnabled } = node;
+  return !isEnabled ? (
+    <Tag
       backgroundColor="gray.500"
       color="white"
       size="sm"
       height="fit-content"
       data-testid={`custom-tag-${node.label}`}
     >
-      Custom
+      DISABLED
     </Tag>
   ) : null;
 };
@@ -147,7 +163,12 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
               node={node as TaxonomyEntityNode}
             />
           )}
-          renderTag={(node) => <CustomTag node={node as TaxonomyEntityNode} />}
+          renderTag={(node) => (
+            <HStack spacing={2}>
+              <CustomTag node={node as TaxonomyEntityNode} />
+              <DisabledTag node={node as TaxonomyEntityNode} />
+            </HStack>
+          )}
         />
         {entityToEdit ? (
           <TaxonomyFormBase

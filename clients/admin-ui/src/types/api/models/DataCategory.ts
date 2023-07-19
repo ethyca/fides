@@ -28,4 +28,8 @@ export type DataCategory = {
    * Denotes whether the resource is part of the default taxonomy or not.
    */
   is_default?: boolean;
+  /**
+   * Denotes whether the resource is enabled in the taxonomy or not.
+   */
+  active?: boolean;
 };
