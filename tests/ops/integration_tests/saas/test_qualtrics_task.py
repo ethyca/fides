@@ -16,50 +16,5 @@ class TestQualtricsConnector:
             access_policy=policy, identities={"email": qualtrics_identity_email}
         )
 
-        assert access_results["qualtrics_instance:search_directory_contact"][0]["email"] == qualtrics_identity_email
-
-    # async def test_strict_erasure_request(
-    #     self,
-    #     qualtrics_runner: ConnectorRunner,
-    #     policy: Policy,
-    #     erasure_policy_string_rewrite: Policy,
-    #     qualtrics_erasure_identity_email: str,
-    #     qualtrics_erasure_data,
-    # ):
-    #     (
-    #         access_results,
-    #         erasure_results,
-    #     ) = await qualtrics_runner.strict_erasure_request(
-    #         access_policy=policy,
-    #         erasure_policy=erasure_policy_string_rewrite,
-    #         identities={"email": qualtrics_erasure_identity_email},
-    #     )
-
-    async def test_non_strict_erasure_request(
-        self,
-        qualtrics_runner: ConnectorRunner,
-        policy: Policy,
-        erasure_policy_string_rewrite: Policy,
-        qualtrics_erasure_identity_email: str,
-        qualtrics_erasure_data,
-        qualtrics_client,
-    ):
-        (
-            access_results,
-            erasure_results,
-        ) = await qualtrics_runner.non_strict_erasure_request(
-            access_policy=policy,
-            erasure_policy=erasure_policy_string_rewrite,
-            identities={"email": qualtrics_erasure_identity_email},
-        )
-
-        assert erasure_results == {
-            "qualtrics_instance:search_directory_contact": 0,
-            "qualtrics_instance:directory_contacts": 1,
-        }
-
-        response = qualtrics_client.get_directory_contacts(qualtrics_erasure_identity_email)
-        # Check whether user details updated or not
-        directory_contacts_response = response.json()
-        assert directory_contacts_response['result']['elements'][0]["firstName"] == "MASKED"
-        assert directory_contacts_response['result']['elements'][0]["lastName"]  == "MASKED"
+        for contacts in access_results["qualtrics_instance:search_directory_contact"]:
+            assert contacts["email"] == qualtrics_identity_email

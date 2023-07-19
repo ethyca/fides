@@ -7,8 +7,8 @@ saas_config:
 
   connector_params:
     - name: domain
-    - name: api_key
-    - name: directory_id
+      default_value: yul1.qualtrics.com
+    - name: api_key    
 
   client_config:
     protocol: https
@@ -32,43 +32,26 @@ saas_config:
       requests:
         read:
           method: POST
-          path: /API/v3/directories/<directory_id>/contacts/search
+          path: /API/v3/directories/<all_directories_directoryId>/contacts/search
           body: |
             {
              "filter": {"filterType": "email","comparison": "eq","value": "<email>"}
              }
           data_path: result.elements
           param_values:
-            - name: directory_id
-              connector_param: directory_id
+            - name: all_directories_directoryId
+              references:
+                - dataset: <instance_fides_key>
+                  field: all_directories.directoryId
+                  direction: from
             - name: email
               identity: email
-    - name: directory_contacts
+    - name: all_directories
       requests:
         read:
           method: GET
-          path: /API/v3/directories/<directory_id>/contacts/<contact_id>
-          data_path: result
+          path: /API/v3/directories
+          data_path: result.elements
           param_values:
-            - name: directory_id
-              connector_param: directory_id
-            - name: contact_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: search_directory_contact.id
-                  direction: from
-        update:
-          method: PUT
-          path: /API/v3/directories/<directory_id>/contacts/<contact_id>
-          body: |
-            {
-                  <masked_object_fields>  
-            }
-          param_values:
-            - name: directory_id
-              connector_param: directory_id
-            - name: contact_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: directory_contacts.contactId
-                  direction: from
+            - name: placeholder
+              identity: email
