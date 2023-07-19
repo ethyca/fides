@@ -64,14 +64,14 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
     <>
       {isSwitch ? (
         <Flex justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm">Enable integration</Text>
-            <Switch
-              marginLeft="8px"
-              colorScheme="complimentary"
-              isChecked={!disabled}
-              onChange={onOpen}
-            />
-          </Flex>
+          <Text fontSize="sm">Enable integration</Text>
+          <Switch
+            marginLeft="8px"
+            colorScheme="complimentary"
+            isChecked={!disabled}
+            onChange={onOpen}
+          />
+        </Flex>
       ) : (
         <MenuItem
           _focus={{ color: "complimentary.500", bg: "gray.100" }}
