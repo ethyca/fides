@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.16.1b0.post0.dev4"
+    "version": "2.16.1b0.post0.dev5"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14651,6 +14651,12 @@
             "type": "boolean",
             "description": "Denotes whether the resource is part of the default taxonomy or not.",
             "default": false
+          },
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "Indicates whether the resource is currently 'active'.",
+            "default": true
           }
         },
         "description": "The DataCategory resource model."
@@ -14759,6 +14765,12 @@
             "type": "boolean",
             "description": "Denotes whether the resource is part of the default taxonomy or not.",
             "default": false
+          },
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "Indicates whether the resource is currently 'active'.",
+            "default": true
           }
         },
         "description": "The DataQualifier resource model."
@@ -14829,6 +14841,12 @@
             "type": "boolean",
             "description": "Denotes whether the resource is part of the default taxonomy or not.",
             "default": false
+          },
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "Indicates whether the resource is currently 'active'.",
+            "default": true
           }
         },
         "description": "The DataSubject resource model."
@@ -14973,6 +14991,12 @@
             "type": "boolean",
             "description": "Denotes whether the resource is part of the default taxonomy or not.",
             "default": false
+          },
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "Indicates whether the resource is currently 'active'.",
+            "default": true
           }
         },
         "description": "The DataUse resource model."
