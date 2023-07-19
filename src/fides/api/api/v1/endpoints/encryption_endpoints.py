@@ -3,12 +3,6 @@ import secrets
 from fastapi import Security
 from loguru import logger
 
-from fides.api.api.v1.urn_registry import (
-    DECRYPT_AES,
-    ENCRYPT_AES,
-    ENCRYPTION_KEY,
-    V1_URL_PREFIX,
-)
 from fides.api.cryptography import cryptographic_util
 from fides.api.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 from fides.api.oauth.utils import verify_oauth_client
@@ -26,6 +20,12 @@ from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_verify_secret_length as aes_gcm_encrypt,
 )
 from fides.common.api.scope_registry import ENCRYPTION_EXEC
+from fides.common.api.v1.urn_registry import (
+    DECRYPT_AES,
+    ENCRYPT_AES,
+    ENCRYPTION_KEY,
+    V1_URL_PREFIX,
+)
 from fides.config import CONFIG
 
 router = APIRouter(tags=["Encryption"], prefix=V1_URL_PREFIX)

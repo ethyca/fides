@@ -12,6 +12,7 @@
   --fides-overlay-gpc-applied-text-color: white;
   --fides-overlay-gpc-overridden-background-color: #e53e3e;
   --fides-overlay-gpc-overridden-text-color: white;
+  --fides-overlay-background-dark-color: #e2e8f0;
   /* Buttons */
   --fides-overlay-primary-button-background-color: var(
     --fides-overlay-primary-color
@@ -41,6 +42,8 @@
   /* Dividers */
   --fides-overlay-row-divider-color: #e2e8f0;
   --fides-overlay-row-hover-color: var(--fides-overlay-hover-color);
+  /* Badge */
+  --fides-overlay-badge-background-color: #718096;
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
@@ -85,6 +88,7 @@ div#fides-banner-container {
   display: flex;
   justify-content: center;
   visibility: visible;
+  max-height: 100%;
 }
 
 div#fides-banner {
@@ -93,6 +97,7 @@ div#fides-banner {
   color: var(--fides-overlay-body-font-color);
   box-sizing: border-box;
   padding: var(--fides-overlay-padding);
+  overflow-y: scroll;
 
   display: flex;
   flex-direction: row;
@@ -250,6 +255,7 @@ div.fides-modal-content {
   border-radius: var(--fides-overlay-component-border-radius);
   max-height: 100%;
   max-width: 100%;
+  overflow-y: scroll;
 
   z-index: 2;
   position: fixed;
@@ -430,10 +436,9 @@ div#fides-modal .fides-modal-button-group {
 }
 
 .fides-notice-toggle .fides-notice-toggle-title {
-  padding: 0.5em;
+  padding-inline: 0.5em 0;
   display: flex;
   justify-content: space-between;
-  min-height: 40px;
   align-items: center;
 }
 
@@ -442,6 +447,8 @@ div#fides-modal .fides-modal-button-group {
   display: flex;
   justify-content: space-between;
   margin-right: 0.5em;
+  min-height: 40px;
+  align-items: center;
 }
 
 .fides-notice-toggle .fides-notice-toggle-title:hover {
@@ -500,4 +507,110 @@ div#fides-modal .fides-modal-button-group {
 .fides-gpc-badge-overridden {
   background: var(--fides-overlay-gpc-overridden-background-color);
   color: var(--fides-overlay-gpc-overridden-text-color);
+}
+
+/* Tabs */
+
+.fides-tab-list {
+  padding: 0;
+  display: flex;
+  list-style-type: none;
+}
+
+.fides-tab-list > li {
+  width: 100%;
+}
+
+.fides-tab-button {
+  background: none;
+  border-width: 0 0 1px 0;
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+  color: var(--fides-overlay-body-font-color);
+  font-weight: 500;
+  padding: 0.6em 1.2em;
+  cursor: pointer;
+  width: 100%;
+}
+
+.fides-tab-button[aria-selected="true"] {
+  color: var(--fides-overlay-primary-active-color);
+  border-bottom-width: 2px;
+  border-color: var(--fides-overlay-primary-active-color);
+  font-weight: 600;
+}
+
+.fides-tab-button::focus-visible {
+  outline: 1px auto Highlight;
+  outline: 1px auto -webkit-focus-ring-color;
+}
+.fides-tab-button:focus:not(:focus-visible) {
+  outline: 0;
+}
+
+/* GVL Badge */
+
+.fides-notice-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  margin-left: 0.6em;
+  text-transform: uppercase;
+  padding: 0 4px;
+  font-weight: 600;
+  border-radius: var(--fides-overlay-button-border-radius);
+  background: var(--fides-overlay-badge-background-color);
+  color: white;
+  font-size: 0.7em;
+}
+.fides-background-dark {
+  background-color: var(--fides-overlay-background-dark-color);
+}
+
+/* Filter button */
+
+.fides-filter-button-group {
+  background-color: var(
+    --fides-overlay-secondary-button-background-hover-color
+  );
+  border-radius: var(--fides-overlay-button-border-radius);
+  width: fit-content;
+  padding: 0.3em;
+}
+
+.fides-filter-button {
+  background-color: transparent;
+  border: none;
+  padding: 0.3em 1em;
+  cursor: pointer;
+}
+
+.fides-filter-button[aria-checked="true"] {
+  background-color: var(--fides-overlay-primary-button-background-color);
+  color: var(--fides-overlay-primary-button-text-color);
+  border-radius: var(--fides-overlay-button-border-radius);
+}
+
+/* Table */
+
+.fides-cookies-table {
+  border-collapse: collapse;
+  width: 100%;
+  text-align: left;
+}
+
+.fides-cookies-table th {
+  text-transform: uppercase;
+}
+
+.fides-cookies-table td,
+.fides-cookies-table th {
+  border: 1px solid var(--fides-overlay-row-divider-color);
+  padding-left: 1.1em;
+  padding-right: 0.6em;
+}
+
+/* General classes */
+.fides-flex-center {
+  display: flex;
+  align-items: center;
 }

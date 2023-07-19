@@ -11,6 +11,7 @@ import {
   useDisclosure,
   useToast,
 } from "@fidesui/react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
@@ -57,14 +58,21 @@ const SystemCard = ({ system }: SystemCardProps) => {
 
   return (
     <Box display="flex" data-testid={`system-${system.fides_key}`}>
-      <Box flexGrow={1} p={4}>
-        <Heading as="h2" fontSize="16px" mb={2}>
-          {systemName}
-        </Heading>
-        <Box color="gray.600" fontSize="14px">
-          <Text>{system.description}</Text>
+      <Link href={`${SYSTEM_ROUTE}/configure/${system.fides_key}`} passHref>
+        <Box
+          flexGrow={1}
+          p={4}
+          data-testid="system-box"
+          _hover={{ cursor: "pointer" }}
+        >
+          <Heading as="h2" fontSize="16px" mb={2}>
+            {systemName}
+          </Heading>
+          <Box color="gray.600" fontSize="14px">
+            <Text>{system.description}</Text>
+          </Box>
         </Box>
-      </Box>
+      </Link>
       <Menu>
         <MenuButton
           as={IconButton}

@@ -8,5 +8,5 @@
 export enum ConsentMethod {
   BUTTON = "button",
   GPC = "gpc",
-  API = "api",
+  INDIVIDUAL_NOTICE = "individual_notice",
 }

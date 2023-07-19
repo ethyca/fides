@@ -18,18 +18,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.urn_registry import (
-    MESSAGING_ACTIVE_DEFAULT,
-    MESSAGING_BY_KEY,
-    MESSAGING_CONFIG,
-    MESSAGING_DEFAULT,
-    MESSAGING_DEFAULT_BY_TYPE,
-    MESSAGING_DEFAULT_SECRETS,
-    MESSAGING_SECRETS,
-    MESSAGING_STATUS,
-    MESSAGING_TEST,
-    V1_URL_PREFIX,
-)
 from fides.api.common_exceptions import (
     MessageDispatchException,
     MessagingConfigNotFoundException,
@@ -68,6 +56,18 @@ from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     MESSAGING_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    MESSAGING_ACTIVE_DEFAULT,
+    MESSAGING_BY_KEY,
+    MESSAGING_CONFIG,
+    MESSAGING_DEFAULT,
+    MESSAGING_DEFAULT_BY_TYPE,
+    MESSAGING_DEFAULT_SECRETS,
+    MESSAGING_SECRETS,
+    MESSAGING_STATUS,
+    MESSAGING_TEST,
+    V1_URL_PREFIX,
 )
 from fides.config.config_proxy import ConfigProxy
 

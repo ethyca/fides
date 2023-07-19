@@ -6,7 +6,7 @@ import pytest
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.schemas.connection_configuration.connection_config import (
+from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
 from fides.api.service.connectors.saas.connector_registry_service import (
@@ -31,7 +31,6 @@ def secondary_sendgrid_instance(db):
     connection_config, dataset_config = instantiate_connector(
         db,
         "sendgrid",
-        "sendgrid_connection_config_secondary",
         "secondary_sendgrid_instance",
         "Sendgrid ConnectionConfig description",
         secrets,
@@ -49,7 +48,6 @@ def secondary_mailchimp_instance(db):
     """
     connection_config, dataset_config = instantiate_mailchimp(
         db,
-        "mailchimp_connection_config_secondary",
         "secondary_mailchimp_instance",
     )
     yield connection_config, dataset_config
@@ -67,7 +65,6 @@ def tertiary_mailchimp_instance(db):
     """
     connection_config, dataset_config = instantiate_mailchimp(
         db,
-        "mailchimp_connection_config_tertiary",
         "tertiary_mailchimp_instance",
     )
     yield connection_config, dataset_config
@@ -75,7 +72,7 @@ def tertiary_mailchimp_instance(db):
     connection_config.delete(db)
 
 
-def instantiate_mailchimp(db, key, fides_key) -> tuple[ConnectionConfig, DatasetConfig]:
+def instantiate_mailchimp(db, fides_key) -> tuple[ConnectionConfig, DatasetConfig]:
     secrets = {
         "domain": "test_mailchimp_domain",
         "username": "test_mailchimp_username",
@@ -84,7 +81,6 @@ def instantiate_mailchimp(db, key, fides_key) -> tuple[ConnectionConfig, Dataset
     return instantiate_connector(
         db,
         "mailchimp",
-        key,
         fides_key,
         "Mailchimp ConnectionConfig description",
         secrets,
@@ -94,10 +90,10 @@ def instantiate_mailchimp(db, key, fides_key) -> tuple[ConnectionConfig, Dataset
 def instantiate_connector(
     db,
     connector_type,
-    key,
     fides_key,
     description,
     secrets,
+    system=None,
 ) -> tuple[ConnectionConfig, DatasetConfig]:
     """
     Helper to genericize instantiation of a SaaS connector
@@ -106,15 +102,14 @@ def instantiate_connector(
         ConnectorTemplate
     ] = ConnectorRegistry.get_connector_template(connector_type)
     template_vals = SaasConnectionTemplateValues(
-        name=key,
-        key=key,
+        key=fides_key,
         description=description,
         secrets=secrets,
         instance_key=fides_key,
     )
 
     connection_config = ConnectionConfig.filter(
-        db=db, conditions=(ConnectionConfig.key == key)
+        db=db, conditions=(ConnectionConfig.key == fides_key)
     ).first()
     assert connection_config is None
 
@@ -140,7 +135,7 @@ def instantiate_connector(
     )
 
     connection_config = ConnectionConfig.filter(
-        db=db, conditions=(ConnectionConfig.key == key)
+        db=db, conditions=(ConnectionConfig.key == fides_key)
     ).first()
     assert connection_config is not None
     dataset_config = DatasetConfig.filter(
@@ -148,4 +143,9 @@ def instantiate_connector(
         conditions=(DatasetConfig.fides_key == fides_key),
     ).first()
     assert dataset_config is not None
+
+    if system:
+        system.connection_configs = connection_config
+        db.commit()
+
     return connection_config, dataset_config

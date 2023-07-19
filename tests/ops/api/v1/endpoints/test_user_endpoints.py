@@ -16,13 +16,6 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import (
-    LOGIN,
-    LOGOUT,
-    USER_DETAIL,
-    USERS,
-    V1_URL_PREFIX,
-)
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -49,6 +42,13 @@ from fides.common.api.scope_registry import (
     USER_PASSWORD_RESET,
     USER_READ,
     USER_UPDATE,
+)
+from fides.common.api.v1.urn_registry import (
+    LOGIN,
+    LOGOUT,
+    USER_DETAIL,
+    USERS,
+    V1_URL_PREFIX,
 )
 from fides.config import CONFIG
 from tests.conftest import generate_auth_header_for_user
@@ -162,6 +162,19 @@ class TestCreateUser:
         assert user.permissions.roles == [
             VIEWER
         ], "User given viewer role by default on create"
+
+    def test_underscore_in_password(
+        self,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+        body = {"username": "test_user", "password": str_to_b64_str("Test_passw0rd")}
+
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        assert HTTP_201_CREATED == response.status_code
 
     def test_create_user_as_root(
         self,

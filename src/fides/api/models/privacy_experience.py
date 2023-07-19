@@ -17,8 +17,12 @@ from fides.api.models.privacy_notice import (
     create_historical_data_from_record,
     update_if_modified,
 )
-from fides.api.models.privacy_preference import CurrentPrivacyPreference
+from fides.api.models.privacy_preference import (
+    CurrentPrivacyPreference,
+    LastServedNotice,
+)
 from fides.api.models.privacy_request import ProvidedIdentity
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
     ConsentMechanism.notice_only,
@@ -243,6 +247,7 @@ class PrivacyExperience(Base):
         self,
         db: Session,
         show_disabled: Optional[bool] = True,
+        systems_applicable: Optional[bool] = False,
         fides_user_provided_identity: Optional[ProvidedIdentity] = None,
     ) -> List[PrivacyNotice]:
         """Return privacy notices that overlap on at least one region
@@ -260,26 +265,27 @@ class PrivacyExperience(Base):
                 PrivacyNotice.disabled.is_(False)
             )
 
+        if systems_applicable:
+            data_uses: set[str] = System.get_data_uses(
+                System.all(db), include_parents=True
+            )
+            privacy_notice_query = privacy_notice_query.filter(PrivacyNotice.data_uses.overlap(data_uses))  # type: ignore
+
         if not fides_user_provided_identity:
             return privacy_notice_query.order_by(PrivacyNotice.created_at.desc()).all()
 
         notices: List[PrivacyNotice] = []
         for notice in privacy_notice_query.order_by(PrivacyNotice.created_at.desc()):
-            saved_preference: Optional[
-                CurrentPrivacyPreference
-            ] = CurrentPrivacyPreference.get_preference_for_notice_and_fides_user_device(
+            cache_saved_preference_on_notice(
                 db=db,
+                notice=notice,
                 fides_user_provided_identity=fides_user_provided_identity,
-                privacy_notice=notice,
             )
-            if saved_preference:
-                # Temporarily cache the preference for the given fides user device id in memory.
-                if saved_preference.preference_matches_latest_version:
-                    notice.current_preference = saved_preference.preference
-                    notice.outdated_preference = None
-                else:
-                    notice.current_preference = None
-                    notice.outdated_preference = saved_preference.preference
+            cache_notice_served(
+                db=db,
+                notice=notice,
+                fides_user_provided_identity=fides_user_provided_identity,
+            )
             notices.append(notice)
 
         return notices
@@ -308,7 +314,7 @@ class PrivacyExperience(Base):
 
     @staticmethod
     def get_experience_by_region_and_component(
-        db: Session, region: PrivacyNoticeRegion, component: ComponentType
+        db: Session, region: str, component: ComponentType
     ) -> Optional[PrivacyExperience]:
         """Load an experience for a given region and component type"""
         return (
@@ -322,7 +328,7 @@ class PrivacyExperience(Base):
 
     @staticmethod
     def get_experiences_by_region(
-        db: Session, region: PrivacyNoticeRegion
+        db: Session, region: str
     ) -> Tuple[Optional[PrivacyExperience], Optional[PrivacyExperience]]:
         """Load both the overlay and privacy center experience for a given region"""
         overlay_experience: Optional[
@@ -418,7 +424,7 @@ def upsert_privacy_experiences_after_notice_update(
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db=db, region=region)
+        ) = PrivacyExperience.get_experiences_by_region(db=db, region=region.value)
 
         privacy_center_notices: Query = get_privacy_notices_by_region_and_component(
             db, region, ComponentType.privacy_center
@@ -503,7 +509,7 @@ def upsert_privacy_experiences_after_config_update(
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, region)
+        ) = PrivacyExperience.get_experiences_by_region(db, region.value)
 
         existing_experience: Optional[PrivacyExperience] = (
             overlay_experience
@@ -531,3 +537,46 @@ def upsert_privacy_experiences_after_config_update(
             )
             linked_regions.append(region)
     return linked_regions, unlinked_regions
+
+
+def cache_saved_preference_on_notice(
+    db: Session, notice: PrivacyNotice, fides_user_provided_identity: ProvidedIdentity
+) -> None:
+    """At runtime, cache any previously saved preference values for the given user on the privacy notice"""
+    saved_preference: Optional[
+        CurrentPrivacyPreference
+    ] = CurrentPrivacyPreference.get_preference_for_notice_and_fides_user_device(
+        db=db,
+        fides_user_provided_identity=fides_user_provided_identity,
+        privacy_notice=notice,
+    )
+    if saved_preference:
+        # Temporarily cache the preference for the given fides user device id in memory.
+        if saved_preference.preference_matches_latest_version:
+            notice.current_preference = saved_preference.preference
+            notice.outdated_preference = None
+        else:
+            notice.current_preference = None
+            notice.outdated_preference = saved_preference.preference
+
+
+def cache_notice_served(
+    db: Session, notice: PrivacyNotice, fides_user_provided_identity: ProvidedIdentity
+) -> None:
+    """At runtime, cache if the current notice or a previous version of the notice was served to the user
+    if applicable"""
+    served_notice: Optional[
+        LastServedNotice
+    ] = LastServedNotice.get_last_served_for_notice_and_fides_user_device(
+        db=db,
+        fides_user_provided_identity=fides_user_provided_identity,
+        privacy_notice=notice,
+    )
+    if served_notice:
+        # Temporarily cache that the notice was served for the given fides user device id in memory.
+        if served_notice.served_latest_version:
+            notice.current_served = True
+            notice.outdated_served = None
+        else:
+            notice.current_served = None
+            notice.outdated_served = True

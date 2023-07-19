@@ -2,12 +2,6 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.urn_registry import (
-    ACCESS_MANUAL_WEBHOOK,
-    ACCESS_MANUAL_WEBHOOKS,
-    CONNECTION_TEST,
-    V1_URL_PREFIX,
-)
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.common.api.scope_registry import (
     CONNECTION_READ,
@@ -15,6 +9,12 @@ from fides.common.api.scope_registry import (
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
     WEBHOOK_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    ACCESS_MANUAL_WEBHOOK,
+    ACCESS_MANUAL_WEBHOOKS,
+    CONNECTION_TEST,
+    V1_URL_PREFIX,
 )
 
 
@@ -98,7 +98,7 @@ class TestGetAccessManualWebhook:
         assert connection_config_details["access"] == "read"
         assert connection_config_details["created_at"] is not None
         assert connection_config_details["updated_at"] is not None
-        assert "secrets" not in connection_config_details
+        assert connection_config_details["secrets"] is None
 
 
 class TestPostAccessManualWebhook:
@@ -349,7 +349,7 @@ class TestPostAccessManualWebhook:
         assert connection_config_details["access"] == "read"
         assert connection_config_details["created_at"] is not None
         assert connection_config_details["updated_at"] is not None
-        assert "secrets" not in connection_config_details
+        assert connection_config_details["secrets"] is None
 
         manual_webhook = AccessManualWebhook.get(db=db, object_id=resp["id"])
         manual_webhook.delete(db)
@@ -441,7 +441,7 @@ class TestPatchAccessManualWebhook:
         assert connection_config_details["access"] == "read"
         assert connection_config_details["created_at"] is not None
         assert connection_config_details["updated_at"] is not None
-        assert "secrets" not in connection_config_details
+        assert connection_config_details["secrets"] is None
 
 
 class TestDeleteAccessManualWebhook:
@@ -564,7 +564,7 @@ class TestGetAccessManualWebhooks:
         assert connection_config_details["access"] == "read"
         assert connection_config_details["created_at"] is not None
         assert connection_config_details["updated_at"] is not None
-        assert "secrets" not in connection_config_details
+        assert connection_config_details["secrets"] is None
 
 
 class TestManualWebhookTest:

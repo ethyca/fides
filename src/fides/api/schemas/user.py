@@ -46,7 +46,7 @@ class UserCreate(FidesSchema):
             raise ValueError("Password must have at least one capital letter.")
         if re.search("[a-z]", decoded_password) is None:
             raise ValueError("Password must have at least one lowercase letter.")
-        if re.search(r"[\W]", decoded_password) is None:
+        if re.search(r"[\W_]", decoded_password) is None:
             raise ValueError("Password must have at least one symbol.")
 
         return decoded_password
