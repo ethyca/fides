@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.16.1b0.post0.dev3"
+    "version": "2.16.1b0.post0.dev4"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3391,6 +3391,46 @@
           }
         ]
       },
+      "delete": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Delete Connection",
+        "operationId": "delete_connection_api_v1_system__fides_key__connection_delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:delete"
+            ]
+          }
+        ]
+      },
       "patch": {
         "tags": [
           "System"
@@ -3567,58 +3607,6 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "connection:create_or_update"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/system/{fides_key}/connection/{connection_key}": {
-      "delete": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Delete Connection",
-        "operationId": "delete_connection_api_v1_system__fides_key__connection__connection_key__delete",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.<>-]+$",
-              "type": "string"
-            },
-            "name": "connection_key",
-            "in": "path"
-          },
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "connection:delete"
             ]
           }
         ]
