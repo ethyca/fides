@@ -98,7 +98,7 @@ class TestGetAccessManualWebhook:
         assert connection_config_details["access"] == "read"
         assert connection_config_details["created_at"] is not None
         assert connection_config_details["updated_at"] is not None
-        assert "secrets" not in connection_config_details
+        assert connection_config_details["secrets"] is None
 
 
 class TestPostAccessManualWebhook:
@@ -349,7 +349,7 @@ class TestPostAccessManualWebhook:
         assert connection_config_details["access"] == "read"
         assert connection_config_details["created_at"] is not None
         assert connection_config_details["updated_at"] is not None
-        assert "secrets" not in connection_config_details
+        assert connection_config_details["secrets"] is None
 
         manual_webhook = AccessManualWebhook.get(db=db, object_id=resp["id"])
         manual_webhook.delete(db)
@@ -441,7 +441,7 @@ class TestPatchAccessManualWebhook:
         assert connection_config_details["access"] == "read"
         assert connection_config_details["created_at"] is not None
         assert connection_config_details["updated_at"] is not None
-        assert "secrets" not in connection_config_details
+        assert connection_config_details["secrets"] is None
 
 
 class TestDeleteAccessManualWebhook:
@@ -564,7 +564,7 @@ class TestGetAccessManualWebhooks:
         assert connection_config_details["access"] == "read"
         assert connection_config_details["created_at"] is not None
         assert connection_config_details["updated_at"] is not None
-        assert "secrets" not in connection_config_details
+        assert connection_config_details["secrets"] is None
 
 
 class TestManualWebhookTest:

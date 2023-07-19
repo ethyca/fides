@@ -6,16 +6,14 @@ import {
   CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
   useGetConnectionConfigDatasetConfigsQuery,
-  useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
 import { useDatasetConfigField } from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
   CreateSaasConnectionConfigRequest,
   CreateSaasConnectionConfigResponse,
-  DatastoreConnectionSecretsRequest,
   DatastoreConnectionSecretsResponse,
 } from "datastore-connections/types";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
@@ -24,10 +22,12 @@ import { formatKey } from "~/features/datastore-connections/system_portal_config
 import TestConnectionMessage from "~/features/datastore-connections/system_portal_config/TestConnectionMessage";
 import TestData from "~/features/datastore-connections/TestData";
 import {
+  ConnectionConfigSecretsRequest,
   selectActiveSystem,
   setActiveSystem,
   useDeleteSystemConnectionConfigMutation,
   usePatchSystemConnectionConfigsMutation,
+  usePatchSystemConnectionSecretsMutation,
 } from "~/features/system/system.slice";
 import {
   AccessLevel,
@@ -69,7 +69,7 @@ const createSaasConnector = async (
   };
 
   Object.entries(secretsSchema!.properties).forEach((key) => {
-    params.connectionConfig.secrets[key[0]] = values[key[0]];
+    params.connectionConfig.secrets[key[0]] = values.secrets[key[0]];
   });
   return (await createSaasConnectorFunc(
     params
@@ -124,18 +124,32 @@ export const patchConnectionConfig = async (
 const upsertConnectionConfigSecrets = async (
   values: ConnectionConfigFormValues,
   secretsSchema: ConnectionTypeSecretSchemaReponse,
-  connectionConfigFidesKey: string,
-  upsertFunc: any
+  systemFidesKey: string,
+  originalSecrets: Record<string, string>,
+  patchFunc: any
 ) => {
-  const params2: DatastoreConnectionSecretsRequest = {
-    connection_key: connectionConfigFidesKey,
+  const params2: ConnectionConfigSecretsRequest = {
+    systemFidesKey,
     secrets: {},
   };
   Object.entries(secretsSchema!.properties).forEach((key) => {
-    params2.secrets[key[0]] = values[key[0]];
+    /*
+     * Only patch secrets that have changed. Otherwise, sensitive secrets
+     * would get overwritten with "**********" strings
+     */
+    if (
+      !(key[0] in originalSecrets) ||
+      values.secrets[key[0]] !== originalSecrets[key[0]]
+    ) {
+      params2.secrets[key[0]] = values.secrets[key[0]];
+    }
   });
 
-  return (await upsertFunc(
+  if (Object.keys(params2.secrets).length === 0) {
+    return Promise.resolve();
+  }
+
+  return (await patchFunc(
     params2
   ).unwrap()) as DatastoreConnectionSecretsResponse;
 };
@@ -180,8 +194,8 @@ export const useConnectorForm = ({
   });
 
   const [createSassConnectionConfig] = useCreateSassConnectionConfigMutation();
-  const [updateDatastoreConnectionSecrets] =
-    useUpdateDatastoreConnectionSecretsMutation();
+  const [updateSystemConnectionSecrets] =
+    usePatchSystemConnectionSecretsMutation();
   const [patchDatastoreConnection] = usePatchSystemConnectionConfigsMutation();
   const [deleteDatastoreConnection, deleteDatastoreConnectionResult] =
     useDeleteSystemConnectionConfigMutation();
@@ -189,6 +203,10 @@ export const useConnectorForm = ({
     connectionConfig?.key || ""
   );
 
+  const originalSecrets = useMemo(
+    () => (connectionConfig ? { ...connectionConfig.secrets } : {}),
+    [connectionConfig]
+  );
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
 
   const handleDelete = async () => {
@@ -248,8 +266,9 @@ export const useConnectorForm = ({
           await upsertConnectionConfigSecrets(
             secretsPayload,
             secretsSchema!,
-            payload.succeeded[0].key,
-            updateDatastoreConnectionSecrets
+            systemFidesKey,
+            originalSecrets,
+            updateSystemConnectionSecrets
           );
         }
       }
