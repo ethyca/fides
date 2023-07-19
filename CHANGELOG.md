@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.17.0...main)
 
+### Fixed
+- Fix datamap zoom for low system counts [#3835](https://github.com/ethyca/fides/pull/3835)
+
 ## [2.17.0](https://github.com/ethyca/fides/compare/2.16.0...2.17.0)
 
 ### Added
