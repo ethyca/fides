@@ -207,6 +207,8 @@ def delete_connection(fides_key: str, *, db: Session = Depends(deps.get_db)) -> 
             detail="No integration found linked to this system",
         )
 
+    # system.connection_configs will temporarily only have one config
+    # it will be updated to have multiple configs in the future
     delete_connection_config(db, system.connection_configs.key)
 
 
