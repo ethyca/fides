@@ -82,6 +82,10 @@ The types of changes are:
 - In "view systems", system cards can now be clicked and link to that system's `configure/[id]` page [#3734](https://github.com/ethyca/fides/pull/3734)
 - Enable privacy notice and privacy experience feature flags by default [#3773](https://github.com/ethyca/fides/pull/3773)
 
+### Security
+- Resolve Zip bomb file upload vulnerability [CVE-2023-37480](https://github.com/ethyca/fides/security/advisories/GHSA-g95c-2jgm-hqc6)
+- Resolve SVG bomb (billion laughs) file upload vulnerability [CVE-2023-37481](https://github.com/ethyca/fides/security/advisories/GHSA-3rw2-wfc8-wmj5)
+
 ## [2.15.1](https://github.com/ethyca/fides/compare/2.15.0...2.15.1)
 
 ### Added
