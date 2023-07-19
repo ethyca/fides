@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.0" id="katman_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 800 600" style="enable-background:new 0 0 800 600;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#D8276C;}
+	.st1{fill:#1D1D1B;}
+</style>
+<path class="st0" d="M177.5,360v1.9h24.4l0,0l0,0v-24.3l0,0v-0.1h-24.4V358c0,0.6,0,1.2,0,1.8C177.5,359.9,177.5,360,177.5,360z"/>
+<path class="st0" d="M78.3,337.5l7.4,7.2l17.4,18v-25.3h74.4v-25h-74.3c-0.7-0.2-24.9-24.8-24.9-24.8V337.5z"/>
+<path class="st0" d="M102.7,240.2v-1.8H78.3l0,0l0,0v24.3l0,0v0.1h24.4v-20.6c0-0.6,0-1.2,0-1.8
+	C102.7,240.4,102.7,240.3,102.7,240.2z"/>
+<path class="st0" d="M201.9,262.8l-7.4-7.2l-17.4-18v25.2h-74.4v25.1H177c0.7,0.3,24.9,24.8,24.9,24.8V262.8z"/>
+</svg>
