@@ -1,9 +1,14 @@
 import { h, VNode } from "preact";
 import { Attributes } from "../lib/a11y-dialog";
-import { PrivacyNotice, ExperienceConfig } from "../lib/consent-types";
+import {
+  PrivacyNotice,
+  ExperienceConfig,
+  FidesOptions,
+} from "../lib/consent-types";
 import NoticeToggles from "./NoticeToggles";
 import CloseButton from "./CloseButton";
 import GpcInfo from "./GpcInfo";
+import TcfTabs from "./TcfTabs";
 
 type NoticeKeys = Array<PrivacyNotice["notice_key"]>;
 
@@ -14,6 +19,7 @@ const ConsentModal = ({
   enabledNoticeKeys,
   onChange,
   buttonGroup,
+  options,
 }: {
   attributes: Attributes;
   experience: ExperienceConfig;
@@ -22,8 +28,10 @@ const ConsentModal = ({
   onClose: () => void;
   onChange: (enabledNoticeKeys: NoticeKeys) => void;
   buttonGroup: VNode;
+  options: FidesOptions;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
+  const showTcf = options.tcfEnabled;
 
   return (
     // @ts-ignore A11yDialog ref obj type isn't quite the same
@@ -53,13 +61,17 @@ const ConsentModal = ({
           {experience.description}
         </p>
         <GpcInfo />
-        <div className="fides-modal-notices">
-          <NoticeToggles
-            notices={notices}
-            enabledNoticeKeys={enabledNoticeKeys}
-            onChange={onChange}
-          />
-        </div>
+        {showTcf ? (
+          <TcfTabs />
+        ) : (
+          <div className="fides-modal-notices">
+            <NoticeToggles
+              notices={notices}
+              enabledNoticeKeys={enabledNoticeKeys}
+              onChange={onChange}
+            />
+          </div>
+        )}
         {buttonGroup}
         {experience.privacy_policy_link_label &&
         experience.privacy_policy_url ? (

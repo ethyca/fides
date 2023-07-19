@@ -12,7 +12,7 @@ import type { SaaSConfigBase } from "./SaaSConfigBase";
  * Do *NOT* add "secrets" to this schema.
  */
 export type ConnectionConfigurationResponse = {
-  name: string;
+  name?: string;
   key: string;
   description?: string;
   connection_type: ConnectionType;
@@ -23,4 +23,5 @@ export type ConnectionConfigurationResponse = {
   last_test_timestamp?: string;
   last_test_succeeded?: boolean;
   saas_config?: SaaSConfigBase;
+  secrets?: object;
 };

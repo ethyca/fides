@@ -1,3 +1,6 @@
+from unittest import mock
+from unittest.mock import Mock
+
 import pytest
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 from starlette.testclient import TestClient
@@ -46,11 +49,25 @@ class TestApiRouter:
         )
         assert resp_4.status_code == HTTP_404_NOT_FOUND
 
+    @mock.patch("fides.api.main.get_admin_index_as_response")
     def test_malicious_url(
         self,
+        mock_admin_index_response: Mock,
         api_client: TestClient,
         url,
     ) -> None:
+        """
+        Assert that malicious URLs that attempt path traversal attacks
+        are NOT treated as legitimate URLs, and instead the basic "admin" index
+        response is returned.
+        """
+
+        # admin index response changes depending on environment.
+        # we mock the value here to give ourselves a consistent response to evaluate against.
+        # what we want to ensure is that the admin index response is what gets returned,
+        # indicating that the attempted path traversal does not occur.
+        mock_admin_index_response.return_value = "<h1>Privacy is a Human Right!</h1>"
+
         malicious_paths = [
             "../../../../../../../../../etc/passwd",
             "..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc/passwd",

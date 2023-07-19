@@ -1459,19 +1459,23 @@ class TestGetActiveDefaultMessagingConfig:
         url,
         api_client: TestClient,
         generate_auth_header,
+        loguru_caplog,
     ):
         """
         This is contrived and should not be able to occur, but here we test what happens
         if somehow the `notifications.notification_service_type` config property is set
         to an invalid value.
         """
+
+        error_message = "Unknown notification_service_type"
         auth_header = generate_auth_header([MESSAGING_READ])
-        with pytest.raises(ValueError) as e:
-            api_client.get(
-                url,
-                headers=auth_header,
-            )
-        assert "Unknown notification_service_type" in str(e)
+        api_client.get(
+            url,
+            headers=auth_header,
+        )
+
+        assert "ERROR" in loguru_caplog.text
+        assert error_message in loguru_caplog.text
 
     @pytest.mark.usefixtures("notification_service_type_mailgun")
     def test_get_active_default_config(

@@ -2,7 +2,7 @@ import pytest
 
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.models.policy import ActionType
-from fides.api.schemas.connection_configuration.connection_config import SystemType
+from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
