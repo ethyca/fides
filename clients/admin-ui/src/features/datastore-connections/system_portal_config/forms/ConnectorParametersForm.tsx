@@ -68,7 +68,7 @@ type ConnectorParametersFormProps = {
   connectionOption: ConnectionSystemTypeMap;
   isCreatingConnectionConfig: boolean;
   datasetDropdownOptions: Option[];
-  onDelete: (id: string) => void;
+  onDelete: () => void;
   deleteResult: any;
 };
 
