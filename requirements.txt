@@ -36,7 +36,7 @@ pydantic==1.10.9
 pydash==6.0.2
 PyJWT==2.4.0
 pymongo==3.13.0
-pymssql @ git+https://github.com/pymssql/pymssql.git@537307c8afb730f741d906688f7b60d479d2272a # pinned to (hopefully temporarily!) work around https://github.com/pymssql/pymssql/issues/826, see https://github.com/pymssql/pymssql/pull/803
+pymssql @ git+https://github.com/pymssql/pymssql.git@448a21448194f4e644493a9d84ea0684c9f6a19c # pinned to (hopefully temporarily!) work around https://github.com/pymssql/pymssql/issues/826, see https://github.com/pymssql/pymssql/pull/827
 PyMySQL==1.0.2
 python-jose[cryptography]==3.3.0
 pyyaml>=5,<7
