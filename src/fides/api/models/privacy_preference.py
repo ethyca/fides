@@ -176,6 +176,12 @@ class ConsentReportingMixin:
 
     tcf_version = Column(String)
 
+    @property
+    def privacy_notice_id(self) -> Optional[str]:
+        if self.privacy_notice_history:
+            return self.privacy_notice_history.privacy_notice_id
+        return None
+
     # Relationships
     @declared_attr
     def privacy_notice_history(cls) -> relationship:
@@ -192,16 +198,15 @@ class ConsentReportingMixin:
         )
 
     @property
-    def preference_type(self) -> Optional[PreferenceType]:
+    def preference_type(self) -> PreferenceType:
         if self.privacy_notice_history_id:
             return PreferenceType.privacy_notice_id
         if self.data_use:
             return PreferenceType.data_use
         if self.vendor:
             return PreferenceType.vendor
-        if self.feature:
-            return PreferenceType.feature
-        return None
+
+        return PreferenceType.feature
 
 
 class ServingComponent(Enum):
@@ -243,10 +248,8 @@ def _validate_before_saving_consent_history(
 
     if (
         sum(
-            [
-                item is not None
-                for item in [privacy_notice_history, data_use, vendor, feature]
-            ]
+            item is not None
+            for item in [privacy_notice_history, data_use, vendor, feature]
         )
         != 1
     ):
@@ -737,16 +740,9 @@ def upsert_last_saved_record(
         Union[CurrentPrivacyPreference, LastServedNotice]
     ] = None
 
-    record_type_mapping = {
-        PreferenceType.privacy_notice_id: "privacy_notice_history_id",
-        PreferenceType.data_use: "data_use",
-        PreferenceType.vendor: "vendor",
-        PreferenceType.feature: "feature",
-    }
-    constraint_field = record_type_mapping.get(
-        created_historical_record.preference_type
+    field_val = getattr(
+        created_historical_record, created_historical_record.preference_type.value
     )
-    field_val = getattr(created_historical_record, constraint_field)
 
     # Check if we have "current" records for the ProvidedIdentity (usu an email or phone)/Privacy Notice
     if created_historical_record.provided_identity_id:
@@ -755,7 +751,10 @@ def upsert_last_saved_record(
             .filter(
                 current_record_class.provided_identity_id
                 == created_historical_record.provided_identity_id,
-                current_record_class.__table__.c[constraint_field] == field_val,
+                current_record_class.__table__.c[
+                    created_historical_record.preference_type.value
+                ]
+                == field_val,
             )
             .first()
         )
@@ -770,7 +769,10 @@ def upsert_last_saved_record(
             .filter(
                 current_record_class.fides_user_device_provided_identity_id
                 == created_historical_record.fides_user_device_provided_identity_id,
-                current_record_class.__table__.c[constraint_field] == field_val,
+                current_record_class.__table__.c[
+                    created_historical_record.preference_type.value
+                ]
+                == field_val,
             )
             .first()
         )

@@ -25,7 +25,7 @@ router = APIRouter(tags=["Consent Settings"], prefix=urls.V1_URL_PREFIX)
 def get_consent_settings(*, db: Session = Depends(deps.get_db)) -> ConsentSettings:
     """Returns organization-wide consent settings."""
     logger.info("Getting organization-wide consent settings")
-    return db.query(ConsentSettings).first()
+    return ConsentSettings.get_or_create_with_defaults(db)
 
 
 @router.patch(
@@ -40,9 +40,5 @@ def patch_consent_settings(
 ) -> ConsentSettings:
     """Update organization-wide consent settings. Only the single record is updated."""
     logger.info("Getting organization-wide consent settings")
-    consent_settings_record = db.query(ConsentSettings).first()
-    if not consent_settings_record:
-        consent_settings_record = ConsentSettings.create(
-            db, data={"tcf_enabled": False}
-        )
-    return consent_settings_record.update(db=db, data=data.dict())
+    consent_settings_record = ConsentSettings.get_or_create_with_defaults(db)
+    return consent_settings_record.update(db=db, data=data.dict())  # type: ignore[return-value]

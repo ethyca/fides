@@ -253,7 +253,7 @@ def create_default_consent_settings() -> None:
     logger.info("Loading default Consent Settings")
     try:
         db = get_api_session()
-        ConsentSettings.get_or_create(db)
+        ConsentSettings.get_or_create_with_defaults(db)
     except Exception as e:
         logger.error("Skipping loading default consent settings: {}", str(e))
     finally:

@@ -1,6 +1,6 @@
 from functools import lru_cache
 from os.path import dirname, join
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Tuple
 
 import yaml
 from sqlalchemy import or_
@@ -9,7 +9,10 @@ from sqlalchemy.orm import Session
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
-from fides.api.models.sql_models import PrivacyDeclaration, System
+from fides.api.models.sql_models import (  # type:ignore[attr-defined]
+    PrivacyDeclaration,
+    System,
+)
 from fides.api.schemas.privacy_notice import TCFConsentRecord, TCFVendorConsentRecord
 from fides.config.helpers import load_file
 
@@ -22,7 +25,7 @@ TCF_PATH = join(
 
 @lru_cache()
 def load_tcf_data_uses(
-    db,
+    db: Session,
 ) -> Tuple[List[TCFConsentRecord], List[TCFVendorConsentRecord]]:
     """
     Load TCF Data uses from TCF_PATH and then return data uses that are parents/exact matches
@@ -89,7 +92,7 @@ def load_tcf_data_uses(
     ], list(system_map.values())
 
 
-EEA_COUNTRIES = [
+EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
     PrivacyNoticeRegion.be,
     PrivacyNoticeRegion.bg,
     PrivacyNoticeRegion.cz,
@@ -123,15 +126,17 @@ EEA_COUNTRIES = [
     PrivacyNoticeRegion.gb_wls,
     PrivacyNoticeRegion.gb_nir,
     PrivacyNoticeRegion.no,
-    "is",
+    PrivacyNoticeRegion["is"],
     PrivacyNoticeRegion.li,
 ]
 
 
-def create_tcf_experiences_on_startup(db: Session):
+def create_tcf_experiences_on_startup(db: Session) -> None:
     for region in EEA_COUNTRIES:
         if not PrivacyExperience.get_experience_by_region_and_component(
-            db, region, ComponentType.tcf_overlay
+            db,
+            region.value,
+            ComponentType.tcf_overlay,
         ):
             PrivacyExperience.create_default_experience_for_region(
                 db, region, ComponentType.tcf_overlay

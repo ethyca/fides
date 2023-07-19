@@ -97,7 +97,7 @@ def _filter_experiences_by_region_or_country(
         experience_ids.append(privacy_center.id)
 
     # Only return TCF overlay or a regular overlay here; not both
-    consent_settings = ConsentSettings.get_or_create(db)
+    consent_settings = ConsentSettings.get_or_create_with_defaults(db)
     if consent_settings.tcf_enabled and tcf_overlay:
         experience_ids.append(tcf_overlay.id)
     else:
@@ -182,7 +182,7 @@ def privacy_experience_list(
         )
 
     results: List[PrivacyExperience] = []
-    should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
+    should_unescape: Optional[str] = request.headers.get(UNESCAPE_SAFESTR_HEADER)
     for privacy_experience in experience_query.order_by(
         PrivacyExperience.created_at.desc()
     ):
@@ -223,8 +223,8 @@ def embed_experience_details(
     show_disabled: Optional[bool],
     systems_applicable: Optional[bool],
     fides_user_provided_identity: Optional[ProvidedIdentity],
-    should_unescape: Optional[bool],
-):
+    should_unescape: Optional[str],
+) -> None:
     """At runtime, embed relevant privacy notices, tcf_data_uses, tcf_vendors,
     and tcf_features into the response body for the given Experience"""
     privacy_experience.privacy_notices = []

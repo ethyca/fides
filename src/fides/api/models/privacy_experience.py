@@ -547,7 +547,7 @@ def upsert_privacy_experiences_after_config_update(
 def cache_saved_and_served_on_consent_record(
     db: Session,
     consent_record: Union[PrivacyNotice, TCFConsentRecord],
-    fides_user_provided_identity: ProvidedIdentity,
+    fides_user_provided_identity: Optional[ProvidedIdentity],
     preference_type: PreferenceType,
 ) -> None:
     """For display purposes, cache whether the resource was served to the given user and/or the user has saved

@@ -325,7 +325,7 @@ def connection_status(
 
     connector = get_connector(connection_config)
     try:
-        status: ConnectionTestStatus | None = connector.test_connection()
+        status: Optional[ConnectionTestStatus] = connector.test_connection()
 
     except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(

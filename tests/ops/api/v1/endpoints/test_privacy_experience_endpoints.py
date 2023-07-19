@@ -643,7 +643,7 @@ class TestGetTCFPrivacyExperiences:
     def test_tcf_enabled(
         self, db, api_client, url, privacy_experience_france_tcf_overlay
     ):
-        settings = ConsentSettings.get_or_create(db)
+        settings = ConsentSettings.get_or_create_with_defaults(db)
         settings.update(db=db, data={"tcf_enabled": True})
         resp = api_client.get(
             url + "?region=fr",
@@ -661,6 +661,7 @@ class TestGetTCFPrivacyExperiences:
         "privacy_experience_france_overlay",
         "privacy_preference_history_for_tcf_data_use",
         "served_notice_history_for_data_use",
+        "fides_user_provided_identity",
     )
     def test_tcf_enabled_with_overlapping_systems(
         self,
@@ -669,7 +670,6 @@ class TestGetTCFPrivacyExperiences:
         url,
         privacy_experience_france_tcf_overlay,
         tcf_system,
-        fides_user_provided_identity,
     ):
         secrets = {
             "domain": "test_sendgrid_domain",
@@ -685,7 +685,7 @@ class TestGetTCFPrivacyExperiences:
         connection_config.system_id = tcf_system.id
         connection_config.save(db)
 
-        settings = ConsentSettings.get_or_create(db)
+        settings = ConsentSettings.get_or_create_with_defaults(db)
         settings.update(db=db, data={"tcf_enabled": True})
         resp = api_client.get(
             url
@@ -756,7 +756,7 @@ class TestFilterExperiencesByRegionOrCountry:
     def test_tcf_overlay_returned_when_tcf_enabled(
         self, db, privacy_experience_france_tcf_overlay
     ):
-        consent_settings = ConsentSettings.get_or_create(db)
+        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
         consent_settings.update(db=db, data={"tcf_enabled": True})
 
         resp = _filter_experiences_by_region_or_country(
@@ -769,7 +769,7 @@ class TestFilterExperiencesByRegionOrCountry:
         "privacy_experience_france_overlay", "privacy_experience_france_tcf_overlay"
     )
     def test_tcf_enabled_but_we_are_not_in_eea(self, db, privacy_experience_overlay):
-        consent_settings = ConsentSettings.get_or_create(db)
+        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
         consent_settings.update(db=db, data={"tcf_enabled": True})
 
         resp = _filter_experiences_by_region_or_country(

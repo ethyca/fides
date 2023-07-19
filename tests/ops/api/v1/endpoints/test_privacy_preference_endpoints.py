@@ -1360,7 +1360,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         """Assert CurrentPrivacyPreference records were updated and PrivacyPreferenceHistory records were created
         for recordkeeping with respect to the fides user device id in the request
         """
-        consent_settings = ConsentSettings.get_or_create(db)
+        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
         consent_settings.tcf_enabled = True
         consent_settings.save(db=db)
 

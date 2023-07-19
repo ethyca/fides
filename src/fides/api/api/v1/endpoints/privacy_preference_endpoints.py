@@ -40,6 +40,7 @@ from fides.api.models.privacy_preference import (
     LastServedNotice,
     PreferenceType,
     PrivacyPreferenceHistory,
+    RequestOrigin,
     ServedNoticeHistory,
 )
 from fides.api.models.privacy_request import (
@@ -201,8 +202,8 @@ def verify_previously_served_records(
         preference_item: Union[ConsentOptionCreate, TCFPreferenceSave],
         notice_field_name: str,
         preference_field_name: str,
-        preference_type,
-    ):
+        name_for_log: str,
+    ) -> None:
         if preference_item.served_notice_history_id:
             served_notice_history: ServedNoticeHistory = get_served_notice_history(
                 db, preference_item.served_notice_history_id
@@ -212,7 +213,7 @@ def verify_previously_served_records(
             ):
                 raise HTTPException(
                     status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=f"The ServedNoticeHistory record '{served_notice_history.id}' did not serve the {preference_type} '{getattr(preference_item, preference_field_name)}'.",
+                    detail=f"The ServedNoticeHistory record '{served_notice_history.id}' did not serve the {name_for_log} '{getattr(preference_item, preference_field_name)}'.",
                 )
 
     for preference in data.preferences:
@@ -394,13 +395,13 @@ def persist_tcf_preferences(
     user_data: Dict[str, str],
     request_data: PrivacyPreferencesRequest,
     upserted_current_preferences: List[CurrentPrivacyPreference],
-):
+) -> None:
     """Save TCF preferences with respect to data use, vendor, or feature if applicable.
 
     All TCF Preferences have frontend-only enforcement at the moment, so no Privacy Requests
-    are created to propagate consent.
+    are created to propagate consent. The upserted_current_preferences list is updated in place.
     """
-    consent_settings = ConsentSettings.get_or_create(db)
+    consent_settings = ConsentSettings.get_or_create_with_defaults(db)
     if not consent_settings.tcf_enabled:
         return
 
@@ -451,8 +452,6 @@ def persist_tcf_preferences(
             )
         )
 
-    return upserted_current_preferences
-
 
 def update_request_body_for_consent_served_or_saved(
     db: Session,
@@ -461,7 +460,7 @@ def update_request_body_for_consent_served_or_saved(
     request: Request,
     original_request_data: Union[PrivacyPreferencesRequest, NoticesServedRequest],
     resource_type: Union[Type[PrivacyPreferencesCreate], Type[NoticesServedCreate]],
-) -> Dict[str, str]:
+) -> Dict[str, Union[Optional[RequestOrigin], Optional[str]]]:
     """Build a starting payload to save that consent was served or saved for a given user"""
 
     request_data = _supplement_request_data_from_request_headers(
@@ -644,7 +643,9 @@ def save_consent_served_for_identities(
     )
     common_data["serving_component"] = original_request_data.serving_component
 
-    def save_consent_served(identifiers: List[str], field_name: PreferenceType):
+    def save_consent_served(
+        identifiers: List[SafeStr], field_name: PreferenceType
+    ) -> None:
         """Internal helper for creating a ServedNoticeHistory record for various types
         of preferences"""
         for identifier in identifiers:
