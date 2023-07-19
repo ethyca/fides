@@ -154,6 +154,11 @@ const CytoscapeGraph = ({
     };
     if (datamapGraphRef.current) {
       datamapGraphRef.current.on("click", "node", setNode);
+      datamapGraphRef.current.on("layoutstop", ()=>{
+        datamapGraphRef.current.maxZoom(2.5);
+        datamapGraphRef.current.fit();
+        datamapGraphRef.current.maxZoom(100);
+      })
     }
 
     return () => {
@@ -202,6 +207,7 @@ const CytoscapeGraph = ({
               datamapGraphRef.current = cy;
             }
           }}
+          maxZoom={1}
           elements={elements}
           style={{ height: "100%", width: "100%", backgroundColor }}
           stylesheet={styleSheet}
