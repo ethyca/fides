@@ -13,6 +13,7 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
+  Spacer,
   Tooltip,
   VStack,
 } from "@fidesui/react";
@@ -67,7 +68,7 @@ type ConnectorParametersFormProps = {
   connectionOption: ConnectionSystemTypeMap;
   isCreatingConnectionConfig: boolean;
   datasetDropdownOptions: Option[];
-  onDelete: (id: string) => void;
+  onDelete: () => void;
   deleteResult: any;
 };
 
@@ -171,6 +172,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               {item.type !== "integer" && (
                 <Input
                   {...field}
+                  type={item.sensitive ? "password" : "text"}
                   placeholder={getPlaceholder(item)}
                   autoComplete="off"
                   color="gray.700"
@@ -184,7 +186,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   onChange={(value) => {
                     form.setFieldValue(field.name, value);
                   }}
-                  defaultValue={field.value ?? 0}
+                  value={field.value ?? 0}
                   min={0}
                   size="sm"
                 >
@@ -278,6 +280,24 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {(props: FormikProps<Values>) => (
         <Form noValidate>
           <VStack align="stretch" gap="16px">
+            <ButtonGroup size="sm" spacing="8px" variant="outline">
+              {connectionConfig ? (
+                <DisableConnectionModal
+                  connection_key={connectionConfig?.key}
+                  disabled={isDisabledConnection}
+                  connection_type={connectionConfig?.connection_type}
+                  access_type={connectionConfig?.access}
+                  name={connectionConfig?.name ?? connectionConfig.key}
+                  isSwitch
+                />
+              ) : null}
+              {connectionConfig ? (
+                <DeleteConnectionModal
+                  onDelete={onDelete}
+                  deleteResult={deleteResult}
+                />
+              ) : null}
+            </ButtonGroup>
             {/* Connection Identifier */}
             <Field
               id="instance_key"
@@ -345,7 +365,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             ) : null}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
-                colorScheme="gray.700"
                 isDisabled={
                   !connectionConfig?.key ||
                   isSubmitting ||
@@ -361,6 +380,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               {connectionOption.type === SystemType.MANUAL ? (
                 <DSRCustomizationModal connectionConfig={connectionConfig} />
               ) : null}
+              <Spacer />
               <Button
                 bg="primary.800"
                 color="white"
@@ -375,23 +395,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               >
                 Save
               </Button>
-              {connectionConfig ? (
-                <DisableConnectionModal
-                  connection_key={connectionConfig?.key}
-                  disabled={isDisabledConnection}
-                  connection_type={connectionConfig?.connection_type}
-                  access_type={connectionConfig?.access}
-                  name={connectionConfig?.name ?? connectionConfig.key}
-                  isSwitch
-                />
-              ) : null}
-              {connectionConfig ? (
-                <DeleteConnectionModal
-                  connectionKey={connectionConfig.key}
-                  onDelete={onDelete}
-                  deleteResult={deleteResult}
-                />
-              ) : null}
             </ButtonGroup>
           </VStack>
         </Form>

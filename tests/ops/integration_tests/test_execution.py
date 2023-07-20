@@ -618,8 +618,8 @@ async def test_restart_graph_from_failure(
         )
     assert exc.value.__class__ == ValidationError
     assert (
-        exc.value.errors()[0]["msg"]
-        == "MongoDBSchema must be supplied a 'url' or all of: ['host']."
+        "MongoDBSchema must be supplied all of: ['host', 'username', 'password', 'defaultauthdb']"
+        in str(exc.value)
     )
 
     execution_logs = get_sorted_execution_logs(db, privacy_request)

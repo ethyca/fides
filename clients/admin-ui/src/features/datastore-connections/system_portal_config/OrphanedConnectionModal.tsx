@@ -112,9 +112,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
         loadingText="Deleting"
         onClick={onOpen}
         size="sm"
-        variant="solid"
-        color="white"
-        colorScheme="primary"
+        variant="outline"
       >
         Link integration
       </Button>

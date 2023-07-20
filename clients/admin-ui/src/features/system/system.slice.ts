@@ -115,7 +115,7 @@ const systemApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: secrets,
       }),
-      invalidatesTags: () => ["Datastore Connection"],
+      invalidatesTags: () => ["System", "Datastore Connection"],
     }),
     getSystemConnectionConfigs: build.query<
       ConnectionConfigurationResponse[],
@@ -125,6 +125,13 @@ const systemApi = baseApi.injectEndpoints({
         url: `/system/${systemFidesKey}/connection`,
       }),
       providesTags: ["Datamap", "System", "Datastore Connection"],
+    }),
+    deleteSystemConnectionConfig: build.mutation({
+      query: (systemFidesKey) => ({
+        url: `/system/${systemFidesKey}/connection`,
+        method: "DELETE",
+      }),
+      invalidatesTags: () => ["Datastore Connection", "System"],
     }),
   }),
 });
@@ -137,6 +144,7 @@ export const {
   useDeleteSystemMutation,
   useUpsertSystemsMutation,
   usePatchSystemConnectionConfigsMutation,
+  useDeleteSystemConnectionConfigMutation,
   useGetSystemConnectionConfigsQuery,
   usePatchSystemConnectionSecretsMutation,
 } = systemApi;

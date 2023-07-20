@@ -20,6 +20,11 @@ from .application_fixtures import integration_secrets
 
 
 @pytest.fixture(scope="function")
+def mariadb_example_secrets():
+    return integration_secrets["mariadb_example"]
+
+
+@pytest.fixture(scope="function")
 def connection_config_mariadb(db: Session) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
