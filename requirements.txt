@@ -6,6 +6,7 @@ boto3==1.26.1
 celery[pytest]==5.2.7
 colorama>=0.4.3
 cryptography==38.0.3
+Cython~=0.29
 dask==2022.9.2
 deepdiff==6.3.0
 defusedxml==0.7.1
@@ -36,7 +37,7 @@ pydantic==1.10.9
 pydash==6.0.2
 PyJWT==2.4.0
 pymongo==3.13.0
-pymssql @ git+https://github.com/pymssql/pymssql.git@448a21448194f4e644493a9d84ea0684c9f6a19c # pinned to (hopefully temporarily!) work around https://github.com/pymssql/pymssql/issues/826, see https://github.com/pymssql/pymssql/pull/827
+pymssql==2.2.7
 PyMySQL==1.0.2
 python-jose[cryptography]==3.3.0
 pyyaml>=5,<7
