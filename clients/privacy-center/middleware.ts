@@ -5,14 +5,17 @@ export default function middleware(request: NextRequest) {
   const start = Date.now();
   const response = NextResponse.next();
   const stop = Date.now();
-  const handler_time = stop - start;
+  const handlerTime = stop - start;
 
-  const log_dict = {
+  const logDict = {
     method: request.method,
     status_code: response.status,
-    handler_time: `${handler_time}ms`,
+    handler_time: `${handlerTime}ms`,
     path: request.nextUrl.pathname,
   };
-  console.info(JSON.stringify(log_dict));
+
+  /* eslint-disable no-console */
+  console.info(JSON.stringify(logDict));
+  /* eslint-enable no-console */
   return response;
 }
