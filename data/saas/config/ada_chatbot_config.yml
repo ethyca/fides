@@ -80,23 +80,3 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: conversations._id
                   direction: from
-    - name: delete_chatter_data
-      requests:
-        delete:
-          method: POST
-          path: /api/v1/data-subject-request
-          client_config:
-            protocol: https
-            host: <domain>
-            authentication:
-              strategy: bearer
-              configuration:
-                token: <compliance_access_token>
-          body: |
-            {
-             "type": "ERASURE",
-             "email": "<email>"
-            }
-          param_values:
-            - name: email
-              identity: email

@@ -21,27 +21,3 @@ class TestAda_ChatbotConnector:
             access_results["ada_chatbot_instance:conversations"][0]["variables"]["email"]
             == ada_chatbot_identity_email
         )
-
-    async def test_non_strict_erasure_request(
-        self,
-        ada_chatbot_runner: ConnectorRunner,
-        policy: Policy,
-        erasure_policy_string_rewrite: Policy,
-        ada_chatbot_erasure_identity_email: str,
-        ada_chatbot_erasure_data,
-        ada_chatbot_client
-    ):
-        (
-            access_results,
-            erasure_results,
-        ) = await ada_chatbot_runner.non_strict_erasure_request(
-            access_policy=policy,
-            erasure_policy=erasure_policy_string_rewrite,
-            identities={"email": ada_chatbot_erasure_identity_email},
-        )
-
-        assert erasure_results == {
-            "ada_chatbot_instance:conversations": 0,
-            "ada_chatbot_instance:messages": 0,
-            "ada_chatbot_instance:delete_chatter_data": 1,
-        }

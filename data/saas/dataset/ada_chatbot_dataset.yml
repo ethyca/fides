@@ -173,9 +173,3 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-      - name: delete_chatter_data
-        fields:
-          - name: email
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string

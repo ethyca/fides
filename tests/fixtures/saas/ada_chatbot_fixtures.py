@@ -57,35 +57,10 @@ class AdaChatbotClient:
             params={"created_since": '2023-06-28T17:59:28.201000', "page_size": 100, "chatter_id": chatterid},
         )
 
-    def delete_data(self, email):
-        return requests.post(
-            url=f"{self.base_url}/api/v1/data-subject-request",
-            headers=self.headers,
-            json={
-            "type": "ERASURE",
-            "email": email
-            },
-        )
-
 
 @pytest.fixture
 def ada_chatbot_client(ada_chatbot_secrets) -> Generator:
     yield AdaChatbotClient(ada_chatbot_secrets)
-
-
-
-@pytest.fixture
-def ada_chatbot_erasure_data(
-    ada_chatbot_client: AdaChatbotClient,
-    ada_chatbot_erasure_identity_email: str,
-    ada_chatbot_secrets
-) -> Generator:
-    # customer
-    response = ada_chatbot_client.delete_data(ada_chatbot_erasure_identity_email)
-    assert response.ok
-    user = response.json()["email"]
-
-    yield user
 
 
 @pytest.fixture
