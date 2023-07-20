@@ -703,16 +703,19 @@ class TestGetConnectionSecretSchema:
             "description": "Schema to validate the secrets needed to connect to BigQuery",
             "type": "object",
             "properties": {
-                "url": {"title": "URL", "sensitive": True, "type": "string"},
-                "dataset": {"title": "Dataset", "type": "string"},
                 "keyfile_creds": {
                     "title": "Keyfile Creds",
+                    "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
                     "sensitive": True,
                     "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
                 },
+                "dataset": {
+                    "title": "BigQuery Dataset",
+                    "description": "The dataset within your BigQuery project that contains the tables you want to access.",
+                    "type": "string",
+                },
             },
-            "required": ["keyfile_creds"],
-            "additionalProperties": False,
+            "required": ["keyfile_creds", "dataset"],
             "definitions": {
                 "KeyfileCreds": {
                     "title": "KeyfileCreds",
@@ -761,17 +764,24 @@ class TestGetConnectionSecretSchema:
             "description": "Schema to validate the secrets needed to connect to an Amazon DynamoDB cluster",
             "type": "object",
             "properties": {
-                "url": {"title": "URL", "sensitive": True, "type": "string"},
-                "region_name": {"title": "Region Name", "type": "string"},
-                "aws_access_key_id": {"title": "AWS Access Key ID", "type": "string"},
+                "region_name": {
+                    "title": "Region",
+                    "description": "The AWS region where your DynamoDB table is located (ex. us-west-2).",
+                    "type": "string",
+                },
+                "aws_access_key_id": {
+                    "title": "Access Key ID",
+                    "description": "Part of the credentials that provide access to your AWS account.",
+                    "type": "string",
+                },
                 "aws_secret_access_key": {
-                    "title": "AWS Secret Access Key",
+                    "title": "Secret Access Key",
+                    "description": "Part of the credentials that provide access to your AWS account.",
                     "sensitive": True,
                     "type": "string",
                 },
             },
             "required": ["region_name", "aws_access_key_id", "aws_secret_access_key"],
-            "additionalProperties": False,
         }
 
     def test_get_connection_secret_schema_mariadb(
@@ -786,14 +796,35 @@ class TestGetConnectionSecretSchema:
             "description": "Schema to validate the secrets needed to connect to a MariaDB Database",
             "type": "object",
             "properties": {
-                "url": {"title": "URL", "sensitive": True, "type": "string"},
-                "username": {"title": "Username", "type": "string"},
-                "password": {"title": "Password", "sensitive": True, "type": "string"},
-                "dbname": {"title": "DB Name", "type": "string"},
-                "host": {"title": "Host", "type": "string"},
-                "port": {"title": "Port", "type": "integer"},
+                "host": {
+                    "title": "Host",
+                    "description": "The hostname or IP address of the server where the database is running.",
+                    "type": "string",
+                },
+                "port": {
+                    "default": 3306,
+                    "title": "Port",
+                    "description": "The network port number on which the server is listening for incoming connections (default: 3306).",
+                    "type": "integer",
+                },
+                "username": {
+                    "title": "Username",
+                    "description": "The user account used to authenticate and access the database.",
+                    "type": "string",
+                },
+                "password": {
+                    "title": "Password",
+                    "description": "The password used to authenticate and access the database.",
+                    "sensitive": True,
+                    "type": "string",
+                },
+                "dbname": {
+                    "title": "Database",
+                    "description": "The name of the specific database within the database server that you want to connect to.",
+                    "type": "string",
+                },
             },
-            "additionalProperties": False,
+            "required": ["host", "dbname"],
         }
 
     def test_get_connection_secret_schema_mongodb(
@@ -808,14 +839,35 @@ class TestGetConnectionSecretSchema:
             "description": "Schema to validate the secrets needed to connect to a MongoDB Database",
             "type": "object",
             "properties": {
-                "url": {"title": "URL", "sensitive": True, "type": "string"},
-                "username": {"title": "Username", "type": "string"},
-                "password": {"title": "Password", "sensitive": True, "type": "string"},
-                "host": {"title": "Host", "type": "string"},
-                "port": {"title": "Port", "type": "integer"},
-                "defaultauthdb": {"title": "Default Auth DB", "type": "string"},
+                "host": {
+                    "title": "Host",
+                    "description": "The hostname or IP address of the server where the database is running.",
+                    "type": "string",
+                },
+                "port": {
+                    "default": 27017,
+                    "title": "Port",
+                    "description": "The network port number on which the server is listening for incoming connections (default: 27017).",
+                    "type": "integer",
+                },
+                "username": {
+                    "title": "Username",
+                    "description": "The user account used to authenticate and access the database.",
+                    "type": "string",
+                },
+                "password": {
+                    "title": "Password",
+                    "description": "The password used to authenticate and access the database.",
+                    "sensitive": True,
+                    "type": "string",
+                },
+                "defaultauthdb": {
+                    "title": "Default Auth DB",
+                    "description": "Used to specify the default authentication database.",
+                    "type": "string",
+                },
             },
-            "additionalProperties": False,
+            "required": ["host", "username", "password", "defaultauthdb"],
         }
 
     def test_get_connection_secret_schema_mssql(
@@ -830,14 +882,35 @@ class TestGetConnectionSecretSchema:
             "description": "Schema to validate the secrets needed to connect to a MS SQL Database\n\nconnection string takes the format:\nmssql+pymssql://[username]:[password]@[host]:[port]/[dbname]",
             "type": "object",
             "properties": {
-                "url": {"title": "URL", "sensitive": True, "type": "string"},
-                "username": {"title": "Username", "type": "string"},
-                "password": {"title": "Password", "sensitive": True, "type": "string"},
-                "host": {"title": "Host", "type": "string"},
-                "port": {"title": "Port", "type": "integer"},
-                "dbname": {"title": "DB Name", "type": "string"},
+                "host": {
+                    "title": "Host",
+                    "description": "The hostname or IP address of the server where the database is running.",
+                    "type": "string",
+                },
+                "port": {
+                    "default": 1433,
+                    "title": "Port",
+                    "description": "The network port number on which the server is listening for incoming connections (default: 1433).",
+                    "type": "integer",
+                },
+                "username": {
+                    "title": "Username",
+                    "description": "The user account used to authenticate and access the database.",
+                    "type": "string",
+                },
+                "password": {
+                    "title": "Password",
+                    "description": "The password used to authenticate and access the database.",
+                    "sensitive": True,
+                    "type": "string",
+                },
+                "dbname": {
+                    "title": "Database",
+                    "description": "The name of the specific database within the database server that you want to connect to.",
+                    "type": "string",
+                },
             },
-            "additionalProperties": False,
+            "required": ["host", "username", "password", "dbname"],
         }
 
     def test_get_connection_secret_schema_mysql(
@@ -852,14 +925,35 @@ class TestGetConnectionSecretSchema:
             "description": "Schema to validate the secrets needed to connect to a MySQL Database",
             "type": "object",
             "properties": {
-                "url": {"title": "URL", "sensitive": True, "type": "string"},
-                "username": {"title": "Username", "type": "string"},
-                "password": {"title": "Password", "sensitive": True, "type": "string"},
-                "dbname": {"title": "DB Name", "type": "string"},
-                "host": {"title": "Host", "type": "string"},
-                "port": {"title": "Port", "type": "integer"},
+                "host": {
+                    "title": "Host",
+                    "description": "The hostname or IP address of the server where the database is running.",
+                    "type": "string",
+                },
+                "port": {
+                    "default": 3306,
+                    "title": "Port",
+                    "description": "The network port number on which the server is listening for incoming connections (default: 3306).",
+                    "type": "integer",
+                },
+                "username": {
+                    "title": "Username",
+                    "description": "The user account used to authenticate and access the database.",
+                    "type": "string",
+                },
+                "password": {
+                    "title": "Password",
+                    "description": "The password used to authenticate and access the database.",
+                    "sensitive": True,
+                    "type": "string",
+                },
+                "dbname": {
+                    "title": "Database",
+                    "description": "The name of the specific database within the database server that you want to connect to.",
+                    "type": "string",
+                },
             },
-            "additionalProperties": False,
+            "required": ["host", "dbname"],
         }
 
     def test_get_connection_secret_schema_postgres(
@@ -874,20 +968,46 @@ class TestGetConnectionSecretSchema:
             "description": "Schema to validate the secrets needed to connect to a PostgreSQL Database",
             "type": "object",
             "properties": {
-                "url": {"title": "URL", "sensitive": True, "type": "string"},
-                "username": {"title": "Username", "type": "string"},
-                "password": {"title": "Password", "sensitive": True, "type": "string"},
-                "dbname": {"title": "DB Name", "type": "string"},
-                "db_schema": {"title": "DB Schema", "type": "string"},
-                "host": {"title": "Host", "type": "string"},
-                "port": {"title": "Port", "type": "integer"},
+                "host": {
+                    "title": "Host",
+                    "description": "The hostname or IP address of the server where the database is running.",
+                    "type": "string",
+                },
+                "port": {
+                    "default": 5432,
+                    "title": "Port",
+                    "description": "The network port number on which the server is listening for incoming connections (default: 5432).",
+                    "type": "integer",
+                },
+                "username": {
+                    "title": "Username",
+                    "description": "The user account used to authenticate and access the database.",
+                    "type": "string",
+                },
+                "password": {
+                    "title": "Password",
+                    "description": "The password used to authenticate and access the database.",
+                    "sensitive": True,
+                    "type": "string",
+                },
+                "dbname": {
+                    "title": "Database",
+                    "description": "The name of the specific database within the database server that you want to connect to.",
+                    "type": "string",
+                },
+                "db_schema": {
+                    "title": "Schema",
+                    "description": "The default schema to be used for the database connection (defaults to public).",
+                    "type": "string",
+                },
                 "ssh_required": {
                     "title": "SSH Required",
+                    "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
                     "default": False,
                     "type": "boolean",
                 },
             },
-            "additionalProperties": False,
+            "required": ["host", "dbname"],
         }
 
     def test_get_connection_secret_schema_redshift(
@@ -902,20 +1022,46 @@ class TestGetConnectionSecretSchema:
             "description": "Schema to validate the secrets needed to connect to an Amazon Redshift cluster",
             "type": "object",
             "properties": {
-                "url": {"title": "URL", "sensitive": True, "type": "string"},
-                "host": {"title": "Host", "type": "string"},
-                "port": {"title": "Port", "type": "integer"},
-                "database": {"title": "Database", "type": "string"},
-                "user": {"title": "User", "type": "string"},
-                "password": {"title": "Password", "sensitive": True, "type": "string"},
-                "db_schema": {"title": "DB Schema", "type": "string"},
+                "host": {
+                    "title": "Host",
+                    "description": "The hostname or IP address of the server where the database is running.",
+                    "type": "string",
+                },
+                "port": {
+                    "default": 5439,
+                    "title": "Port",
+                    "description": "The network port number on which the server is listening for incoming connections (default: 5439).",
+                    "type": "integer",
+                },
+                "user": {
+                    "title": "Username",
+                    "description": "The user account used to authenticate and access the database.",
+                    "type": "string",
+                },
+                "password": {
+                    "title": "Password",
+                    "description": "The password used to authenticate and access the database.",
+                    "sensitive": True,
+                    "type": "string",
+                },
+                "database": {
+                    "title": "Database",
+                    "description": "The name of the specific database within the database server that you want to connect to.",
+                    "type": "string",
+                },
+                "db_schema": {
+                    "title": "Schema",
+                    "description": "The default schema to be used for the database connection (defaults to public).",
+                    "type": "string",
+                },
                 "ssh_required": {
                     "title": "SSH Required",
+                    "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your Redshift database is behind a firewall and requires SSH tunneling for remote connections.",
                     "default": False,
                     "type": "boolean",
                 },
             },
-            "additionalProperties": False,
+            "required": ["host", "user", "password", "database"],
         }
 
     def test_get_connection_secret_schema_snowflake(
@@ -930,19 +1076,51 @@ class TestGetConnectionSecretSchema:
             "description": "Schema to validate the secrets needed to connect to Snowflake",
             "type": "object",
             "properties": {
-                "url": {"title": "URL", "sensitive": True, "type": "string"},
-                "user_login_name": {
-                    "title": "User Login Name",
+                "account_identifier": {
+                    "title": "Account Name",
+                    "description": "The unique identifier for your Snowflake account.",
                     "type": "string",
                 },
-                "password": {"title": "Password", "sensitive": True, "type": "string"},
-                "account_identifier": {"title": "Account Identifier", "type": "string"},
-                "database_name": {"title": "Database Name", "type": "string"},
-                "schema_name": {"title": "Schema Name", "type": "string"},
-                "warehouse_name": {"title": "Warehouse Name", "type": "string"},
-                "role_name": {"title": "Role Name", "type": "string"},
+                "user_login_name": {
+                    "title": "Username",
+                    "description": "The user account used to authenticate and access the database.",
+                    "type": "string",
+                },
+                "password": {
+                    "title": "Password",
+                    "description": "The password used to authenticate and access the database.",
+                    "sensitive": True,
+                    "type": "string",
+                },
+                "warehouse_name": {
+                    "title": "Warehouse",
+                    "description": "The name of the Snowflake warehouse where your queries will be executed.",
+                    "type": "string",
+                },
+                "database_name": {
+                    "title": "Database",
+                    "description": "The name of the Snowflake database you want to connect to.",
+                    "type": "string",
+                },
+                "schema_name": {
+                    "title": "Schema",
+                    "description": "The name of the Snowflake schema within the selected database.",
+                    "type": "string",
+                },
+                "role_name": {
+                    "title": "Role",
+                    "description": "The Snowflake role to assume for the session, if different than Username.",
+                    "type": "string",
+                },
             },
-            "additionalProperties": False,
+            "required": [
+                "account_identifier",
+                "user_login_name",
+                "password",
+                "warehouse_name",
+                "database_name",
+                "schema_name",
+            ],
         }
 
     def test_get_connection_secret_schema_hubspot(

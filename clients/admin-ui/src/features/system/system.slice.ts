@@ -115,7 +115,7 @@ const systemApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: secrets,
       }),
-      invalidatesTags: () => ["Datastore Connection"],
+      invalidatesTags: () => ["System", "Datastore Connection"],
     }),
     getSystemConnectionConfigs: build.query<
       ConnectionConfigurationResponse[],

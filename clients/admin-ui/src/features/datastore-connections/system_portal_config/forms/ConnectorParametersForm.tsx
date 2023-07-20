@@ -185,7 +185,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   onChange={(value) => {
                     form.setFieldValue(field.name, value);
                   }}
-                  defaultValue={field.value ?? 0}
+                  value={field.value ?? 0}
                   min={0}
                   size="sm"
                 >
@@ -292,7 +292,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               ) : null}
               {connectionConfig ? (
                 <DeleteConnectionModal
-                  connectionKey={connectionConfig.key}
                   onDelete={onDelete}
                   deleteResult={deleteResult}
                 />
