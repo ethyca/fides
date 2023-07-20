@@ -77,6 +77,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     handleCreate: createEntity,
     handleEdit,
     handleDelete: deleteEntity,
+    handleDisable: disableEntity,
     renderExtraFormFields,
     transformEntityToInitialValues,
   } = useTaxonomy();
@@ -88,6 +89,10 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
   }, [data]);
 
   const [nodeToDelete, setNodeToDelete] = useState<TaxonomyEntityNode | null>(
+    null
+  );
+
+  const [nodeToDisable, setNodeToDisable] = useState<TaxonomyEntityNode | null>(
     null
   );
 
@@ -109,6 +114,13 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     onOpen: onDeleteOpen,
     onClose: onDeleteClose,
   } = useDisclosure();
+
+  const {
+    isOpen: disableIsOpen,
+    onOpen: onDisableOpen, 
+    onClose: onDisableClose,
+  } = useDisclosure();
+
   const toast = useToast();
 
   if (isLoading) {
@@ -137,6 +149,11 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     onDeleteOpen();
   };
 
+  const handleSetNodeToDisable = (node: TaxonomyEntityNode) => {
+    setNodeToDisable(node);
+    onDisableOpen();
+  };
+
   const handleDelete = async () => {
     if (nodeToDelete) {
       const result = await deleteEntity(nodeToDelete.value);
@@ -146,6 +163,21 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
         toast(successToastParams(`Successfully deleted ${taxonomyType}`));
       }
       onDeleteClose();
+      setEntityToEdit(null);
+    }
+  };
+
+  const handleDisable = async () => {
+    if (nodeToDisable) {
+      const isDisabled = nodeToDelete?.active;
+      console.log(nodeToDisable.value)
+      const result = await disableEntity(nodeToDisable.value, isDisabled);
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
+      } else {
+        toast(successToastParams(`Successfully disabled ${taxonomyType}`));
+      }
+      onDisableClose();
       setEntityToEdit(null);
     }
   };
@@ -160,6 +192,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
             <ActionButtons
               onDelete={handleSetNodeToDelete}
               onEdit={handleSetEntityToEdit}
+              onDisable={handleSetNodeToDisable}
               node={node as TaxonomyEntityNode}
             />
           )}
@@ -213,6 +246,34 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
                     {nodeToDelete.value}
                   </Text>{" "}
                   will also delete all of its children.
+                </Text>
+              ) : null}
+            </Stack>
+          }
+        />
+      ) : null}
+      {nodeToDisable ? (
+        <ConfirmationModal
+          isOpen={disableIsOpen}
+          onClose={onDisableClose}
+          onConfirm={handleDisable}
+          title={`Disable ${taxonomyType}`}
+          message={
+            <Stack>
+              <Text>
+                You are about to permanently disable the {taxonomyType}{" "}
+                <Text color="complimentary.500" as="span" fontWeight="bold">
+                  {nodeToDisable.value}
+                </Text>{" "}
+                from your taxonomy. Are you sure you would like to continue?
+              </Text>
+              {nodeToDisable.children.length ? (
+                <Text color="red" data-testid="disable-children-warning">
+                  Disabling{" "}
+                  <Text as="span" fontWeight="bold">
+                    {nodeToDisable.value}
+                  </Text>{" "}
+                  will also disable all of its children.
                 </Text>
               ) : null}
             </Stack>
