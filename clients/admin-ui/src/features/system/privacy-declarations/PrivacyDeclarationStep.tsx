@@ -15,6 +15,23 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
     includeDatasets: true,
   });
 
+  const allEnabledDataCategories = dataProps.allDataCategories.filter(
+    (category) => category.active
+  );
+
+  const allEnabledDataUses = dataProps.allDataUses.filter((use) => use.active);
+
+  const allEnabledDataSubjects = dataProps.allDataSubjects.filter(
+    (subject) => subject.active
+  );
+
+  const filteredDataProps = {
+    ...dataProps,
+    allDataCategories: allEnabledDataCategories,
+    allDataUses: allEnabledDataUses,
+    allDataSubject: allEnabledDataSubjects,
+  };
+
   return (
     <Stack spacing={3} data-testid="privacy-declaration-step">
       <Heading as="h3" size="md">
@@ -40,7 +57,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
           system={system}
           includeCustomFields
           includeCookies
-          {...dataProps}
+          {...filteredDataProps}
         />
       )}
     </Stack>
