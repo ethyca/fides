@@ -1,4 +1,13 @@
 import { useEffect, useState, useCallback } from "preact/hooks";
+import { FidesEvent } from "./events";
+import {
+  FidesOptions,
+  LastServedNoticeSchema,
+  NoticesServedRequest,
+  PrivacyNotice,
+  ServingComponent,
+} from "./consent-types";
+import { patchNoticesServed } from "../services/fides/api";
 
 /**
  * Hook which tracks if the app has mounted yet.
@@ -53,4 +62,51 @@ export const useDisclosure = ({ id }: { id: string }) => {
     getButtonProps,
     getDisclosureProps,
   };
+};
+
+export const useConsentServed = ({
+  notices,
+  options,
+}: {
+  notices: PrivacyNotice[];
+  options: FidesOptions;
+}) => {
+  const [consentServed, setConsentServed] = useState(false);
+  const [servedNotices, setServedNotices] = useState<
+    LastServedNoticeSchema[] | undefined
+  >(undefined);
+
+  const handleUIEvent = useCallback(
+    async (event: FidesEvent) => {
+      if (consentServed) {
+        return;
+      }
+      setConsentServed(true);
+      const request: NoticesServedRequest = {
+        browser_identity: window.Fides.identity, // TODO
+        privacy_notice_history_ids: notices.map(
+          (n) => n.privacy_notice_history_id
+        ),
+        serving_component: ServingComponent.BANNER, // TODO
+      };
+      const result = await patchNoticesServed({
+        request,
+        fidesApiUrl: options.fidesApiUrl,
+        debug: options.debug,
+      });
+      if (result) {
+        setServedNotices(result);
+      }
+    },
+    [consentServed, notices, options]
+  );
+
+  useEffect(() => {
+    window.addEventListener("FidesUIShown", handleUIEvent);
+    return () => {
+      window.removeEventListener("FidesUIShown", handleUIEvent);
+    };
+  }, [handleUIEvent]);
+
+  return { servedNotices };
 };

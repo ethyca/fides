@@ -20,8 +20,9 @@ import { FidesCookie } from "../lib/cookie";
 import "./fides.css";
 import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
-import { useHasMounted } from "../lib/hooks";
+import { useConsentServed, useHasMounted } from "../lib/hooks";
 import ConsentButtons from "./ConsentButtons";
+import { dispatchFidesEvent } from "../lib/events";
 
 export interface OverlayProps {
   options: FidesOptions;
@@ -59,8 +60,9 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   const handleOpenModal = useCallback(() => {
     if (instance) {
       instance.show();
+      dispatchFidesEvent("FidesUIShown", cookie, options.debug);
     }
-  }, [instance]);
+  }, [instance, cookie, options.debug]);
 
   const handleCloseModal = useCallback(() => {
     if (instance) {
@@ -105,10 +107,20 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     [experience]
   );
 
+  useEffect(() => {
+    if (showBanner) {
+      dispatchFidesEvent("FidesUIShown", cookie, options.debug);
+    }
+  }, [showBanner, cookie, options.debug]);
+
   const privacyNotices = useMemo(
     () => experience.privacy_notices ?? [],
     [experience.privacy_notices]
   );
+  const { servedNotices } = useConsentServed({
+    notices: privacyNotices,
+    options,
+  });
 
   const handleUpdatePreferences = useCallback(
     (enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>) => {
@@ -126,6 +138,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
         consentMethod: ConsentMethod.button,
         userLocationString: fidesRegionString,
         cookie,
+        servedNotices,
       });
       // Make sure our draft state also updates
       setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
@@ -136,6 +149,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       fidesRegionString,
       experience.id,
       options.fidesApiUrl,
+      servedNotices,
     ]
   );
 

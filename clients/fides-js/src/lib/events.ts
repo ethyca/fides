@@ -5,14 +5,19 @@ import { debugLog } from "./consent-utils";
  * Defines the available event names:
  * - FidesInitialized: dispatched when initialization is complete, from Fides.init()
  * - FidesUpdated: dispatched when preferences are updated, from updateConsentPreferences() or Fides.init()
+ * - FidesUIShown: dispatched when either the banner or modal is shown to the user
  */
-export type FidesEventType = "FidesInitialized" | "FidesUpdated";
+export type FidesEventType =
+  | "FidesInitialized"
+  | "FidesUpdated"
+  | "FidesUIShown";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
   interface WindowEventMap {
     FidesInitialized: FidesEvent;
     FidesUpdated: FidesEvent;
+    FidesUIShown: FidesEvent;
   }
 }
 
