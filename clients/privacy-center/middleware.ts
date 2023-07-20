@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import type { NextRequest} from "next/server";
 
-export default function middleware(request) {
+export default function middleware(request: NextRequest) {
   const start = Date.now();
   const response = NextResponse.next();
   const stop = Date.now();
@@ -10,8 +11,8 @@ export default function middleware(request) {
     method: request.method,
     status_code: response.status,
     handler_time: `${handler_time}ms`,
-    path: request.destination,
+    path: request.nextUrl.pathname,
   };
-  console.info(log_dict);
+  console.info(JSON.stringify(log_dict));
   return response;
 }
