@@ -108,7 +108,7 @@ def annotate_dataset(
     """
     output_dataset = []
 
-    datasets = ingest_manifests(dataset_file)["dataset"]
+    datasets = [Dataset.parse_obj(dataset) for dataset in ingest_manifests(dataset_file)["dataset"]]
     resources = api_helpers.list_server_resources(
         url=str(config.cli.server_url),
         resource_type=resource_type,
@@ -132,7 +132,7 @@ def annotate_dataset(
     ]
 
     for dataset in datasets:
-        current_dataset = Dataset(**dataset)
+        current_dataset = Dataset.parse_obj(dataset)
         try:
             click.secho(f"\n####\nAnnotating Dataset: [{current_dataset.name}]")
 

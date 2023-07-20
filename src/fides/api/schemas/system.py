@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 from fideslang.models import Cookies, PrivacyDeclaration, System
 from pydantic import Field
@@ -20,7 +20,7 @@ class PrivacyDeclarationResponse(PrivacyDeclaration):
 class SystemResponse(System):
     """Extension of base pydantic model to include `privacy_declarations.id` fields in responses"""
 
-    privacy_declarations: List[PrivacyDeclarationResponse] = Field(
+    privacy_declarations: Sequence[PrivacyDeclarationResponse] = Field(
         description=PrivacyDeclarationResponse.__doc__,
     )
 

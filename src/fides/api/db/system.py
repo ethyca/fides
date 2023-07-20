@@ -142,11 +142,17 @@ async def upsert_cookies(
     privacy_declaration: PrivacyDeclaration,
     system: System,
 ) -> None:
-    """Upsert cookies for the given privacy declaration: retrieve cookies by name/system/privacy declaration
+    """
+    Upsert cookies for the given privacy declaration: retrieve cookies
+    by name/system/privacy declaration.
+
     Remove any existing cookies that aren't specified here.
     """
-    cookie_list: List[CookieSchema] = cookies or []
-    for cookie_data in cookie_list:
+
+    if not cookies:
+        return
+
+    for cookie_data in cookies:
         # Check if cookie exists for this name/system/privacy declaration
         result = await async_session.execute(
             select(Cookies).where(
@@ -180,7 +186,7 @@ async def upsert_cookies(
     delete_result = await async_session.execute(
         select(Cookies).where(
             and_(
-                Cookies.name.notin_([cookie["name"] for cookie in cookie_list]),
+                Cookies.name.notin_([cookie["name"] for cookie in cookies]),
                 Cookies.system_id == system.id,
                 Cookies.privacy_declaration_id == privacy_declaration.id,
             )
