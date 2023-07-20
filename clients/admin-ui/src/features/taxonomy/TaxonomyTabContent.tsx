@@ -77,7 +77,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     handleCreate: createEntity,
     handleEdit,
     handleDelete: deleteEntity,
-    handleDisable: disableEntity,
+    handleToggleEnabled: toggleEntityEnabled,
     renderExtraFormFields,
     transformEntityToInitialValues,
   } = useTaxonomy();
@@ -92,9 +92,8 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     null
   );
 
-  const [nodeToDisable, setNodeToDisable] = useState<TaxonomyEntityNode | null>(
-    null
-  );
+  const [nodeToToggleEnabled, setNodeToToggleEnabled] =
+    useState<TaxonomyEntityNode | null>(null);
 
   const isAdding = useAppSelector(selectIsAddFormOpen);
 
@@ -117,7 +116,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
 
   const {
     isOpen: disableIsOpen,
-    onOpen: onDisableOpen, 
+    onOpen: onDisableOpen,
     onClose: onDisableClose,
   } = useDisclosure();
 
@@ -149,8 +148,8 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     onDeleteOpen();
   };
 
-  const handleSetNodeToDisable = (node: TaxonomyEntityNode) => {
-    setNodeToDisable(node);
+  const handleSetNodeToToggleEnabled = (node: TaxonomyEntityNode) => {
+    setNodeToToggleEnabled(node);
     onDisableOpen();
   };
 
@@ -167,15 +166,27 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     }
   };
 
-  const handleDisable = async () => {
-    if (nodeToDisable) {
-      const isDisabled = nodeToDelete?.active;
-      console.log(nodeToDisable.value)
-      const result = await disableEntity(nodeToDisable.value, isDisabled);
+  const handleToggleEnabled = async () => {
+    const entityToToggleEnabled =
+      (nodeToToggleEnabled &&
+        data?.find((d) => d.fides_key === nodeToToggleEnabled.value)) ??
+      null;
+    if (entityToToggleEnabled) {
+      const isDisabling = nodeToToggleEnabled?.active;
+      const result = await toggleEntityEnabled(
+        entityToToggleEnabled,
+        !isDisabling
+      );
       if (isErrorResult(result)) {
         toast(errorToastParams(getErrorMessage(result.error)));
       } else {
-        toast(successToastParams(`Successfully disabled ${taxonomyType}`));
+        toast(
+          successToastParams(
+            `Successfully ${
+              isDisabling ? "disabled" : "enabled"
+            } ${taxonomyType}`
+          )
+        );
       }
       onDisableClose();
       setEntityToEdit(null);
@@ -192,7 +203,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
             <ActionButtons
               onDelete={handleSetNodeToDelete}
               onEdit={handleSetEntityToEdit}
-              onDisable={handleSetNodeToDisable}
+              onDisable={handleSetNodeToToggleEnabled}
               node={node as TaxonomyEntityNode}
             />
           )}
@@ -252,30 +263,28 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
           }
         />
       ) : null}
-      {nodeToDisable ? (
+      {nodeToToggleEnabled ? (
         <ConfirmationModal
           isOpen={disableIsOpen}
           onClose={onDisableClose}
-          onConfirm={handleDisable}
-          title={`Disable ${taxonomyType}`}
+          onConfirm={handleToggleEnabled}
+          title={`${
+            nodeToToggleEnabled.active ? "Disable" : "Enable"
+          } ${taxonomyType}`}
           message={
             <Stack>
               <Text>
-                You are about to permanently disable the {taxonomyType}{" "}
+                This will {nodeToToggleEnabled.active ? "disable" : "enable"}{" "}
+                the {taxonomyType}{" "}
                 <Text color="complimentary.500" as="span" fontWeight="bold">
-                  {nodeToDisable.value}
+                  {nodeToToggleEnabled.value}
                 </Text>{" "}
-                from your taxonomy. Are you sure you would like to continue?
+                from your taxonomy
+                {nodeToToggleEnabled.children.length
+                  ? " and all its children"
+                  : ""}
+                .
               </Text>
-              {nodeToDisable.children.length ? (
-                <Text color="red" data-testid="disable-children-warning">
-                  Disabling{" "}
-                  <Text as="span" fontWeight="bold">
-                    {nodeToDisable.value}
-                  </Text>{" "}
-                  will also disable all of its children.
-                </Text>
-              ) : null}
             </Stack>
           }
         />

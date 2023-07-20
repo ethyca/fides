@@ -16,7 +16,12 @@ interface ActionButtonProps {
   onDelete: (node: TaxonomyEntityNode) => void;
   onDisable: (node: TaxonomyEntityNode) => void;
 }
-const ActionButtons = ({ node, onEdit, onDelete, onDisable }: ActionButtonProps) => {
+const ActionButtons = ({
+  node,
+  onEdit,
+  onDelete,
+  onDisable,
+}: ActionButtonProps) => {
   const showDelete = !node.is_default;
   return (
     <HStack mr={4}>
@@ -45,9 +50,9 @@ const ActionButtons = ({ node, onEdit, onDelete, onDisable }: ActionButtonProps)
         size="sm"
         colorScheme="purple"
         defaultChecked={node.active}
-        onChange={(e) => onDisable(node)}
+        onChange={() => onDisable(node)}
       />
-      <Text>Enable</Text>
+      <Text>Enabled</Text>
     </HStack>
   );
 };
