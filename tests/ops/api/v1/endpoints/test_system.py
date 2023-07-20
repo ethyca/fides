@@ -198,6 +198,34 @@ class TestPatchSystemConnections:
         resp = api_client.patch(url, headers=auth_header, json=payload)
         assert resp.status_code == expected_status_code
 
+    @mock.patch("fides.api.util.connection_util.get_connection_config_or_error")
+    def test_patch_connection_secrets_removes_access_token(
+        self,
+        mock_get_connection_config_or_error: mock.Mock,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        oauth2_authorization_code_connection_config,
+    ):
+        mock_get_connection_config_or_error.return_value = (
+            oauth2_authorization_code_connection_config
+        )
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+
+        # First, ensure the connection_config has an access_token
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        assert "access_token" in resp.json()["connection_config"]["secrets"]
+
+        # Now, patch the connection_config with new secrets (but no access_token)
+        resp = api_client.patch(
+            url, headers=auth_header, json={"domain": "test_domain"}
+        )
+
+        assert resp.status_code == HTTP_200_OK
+        assert "access_token" not in resp.json()["connection_config"]["secrets"]
+
 
 class TestGetConnections:
     def test_get_connections_not_authenticated(

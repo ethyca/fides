@@ -535,6 +535,63 @@ class TestCallback:
 
         authentication_request.delete(db)
 
+    @mock.patch(
+        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+    )
+    def test_callback_with_referer(
+        self,
+        get_access_token_mock: Mock,
+        db,
+        api_client: TestClient,
+        callback_url,
+        oauth2_authorization_code_connection_config,
+    ):
+        get_access_token_mock.return_value = None
+        authentication_request = AuthenticationRequest.create_or_update(
+            db,
+            data={
+                "connection_key": oauth2_authorization_code_connection_config.key,
+                "state": "new_request",
+                "referer": "http://test.com",
+            },
+        )
+        response = api_client.get(
+            callback_url, params={"code": "abc", "state": "new_request"}
+        )
+        get_access_token_mock.assert_called_once()
+        assert response.status_code == 307  # HTTP status for redirection
+        assert response.headers["location"].startswith("http://test.com")
+
+        authentication_request.delete(db)
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+    )
+    def test_callback_without_referer(
+        self,
+        get_access_token_mock: Mock,
+        db,
+        api_client: TestClient,
+        callback_url,
+        oauth2_authorization_code_connection_config,
+    ):
+        get_access_token_mock.return_value = None
+        authentication_request = AuthenticationRequest.create_or_update(
+            db,
+            data={
+                "connection_key": oauth2_authorization_code_connection_config.key,
+                "state": "new_request",
+            },
+        )
+        response = api_client.get(
+            callback_url, params={"code": "abc", "state": "new_request"}
+        )
+        get_access_token_mock.assert_called_once()
+        assert response.status_code == 200
+        assert "No referer URL available." in response.text
+
+        authentication_request.delete(db)
+
 
 class TestReadRoleMapping:
     @pytest.fixture(scope="function")

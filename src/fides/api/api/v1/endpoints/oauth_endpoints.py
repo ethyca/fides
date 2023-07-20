@@ -1,7 +1,7 @@
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 from fastapi import Body, Depends, HTTPException, Request, Response, Security
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse
 from fastapi.security import HTTPBasic
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -34,7 +34,6 @@ from fides.api.service.authentication.authentication_strategy import (
 from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
-from fides.api.service.connectors import get_connector
 from fides.api.util.api_router import APIRouter
 from fides.common.api.scope_registry import (
     CLIENT_CREATE,
@@ -251,10 +250,9 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Resp
             return RedirectResponse(
                 url=f"{authentication_request.referer}?status={status_message.test_status.value}"
             )
-        else:
-            return PlainTextResponse(
-                content=f"Test status: {status_message.test_status.value}. No referer URL available. Please navigate back to the Fides Admin UI.",
-                status_code=200,
-            )
+        return PlainTextResponse(
+            content=f"Test status: {status_message.test_status.value}. No referer URL available. Please navigate back to the Fides Admin UI.",
+            status_code=200,
+        )
     except (OAuth2TokenException, FidesopsException) as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))

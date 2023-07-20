@@ -245,9 +245,15 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     return fillInDefaults(initialValues, secretsSchema);
   };
 
-  const handleSubmit = (values: any, actions: any) => {
-    // convert each property value of type FidesopsDatasetReference
-    // from a dot delimited string to a FidesopsDatasetReference
+  /**
+   * Preprocesses the input values.
+   * Currently, it is only used to convert FIDES_DATASET_REFERENCE fields.
+   * @param values ConnectionConfigFormValues - The original values.
+   * @returns ConnectionConfigFormValues - The processed values.
+   */
+  const preprocessValues = (
+    values: ConnectionConfigFormValues
+  ): ConnectionConfigFormValues => {
     const updatedValues = { ...values };
     if (secretsSchema) {
       Object.keys(secretsSchema.properties).forEach((key) => {
@@ -264,11 +270,19 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         }
       });
     }
-    onSaveClick(updatedValues, actions);
+    return updatedValues;
+  };
+
+  const handleSubmit = (values: any, actions: any) => {
+    // convert each property value of type FidesopsDatasetReference
+    // from a dot delimited string to a FidesopsDatasetReference
+    const processedValues = preprocessValues(values);
+    onSaveClick(processedValues, actions);
   };
 
   const handleAuthorizeConnectionClick = async (
     values: ConnectionConfigFormValues,
+    // @ts-ignore
     props: FormikProps<Values>
   ) => {
     const errors = await props.validateForm();
@@ -276,11 +290,19 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     if (Object.keys(errors).length > 0) {
       return;
     }
-
-    onAuthorizeConnectionClick(values); // this part needs values
+    
+    const processedValues = preprocessValues(values);
+    onAuthorizeConnectionClick(processedValues);
   };
 
-  const handleTestConnectionClick = async () => {
+  // @ts-ignore
+  const handleTestConnectionClick = async (props: FormikProps<Values>) => {
+    const errors = await props.validateForm();
+
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     const result = await trigger(connectionConfig!.key);
     onTestConnectionClick(result);
   };

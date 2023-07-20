@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from fastapi import Depends, Response, Security, HTTPException
+from fastapi import Depends, HTTPException, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate

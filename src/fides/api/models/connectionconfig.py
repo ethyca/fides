@@ -169,7 +169,6 @@ class ConnectionConfig(Base):
         """Returns True if the connection config has an access token, used for OAuth2 connections"""
 
         saas_config = self.get_saas_config()
-
         if not saas_config:
             return False
 

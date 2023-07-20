@@ -332,10 +332,16 @@ export const useConnectorForm = ({
       const authorizationUrl = (await getAuthorizationUrl(
         connectionConfig!.key
       ).unwrap()) as string;
-      window.location.href = authorizationUrl;
+
+      setIsAuthorizing(false);
+      
+      // workaround to make sure isAuthorizing is set to false before redirecting
+      setTimeout(() => {
+        window.location.href = authorizationUrl;
+      }, 0);
     } catch (error) {
-      console.log(error)
       handleError(error);
+    } finally {
       setIsAuthorizing(false);
     }
   };
