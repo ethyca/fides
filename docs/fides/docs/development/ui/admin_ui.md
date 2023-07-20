@@ -17,16 +17,6 @@ This will navigate you to the `admin-ui` directory, and start the development en
 
 Visit `http://localhost:3000/` in your browser, and provide your user credentials to log in.
 
-## Authentication
-
-To enable stable authentication you must supply a `NEXTAUTH_SECRET` environment
-variable. The best way to do this is by creating a `.env.local` file, which Next
-will automatically pick up:
-
-```bash
-echo NEXTAUTH_SECRET=`openssl rand -base64 32` >> .env.local
-```
-
 ### Backend deployment
 
 Fides automatically serves a version of the UI when running `nox -s dev`.
