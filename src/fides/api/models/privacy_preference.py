@@ -166,6 +166,7 @@ class ServingComponent(Enum):
     overlay = "overlay"
     banner = "banner"
     privacy_center = "privacy_center"
+    gpc = "gpc"
 
 
 def _validate_notice_and_identity(

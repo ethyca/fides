@@ -67,6 +67,8 @@ import {
   ConsentMethod,
   SaveConsentPreference,
   ConsentMechanism,
+  NoticesServedRequest,
+  ServingComponent,
 } from "./lib/consent-types";
 import {
   constructFidesRegionString,
@@ -76,7 +78,7 @@ import {
   validateOptions,
 } from "./lib/consent-utils";
 import { dispatchFidesEvent } from "./lib/events";
-import { fetchExperience } from "./services/fides/api";
+import { fetchExperience, patchNoticesServed } from "./services/fides/api";
 import { getGeolocation } from "./services/external/geolocation";
 import { OverlayProps } from "./components/Overlay";
 import { updateConsentPreferences } from "./lib/preferences";
@@ -131,6 +133,7 @@ const automaticallyApplyGPCPreferences = (
   cookie: FidesCookie,
   fidesRegionString: string | null,
   fidesApiUrl: string,
+  debug: boolean,
   effectiveExperience?: PrivacyExperience | null
 ) => {
   if (!effectiveExperience || !effectiveExperience.privacy_notices) {
@@ -167,14 +170,31 @@ const automaticallyApplyGPCPreferences = (
   );
 
   if (gpcApplied) {
-    updateConsentPreferences({
-      consentPreferencesToSave,
-      experienceId: effectiveExperience.id,
-      fidesApiUrl,
-      consentMethod: ConsentMethod.gpc,
-      userLocationString: fidesRegionString || undefined,
-      cookie,
-    });
+    const noticeRequest: NoticesServedRequest = {
+      browser_identity: cookie.identity,
+      serving_component: ServingComponent.GPC,
+      privacy_notice_history_ids: consentPreferencesToSave.map(
+        (p) => p.notice.privacy_notice_history_id
+      ),
+      user_geography: fidesRegionString || undefined,
+      // GPC does not apply when it's acknowledge only, so this will always be false
+      acknowledge_mode: false,
+      privacy_experience_id: effectiveExperience?.id,
+    };
+    patchNoticesServed({ request: noticeRequest, fidesApiUrl, debug }).then(
+      (servedNotices) => {
+        updateConsentPreferences({
+          consentPreferencesToSave,
+          experienceId: effectiveExperience.id,
+          fidesApiUrl,
+          consentMethod: ConsentMethod.gpc,
+          userLocationString: fidesRegionString || undefined,
+          cookie,
+          servedNotices: servedNotices ?? undefined,
+          debug,
+        });
+      }
+    );
   }
 };
 
@@ -276,6 +296,7 @@ const init = async ({
       cookie,
       fidesRegionString,
       options.fidesApiUrl,
+      options.debug,
       effectiveExperience
     );
   }
