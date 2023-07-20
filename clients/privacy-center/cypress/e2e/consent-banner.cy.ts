@@ -1696,5 +1696,41 @@ describe("Consent banner", () => {
         expect(interception.request.body.acknowledge_mode).to.eql(true);
       });
     });
+
+    it("works with gpc", () => {
+      cy.on("window:before:load", (win) => {
+        // eslint-disable-next-line no-param-reassign
+        win.navigator.globalPrivacyControl = true;
+      });
+      stubConfig({
+        experience: {
+          id: experienceId,
+          show_banner: true,
+          privacy_notices: [
+            mockPrivacyNotice({
+              name: "Data Sales and Sharing",
+              notice_key: "data_sales_and_sharing",
+              consent_mechanism: ConsentMechanism.OPT_OUT,
+              has_gpc_flag: true,
+              privacy_notice_history_id: historyId1,
+            }),
+            mockPrivacyNotice({
+              name: "Essential",
+              notice_key: "essential",
+              consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+              has_gpc_flag: false,
+              privacy_notice_history_id: historyId2,
+            }),
+          ],
+        },
+      });
+      // Expect two calls
+      cy.wait("@patchNoticesServed").then((interception) => {
+        expect(interception.request.body.serving_component).to.eql("gpc");
+      });
+      cy.wait("@patchNoticesServed").then((interception) => {
+        expect(interception.request.body.serving_component).to.eql("banner");
+      });
+    });
   });
 });
