@@ -43,6 +43,8 @@ ENV PATH="/opt/fides/bin:${PATH}"
 RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools wheel
 
 COPY requirements.txt .
+RUN pip install cython==0.29.35
+RUN pip install pymssql==2.1.5 --no-build-isolation
 RUN pip install --no-cache-dir install -r requirements.txt
 
 COPY dev-requirements.txt .
