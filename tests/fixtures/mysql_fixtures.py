@@ -19,6 +19,11 @@ from .application_fixtures import integration_secrets
 
 
 @pytest.fixture(scope="function")
+def mysql_example_secrets():
+    return integration_secrets["mysql_example"]
+
+
+@pytest.fixture(scope="function")
 def dataset_config_mysql(
     connection_config: ConnectionConfig,
     db: Session,
