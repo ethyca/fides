@@ -22,11 +22,13 @@ declare global {
 }
 
 /**
- * Defines the properties available on event.detail. As of now, these are an
- * explicit subset of properties from the Fides cookie
- * TODO: add identity and meta?
+ * Defines the properties available on event.detail. Currently the FidesCookie
+ * and an extra field `meta` for any other details that the event wants to pass
+ * around.
  */
-export type FidesEventDetail = Pick<FidesCookie, "consent">;
+export type FidesEventDetail = FidesCookie & {
+  extraDetails?: Record<string, string>;
+};
 
 export type FidesEvent = CustomEvent<FidesEventDetail>;
 
@@ -47,18 +49,16 @@ export type FidesEvent = CustomEvent<FidesEventDetail>;
 export const dispatchFidesEvent = (
   type: FidesEventType,
   cookie: FidesCookie,
-  debug: boolean
+  debug: boolean,
+  extraDetails?: Record<string, string>
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
-    // Pick a subset of the Fides cookie properties to provide as event detail
-    const { consent }: FidesEventDetail = cookie;
-    const detail: FidesEventDetail = { consent };
-    const event = new CustomEvent(type, { detail });
+    const event = new CustomEvent(type, {
+      detail: { ...cookie, extraDetails },
+    });
     debugLog(
       debug,
-      `Dispatching event type ${type} with cookie consent ${JSON.stringify(
-        cookie?.consent
-      )}`
+      `Dispatching event type ${type} with cookie ${JSON.stringify(cookie)}`
     );
     window.dispatchEvent(event);
   }

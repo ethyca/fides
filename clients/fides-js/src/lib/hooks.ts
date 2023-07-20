@@ -67,9 +67,15 @@ export const useDisclosure = ({ id }: { id: string }) => {
 export const useConsentServed = ({
   notices,
   options,
+  userGeography,
+  privacyExperienceId,
+  acknowledgeMode,
 }: {
   notices: PrivacyNotice[];
   options: FidesOptions;
+  userGeography?: string;
+  privacyExperienceId?: string;
+  acknowledgeMode?: boolean;
 }) => {
   const [consentServed, setConsentServed] = useState(false);
   const [servedNotices, setServedNotices] = useState<
@@ -82,12 +88,19 @@ export const useConsentServed = ({
         return;
       }
       setConsentServed(true);
+      if (!event.detail.extraDetails) {
+        return;
+      }
       const request: NoticesServedRequest = {
-        browser_identity: window.Fides.identity, // TODO
+        browser_identity: event.detail.identity,
+        privacy_experience_id: privacyExperienceId,
+        user_geography: userGeography,
+        acknowledge_mode: acknowledgeMode,
         privacy_notice_history_ids: notices.map(
           (n) => n.privacy_notice_history_id
         ),
-        serving_component: ServingComponent.BANNER, // TODO
+        serving_component: event.detail.extraDetails
+          .servingComponent as ServingComponent,
       };
       const result = await patchNoticesServed({
         request,
@@ -98,7 +111,14 @@ export const useConsentServed = ({
         setServedNotices(result);
       }
     },
-    [consentServed, notices, options]
+    [
+      consentServed,
+      notices,
+      options,
+      acknowledgeMode,
+      privacyExperienceId,
+      userGeography,
+    ]
   );
 
   useEffect(() => {
