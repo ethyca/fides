@@ -685,6 +685,7 @@ describe("Consent banner", () => {
         );
         cy.get("span")
           .contains("Test privacy notice with gpc enabled")
+          .parent()
           .within(() => {
             cy.get("span").contains("Global Privacy Control applied");
           });
@@ -1062,6 +1063,7 @@ describe("Consent banner", () => {
         );
         cy.get("span")
           .contains("Test privacy notice")
+          .parent()
           .within(() => {
             cy.get("span").contains("Global Privacy Control overridden");
           });
@@ -1546,16 +1548,19 @@ describe("Consent banner", () => {
       cy.get("#fides-modal-link").click();
       cy.get(".fides-notice-toggle")
         .contains("Applied")
+        .parent()
         .within(() => {
           cy.get(".fides-gpc-label").contains("applied");
         });
       cy.get(".fides-notice-toggle")
         .contains("Notice only")
+        .parent()
         .within(() => {
           cy.get(".fides-gpc-label").should("not.exist");
         });
       cy.get(".fides-notice-toggle")
         .contains("Overridden")
+        .parent()
         .within(() => {
           cy.get(".fides-gpc-label").contains("overridden");
         });
