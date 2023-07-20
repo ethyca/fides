@@ -4,7 +4,6 @@ import abc
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Extra, root_validator
-from pydantic.fields import Field
 
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.schemas import Msg
@@ -12,10 +11,6 @@ from fides.api.schemas import Msg
 
 class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
     """Abstract Base Schema for updating Connection Configuration Secrets"""
-
-    url: Optional[str] = Field(
-        None, title="URL", sensitive=True
-    )  # User can always specify the URL directly
 
     _required_components: List[str]
 
@@ -29,16 +24,13 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
     def required_components_supplied(  # type: ignore
         cls: ConnectionConfigSecretsSchema, values: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Validate that the minimum required components have been supplied.
-
-        Connection configurations either 1) need the entire URL
-        *OR* 2) all of the required components to *build* that URL."""
-        min_fields_present = values.get("url") or all(
+        """Validate that the minimum required components have been supplied."""
+        min_fields_present = all(
             values.get(component) for component in cls._required_components
         )
         if not min_fields_present:
             raise ValueError(
-                f"{cls.__name__} must be supplied a 'url' or all of: {cls._required_components}."  # type: ignore
+                f"{cls.__name__} must be supplied all of: {cls._required_components}."  # type: ignore
             )
 
         return values
@@ -46,7 +38,7 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
     class Config:
         """Only permit selected secret fields to be stored."""
 
-        extra = Extra.forbid
+        extra = Extra.ignore
         orm_mode = True
 
 

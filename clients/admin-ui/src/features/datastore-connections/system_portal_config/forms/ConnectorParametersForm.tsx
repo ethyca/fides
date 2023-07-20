@@ -172,6 +172,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               {item.type !== "integer" && (
                 <Input
                   {...field}
+                  type={item.sensitive ? "password" : "text"}
                   placeholder={getPlaceholder(item)}
                   autoComplete="off"
                   color="gray.700"
@@ -185,7 +186,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   onChange={(value) => {
                     form.setFieldValue(field.name, value);
                   }}
-                  defaultValue={field.value ?? 0}
+                  value={field.value ?? 0}
                   min={0}
                   size="sm"
                 >
