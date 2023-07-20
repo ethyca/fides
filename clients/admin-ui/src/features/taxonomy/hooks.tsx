@@ -178,10 +178,6 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
 
     const result = updateDataCategoryMutationTrigger(payload);
 
-    if (customFields.isEnabled) {
-      await customFields.upsertCustomFields(payload);
-    }
-
     return result;
   };
 

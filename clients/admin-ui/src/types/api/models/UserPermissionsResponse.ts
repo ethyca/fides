@@ -7,10 +7,8 @@ import type { ScopeRegistryEnum } from "./ScopeRegistryEnum";
 
 /**
  * Response after creating, editing, or retrieving a FidesUserPermissions record.
- *
- * Overrides in Plus to use the Plus ScopeRegistryEnum so Plus scopes are returned.
  */
-export type UserPermissionsPlusResponse = {
+export type UserPermissionsResponse = {
   roles: Array<RoleRegistryEnum>;
   id: string;
   user_id: string;

@@ -52,7 +52,7 @@ export type DataUse = {
    */
   is_default?: boolean;
   /**
-   * Denotes whether the resource is enabled in the taxonomy or not.
+   * Indicates whether the resource is currently 'active'.
    */
   active?: boolean;
 };
