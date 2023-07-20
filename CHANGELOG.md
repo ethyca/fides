@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.17.0...main)
 
+### Added
+
+- HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
+
 ## [2.17.0](https://github.com/ethyca/fides/compare/2.16.0...2.17.0)
 
 ### Added
