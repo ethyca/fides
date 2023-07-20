@@ -5,6 +5,8 @@ import {
   FidesCookie,
   LegacyConsentConfig,
   PrivacyNotice,
+  LastServedNoticeSchema,
+  ConsentOptionCreate,
 } from "fides-js";
 import {
   ConsentMechanism,
@@ -96,6 +98,11 @@ const stubConfig = (
           body: {},
         }
       ).as("patchPrivacyPreference");
+      cy.intercept(
+        "PATCH",
+        `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
+        { fixture: "consent/notices_served.json" }
+      ).as("patchNoticesServed");
     }
     cy.visitConsentDemo(updatedConfig);
   });
@@ -1552,6 +1559,142 @@ describe("Consent banner", () => {
         .within(() => {
           cy.get(".fides-gpc-label").contains("overridden");
         });
+    });
+  });
+
+  describe("consent reporting", () => {
+    const experienceId = "experience-id";
+    const historyId1 = "pri_mock_history_id_1";
+    const historyId2 = "pri_mock_history_id_2";
+    it("can go through consent reporting flow from the banner", () => {
+      stubConfig({
+        experience: {
+          id: experienceId,
+          show_banner: true,
+          privacy_notices: [
+            mockPrivacyNotice({
+              name: "Data Sales and Sharing",
+              notice_key: "data_sales_and_sharing",
+              privacy_notice_history_id: historyId1,
+            }),
+            mockPrivacyNotice({
+              name: "Essential",
+              notice_key: "essential",
+              privacy_notice_history_id: historyId2,
+            }),
+          ],
+        },
+      });
+      // Since the banner shows immediately, we should issue a FidesUIShown event
+      cy.get("@FidesUIShown").should("have.been.calledOnce");
+      // And tell the server the notices have been served
+      cy.wait("@patchNoticesServed").then((interception) => {
+        const { browser_identity: identity, ...body } =
+          interception.request.body;
+        expect(identity.fides_user_device_id).to.be.a("string");
+        expect(body).to.eql({
+          privacy_experience_id: experienceId,
+          user_geography: "us_ca",
+          acknowledge_mode: false,
+          serving_component: "banner",
+          privacy_notice_history_ids: [historyId1, historyId2],
+        });
+        // Now opt out of the notices
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Reject Test").click();
+        });
+        // The patch should include the served notice IDs (response from patchNoticesServed)
+        cy.wait("@patchPrivacyPreference").then((preferenceInterception) => {
+          const { preferences } = preferenceInterception.request.body;
+          const expected = interception.response?.body.map(
+            (s: LastServedNoticeSchema) => s.served_notice_history_id
+          );
+          expect(
+            preferences.map(
+              (p: ConsentOptionCreate) => p.served_notice_history_id
+            )
+          ).to.eql(expected);
+        });
+      });
+    });
+
+    it("can go through consent reporting flow from the modal", () => {
+      stubConfig({
+        experience: {
+          id: experienceId,
+          show_banner: false,
+          privacy_notices: [
+            mockPrivacyNotice({
+              name: "Data Sales and Sharing",
+              notice_key: "data_sales_and_sharing",
+              privacy_notice_history_id: historyId1,
+            }),
+            mockPrivacyNotice({
+              name: "Essential",
+              notice_key: "essential",
+              privacy_notice_history_id: historyId2,
+            }),
+          ],
+        },
+      });
+      cy.get("@FidesUIShown").should("not.have.been.called");
+      cy.get("#fides-modal-link").click();
+      cy.get("@FidesUIShown").should("have.been.calledOnce");
+      cy.wait("@patchNoticesServed").then((interception) => {
+        const { browser_identity: identity, ...body } =
+          interception.request.body;
+        expect(identity.fides_user_device_id).to.be.a("string");
+        expect(body).to.eql({
+          privacy_experience_id: experienceId,
+          user_geography: "us_ca",
+          acknowledge_mode: false,
+          serving_component: "overlay",
+          privacy_notice_history_ids: [historyId1, historyId2],
+        });
+        // Now opt out of the notices
+        cy.getByTestId("consent-modal").within(() => {
+          cy.get("button").contains("Reject Test").click();
+        });
+        // The patch should include the served notice IDs (response from patchNoticesServed)
+        cy.wait("@patchPrivacyPreference").then((preferenceInterception) => {
+          const { preferences } = preferenceInterception.request.body;
+          const expected = interception.response?.body.map(
+            (s: LastServedNoticeSchema) => s.served_notice_history_id
+          );
+          expect(
+            preferences.map(
+              (p: ConsentOptionCreate) => p.served_notice_history_id
+            )
+          ).to.eql(expected);
+        });
+      });
+    });
+
+    it("can set acknowledge mode to true", () => {
+      stubConfig({
+        experience: {
+          id: experienceId,
+          show_banner: true,
+          privacy_notices: [
+            mockPrivacyNotice({
+              name: "Data Sales and Sharing",
+              notice_key: "data_sales_and_sharing",
+              consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+              privacy_notice_history_id: historyId1,
+            }),
+            mockPrivacyNotice({
+              name: "Essential",
+              notice_key: "essential",
+              consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+              privacy_notice_history_id: historyId2,
+            }),
+          ],
+        },
+      });
+      cy.get("@FidesUIShown").should("have.been.calledOnce");
+      cy.wait("@patchNoticesServed").then((interception) => {
+        expect(interception.request.body.acknowledge_mode).to.eql(true);
+      });
     });
   });
 });
