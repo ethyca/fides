@@ -15,11 +15,16 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.16.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.17.0...main)
+
+## [2.17.0](https://github.com/ethyca/fides/compare/2.16.0...2.17.0)
 
 ### Added
 
 - Tab component for `fides-js` [#3782](https://github.com/ethyca/fides/pull/3782)
+- Various other UI components for `fides-js` to support upcoming TCF modal [#3803](https://github.com/ethyca/fides/pull/3803)
+- Prefetches API calls as part of Fides.js [#3698](https://github.com/ethyca/fides/pull/3698)
+
 ### Developer Experience
 
 - Changed where db-dependent routers were imported to avoid dependency issues [#3741](https://github.com/ethyca/fides/pull/3741)
@@ -29,17 +34,23 @@ The types of changes are:
 - Bumped supported Python versions to `3.10.12`, `3.9.17`, and `3.8.17` [#3733](https://github.com/ethyca/fides/pull/3733)
 - Logging Updates [#3758](https://github.com/ethyca/fides/pull/3758)
 - Add polyfill service to fides-js route [#3759](https://github.com/ethyca/fides/pull/3759)
+- Show/hide integration values [#3775](https://github.com/ethyca/fides/pull/3775)
 - Sort system cards alphabetically by name on "View systems" page [#3781](https://github.com/ethyca/fides/pull/3781)
+- Update admin ui to use new integration delete route [#3785](https://github.com/ethyca/fides/pull/3785)
 
 ### Removed
 
 - Removed "Custom field(s) successfully saved" toast [#3779](https://github.com/ethyca/fides/pull/3779)
 
 ### Added
+
 - Record when consent is served [#3777](https://github.com/ethyca/fides/pull/3777)
+- Add an `active` property to taxonomy elements [#3784](https://github.com/ethyca/fides/pull/3784)
+- Erasure support for Heap [#3599](https://github.com/ethyca/fides/pull/3599)
 
 ### Fixed
 - Privacy notice UI's list of possible regions now matches the backend's list [#3787](https://github.com/ethyca/fides/pull/3787)
+- Admin UI "property does not existing" build issue [#3831](https://github.com/ethyca/fides/pull/3831)
 
 ## [2.16.0](https://github.com/ethyca/fides/compare/2.15.1...2.16.0)
 
@@ -79,6 +90,10 @@ The types of changes are:
 - Fields with default fields are now flagged as required in the front-end [#3694](https://github.com/ethyca/fides/pull/3694)
 - In "view systems", system cards can now be clicked and link to that system's `configure/[id]` page [#3734](https://github.com/ethyca/fides/pull/3734)
 - Enable privacy notice and privacy experience feature flags by default [#3773](https://github.com/ethyca/fides/pull/3773)
+
+### Security
+- Resolve Zip bomb file upload vulnerability [CVE-2023-37480](https://github.com/ethyca/fides/security/advisories/GHSA-g95c-2jgm-hqc6)
+- Resolve SVG bomb (billion laughs) file upload vulnerability [CVE-2023-37481](https://github.com/ethyca/fides/security/advisories/GHSA-3rw2-wfc8-wmj5)
 
 ## [2.15.1](https://github.com/ethyca/fides/compare/2.15.0...2.15.1)
 

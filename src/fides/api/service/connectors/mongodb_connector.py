@@ -42,8 +42,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
 
     def create_client(self) -> MongoClient:
         """Returns a client for a MongoDB instance"""
-        config = MongoDBSchema(**self.configuration.secrets or {})
-        uri = config.url if config.url else self.build_uri()
+        uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
         try:
             return MongoClient(uri, serverSelectionTimeoutMS=5000)
         except ValueError:
@@ -57,14 +56,21 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         """
         Connects to the Mongo database and makes two trivial queries to ensure connection is valid.
         """
-        config = MongoDBSchema(**self.configuration.secrets or {})
         logger.info("Starting test connection to {}", self.configuration.key)
         client = self.client()
+
         try:
             # Make a couple of trivial requests - getting server info and fetching the collection names
             client.server_info()
-            if config.defaultauthdb:
-                db = client[config.defaultauthdb]
+
+            # Retrieve the default auth database if it exists
+            default_auth_db = (
+                self.configuration.secrets.get("defaultauthdb")
+                if self.configuration.secrets
+                else None
+            )
+            if default_auth_db:
+                db = client[default_auth_db]
                 db.collection_names()
         except ServerSelectionTimeoutError:
             raise ConnectionException(

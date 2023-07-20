@@ -20,6 +20,11 @@ from .application_fixtures import integration_secrets
 
 
 @pytest.fixture(scope="function")
+def mongo_example_secrets():
+    return integration_secrets["mongo_example"]
+
+
+@pytest.fixture(scope="function")
 def mongo_connection_config(db: Session) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,

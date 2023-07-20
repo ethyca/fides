@@ -27,6 +27,12 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.schemas.system import PrivacyDeclarationResponse
+from fides.api.schemas.taxonomy_extensions import (
+    DataCategory,
+    DataQualifier,
+    DataSubject,
+    DataUse,
+)
 from fides.api.util.endpoint_utils import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
 from fides.common.api.scope_registry import (
     CREATE,
@@ -49,6 +55,12 @@ from fides.core import api as _api
 CONFIG = get_config()
 
 TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
+TAXONOMY_EXTENSIONS = {
+    "data_category": DataCategory,
+    "data_subject": DataSubject,
+    "data_use": DataUse,
+    "data_qualifier": DataQualifier,
+}
 
 
 # Helper Functions
@@ -1861,6 +1873,120 @@ class TestDefaultTaxonomyCrud:
             resource_id=second_item.fides_key,
             headers=test_config.user.auth_header,
         )
+
+
+@pytest.mark.integration
+class TestCrudActiveProperty:
+    """
+    Ensure `active` property is exposed properly via CRUD endpoints.
+    Specific tests for this property since it's a fides-specific
+    extension to the underlying fideslang taxonomy models.
+    """
+
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_can_update_active_on_default(
+        self, test_config: FidesConfig, endpoint: str
+    ) -> None:
+        """Ensure we can toggle `active` property on default taxonomy elements"""
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        resource = TAXONOMY_EXTENSIONS[endpoint](
+            **resource.dict()
+        )  # cast resource to extended model
+        resource.active = False
+        json_resource = resource.json(exclude_none=True)
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 200
+        assert result.json()["active"] is False
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is False
+
+        resource.active = True
+        json_resource = resource.json(exclude_none=True)
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 200
+        assert result.json()["active"] is True
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is True
+
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_can_create_with_active_property(
+        self,
+        test_config: FidesConfig,
+        endpoint: str,
+        generate_auth_header,
+    ) -> None:
+        """Ensure we can create taxonomy elements with `active` property set"""
+        # get a default taxonomy element as a sample resource
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        resource = TAXONOMY_EXTENSIONS[endpoint](
+            **resource.dict()
+        )  # cast resource to extended model
+        resource.fides_key = resource.fides_key + "_test_create_active_false"
+        resource.is_default = False
+        resource.active = False
+        json_resource = resource.json(exclude_none=True)
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 201
+        assert result.json()["active"] is False
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is False
+
+        resource.fides_key = resource.fides_key + "_test_create_active_true"
+        resource.active = True
+        json_resource = resource.json(exclude_none=True)
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 201
+        assert result.json()["active"] is True
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is True
 
 
 @pytest.mark.integration

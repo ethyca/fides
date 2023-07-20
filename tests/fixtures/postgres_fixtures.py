@@ -3,6 +3,7 @@ from uuid import uuid4
 
 import pytest
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import ObjectDeletedError
 from sqlalchemy_utils.functions import drop_database
 
 from fides.api.db.session import get_db_engine, get_db_session
@@ -25,6 +26,11 @@ from fides.config import CONFIG
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 
 from .application_fixtures import integration_secrets
+
+
+@pytest.fixture(scope="function")
+def postgres_example_secrets():
+    return integration_secrets["postgres_example"]
 
 
 @pytest.fixture
@@ -153,7 +159,11 @@ def connection_config(
         },
     )
     yield connection_config
-    connection_config.delete(db)
+
+    try:
+        connection_config.delete(db)
+    except ObjectDeletedError:
+        pass
 
 
 @pytest.fixture(scope="function")
