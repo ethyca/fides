@@ -20,7 +20,7 @@ from fides.api.graph.config import (
 
 DataCategoryFieldMapping = Dict[CollectionAddress, Dict[FidesKey, List[FieldPath]]]
 
-
+# Add the nodes to the database as Tasks
 class Node:
     """A traversal_node represents a single collection as a graph traversal_node.
     Note that a traversal_node is simply a store of a graph location and connections and does not imply ordering.
