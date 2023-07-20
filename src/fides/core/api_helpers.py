@@ -4,7 +4,7 @@ Reusable utilities meant to make repetitive api-related tasks easier.
 
 from typing import Dict, List, Optional, Union
 
-from fideslang import FidesModel
+from fideslang.models import FidesModel
 from fideslang.parse import parse_dict
 from fideslang.validation import FidesKey
 from requests import Response

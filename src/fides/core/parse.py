@@ -1,5 +1,5 @@
 """This module is responsible for parsing and verifying file, either with or without a server being available."""
-from fideslang import Taxonomy
+from fideslang.models import Taxonomy
 from fideslang.manifests import ingest_manifests
 from fideslang.parse import load_manifests_into_taxonomy
 

@@ -3,7 +3,7 @@ Provides functions that seed the application with data.
 """
 from typing import Dict, List, Optional
 
-from fideslang import DEFAULT_TAXONOMY
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from loguru import logger as log
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session

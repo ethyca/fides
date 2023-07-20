@@ -4,7 +4,7 @@ from pprint import pprint
 from typing import Dict, List, Tuple
 
 from deepdiff import DeepDiff
-from fideslang import FidesModel, Taxonomy
+from fideslang.models import FidesModel, Taxonomy
 
 from fides.common.utils import echo_green, echo_red, handle_cli_response
 from fides.core import api

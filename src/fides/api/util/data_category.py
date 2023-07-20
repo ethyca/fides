@@ -1,7 +1,7 @@
 from enum import Enum as EnumType
 from typing import List, Type
 
-from fideslang import DEFAULT_TAXONOMY
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from sqlalchemy.orm import Session
 
