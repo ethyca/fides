@@ -237,6 +237,7 @@ class TestAuthorizationUrl:
             data={
                 "connection_key": oauth2_authorization_code_connection_config.key,
                 "state": state,
+                "referer": None,
             },
         )
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Set
+from typing import Any, Set
 
 import yaml
 
@@ -15,11 +15,7 @@ from fides.api.schemas.connection_configuration.connection_type_system_map impor
 )
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.schemas.policy import SUPPORTED_ACTION_TYPES, ActionType
-from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
-    OAuth2AuthorizationCodeAuthenticationStrategy,
-)
 from fides.api.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
 )
