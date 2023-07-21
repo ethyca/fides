@@ -265,7 +265,7 @@ class TestPrivacyPreferenceHistory:
             PrivacyPreferenceHistory.create(
                 db=db,
                 data={
-                    "data_use": "marketing.advertising.third_party.targeted",
+                    "purpose": 8,
                     "vendor": "amplitude",
                     "fides_user_device": fides_user_device_id,
                     "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
@@ -276,7 +276,7 @@ class TestPrivacyPreferenceHistory:
                 check_name=False,
             )
 
-    def test_create_privacy_preference_for_data_use(
+    def test_create_privacy_preference_for_purpose(
         self, db, system, fides_user_provided_identity
     ):
         (
@@ -289,7 +289,7 @@ class TestPrivacyPreferenceHistory:
         preference_history_record = PrivacyPreferenceHistory.create(
             db=db,
             data={
-                "data_use": "marketing.advertising.third_party.targeted",
+                "purpose": 4,
                 "email": None,
                 "fides_user_device": fides_user_device_id,
                 "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
@@ -325,10 +325,7 @@ class TestPrivacyPreferenceHistory:
             preference_history_record.fides_user_device_provided_identity
             == fides_user_provided_identity
         )
-        assert (
-            preference_history_record.data_use
-            == "marketing.advertising.third_party.targeted"
-        )
+        assert preference_history_record.purpose == 4
         assert preference_history_record.tcf_version == "2.2"
 
         assert preference_history_record.phone_number is None
@@ -354,10 +351,7 @@ class TestPrivacyPreferenceHistory:
         current_privacy_preference_id = current_privacy_preference.id
         assert current_privacy_preference.preference == UserConsentPreference.opt_out
         assert current_privacy_preference.privacy_notice_history is None
-        assert (
-            current_privacy_preference.data_use
-            == "marketing.advertising.third_party.targeted"
-        )
+        assert current_privacy_preference.purpose == 4
         assert current_privacy_preference.tcf_version == "2.2"
 
         # Save preferences again with an "opt in" preference for this privacy notice
@@ -365,7 +359,7 @@ class TestPrivacyPreferenceHistory:
             db=db,
             data={
                 "preference": "opt_in",
-                "data_use": "marketing.advertising.third_party.targeted",
+                "purpose": 4,
                 "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
                 "request_origin": "tcf_overlay",
                 "secondary_user_ids": {"ga_client_id": "test"},
@@ -377,19 +371,13 @@ class TestPrivacyPreferenceHistory:
 
         assert next_preference_history_record.preference == UserConsentPreference.opt_in
         assert next_preference_history_record.privacy_notice_history is None
-        assert (
-            next_preference_history_record.data_use
-            == "marketing.advertising.third_party.targeted"
-        )
+        assert next_preference_history_record.purpose == 4
 
         # Assert CurrentPrivacyPreference record upserted
         db.refresh(current_privacy_preference)
         assert current_privacy_preference.preference == UserConsentPreference.opt_in
         assert current_privacy_preference.privacy_notice_history is None
-        assert (
-            current_privacy_preference.data_use
-            == "marketing.advertising.third_party.targeted"
-        )
+        assert current_privacy_preference.purpose == 4
         assert (
             next_preference_history_record.current_privacy_preference
             == current_privacy_preference
@@ -940,30 +928,30 @@ class TestCurrentPrivacyPreference:
             is None
         )
 
-    def test_get_preference_by_data_use_and_fides_user_device(
+    def test_get_preference_by_purpose_and_fides_user_device(
         self,
         db,
         empty_provided_identity,
-        privacy_preference_history_for_tcf_data_use,
+        privacy_preference_history_for_tcf_purpose,
         fides_user_provided_identity,
     ):
         pref = CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
             db=db,
             fides_user_provided_identity=fides_user_provided_identity,
-            preference_type=PreferenceType.data_use,
-            preference_value="analytics.reporting.content_performance",
+            preference_type=PreferenceType.purpose,
+            preference_value=8,
         )
         assert (
             pref
-            == privacy_preference_history_for_tcf_data_use.current_privacy_preference
+            == privacy_preference_history_for_tcf_purpose.current_privacy_preference
         )
 
         assert (
             CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
                 db=db,
                 fides_user_provided_identity=empty_provided_identity,
-                preference_type=PreferenceType.data_use,
-                preference_value="analytics.reporting.content_performanceg",
+                preference_type=PreferenceType.purpose,
+                preference_value=8,
             )
             is None
         )
@@ -972,8 +960,8 @@ class TestCurrentPrivacyPreference:
             CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
                 db=db,
                 fides_user_provided_identity=fides_user_provided_identity,
-                preference_type=PreferenceType.data_use,
-                preference_value="other_use",
+                preference_type=PreferenceType.purpose,
+                preference_value=500,
             )
             is None
         )
@@ -1185,29 +1173,31 @@ class TestLastServedNotice:
             is None
         )
 
-    def test_get_last_served_for_data_use_and_fides_user_device(
+    def test_get_last_served_for_purpose_and_fides_user_device(
         self,
         db,
         fides_user_provided_identity,
         empty_provided_identity,
-        served_notice_history_for_data_use,
+        served_notice_history_for_tcf_purpose,
     ):
         retrieved_record = (
             LastServedNotice.get_last_served_for_preference_type_and_fides_user_device(
                 db,
                 fides_user_provided_identity=fides_user_provided_identity,
-                tcf_preference_type=PreferenceType.data_use,
-                preference_value="analytics.reporting.content_performance",
+                tcf_preference_type=PreferenceType.purpose,
+                preference_value=8,
             )
         )
-        assert retrieved_record == served_notice_history_for_data_use.last_served_record
+        assert (
+            retrieved_record == served_notice_history_for_tcf_purpose.last_served_record
+        )
 
         assert (
             LastServedNotice.get_last_served_for_preference_type_and_fides_user_device(
                 db,
                 fides_user_provided_identity=empty_provided_identity,
-                tcf_preference_type=PreferenceType.data_use,
-                preference_value="analytics.reporting.content_performance",
+                tcf_preference_type=PreferenceType.purpose,
+                preference_value=8,
             )
             is None
         )
@@ -1215,8 +1205,8 @@ class TestLastServedNotice:
             LastServedNotice.get_last_served_for_preference_type_and_fides_user_device(
                 db,
                 fides_user_provided_identity=fides_user_provided_identity,
-                tcf_preference_type=PreferenceType.data_use,
-                preference_value="not_this_use",
+                tcf_preference_type=PreferenceType.purpose,
+                preference_value=200,
             )
             is None
         )

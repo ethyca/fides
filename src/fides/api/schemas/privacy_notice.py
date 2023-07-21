@@ -13,13 +13,7 @@ from fides.api.models.privacy_notice import PrivacyNoticeRegion, UserConsentPref
 from fides.api.schemas.base_class import FidesSchema
 
 
-class BaseConsentSchema(FidesSchema):
-    name: Optional[str]
-    description: Optional[str]
-    internal_description: Optional[str]
-
-
-class PrivacyNotice(BaseConsentSchema):
+class PrivacyNotice(FidesSchema):
     """
     Base for PrivacyNotice API objects
 
@@ -27,14 +21,17 @@ class PrivacyNotice(BaseConsentSchema):
     stricter but not less strict
     """
 
+    name: Optional[str]
     notice_key: Optional[FidesKey]
+    description: Optional[str]
+    internal_description: Optional[str]
     origin: Optional[str]
     regions: Optional[conlist(PrivacyNoticeRegion, min_items=1)]  # type: ignore
-    data_uses: Optional[conlist(str, min_items=1)]  # type: ignore
     consent_mechanism: Optional[ConsentMechanism]
+    data_uses: Optional[conlist(str, min_items=1)]  # type: ignore
     enforcement_level: Optional[EnforcementLevel]
-    has_gpc_flag: Optional[bool] = False
     disabled: Optional[bool] = False
+    has_gpc_flag: Optional[bool] = False
     displayed_in_privacy_center: Optional[bool] = False
     displayed_in_overlay: Optional[bool] = False
     displayed_in_api: Optional[bool] = False

@@ -1,4 +1,5 @@
 import pytest
+from fideslang.gvl import MAPPED_PURPOSES
 from sqlalchemy.exc import IntegrityError
 
 from fides.api.api.deps import get_api_session
@@ -20,7 +21,7 @@ from fides.api.models.privacy_notice import (
     UserConsentPreference,
 )
 from fides.api.models.privacy_preference import PreferenceType
-from fides.api.schemas.tcf import TCFConsentRecord
+from fides.api.schemas.tcf import TCFPurposeRecord
 
 
 class TestExperienceConfig:
@@ -1198,70 +1199,70 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
 
 class TestCacheSavedAndServedOnTCFConsentRecord:
     @pytest.fixture
-    def tcf_data_use_consent_record(self):
-        return TCFConsentRecord(**{"id": "analytics.reporting.content_performance"})
+    def tcf_purpose_consent_record(self):
+        return TCFPurposeRecord(**MAPPED_PURPOSES[8].dict())
 
-    def test_record_for_data_use_exists_for_older_version(
+    def test_record_for_tcf_purpose_exists_for_older_version(
         self,
         db,
-        tcf_data_use_consent_record,
+        tcf_purpose_consent_record,
         fides_user_provided_identity,
-        privacy_preference_history_for_tcf_data_use,
-        served_notice_history_for_data_use,
+        privacy_preference_history_for_tcf_purpose,
+        served_notice_history_for_tcf_purpose,
     ):
-        privacy_preference_history_for_tcf_data_use.current_privacy_preference.tcf_version = (
+        privacy_preference_history_for_tcf_purpose.current_privacy_preference.tcf_version = (
             "2.1"
         )
-        privacy_preference_history_for_tcf_data_use.current_privacy_preference.save(db)
+        privacy_preference_history_for_tcf_purpose.current_privacy_preference.save(db)
 
-        served_notice_history_for_data_use.last_served_record.tcf_version = "2.1"
-        served_notice_history_for_data_use.last_served_record.save(db)
+        served_notice_history_for_tcf_purpose.last_served_record.tcf_version = "2.1"
+        served_notice_history_for_tcf_purpose.last_served_record.save(db)
 
         cache_saved_and_served_on_consent_record(
             db,
-            tcf_data_use_consent_record,
+            tcf_purpose_consent_record,
             fides_user_provided_identity,
-            preference_type=PreferenceType.data_use,
+            preference_type=PreferenceType.purpose,
         )
-        assert tcf_data_use_consent_record.current_preference is None
+        assert tcf_purpose_consent_record.current_preference is None
         assert (
-            tcf_data_use_consent_record.outdated_preference
+            tcf_purpose_consent_record.outdated_preference
             == UserConsentPreference.opt_out
         )
-        assert tcf_data_use_consent_record.current_served is None
-        assert tcf_data_use_consent_record.outdated_served is True
+        assert tcf_purpose_consent_record.current_served is None
+        assert tcf_purpose_consent_record.outdated_served is True
 
     @pytest.mark.usefixtures(
-        "privacy_preference_history_for_tcf_data_use",
-        "served_notice_history_for_data_use",
+        "privacy_preference_history_for_tcf_purpose",
+        "served_notice_history_for_tcf_purpose",
     )
-    def test_record_for_data_use_exists_for_current_version(
-        self, db, tcf_data_use_consent_record, fides_user_provided_identity
+    def test_record_for_tcf_purpose_exists_for_current_version(
+        self, db, tcf_purpose_consent_record, fides_user_provided_identity
     ):
         cache_saved_and_served_on_consent_record(
             db,
-            tcf_data_use_consent_record,
+            tcf_purpose_consent_record,
             fides_user_provided_identity,
-            preference_type=PreferenceType.data_use,
+            preference_type=PreferenceType.purpose,
         )
         assert (
-            tcf_data_use_consent_record.current_preference
+            tcf_purpose_consent_record.current_preference
             == UserConsentPreference.opt_out
         )
-        assert tcf_data_use_consent_record.outdated_preference is None
-        assert tcf_data_use_consent_record.current_served is True
-        assert tcf_data_use_consent_record.outdated_served is None
+        assert tcf_purpose_consent_record.outdated_preference is None
+        assert tcf_purpose_consent_record.current_served is True
+        assert tcf_purpose_consent_record.outdated_served is None
 
-    def test_no_record_for_data_use_exists(
-        self, db, tcf_data_use_consent_record, fides_user_provided_identity
+    def test_no_record_for_tcf_purpose_exists(
+        self, db, tcf_purpose_consent_record, fides_user_provided_identity
     ):
         cache_saved_and_served_on_consent_record(
             db,
-            tcf_data_use_consent_record,
+            tcf_purpose_consent_record,
             fides_user_provided_identity,
-            preference_type=PreferenceType.data_use,
+            preference_type=PreferenceType.purpose,
         )
-        assert tcf_data_use_consent_record.current_preference is None
-        assert tcf_data_use_consent_record.outdated_preference is None
-        assert tcf_data_use_consent_record.current_served is None
-        assert tcf_data_use_consent_record.outdated_served is None
+        assert tcf_purpose_consent_record.current_preference is None
+        assert tcf_purpose_consent_record.outdated_preference is None
+        assert tcf_purpose_consent_record.current_served is None
+        assert tcf_purpose_consent_record.outdated_served is None

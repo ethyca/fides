@@ -632,7 +632,7 @@ class TestGetTCFPrivacyExperiences:
             resp.json()["items"][0]["privacy_notices"][0]["id"]
             == privacy_notice_fr_provide_service_frontend_only.id
         )
-        assert resp.json()["items"][0]["tcf_data_uses"] == []
+        assert resp.json()["items"][0]["tcf_purposes"] == []
         assert resp.json()["items"][0]["tcf_vendors"] == []
         assert resp.json()["items"][0]["tcf_features"] == []
 
@@ -653,14 +653,14 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
         assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
         assert resp.json()["items"][0]["privacy_notices"] == []
-        assert resp.json()["items"][0]["tcf_data_uses"] == []
+        assert resp.json()["items"][0]["tcf_purposes"] == []
         assert resp.json()["items"][0]["tcf_vendors"] == []
         assert resp.json()["items"][0]["tcf_features"] == []
 
     @pytest.mark.usefixtures(
         "privacy_experience_france_overlay",
-        "privacy_preference_history_for_tcf_data_use",
-        "served_notice_history_for_data_use",
+        "privacy_preference_history_for_tcf_purpose",
+        "served_notice_history_for_tcf_purpose",
         "fides_user_provided_identity",
     )
     def test_tcf_enabled_with_overlapping_systems(
@@ -696,27 +696,22 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
         assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
         assert resp.json()["items"][0]["privacy_notices"] == []
-        assert len(resp.json()["items"][0]["tcf_data_uses"]) == 1
+        assert len(resp.json()["items"][0]["tcf_purposes"]) == 1
+        assert resp.json()["items"][0]["tcf_purposes"][0]["id"] == 8
+        assert resp.json()["items"][0]["tcf_purposes"][0]["data_uses"] == [
+            "analytics.reporting.content_performance"
+        ]
         assert (
-            resp.json()["items"][0]["tcf_data_uses"][0]["id"]
-            == "analytics.reporting.content_performance"
-        )
-        assert (
-            resp.json()["items"][0]["tcf_data_uses"][0]["current_preference"]
+            resp.json()["items"][0]["tcf_purposes"][0]["current_preference"]
             == "opt_out"
         )
-        assert (
-            resp.json()["items"][0]["tcf_data_uses"][0]["outdated_preference"] is None
-        )
-        assert resp.json()["items"][0]["tcf_data_uses"][0]["current_served"] is True
-        assert resp.json()["items"][0]["tcf_data_uses"][0]["outdated_served"] is None
+        assert resp.json()["items"][0]["tcf_purposes"][0]["outdated_preference"] is None
+        assert resp.json()["items"][0]["tcf_purposes"][0]["current_served"] is True
+        assert resp.json()["items"][0]["tcf_purposes"][0]["outdated_served"] is None
 
         assert len(resp.json()["items"][0]["tcf_vendors"]) == 1
         assert resp.json()["items"][0]["tcf_vendors"][0]["id"] == "sendgrid"
-        assert (
-            resp.json()["items"][0]["tcf_vendors"][0]["data_uses"][0]["id"]
-            == "analytics.reporting.content_performance"
-        )
+        assert resp.json()["items"][0]["tcf_vendors"][0]["purposes"][0]["id"] == 8
         assert resp.json()["items"][0]["tcf_features"] == []
 
 

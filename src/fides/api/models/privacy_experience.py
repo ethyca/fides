@@ -24,7 +24,7 @@ from fides.api.models.privacy_preference import (
 )
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.schemas.tcf import TCFConsentRecord
+from fides.api.schemas.tcf import TCFPurposeRecord, TCFVendorRecord
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
     ConsentMechanism.notice_only,
@@ -211,7 +211,7 @@ class PrivacyExperience(Base):
     # Attribute that can be added as the result of "get_related_privacy_notices". Privacy notices aren't directly
     # related to experiences.
     privacy_notices: List[PrivacyNotice] = []
-    tcf_data_uses: List
+    tcf_purposes: List
     tcf_vendors: List
     tcf_features: List
 
@@ -546,7 +546,7 @@ def upsert_privacy_experiences_after_config_update(
 
 def cache_saved_and_served_on_consent_record(
     db: Session,
-    consent_record: Union[PrivacyNotice, TCFConsentRecord],
+    consent_record: Union[PrivacyNotice, TCFPurposeRecord, TCFVendorRecord],
     fides_user_provided_identity: Optional[ProvidedIdentity],
     preference_type: PreferenceType,
 ) -> None:

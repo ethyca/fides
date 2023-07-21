@@ -1138,17 +1138,17 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         privacy_notice,
         consent_policy,
         privacy_experience_france_tcf_overlay,
-        served_notice_history_for_data_use,
+        served_notice_history_for_tcf_purpose,
     ):
         return {
             "browser_identity": {
                 "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
             },
-            "data_use_preferences": [
+            "purpose_preferences": [
                 {
-                    "id": "analytics.reporting.content_performance",
+                    "id": 8,
                     "preference": "opt_out",
-                    "served_notice_history_id": served_notice_history_for_data_use.id,
+                    "served_notice_history_id": served_notice_history_for_tcf_purpose.id,
                 }
             ],
             "vendor_preferences": [
@@ -1356,7 +1356,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         url,
         tcf_request_body,
         privacy_experience_france_tcf_overlay,
-        served_notice_history_for_data_use,
+        served_notice_history_for_tcf_purpose,
     ):
         """Assert CurrentPrivacyPreference records were updated and PrivacyPreferenceHistory records were created
         for recordkeeping with respect to the fides user device id in the request
@@ -1374,36 +1374,34 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert response.status_code == 200
         assert len(response.json()) == 2
 
-        data_use_response = response.json()[0]
-        assert data_use_response["preference"] == "opt_out"
-        assert (
-            data_use_response["data_use"] == "analytics.reporting.content_performance"
-        )
+        purpose_response = response.json()[0]
+        assert purpose_response["preference"] == "opt_out"
+        assert purpose_response["purpose"] == 8
 
-        data_use_privacy_preference_history_id = data_use_response[
+        purpose_privacy_preference_history_id = purpose_response[
             "privacy_preference_history_id"
         ]
-        current_data_use_preference = CurrentPrivacyPreference.get(
-            db, object_id=data_use_response["id"]
+        current_purpose_preference = CurrentPrivacyPreference.get(
+            db, object_id=purpose_response["id"]
         )
 
         # Assert details saved with respect to data use
-        data_use_privacy_preference_history = (
-            current_data_use_preference.privacy_preference_history
+        purpose_privacy_preference_history = (
+            current_purpose_preference.privacy_preference_history
         )
         assert (
-            data_use_privacy_preference_history.id
-            == data_use_privacy_preference_history_id
+            purpose_privacy_preference_history.id
+            == purpose_privacy_preference_history_id
         )
-        assert data_use_privacy_preference_history.vendor is None
-        assert data_use_privacy_preference_history.privacy_notice_history_id is None
-        assert data_use_privacy_preference_history.feature is None
+        assert purpose_privacy_preference_history.vendor is None
+        assert purpose_privacy_preference_history.privacy_notice_history_id is None
+        assert purpose_privacy_preference_history.feature is None
 
         fides_user_device_provided_identity = (
-            data_use_privacy_preference_history.fides_user_device_provided_identity
+            purpose_privacy_preference_history.fides_user_device_provided_identity
         )
         assert (
-            current_data_use_preference.fides_user_device_provided_identity
+            current_purpose_preference.fides_user_device_provided_identity
             == fides_user_device_provided_identity
         )
         assert (
@@ -1415,33 +1413,30 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             == test_device_id
         )
         assert (
-            data_use_privacy_preference_history.hashed_fides_user_device
+            purpose_privacy_preference_history.hashed_fides_user_device
             == ProvidedIdentity.hash_value(test_device_id)
         )
-        assert data_use_privacy_preference_history.fides_user_device == test_device_id
-        assert (
-            data_use_privacy_preference_history.data_use
-            == data_use_response["data_use"]
-        )
+        assert purpose_privacy_preference_history.fides_user_device == test_device_id
+        assert purpose_privacy_preference_history.purpose == purpose_response["purpose"]
 
         assert (
-            data_use_privacy_preference_history.request_origin
+            purpose_privacy_preference_history.request_origin
             == RequestOrigin.tcf_overlay
         )
-        assert data_use_privacy_preference_history.user_agent == "testclient"
+        assert purpose_privacy_preference_history.user_agent == "testclient"
         assert (
-            data_use_privacy_preference_history.privacy_experience_config_history_id
+            purpose_privacy_preference_history.privacy_experience_config_history_id
             is None
         )
         assert (
-            data_use_privacy_preference_history.privacy_experience_id
+            purpose_privacy_preference_history.privacy_experience_id
             == privacy_experience_france_tcf_overlay.id
         )
-        assert data_use_privacy_preference_history.anonymized_ip_address == masked_ip
-        assert data_use_privacy_preference_history.url_recorded is None
+        assert purpose_privacy_preference_history.anonymized_ip_address == masked_ip
+        assert purpose_privacy_preference_history.url_recorded is None
         assert (
-            data_use_privacy_preference_history.served_notice_history_id
-            == served_notice_history_for_data_use.id
+            purpose_privacy_preference_history.served_notice_history_id
+            == served_notice_history_for_tcf_purpose.id
         )
 
         # Assert details saved w.r.t vendor
@@ -1456,7 +1451,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         vendor_privacy_preference_history = (
             current_vendor_preference.privacy_preference_history
         )
-        assert vendor_privacy_preference_history.data_use is None
+        assert vendor_privacy_preference_history.purpose is None
         assert vendor_privacy_preference_history.privacy_notice_history_id is None
         assert vendor_privacy_preference_history.feature is None
 
@@ -1464,7 +1459,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             vendor_privacy_preference_history.fides_user_device_provided_identity
         )
         assert (
-            current_data_use_preference.fides_user_device_provided_identity
+            current_purpose_preference.fides_user_device_provided_identity
             == fides_user_device_provided_identity
         )
         assert (
@@ -1500,12 +1495,12 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert vendor_privacy_preference_history.served_notice_history_id is None
 
         # Privacy request not created for TCF
-        assert data_use_privacy_preference_history.privacy_request_id is None
+        assert purpose_privacy_preference_history.privacy_request_id is None
         assert vendor_privacy_preference_history.privacy_request_id is None
         assert not run_privacy_request_mock.called
 
-        current_data_use_preference.delete(db)
-        data_use_privacy_preference_history.delete(db)
+        current_purpose_preference.delete(db)
+        purpose_privacy_preference_history.delete(db)
         current_vendor_preference.delete(db)
         vendor_privacy_preference_history.delete(db)
 
@@ -2009,7 +2004,7 @@ class TestSaveNoticesServedForFidesDeviceId:
             "browser_identity": {
                 "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
             },
-            "tcf_data_uses": ["personalize.profiling"],
+            "tcf_purposes": [5],
             "tcf_vendors": ["amplitude"],
             "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
             "user_geography": "fr",
@@ -2202,25 +2197,25 @@ class TestSaveNoticesServedForFidesDeviceId:
         )
         assert response.status_code == 200
         assert len(response.json()) == 2
-        data_use_served = response.json()[0]
+        purpose_served = response.json()[0]
         vendor_served = response.json()[1]
 
-        assert data_use_served["data_use"] == "personalize.profiling"
-        assert data_use_served["vendor"] is None
-        assert data_use_served["feature"] is None
-        assert data_use_served["privacy_notice_history"] is None
-        data_use_served_id = data_use_served["id"]
-        data_use_served_history_id = data_use_served["served_notice_history_id"]
+        assert purpose_served["purpose"] == 5
+        assert purpose_served["vendor"] is None
+        assert purpose_served["feature"] is None
+        assert purpose_served["privacy_notice_history"] is None
+        purpose_served_id = purpose_served["id"]
+        purpose_served_history_id = purpose_served["served_notice_history_id"]
 
-        assert vendor_served["data_use"] is None
+        assert vendor_served["purpose"] is None
         assert vendor_served["vendor"] == "amplitude"
         assert vendor_served["feature"] is None
         assert vendor_served["privacy_notice_history"] is None
         vendor_served_id = vendor_served["id"]
         vendor_served_history_id = vendor_served["served_notice_history_id"]
 
-        last_served_use = LastServedNotice.get(db, object_id=data_use_served_id)
-        assert last_served_use.data_use == "personalize.profiling"
+        last_served_use = LastServedNotice.get(db, object_id=purpose_served_id)
+        assert last_served_use.purpose == 5
         assert last_served_use.privacy_notice_id is None
         assert last_served_use.privacy_notice_history_id is None
         assert last_served_use.vendor is None
@@ -2228,22 +2223,22 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert last_served_use.created_at is not None
         assert last_served_use.updated_at is not None
         assert last_served_use.tcf_version == "2.2"
-        assert last_served_use.served_notice_history_id == data_use_served_history_id
+        assert last_served_use.served_notice_history_id == purpose_served_history_id
         use_served_history = ServedNoticeHistory.get(
-            db, object_id=data_use_served_history_id
+            db, object_id=purpose_served_history_id
         )
         assert (
             use_served_history.fides_user_device_provided_identity_id
             == last_served_use.fides_user_device_provided_identity_id
         )
-        assert use_served_history.data_use == "personalize.profiling"
+        assert use_served_history.purpose == 5
         assert (
             use_served_history.privacy_experience_id
             == privacy_experience_france_tcf_overlay.id
         )
 
         last_served_vendor = LastServedNotice.get(db, object_id=vendor_served_id)
-        assert last_served_vendor.data_use is None
+        assert last_served_vendor.purpose is None
         assert last_served_vendor.privacy_notice_id is None
         assert last_served_vendor.privacy_notice_history_id is None
         assert last_served_vendor.vendor == "amplitude"

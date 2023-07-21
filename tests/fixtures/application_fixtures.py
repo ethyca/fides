@@ -1484,7 +1484,7 @@ def served_notice_history(
 
 
 @pytest.fixture(scope="function")
-def served_notice_history_for_data_use(
+def served_notice_history_for_tcf_purpose(
     db: Session, fides_user_provided_identity
 ) -> Generator:
     pref_1 = ServedNoticeHistory.create(
@@ -1493,7 +1493,7 @@ def served_notice_history_for_data_use(
             "acknowledge_mode": False,
             "serving_component": "tcf_overlay",
             "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "data_use": "analytics.reporting.content_performance",
+            "purpose": 8,
         },
         check_name=False,
     )
@@ -2220,7 +2220,7 @@ def privacy_preference_history(
 
 
 @pytest.fixture(scope="function")
-def privacy_preference_history_for_tcf_data_use(
+def privacy_preference_history_for_tcf_purpose(
     db,
     provided_identity_and_consent_request,
     privacy_experience_france_overlay,
@@ -2233,7 +2233,7 @@ def privacy_preference_history_for_tcf_data_use(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "data_use": "analytics.reporting.content_performance",
+            "purpose": 8,
             "privacy_experience_config_history_id": None,
             "privacy_experience_id": privacy_experience_france_overlay.id,
             "preference": "opt_out",

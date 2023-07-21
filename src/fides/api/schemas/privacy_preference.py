@@ -16,7 +16,7 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.redis_cache import Identity
-from fides.api.schemas.tcf import TCFPreferenceSave
+from fides.api.schemas.tcf import TCFPreferenceSave, TCFPurposeSave
 
 
 class ConsentOptionCreate(FidesSchema):
@@ -33,7 +33,7 @@ class PrivacyPreferencesRequest(FidesSchema):
     browser_identity: Identity
     code: Optional[SafeStr]
     preferences: conlist(ConsentOptionCreate, max_items=50) = []  # type: ignore
-    data_use_preferences: conlist(TCFPreferenceSave, max_items=50) = []  # type: ignore
+    purpose_preferences: conlist(TCFPurposeSave, max_items=50) = []  # type: ignore
     vendor_preferences: conlist(TCFPreferenceSave, max_items=50) = []  # type: ignore
     feature_preferences: conlist(TCFPreferenceSave, max_items=50) = []  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
@@ -66,7 +66,7 @@ class RecordConsentServedRequest(FidesSchema):
     browser_identity: Identity
     code: Optional[SafeStr]  # For verified identity workflow only
     privacy_notice_history_ids: List[SafeStr] = []
-    tcf_data_uses: List[SafeStr] = []
+    tcf_purposes: List[int] = []
     tcf_vendors: List[SafeStr] = []
     tcf_features: List[SafeStr] = []
     privacy_experience_id: Optional[SafeStr]
@@ -93,7 +93,7 @@ class LastServedConsentSchema(FidesSchema):
     updated_at: datetime
     served_notice_history_id: str
     privacy_notice_history: Optional[PrivacyNoticeHistorySchema]
-    data_use: Optional[str]
+    purpose: Optional[int]
     vendor: Optional[str]
     feature: Optional[str]
 
@@ -152,8 +152,8 @@ class ConsentReportingSchema(FidesSchema):
     served_notice_history_id: Optional[str] = Field(
         title="The id of the record where the notice was served to the end user"
     )
-    data_use: Optional[str] = Field(
-        title="The TCF data use this preference was saved against"
+    purpose: Optional[int] = Field(
+        title="The TCF purpose this preference was saved against"
     )
     vendor: Optional[str] = Field(
         title="The TCF vendor this preference was saved against"
@@ -173,7 +173,7 @@ class CurrentPrivacyPreferenceSchema(FidesSchema):
     preference: UserConsentPreference
     privacy_notice_history: Optional[PrivacyNoticeHistorySchema]
     privacy_preference_history_id: Optional[str]
-    data_use: Optional[str]
+    purpose: Optional[int]
     vendor: Optional[str]
     feature: Optional[str]
 
@@ -190,6 +190,6 @@ class CurrentPrivacyPreferenceReportingSchema(FidesSchema):
     privacy_preference_history_id: str
     provided_identity_id: Optional[str]
     created_at: datetime
-    data_use: Optional[str]
+    purpose: Optional[str]
     vendor: Optional[str]
     feature: Optional[str]

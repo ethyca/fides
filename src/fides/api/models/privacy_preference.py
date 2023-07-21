@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional, Tuple, Type, Union
 
 from sqlalchemy import ARRAY, Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint, func
+from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
@@ -52,7 +52,7 @@ class ConsentMethod(Enum):
 class PreferenceType(Enum):
     privacy_notice_id = "privacy_notice_id"
     privacy_notice_history_id = "privacy_notice_history_id"
-    data_use = "data_use"
+    purpose = "purpose"
     vendor = "vendor"
     feature = "feature"
 
@@ -73,9 +73,9 @@ class ConsentReportingMixin:
     )
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
-    data_use = Column(
-        String, index=True
-    )  # When saving privacy preferences with respect to a data use directly
+    purpose = Column(
+        Integer, index=True
+    )  # When saving privacy preferences with respect to a TCF purpose directly
     # Encrypted email, for reporting
     email = Column(
         StringEncryptedType(
@@ -201,8 +201,8 @@ class ConsentReportingMixin:
     def preference_type(self) -> PreferenceType:
         if self.privacy_notice_history_id:
             return PreferenceType.privacy_notice_id
-        if self.data_use:
-            return PreferenceType.data_use
+        if self.purpose:
+            return PreferenceType.purpose
         if self.vendor:
             return PreferenceType.vendor
 
@@ -242,14 +242,14 @@ def _validate_before_saving_consent_history(
             "Must supply a verified provided identity id or a fides_user_device_provided_identity_id"
         )
 
-    data_use = data.get("data_use")
+    purpose = data.get("purpose")
     vendor = data.get("vendor")
     feature = data.get("feature")
 
     if (
         sum(
             item is not None
-            for item in [privacy_notice_history, data_use, vendor, feature]
+            for item in [privacy_notice_history, purpose, vendor, feature]
         )
         != 1
     ):
@@ -257,7 +257,7 @@ def _validate_before_saving_consent_history(
             "Can only save record against one of a privacy notice, data use, vendor, or feature."
         )
 
-    return privacy_notice_history, data_use, vendor, feature
+    return privacy_notice_history, purpose, vendor, feature
 
 
 class ServedNoticeHistory(ConsentReportingMixin, Base):
@@ -316,12 +316,12 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
         """
         (
             privacy_notice_history,
-            data_use,
+            purpose,
             vendor,
             feature,
         ) = _validate_before_saving_consent_history(db, data)
 
-        if any([data_use, vendor, feature]):
+        if any([purpose, vendor, feature]):
             data["tcf_version"] = CURRENT_TCF_VERSION
 
         created_served_notice_history = super().create(
@@ -340,10 +340,10 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
                 "privacy_notice_id"
             ] = privacy_notice_history.privacy_notice_id
 
-        last_served_data["data_use"] = data_use
+        last_served_data["purpose"] = purpose
         last_served_data["vendor"] = vendor
         last_served_data["feature"] = feature
-        if any([data_use, vendor, feature]):
+        if any([purpose, vendor, feature]):
             last_served_data["tcf_version"] = CURRENT_TCF_VERSION
 
         upserted_last_served_notice_record = upsert_last_saved_record(
@@ -477,7 +477,7 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
         """
         (
             privacy_notice_history,
-            data_use,
+            purpose,
             vendor,
             feature,
         ) = _validate_before_saving_consent_history(db, data)
@@ -487,7 +487,7 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
                 "relevant_systems"
             ] = privacy_notice_history.calculate_relevant_systems(db)
 
-        if any([data_use, vendor, feature]):
+        if any([purpose, vendor, feature]):
             data["tcf_version"] = CURRENT_TCF_VERSION
 
         created_privacy_preference_history = super().create(
@@ -508,11 +508,11 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
                 "privacy_notice_history_id"
             ] = privacy_notice_history.id
 
-        current_privacy_preference_data["data_use"] = data_use
+        current_privacy_preference_data["purpose"] = purpose
         current_privacy_preference_data["vendor"] = vendor
         current_privacy_preference_data["feature"] = feature
 
-        if any([data_use, vendor, feature]):
+        if any([purpose, vendor, feature]):
             current_privacy_preference_data["tcf_version"] = CURRENT_TCF_VERSION
 
         current_preference = upsert_last_saved_record(
@@ -531,7 +531,7 @@ class LastSavedMixin:
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
-    data_use = Column(String, index=True)  # When a data use was served directly (TCF)
+    purpose = Column(Integer, index=True)  # When a purpose was served directly (TCF)
 
     feature = Column(String, index=True)  # When a feature was served directly (TCF)
 
@@ -622,11 +622,11 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
             "privacy_notice_id",
             name="fides_user_device_identity_privacy_notice",
         ),
-        UniqueConstraint("provided_identity_id", "data_use", name="identity_data_use"),
+        UniqueConstraint("provided_identity_id", "purpose", name="identity_purpose"),
         UniqueConstraint(
             "fides_user_device_provided_identity_id",
-            "data_use",
-            name="fides_user_device_identity_data_use",
+            "purpose",
+            name="fides_user_device_identity_purpose",
         ),
         UniqueConstraint("provided_identity_id", "vendor", name="identity_vendor"),
         UniqueConstraint(
@@ -653,10 +653,10 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
         db: Session,
         fides_user_provided_identity: ProvidedIdentity,
         preference_type: PreferenceType,
-        preference_value: str,
+        preference_value: Union[int, str],
     ) -> Optional[CurrentPrivacyPreference]:
-        """Retrieves the CurrentPrivacyPreference saved against a notice, data use,
-        vendor, or feature for a given fides user device id
+        """Retrieves the CurrentPrivacyPreference saved against a notice, TCF purpose,
+        TCF vendor, or TCF feature for a given fides user device id
         """
 
         return (
@@ -705,7 +705,7 @@ class LastServedNotice(LastSavedMixin, Base):
         db: Session,
         fides_user_provided_identity: ProvidedIdentity,
         tcf_preference_type: PreferenceType,
-        preference_value: str,
+        preference_value: Union[str, int],
     ) -> Optional[LastServedNotice]:
         """Retrieves the CurrentPrivacyPreference for the user with the given identity
         and the served preference type/value"""

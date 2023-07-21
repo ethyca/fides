@@ -67,7 +67,7 @@ from fides.api.schemas.privacy_request import (
     VerificationCode,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.schemas.tcf import TCFPreferenceSave
+from fides.api.schemas.tcf import TCFPreferenceSave, TCFPurposeSave
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
@@ -199,7 +199,9 @@ def verify_previously_served_records(
     """
 
     def validate_served_record(
-        preference_record: Union[ConsentOptionCreate, TCFPreferenceSave],
+        preference_record: Union[
+            ConsentOptionCreate, TCFPurposeSave, TCFPreferenceSave
+        ],
         served_record_field: str,
         saved_preference_field: str,
         name_for_log: str,
@@ -224,12 +226,12 @@ def verify_previously_served_records(
             name_for_log="Privacy Notice History",
         )
 
-    for preference in data.data_use_preferences:
+    for preference in data.purpose_preferences:
         validate_served_record(
             preference_record=preference,
-            served_record_field="data_use",
+            served_record_field="purpose",
             saved_preference_field="id",
-            name_for_log="data use",
+            name_for_log="purpose",
         )
 
     for preference in data.vendor_preferences:
@@ -413,7 +415,7 @@ def persist_tcf_preferences(
     request_data: PrivacyPreferencesRequest,
     upserted_current_preferences: List[CurrentPrivacyPreference],
 ) -> None:
-    """Save TCF preferences with respect to data use, vendor, or feature if applicable.
+    """Save TCF preferences with respect to purpose, vendor, or feature if applicable.
 
     All TCF Preferences have frontend-only enforcement at the moment, so no Privacy Requests
     are created to propagate consent. The upserted_current_preferences list is updated in place.
@@ -423,7 +425,7 @@ def persist_tcf_preferences(
         return
 
     def save_tcf_preference(
-        field_type: str, preference: TCFPreferenceSave
+        field_type: str, preference: Union[TCFPreferenceSave, TCFPurposeSave]
     ) -> CurrentPrivacyPreference:
         (
             _,
@@ -443,13 +445,13 @@ def persist_tcf_preferences(
         )
         return current_preference
 
-    # Save TCF preferences separately with respect to data use, vendor, and/or feature.
+    # Save TCF preferences separately with respect to purpose, vendor, and/or feature.
     # Currently, we don't attempt to propagate these preferences to third party systems.
-    for data_use_preference in request_data.data_use_preferences:
+    for purpose_preference in request_data.purpose_preferences:
         upserted_current_preferences.append(
             save_tcf_preference(
-                preference=data_use_preference,
-                field_type="data_use",
+                preference=purpose_preference,
+                field_type="purpose",
             )
         )
 
@@ -533,7 +535,7 @@ def save_privacy_preferences_for_identities(
     """
     Saves privacy preferences for an end user.
 
-    Saves preferences for either a privacy notice, or individual TCF items like data uses, vendors, or features.
+    Saves preferences for either a privacy notice, or individual TCF items like purposes, vendors, or features.
 
     Creates both a detailed historical record and upserts a current record with just the most recently saved changes
     for each preference type.
@@ -645,7 +647,7 @@ def save_consent_served_for_identities(
     """
     Saves that consent was served to the end user.
 
-    Saves that either a privacy notice, or individual TCF items like data uses, vendors, or features
+    Saves that either a privacy notice, or individual TCF items like purposes, vendors, or features
     were served.
 
     We save a historical record every time a consent item was served to the user in the frontend,
@@ -663,7 +665,7 @@ def save_consent_served_for_identities(
     common_data["serving_component"] = original_request_data.serving_component
 
     def save_consent_served(
-        identifiers: List[SafeStr], field_name: PreferenceType
+        identifiers: Union[List[SafeStr], List[int]], field_name: PreferenceType
     ) -> None:
         """Internal helper for creating a ServedNoticeHistory record for various types
         of preferences"""
@@ -688,7 +690,7 @@ def save_consent_served_for_identities(
         original_request_data.privacy_notice_history_ids,
         PreferenceType.privacy_notice_history_id,
     )
-    save_consent_served(original_request_data.tcf_data_uses, PreferenceType.data_use)
+    save_consent_served(original_request_data.tcf_purposes, PreferenceType.purpose)
     save_consent_served(original_request_data.tcf_vendors, PreferenceType.vendor)
     save_consent_served(original_request_data.tcf_features, PreferenceType.feature)
 
@@ -830,7 +832,7 @@ def get_historical_consent_report(
             PrivacyPreferenceHistory.served_notice_history_id.label(
                 "served_notice_history_id"
             ),
-            PrivacyPreferenceHistory.data_use.label("data_use"),
+            PrivacyPreferenceHistory.purpose.label("purpose"),
             PrivacyPreferenceHistory.vendor.label("vendor"),
             PrivacyPreferenceHistory.feature.label("feature"),
         )
