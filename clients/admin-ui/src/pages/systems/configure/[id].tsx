@@ -43,7 +43,7 @@ const ConfigureSystem: NextPage = () => {
   }, [system, dispatch]);
 
   useEffect(() => {
-    const {status} = router.query;
+    const { status } = router.query;
 
     if (status) {
       if (status === "succeeded") {
