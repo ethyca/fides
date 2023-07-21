@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentMechanism } from './ConsentMechanism';
-import type { EnforcementLevel } from './EnforcementLevel';
-import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { ConsentMechanism } from "./ConsentMechanism";
+import type { EnforcementLevel } from "./EnforcementLevel";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
  * An API representation of a PrivacyNotice that includes an `id` field.
@@ -27,4 +27,3 @@ export type PrivacyNoticeWithId = {
   displayed_in_api?: boolean;
   id: string;
 };
-

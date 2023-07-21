@@ -11,4 +11,3 @@ export type Classification = {
   aggregated_score?: number;
   classification_paradigm?: string;
 };
-

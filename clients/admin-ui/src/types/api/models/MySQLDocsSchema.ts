@@ -27,4 +27,3 @@ export type MySQLDocsSchema = {
    */
   dbname: string;
 };
-

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Cookies } from './Cookies';
+import type { Cookies } from "./Cookies";
 
 /**
  * The PrivacyDeclaration resource model.
@@ -48,4 +48,3 @@ export type PrivacyDeclaration = {
    */
   cookies?: Array<Cookies>;
 };
-

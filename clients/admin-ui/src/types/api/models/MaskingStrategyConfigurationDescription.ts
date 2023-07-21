@@ -10,4 +10,3 @@ export type MaskingStrategyConfigurationDescription = {
   optional?: boolean;
   description: string;
 };
-

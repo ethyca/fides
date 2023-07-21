@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Identity } from './Identity';
-import type { ServingComponent } from './ServingComponent';
+import type { Identity } from "./Identity";
+import type { ServingComponent } from "./ServingComponent";
 
 /**
  * Request body when indicating that notices were served in the UI
@@ -17,4 +17,3 @@ export type NoticesServedRequest = {
   acknowledge_mode?: boolean;
   serving_component: ServingComponent;
 };
-

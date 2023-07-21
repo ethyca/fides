@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AccessLevel } from './AccessLevel';
-import type { ConnectionType } from './ConnectionType';
-import type { SaaSConfigBase } from './SaaSConfigBase';
+import type { AccessLevel } from "./AccessLevel";
+import type { ConnectionType } from "./ConnectionType";
+import type { SaaSConfigBase } from "./SaaSConfigBase";
 
 /**
  * Describes the returned schema for a ConnectionConfiguration.
@@ -25,4 +25,3 @@ export type ConnectionConfigurationResponse = {
   saas_config?: SaaSConfigBase;
   secrets?: any;
 };
-

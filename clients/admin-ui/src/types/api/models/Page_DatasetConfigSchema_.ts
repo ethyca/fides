@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DatasetConfigSchema } from './DatasetConfigSchema';
+import type { DatasetConfigSchema } from "./DatasetConfigSchema";
 
 export type Page_DatasetConfigSchema_ = {
   items: Array<DatasetConfigSchema>;
@@ -10,4 +10,3 @@ export type Page_DatasetConfigSchema_ = {
   page: number;
   size: number;
 };
-

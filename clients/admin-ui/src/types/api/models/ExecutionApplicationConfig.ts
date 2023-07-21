@@ -9,4 +9,3 @@ export type ExecutionApplicationConfig = {
   subject_identity_verification_required?: boolean;
   require_manual_request_approval?: boolean;
 };
-

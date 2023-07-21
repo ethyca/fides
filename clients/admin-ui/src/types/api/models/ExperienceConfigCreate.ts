@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { BannerEnabled } from './BannerEnabled';
-import type { ComponentType } from './ComponentType';
-import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { BannerEnabled } from "./BannerEnabled";
+import type { ComponentType } from "./ComponentType";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
  * An API representation to create ExperienceConfig.
@@ -51,4 +51,3 @@ export type ExperienceConfigCreate = {
   title: string;
   component: ComponentType;
 };
-

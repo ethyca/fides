@@ -9,4 +9,3 @@ export type ClientCreatedResponse = {
   client_id: string;
   client_secret: string;
 };
-

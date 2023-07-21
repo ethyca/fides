@@ -8,4 +8,3 @@
 export type UserCreateResponse = {
   id: string;
 };
-

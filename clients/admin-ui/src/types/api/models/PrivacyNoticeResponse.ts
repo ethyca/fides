@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentMechanism } from './ConsentMechanism';
-import type { Cookies } from './Cookies';
-import type { EnforcementLevel } from './EnforcementLevel';
-import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { ConsentMechanism } from "./ConsentMechanism";
+import type { Cookies } from "./Cookies";
+import type { EnforcementLevel } from "./EnforcementLevel";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
  * An API representation of a PrivacyNotice used for response payloads
@@ -32,4 +32,3 @@ export type PrivacyNoticeResponse = {
   privacy_notice_history_id: string;
   cookies: Array<Cookies>;
 };
-

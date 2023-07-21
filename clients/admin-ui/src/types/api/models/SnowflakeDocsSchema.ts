@@ -35,4 +35,3 @@ export type SnowflakeDocsSchema = {
    */
   role_name?: string;
 };
-

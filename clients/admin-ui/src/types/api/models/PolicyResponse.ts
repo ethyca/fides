@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DrpAction } from './DrpAction';
-import type { RuleResponse } from './RuleResponse';
+import type { DrpAction } from "./DrpAction";
+import type { RuleResponse } from "./RuleResponse";
 
 /**
  * A holistic view of a Policy record, including all foreign keys by default.
@@ -15,4 +15,3 @@ export type PolicyResponse = {
   execution_timeframe?: number;
   rules?: Array<RuleResponse>;
 };
-

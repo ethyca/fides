@@ -6,6 +6,6 @@
  * The component type - not formalized in the db
  */
 export enum ComponentType {
-  OVERLAY = 'overlay',
-  PRIVACY_CENTER = 'privacy_center',
+  OVERLAY = "overlay",
+  PRIVACY_CENTER = "privacy_center",
 }

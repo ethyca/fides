@@ -8,4 +8,3 @@
 export type DrpMeta = {
   version: string;
 };
-

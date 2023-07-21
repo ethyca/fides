@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Dataset } from './Dataset';
-import type { DatasetTraversalDetails } from './DatasetTraversalDetails';
+import type { Dataset } from "./Dataset";
+import type { DatasetTraversalDetails } from "./DatasetTraversalDetails";
 
 /**
  * Response model for validating a dataset, which includes both the dataset
@@ -14,4 +14,3 @@ export type ValidateDatasetResponse = {
   dataset: Dataset;
   traversal_details: DatasetTraversalDetails;
 };
-

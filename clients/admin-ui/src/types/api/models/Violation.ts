@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ViolationAttributes } from './ViolationAttributes';
+import type { ViolationAttributes } from "./ViolationAttributes";
 
 /**
  * The model for violations within an evaluation.
@@ -17,4 +17,3 @@ export type Violation = {
    */
   detail: string;
 };
-

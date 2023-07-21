@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { PolicyResponse } from './PolicyResponse';
+import type { PolicyResponse } from "./PolicyResponse";
 
 export type Page_PolicyResponse_ = {
   items: Array<PolicyResponse>;
@@ -10,4 +10,3 @@ export type Page_PolicyResponse_ = {
   page: number;
   size: number;
 };
-

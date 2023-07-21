@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { WebhookDirection } from './WebhookDirection';
+import type { WebhookDirection } from "./WebhookDirection";
 
 /**
  * Request schema for creating/updating a Policy Webhook
@@ -13,4 +13,3 @@ export type PolicyWebhookCreate = {
   name?: string;
   connection_config_key: string;
 };
-

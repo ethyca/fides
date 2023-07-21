@@ -12,4 +12,3 @@ export type FidesDocsSchema = {
   polling_timeout?: number;
   polling_interval?: number;
 };
-

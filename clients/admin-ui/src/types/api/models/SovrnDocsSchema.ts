@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AdvancedSettingsWithExtendedIdentityTypes } from './AdvancedSettingsWithExtendedIdentityTypes';
+import type { AdvancedSettingsWithExtendedIdentityTypes } from "./AdvancedSettingsWithExtendedIdentityTypes";
 
 /**
  * SovrnDocsSchema Secrets Schema for API Docs
@@ -13,4 +13,3 @@ export type SovrnDocsSchema = {
   test_email_address?: string;
   advanced_settings?: AdvancedSettingsWithExtendedIdentityTypes;
 };
-

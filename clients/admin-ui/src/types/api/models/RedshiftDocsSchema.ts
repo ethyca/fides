@@ -35,4 +35,3 @@ export type RedshiftDocsSchema = {
    */
   ssh_required?: boolean;
 };
-

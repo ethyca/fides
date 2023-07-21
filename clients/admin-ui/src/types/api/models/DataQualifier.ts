@@ -33,4 +33,3 @@ export type DataQualifier = {
    */
   active?: boolean;
 };
-

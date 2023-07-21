@@ -8,4 +8,3 @@
 export type CollectionMeta = {
   after?: Array<string>;
 };
-

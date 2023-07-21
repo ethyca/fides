@@ -10,4 +10,3 @@ export type AesDecryptionRequest = {
   key: string;
   nonce: string;
 };
-

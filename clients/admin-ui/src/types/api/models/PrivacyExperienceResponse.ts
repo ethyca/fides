@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ComponentType } from './ComponentType';
-import type { ExperienceConfigResponse } from './ExperienceConfigResponse';
-import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
-import type { PrivacyNoticeResponseWithUserPreferences } from './PrivacyNoticeResponseWithUserPreferences';
+import type { ComponentType } from "./ComponentType";
+import type { ExperienceConfigResponse } from "./ExperienceConfigResponse";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { PrivacyNoticeResponseWithUserPreferences } from "./PrivacyNoticeResponseWithUserPreferences";
 
 /**
  * An API representation of a PrivacyExperience used for response payloads
@@ -20,4 +20,3 @@ export type PrivacyExperienceResponse = {
   show_banner?: boolean;
   privacy_notices?: Array<PrivacyNoticeResponseWithUserPreferences>;
 };
-

@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ExecutionApplicationConfig } from './ExecutionApplicationConfig';
-import type { NotificationApplicationConfig } from './NotificationApplicationConfig';
-import type { StorageApplicationConfig } from './StorageApplicationConfig';
+import type { ExecutionApplicationConfig } from "./ExecutionApplicationConfig";
+import type { NotificationApplicationConfig } from "./NotificationApplicationConfig";
+import type { StorageApplicationConfig } from "./StorageApplicationConfig";
 
 /**
  * Application config settings update body is an arbitrary dict (JSON object)
@@ -18,4 +18,3 @@ export type ApplicationConfig = {
   notifications?: NotificationApplicationConfig;
   execution?: ExecutionApplicationConfig;
 };
-

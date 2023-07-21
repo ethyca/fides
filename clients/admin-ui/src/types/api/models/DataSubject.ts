@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DataSubjectRights } from './DataSubjectRights';
+import type { DataSubjectRights } from "./DataSubjectRights";
 
 /**
  * The DataSubject resource model.
@@ -48,4 +48,3 @@ export type DataSubject = {
    */
   active?: boolean;
 };
-

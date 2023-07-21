@@ -15,19 +15,15 @@ export type CoreHealthCheck = {
 };
 
 export namespace CoreHealthCheck {
-
   export enum database {
-    HEALTHY = 'healthy',
-    UNHEALTHY = 'unhealthy',
-    NEEDS_MIGRATION = 'needs migration',
+    HEALTHY = "healthy",
+    UNHEALTHY = "unhealthy",
+    NEEDS_MIGRATION = "needs migration",
   }
 
   export enum cache {
-    HEALTHY = 'healthy',
-    UNHEALTHY = 'unhealthy',
-    NO_CACHE_CONFIGURED = 'no cache configured',
+    HEALTHY = "healthy",
+    UNHEALTHY = "unhealthy",
+    NO_CACHE_CONFIGURED = "no cache configured",
   }
-
-
 }
-

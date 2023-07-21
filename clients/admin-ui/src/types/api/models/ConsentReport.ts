@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Identity } from './Identity';
+import type { Identity } from "./Identity";
 
 /**
  * Schema for reporting Consent requests.
@@ -18,4 +18,3 @@ export type ConsentReport = {
   created_at: string;
   updated_at: string;
 };
-

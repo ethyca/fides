@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { BannerEnabled } from './BannerEnabled';
-import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { BannerEnabled } from "./BannerEnabled";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
  * Updating ExperienceConfig. Note that component cannot be updated once its created
@@ -62,4 +62,3 @@ export type ExperienceConfigUpdate = {
    */
   title?: string;
 };
-

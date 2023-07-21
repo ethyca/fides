@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentReportingSchema } from './ConsentReportingSchema';
+import type { ConsentReportingSchema } from "./ConsentReportingSchema";
 
 export type Page_ConsentReportingSchema_ = {
   items: Array<ConsentReportingSchema>;
@@ -10,4 +10,3 @@ export type Page_ConsentReportingSchema_ = {
   page: number;
   size: number;
 };
-

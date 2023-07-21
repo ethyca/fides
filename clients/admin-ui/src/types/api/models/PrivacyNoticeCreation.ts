@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentMechanism } from './ConsentMechanism';
-import type { EnforcementLevel } from './EnforcementLevel';
-import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { ConsentMechanism } from "./ConsentMechanism";
+import type { EnforcementLevel } from "./EnforcementLevel";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
  * An API representation of a PrivacyNotice.
@@ -27,4 +27,3 @@ export type PrivacyNoticeCreation = {
   displayed_in_overlay?: boolean;
   displayed_in_api?: boolean;
 };
-

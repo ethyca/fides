@@ -8,4 +8,3 @@
 export type GetRegistrationStatusResponse = {
   opt_in?: boolean;
 };
-

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { RuleResponseWithTargets } from './RuleResponseWithTargets';
+import type { RuleResponseWithTargets } from "./RuleResponseWithTargets";
 
 export type Page_RuleResponseWithTargets_ = {
   items: Array<RuleResponseWithTargets>;
@@ -10,4 +10,3 @@ export type Page_RuleResponseWithTargets_ = {
   page: number;
   size: number;
 };
-

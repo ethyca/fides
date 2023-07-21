@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { PrivacyRule } from './PrivacyRule';
+import type { PrivacyRule } from "./PrivacyRule";
 
 /**
  * The PolicyRule resource model.
@@ -40,4 +40,3 @@ export type PolicyRule = {
    */
   data_qualifier?: string;
 };
-

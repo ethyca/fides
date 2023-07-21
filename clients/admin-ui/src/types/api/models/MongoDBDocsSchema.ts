@@ -27,4 +27,3 @@ export type MongoDBDocsSchema = {
    */
   defaultauthdb: string;
 };
-

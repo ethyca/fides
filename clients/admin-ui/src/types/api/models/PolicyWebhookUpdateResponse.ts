@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { PolicyWebhookResponse } from './PolicyWebhookResponse';
-import type { WebhookOrder } from './WebhookOrder';
+import type { PolicyWebhookResponse } from "./PolicyWebhookResponse";
+import type { WebhookOrder } from "./WebhookOrder";
 
 /**
  * Response schema after a PATCH to a single webhook - because updating the order of this webhook can update the
@@ -13,4 +13,3 @@ export type PolicyWebhookUpdateResponse = {
   resource: PolicyWebhookResponse;
   new_order: Array<WebhookOrder>;
 };
-

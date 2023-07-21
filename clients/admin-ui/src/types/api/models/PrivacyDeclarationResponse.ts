@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Cookies } from './Cookies';
+import type { Cookies } from "./Cookies";
 
 /**
  * Extension of base pydantic model to include DB `id` field in the response
@@ -46,4 +46,3 @@ export type PrivacyDeclarationResponse = {
    */
   id: string;
 };
-
