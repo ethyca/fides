@@ -8,7 +8,7 @@ import {
 import NoticeToggles from "./NoticeToggles";
 import CloseButton from "./CloseButton";
 import GpcInfo from "./GpcInfo";
-import TcfTabs from "./TcfTabs";
+import TcfTabs from "./Tcf/TcfTabs";
 
 type NoticeKeys = Array<PrivacyNotice["notice_key"]>;
 
@@ -62,7 +62,7 @@ const ConsentModal = ({
         </p>
         <GpcInfo />
         {showTcf ? (
-          <TcfTabs />
+          <TcfTabs notices={notices} />
         ) : (
           <div className="fides-modal-notices">
             <NoticeToggles

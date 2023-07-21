@@ -13,7 +13,7 @@ import {
   Text,
   useDisclosure,
 } from "@fidesui/react";
-import { useAPIHelper } from "common/hooks";
+import { useAlert, useAPIHelper } from "common/hooks";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import React, { useMemo, useState } from "react";
@@ -44,6 +44,8 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedConnectionConfig, setSelectedConnectionConfig] =
     useState<ConnectionConfigurationResponse | null>(null);
+
+  const { successAlert } = useAlert();
 
   const [patchDatastoreConnection, { isLoading }] =
     usePatchSystemConnectionConfigsMutation();
@@ -84,13 +86,17 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
             ct.identifier === selectedConnectionConfig?.connection_type
         ) as ConnectionSystemTypeMap;
 
-        await patchConnectionConfig(
+        const response = await patchConnectionConfig(
           formValues,
           connectionOption,
           systemFidesKey,
           selectedConnectionConfig,
           patchDatastoreConnection
         );
+
+        if (response.succeeded[0]) {
+          successAlert(`Integration successfully linked!`);
+        }
 
         setSelectedConnectionConfig(null);
         onClose();
@@ -106,9 +112,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
         loadingText="Deleting"
         onClick={onOpen}
         size="sm"
-        variant="solid"
-        color="white"
-        colorScheme="primary"
+        variant="outline"
       >
         Link integration
       </Button>
