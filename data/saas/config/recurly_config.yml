@@ -1,0 +1,126 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Recurly
+  type: recurly
+  description: A sample schema representing the Recurly connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+    - name: username
+    - name: accept_header
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <username>
+        password: '12345'
+
+  test_request:
+    method: GET
+    path: /accounts
+    headers:
+      - name: Accept
+        value: <accept_header>
+    param_values:
+      - name: accept_header
+        connector_param: accept_header
+
+  endpoints:
+    - name: accounts
+      requests:
+        read:
+          method: GET
+          path: /accounts
+          headers:
+            - name: Accept
+              value: <accept_header>
+          query_params:
+            - name: email
+              value: <email>
+          data_path: data
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: state
+                value: active
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: next
+          param_values:
+            - name: accept_header
+              connector_param: accept_header
+            - name: email
+              identity: email
+        delete:
+          method: DELETE
+          path: /accounts/<accounts_id>
+          headers:
+            - name: Accept
+              value: <accept_header>
+          param_values:
+            - name: accounts_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: accounts.id
+                  direction: from
+            - name: accept_header
+              connector_param: accept_header
+    - name: billing_info
+      requests:
+        read:
+          method: GET
+          path: /accounts/<accounts_id>/billing_info
+          headers:
+            - name: Accept
+              value: <accept_header>
+          param_values:
+            - name: accounts_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: accounts.id
+                  direction: from
+            - name: accept_header
+              connector_param: accept_header
+    - name: shipping_address
+      requests:
+        read:
+          method: GET
+          path: /accounts/<accounts_id>/shipping_addresses
+          headers:
+            - name: Accept
+              value: <accept_header>
+          data_path: data
+          param_values:
+            - name: accounts_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: accounts.id
+                  direction: from
+            - name: accept_header
+              connector_param: accept_header
+        delete:
+          method: DELETE
+          path: >-
+            /accounts/<shipping_address_account_id>/shipping_addresses/<shipping_address_id>
+          headers:
+            - name: Accept
+              value: <accept_header>
+          param_values:
+            - name: shipping_address_account_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: shipping_address.account_id
+                  direction: from
+            - name: shipping_address_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: shipping_address.id
+                  direction: from
+            - name: accept_header
+              connector_param: accept_header
