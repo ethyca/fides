@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Additional consent reporting calls from `fides-js` [#3845](https://github.com/ethyca/fides/pull/3845)
+- Additional consent reporting calls from privacy center [#3847](https://github.com/ethyca/fides/pull/3847)
 
 ## [2.17.0](https://github.com/ethyca/fides/compare/2.16.0...2.17.0)
 
