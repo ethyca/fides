@@ -22,6 +22,7 @@ The types of changes are:
 ### Added
 
 - Tab component for `fides-js` [#3782](https://github.com/ethyca/fides/pull/3782)
+- Added toast for successfully linking an existing integration to a system [#3826](https://github.com/ethyca/fides/pull/3826)
 - Various other UI components for `fides-js` to support upcoming TCF modal [#3803](https://github.com/ethyca/fides/pull/3803)
 - Prefetches API calls as part of Fides.js [#3698](https://github.com/ethyca/fides/pull/3698)
 
