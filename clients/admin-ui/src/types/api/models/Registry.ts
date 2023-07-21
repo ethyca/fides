@@ -27,3 +27,4 @@ export type Registry = {
    */
   description?: string;
 };
+

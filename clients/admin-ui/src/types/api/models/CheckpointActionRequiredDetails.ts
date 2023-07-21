@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { CurrentStep } from "./CurrentStep";
-import type { ManualAction } from "./ManualAction";
+import type { CurrentStep } from './CurrentStep';
+import type { ManualAction } from './ManualAction';
 
 /**
  * Describes actions needed on a particular checkpoint.
@@ -17,3 +17,4 @@ export type CheckpointActionRequiredDetails = {
   collection?: string;
   action_needed?: Array<ManualAction>;
 };
+

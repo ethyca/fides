@@ -2,14 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationResponse";
-import type { ContactDetails } from "./ContactDetails";
-import type { Cookies } from "./Cookies";
-import type { DataFlow } from "./DataFlow";
-import type { DataProtectionImpactAssessment } from "./DataProtectionImpactAssessment";
-import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
-import type { PrivacyDeclarationResponse } from "./PrivacyDeclarationResponse";
-import type { SystemMetadata } from "./SystemMetadata";
+import type { ConnectionConfigurationResponse } from './ConnectionConfigurationResponse';
+import type { ContactDetails } from './ContactDetails';
+import type { Cookies } from './Cookies';
+import type { DataFlow } from './DataFlow';
+import type { DataProtectionImpactAssessment } from './DataProtectionImpactAssessment';
+import type { DataResponsibilityTitle } from './DataResponsibilityTitle';
+import type { PrivacyDeclarationResponse } from './PrivacyDeclarationResponse';
+import type { SystemMetadata } from './SystemMetadata';
 
 /**
  * Extension of base pydantic model to include `privacy_declarations.id` fields in responses
@@ -117,3 +117,4 @@ export type SystemResponse = {
   connection_configs?: ConnectionConfigurationResponse;
   cookies?: Array<Cookies>;
 };
+

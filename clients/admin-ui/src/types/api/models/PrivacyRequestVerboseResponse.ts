@@ -2,11 +2,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequiredDetails";
-import type { ExecutionAndAuditLogResponse } from "./ExecutionAndAuditLogResponse";
-import type { PolicyResponse } from "./PolicyResponse";
-import type { PrivacyRequestReviewer } from "./PrivacyRequestReviewer";
-import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
+import type { CheckpointActionRequiredDetails } from './CheckpointActionRequiredDetails';
+import type { ExecutionAndAuditLogResponse } from './ExecutionAndAuditLogResponse';
+import type { PolicyResponse } from './PolicyResponse';
+import type { PrivacyRequestReviewer } from './PrivacyRequestReviewer';
+import type { PrivacyRequestStatus } from './PrivacyRequestStatus';
 
 /**
  * The schema for the more detailed PrivacyRequest response containing both
@@ -31,3 +31,4 @@ export type PrivacyRequestVerboseResponse = {
   days_left?: number;
   results: Record<string, Array<ExecutionAndAuditLogResponse>>;
 };
+

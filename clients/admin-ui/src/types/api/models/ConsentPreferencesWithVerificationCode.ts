@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Consent } from "./Consent";
-import type { ConsentWithExecutableStatus } from "./ConsentWithExecutableStatus";
-import type { Identity } from "./Identity";
+import type { Consent } from './Consent';
+import type { ConsentWithExecutableStatus } from './ConsentWithExecutableStatus';
+import type { Identity } from './Identity';
 
 /**
  * Schema for consent preferences including the verification code.
@@ -16,3 +16,4 @@ export type ConsentPreferencesWithVerificationCode = {
   executable_options?: Array<ConsentWithExecutableStatus>;
   browser_identity?: Identity;
 };
+

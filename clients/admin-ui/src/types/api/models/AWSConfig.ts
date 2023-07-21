@@ -10,3 +10,4 @@ export type AWSConfig = {
   aws_secret_access_key: string;
   aws_access_key_id: string;
 };
+

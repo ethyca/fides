@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { StorageConfigStatus } from "./StorageConfigStatus";
+import type { StorageConfigStatus } from './StorageConfigStatus';
 
 /**
  * A schema for checking configuration status of storage config.
@@ -11,3 +11,4 @@ export type StorageConfigStatusMessage = {
   config_status?: StorageConfigStatus;
   detail?: string;
 };
+

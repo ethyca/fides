@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationResponse";
+import type { ConnectionConfigurationResponse } from './ConnectionConfigurationResponse';
 
 export type Page_ConnectionConfigurationResponse_ = {
   items: Array<ConnectionConfigurationResponse>;
@@ -10,3 +10,4 @@ export type Page_ConnectionConfigurationResponse_ = {
   page: number;
   size: number;
 };
+

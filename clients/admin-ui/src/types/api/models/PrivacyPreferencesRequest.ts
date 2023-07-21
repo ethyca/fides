@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentMethod } from "./ConsentMethod";
-import type { ConsentOptionCreate } from "./ConsentOptionCreate";
-import type { Identity } from "./Identity";
+import type { ConsentMethod } from './ConsentMethod';
+import type { ConsentOptionCreate } from './ConsentOptionCreate';
+import type { Identity } from './Identity';
 
 /**
  * Request body for creating PrivacyPreferences.
@@ -18,3 +18,4 @@ export type PrivacyPreferencesRequest = {
   user_geography?: string;
   method?: ConsentMethod;
 };
+

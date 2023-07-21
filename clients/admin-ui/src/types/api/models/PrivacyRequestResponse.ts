@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequiredDetails";
-import type { PolicyResponse } from "./PolicyResponse";
-import type { PrivacyRequestReviewer } from "./PrivacyRequestReviewer";
-import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
+import type { CheckpointActionRequiredDetails } from './CheckpointActionRequiredDetails';
+import type { PolicyResponse } from './PolicyResponse';
+import type { PrivacyRequestReviewer } from './PrivacyRequestReviewer';
+import type { PrivacyRequestStatus } from './PrivacyRequestStatus';
 
 /**
  * Schema to check the status of a PrivacyRequest
@@ -28,3 +28,4 @@ export type PrivacyRequestResponse = {
   resume_endpoint?: string;
   days_left?: number;
 };
+

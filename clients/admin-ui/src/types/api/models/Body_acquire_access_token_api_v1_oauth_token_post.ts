@@ -8,3 +8,4 @@ export type Body_acquire_access_token_api_v1_oauth_token_post = {
   client_id?: string;
   client_secret?: string;
 };
+

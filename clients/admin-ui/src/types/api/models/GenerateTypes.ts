@@ -7,6 +7,6 @@
  * for a valid type of resource to generate.
  */
 export enum GenerateTypes {
-  SYSTEMS = "systems",
-  DATASETS = "datasets",
+  SYSTEMS = 'systems',
+  DATASETS = 'datasets',
 }

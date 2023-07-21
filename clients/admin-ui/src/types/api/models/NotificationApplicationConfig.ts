@@ -11,3 +11,4 @@ export type NotificationApplicationConfig = {
   send_request_review_notification?: boolean;
   notification_service_type?: string;
 };
+

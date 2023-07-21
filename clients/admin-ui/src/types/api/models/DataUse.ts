@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { LegalBasisEnum } from "./LegalBasisEnum";
-import type { SpecialCategoriesEnum } from "./SpecialCategoriesEnum";
+import type { LegalBasisEnum } from './LegalBasisEnum';
+import type { SpecialCategoriesEnum } from './SpecialCategoriesEnum';
 
 /**
  * The DataUse resource model.
@@ -51,4 +51,9 @@ export type DataUse = {
    * Denotes whether the resource is part of the default taxonomy or not.
    */
   is_default?: boolean;
+  /**
+   * Indicates whether the resource is currently 'active'.
+   */
+  active?: boolean;
 };
+

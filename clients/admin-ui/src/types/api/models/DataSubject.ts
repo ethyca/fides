@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DataSubjectRights } from "./DataSubjectRights";
+import type { DataSubjectRights } from './DataSubjectRights';
 
 /**
  * The DataSubject resource model.
@@ -43,4 +43,9 @@ export type DataSubject = {
    * Denotes whether the resource is part of the default taxonomy or not.
    */
   is_default?: boolean;
+  /**
+   * Indicates whether the resource is currently 'active'.
+   */
+  active?: boolean;
 };
+

@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ContactDetails } from "./ContactDetails";
-import type { OrganizationMetadata } from "./OrganizationMetadata";
+import type { ContactDetails } from './ContactDetails';
+import type { OrganizationMetadata } from './OrganizationMetadata';
 
 /**
  * The Organization resource model.
@@ -81,3 +81,4 @@ export type Organization = {
    */
   security_policy?: string;
 };
+

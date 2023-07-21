@@ -6,7 +6,7 @@
  * An enumeration.
  */
 export enum ServingComponent {
-  OVERLAY = "overlay",
-  BANNER = "banner",
-  PRIVACY_CENTER = "privacy_center",
+  OVERLAY = 'overlay',
+  BANNER = 'banner',
+  PRIVACY_CENTER = 'privacy_center',
 }

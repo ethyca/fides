@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AdvancedSettings } from "./AdvancedSettings";
+import type { AdvancedSettings } from './AdvancedSettings';
 
 /**
  * EmailDocsSchema Secrets Schema for API Docs
@@ -13,3 +13,4 @@ export type EmailDocsSchema = {
   test_email_address?: string;
   advanced_settings?: AdvancedSettings;
 };
+

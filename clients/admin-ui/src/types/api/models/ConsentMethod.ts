@@ -6,7 +6,7 @@
  * An enumeration.
  */
 export enum ConsentMethod {
-  BUTTON = "button",
-  GPC = "gpc",
-  INDIVIDUAL_NOTICE = "individual_notice",
+  BUTTON = 'button',
+  GPC = 'gpc',
+  INDIVIDUAL_NOTICE = 'individual_notice',
 }

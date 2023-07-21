@@ -26,3 +26,4 @@ export type DataProtectionImpactAssessment = {
    */
   link?: string;
 };
+

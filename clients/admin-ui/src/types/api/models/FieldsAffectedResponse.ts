@@ -10,3 +10,4 @@ export type FieldsAffectedResponse = {
   field_name?: string;
   data_categories?: Array<string>;
 };
+

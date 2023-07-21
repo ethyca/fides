@@ -9,6 +9,6 @@
  * "Write" perms mean we can update/delete items in the connected database.
  */
 export enum AccessLevel {
-  READ = "read",
-  WRITE = "write",
+  READ = 'read',
+  WRITE = 'write',
 }

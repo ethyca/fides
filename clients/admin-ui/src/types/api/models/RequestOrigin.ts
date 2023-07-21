@@ -6,7 +6,7 @@
  * An enumeration.
  */
 export enum RequestOrigin {
-  PRIVACY_CENTER = "privacy_center",
-  OVERLAY = "overlay",
-  API = "api",
+  PRIVACY_CENTER = 'privacy_center',
+  OVERLAY = 'overlay',
+  API = 'api',
 }

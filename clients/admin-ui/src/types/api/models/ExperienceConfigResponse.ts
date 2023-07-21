@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { BannerEnabled } from "./BannerEnabled";
-import type { ComponentType } from "./ComponentType";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { BannerEnabled } from './BannerEnabled';
+import type { ComponentType } from './ComponentType';
+import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
 
 /**
  * An API representation of ExperienceConfig used for response payloads
@@ -66,3 +66,4 @@ export type ExperienceConfigResponse = {
   created_at: string;
   updated_at: string;
 };
+

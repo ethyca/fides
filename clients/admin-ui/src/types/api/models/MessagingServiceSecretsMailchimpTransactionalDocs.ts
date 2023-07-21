@@ -8,3 +8,4 @@
 export type MessagingServiceSecretsMailchimpTransactionalDocs = {
   mailchimp_transactional_api_key: string;
 };
+

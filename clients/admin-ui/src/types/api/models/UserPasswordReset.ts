@@ -9,3 +9,4 @@ export type UserPasswordReset = {
   old_password: string;
   new_password: string;
 };
+

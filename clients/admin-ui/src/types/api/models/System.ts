@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ContactDetails } from "./ContactDetails";
-import type { DataFlow } from "./DataFlow";
-import type { DataProtectionImpactAssessment } from "./DataProtectionImpactAssessment";
-import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
-import type { PrivacyDeclaration } from "./PrivacyDeclaration";
-import type { SystemMetadata } from "./SystemMetadata";
+import type { ContactDetails } from './ContactDetails';
+import type { DataFlow } from './DataFlow';
+import type { DataProtectionImpactAssessment } from './DataProtectionImpactAssessment';
+import type { DataResponsibilityTitle } from './DataResponsibilityTitle';
+import type { PrivacyDeclaration } from './PrivacyDeclaration';
+import type { SystemMetadata } from './SystemMetadata';
 
 /**
  * The System resource model.
@@ -113,3 +113,4 @@ export type System = {
    */
   data_protection_impact_assessment?: DataProtectionImpactAssessment;
 };
+

@@ -6,7 +6,7 @@
  * Response formats
  */
 export enum ResponseFormat {
-  JSON = "json",
-  CSV = "csv",
-  HTML = "html",
+  JSON = 'json',
+  CSV = 'csv',
+  HTML = 'html',
 }

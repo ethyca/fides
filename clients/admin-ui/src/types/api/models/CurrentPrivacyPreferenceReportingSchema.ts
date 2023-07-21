@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { UserConsentPreference } from "./UserConsentPreference";
+import type { UserConsentPreference } from './UserConsentPreference';
 
 /**
  * Schema to represent the latest saved preference for a given privacy notice
@@ -17,3 +17,4 @@ export type CurrentPrivacyPreferenceReportingSchema = {
   provided_identity_id?: string;
   created_at: string;
 };
+

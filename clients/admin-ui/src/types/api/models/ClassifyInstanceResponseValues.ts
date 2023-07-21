@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ClassificationStatus } from "./ClassificationStatus";
-import type { GenerateTypes } from "./GenerateTypes";
-import type { ValidTargets } from "./ValidTargets";
+import type { ClassificationStatus } from './ClassificationStatus';
+import type { GenerateTypes } from './GenerateTypes';
+import type { ValidTargets } from './ValidTargets';
 
 export type ClassifyInstanceResponseValues = {
   status: ClassificationStatus;
@@ -18,3 +18,4 @@ export type ClassifyInstanceResponseValues = {
   updated_at: string;
   has_labels?: boolean;
 };
+

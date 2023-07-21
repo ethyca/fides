@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { CurrentPrivacyPreferenceSchema } from "./CurrentPrivacyPreferenceSchema";
+import type { CurrentPrivacyPreferenceSchema } from './CurrentPrivacyPreferenceSchema';
 
 export type Page_CurrentPrivacyPreferenceSchema_ = {
   items: Array<CurrentPrivacyPreferenceSchema>;
@@ -10,3 +10,4 @@ export type Page_CurrentPrivacyPreferenceSchema_ = {
   page: number;
   size: number;
 };
+

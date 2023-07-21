@@ -10,3 +10,4 @@ export type RuleTarget = {
   key?: string;
   data_category: string;
 };
+

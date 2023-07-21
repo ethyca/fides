@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
+import type { PrivacyNoticeResponse } from './PrivacyNoticeResponse';
 
 export type Page_PrivacyNoticeResponse_ = {
   items: Array<PrivacyNoticeResponse>;
@@ -10,3 +10,4 @@ export type Page_PrivacyNoticeResponse_ = {
   page: number;
   size: number;
 };
+

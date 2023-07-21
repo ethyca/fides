@@ -5,4 +5,6 @@
 /**
  * Manual Webhooks Secrets Schema for API Docs
  */
-export type ManualWebhookSchemaforDocs = {};
+export type ManualWebhookSchemaforDocs = {
+};
+

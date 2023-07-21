@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ContactDetails } from "./ContactDetails";
-import type { DatasetCollection } from "./DatasetCollection";
-import type { DatasetMetadata } from "./DatasetMetadata";
+import type { ContactDetails } from './ContactDetails';
+import type { DatasetCollection } from './DatasetCollection';
+import type { DatasetMetadata } from './DatasetMetadata';
 
 /**
  * The Dataset resource model.
@@ -72,3 +72,4 @@ export type Dataset = {
    */
   collections: Array<DatasetCollection>;
 };
+

@@ -12,3 +12,4 @@ export type Identity = {
   ljt_readerID?: string;
   fides_user_device_id?: string;
 };
+

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConnectionSystemTypeMap } from "./ConnectionSystemTypeMap";
+import type { ConnectionSystemTypeMap } from './ConnectionSystemTypeMap';
 
 export type Page_ConnectionSystemTypeMap_ = {
   items: Array<ConnectionSystemTypeMap>;
@@ -10,3 +10,4 @@ export type Page_ConnectionSystemTypeMap_ = {
   page: number;
   size: number;
 };
+

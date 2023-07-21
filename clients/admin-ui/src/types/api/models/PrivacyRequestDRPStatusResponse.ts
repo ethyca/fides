@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { PrivacyRequestDRPStatus } from "./PrivacyRequestDRPStatus";
+import type { PrivacyRequestDRPStatus } from './PrivacyRequestDRPStatus';
 
 /**
  * A Fidesops PrivacyRequest updated to fit the Data Rights Protocol specification.
@@ -16,3 +16,4 @@ export type PrivacyRequestDRPStatusResponse = {
   reason?: string;
   user_verification_url?: string;
 };
+

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MessagingConnectionTestStatus } from "./MessagingConnectionTestStatus";
+import type { MessagingConnectionTestStatus } from './MessagingConnectionTestStatus';
 
 /**
  * A schema for testing functionality of a messaging config.
@@ -12,3 +12,4 @@ export type TestMessagingStatusMessage = {
   test_status?: MessagingConnectionTestStatus;
   failure_reason?: string;
 };
+

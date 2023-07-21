@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ExecutionLogDetailResponse } from "./ExecutionLogDetailResponse";
+import type { ExecutionLogDetailResponse } from './ExecutionLogDetailResponse';
 
 export type Page_ExecutionLogDetailResponse_ = {
   items: Array<ExecutionLogDetailResponse>;
@@ -10,3 +10,4 @@ export type Page_ExecutionLogDetailResponse_ = {
   page: number;
   size: number;
 };
+

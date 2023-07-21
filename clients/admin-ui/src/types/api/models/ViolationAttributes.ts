@@ -23,3 +23,4 @@ export type ViolationAttributes = {
    */
   data_qualifier: string;
 };
+

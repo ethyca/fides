@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ExperienceConfigResponse } from "./ExperienceConfigResponse";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { ExperienceConfigResponse } from './ExperienceConfigResponse';
+import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
 
 /**
  * Schema with the created/updated experience config with regions that succeeded or failed
@@ -13,3 +13,4 @@ export type ExperienceConfigCreateOrUpdateResponse = {
   linked_regions: Array<PrivacyNoticeRegion>;
   unlinked_regions: Array<PrivacyNoticeRegion>;
 };
+

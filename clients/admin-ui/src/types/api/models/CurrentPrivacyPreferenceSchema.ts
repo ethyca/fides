@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { PrivacyNoticeHistorySchema } from "./PrivacyNoticeHistorySchema";
-import type { UserConsentPreference } from "./UserConsentPreference";
+import type { PrivacyNoticeHistorySchema } from './PrivacyNoticeHistorySchema';
+import type { UserConsentPreference } from './UserConsentPreference';
 
 /**
  * Schema to represent the latest saved preference for a given privacy notice
@@ -16,3 +16,4 @@ export type CurrentPrivacyPreferenceSchema = {
   privacy_notice_history: PrivacyNoticeHistorySchema;
   privacy_preference_history_id: string;
 };
+
