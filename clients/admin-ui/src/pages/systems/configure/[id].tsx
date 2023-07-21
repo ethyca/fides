@@ -5,7 +5,6 @@ import {
   Heading,
   Spinner,
   Text,
-  toast,
   useToast,
 } from "@fidesui/react";
 import type { NextPage } from "next";
@@ -44,7 +43,7 @@ const ConfigureSystem: NextPage = () => {
   }, [system, dispatch]);
 
   useEffect(() => {
-    const status = router.query.status;
+    const {status} = router.query;
 
     if (status) {
       if (status === "succeeded") {
@@ -53,7 +52,7 @@ const ConfigureSystem: NextPage = () => {
         toast(errorToastParams(`Failed to authorize integration.`));
       }
       // create a new url without the status query param
-      let newQuery = { ...router.query };
+      const newQuery = { ...router.query };
       delete newQuery.status;
       const newUrl = {
         pathname: router.pathname,
@@ -65,7 +64,7 @@ const ConfigureSystem: NextPage = () => {
 
       setInitialTabIndex(3);
     }
-  }, [router.query]);
+  }, [router, toast]);
 
   if (isLoading) {
     return (

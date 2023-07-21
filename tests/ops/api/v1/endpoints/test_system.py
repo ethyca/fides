@@ -1,6 +1,5 @@
 import json
 from unittest import mock
-from uuid import uuid4
 
 import pytest
 from fastapi_pagination import Params
@@ -112,6 +111,14 @@ def connections():
 
 
 class TestPatchSystemConnections:
+    @pytest.fixture(scope="function")
+    def system_linked_with_connection_config(
+        self, system: System, oauth2_authorization_code_connection_config, db: Session
+    ):
+        system.connection_configs = oauth2_authorization_code_connection_config
+        db.commit()
+        return system
+
     def test_patch_connections_valid_system(
         self, api_client: TestClient, generate_auth_header, url, payload
     ):
@@ -198,33 +205,35 @@ class TestPatchSystemConnections:
         resp = api_client.patch(url, headers=auth_header, json=payload)
         assert resp.status_code == expected_status_code
 
-    @mock.patch("fides.api.util.connection_util.get_connection_config_or_error")
     def test_patch_connection_secrets_removes_access_token(
         self,
-        mock_get_connection_config_or_error: mock.Mock,
         api_client: TestClient,
         generate_auth_header,
         url,
-        oauth2_authorization_code_connection_config,
+        system_linked_with_connection_config,
     ):
-        mock_get_connection_config_or_error.return_value = (
-            oauth2_authorization_code_connection_config
+        auth_header = generate_auth_header(
+            scopes=[CONNECTION_READ, CONNECTION_CREATE_OR_UPDATE]
         )
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-
-        # First, ensure the connection_config has an access_token
+        # verify the connection_config is authorized
         resp = api_client.get(url, headers=auth_header)
-        assert resp.status_code == HTTP_200_OK
-        assert "access_token" in resp.json()["connection_config"]["secrets"]
 
-        # Now, patch the connection_config with new secrets (but no access_token)
+        assert resp.status_code == HTTP_200_OK
+        assert resp.json()["items"][0]["authorized"] is True
+
+        # patch the connection_config with new secrets (but no access_token)
         resp = api_client.patch(
-            url, headers=auth_header, json={"domain": "test_domain"}
+            f"{url}/secrets?verify=False",
+            headers=auth_header,
+            json={"domain": "test_domain"},
         )
 
+        # verify the connection_config is no longer authorized
+        resp = api_client.get(url, headers=auth_header)
+
         assert resp.status_code == HTTP_200_OK
-        assert "access_token" not in resp.json()["connection_config"]["secrets"]
+        assert resp.json()["items"][0]["authorized"] is False
 
 
 class TestGetConnections:
@@ -285,6 +294,7 @@ class TestGetConnections:
             "created_at",
             "disabled",
             "description",
+            "authorized",
         }
         connection_keys = [connection["key"] for connection in connections]
         assert response_body["items"][0]["key"] in connection_keys
@@ -725,10 +735,11 @@ class TestInstantiateSystemConnectionFromTemplate:
             "msg": "field required",
             "type": "value_error.missing",
         }
+        # extra values should be permitted, but the system should return an error if there are missing fields.
         assert resp.json()["detail"][1] == {
-            "loc": ["bad_mailchimp_secret_key"],
-            "msg": "extra fields not permitted",
-            "type": "value_error.extra",
+            "loc": ["__root__"],
+            "msg": "mailchimp_schema must be supplied all of: [domain, username, api_key].",
+            "type": "value_error",
         }
 
         connection_config = ConnectionConfig.filter(

@@ -85,20 +85,6 @@ def get_connection_types(
         """If a search query param was included, is it a substring of an available connector type?"""
         return search.lower() in elem.lower() if search else True
 
-    def authorization_required(connector_template: Optional[ConnectorTemplate]) -> bool:
-        """Determines if the auth strategy for the given connector template requires authorization."""
-        if connector_template is None:
-            return False
-
-        config = SaaSConfig(**load_config_from_string(connector_template.config))
-        authentication = config.client_config.authentication
-        return (
-            authentication.strategy
-            == OAuth2AuthorizationCodeAuthenticationStrategy.name
-            if authentication
-            else False
-        )
-
     def saas_request_type_filter(connection_type: str) -> bool:
         """
         If any of the request type filters are set to true,
@@ -189,22 +175,17 @@ def get_connection_types(
         )
 
         for item in saas_types:
-            if ConnectorRegistry.get_connector_template(item) is not None:
-                connector_template = ConnectorRegistry.get_connector_template(item)
-
-            connection_system_types.append(
-                ConnectionSystemTypeMap(
-                    identifier=item,
-                    type=SystemType.saas,
-                    human_readable=connector_template.human_readable
-                    if connector_template is not None
-                    else "",
-                    encoded_icon=connector_template.icon
-                    if connector_template is not None
-                    else None,
-                    authorization_required=authorization_required(connector_template),
+            connector_template = ConnectorRegistry.get_connector_template(item)
+            if connector_template is not None:
+                connection_system_types.append(
+                    ConnectionSystemTypeMap(
+                        identifier=item,
+                        type=SystemType.saas,
+                        human_readable=connector_template.human_readable,
+                        encoded_icon=connector_template.icon,
+                        authorization_required=connector_template.authorization_required,
+                    )
                 )
-            )
 
     if (
         system_type == SystemType.manual or system_type is None

@@ -319,6 +319,7 @@ export const useConnectorForm = ({
           systemFidesKey,
           createSassConnectionConfig
         );
+        // eslint-disable-next-line no-param-reassign
         connectionConfig = response.connection;
       } else {
         await upsertConnectionConfigSecrets(
@@ -334,7 +335,7 @@ export const useConnectorForm = ({
       ).unwrap()) as string;
 
       setIsAuthorizing(false);
-      
+
       // workaround to make sure isAuthorizing is set to false before redirecting
       setTimeout(() => {
         window.location.href = authorizationUrl;

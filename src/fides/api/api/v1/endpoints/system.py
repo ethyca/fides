@@ -175,12 +175,14 @@ def patch_connection_secrets(
         db, unvalidated_secrets, connection_config
     ).dict()
 
-    # invalidate the access token for OAuth connections if the user is updating the secrets
-    if connection_config.authorized:
-        del connection_config.secrets["access_token"]
-
     for key, value in validated_secrets.items():
         connection_config.secrets[key] = value  # type: ignore
+
+    # Deauthorize an OAuth connection when the secrets are updated. This is necessary because
+    # the existing access tokens may not be valid anymore. This only applies to SaaS connection
+    # configurations that use the "oauth2_authorization_code" authentication strategy.
+    if connection_config.authorized:
+        del connection_config.secrets["access_token"]
 
     # Save validated secrets, regardless of whether they've been verified.
     logger.info("Updating connection config secrets for '{}'", connection_config.key)

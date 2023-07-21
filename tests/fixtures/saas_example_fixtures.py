@@ -298,8 +298,8 @@ def oauth2_authorization_code_connection_config(
     saas_config = {
         "fides_key": "oauth2_authorization_code_connector",
         "name": "OAuth2 Auth Code Connector",
-        "type": "custom",
-        "description": "Generic OAuth2 connector for testing",
+        "type": "salesforce",
+        "description": "Salesforce connector for testing OAuth2",
         "version": "0.0.1",
         "connector_params": [{"name": item} for item in secrets.keys()],
         "client_config": {
