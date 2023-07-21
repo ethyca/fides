@@ -153,7 +153,6 @@ describe("System management page", () => {
           cy.getByTestId("new-declaration-form");
           const declaration = system.privacy_declarations[0];
           cy.getByTestId("input-data_use").click();
-          cy.pause();
           cy.getByTestId("input-data_use").within(() => {
             cy.contains(declaration.data_use).click();
           });
