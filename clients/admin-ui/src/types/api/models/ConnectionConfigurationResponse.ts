@@ -23,5 +23,4 @@ export type ConnectionConfigurationResponse = {
   last_test_timestamp?: string;
   last_test_succeeded?: boolean;
   saas_config?: SaaSConfigBase;
-  secrets?: any;
 };

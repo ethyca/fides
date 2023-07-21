@@ -323,8 +323,6 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
       active: isDisabled,
     };
 
-    console.log(payload);
-
     const result = updateDataUseMutationTrigger(payload);
 
     if (customFields.isEnabled) {
@@ -500,8 +498,6 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
       ...entity,
       active: isDisabled,
     };
-
-    console.log(payload);
 
     const result = updateDataSubjectMutationTrigger(payload);
 
