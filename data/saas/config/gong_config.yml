@@ -25,54 +25,42 @@ saas_config:
     path: /v2/users
 
   endpoints:
-    - name: data_privacy(email)
+    - name: data_privacy
       requests:
         read:
-          method: GET
-          path: /v2/data-privacy/data-for-email-address
-          query_params:
-            - name: emailAddress
-              value: <email>
-          param_values:
-            - name: email
-              identity: email
+          - method: GET
+            path: /v2/data-privacy/data-for-email-address
+            query_params:
+              - name: emailAddress
+                value: <email>
+            param_values:
+              - name: email
+                identity: email
+            ignore_errors: true
+          - method: GET
+            path: /v2/data-privacy/data-for-phone-number
+            query_params:
+              - name: phoneNumber
+                value: <phoneNumber>
+            param_values:
+              - name: phoneNumber
+                identity: phoneNumber
+            ignore_errors: true
+
         delete:
-          method: POST
-          path: /v2/data-privacy/erase-data-for-email-address
-          query_params:
-            - name: emailAddress
-              value: <email>
-          param_values:
-            - name: email
-              identity: email
-    - name: data_privacy(_phone)
-      requests:
-        read:
-          method: GET
-          path: /v2/data-privacy/data-for-phone-number
-          headers:
-            - name: Authorization
-              value: Basic <token>
-          query_params:
-            - name: phoneNumber
-              value: <phoneNumber>
-          param_values:
-            - name: token
-              connector_param: token
-            - name: phoneNumber
-              identity: phoneNumber
-        delete:
-          method: POST
-          path: /v2/data-privacy/erase-data-for-phone-number
-          headers:
-            - name: Authorization
-              value: Basic <token>
-          body: |
-            {
-              "phoneNumber": "<phoneNumber>"
-            }
-          param_values:
-            - name: token
-              connector_param: token
-            - name: phoneNumber
-              identity: phoneNumber
+            method: POST
+            path: /v2/data-privacy/erase-data-for-email-address
+            query_params:
+              - name: emailAddress
+                value: <email>
+            param_values:
+              - name: email
+                identity: email
+            method: POST
+            path: /v2/data-privacy/erase-data-for-phone-number
+            query_params:
+              - name: phoneNumber
+                value: <phoneNumber>
+            param_values:
+              - name: phoneNumber
+                identity: phoneNumber

@@ -3,30 +3,106 @@ dataset:
     name: gong
     description: A sample dataset representing the Gong connector for Fides
     collections:
-      - name: data_privacy(email)
+      - name: data_privacy
         fields:
           - name: requestId
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: emails
           - name: calls
           - name: meetings
           - name: customerData
+            fidesops_meta:
+              data_type: 'object[]'
+            fields:
+              - name: system
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: objects
+                fidesops_meta:
+                  data_type: 'object[]'
+                fields:
+                  - name: id
+                  - name: objectType
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: externalId
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: mirrorId
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: fields
+                    fidesops_meta:
+                      data_type: 'object[]'
+                    fields:
+                      - name: name
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
+                      - name: value
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
           - name: customerEngagement
-      - name: data_privacy(_phone)
         fields:
           - name: requestId
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: emails
           - name: calls
           - name: meetings
           - name: customerData
+            fidesops_meta:
+              data_type: 'object[]'
+            fields:
+              - name: system
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: objects
+                fidesops_meta:
+                  data_type: 'object[]'
+                fields:
+                  - name: id
+                  - name: objectType
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: externalId
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: mirrorId
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: fields
+                    fidesops_meta:
+                      data_type: 'object[]'
+                    fields:
+                      - name: name
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
+                      - name: value
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
           - name: suppliedPhoneNumber
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: matchingPhoneNumbers
           - name: emailAddresses
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: 'string[]'
