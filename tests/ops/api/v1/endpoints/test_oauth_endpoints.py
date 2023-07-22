@@ -640,7 +640,7 @@ class TestCallback:
         assert response.status_code == 200
         assert (
             response.text
-            == "Test status: failed. No referer URL available. Please navigate back to the Fides Admin UI."
+            == "Connection test status: failed. No referer URL available. Please navigate back to the Fides Admin UI."
         )
 
         authentication_request.delete(db)

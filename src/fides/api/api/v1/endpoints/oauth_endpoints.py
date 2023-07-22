@@ -12,7 +12,6 @@ from starlette.status import (
 )
 
 from fides.api.api.deps import get_db
-from fides.api.api.v1.endpoints.connection_endpoints import connection_status
 from fides.api.api.v1.endpoints.saas_config_endpoints import (
     verify_oauth_connection_config,
 )
@@ -23,7 +22,7 @@ from fides.api.common_exceptions import (
 )
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail
-from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.client import ClientCreatedResponse
@@ -35,6 +34,7 @@ from fides.api.service.authentication.authentication_strategy_oauth2_authorizati
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
 from fides.api.util.api_router import APIRouter
+from fides.api.util.connection_util import connection_status
 from fides.common.api.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
@@ -246,12 +246,19 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Resp
         msg = f"Test completed for ConnectionConfig with key: {connection_config.key}."
         status_message = connection_status(connection_config, msg, db)
 
+        # default to failed if the status is not set
+        test_status_value = (
+            status_message.test_status.value
+            if status_message.test_status
+            else ConnectionTestStatus.failed.value
+        )
+
         if authentication_request.referer:
             return RedirectResponse(
-                url=f"{authentication_request.referer}?status={status_message.test_status.value}"
+                url=f"{authentication_request.referer}?status={test_status_value}"
             )
         return PlainTextResponse(
-            content=f"Test status: {status_message.test_status.value}. No referer URL available. Please navigate back to the Fides Admin UI.",
+            content=f"Connection test status: {test_status_value}. No referer URL available. Please navigate back to the Fides Admin UI.",
             status_code=200,
         )
     except (OAuth2TokenException, FidesopsException) as exc:
