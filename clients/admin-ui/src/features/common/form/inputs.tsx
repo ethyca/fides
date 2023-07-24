@@ -26,13 +26,13 @@ import {
   VStack,
 } from "@fidesui/react";
 import {
+  chakraComponents,
   CreatableSelect,
   MenuPosition,
   MultiValue,
   Select,
   SingleValue,
   Size,
-  chakraComponents
 } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
 import { useState } from "react";
@@ -151,7 +151,7 @@ export interface SelectProps {
    */
   singleValueBlock?: boolean;
   isFormikOnChange?: boolean;
-  isCustomOption?: boolean;  
+  isCustomOption?: boolean;
 }
 
 export const SelectInput = ({
@@ -165,7 +165,7 @@ export const SelectInput = ({
   isDisabled = false,
   menuPosition = "absolute",
   onChange,
-  isCustomOption
+  isCustomOption,
 }: { fieldName: string; isMulti?: boolean; onChange?: any } & Omit<
   SelectProps,
   "label"
@@ -207,25 +207,38 @@ export const SelectInput = ({
     }
   };
 
-  const components = {}
-  if(isClearable){
-    components["ClearIndicator"] = () => null
+  const components = {};
+  if (isClearable) {
+    components.ClearIndicator = function() {
+  return null
+};
   }
 
-  if(isCustomOption){
-    components["Option"] = ({children, ...props})=>(<chakraComponents.Option {...props}>
-      <Flex flexDirection="column">
-      <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">
-      {props.data.label}
-      </Text>
-      <Text color="gray.500" fontSize="12px" lineHeight={4} fontWeight="normal" >
-      {props.data.description? props.data.description: null}
-      </Text>
-      </Flex>
-      </chakraComponents.Option>)
+  if (isCustomOption) {
+    components.Option = function({ children, ...props }) {
+  return <chakraComponents.Option {...props}>
+        <Flex flexDirection="column">
+          <Text
+            color="gray.700"
+            fontSize="14px"
+            lineHeight={5}
+            fontWeight="medium"
+          >
+            {props.data.label}
+          </Text>
+          <Text
+            color="gray.500"
+            fontSize="12px"
+            lineHeight={4}
+            fontWeight="normal"
+          >
+            {props.data.description ? props.data.description : null}
+          </Text>
+        </Flex>
+      </chakraComponents.Option>
+};
   }
-  
- 
+
   return (
     <Select
       options={options}
@@ -244,9 +257,9 @@ export const SelectInput = ({
           flexGrow: 1,
           backgroundColor: "white",
         }),
-        option: (provided, state)=>({
+        option: (provided, state) => ({
           ...provided,
-          background: state.isSelected || state.isFocused?"gray.50": "unset"
+          background: state.isSelected || state.isFocused ? "gray.50" : "unset",
         }),
         dropdownIndicator: (provided) => ({
           ...provided,
@@ -274,7 +287,7 @@ export const SelectInput = ({
             })
           : undefined,
       }}
-      components={ Object.keys(components).length > 0? components: undefined}
+      components={Object.keys(components).length > 0 ? components : undefined}
       isSearchable={isSearchable}
       isClearable={isClearable}
       instanceId={`select-${field.name}`}
@@ -525,7 +538,7 @@ export const CustomSelect = ({
             isMulti={isMulti}
             singleValueBlock={singleValueBlock}
             isDisabled={isDisabled}
-            isCustomOption={isCustomOption}            
+            isCustomOption={isCustomOption}
             menuPosition={props.menuPosition}
           />
         </Box>
