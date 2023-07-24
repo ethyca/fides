@@ -491,7 +491,6 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     entity: TaxonomyEntity,
     isDisabled: boolean
   ) => {
-    // const payload = needToCreateFunction(initialValues, isDisabled);
 
     const payload = {
       ...entity,
