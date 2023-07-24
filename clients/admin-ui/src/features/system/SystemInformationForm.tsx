@@ -18,8 +18,9 @@ import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
-import { CustomTextInput, CustomSelect } from "~/features/common/form/inputs";
+import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
 import {
   defaultInitialValues,
   FormValues,
@@ -31,7 +32,6 @@ import {
   useCreateSystemMutation,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
-import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice"
 import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
 import { ResourceTypes, System } from "~/types/api";
 
@@ -90,17 +90,18 @@ const SystemInformationForm = ({
     useUpdateSystemMutation();
   const { data } = useGetAllDictionaryEntriesQuery();
 
-  const dictionaryOptions = useMemo(()=>{
-    return data?.items ?data.items.map((d)=> {
-      return {
-        label: d.legal_name,
-        value: d.id
-      }
-    }).sort((a, b) =>
-        a.label > b.label ? 1 : -1
-      )      
-      : []
-  })
+  const dictionaryOptions = useMemo(
+    () =>
+      data?.items
+        ? data.items
+            .map((d) => ({
+              label: d.legal_name,
+              value: d.id,
+            }))
+            .sort((a, b) => (a.label > b.label ? 1 : -1))
+        : [],
+    [data]
+  );
   const systems = useAppSelector(selectAllSystems);
   const isEditing = useMemo(
     () =>
@@ -187,16 +188,16 @@ const SystemInformationForm = ({
                 spacing={4}
                 maxWidth={!abridged ? { base: "100%", lg: "50%" } : undefined}
               >
-                <CustomSelect 
+                <CustomSelect
                   id="vendor"
                   name="meta.vendor.id"
                   label="Vendor"
                   placeholder="Select a vendor"
-                  singleValueBlock={true}
+                  singleValueBlock
                   options={dictionaryOptions}
                   tooltip="Select the vendor that matches the system"
                   variant="stacked"
-                  />
+                />
                 <CustomTextInput
                   id="name"
                   name="name"

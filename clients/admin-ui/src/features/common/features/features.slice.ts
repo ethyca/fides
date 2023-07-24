@@ -152,7 +152,9 @@ export const useFeatures = (): Features => {
   const dataFlowScanning = plusHealth
     ? !!plusHealth.system_scanner.enabled
     : false;
-  const dictionaryService = plusHealth ? !!plusHealth.dictionary.enabled : false;
+  const dictionaryService = plusHealth
+    ? !!plusHealth.dictionary.enabled
+    : false;
 
   const systemsCount = allSystems?.length ?? 0;
 

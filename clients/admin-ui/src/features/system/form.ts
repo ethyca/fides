@@ -69,7 +69,7 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
     ? formValues.joint_controller
     : undefined;
 
-  const payload ={
+  const payload = {
     // Fields that are preserved by the form:
     data_responsibility_title: formValues.data_responsibility_title,
     description: formValues.description,
@@ -92,11 +92,11 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
         : formValues.administrating_department,
   };
 
-  if( formValues['meta']['vendor']['id'] &&true){
-    payload.meta = {}
-    payload.meta.vendor = {}
-    payload.meta.vendor.id = formValues.meta.vendor.id
+  if (formValues.meta.vendor.id && true) {
+    payload.meta = {};
+    payload.meta.vendor = {};
+    payload.meta.vendor.id = formValues.meta.vendor.id;
   }
-  
-  return payload
+
+  return payload;
 };
