@@ -56,7 +56,7 @@ export const transformSystemToFormValues = (
   };
 };
 
-export const transformFormValuesToSystem = (formValues: FormValues): System => {
+export const transformFormValuesToSystem = (formValues: FormValues, dictionaryService: boolean): System => {
   const hasImpactAssessment =
     formValues.data_protection_impact_assessment?.is_required === "true";
   const impactAssessment = hasImpactAssessment
@@ -92,7 +92,7 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
         : formValues.administrating_department,
   };
 
-  if (formValues.meta.vendor.id && true) {
+  if (dictionaryService && formValues.meta.vendor.id ) {
     payload.meta = {};
     payload.meta.vendor = {};
     payload.meta.vendor.id = formValues.meta.vendor.id;
