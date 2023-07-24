@@ -31,5 +31,5 @@ export type DataCategory = {
   /**
    * Indicates whether the resource is currently 'active'.
    */
-  active: boolean;
+  active?: boolean;
 };
