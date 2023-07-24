@@ -157,6 +157,12 @@ class PrivacyNoticeResponseWithUserPreferences(PrivacyNoticeResponse):
     outdated_preference: Optional[
         UserConsentPreference
     ]  # If no current preference, check if we have a preference saved for a previous version.
+    current_served: Optional[
+        bool
+    ]  # Do we have a record of the most recent version of this notice being served to the user?
+    outdated_served: Optional[
+        bool
+    ]  # Have we served an older version of this notice to the user?
 
 
 class PrivacyNoticeHistorySchema(PrivacyNoticeCreation, PrivacyNoticeWithId):

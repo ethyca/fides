@@ -47,7 +47,10 @@ from fides.api.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeRegion,
 )
-from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.privacy_preference import (
+    PrivacyPreferenceHistory,
+    ServedNoticeHistory,
+)
 from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
@@ -1463,6 +1466,24 @@ def privacy_notice(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def served_notice_history(
+    db: Session, privacy_notice, fides_user_provided_identity
+) -> Generator:
+    pref_1 = ServedNoticeHistory.create(
+        db=db,
+        data={
+            "acknowledge_mode": False,
+            "serving_component": "overlay",
+            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+            "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_notice_us_ca_provide(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
@@ -1518,6 +1539,24 @@ def privacy_preference_history_us_ca_provide_for_fides_user(
         db=db,
         data={
             "preference": "opt_in",
+            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+            "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)
+
+
+@pytest.fixture(scope="function")
+def served_notice_history_us_ca_provide_for_fides_user(
+    db: Session, privacy_notice_us_ca_provide, fides_user_provided_identity
+) -> Generator:
+    pref_1 = ServedNoticeHistory.create(
+        db=db,
+        data={
+            "acknowledge_mode": False,
+            "serving_component": "overlay",
             "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
         },
@@ -2120,6 +2159,7 @@ def privacy_preference_history(
     provided_identity_and_consent_request,
     privacy_notice,
     privacy_experience_privacy_center,
+    served_notice_history,
 ):
     provided_identity, consent_request = provided_identity_and_consent_request
     privacy_notice_history = privacy_notice.histories[0]
@@ -2139,6 +2179,7 @@ def privacy_preference_history(
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "us_ca",
             "url_recorded": "example.com/privacy_center",
+            "served_notice_history_id": served_notice_history.id,
         },
         check_name=False,
     )

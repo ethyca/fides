@@ -6,7 +6,8 @@ from fideslang.validation import FidesKey
 from sqlalchemy.orm import Session
 
 from fides.api import common_exceptions
-from fides.api.models.sql_models import (  # type: ignore[attr-defined]
+
+from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     DataCategory as DataCategoryDbModel,
 )
 

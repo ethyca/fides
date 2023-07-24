@@ -1,5 +1,5 @@
 import type { NextApiRequest } from "next";
-import type { UserGeolocation } from "fides-js";
+import { UserGeolocation } from "fides-js";
 
 // Regex to validate a location string, which must:
 // 1) Start with a 2-3 character country code (e.g. "US")
@@ -20,16 +20,14 @@ export const LOCATION_HEADERS = [
  * Lookup the "geolocation" (ie country and region) for the given request by looking for either:
  * 1) An explicit "geolocation" query param (e.g. https://privacy.example.com/some/path?geolocation=US-CA)
  * 2) Supported geolocation headers (e.g. "Cloudfront-Viewer-Country: US")
+ * 3) A geolocation API URL to infer location based on IP
  *
- * If neither of these are found, return an undefined geolocation.
+ * If none of these are found, return a null geolocation.
  *
- * NOTE: This specifically *does not* include performing a geo-IP lookup... yet!
  */
-export const getGeolocation = (
+export const lookupGeolocation = async (
   req: NextApiRequest
-): UserGeolocation | undefined => {
-  // DEFER: read headers to determine & return the request's IP address
-
+): Promise<UserGeolocation | null> => {
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;
   if (
@@ -62,5 +60,8 @@ export const getGeolocation = (
       };
     }
   }
-  return undefined;
+
+  // DEFER: read headers to determine & return the request's IP address
+  // Get geolocation if settings.IS_OVERLAY_ENABLED && settings.IS_GEOLOCATION_ENABLED && settings.GEOLOCATION_API_URL
+  return null;
 };

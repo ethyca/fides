@@ -48,7 +48,7 @@ const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps & ImageProps> = ({
   };
   const getAltValue = (): string => {
     if (isDatastoreConnection(data)) {
-      return data.name;
+      return data.name ?? data.key;
     }
     if (isConnectionSystemTypeMap(data)) {
       return data.human_readable;

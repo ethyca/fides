@@ -195,7 +195,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   const getInitialValues = () => {
     const initialValues = { ...defaultValues };
     if (connection?.key) {
-      initialValues.name = connection.name;
+      initialValues.name = connection.name ?? "";
       initialValues.description = connection.description as string;
       initialValues.instance_key =
         connection.connection_type === ConnectionType.SAAS

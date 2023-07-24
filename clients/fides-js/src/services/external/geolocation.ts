@@ -1,4 +1,4 @@
-import { UserGeolocation } from "~/lib/consent-types";
+import { UserGeolocation } from "../../lib/consent-types";
 import { debugLog } from "../../lib/consent-utils";
 
 /**

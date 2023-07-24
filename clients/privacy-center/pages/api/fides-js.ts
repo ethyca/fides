@@ -3,9 +3,15 @@ import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { CacheControl, stringify } from "cache-control-parser";
 
-import { ConsentOption, FidesConfig } from "fides-js";
+import {
+  ConsentOption,
+  FidesConfig,
+  constructFidesRegionString,
+  CONSENT_COOKIE_NAME,
+  fetchExperience,
+} from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
-import { getGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
+import { lookupGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
 
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
 
@@ -52,9 +58,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Check if a geolocation was provided via headers or query param; if so, inject into the bundle
-  const geolocation = getGeolocation(req);
-
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await loadPrivacyCenterEnvironment();
   let options: ConsentOption[] = [];
@@ -65,6 +68,33 @@ export default async function handler(
       default: option.default,
       cookieKeys: option.cookieKeys,
     }));
+  }
+
+  // Check if a geolocation was provided via headers, query param, or obtainable via a geolocation URL;
+  // if so, inject into the bundle, along with privacy experience
+  const geolocation = await lookupGeolocation(req);
+  let experience;
+  if (geolocation) {
+    const fidesRegionString = constructFidesRegionString(geolocation);
+    if (fidesRegionString && environment.settings.IS_OVERLAY_ENABLED) {
+      let fidesUserDeviceId = null;
+      if (Object.keys(req.cookies).length) {
+        const fidesCookie = req.cookies[CONSENT_COOKIE_NAME];
+        if (fidesCookie) {
+          fidesUserDeviceId =
+            JSON.parse(fidesCookie)?.identity?.fides_user_device_id;
+        }
+      }
+      if (environment.settings.DEBUG) {
+        console.log("Fetching relevant experiences from server-side...");
+      }
+      experience = await fetchExperience(
+        fidesRegionString,
+        environment.settings.FIDES_API_URL,
+        fidesUserDeviceId,
+        environment.settings.DEBUG
+      );
+    }
   }
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
@@ -81,8 +111,10 @@ export default async function handler(
       modalLinkId: environment.settings.MODAL_LINK_ID,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
       fidesApiUrl: environment.settings.FIDES_API_URL,
+      tcfEnabled: environment.settings.TCF_ENABLED,
     },
-    geolocation,
+    experience: experience || undefined,
+    geolocation: geolocation || undefined,
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
