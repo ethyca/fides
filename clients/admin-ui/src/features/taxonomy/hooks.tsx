@@ -62,6 +62,10 @@ export interface TaxonomyHookData<T extends TaxonomyEntity> {
     newValues: FormValues
   ) => RTKResult<TaxonomyEntity>;
   handleDelete: (key: string) => RTKResult<string>;
+  handleToggleEnabled: (
+    entity: TaxonomyEntity,
+    isDisabled: boolean
+  ) => RTKResult<TaxonomyEntity>;
   renderExtraFormFields?: (entity: T) => ReactNode;
   transformEntityToInitialValues: (entity: T) => FormValues;
 }
@@ -163,6 +167,20 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
 
   const handleDelete = deleteDataCategoryMutationTrigger;
 
+  const handleToggleEnabled = async (
+    entity: TaxonomyEntity,
+    isDisabled: boolean
+  ) => {
+    const payload = {
+      ...entity,
+      active: isDisabled,
+    };
+
+    const result = updateDataCategoryMutationTrigger(payload);
+
+    return result;
+  };
+
   const renderExtraFormFields = (formValues: FormValues) => (
     <CustomFieldsList
       resourceFidesKey={formValues.fides_key}
@@ -186,6 +204,7 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
     handleCreate,
     handleEdit,
     handleDelete,
+    handleToggleEnabled,
     renderExtraFormFields,
     transformEntityToInitialValues,
   };
@@ -293,6 +312,24 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
     };
   };
 
+  const handleToggleEnabled = async (
+    entity: TaxonomyEntity,
+    isDisabled: boolean
+  ) => {
+    const payload = {
+      ...entity,
+      active: isDisabled,
+    };
+
+    const result = updateDataUseMutationTrigger(payload);
+
+    if (customFields.isEnabled) {
+      await customFields.upsertCustomFields(payload);
+    }
+
+    return result;
+  };
+
   const legalBases = enumToOptions(LegalBasisEnum);
   const specialCategories = enumToOptions(SpecialCategoriesEnum);
 
@@ -346,6 +383,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
     handleCreate,
     handleEdit,
     handleDelete,
+    handleToggleEnabled,
     renderExtraFormFields,
     transformEntityToInitialValues,
   };
@@ -448,6 +486,24 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     };
   };
 
+  const handleToggleEnabled = async (
+    entity: TaxonomyEntity,
+    isDisabled: boolean
+  ) => {
+    const payload = {
+      ...entity,
+      active: isDisabled,
+    };
+
+    const result = updateDataSubjectMutationTrigger(payload);
+
+    if (customFields.isEnabled) {
+      await customFields.upsertCustomFields(payload);
+    }
+
+    return result;
+  };
+
   const renderExtraFormFields = (entity: DataSubject) => (
     <>
       <CustomSelect
@@ -486,6 +542,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     handleCreate,
     handleEdit,
     handleDelete,
+    handleToggleEnabled,
     renderExtraFormFields,
     transformEntityToInitialValues,
   };

@@ -23,6 +23,7 @@ The types of changes are:
 
 - Tab component for `fides-js` [#3782](https://github.com/ethyca/fides/pull/3782)
 - Prefetches API calls as part of Fides.js [#3698](https://github.com/ethyca/fides/pull/3698)
+- Allow items in taxonomy to be enabled or disabled [#3844](https://github.com/ethyca/fides/pull/3844)
 
 ### Developer Experience
 
