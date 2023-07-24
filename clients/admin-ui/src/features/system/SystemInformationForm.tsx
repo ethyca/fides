@@ -18,7 +18,7 @@ import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
-import { CustomTextInput } from "~/features/common/form/inputs";
+import { CustomTextInput, CustomSelect } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
   defaultInitialValues,
@@ -31,6 +31,7 @@ import {
   useCreateSystemMutation,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
+import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice"
 import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
 import { ResourceTypes, System } from "~/types/api";
 
@@ -87,6 +88,19 @@ const SystemInformationForm = ({
     useCreateSystemMutation();
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
     useUpdateSystemMutation();
+  const { data } = useGetAllDictionaryEntriesQuery();
+
+  const dictionaryOptions = useMemo(()=>{
+    return data?.items ?data.items.map((d)=> {
+      return {
+        label: d.legal_name,
+        value: d.id
+      }
+    }).sort((a, b) =>
+        a.label > b.label ? 1 : -1
+      )      
+      : []
+  })
   const systems = useAppSelector(selectAllSystems);
   const isEditing = useMemo(
     () =>
@@ -105,6 +119,7 @@ const SystemInformationForm = ({
   ) => {
     const systemBody = transformFormValuesToSystem(values);
 
+    // console.log(values)
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
     ) => {
@@ -172,6 +187,16 @@ const SystemInformationForm = ({
                 spacing={4}
                 maxWidth={!abridged ? { base: "100%", lg: "50%" } : undefined}
               >
+                <CustomSelect 
+                  id="vendor"
+                  name="meta.vendor.id"
+                  label="Vendor"
+                  placeholder="Select a vendor"
+                  singleValueBlock={true}
+                  options={dictionaryOptions}
+                  tooltip="Select the vendor that matches the system"
+                  variant="stacked"
+                  />
                 <CustomTextInput
                   id="name"
                   name="name"

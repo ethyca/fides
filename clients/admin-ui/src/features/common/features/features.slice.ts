@@ -134,6 +134,7 @@ export type Features = {
   systemsCount: number;
   connectionsCount: number;
   dataFlowScanning: boolean;
+  dictionaryService: boolean;
 
   flags: FlagsFor<FlagConfig>;
 };
@@ -151,6 +152,7 @@ export const useFeatures = (): Features => {
   const dataFlowScanning = plusHealth
     ? !!plusHealth.system_scanner.enabled
     : false;
+  const dictionaryService = plusHealth ? !!plusHealth.dictionary.enabled : false;
 
   const systemsCount = allSystems?.length ?? 0;
 
@@ -165,6 +167,7 @@ export const useFeatures = (): Features => {
     systemsCount,
     connectionsCount,
     dataFlowScanning,
+    dictionaryService,
     flags,
   };
 };
