@@ -41,6 +41,7 @@ The types of changes are:
 - Update admin ui to use new integration delete route [#3785](https://github.com/ethyca/fides/pull/3785)
 - Pinned `pymssql` and `cython` dependencies to avoid build issues on ARM machines [#3829](https://github.com/ethyca/fides/pull/3829)
 - Disable server-side geolocation for Fides.js [#3850](https://github.com/ethyca/fides/pull/3850)
+- Remove experience prefetching for Fides.js [#3855](https://github.com/ethyca/fides/pull/3855)
 
 ### Removed
 
