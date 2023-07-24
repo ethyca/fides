@@ -3,10 +3,7 @@ import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { CacheControl, stringify } from "cache-control-parser";
 
-import {
-  ConsentOption,
-  FidesConfig,
-} from "fides-js";
+import { ConsentOption, FidesConfig } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import { lookupGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
 
