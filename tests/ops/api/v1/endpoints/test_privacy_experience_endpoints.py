@@ -714,6 +714,25 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["tcf_vendors"][0]["purposes"][0]["id"] == 8
         assert resp.json()["items"][0]["tcf_features"] == []
 
+        assert len(resp.json()["items"][0]["tcf_special_purposes"]) == 1
+        assert resp.json()["items"][0]["tcf_special_purposes"][0]["id"] == 1
+
+        assert (
+            resp.json()["items"][0]["tcf_special_purposes"][0]["current_preference"]
+            is None
+        )
+        assert (
+            resp.json()["items"][0]["tcf_special_purposes"][0]["outdated_preference"]
+            is None
+        )
+        assert (
+            resp.json()["items"][0]["tcf_special_purposes"][0]["current_served"] is None
+        )
+        assert (
+            resp.json()["items"][0]["tcf_special_purposes"][0]["outdated_served"]
+            is None
+        )
+
 
 class TestFilterExperiencesByRegionOrCountry:
     def test_region_exact_match(self, db, privacy_experience_france_overlay):

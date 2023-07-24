@@ -67,7 +67,7 @@ from fides.api.schemas.privacy_request import (
     VerificationCode,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.schemas.tcf import TCFPreferenceSave, TCFPurposeSave
+from fides.api.schemas.tcf import TCFPreferenceSave, TCFVendorSave
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
@@ -199,9 +199,7 @@ def verify_previously_served_records(
     """
 
     def validate_served_record(
-        preference_record: Union[
-            ConsentOptionCreate, TCFPurposeSave, TCFPreferenceSave
-        ],
+        preference_record: Union[ConsentOptionCreate, TCFVendorSave, TCFPreferenceSave],
         served_record_field: str,
         saved_preference_field: str,
         name_for_log: str,
@@ -425,7 +423,7 @@ def persist_tcf_preferences(
         return
 
     def save_tcf_preference(
-        field_type: str, preference: Union[TCFPreferenceSave, TCFPurposeSave]
+        field_type: str, preference: Union[TCFPreferenceSave, TCFVendorSave]
     ) -> CurrentPrivacyPreference:
         (
             _,
@@ -691,8 +689,14 @@ def save_consent_served_for_identities(
         PreferenceType.privacy_notice_history_id,
     )
     save_consent_served(original_request_data.tcf_purposes, PreferenceType.purpose)
+    save_consent_served(
+        original_request_data.tcf_special_purposes, PreferenceType.special_purpose
+    )
     save_consent_served(original_request_data.tcf_vendors, PreferenceType.vendor)
     save_consent_served(original_request_data.tcf_features, PreferenceType.feature)
+    save_consent_served(
+        original_request_data.tcf_special_features, PreferenceType.special_feature
+    )
 
     return upserted_last_served
 

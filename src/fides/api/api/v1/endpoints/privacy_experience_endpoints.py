@@ -26,6 +26,7 @@ from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.models.privacy_preference import PreferenceType
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
+from fides.api.schemas.tcf import TCFExperienceContents
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
@@ -34,7 +35,7 @@ from fides.api.util.consent_util import (
     get_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, transform_fields
-from fides.api.util.tcf_util import get_tcf_purposes_and_vendors
+from fides.api.util.tcf_util import get_tcf_contents
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 
@@ -225,16 +226,19 @@ def embed_experience_details(
     fides_user_provided_identity: Optional[ProvidedIdentity],
     should_unescape: Optional[str],
 ) -> None:
-    """At runtime, embed relevant privacy notices, tcf_purposes, tcf_vendors,
-    and tcf_features into the response body for the given Experience"""
+    """At runtime, embed relevant privacy notices, tcf_purposes, tcf_special_purposes,
+    tcf_vendors, tcf_features, tcf_special_features into the response body for the given Experience
+    """
     privacy_experience.privacy_notices = []
     privacy_experience.tcf_purposes = []
+    privacy_experience.tcf_special_purposes = []
     privacy_experience.tcf_vendors = []
     privacy_experience.tcf_features = []
+    privacy_experience.tcf_special_features = []
 
     if privacy_experience.component == ComponentType.tcf_overlay:
-        purposes, vendors = get_tcf_purposes_and_vendors(db)
-        for record in purposes:
+        tcf_contents: TCFExperienceContents = get_tcf_contents(db)
+        for record in tcf_contents.purposes:
             cache_saved_and_served_on_consent_record(
                 db,
                 record,
@@ -242,7 +246,15 @@ def embed_experience_details(
                 preference_type=PreferenceType.purpose,
             )
 
-        for record in vendors:
+        for record in tcf_contents.special_purposes:
+            cache_saved_and_served_on_consent_record(
+                db,
+                record,
+                fides_user_provided_identity=fides_user_provided_identity,
+                preference_type=PreferenceType.special_purpose,
+            )
+
+        for record in tcf_contents.vendors:
             cache_saved_and_served_on_consent_record(
                 db,
                 record,
@@ -250,10 +262,11 @@ def embed_experience_details(
                 preference_type=PreferenceType.vendor,
             )
 
-        # TODO Add features
+        # TODO Add features, special features
         # Temporarily cache relevant TCF Data Purposes and Vendors on the given Experience
-        privacy_experience.tcf_purposes = purposes
-        privacy_experience.tcf_vendors = vendors
+        privacy_experience.tcf_purposes = tcf_contents.purposes
+        privacy_experience.tcf_special_purposes = tcf_contents.special_purposes
+        privacy_experience.tcf_vendors = tcf_contents.vendors
 
     else:
         privacy_notices: List[

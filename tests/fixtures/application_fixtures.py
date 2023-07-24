@@ -2468,5 +2468,20 @@ def tcf_system(db: Session) -> System:
         },
     )
 
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Ensure security, prevent and detect fraud",
+            "system_id": system.id,
+            "data_categories": ["user"],
+            "data_use": "essential.fraud_detection",
+            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+            "data_subjects": ["customer"],
+            "dataset_references": None,
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
     db.refresh(system)
     return system

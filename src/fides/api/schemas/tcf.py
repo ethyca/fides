@@ -8,8 +8,17 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_notice import UserSpecificConsentDetails
 
 
+class EmbeddedVendor(FidesSchema):
+    """Sparse details for an embedded vendor that is relevant for a specific purpose
+    Read-only.
+    """
+
+    id: str
+    name: str
+
+
 class TCFPurposeRecord(MappedPurpose, UserSpecificConsentDetails):
-    vendors: List[str] = []  # Vendors that use this purpose
+    vendors: List[EmbeddedVendor] = []  # Vendors that use this purpose
 
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -41,24 +50,34 @@ class TCFVendorRecord(UserSpecificConsentDetails):
     description: Optional[str]
     is_gvl: Optional[bool]
     purposes: List[EmbeddedPurpose] = []
+    special_purposes: List[EmbeddedPurpose] = []
     data_categories: List[TCFDataCategoryRecord] = []
 
 
 class TCFFeatureRecord(UserSpecificConsentDetails):
-    id: str
+    id: int
     name: Optional[str]
 
 
-class TCFPurposeSave(FidesSchema):
-    """Schema for saving a user's preference with respect to a TCF purpose"""
+class TCFExperienceContents:
+    purposes: List[TCFPurposeRecord] = []
+    special_purposes: List[TCFPurposeRecord] = []
+    vendors: List[TCFVendorRecord] = []
+    features: List[TCFFeatureRecord] = []
+    special_features: List[TCFFeatureRecord] = []
 
-    id: int  # Identifier for the data use, vendor, or feature
+
+class TCFPreferenceSave(FidesSchema):
+    """Schema for saving a user's preference with respect to a TCF record with integer id: purpose, special purpose,
+    feature, or special feature"""
+
+    id: int  # Identifier vendor or feature
     preference: UserConsentPreference
     served_notice_history_id: Optional[str]
 
 
-class TCFPreferenceSave(FidesSchema):
-    """Schema for saving a user's preference with respect to a vendor or feature"""
+class TCFVendorSave(FidesSchema):
+    """Schema for saving a user's preference with respect to a vendor"""
 
     id: str  # Identifier vendor or feature
     preference: UserConsentPreference

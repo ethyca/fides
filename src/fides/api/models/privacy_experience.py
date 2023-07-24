@@ -212,8 +212,10 @@ class PrivacyExperience(Base):
     # related to experiences.
     privacy_notices: List[PrivacyNotice] = []
     tcf_purposes: List
+    tcf_special_purposes: List
     tcf_vendors: List
     tcf_features: List
+    tcf_special_features: List
 
     # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
     show_banner: bool

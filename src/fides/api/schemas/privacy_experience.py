@@ -192,6 +192,8 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
     show_banner: Optional[bool]
     privacy_notices: Optional[List[PrivacyNoticeResponseWithUserPreferences]]
     tcf_purposes: Optional[List[TCFPurposeRecord]]
+    tcf_special_purposes: Optional[List[TCFPurposeRecord]]
     tcf_vendors: Optional[List[TCFVendorRecord]]
     tcf_features: Optional[List[TCFFeatureRecord]]
+    tcf_special_features: Optional[List[TCFFeatureRecord]]
     experience_config: Optional[ExperienceConfigResponse]
