@@ -25,11 +25,8 @@ describe("Taxonomy management with Plus features", () => {
 
   const navigateToEditor = () => {
     cy.getByTestId(`accordion-item-${RESOURCE_PARENT.label}`).click();
-    cy.getByTestId(`item-${RESOURCE_CHILD.label}`)
-      .click()
-      .within(() => {
-        cy.getByTestId("edit-btn").click();
-      });
+    cy.getByTestId(`item-${RESOURCE_CHILD.label}`).click({ force: true });
+    cy.getByTestId("edit-btn").click();
   };
 
   // TODO: Inputs are no longer created on this screen.

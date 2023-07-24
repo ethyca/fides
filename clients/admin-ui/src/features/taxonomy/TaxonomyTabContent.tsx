@@ -1,5 +1,6 @@
 import {
   Center,
+  HStack,
   SimpleGrid,
   Spinner,
   Stack,
@@ -28,13 +29,28 @@ const CustomTag = ({ node }: { node: TaxonomyEntityNode }) => {
   const { is_default: isDefault } = node;
   return !isDefault ? (
     <Tag
+      backgroundColor="purple.500"
+      color="white"
+      size="sm"
+      height="fit-content"
+      data-testid={`custom-tag-${node.label}`}
+    >
+      CUSTOM
+    </Tag>
+  ) : null;
+};
+
+const DisabledTag = ({ node }: { node: TaxonomyEntityNode }) => {
+  const { active: isEnabled } = node;
+  return !isEnabled ? (
+    <Tag
       backgroundColor="gray.500"
       color="white"
       size="sm"
       height="fit-content"
       data-testid={`custom-tag-${node.label}`}
     >
-      Custom
+      DISABLED
     </Tag>
   ) : null;
 };
@@ -61,6 +77,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     handleCreate: createEntity,
     handleEdit,
     handleDelete: deleteEntity,
+    handleToggleEnabled: toggleEntityEnabled,
     renderExtraFormFields,
     transformEntityToInitialValues,
   } = useTaxonomy();
@@ -74,6 +91,9 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
   const [nodeToDelete, setNodeToDelete] = useState<TaxonomyEntityNode | null>(
     null
   );
+
+  const [nodeToToggleEnabled, setNodeToToggleEnabled] =
+    useState<TaxonomyEntityNode | null>(null);
 
   const isAdding = useAppSelector(selectIsAddFormOpen);
 
@@ -93,6 +113,13 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     onOpen: onDeleteOpen,
     onClose: onDeleteClose,
   } = useDisclosure();
+
+  const {
+    isOpen: disableIsOpen,
+    onOpen: onDisableOpen,
+    onClose: onDisableClose,
+  } = useDisclosure();
+
   const toast = useToast();
 
   if (isLoading) {
@@ -121,6 +148,11 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     onDeleteOpen();
   };
 
+  const handleSetNodeToToggleEnabled = (node: TaxonomyEntityNode) => {
+    setNodeToToggleEnabled(node);
+    onDisableOpen();
+  };
+
   const handleDelete = async () => {
     if (nodeToDelete) {
       const result = await deleteEntity(nodeToDelete.value);
@@ -130,6 +162,33 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
         toast(successToastParams(`Successfully deleted ${taxonomyType}`));
       }
       onDeleteClose();
+      setEntityToEdit(null);
+    }
+  };
+
+  const handleToggleEnabled = async () => {
+    const entityToToggleEnabled =
+      (nodeToToggleEnabled &&
+        data?.find((d) => d.fides_key === nodeToToggleEnabled.value)) ??
+      null;
+    if (entityToToggleEnabled) {
+      const isDisabling = nodeToToggleEnabled?.active;
+      const result = await toggleEntityEnabled(
+        entityToToggleEnabled,
+        !isDisabling
+      );
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
+      } else {
+        toast(
+          successToastParams(
+            `Successfully ${
+              isDisabling ? "disabled" : "enabled"
+            } ${taxonomyType}`
+          )
+        );
+      }
+      onDisableClose();
       setEntityToEdit(null);
     }
   };
@@ -144,10 +203,16 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
             <ActionButtons
               onDelete={handleSetNodeToDelete}
               onEdit={handleSetEntityToEdit}
+              onDisable={handleSetNodeToToggleEnabled}
               node={node as TaxonomyEntityNode}
             />
           )}
-          renderTag={(node) => <CustomTag node={node as TaxonomyEntityNode} />}
+          renderTag={(node) => (
+            <HStack spacing={2}>
+              <CustomTag node={node as TaxonomyEntityNode} />
+              <DisabledTag node={node as TaxonomyEntityNode} />
+            </HStack>
+          )}
         />
         {entityToEdit ? (
           <TaxonomyFormBase
@@ -194,6 +259,28 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
                   will also delete all of its children.
                 </Text>
               ) : null}
+            </Stack>
+          }
+        />
+      ) : null}
+      {nodeToToggleEnabled ? (
+        <ConfirmationModal
+          isOpen={disableIsOpen}
+          onClose={onDisableClose}
+          onConfirm={handleToggleEnabled}
+          title={`${
+            nodeToToggleEnabled.active ? "Disable" : "Enable"
+          } ${taxonomyType}`}
+          message={
+            <Stack>
+              <Text>
+                This will {nodeToToggleEnabled.active ? "disable" : "enable"}{" "}
+                the {taxonomyType}{" "}
+                <Text color="complimentary.500" as="span" fontWeight="bold">
+                  {nodeToToggleEnabled.value}
+                </Text>{" "}
+                from your taxonomy.
+              </Text>
             </Stack>
           }
         />
