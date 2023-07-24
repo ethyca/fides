@@ -29,6 +29,7 @@ The types of changes are:
 - Include `data_use` and `data_category` metadata in `upload` of access results [#3674](https://github.com/ethyca/fides/pull/3674)
 
 - Tab component for `fides-js` [#3782](https://github.com/ethyca/fides/pull/3782)
+- Added toast for successfully linking an existing integration to a system [#3826](https://github.com/ethyca/fides/pull/3826)
 - Various other UI components for `fides-js` to support upcoming TCF modal [#3803](https://github.com/ethyca/fides/pull/3803)
 - Prefetches API calls as part of Fides.js [#3698](https://github.com/ethyca/fides/pull/3698)
 
@@ -44,6 +45,8 @@ The types of changes are:
 - Show/hide integration values [#3775](https://github.com/ethyca/fides/pull/3775)
 - Sort system cards alphabetically by name on "View systems" page [#3781](https://github.com/ethyca/fides/pull/3781)
 - Update admin ui to use new integration delete route [#3785](https://github.com/ethyca/fides/pull/3785)
+- Pinned `pymssql` and `cython` dependencies to avoid build issues on ARM machines [#3829](https://github.com/ethyca/fides/pull/3829)
+- Disable server-side geolocation for Fides.js [#3850](https://github.com/ethyca/fides/pull/3850)
 
 ### Removed
 
@@ -58,6 +61,7 @@ The types of changes are:
 ### Fixed
 - Privacy notice UI's list of possible regions now matches the backend's list [#3787](https://github.com/ethyca/fides/pull/3787)
 - Admin UI "property does not existing" build issue [#3831](https://github.com/ethyca/fides/pull/3831)
+- Flagging sensitive inputs as passwords to mask values during entry [#3843](https://github.com/ethyca/fides/pull/3843)
 
 ## [2.16.0](https://github.com/ethyca/fides/compare/2.15.1...2.16.0)
 

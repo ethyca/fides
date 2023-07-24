@@ -1,6 +1,5 @@
 import type { NextApiRequest } from "next";
-import { getGeolocation, UserGeolocation } from "fides-js";
-import { PrivacyCenterClientSettings } from "~/app/server-environment";
+import { UserGeolocation } from "fides-js";
 
 // Regex to validate a location string, which must:
 // 1) Start with a 2-3 character country code (e.g. "US")
@@ -27,11 +26,8 @@ export const LOCATION_HEADERS = [
  *
  */
 export const lookupGeolocation = async (
-  req: NextApiRequest,
-  settings: PrivacyCenterClientSettings
+  req: NextApiRequest
 ): Promise<UserGeolocation | null> => {
-  // DEFER: read headers to determine & return the request's IP address
-
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;
   if (
@@ -65,13 +61,7 @@ export const lookupGeolocation = async (
     }
   }
 
-  // Get geolocation using API URL, if provided and overlay is enabled, else null is returned
-  if (settings.IS_OVERLAY_ENABLED) {
-    return getGeolocation(
-      settings.IS_GEOLOCATION_ENABLED,
-      settings.GEOLOCATION_API_URL,
-      settings.DEBUG
-    );
-  }
+  // DEFER: read headers to determine & return the request's IP address
+  // Get geolocation if settings.IS_OVERLAY_ENABLED && settings.IS_GEOLOCATION_ENABLED && settings.GEOLOCATION_API_URL
   return null;
 };
