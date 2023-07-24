@@ -26,7 +26,7 @@ export const LOCATION_HEADERS = [
  *
  */
 export const lookupGeolocation = async (
-  req: NextApiRequest,
+  req: NextApiRequest
 ): Promise<UserGeolocation | null> => {
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;
