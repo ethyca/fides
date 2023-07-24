@@ -30,7 +30,6 @@ export const lookupGeolocation = async (
   req: NextApiRequest,
   settings: PrivacyCenterClientSettings
 ): Promise<UserGeolocation | null> => {
-
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;
   if (
