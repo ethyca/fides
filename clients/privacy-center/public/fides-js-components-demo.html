@@ -4,7 +4,7 @@
     <title>fides-js script demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <script src="./lib/fides.js"></script>
+    <script src="/fides.js"></script>
     <script>
       // Our cypress test suite requires injecting consent options through an obj on window
       // we default to the below for dev purposes
@@ -119,7 +119,6 @@
           modalLinkId: null,
           privacyCenterUrl: "http://localhost:3000",
           fidesApiUrl: "http://localhost:8080/api/v1",
-          tcfEnabled: false,
         },
       };
       window.Fides.init(fidesConfig);
