@@ -30,7 +30,6 @@ export const lookupGeolocation = async (
   req: NextApiRequest,
   settings: PrivacyCenterClientSettings
 ): Promise<UserGeolocation | null> => {
-  // DEFER: read headers to determine & return the request's IP address
 
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;
@@ -65,13 +64,7 @@ export const lookupGeolocation = async (
     }
   }
 
-  // Get geolocation using API URL, if provided and overlay is enabled, else null is returned
-  if (settings.IS_OVERLAY_ENABLED) {
-    return getGeolocation(
-      settings.IS_GEOLOCATION_ENABLED,
-      settings.GEOLOCATION_API_URL,
-      settings.DEBUG
-    );
-  }
+  // DEFER: read headers to determine & return the request's IP address
+  // Get geolocation if settings.IS_OVERLAY_ENABLED && settings.IS_GEOLOCATION_ENABLED && settings.GEOLOCATION_API_URL
   return null;
 };
