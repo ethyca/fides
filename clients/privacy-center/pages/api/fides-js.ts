@@ -72,7 +72,7 @@ export default async function handler(
 
   // Check if a geolocation was provided via headers, query param, or obtainable via a geolocation URL;
   // if so, inject into the bundle, along with privacy experience
-  const geolocation = await lookupGeolocation(req, environment.settings);
+  const geolocation = await lookupGeolocation(req);
   let experience;
   if (geolocation) {
     const fidesRegionString = constructFidesRegionString(geolocation);
