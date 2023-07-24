@@ -21,8 +21,8 @@ from fides.api.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
 )
-from fides.api.task import graph_task
-from fides.api.task.graph_task import get_cached_data_for_erasures
+from fides.api.graph_tasks import graph_task
+from fides.api.graph_tasks.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.fixtures.application_fixtures import integration_secrets
 

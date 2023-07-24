@@ -55,7 +55,7 @@ from fides.api.schemas.external_https import SecondPartyResponseFormat, WebhookJ
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity, IdentityBase
-from fides.api.tasks import celery_app
+from fides.api.scheduler import celery_app
 from fides.api.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,

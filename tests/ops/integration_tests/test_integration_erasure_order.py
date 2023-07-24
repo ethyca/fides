@@ -17,8 +17,8 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.task import graph_task
-from fides.api.task.graph_task import get_cached_data_for_erasures
+from fides.api.graph_tasks import graph_task
+from fides.api.graph_tasks.graph_task import get_cached_data_for_erasures
 from fides.api.util.collection_util import Row
 from fides.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match

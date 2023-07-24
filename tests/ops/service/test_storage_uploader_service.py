@@ -24,7 +24,7 @@ from fides.api.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.service.storage.storage_uploader_service import get_extension, upload
-from fides.api.tasks.storage import (
+from fides.api.scheduler.storage import (
     LOCAL_FIDES_UPLOAD_DIRECTORY,
     encrypt_access_request_results,
     write_to_in_memory_buffer,

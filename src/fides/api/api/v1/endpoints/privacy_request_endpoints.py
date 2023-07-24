@@ -92,10 +92,10 @@ from fides.api.service.messaging.message_dispatch_service import (
     check_and_dispatch_error_notifications,
     dispatch_message_task,
 )
-from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_task import EMPTY_REQUEST, collect_queries
-from fides.api.task.task_resources import TaskResources
-from fides.api.tasks import MESSAGING_QUEUE_NAME
+from fides.privacy_request.graph_tasks.filter_results import filter_data_categories
+from fides.privacy_request.graph_tasks.graph_task import EMPTY_REQUEST, collect_queries
+from fides.privacy_request.graph_tasks.task_resources import TaskResources
+from fides.api.scheduler import MESSAGING_QUEUE_NAME
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row

@@ -10,7 +10,7 @@ from fides.api.service.privacy_request.email_batch_service import (
 from fides.api.service.privacy_request.request_runner_service import (
     initiate_paused_privacy_request_followup,
 )
-from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.api.scheduler.scheduler import scheduler
 from fides.config import get_config
 
 CONFIG = get_config()

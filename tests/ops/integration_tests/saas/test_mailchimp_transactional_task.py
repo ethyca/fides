@@ -18,7 +18,7 @@ from fides.api.service.connectors import SaaSConnector, get_connector
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
-from fides.api.task import graph_task
+from fides.api.graph_tasks import graph_task
 
 
 @pytest.mark.integration_saas

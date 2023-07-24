@@ -25,7 +25,7 @@ from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiterRequest,
     RateLimiterTimeoutException,
 )
-from fides.api.task import graph_task
+from fides.api.graph_tasks import graph_task
 from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,

@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 import pydash
 from loguru import logger
 
-from fides.api.task.refine_target_path import (
+from fides.privacy_request.graph_tasks.refine_target_path import (
     DetailedPath,
     FieldPathNodeInput,
     build_refined_target_paths,

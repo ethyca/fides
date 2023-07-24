@@ -13,7 +13,7 @@ from fides.api.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
-from fides.api.tasks.storage import upload_to_local, upload_to_s3
+from fides.api.scheduler.storage import upload_to_local, upload_to_s3
 from fides.privacy_request.graph.graph import DataCategoryFieldMapping
 
 

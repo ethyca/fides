@@ -26,10 +26,12 @@ from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequest
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors.base_connector import BaseConnector
-from fides.api.task.consolidate_query_matches import consolidate_query_matches
-from fides.api.task.filter_element_match import filter_element_match
-from fides.api.task.refine_target_path import FieldPathNodeInput
-from fides.api.task.task_resources import TaskResources
+from fides.privacy_request.graph_tasks.consolidate_query_matches import (
+    consolidate_query_matches,
+)
+from fides.privacy_request.graph_tasks.filter_element_match import filter_element_match
+from fides.privacy_request.graph_tasks.refine_target_path import FieldPathNodeInput
+from fides.privacy_request.graph_tasks.task_resources import TaskResources
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import (
     NodeInput,

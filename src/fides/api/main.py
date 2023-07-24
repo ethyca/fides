@@ -25,7 +25,7 @@ from fides.api.app_setup import (
 from fides.api.common_exceptions import MalisciousUrlException
 from fides.api.middleware import handle_audit_log_resource
 from fides.api.schemas.analytics import Event, ExtraData
-from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.api.scheduler.scheduler import scheduler
 from fides.api.ui import (
     get_admin_index_as_response,
     get_path_to_admin_ui_file,

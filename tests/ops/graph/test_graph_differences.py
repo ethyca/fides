@@ -20,8 +20,8 @@ from fides.api.graph.traversal import TraversalNode, artificial_traversal_node
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.policy import Policy
 from fides.api.schemas.policy import ActionType
-from fides.api.task.graph_task import EMPTY_REQUEST, GraphTask
-from fides.api.task.task_resources import TaskResources
+from fides.api.graph_tasks.graph_task import EMPTY_REQUEST, GraphTask
+from fides.api.graph_tasks.task_resources import TaskResources
 
 from ..graph.graph_test_util import generate_node
 

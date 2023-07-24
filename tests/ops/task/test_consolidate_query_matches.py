@@ -1,5 +1,5 @@
 from fides.api.graph.config import FieldPath
-from fides.api.task.consolidate_query_matches import consolidate_query_matches
+from fides.api.graph_tasks.consolidate_query_matches import consolidate_query_matches
 
 
 def test_consolidate_query_matches():

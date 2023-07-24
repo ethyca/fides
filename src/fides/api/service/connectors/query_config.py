@@ -17,7 +17,7 @@ from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
-from fides.api.task.refine_target_path import (
+from fides.privacy_request.graph_tasks.refine_target_path import (
     build_refined_target_paths,
     join_detailed_path,
 )

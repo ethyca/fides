@@ -1,5 +1,5 @@
 from fides.api.graph.config import FieldPath
-from fides.api.task.refine_target_path import (
+from fides.api.graph_tasks.refine_target_path import (
     _match_found,
     build_refined_target_paths,
     join_detailed_path,

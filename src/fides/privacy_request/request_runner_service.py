@@ -56,15 +56,15 @@ from fides.api.service.connectors.erasure_email_connector import (
 from fides.api.service.connectors.fides_connector import filter_fides_connector_datasets
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.storage.storage_uploader_service import upload
-from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_task import (
+from fides.privacy_request.graph_tasks.filter_results import filter_data_categories
+from fides.privacy_request.graph_tasks.graph_task import (
     get_cached_data_for_erasures,
     run_access_request,
     run_consent_request,
     run_erasure,
 )
-from fides.api.tasks import DatabaseTask, celery_app
-from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.api.scheduler import DatabaseTask, celery_app
+from fides.api.scheduler.scheduler import scheduler
 from fides.api.util.cache import (
     FidesopsRedis,
     get_async_task_tracking_cache_key,

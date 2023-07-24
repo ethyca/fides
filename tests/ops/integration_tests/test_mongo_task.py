@@ -21,9 +21,9 @@ from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
-from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_task import get_cached_data_for_erasures
+from fides.api.graph_tasks import graph_task
+from fides.api.graph_tasks.filter_results import filter_data_categories
+from fides.api.graph_tasks.graph_task import get_cached_data_for_erasures
 
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (

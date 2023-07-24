@@ -3,7 +3,7 @@ import copy
 import pytest
 
 from fides.api.graph.config import FieldPath
-from fides.api.task.filter_element_match import (
+from fides.api.graph_tasks.filter_element_match import (
     _expand_array_paths_to_preserve,
     _remove_paths_from_row,
     filter_element_match,

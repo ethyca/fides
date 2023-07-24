@@ -39,7 +39,7 @@ from fides.api.schemas.messaging.messaging import (
     SubjectIdentityVerificationBodyParams,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
+from fides.api.scheduler import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy

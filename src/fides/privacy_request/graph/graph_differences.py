@@ -9,7 +9,7 @@ from fides.privacy_request.graph.config import (
 )
 
 if TYPE_CHECKING:
-    from fides.api.task.graph_task import GraphTask
+    from fides.privacy_request.graph_tasks.graph_task import GraphTask
 
 GraphRepr = Dict[str, Dict[str, List[str]]]
 

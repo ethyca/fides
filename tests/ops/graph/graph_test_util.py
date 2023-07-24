@@ -15,8 +15,8 @@ from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.connectors import BaseConnector, MongoDBConnector
 from fides.api.service.connectors.sql_connector import SQLConnector
-from fides.api.task.graph_task import GraphTask
-from fides.api.task.task_resources import TaskResources
+from fides.api.graph_tasks.graph_task import GraphTask
+from fides.api.graph_tasks.task_resources import TaskResources
 from fides.api.util.collection_util import Row
 from tests.fixtures.application_fixtures import faker
 
