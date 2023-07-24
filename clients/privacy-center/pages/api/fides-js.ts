@@ -3,9 +3,12 @@ import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { CacheControl, stringify } from "cache-control-parser";
 
-import { ConsentOption, FidesConfig } from "fides-js";
+import {
+  ConsentOption,
+  FidesConfig,
+} from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
-import { LOCATION_HEADERS } from "~/common/geolocation";
+import { lookupGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
 
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
 
@@ -64,6 +67,10 @@ export default async function handler(
     }));
   }
 
+  // Check if a geolocation was provided via headers, query param, or obtainable via a geolocation URL;
+  // if so, inject into the bundle, along with privacy experience
+  const geolocation = await lookupGeolocation(req);
+
   // Create the FidesConfig JSON that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {
     consent: {
@@ -80,8 +87,7 @@ export default async function handler(
       fidesApiUrl: environment.settings.FIDES_API_URL,
       tcfEnabled: environment.settings.TCF_ENABLED,
     },
-    experience: undefined,
-    geolocation: undefined,
+    geolocation: geolocation || undefined,
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
