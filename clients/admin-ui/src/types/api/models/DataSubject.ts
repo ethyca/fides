@@ -46,5 +46,5 @@ export type DataSubject = {
   /**
    * Indicates whether the resource is currently 'active'.
    */
-  active?: boolean;
+  active: boolean;
 };

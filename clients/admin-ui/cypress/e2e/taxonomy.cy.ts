@@ -38,7 +38,7 @@ describe("Taxonomy management page", () => {
       // clicking should open up accordions to render more items visible
       cy.getByTestId("accordion-item-User Data").click();
       cy.getByTestId("accordion-item-Credentials").should("be.visible");
-      cy.getByTestId("accordion-item-Credentials").click();
+      cy.getByTestId("accordion-item-Credentials").click({ force: true });
       cy.getByTestId("item-Password").should("be.visible");
     });
 
@@ -161,7 +161,7 @@ describe("Taxonomy management page", () => {
     it("Can render the parent field", () => {
       cy.getByTestId("tab-Data Categories").click();
       cy.getByTestId(`accordion-item-User Data`).click();
-      cy.getByTestId("accordion-item-Credentials").click();
+      cy.getByTestId("accordion-item-Credentials").click({ force: true });
       cy.getByTestId("item-Password").trigger("mouseover");
       cy.getByTestId("edit-btn").click();
       cy.getByTestId("input-parent_key").should(

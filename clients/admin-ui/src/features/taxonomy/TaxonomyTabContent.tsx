@@ -279,11 +279,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
                 <Text color="complimentary.500" as="span" fontWeight="bold">
                   {nodeToToggleEnabled.value}
                 </Text>{" "}
-                from your taxonomy
-                {nodeToToggleEnabled.children.length
-                  ? " and all its children"
-                  : ""}
-                .
+                from your taxonomy.
               </Text>
             </Stack>
           }
