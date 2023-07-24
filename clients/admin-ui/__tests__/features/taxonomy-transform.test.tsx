@@ -15,18 +15,21 @@ describe("data category transform", () => {
                 label: "Account City",
                 value: "account.contact.city",
                 is_default: true,
+                active: true,
               },
             ],
             description: "Contact data related to a system account.",
             label: "Account Contact Data",
             value: "account.contact",
             is_default: true,
+            active: true,
           },
         ],
         description: "Data related to a system account.",
         label: "Account Data",
         value: "account",
         is_default: true,
+        active: true,
       },
       {
         children: [
@@ -36,12 +39,14 @@ describe("data category transform", () => {
             label: "Authentication Data",
             value: "system.authentication",
             is_default: true,
+            active: true,
           },
         ],
         description: "Data unique to, and under control of the system.",
         label: "System Data",
         value: "system",
         is_default: true,
+        active: true,
       },
       {
         children: [
@@ -52,6 +57,7 @@ describe("data category transform", () => {
             label: "Derived Data",
             value: "user.derived",
             is_default: true,
+            active: true,
           },
           {
             children: [
@@ -62,6 +68,7 @@ describe("data category transform", () => {
                 label: "User Provided Non-Identifiable Data",
                 value: "user.provided.nonidentifiable",
                 is_default: true,
+                active: true,
               },
               {
                 children: [
@@ -71,6 +78,7 @@ describe("data category transform", () => {
                     label: "User Provided Non-Specific Age",
                     value: "user.provided.identifiable.non_specific_age",
                     is_default: true,
+                    active: true,
                   },
                   {
                     children: [],
@@ -79,6 +87,7 @@ describe("data category transform", () => {
                     label: "Political Opinion",
                     value: "user.provided.identifiable.political_opinion",
                     is_default: true,
+                    active: true,
                   },
                 ],
                 description:
@@ -86,6 +95,7 @@ describe("data category transform", () => {
                 label: "User Provided Identifiable Data",
                 value: "user.provided.identifiable",
                 is_default: true,
+                active: true,
               },
             ],
             description:
@@ -93,6 +103,7 @@ describe("data category transform", () => {
             label: "User Provided Data",
             value: "user.provided",
             is_default: true,
+            active: true,
           },
         ],
         description:
@@ -100,6 +111,7 @@ describe("data category transform", () => {
         label: "User Data",
         value: "user",
         is_default: true,
+        active: true,
       },
     ]);
   });
@@ -114,6 +126,7 @@ describe("data category transform", () => {
           "An individual that is unidentifiable to the systems. Note - This should only be applied to truly anonymous users where there is no risk of re-identification",
         is_default: true,
         children: [],
+        active: true,
       },
       {
         label: "Citizen Voter",
@@ -122,6 +135,7 @@ describe("data category transform", () => {
           "An individual registered to voter with a state or authority.",
         is_default: true,
         children: [],
+        active: true,
       },
       {
         label: "Commuter",
@@ -130,6 +144,7 @@ describe("data category transform", () => {
           "An individual that is traveling or transiting in the context of location tracking.",
         is_default: true,
         children: [],
+        active: true,
       },
     ]);
   });
