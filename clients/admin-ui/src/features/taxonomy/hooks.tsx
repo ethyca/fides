@@ -316,7 +316,6 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
     entity: TaxonomyEntity,
     isDisabled: boolean
   ) => {
-
     const payload = {
       ...entity,
       active: isDisabled,
@@ -491,7 +490,6 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     entity: TaxonomyEntity,
     isDisabled: boolean
   ) => {
-
     const payload = {
       ...entity,
       active: isDisabled,
