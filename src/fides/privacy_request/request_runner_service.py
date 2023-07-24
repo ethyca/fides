@@ -18,12 +18,6 @@ from fides.api.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.db.session import get_db_session
-from fides.api.graph.analytics_events import (
-    failed_graph_analytics_event,
-    fideslog_graph_failure,
-)
-from fides.api.graph.config import CollectionAddress, GraphDataset
-from fides.api.graph.graph import DatasetGraph
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -85,6 +79,12 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.privacy_request.graph.analytics_events import (
+    failed_graph_analytics_event,
+    fideslog_graph_failure,
+)
+from fides.privacy_request.graph.config import CollectionAddress, GraphDataset
+from fides.privacy_request.graph.graph import DatasetGraph
 
 
 class ManualWebhookResults(FidesSchema):

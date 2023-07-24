@@ -7,7 +7,6 @@ from loguru import logger
 
 import fides.connectors.aws as aws_connector
 from fides.api.common_exceptions import ConnectionException
-from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -23,6 +22,7 @@ from fides.connectors.models import (
     ConnectorAuthFailureException,
     ConnectorFailureException,
 )
+from fides.privacy_request.graph.traversal import TraversalNode
 
 
 class DynamoDBConnector(BaseConnector[Any]):  # type: ignore

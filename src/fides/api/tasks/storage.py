@@ -13,15 +13,11 @@ from botocore.exceptions import ClientError, ParamValidationError
 from loguru import logger
 
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
-from fides.api.graph.graph import DataCategoryFieldMapping
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.storage.storage import (
     ResponseFormat,
     S3AuthMethod,
     StorageSecrets,
-)
-from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
-    DsrReportBuilder,
 )
 from fides.api.util.cache import get_cache, get_encryption_cache_key
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
@@ -30,6 +26,8 @@ from fides.api.util.encryption.aes_gcm_encryption_scheme import (
 from fides.api.util.storage_authenticator import get_s3_session
 from fides.api.util.storage_util import storage_json_encoder
 from fides.config import CONFIG
+from fides.privacy_request.dsr_package.dsr_report_builder import DsrReportBuilder
+from fides.privacy_request.graph.graph import DataCategoryFieldMapping
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 

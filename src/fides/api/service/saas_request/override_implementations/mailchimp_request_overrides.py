@@ -3,7 +3,6 @@ from typing import Any, Dict, List
 
 import pydash
 
-from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
@@ -13,6 +12,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.util.collection_util import Row
+from fides.privacy_request.graph.traversal import TraversalNode
 
 
 @register("mailchimp_messages_access", [SaaSRequestType.READ])

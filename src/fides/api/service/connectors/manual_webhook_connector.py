@@ -1,11 +1,11 @@
 from typing import Any, Dict, List
 
-from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.util.collection_util import Row
+from fides.privacy_request.graph.traversal import TraversalNode
 
 
 class ManualWebhookConnector(BaseConnector[None]):

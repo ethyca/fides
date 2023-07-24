@@ -6,7 +6,6 @@ from loguru import logger
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from fides.api.common_exceptions import ClientUnsuccessfulException
-from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -14,6 +13,7 @@ from fides.api.schemas.connection_configuration import HttpsSchema
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import QueryConfig
 from fides.api.util.collection_util import Row
+from fides.privacy_request.graph.traversal import TraversalNode
 
 
 class HTTPSConnector(BaseConnector[None]):

@@ -29,8 +29,6 @@ from fides.api.common_exceptions import (
     TraversalError,
     ValidationError,
 )
-from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import Traversal
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import (
     DatasetConfig,
@@ -65,6 +63,8 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
+from fides.privacy_request.graph.graph import DatasetGraph
+from fides.privacy_request.graph.traversal import Traversal
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,

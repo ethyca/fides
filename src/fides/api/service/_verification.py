@@ -9,11 +9,9 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
-from fides.api.service.privacy_request.request_runner_service import (
-    generate_id_verification_code,
-)
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.privacy_request.request_runner_service import generate_id_verification_code
 
 
 def send_verification_code_to_user(

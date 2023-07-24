@@ -23,7 +23,6 @@ from fides.api.common_exceptions import (
     ConnectionException,
     SSHTunnelConfigNotFoundException,
 )
-from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -53,6 +52,7 @@ from fides.api.service.connectors.query_config import (
 )
 from fides.api.util.collection_util import Row
 from fides.config import get_config
+from fides.privacy_request.graph.traversal import TraversalNode
 
 CONFIG = get_config()
 

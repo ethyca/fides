@@ -7,7 +7,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 
 from fides.api.common_exceptions import ValidationError
-from fides.api.graph.config import (
+from fides.privacy_request.graph.config import (
     Collection,
     CollectionAddress,
     EdgeDirection,
@@ -19,6 +19,7 @@ from fides.api.graph.config import (
 )
 
 DataCategoryFieldMapping = Dict[CollectionAddress, Dict[FidesKey, List[FieldPath]]]
+
 
 # Add the nodes to the database as Tasks
 class Node:

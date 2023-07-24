@@ -4,18 +4,18 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 from fideslog.sdk.python.event import AnalyticsEvent
 
 from fides.api.analytics import in_docker_container, send_analytics_event
-from fides.api.graph.config import CollectionAddress
-from fides.api.graph.graph_differences import (
-    GraphDiffSummary,
-    GraphRepr,
-    find_graph_differences_summary,
-    format_graph_for_caching,
-)
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
 from fides.config import CONFIG
+from fides.privacy_request.graph.config import CollectionAddress
+from fides.privacy_request.graph.graph_differences import (
+    GraphDiffSummary,
+    GraphRepr,
+    find_graph_differences_summary,
+    format_graph_for_caching,
+)
 
 if TYPE_CHECKING:
     from fides.api.task.graph_task import GraphTask

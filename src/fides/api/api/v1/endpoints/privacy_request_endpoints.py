@@ -45,9 +45,6 @@ from fides.api.common_exceptions import (
     TraversalError,
     ValidationError,
 )
-from fides.api.graph.config import CollectionAddress
-from fides.api.graph.graph import DatasetGraph, Node
-from fides.api.graph.traversal import Traversal
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -95,13 +92,6 @@ from fides.api.service.messaging.message_dispatch_service import (
     check_and_dispatch_error_notifications,
     dispatch_message_task,
 )
-from fides.api.service.privacy_request.request_runner_service import (
-    queue_privacy_request,
-)
-from fides.api.service.privacy_request.request_service import (
-    build_required_privacy_request_kwargs,
-    cache_data,
-)
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, collect_queries
 from fides.api.task.task_resources import TaskResources
@@ -144,6 +134,14 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.privacy_request.graph.config import CollectionAddress
+from fides.privacy_request.graph.graph import DatasetGraph, Node
+from fides.privacy_request.graph.traversal import Traversal
+from fides.privacy_request.request_runner_service import queue_privacy_request
+from fides.privacy_request.request_service import (
+    build_required_privacy_request_kwargs,
+    cache_data,
+)
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 

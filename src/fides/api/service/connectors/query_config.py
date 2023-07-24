@@ -10,14 +10,6 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Executable, Update  # type: ignore
 from sqlalchemy.sql.elements import ColumnElement, TextClause
 
-from fides.api.graph.config import (
-    ROOT_COLLECTION_ADDRESS,
-    CollectionAddress,
-    Field,
-    FieldPath,
-    MaskingOverride,
-)
-from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import ManualAction, PrivacyRequest
 from fides.api.schemas.policy import ActionType
@@ -32,6 +24,14 @@ from fides.api.task.refine_target_path import (
 from fides.api.util.collection_util import Row, append, filter_nonempty_values
 from fides.api.util.logger import Pii
 from fides.api.util.querytoken import QueryToken
+from fides.privacy_request.graph.config import (
+    ROOT_COLLECTION_ADDRESS,
+    CollectionAddress,
+    Field,
+    FieldPath,
+    MaskingOverride,
+)
+from fides.privacy_request.graph.traversal import TraversalNode
 
 T = TypeVar("T")
 

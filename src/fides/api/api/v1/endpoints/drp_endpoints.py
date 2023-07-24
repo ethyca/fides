@@ -35,13 +35,6 @@ from fides.api.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
 from fides.api.service.messaging.message_dispatch_service import (
     check_and_dispatch_error_notifications,
 )
-from fides.api.service.privacy_request.request_runner_service import (
-    queue_privacy_request,
-)
-from fides.api.service.privacy_request.request_service import (
-    build_required_privacy_request_kwargs,
-    cache_data,
-)
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.logger import Pii
@@ -49,6 +42,11 @@ from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.privacy_request.request_runner_service import queue_privacy_request
+from fides.privacy_request.request_service import (
+    build_required_privacy_request_kwargs,
+    cache_data,
+)
 
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
 

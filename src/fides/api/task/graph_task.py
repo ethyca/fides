@@ -20,21 +20,6 @@ from fides.api.common_exceptions import (
     SkippingConsentPropagation,
     TraversalError,
 )
-from fides.api.graph.analytics_events import (
-    fideslog_graph_rerun,
-    prepare_rerun_graph_analytics_event,
-)
-from fides.api.graph.config import (
-    ROOT_COLLECTION_ADDRESS,
-    TERMINATOR_ADDRESS,
-    CollectionAddress,
-    Field,
-    FieldAddress,
-    FieldPath,
-)
-from fides.api.graph.graph import DatasetGraph, Edge, Node
-from fides.api.graph.graph_differences import format_graph_for_caching
-from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequest
@@ -57,6 +42,21 @@ from fides.api.util.consent_util import add_errored_system_status_for_consent_re
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from fides.config import CONFIG
+from fides.privacy_request.graph.analytics_events import (
+    fideslog_graph_rerun,
+    prepare_rerun_graph_analytics_event,
+)
+from fides.privacy_request.graph.config import (
+    ROOT_COLLECTION_ADDRESS,
+    TERMINATOR_ADDRESS,
+    CollectionAddress,
+    Field,
+    FieldAddress,
+    FieldPath,
+)
+from fides.privacy_request.graph.graph import DatasetGraph, Edge, Node
+from fides.privacy_request.graph.graph_differences import format_graph_for_caching
+from fides.privacy_request.graph.traversal import Traversal, TraversalNode
 
 dask.config.set(scheduler="threads")
 

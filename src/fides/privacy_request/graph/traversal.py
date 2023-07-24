@@ -6,7 +6,9 @@ import pydash.collections
 from loguru import logger
 
 from fides.api.common_exceptions import TraversalError
-from fides.api.graph.config import (
+from fides.api.util.collection_util import Row, append
+from fides.api.util.matching_queue import MatchingQueue
+from fides.privacy_request.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     Collection,
     CollectionAddress,
@@ -15,9 +17,7 @@ from fides.api.graph.config import (
     FieldPath,
     GraphDataset,
 )
-from fides.api.graph.graph import DatasetGraph, Edge, Node
-from fides.api.util.collection_util import Row, append
-from fides.api.util.matching_queue import MatchingQueue
+from fides.privacy_request.graph.graph import DatasetGraph, Edge, Node
 
 Datastore = Dict[CollectionAddress, List[Row]]
 """A type expressing retrieved rows of data from a specified collection"""

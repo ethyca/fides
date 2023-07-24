@@ -86,13 +86,13 @@ from fideslang.validation import FidesKey
 from pydantic import BaseModel, validator
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.graph.data_type import (
+from fides.api.util.collection_util import merge_dicts
+from fides.api.util.querytoken import QueryToken
+from fides.privacy_request.graph.data_type import (
     DataType,
     DataTypeConverter,
     get_data_type_converter,
 )
-from fides.api.util.collection_util import merge_dicts
-from fides.api.util.querytoken import QueryToken
 
 DatasetAddress = str
 SeedAddress = str

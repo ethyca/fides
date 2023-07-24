@@ -5,7 +5,6 @@ from pymongo import MongoClient
 from pymongo.errors import OperationFailure, ServerSelectionTimeoutError
 
 from fides.api.common_exceptions import ConnectionException
-from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -16,6 +15,7 @@ from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import MongoQueryConfig, QueryConfig
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii
+from fides.privacy_request.graph.traversal import TraversalNode
 
 
 class MongoDBConnector(BaseConnector[MongoClient]):

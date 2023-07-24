@@ -1,12 +1,12 @@
 from typing import TYPE_CHECKING, Dict, List, Optional, Set
 
-from fides.api.graph.config import (
+from fides.api.schemas.base_class import FidesSchema
+from fides.api.util.collection_util import Row
+from fides.privacy_request.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     CollectionAddress,
 )
-from fides.api.schemas.base_class import FidesSchema
-from fides.api.util.collection_util import Row
 
 if TYPE_CHECKING:
     from fides.api.task.graph_task import GraphTask

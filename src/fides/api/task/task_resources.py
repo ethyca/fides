@@ -5,7 +5,6 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ConnectorNotFoundException
-from fides.api.graph.config import CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
@@ -33,6 +32,7 @@ from fides.api.service.connectors import (
 from fides.api.service.connectors.base_email_connector import BaseEmailConnector
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row, extract_key_for_address
+from fides.privacy_request.graph.config import CollectionAddress
 
 
 class Connections:

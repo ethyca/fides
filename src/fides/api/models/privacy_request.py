@@ -37,8 +37,6 @@ from fides.api.cryptography.cryptographic_util import hash_with_salt
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
-from fides.api.graph.config import CollectionAddress
-from fides.api.graph.graph_differences import GraphRepr
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
@@ -73,6 +71,8 @@ from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.common.api.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fides.config import CONFIG
+from fides.privacy_request.graph.config import CollectionAddress
+from fides.privacy_request.graph.graph_differences import GraphRepr
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [

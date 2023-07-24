@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from fastapi import Depends, HTTPException
 from fideslang.validation import FidesKey
@@ -54,11 +54,9 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     create_connection_config_from_template_no_save,
 )
-from fides.api.service.privacy_request.request_runner_service import (
-    queue_privacy_request,
-)
 from fides.api.util.logger import Pii
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
+from fides.privacy_request.request_runner_service import queue_privacy_request
 
 # pylint: disable=too-many-nested-blocks,too-many-branches,too-many-statements
 
@@ -325,7 +323,7 @@ def connection_status(
 
     connector = get_connector(connection_config)
     try:
-        status: ConnectionTestStatus | None = connector.test_connection()
+        status: Union[ConnectionTestStatus, None] = connector.test_connection()
 
     except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(

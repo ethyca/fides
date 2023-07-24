@@ -6,7 +6,6 @@ from firebase_admin.auth import UserNotFoundError, UserRecord
 from loguru import logger
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
@@ -17,6 +16,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import get_identity
+from fides.privacy_request.graph.traversal import TraversalNode
 
 
 @register("firebase_auth_user_access", [SaaSRequestType.READ])
