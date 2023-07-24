@@ -1,5 +1,5 @@
 import type { NextApiRequest } from "next";
-import { getGeolocation, UserGeolocation } from "fides-js";
+import { UserGeolocation } from "fides-js";
 import { PrivacyCenterClientSettings } from "~/app/server-environment";
 
 // Regex to validate a location string, which must:
@@ -28,7 +28,6 @@ export const LOCATION_HEADERS = [
  */
 export const lookupGeolocation = async (
   req: NextApiRequest,
-  settings: PrivacyCenterClientSettings
 ): Promise<UserGeolocation | null> => {
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;

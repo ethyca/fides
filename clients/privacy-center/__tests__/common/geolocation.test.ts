@@ -24,7 +24,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country-Region": "NY",
         },
       });
-      const geolocation = await lookupGeolocation(req, privacyCenterSettings);
+      const geolocation = await lookupGeolocation(req);
       expect(geolocation).toEqual({
         country: "US",
         location: "US-NY",
@@ -39,7 +39,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country": "FR",
         },
       });
-      const geolocation = await lookupGeolocation(req, privacyCenterSettings);
+      const geolocation = await lookupGeolocation(req);
       expect(geolocation).toEqual({
         country: "FR",
         location: "FR",
@@ -53,7 +53,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country-Region": "NY",
         },
       });
-      const geolocation = await lookupGeolocation(req, privacyCenterSettings);
+      const geolocation = await lookupGeolocation(req);
       expect(geolocation).toBeNull();
     });
 
@@ -64,7 +64,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country": "Magicland",
         },
       });
-      const geolocation = await lookupGeolocation(req, privacyCenterSettings);
+      const geolocation = await lookupGeolocation(req);
       expect(geolocation).toBeNull();
     });
   });
@@ -74,7 +74,7 @@ describe("getGeolocation", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=FR-IDF",
       });
-      const geolocation = await lookupGeolocation(req, privacyCenterSettings);
+      const geolocation = await lookupGeolocation(req);
       expect(geolocation).toEqual({
         country: "FR",
         location: "FR-IDF",
@@ -86,7 +86,7 @@ describe("getGeolocation", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=America",
       });
-      const geolocation = await lookupGeolocation(req, privacyCenterSettings);
+      const geolocation = await lookupGeolocation(req);
       expect(geolocation).toBeNull();
     });
   });
@@ -99,7 +99,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country": "FR",
         },
       });
-      const geolocation = await lookupGeolocation(req, privacyCenterSettings);
+      const geolocation = await lookupGeolocation(req);
       expect(geolocation).toEqual({
         country: "US",
         location: "US-CA",
@@ -113,7 +113,7 @@ describe("getGeolocation", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js",
       });
-      const geolocation = await lookupGeolocation(req, privacyCenterSettings);
+      const geolocation = await lookupGeolocation(req);
       expect(geolocation).toBeNull();
     });
   });
@@ -138,7 +138,7 @@ describe("getGeolocation", () => {
         url: "https://privacy.example.com/fides.js",
       });
 
-      const geolocation = await lookupGeolocation(req, privacyCenterSettings);
+      const geolocation = await lookupGeolocation(req);
       expect(geolocation).toEqual({
         country: "US",
         location: "US-CA",
