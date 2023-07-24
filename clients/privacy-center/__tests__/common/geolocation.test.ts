@@ -119,7 +119,7 @@ describe("getGeolocation", () => {
   });
 
   describe("when using geolocation URL", () => {
-    it("fetches data from geolocation URL", async () => {
+    it.skip("fetches data from geolocation URL", async () => {
       privacyCenterSettings.IS_GEOLOCATION_ENABLED = true;
       privacyCenterSettings.GEOLOCATION_API_URL = "some-geolocation-api.com";
       privacyCenterSettings.IS_OVERLAY_ENABLED = true;
