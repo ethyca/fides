@@ -244,14 +244,6 @@ describe("Taxonomy management page", () => {
       // check an entity that has optional fields filled in ("Citizen Voter")
       cy.getByTestId("item-Citizen Voter").trigger("mouseover");
       cy.getByTestId("edit-btn").click();
-      
-      cy.getByTestId("input-automatic_decisions_or_profiling").within(() => {
-        cy.getByTestId("option-true").should("have.attr", "data-checked");
-        cy.getByTestId("option-false").click();
-        cy.getByTestId("option-false").should("have.attr", "data-checked");
-        cy.getByTestId("option-true").should("not.have.attr", "data-checked");
-      });
-
       const rightValues = [
         "Informed",
         "Access",
@@ -263,6 +255,12 @@ describe("Taxonomy management page", () => {
         cy.getByTestId("input-rights").should("contain", v);
       });
       cy.getByTestId("input-strategy").should("contain", "INCLUDE");
+      cy.getByTestId("input-automatic_decisions_or_profiling").within(() => {
+        cy.getByTestId("option-true").should("have.attr", "data-checked");
+        cy.getByTestId("option-false").click();
+        cy.getByTestId("option-false").should("have.attr", "data-checked");
+        cy.getByTestId("option-true").should("not.have.attr", "data-checked");
+      });
 
       // trigger a PUT
       cy.getByTestId("input-name").clear().type("foo");
