@@ -1,6 +1,5 @@
 import type { NextApiRequest } from "next";
 import { UserGeolocation } from "fides-js";
-import { PrivacyCenterClientSettings } from "~/app/server-environment";
 
 // Regex to validate a location string, which must:
 // 1) Start with a 2-3 character country code (e.g. "US")
