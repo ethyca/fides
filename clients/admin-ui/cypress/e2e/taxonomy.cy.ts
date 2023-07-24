@@ -257,7 +257,9 @@ describe("Taxonomy management page", () => {
       cy.getByTestId("input-strategy").should("contain", "INCLUDE");
       cy.getByTestId("input-automatic_decisions_or_profiling").within(() => {
         cy.getByTestId("option-true").should("have.attr", "data-checked");
-        cy.getByTestId("option-false").click();
+        // For some reason Cypress can accidentally click the dropdown selector above,
+        // so we force click the radio
+        cy.getByTestId("option-false").click({ force: true });
         cy.getByTestId("option-false").should("have.attr", "data-checked");
         cy.getByTestId("option-true").should("not.have.attr", "data-checked");
       });
