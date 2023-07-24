@@ -25,6 +25,7 @@ The types of changes are:
 - Added toast for successfully linking an existing integration to a system [#3826](https://github.com/ethyca/fides/pull/3826)
 - Various other UI components for `fides-js` to support upcoming TCF modal [#3803](https://github.com/ethyca/fides/pull/3803)
 - Prefetches API calls as part of Fides.js [#3698](https://github.com/ethyca/fides/pull/3698)
+- Allow items in taxonomy to be enabled or disabled [#3844](https://github.com/ethyca/fides/pull/3844)
 
 ### Developer Experience
 
