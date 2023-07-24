@@ -7,7 +7,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 
 from fides.api.common_exceptions import ValidationError
-from fides.privacy_request.graph.config import (
+from fides.privacy_requests.graph.config import (
     Collection,
     CollectionAddress,
     EdgeDirection,

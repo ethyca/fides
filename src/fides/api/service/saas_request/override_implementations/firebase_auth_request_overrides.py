@@ -16,7 +16,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import get_identity
-from fides.privacy_request.graph.traversal import TraversalNode
+from fides.privacy_requests.graph.traversal import TraversalNode
 
 
 @register("firebase_auth_user_access", [SaaSRequestType.READ])

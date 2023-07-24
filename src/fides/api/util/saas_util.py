@@ -14,7 +14,7 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.config.helpers import load_file
-from fides.privacy_request.graph.config import (
+from fides.privacy_requests.graph.config import (
     Collection,
     CollectionAddress,
     Field,

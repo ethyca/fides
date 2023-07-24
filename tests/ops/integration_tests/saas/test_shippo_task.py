@@ -3,10 +3,10 @@ import random
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
+from fides.api.graph_tasks import graph_task
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.graph_tasks import graph_task
 from fides.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 

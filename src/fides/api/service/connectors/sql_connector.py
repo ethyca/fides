@@ -52,7 +52,7 @@ from fides.api.service.connectors.query_config import (
 )
 from fides.api.util.collection_util import Row
 from fides.config import get_config
-from fides.privacy_request.graph.traversal import TraversalNode
+from fides.privacy_requests.graph.traversal import TraversalNode
 
 CONFIG = get_config()
 

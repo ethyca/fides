@@ -39,6 +39,8 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
+from fides.api.scheduler import DatabaseTask, celery_app
+from fides.api.scheduler.scheduler import scheduler
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
@@ -56,15 +58,6 @@ from fides.api.service.connectors.erasure_email_connector import (
 from fides.api.service.connectors.fides_connector import filter_fides_connector_datasets
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.storage.storage_uploader_service import upload
-from fides.privacy_request.graph_tasks.filter_results import filter_data_categories
-from fides.privacy_request.graph_tasks.graph_task import (
-    get_cached_data_for_erasures,
-    run_access_request,
-    run_consent_request,
-    run_erasure,
-)
-from fides.api.scheduler import DatabaseTask, celery_app
-from fides.api.scheduler.scheduler import scheduler
 from fides.api.util.cache import (
     FidesopsRedis,
     get_async_task_tracking_cache_key,
@@ -79,12 +72,19 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.privacy_request.graph.analytics_events import (
+from fides.privacy_requests.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
-from fides.privacy_request.graph.config import CollectionAddress, GraphDataset
-from fides.privacy_request.graph.graph import DatasetGraph
+from fides.privacy_requests.graph.config import CollectionAddress, GraphDataset
+from fides.privacy_requests.graph.graph import DatasetGraph
+from fides.privacy_requests.graph_tasks.filter_results import filter_data_categories
+from fides.privacy_requests.graph_tasks.graph_task import (
+    get_cached_data_for_erasures,
+    run_access_request,
+    run_consent_request,
+    run_erasure,
+)
 
 
 class ManualWebhookResults(FidesSchema):

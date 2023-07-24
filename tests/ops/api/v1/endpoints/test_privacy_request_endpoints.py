@@ -26,6 +26,7 @@ from fides.api.cryptography.schemas.jwt import (
 )
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
+from fides.api.graph_tasks import graph_task
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
@@ -43,6 +44,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, VIEWER
+from fides.api.scheduler import MESSAGING_QUEUE_NAME
 from fides.api.schemas.dataset import DryRunDatasetResponse
 from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.api.schemas.messaging.messaging import (
@@ -54,8 +56,6 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.policy import ActionType, PolicyResponse
 from fides.api.schemas.redis_cache import Identity
-from fides.api.graph_tasks import graph_task
-from fides.api.scheduler import MESSAGING_QUEUE_NAME
 from fides.api.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,

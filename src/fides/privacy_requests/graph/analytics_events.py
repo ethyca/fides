@@ -6,19 +6,19 @@ from fideslog.sdk.python.event import AnalyticsEvent
 from fides.api.analytics import in_docker_container, send_analytics_event
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
-from fides.privacy_request.graph_tasks.task_resources import TaskResources
 from fides.api.util.collection_util import Row
 from fides.config import CONFIG
-from fides.privacy_request.graph.config import CollectionAddress
-from fides.privacy_request.graph.graph_differences import (
+from fides.privacy_requests.graph.config import CollectionAddress
+from fides.privacy_requests.graph.graph_differences import (
     GraphDiffSummary,
     GraphRepr,
     find_graph_differences_summary,
     format_graph_for_caching,
 )
+from fides.privacy_requests.graph_tasks.task_resources import TaskResources
 
 if TYPE_CHECKING:
-    from fides.privacy_request.graph_tasks.graph_task import GraphTask
+    from fides.privacy_requests.graph_tasks.graph_task import GraphTask
 
 
 async def fideslog_graph_failure(event: Optional[AnalyticsEvent]) -> None:

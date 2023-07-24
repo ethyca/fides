@@ -42,8 +42,8 @@ from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.privacy_request.request_runner_service import queue_privacy_request
-from fides.privacy_request.request_service import (
+from fides.privacy_requests.request_runner_service import queue_privacy_request
+from fides.privacy_requests.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )

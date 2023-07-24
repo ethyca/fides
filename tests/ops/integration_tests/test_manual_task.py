@@ -4,13 +4,13 @@ import pytest
 
 from fides.api.common_exceptions import PrivacyRequestPaused
 from fides.api.graph.config import CollectionAddress
+from fides.api.graph_tasks import graph_task
 from fides.api.models.policy import CurrentStep
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
 )
-from fides.api.graph_tasks import graph_task
 from fides.config import CONFIG
 
 from ..graph.graph_test_util import assert_rows_match

@@ -40,7 +40,7 @@ from fides.api.util.consent_util import (
     should_opt_in_to_service,
 )
 from fides.api.util.saas_util import assign_placeholders, map_param_values
-from fides.privacy_request.graph.traversal import TraversalNode
+from fides.privacy_requests.graph.traversal import TraversalNode
 
 
 class SaaSConnector(BaseConnector[AuthenticatedClient]):

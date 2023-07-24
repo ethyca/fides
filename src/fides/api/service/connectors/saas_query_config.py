@@ -25,8 +25,8 @@ from fides.api.util.saas_util import (
     unflatten_dict,
 )
 from fides.config import CONFIG
-from fides.privacy_request.graph.config import ScalarField
-from fides.privacy_request.graph.traversal import TraversalNode
+from fides.privacy_requests.graph.config import ScalarField
+from fides.privacy_requests.graph.traversal import TraversalNode
 
 T = TypeVar("T")
 

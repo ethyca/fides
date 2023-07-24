@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 from fides.api.cryptography import cryptographic_util
 from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
+from fides.api.graph_tasks import graph_task
+from fides.api.graph_tasks.graph_task import get_cached_data_for_erasures
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -17,8 +19,6 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.graph_tasks import graph_task
-from fides.api.graph_tasks.graph_task import get_cached_data_for_erasures
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import (

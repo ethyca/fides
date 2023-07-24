@@ -10,7 +10,7 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.connectors.query_config import QueryConfig
 from fides.api.util.collection_util import Row
 from fides.config import CONFIG
-from fides.privacy_request.graph.traversal import TraversalNode
+from fides.privacy_requests.graph.traversal import TraversalNode
 
 DB_CONNECTOR_TYPE = TypeVar("DB_CONNECTOR_TYPE")
 

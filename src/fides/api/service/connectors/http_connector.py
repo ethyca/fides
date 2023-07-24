@@ -13,7 +13,7 @@ from fides.api.schemas.connection_configuration import HttpsSchema
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import QueryConfig
 from fides.api.util.collection_util import Row
-from fides.privacy_request.graph.traversal import TraversalNode
+from fides.privacy_requests.graph.traversal import TraversalNode
 
 
 class HTTPSConnector(BaseConnector[None]):

@@ -5,14 +5,14 @@ from firebase_admin import auth
 from firebase_admin.auth import UserNotFoundError, UserRecord
 
 from fides.api.graph.graph import DatasetGraph
+from fides.api.graph_tasks import graph_task
+from fides.api.graph_tasks.graph_task import get_cached_data_for_erasures
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.saas_request.override_implementations.firebase_auth_request_overrides import (
     firebase_auth_user_delete,
     initialize_firebase,
 )
-from fides.api.graph_tasks import graph_task
-from fides.api.graph_tasks.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import assert_rows_match
 

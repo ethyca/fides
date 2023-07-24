@@ -2,14 +2,14 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Set
 
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.util.collection_util import Row
-from fides.privacy_request.graph.config import (
+from fides.privacy_requests.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     CollectionAddress,
 )
 
 if TYPE_CHECKING:
-    from fides.privacy_request.graph_tasks.graph_task import GraphTask
+    from fides.privacy_requests.graph_tasks.graph_task import GraphTask
 
 GraphRepr = Dict[str, Dict[str, List[str]]]
 

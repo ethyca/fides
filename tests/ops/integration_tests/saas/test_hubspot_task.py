@@ -3,12 +3,12 @@ import random
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.redis_cache import Identity
-from fides.api.service.connectors import get_connector
 from fides.api.graph_tasks import graph_task
 from fides.api.graph_tasks.filter_results import filter_data_categories
 from fides.api.graph_tasks.graph_task import get_cached_data_for_erasures
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.redis_cache import Identity
+from fides.api.service.connectors import get_connector
 from fides.config import CONFIG
 from tests.fixtures.saas.hubspot_fixtures import HubspotTestClient, user_exists
 from tests.ops.graph.graph_test_util import assert_rows_match

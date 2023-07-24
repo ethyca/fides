@@ -17,16 +17,6 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-    ConnectionType,
-)
-from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import Policy, Rule, RuleTarget
-from fides.api.models.privacy_request import ExecutionLog, ExecutionLogStatus
-from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.schemas.policy import ActionType
 from fides.api.graph_tasks.graph_task import (
     EMPTY_REQUEST,
     GraphTask,
@@ -39,6 +29,16 @@ from fides.api.graph_tasks.graph_task import (
     update_erasure_mapping_from_cache,
 )
 from fides.api.graph_tasks.task_resources import Connections
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.policy import Policy, Rule, RuleTarget
+from fides.api.models.privacy_request import ExecutionLog, ExecutionLogStatus
+from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.schemas.policy import ActionType
 from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
 )

@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 from loguru import logger
 
 from fides.api.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
-from fides.privacy_request.graph.config import FieldPath
+from fides.privacy_requests.graph.config import FieldPath
 
 Level = Union[
     str, int

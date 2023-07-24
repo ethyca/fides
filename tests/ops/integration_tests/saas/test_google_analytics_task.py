@@ -3,6 +3,7 @@ from uuid import uuid4
 
 import pytest
 
+from fides.api.graph_tasks import graph_task
 from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import (
     ExecutionLog,
@@ -16,7 +17,6 @@ from fides.api.service.connectors import get_connector
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
-from fides.api.graph_tasks import graph_task
 
 
 @pytest.mark.integration_saas

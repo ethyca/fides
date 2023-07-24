@@ -26,12 +26,6 @@ from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequest
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors.base_connector import BaseConnector
-from fides.privacy_request.graph_tasks.consolidate_query_matches import (
-    consolidate_query_matches,
-)
-from fides.privacy_request.graph_tasks.filter_element_match import filter_element_match
-from fides.privacy_request.graph_tasks.refine_target_path import FieldPathNodeInput
-from fides.privacy_request.graph_tasks.task_resources import TaskResources
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import (
     NodeInput,
@@ -44,11 +38,11 @@ from fides.api.util.consent_util import add_errored_system_status_for_consent_re
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from fides.config import CONFIG
-from fides.privacy_request.graph.analytics_events import (
+from fides.privacy_requests.graph.analytics_events import (
     fideslog_graph_rerun,
     prepare_rerun_graph_analytics_event,
 )
-from fides.privacy_request.graph.config import (
+from fides.privacy_requests.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     CollectionAddress,
@@ -56,9 +50,15 @@ from fides.privacy_request.graph.config import (
     FieldAddress,
     FieldPath,
 )
-from fides.privacy_request.graph.graph import DatasetGraph, Edge, Node
-from fides.privacy_request.graph.graph_differences import format_graph_for_caching
-from fides.privacy_request.graph.traversal import Traversal, TraversalNode
+from fides.privacy_requests.graph.graph import DatasetGraph, Edge, Node
+from fides.privacy_requests.graph.graph_differences import format_graph_for_caching
+from fides.privacy_requests.graph.traversal import Traversal, TraversalNode
+from fides.privacy_requests.graph_tasks.consolidate_query_matches import (
+    consolidate_query_matches,
+)
+from fides.privacy_requests.graph_tasks.filter_element_match import filter_element_match
+from fides.privacy_requests.graph_tasks.refine_target_path import FieldPathNodeInput
+from fides.privacy_requests.graph_tasks.task_resources import TaskResources
 
 dask.config.set(scheduler="threads")
 

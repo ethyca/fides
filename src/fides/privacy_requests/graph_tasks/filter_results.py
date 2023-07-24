@@ -6,7 +6,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 
 from fides.api.util.collection_util import Row
-from fides.privacy_request.graph.config import CollectionAddress, FieldPath
+from fides.privacy_requests.graph.config import CollectionAddress, FieldPath
 
 
 def filter_data_categories(

@@ -17,7 +17,7 @@ from fides.api.util.collection_util import Row
 from fides.api.util.errors import FidesError
 from fides.api.util.wrappers import sync
 from fides.common.api.v1 import urn_registry as urls
-from fides.privacy_request.request_service import poll_server_for_completion
+from fides.privacy_requests.request_service import poll_server_for_completion
 
 COMPLETION_STATUSES = [
     PrivacyRequestStatus.complete,

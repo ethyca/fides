@@ -22,7 +22,7 @@ from fides.connectors.models import (
     ConnectorAuthFailureException,
     ConnectorFailureException,
 )
-from fides.privacy_request.graph.traversal import TraversalNode
+from fides.privacy_requests.graph.traversal import TraversalNode
 
 
 class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
