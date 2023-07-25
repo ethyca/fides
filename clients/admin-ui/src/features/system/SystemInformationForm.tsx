@@ -100,7 +100,7 @@ const SystemInformationForm = ({
             .map((d) => ({
               label: d.legal_name.trim(),
               value: d.id,
-              description: "vendor description",
+              description: d.description ? d.description : undefined,
             }))
             .sort((a, b) => (a.label > b.label ? 1 : -1))
         : [],
@@ -124,7 +124,6 @@ const SystemInformationForm = ({
   ) => {
     const systemBody = transformFormValuesToSystem(values, features);
 
-    // console.log(values)
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
     ) => {

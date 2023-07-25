@@ -146,9 +146,17 @@ const CustomOption: React.FC<
       <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">
         {props.data.label}
       </Text>
-      <Text color="gray.500" fontSize="12px" lineHeight={4} fontWeight="normal">
-        {props.data.description ? props.data.description : null}
-      </Text>
+
+      {props.data.description ? (
+        <Text
+          color="gray.500"
+          fontSize="12px"
+          lineHeight={4}
+          fontWeight="normal"
+        >
+          {props.data.description}
+        </Text>
+      ) : null}
     </Flex>
   </chakraComponents.Option>
 );

@@ -20,6 +20,7 @@ export type DictEntry = {
   tags?: string;
   logo?: string;
   cookies: DictCookie[];
+  description: string;
 };
 
 export type CookieType = "web" | "cookie";
