@@ -69,6 +69,11 @@ export const selectDataSubjects: (state: RootState) => DataSubject[] =
     (RootState, { data }) => data ?? emptyDataSubjects
   );
 
+export const selectEnabledDataSubjects = createSelector(
+  selectDataSubjects,
+  (dataSubjects) => dataSubjects.filter((ds) => ds.active) ?? emptyDataSubjects
+);
+
 export const selectDataSubjectsMap = createSelector(
   selectDataSubjects,
   (dataSubjects) =>
