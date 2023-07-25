@@ -1,3 +1,3 @@
-export const load_tcf = () => {
-    console.log("tcf loaded")
-}
+export const tcf = () => {
+  console.log("tcf loaded");
+};
