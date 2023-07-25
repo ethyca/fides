@@ -77,18 +77,18 @@ export const useConsentServed = ({
   privacyExperienceId?: string;
   acknowledgeMode?: boolean;
 }) => {
-  const [consentServed, setConsentServed] = useState(false);
   const [servedNotices, setServedNotices] = useState<
     LastServedNoticeSchema[] | undefined
   >(undefined);
 
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
-      if (consentServed) {
-        return;
-      }
-      setConsentServed(true);
-      if (!event.detail.extraDetails) {
+      // Only send notices-served request when we show via the modal since that
+      // is the only time we show all notices
+      if (
+        !event.detail.extraDetails ||
+        event.detail.extraDetails.servingComponent !== ServingComponent.OVERLAY
+      ) {
         return;
       }
       const request: NoticesServedRequest = {
@@ -99,8 +99,7 @@ export const useConsentServed = ({
         privacy_notice_history_ids: notices.map(
           (n) => n.privacy_notice_history_id
         ),
-        serving_component: event.detail.extraDetails
-          .servingComponent as ServingComponent,
+        serving_component: event.detail.extraDetails.servingComponent,
       };
       const result = await patchNoticesServed({
         request,
@@ -111,14 +110,7 @@ export const useConsentServed = ({
         setServedNotices(result);
       }
     },
-    [
-      consentServed,
-      notices,
-      options,
-      acknowledgeMode,
-      privacyExperienceId,
-      userGeography,
-    ]
+    [notices, options, acknowledgeMode, privacyExperienceId, userGeography]
   );
 
   useEffect(() => {
