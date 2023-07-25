@@ -5,6 +5,7 @@ export interface TaxonomyEntityNode extends TreeNode {
   description?: string;
   children: TaxonomyEntityNode[];
   is_default: boolean;
+  active: boolean;
 }
 
 export interface TaxonomyEntity {
@@ -13,6 +14,7 @@ export interface TaxonomyEntity {
   description?: string;
   parent_key?: string;
   is_default?: boolean;
+  active?: boolean;
 }
 
 export interface Labels {
