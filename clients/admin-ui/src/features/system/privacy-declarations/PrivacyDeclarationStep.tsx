@@ -13,24 +13,8 @@ interface Props {
 const PrivacyDeclarationStep = ({ system }: Props) => {
   const { isLoading, ...dataProps } = usePrivacyDeclarationData({
     includeDatasets: true,
+    includeDisabled: false,
   });
-
-  const allEnabledDataCategories = dataProps.allDataCategories.filter(
-    (category) => category.active
-  );
-
-  const allEnabledDataUses = dataProps.allDataUses.filter((use) => use.active);
-
-  const allEnabledDataSubjects = dataProps.allDataSubjects.filter(
-    (subject) => subject.active
-  );
-
-  const filteredDataProps = {
-    ...dataProps,
-    allDataCategories: allEnabledDataCategories,
-    allDataUses: allEnabledDataUses,
-    allDataSubjects: allEnabledDataSubjects,
-  };
 
   return (
     <Stack spacing={3} data-testid="privacy-declaration-step">
@@ -57,7 +41,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
           system={system}
           includeCustomFields
           includeCookies
-          {...filteredDataProps}
+          {...dataProps}
         />
       )}
     </Stack>
