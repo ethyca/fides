@@ -4,6 +4,7 @@ import {
 } from "~/features/common/custom-fields";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { DataProtectionImpactAssessment, System } from "~/types/api";
+import { Features } from "../common/features";
 
 export interface FormValues
   extends Omit<System, "data_protection_impact_assessment">,
@@ -58,7 +59,7 @@ export const transformSystemToFormValues = (
 
 export const transformFormValuesToSystem = (
   formValues: FormValues,
-  dictionaryService: boolean
+  features: Features
 ): System => {
   const hasImpactAssessment =
     formValues.data_protection_impact_assessment?.is_required === "true";
@@ -94,12 +95,12 @@ export const transformFormValuesToSystem = (
         ? undefined
         : formValues.administrating_department,
   };
-
-  if (dictionaryService && formValues.meta.vendor.id) {
-    payload.meta = {};
-    payload.meta.vendor = {};
-    payload.meta.vendor.id = formValues.meta.vendor.id;
-  }
-
+  if (features.plus){
+    if (features.dictionaryService && formValues?.meta?.vendor?.id) {
+      payload.meta = {};
+      payload.meta.vendor = {};
+      payload.meta.vendor.id = formValues.meta.vendor.id;
+    }
+ }
   return payload;
 };
