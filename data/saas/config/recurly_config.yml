@@ -54,24 +54,6 @@ saas_config:
               connector_param: accept_header
             - name: email
               identity: email
-        update:
-          method: PUT
-          path: /accounts/<accounts_id>
-          headers:
-            - name: Accept
-              value: <accept_header>
-          body: |
-            {
-              <masked_object_fields>
-            }
-          param_values:
-            - name: accounts_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: accounts.id
-                  direction: from
-            - name: accept_header
-              connector_param: accept_header
     - name: billing_info
       requests:
         read:
@@ -85,24 +67,6 @@ saas_config:
               references:
                 - dataset: <instance_fides_key>
                   field: accounts.id
-                  direction: from
-            - name: accept_header
-              connector_param: accept_header
-        update:
-          method: PUT
-          path: /accounts/<billing_info_account_id>/billing_info
-          headers:
-            - name: Accept
-              value: <accept_header>
-          body: |
-            {
-              <masked_object_fields>
-            }
-          param_values:
-            - name: billing_info_account_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: billing_info.account_id
                   direction: from
             - name: accept_header
               connector_param: accept_header
@@ -120,29 +84,6 @@ saas_config:
               references:
                 - dataset: <instance_fides_key>
                   field: accounts.id
-                  direction: from
-            - name: accept_header
-              connector_param: accept_header
-        update:
-          method: PUT
-          path: /accounts/<shipping_address_account_id>/shipping_addresses/<shipping_address_id>
-          headers:
-            - name: Accept
-              value: <accept_header>
-          body: |
-            {
-              <masked_object_fields>
-            }
-          param_values:
-            - name: shipping_address_account_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: shipping_address.account_id
-                  direction: from
-            - name: shipping_address_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: shipping_address.id
                   direction: from
             - name: accept_header
               connector_param: accept_header
