@@ -82,3 +82,14 @@ export const selectDataUseOptions = createSelector(selectDataUses, (dataUses) =>
     value: du.fides_key,
   }))
 );
+
+export const selectEnabledDataUseOptions = createSelector(
+  selectDataUses,
+  (dataUses) =>
+    dataUses
+      .filter((du) => du.active)
+      .map((du) => ({
+        label: du.fides_key,
+        value: du.fides_key,
+      }))
+);
