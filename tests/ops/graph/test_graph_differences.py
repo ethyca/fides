@@ -2,23 +2,28 @@ from typing import Any, Dict
 
 import pytest
 
-from fides.api.graph.analytics_events import prepare_rerun_graph_analytics_event
-from fides.api.graph.config import (
+from fides.privacy_requests.graph.analytics_events import (
+    prepare_rerun_graph_analytics_event,
+)
+from fides.privacy_requests.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
     FieldAddress,
 )
-from fides.api.graph.graph import Edge
-from fides.api.graph.graph_differences import (
+from fides.privacy_requests.graph.graph import Edge
+from fides.privacy_requests.graph.graph_differences import (
     GraphDiff,
     GraphDiffSummary,
     _find_graph_differences,
     find_graph_differences_summary,
     format_graph_for_caching,
 )
-from fides.api.graph.traversal import TraversalNode, artificial_traversal_node
-from fides.api.graph_tasks.graph_task import EMPTY_REQUEST, GraphTask
-from fides.api.graph_tasks.task_resources import TaskResources
+from fides.privacy_requests.graph.traversal import (
+    TraversalNode,
+    artificial_traversal_node,
+)
+from fides.privacy_requests.graph_tasks.graph_task import EMPTY_REQUEST, GraphTask
+from fides.privacy_requests.graph_tasks.task_resources import TaskResources
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.policy import Policy
 from fides.api.schemas.policy import ActionType

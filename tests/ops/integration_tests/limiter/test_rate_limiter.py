@@ -9,8 +9,8 @@ import pytest
 from requests import Session
 
 from fides.api.db import session
-from fides.api.graph.graph import DatasetGraph
-from fides.api.graph_tasks import graph_task
+from fides.privacy_requests.graph.graph import DatasetGraph
+from fides.privacy_requests.graph_tasks import graph_task
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,

@@ -14,7 +14,7 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.api.graph.config import CollectionAddress
+from fides.privacy_requests.graph.config import CollectionAddress
 from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,

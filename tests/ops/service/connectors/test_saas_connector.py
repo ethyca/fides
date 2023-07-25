@@ -10,8 +10,8 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 
 from fides.api.common_exceptions import SkippingConsentPropagation
-from fides.api.graph.graph import Node
-from fides.api.graph.traversal import TraversalNode
+from fides.privacy_requests.graph.graph import Node
+from fides.privacy_requests.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity

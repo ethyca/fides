@@ -2,7 +2,7 @@ from typing import Any, Dict, List, cast
 
 from requests import PreparedRequest
 
-from fides.api.graph.traversal import TraversalNode
+from fides.privacy_requests.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest

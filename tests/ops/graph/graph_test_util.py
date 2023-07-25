@@ -5,11 +5,11 @@ from fideslang.validation import FidesKey
 from sqlalchemy.engine import Engine
 
 from fides.api.db.base_class import FidesBase
-from fides.api.graph.config import *
-from fides.api.graph.traversal import *
-from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.graph_tasks.graph_task import GraphTask
-from fides.api.graph_tasks.task_resources import TaskResources
+from fides.privacy_requests.graph.config import *
+from fides.privacy_requests.graph.traversal import *
+from fides.privacy_requests.graph.traversal import Traversal, TraversalNode
+from fides.privacy_requests.graph_tasks.graph_task import GraphTask
+from fides.privacy_requests.graph_tasks.task_resources import TaskResources
 
 # to avoid having faker spam the logs
 from fides.api.models.connectionconfig import ConnectionConfig

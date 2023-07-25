@@ -5,9 +5,9 @@ from unittest.mock import Mock
 
 import pytest
 
-from fides.api.graph.config import CollectionAddress
-from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.privacy_requests.graph.config import CollectionAddress
+from fides.privacy_requests.graph.graph import DatasetGraph
+from fides.privacy_requests.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest

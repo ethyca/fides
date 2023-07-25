@@ -5,7 +5,7 @@ from fideslang import FidesDatasetReference
 from pydantic import ValidationError
 
 from fides.api.common_exceptions import ValidationError as FidesopsValidationError
-from fides.api.graph.config import CollectionAddress, FieldAddress
+from fides.privacy_requests.graph.config import CollectionAddress, FieldAddress
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.saas.saas_config import (
     ConnectorParam,

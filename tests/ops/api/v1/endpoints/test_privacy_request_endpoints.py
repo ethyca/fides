@@ -24,9 +24,9 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.api.graph.config import CollectionAddress
-from fides.api.graph.graph import DatasetGraph
-from fides.api.graph_tasks import graph_task
+from fides.privacy_requests.graph.config import CollectionAddress
+from fides.privacy_requests.graph.graph import DatasetGraph
+from fides.privacy_requests.graph_tasks import graph_task
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail

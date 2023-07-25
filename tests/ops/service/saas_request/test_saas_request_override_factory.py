@@ -7,7 +7,7 @@ from fides.api.common_exceptions import (
     InvalidSaaSRequestOverrideException,
     NoSuchSaaSRequestOverrideException,
 )
-from fides.api.graph.traversal import TraversalNode
+from fides.privacy_requests.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient

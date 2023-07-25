@@ -4,10 +4,10 @@ from typing import Any, Dict, List, Optional, Tuple
 from sqlalchemy.orm import Session
 
 from fides.api.cryptography import cryptographic_util
-from fides.api.graph.config import GraphDataset
-from fides.api.graph.graph import DatasetGraph
-from fides.api.graph_tasks import graph_task
-from fides.api.graph_tasks.graph_task import get_cached_data_for_erasures
+from fides.privacy_requests.graph.config import GraphDataset
+from fides.privacy_requests.graph.graph import DatasetGraph
+from fides.privacy_requests.graph_tasks import graph_task
+from fides.privacy_requests.graph_tasks.graph_task import get_cached_data_for_erasures
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,

@@ -5,15 +5,15 @@ import pytest
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from fideslang.models import Dataset
 
-from fides.api.graph.config import (
+from fides.privacy_requests.graph.config import (
     CollectionAddress,
     FieldAddress,
     FieldPath,
     ObjectField,
     ScalarField,
 )
-from fides.api.graph.graph import DatasetGraph, Edge
-from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.privacy_requests.graph.graph import DatasetGraph, Edge
+from fides.privacy_requests.graph.traversal import Traversal, TraversalNode
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.masking.masking_configuration import HashMaskingConfiguration

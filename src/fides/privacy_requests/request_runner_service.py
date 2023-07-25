@@ -135,6 +135,7 @@ def run_webhooks_and_report_status(
     """
     Runs a series of webhooks either pre- or post- privacy request execution, if any are configured.
     Updates privacy request status if execution is paused/errored.
+
     Returns True if execution should proceed.
     """
     webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)  # type: ignore
@@ -195,7 +196,7 @@ def upload_access_results(  # pylint: disable=R0912
     manual_data: Dict[str, List[Dict[str, Optional[Any]]]],
     fides_connector_datasets: Set[str],
 ) -> List[str]:
-    """Process the data uploads after the access portion of the privacy request has completed"""
+    """Process the data uploads after the access portion of the privacy request has completed."""
     download_urls: List[str] = []
     if not access_result:
         logger.info("No results returned for access request {}", privacy_request.id)

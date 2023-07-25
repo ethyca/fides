@@ -24,7 +24,7 @@ from fides.api.service.connectors.consent_email_connector import (
     get_identity_types_for_connector,
     send_single_consent_email,
 )
-from fides.api.service.privacy_request.request_runner_service import (
+from fides.privacy_requests.request_runner_service import (
     get_consent_email_connection_configs,
 )
 

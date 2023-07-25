@@ -49,7 +49,8 @@ def cache_data(
     encryption_key: Optional[str],
     drp_request_body: Optional[DrpPrivacyRequestCreate],
 ) -> None:
-    """Cache privacy request data"""
+    """Cache privacy request data."""
+
     # Store identity and encryption key in the cache
     logger.info("Caching identity for privacy request {}", privacy_request.id)
     privacy_request.cache_identity(identity)

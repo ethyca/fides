@@ -4,9 +4,9 @@ from time import sleep
 import pytest
 import requests
 
-from fides.api.graph.graph import DatasetGraph
-from fides.api.graph_tasks import graph_task
-from fides.api.graph_tasks.graph_task import get_cached_data_for_erasures
+from fides.privacy_requests.graph.graph import DatasetGraph
+from fides.privacy_requests.graph_tasks import graph_task
+from fides.privacy_requests.graph_tasks.graph_task import get_cached_data_for_erasures
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector

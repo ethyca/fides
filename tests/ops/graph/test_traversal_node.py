@@ -1,4 +1,4 @@
-from fides.api.graph.traversal import *
+from fides.privacy_requests.graph.traversal import *
 
 from .test_graph_traversal import generate_node
 

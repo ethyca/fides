@@ -7,7 +7,7 @@ from bson import ObjectId
 from fideslang.models import Dataset
 
 from fides.api.common_exceptions import SkippingConsentPropagation
-from fides.api.graph.config import (
+from fides.privacy_requests.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     Collection,
@@ -15,9 +15,9 @@ from fides.api.graph.config import (
     FieldPath,
     GraphDataset,
 )
-from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.graph_tasks.graph_task import (
+from fides.privacy_requests.graph.graph import DatasetGraph
+from fides.privacy_requests.graph.traversal import Traversal, TraversalNode
+from fides.privacy_requests.graph_tasks.graph_task import (
     EMPTY_REQUEST,
     GraphTask,
     TaskResources,
@@ -28,7 +28,7 @@ from fides.api.graph_tasks.graph_task import (
     start_function,
     update_erasure_mapping_from_cache,
 )
-from fides.api.graph_tasks.task_resources import Connections
+from fides.privacy_requests.graph_tasks.task_resources import Connections
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,

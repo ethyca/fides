@@ -7,10 +7,10 @@ from pydantic import ValidationError
 from sqlalchemy.exc import InvalidRequestError
 
 from fides.api.db.session import get_db_session
-from fides.api.graph.config import CollectionAddress
-from fides.api.graph.graph import DatasetGraph
-from fides.api.graph_tasks import graph_task
-from fides.api.graph_tasks.graph_task import get_cached_data_for_erasures
+from fides.privacy_requests.graph.config import CollectionAddress
+from fides.privacy_requests.graph.graph import DatasetGraph
+from fides.privacy_requests.graph_tasks import graph_task
+from fides.privacy_requests.graph_tasks.graph_task import get_cached_data_for_erasures
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,

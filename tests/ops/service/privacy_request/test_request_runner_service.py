@@ -17,8 +17,8 @@ from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fides.api.graph.config import CollectionAddress, FieldPath
-from fides.api.graph.graph import DatasetGraph
+from fides.privacy_requests.graph.config import CollectionAddress, FieldPath
+from fides.privacy_requests.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.policy import CurrentStep, PolicyPostWebhook
@@ -55,7 +55,7 @@ from fides.api.service.connectors.sql_connector import (
 )
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
-from fides.api.service.privacy_request.request_runner_service import (
+from fides.privacy_requests.request_runner_service import (
     build_consent_dataset_graph,
     needs_batch_email_send,
     run_webhooks_and_report_status,

@@ -3,8 +3,8 @@ import uuid
 import pytest
 
 from fides.api.common_exceptions import PrivacyRequestPaused
-from fides.api.graph.config import CollectionAddress
-from fides.api.graph_tasks import graph_task
+from fides.privacy_requests.graph.config import CollectionAddress
+from fides.privacy_requests.graph_tasks import graph_task
 from fides.api.models.policy import CurrentStep
 from fides.api.models.privacy_request import (
     ExecutionLog,

@@ -1,7 +1,7 @@
 import pytest
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.graph.config import (
+from fides.privacy_requests.graph.config import (
     Collection,
     FieldAddress,
     FieldPath,
