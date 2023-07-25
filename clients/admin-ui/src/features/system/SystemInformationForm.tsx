@@ -18,6 +18,7 @@ import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
+import { useFeatures } from "~/features/common/features/features.slice";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
@@ -34,7 +35,6 @@ import {
 } from "~/features/system/system.slice";
 import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
 import { ResourceTypes, System } from "~/types/api";
-import { useFeatures } from "~/features/common/features/features.slice"
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
@@ -86,7 +86,7 @@ const SystemInformationForm = ({
   );
 
   const { dictionaryService } = useFeatures();
-  
+
   const [createSystemMutationTrigger, createSystemMutationResult] =
     useCreateSystemMutation();
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
@@ -100,7 +100,7 @@ const SystemInformationForm = ({
             .map((d) => ({
               label: d.legal_name.trim(),
               value: d.id,
-              description: "vendor description"
+              description: "vendor description",
             }))
             .sort((a, b) => (a.label > b.label ? 1 : -1))
         : [],
@@ -192,18 +192,19 @@ const SystemInformationForm = ({
                 spacing={4}
                 maxWidth={!abridged ? { base: "100%", lg: "50%" } : undefined}
               >
-                {dictionaryService ? 
-                <CustomSelect
-                  id="vendor"
-                  name="meta.vendor.id"
-                  label="Vendor"
-                  placeholder="Select a vendor"
-                  singleValueBlock
-                  options={dictionaryOptions}
-                  tooltip="Select the vendor that matches the system"
-                  isCustomOption
-                  variant="stacked"
-                />:null}
+                {dictionaryService ? (
+                  <CustomSelect
+                    id="vendor"
+                    name="meta.vendor.id"
+                    label="Vendor"
+                    placeholder="Select a vendor"
+                    singleValueBlock
+                    options={dictionaryOptions}
+                    tooltip="Select the vendor that matches the system"
+                    isCustomOption
+                    variant="stacked"
+                  />
+                ) : null}
                 <CustomTextInput
                   id="name"
                   name="name"

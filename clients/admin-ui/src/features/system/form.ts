@@ -72,7 +72,7 @@ export const transformFormValuesToSystem = (
     ? formValues.joint_controller
     : undefined;
 
-  const payload = {
+  const payload: System = {
     // Fields that are preserved by the form:
     data_responsibility_title: formValues.data_responsibility_title,
     description: formValues.description,
