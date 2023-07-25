@@ -44,10 +44,10 @@ describe("Config wizard with plus settings", () => {
           cluster_error: null,
         },
         dictionary: {
-        enabled: true,
-        service_health: null,
-        service_error: null
-      }
+          enabled: true,
+          service_health: null,
+          service_error: null,
+        },
       });
       cy.visit(ADD_SYSTEMS_ROUTE);
       cy.getByTestId("add-systems");
@@ -71,8 +71,8 @@ describe("Config wizard with plus settings", () => {
         dictionary: {
           enabled: true,
           service_health: null,
-          service_error: null
-        }
+          service_error: null,
+        },
       });
       cy.visit(ADD_SYSTEMS_ROUTE);
       cy.getByTestId("add-systems");

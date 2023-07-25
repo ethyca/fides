@@ -4,6 +4,7 @@ import {
 } from "~/features/common/custom-fields";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { DataProtectionImpactAssessment, System } from "~/types/api";
+
 import { Features } from "../common/features";
 
 export interface FormValues
@@ -95,12 +96,12 @@ export const transformFormValuesToSystem = (
         ? undefined
         : formValues.administrating_department,
   };
-  if (features.plus){
+  if (features.plus) {
     if (features.dictionaryService && formValues?.meta?.vendor?.id) {
       payload.meta = {};
       payload.meta.vendor = {};
       payload.meta.vendor.id = formValues.meta.vendor.id;
     }
- }
+  }
   return payload;
 };
