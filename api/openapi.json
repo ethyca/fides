@@ -2,60 +2,9 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.16.0"
+    "version": "2.17.0"
   },
   "paths": {
-    "/api/v1/admin/db/{action}": {
-      "post": {
-        "tags": [
-          "Admin",
-          "Admin"
-        ],
-        "summary": "Db Action",
-        "description": "Initiate one of the enumerated DBActions.",
-        "operationId": "db_action_api_v1_admin_db__action__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/DBActions"
-            },
-            "name": "action",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Db Action Api V1 Admin Db  Action  Post",
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "database:reset"
-            ]
-          }
-        ]
-      }
-    },
     "/api/v1/data_category": {
       "get": {
         "tags": [
@@ -2239,57 +2188,6 @@
         ]
       }
     },
-    "/health": {
-      "get": {
-        "tags": [
-          "Health"
-        ],
-        "summary": "Health",
-        "description": "Confirm that the API is running and healthy.",
-        "operationId": "health_health_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CoreHealthCheck"
-                },
-                "example": {
-                  "webserver": "healthy",
-                  "version": "1.0.0",
-                  "database": "healthy",
-                  "cache": "healthy",
-                  "workers_enabled": "True",
-                  "workers": [
-                    "celery@c606808353b5"
-                  ]
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Service Unavailable",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "webserver": "healthy",
-                    "version": "1.0.0",
-                    "database": "unhealthy",
-                    "cache": "healthy",
-                    "workers_enabled": "True",
-                    "workers": [
-                      "celery@c606808353b5"
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/organization": {
       "get": {
         "tags": [
@@ -3493,6 +3391,46 @@
           }
         ]
       },
+      "delete": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Delete Connection",
+        "operationId": "delete_connection_api_v1_system__fides_key__connection_delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:delete"
+            ]
+          }
+        ]
+      },
       "patch": {
         "tags": [
           "System"
@@ -3533,6 +3471,123 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BulkPutConnectionConfiguration"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/system/{fides_key}/connection/secrets": {
+      "patch": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Patch Connection Secrets",
+        "description": "Patch secrets that will be used to connect to a specified connection_type.\n\nThe specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB\nwill differ from Dynamo DB.",
+        "operationId": "patch_connection_secrets_api_v1_system__fides_key__connection_secrets_patch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Verify",
+              "type": "boolean",
+              "default": true
+            },
+            "name": "verify",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Unvalidated Secrets",
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/MongoDBDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MySQLDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RedshiftDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SnowflakeDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MSSQLDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MariaDBDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/BigQueryDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SaaSSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ManualWebhookSchemaforDocs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TimescaleDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FidesDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SovrnDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestStatusMessage"
                 }
               }
             }
@@ -4158,9 +4213,9 @@
         "tags": [
           "Connection Types"
         ],
-        "summary": "Get Connection Type Secret Schema",
+        "summary": "Get Connection Type Secret Schema Route",
         "description": "Returns the secret fields that should be supplied to authenticate with a particular connection type\n\nNote that this endpoint should never return actual secrets, we return the *types* of secret fields needed\nto authenticate.",
-        "operationId": "get_connection_type_secret_schema_api_v1_connection_type__connection_type__secret_get",
+        "operationId": "get_connection_type_secret_schema_route_api_v1_connection_type__connection_type__secret_get",
         "parameters": [
           {
             "required": true,
@@ -4178,7 +4233,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Get Connection Type Secret Schema Api V1 Connection Type  Connection Type  Secret Get",
+                  "title": "Response Get Connection Type Secret Schema Route Api V1 Connection Type  Connection Type  Secret Get",
                   "type": "object"
                 }
               }
@@ -4430,7 +4485,6 @@
           "Connections"
         ],
         "summary": "Delete Connection",
-        "description": "Removes the connection configuration with matching key.",
         "operationId": "delete_connection_api_v1_connection__connection_key__delete",
         "parameters": [
           {
@@ -8734,6 +8788,109 @@
         ]
       }
     },
+    "/api/v1/notices-served": {
+      "patch": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Save Notices Served",
+        "description": "Records what notices were served to a fides user device id only.  Generally called by the banner\nor an overlay.\n\nAll notices that were served in an experience should be included in the request body.",
+        "operationId": "save_notices_served_api_v1_notices_served_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoticesServedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Save Notices Served Api V1 Notices Served Patch",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LastServedNoticeSchema"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consent-request/{consent_request_id}/notices-served": {
+      "patch": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Save Notices Served Via Privacy Center",
+        "description": "Saves that notices were served via a verified identity flow (privacy center)\n\nCapable of saving that notices were served against a verified email/phone number and a fides user device id\nsimultaneously.\n\nCreates a ServedNoticeHistory history record for every notice in the request and upserts\na LastServedNotice record.",
+        "operationId": "save_notices_served_via_privacy_center_api_v1_consent_request__consent_request_id__notices_served_patch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Consent Request Id",
+              "type": "string"
+            },
+            "name": "consent_request_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoticesServedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Save Notices Served Via Privacy Center Api V1 Consent Request  Consent Request Id  Notices Served Patch",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LastServedNoticeSchema"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/privacy-request": {
       "get": {
         "tags": [
@@ -12796,6 +12953,108 @@
         }
       }
     },
+    "/api/v1/admin/db/{action}": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Admin"
+        ],
+        "summary": "Db Action",
+        "description": "Initiate one of the enumerated DBActions.",
+        "operationId": "db_action_api_v1_admin_db__action__post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/DBActions"
+            },
+            "name": "action",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Db Action Api V1 Admin Db  Action  Post",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "database:reset"
+            ]
+          }
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health",
+        "description": "Confirm that the API is running and healthy.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoreHealthCheck"
+                },
+                "example": {
+                  "webserver": "healthy",
+                  "version": "1.0.0",
+                  "database": "healthy",
+                  "cache": "healthy",
+                  "workers_enabled": "True",
+                  "workers": [
+                    "celery@c606808353b5"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "webserver": "healthy",
+                    "version": "1.0.0",
+                    "database": "unhealthy",
+                    "cache": "healthy",
+                    "workers_enabled": "True",
+                    "workers": [
+                      "celery@c606808353b5"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "tags": [
@@ -13094,19 +13353,11 @@
       "BigQueryDocsSchema": {
         "title": "BigQueryDocsSchema",
         "required": [
-          "keyfile_creds"
+          "keyfile_creds",
+          "dataset"
         ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
-            "type": "string",
-            "sensitive": true
-          },
-          "dataset": {
-            "title": "Dataset",
-            "type": "string"
-          },
           "keyfile_creds": {
             "title": "Keyfile Creds",
             "allOf": [
@@ -13114,10 +13365,15 @@
                 "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds"
               }
             ],
+            "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
             "sensitive": true
+          },
+          "dataset": {
+            "title": "BigQuery Dataset",
+            "type": "string",
+            "description": "The dataset within your BigQuery project that contains the tables you want to access."
           }
         },
-        "additionalProperties": false,
         "description": "BigQuery Secrets Schema for API Docs"
       },
       "Body_acquire_access_token_api_v1_oauth_token_post": {
@@ -13548,6 +13804,10 @@
           },
           "saas_config": {
             "$ref": "#/components/schemas/SaaSConfigBase"
+          },
+          "secrets": {
+            "title": "Secrets",
+            "type": "object"
           }
         },
         "description": "Describes the returned schema for a ConnectionConfiguration.\n\nDo *NOT* add \"secrets\" to this schema."
@@ -13738,6 +13998,10 @@
           },
           "preference": {
             "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "served_notice_history_id": {
+            "title": "Served Notice History Id",
+            "type": "string"
           }
         },
         "description": "Schema for saving the user's preference for a given notice"
@@ -13972,6 +14236,10 @@
                 "$ref": "#/components/schemas/ConsentMethod"
               }
             ]
+          },
+          "served_notice_history_id": {
+            "title": "The id of the record where the notice was served to the end user",
+            "type": "string"
           }
         },
         "description": "Schema for consent reporting - largely a join of PrivacyPreferenceHistory and PrivacyRequest"
@@ -14380,6 +14648,12 @@
             "type": "boolean",
             "description": "Denotes whether the resource is part of the default taxonomy or not.",
             "default": false
+          },
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "Indicates whether the resource is currently 'active'.",
+            "default": true
           }
         },
         "description": "The DataCategory resource model."
@@ -14488,6 +14762,12 @@
             "type": "boolean",
             "description": "Denotes whether the resource is part of the default taxonomy or not.",
             "default": false
+          },
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "Indicates whether the resource is currently 'active'.",
+            "default": true
           }
         },
         "description": "The DataQualifier resource model."
@@ -14558,6 +14838,12 @@
             "type": "boolean",
             "description": "Denotes whether the resource is part of the default taxonomy or not.",
             "default": false
+          },
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "Indicates whether the resource is currently 'active'.",
+            "default": true
           }
         },
         "description": "The DataSubject resource model."
@@ -14702,6 +14988,12 @@
             "type": "boolean",
             "description": "Denotes whether the resource is part of the default taxonomy or not.",
             "default": false
+          },
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "Indicates whether the resource is currently 'active'.",
+            "default": true
           }
         },
         "description": "The DataUse resource model."
@@ -15173,26 +15465,23 @@
         ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
-            "type": "string",
-            "sensitive": true
-          },
           "region_name": {
-            "title": "Region Name",
-            "type": "string"
+            "title": "Region",
+            "type": "string",
+            "description": "The AWS region where your DynamoDB table is located (ex. us-west-2)."
           },
           "aws_access_key_id": {
-            "title": "AWS Access Key ID",
-            "type": "string"
+            "title": "Access Key ID",
+            "type": "string",
+            "description": "Part of the credentials that provide access to your AWS account."
           },
           "aws_secret_access_key": {
-            "title": "AWS Secret Access Key",
+            "title": "Secret Access Key",
             "type": "string",
+            "description": "Part of the credentials that provide access to your AWS account.",
             "sensitive": true
           }
         },
-        "additionalProperties": false,
         "description": "DynamoDB Secrets Schema for API Docs"
       },
       "EdgeDirection": {
@@ -15834,11 +16123,6 @@
         ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
-            "type": "string",
-            "sensitive": true
-          },
           "uri": {
             "title": "Uri",
             "type": "string"
@@ -15861,7 +16145,6 @@
             "type": "integer"
           }
         },
-        "additionalProperties": false,
         "description": "Fides Child Secrets Schema for API docs"
       },
       "FidesMeta": {
@@ -16149,6 +16432,35 @@
         "type": "string",
         "description": "Determine whether or not defined rights are\nbeing included or excluded."
       },
+      "LastServedNoticeSchema": {
+        "title": "LastServedNoticeSchema",
+        "required": [
+          "id",
+          "updated_at",
+          "privacy_notice_history",
+          "served_notice_history_id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "privacy_notice_history": {
+            "$ref": "#/components/schemas/PrivacyNoticeHistorySchema"
+          },
+          "served_notice_history_id": {
+            "title": "Served Notice History Id",
+            "type": "string"
+          }
+        },
+        "description": "Schema that surfaces the last version of a notice that was shown to a user"
+      },
       "LegalBasisEnum": {
         "title": "LegalBasisEnum",
         "enum": [
@@ -16164,36 +16476,42 @@
       },
       "MSSQLDocsSchema": {
         "title": "MSSQLDocsSchema",
+        "required": [
+          "host",
+          "username",
+          "password",
+          "dbname"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "host": {
+            "title": "Host",
             "type": "string",
-            "sensitive": true
+            "description": "The hostname or IP address of the server where the database is running."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 1433).",
+            "default": 1433
           },
           "username": {
             "title": "Username",
-            "type": "string"
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
-          "host": {
-            "title": "Host",
-            "type": "string"
-          },
-          "port": {
-            "title": "Port",
-            "type": "integer"
-          },
           "dbname": {
-            "title": "DB Name",
-            "type": "string"
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the specific database within the database server that you want to connect to."
           }
         },
-        "additionalProperties": false,
         "description": "MS SQL Secrets Schema for API Docs"
       },
       "ManualAction": {
@@ -16277,36 +16595,40 @@
       },
       "MariaDBDocsSchema": {
         "title": "MariaDBDocsSchema",
+        "required": [
+          "host",
+          "dbname"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "host": {
+            "title": "Host",
             "type": "string",
-            "sensitive": true
+            "description": "The hostname or IP address of the server where the database is running."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 3306).",
+            "default": 3306
           },
           "username": {
             "title": "Username",
-            "type": "string"
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
           "dbname": {
-            "title": "DB Name",
-            "type": "string"
-          },
-          "host": {
-            "title": "Host",
-            "type": "string"
-          },
-          "port": {
-            "title": "Port",
-            "type": "integer"
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the specific database within the database server that you want to connect to."
           }
         },
-        "additionalProperties": false,
         "description": "MariaDB Secrets Schema for API Docs"
       },
       "MaskingAPIRequest": {
@@ -16710,71 +17032,122 @@
       },
       "MongoDBDocsSchema": {
         "title": "MongoDBDocsSchema",
+        "required": [
+          "host",
+          "username",
+          "password",
+          "defaultauthdb"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "host": {
+            "title": "Host",
             "type": "string",
-            "sensitive": true
+            "description": "The hostname or IP address of the server where the database is running."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 27017).",
+            "default": 27017
           },
           "username": {
             "title": "Username",
-            "type": "string"
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
-          },
-          "host": {
-            "title": "Host",
-            "type": "string"
-          },
-          "port": {
-            "title": "Port",
-            "type": "integer"
           },
           "defaultauthdb": {
             "title": "Default Auth DB",
-            "type": "string"
+            "type": "string",
+            "description": "Used to specify the default authentication database."
           }
         },
-        "additionalProperties": false,
         "description": "Mongo DB Secrets Schema for API docs"
       },
       "MySQLDocsSchema": {
         "title": "MySQLDocsSchema",
+        "required": [
+          "host",
+          "dbname"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "host": {
+            "title": "Host",
             "type": "string",
-            "sensitive": true
+            "description": "The hostname or IP address of the server where the database is running."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 3306).",
+            "default": 3306
           },
           "username": {
             "title": "Username",
-            "type": "string"
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
           "dbname": {
-            "title": "DB Name",
-            "type": "string"
-          },
-          "host": {
-            "title": "Host",
-            "type": "string"
-          },
-          "port": {
-            "title": "Port",
-            "type": "integer"
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the specific database within the database server that you want to connect to."
           }
         },
-        "additionalProperties": false,
         "description": "MySQL Secrets Schema for API Docs"
+      },
+      "NoticesServedRequest": {
+        "title": "NoticesServedRequest",
+        "required": [
+          "browser_identity",
+          "privacy_notice_history_ids",
+          "serving_component"
+        ],
+        "type": "object",
+        "properties": {
+          "browser_identity": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "privacy_notice_history_ids": {
+            "title": "Privacy Notice History Ids",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "privacy_experience_id": {
+            "title": "Privacy Experience Id",
+            "type": "string"
+          },
+          "user_geography": {
+            "title": "User Geography",
+            "type": "string"
+          },
+          "acknowledge_mode": {
+            "title": "Acknowledge Mode",
+            "type": "boolean"
+          },
+          "serving_component": {
+            "$ref": "#/components/schemas/ServingComponent"
+          }
+        },
+        "description": "Request body when indicating that notices were served in the UI"
       },
       "NotificationApplicationConfig": {
         "title": "NotificationApplicationConfig",
@@ -17890,45 +18263,51 @@
       },
       "PostgreSQLDocsSchema": {
         "title": "PostgreSQLDocsSchema",
+        "required": [
+          "host",
+          "dbname"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "host": {
+            "title": "Host",
             "type": "string",
-            "sensitive": true
+            "description": "The hostname or IP address of the server where the database is running."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 5432).",
+            "default": 5432
           },
           "username": {
             "title": "Username",
-            "type": "string"
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
           "dbname": {
-            "title": "DB Name",
-            "type": "string"
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the specific database within the database server that you want to connect to."
           },
           "db_schema": {
-            "title": "DB Schema",
-            "type": "string"
-          },
-          "host": {
-            "title": "Host",
-            "type": "string"
-          },
-          "port": {
-            "title": "Port",
-            "type": "integer"
+            "title": "Schema",
+            "type": "string",
+            "description": "The default schema to be used for the database connection (defaults to public)."
           },
           "ssh_required": {
             "title": "SSH Required",
             "type": "boolean",
+            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
           }
         },
-        "additionalProperties": false,
         "description": "Postgres Secrets Schema for API Docs"
       },
       "PrivacyDeclaration": {
@@ -18649,6 +19028,14 @@
           },
           "outdated_preference": {
             "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "current_served": {
+            "title": "Current Served",
+            "type": "boolean"
+          },
+          "outdated_served": {
+            "title": "Outdated Served",
+            "type": "boolean"
           }
         },
         "additionalProperties": false,
@@ -19235,45 +19622,53 @@
       },
       "RedshiftDocsSchema": {
         "title": "RedshiftDocsSchema",
+        "required": [
+          "host",
+          "user",
+          "password",
+          "database"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
-            "type": "string",
-            "sensitive": true
-          },
           "host": {
             "title": "Host",
-            "type": "string"
+            "type": "string",
+            "description": "The hostname or IP address of the server where the database is running."
           },
           "port": {
             "title": "Port",
-            "type": "integer"
-          },
-          "database": {
-            "title": "Database",
-            "type": "string"
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 5439).",
+            "default": 5439
           },
           "user": {
-            "title": "User",
-            "type": "string"
+            "title": "Username",
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
+          "database": {
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the specific database within the database server that you want to connect to."
+          },
           "db_schema": {
-            "title": "DB Schema",
-            "type": "string"
+            "title": "Schema",
+            "type": "string",
+            "description": "The default schema to be used for the database connection (defaults to public)."
           },
           "ssh_required": {
             "title": "SSH Required",
             "type": "boolean",
+            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your Redshift database is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
           }
         },
-        "additionalProperties": false,
         "description": "Redshift Secrets Schema for API Docs"
       },
       "Registration": {
@@ -20021,46 +20416,64 @@
         ],
         "description": "An enumeration."
       },
+      "ServingComponent": {
+        "title": "ServingComponent",
+        "enum": [
+          "overlay",
+          "banner",
+          "privacy_center"
+        ],
+        "description": "An enumeration."
+      },
       "SnowflakeDocsSchema": {
         "title": "SnowflakeDocsSchema",
+        "required": [
+          "account_identifier",
+          "user_login_name",
+          "password",
+          "warehouse_name",
+          "database_name",
+          "schema_name"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "account_identifier": {
+            "title": "Account Name",
             "type": "string",
-            "sensitive": true
+            "description": "The unique identifier for your Snowflake account."
           },
           "user_login_name": {
-            "title": "User Login Name",
-            "type": "string"
+            "title": "Username",
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
-          "account_identifier": {
-            "title": "Account Identifier",
-            "type": "string"
+          "warehouse_name": {
+            "title": "Warehouse",
+            "type": "string",
+            "description": "The name of the Snowflake warehouse where your queries will be executed."
           },
           "database_name": {
-            "title": "Database Name",
-            "type": "string"
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the Snowflake database you want to connect to."
           },
           "schema_name": {
-            "title": "Schema Name",
-            "type": "string"
-          },
-          "warehouse_name": {
-            "title": "Warehouse Name",
-            "type": "string"
+            "title": "Schema",
+            "type": "string",
+            "description": "The name of the Snowflake schema within the selected database."
           },
           "role_name": {
-            "title": "Role Name",
-            "type": "string"
+            "title": "Role",
+            "type": "string",
+            "description": "The Snowflake role to assume for the session, if different than Username."
           }
         },
-        "additionalProperties": false,
         "description": "Snowflake Secrets Schema for API Docs"
       },
       "SovrnDocsSchema": {
@@ -20751,45 +21164,51 @@
       },
       "TimescaleDocsSchema": {
         "title": "TimescaleDocsSchema",
+        "required": [
+          "host",
+          "dbname"
+        ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "URL",
+          "host": {
+            "title": "Host",
             "type": "string",
-            "sensitive": true
+            "description": "The hostname or IP address of the server where the database is running."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 5432).",
+            "default": 5432
           },
           "username": {
             "title": "Username",
-            "type": "string"
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
           },
           "password": {
             "title": "Password",
             "type": "string",
+            "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
           "dbname": {
-            "title": "DB Name",
-            "type": "string"
+            "title": "Database",
+            "type": "string",
+            "description": "The name of the specific database within the database server that you want to connect to."
           },
           "db_schema": {
-            "title": "DB Schema",
-            "type": "string"
-          },
-          "host": {
-            "title": "Host",
-            "type": "string"
-          },
-          "port": {
-            "title": "Port",
-            "type": "integer"
+            "title": "Schema",
+            "type": "string",
+            "description": "The default schema to be used for the database connection (defaults to public)."
           },
           "ssh_required": {
             "title": "SSH Required",
             "type": "boolean",
+            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
           }
         },
-        "additionalProperties": false,
         "description": "TimescaleDB Secrets Schema for API Docs"
       },
       "UserConsentPreference": {
