@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from fastapi import Depends, Response, Security, HTTPException
+from fastapi import Depends, HTTPException, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -177,6 +177,12 @@ def patch_connection_secrets(
 
     for key, value in validated_secrets.items():
         connection_config.secrets[key] = value  # type: ignore
+
+    # Deauthorize an OAuth connection when the secrets are updated. This is necessary because
+    # the existing access tokens may not be valid anymore. This only applies to SaaS connection
+    # configurations that use the "oauth2_authorization_code" authentication strategy.
+    if connection_config.authorized:
+        del connection_config.secrets["access_token"]
 
     # Save validated secrets, regardless of whether they've been verified.
     logger.info("Updating connection config secrets for '{}'", connection_config.key)
