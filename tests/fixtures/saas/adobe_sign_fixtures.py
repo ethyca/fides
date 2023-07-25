@@ -19,8 +19,6 @@ def adobe_sign_secrets(saas_config) -> Dict[str, Any]:
         or secrets["client_secret"],
         "redirect_uri": pydash.get(saas_config, "adobe_sign.redirect_uri")
         or secrets["redirect_uri"],
-        "access_token": pydash.get(saas_config, "adobe_sign.access_token")
-        or secrets["access_token"],
     }
 
 

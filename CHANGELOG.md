@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.17.0...main)
 
+### Added
+- Access support for Adobe Sign [#3504](https://github.com/ethyca/fides/pull/3504)
+
 ### Changed
 - Simplified the file structure for HTML DSR packages [#3848](https://github.com/ethyca/fides/pull/3848)
 
