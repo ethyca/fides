@@ -142,7 +142,7 @@ const CustomOption: React.FC<
   OptionProps<Option, boolean, GroupBase<Option>>
 > = ({ children, ...props }) => (
   <chakraComponents.Option {...props}>
-    <Flex flexDirection="column">
+    <Flex flexDirection="column" padding={2}>
       <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">
         {props.data.label}
       </Text>
