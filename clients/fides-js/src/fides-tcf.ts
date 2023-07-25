@@ -72,17 +72,18 @@ const init = async (config: FidesConfig) => {
   const cookie = getInitialCookie(config);
   const initialFides = getInitialFides({ ...config, cookie });
   if (initialFides) {
-    _Fides = { ..._Fides, ...initialFides };
+    Object.assign(_Fides, initialFides);
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
     dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);
   }
-  const updatedFides = initialize({ ...config, cookie });
-  _Fides = { ..._Fides, ...updatedFides };
+  const updatedFides = await initialize({ ...config, cookie });
+  Object.assign(_Fides, updatedFides);
+
   // Dispatch the "FidesInitialized" event to update listeners with the initial
   // state. Skip if we already initialized due to an existing cookie.
   // For convenience, also dispatch the "FidesUpdated" event; this allows
   // listeners to ignore the initialization event if they prefer
-  if (!isNewFidesCookie(cookie)) {
+  if (isNewFidesCookie(cookie)) {
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
   }
   dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);

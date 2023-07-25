@@ -158,21 +158,21 @@ export const getInitialFides = ({
   options,
 }: {
   cookie: FidesCookie;
-} & FidesConfig) => {
-  const initialFides: Partial<Fides> = {};
+} & FidesConfig): Partial<Fides> | null => {
   const hasExistingCookie = !isNewFidesCookie(cookie);
   if (!hasExistingCookie) {
     return null;
   }
 
-  initialFides.consent = cookie.consent;
-  initialFides.fides_meta = cookie.fides_meta;
-  initialFides.identity = cookie.identity;
-  initialFides.experience = experience;
-  initialFides.geolocation = geolocation;
-  initialFides.options = options;
-  initialFides.initialized = true;
-  return initialFides;
+  return {
+    consent: cookie.consent,
+    fides_meta: cookie.fides_meta,
+    identity: cookie.identity,
+    experience,
+    geolocation,
+    options,
+    initialized: true,
+  };
 };
 
 /**
@@ -189,8 +189,7 @@ export const initialize = async ({
   options,
   experience,
   geolocation,
-}: { cookie: FidesCookie } & FidesConfig) => {
-  const updatedFides: Partial<Fides> = {};
+}: { cookie: FidesCookie } & FidesConfig): Promise<Partial<Fides>> => {
   const context = getConsentContext();
 
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
@@ -258,14 +257,14 @@ export const initialize = async ({
     );
   }
 
-  // Initialize the window.Fides object
-  updatedFides.consent = cookie.consent;
-  updatedFides.fides_meta = cookie.fides_meta;
-  updatedFides.identity = cookie.identity;
-  updatedFides.experience = experience;
-  updatedFides.geolocation = geolocation;
-  updatedFides.options = options;
-  updatedFides.initialized = true;
-
-  return updatedFides;
+  // return an object with the updated Fides values
+  return {
+    consent: cookie.consent,
+    fides_meta: cookie.fides_meta,
+    identity: cookie.identity,
+    experience,
+    geolocation,
+    options,
+    initialized: true,
+  };
 };
