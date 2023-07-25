@@ -174,6 +174,7 @@ class TestPrivacyPreferenceHistory:
         )  # Hasn't been added yet
         assert preference_history_record.provided_identity == provided_identity
         assert preference_history_record.relevant_systems == [system.fides_key]
+        assert preference_history_record.tcf_version is None  # Not relevant here
         assert preference_history_record.request_origin == RequestOrigin.privacy_center
         assert preference_history_record.secondary_user_ids == {"ga_client_id": "test"}
         assert (
@@ -200,6 +201,7 @@ class TestPrivacyPreferenceHistory:
         assert (
             current_privacy_preference.privacy_notice_history == privacy_notice_history
         )
+        assert current_privacy_preference.tcf_version is None
 
         # Save preferences again with an "opt in" preference for this privacy notice
         next_preference_history_record = PrivacyPreferenceHistory.create(
@@ -414,6 +416,7 @@ class TestPrivacyPreferenceHistory:
         assert special_purpose_preference_history_record.purpose is None
         assert special_purpose_preference_history_record.feature is None
         assert special_purpose_preference_history_record.special_feature is None
+        assert special_purpose_preference_history_record.tcf_version == "2.2"
         assert (
             special_purpose_preference_history_record.privacy_notice_history_id is None
         )
@@ -426,6 +429,7 @@ class TestPrivacyPreferenceHistory:
         assert current_special_purpose_preference.feature is None
         assert current_special_purpose_preference.special_feature is None
         assert current_special_purpose_preference.privacy_notice_history_id is None
+        assert current_special_purpose_preference.tcf_version == "2.2"
 
         current_special_purpose_preference.delete(db)
         special_purpose_preference_history_record.delete(db)

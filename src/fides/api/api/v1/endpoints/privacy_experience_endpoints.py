@@ -61,7 +61,7 @@ def _filter_experiences_by_region_or_country(
     db: Session, region: Optional[str], experience_query: Query
 ) -> Query:
     """
-    Return at most two privacy experiences, a privacy center experience and an overlay (regular or TCF type)
+    Return at most two privacy experiences: a privacy center experience and an overlay (regular or TCF type)
     that matches the given region. Experiences are looked up by supplied region first.  If nothing is found,
     we attempt to look up by country code.
 

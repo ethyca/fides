@@ -9,6 +9,7 @@ from sqlalchemy.dialects.postgresql import array_agg
 from sqlalchemy.orm import Query, Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.privacy_preference import PreferenceType
 from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     PrivacyDeclaration,
     System,
@@ -26,6 +27,11 @@ TCF_FIELD_LIST = [
     "tcf_features",
     "tcf_special_features",
 ]
+
+
+def get_preference_type_by_field_name(tcf_field_name: str):
+    """Return PreferenceType Enum value given the TCF Field name"""
+    return PreferenceType[tcf_field_name.replace("tcf_", "").rstrip("s")]
 
 
 def get_purposes_and_vendors(

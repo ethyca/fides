@@ -29,7 +29,11 @@ from fides.api.schemas.tcf import (
     TCFPurposeRecord,
     TCFVendorRecord,
 )
-from fides.api.util.tcf_util import TCF_FIELD_LIST, get_tcf_contents
+from fides.api.util.tcf_util import (
+    TCF_FIELD_LIST,
+    get_preference_type_by_field_name,
+    get_tcf_contents,
+)
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
     ConsentMechanism.notice_only,
@@ -216,11 +220,12 @@ class PrivacyExperience(Base):
     # Attribute that can be added as the result of "get_related_privacy_notices". Privacy notices aren't directly
     # related to experiences.
     privacy_notices: List[PrivacyNotice] = []
-    tcf_purposes: List
-    tcf_special_purposes: List
-    tcf_vendors: List
-    tcf_features: List
-    tcf_special_features: List
+    # TCF attributes that can be added at runtime as the result of "get_related_tcf_contents"
+    tcf_purposes: List = []
+    tcf_special_purposes: List = []
+    tcf_vendors: List = []
+    tcf_features: List = []
+    tcf_special_features: List = []
 
     # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
     show_banner: bool
@@ -318,9 +323,9 @@ class PrivacyExperience(Base):
                         db,
                         record,
                         fides_user_provided_identity=fides_user_provided_identity,
-                        preference_type=PreferenceType[
-                            tcf_field_name.strip("tcf_").rstrip("s")
-                        ],
+                        preference_type=get_preference_type_by_field_name(
+                            tcf_field_name
+                        ),
                     )
             return tcf_contents
         return TCFExperienceContents()

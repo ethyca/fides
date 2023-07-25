@@ -18,6 +18,34 @@ from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.tcf import TCFPreferenceSave, TCFVendorSave
 
+TCF_PREFERENCES_FIELDS = [
+    "purpose_preferences",
+    "special_purpose_preferences",
+    "vendor_preferences",
+    "feature_preferences",
+    "special_feature_preferences",
+]
+
+
+class TCFAttributes(FidesSchema):
+    """Common schema for storing the relevant TCF Attribute"""
+
+    purpose: Optional[int] = Field(
+        title="The TCF purpose that was served or saved against"
+    )
+    special_purpose: Optional[int] = Field(
+        title="The TCF special purpose that was served or saved against"
+    )
+    vendor: Optional[str] = Field(
+        title="The TCF vendor that was served or saved against"
+    )
+    feature: Optional[int] = Field(
+        title="The TCF feature that was served or saved against"
+    )
+    special_feature: Optional[int] = Field(
+        title="The TCF special feature that was served or saved against"
+    )
+
 
 class ConsentOptionCreate(FidesSchema):
     """Schema for saving the user's preference for a given notice"""
@@ -90,20 +118,16 @@ class RecordConsentServedCreate(RecordConsentServedRequest):
     user_agent: Optional[SafeStr]
 
 
-class LastServedConsentSchema(FidesSchema):
+class LastServedConsentSchema(TCFAttributes):
     """Schema that surfaces the the last time a consent item that was shown to a user"""
 
     id: str
     updated_at: datetime
     served_notice_history_id: str
     privacy_notice_history: Optional[PrivacyNoticeHistorySchema]
-    purpose: Optional[int]
-    special_purpose: Optional[int]
-    vendor: Optional[str]
-    feature: Optional[int]
 
 
-class ConsentReportingSchema(FidesSchema):
+class ConsentReportingSchema(TCFAttributes):
     """Schema for consent reporting - largely a join of PrivacyPreferenceHistory and PrivacyRequest"""
 
     id: str = Field(title="The PrivacyPreferenceHistory id")
@@ -157,21 +181,9 @@ class ConsentReportingSchema(FidesSchema):
     served_notice_history_id: Optional[str] = Field(
         title="The id of the record where the notice was served to the end user"
     )
-    purpose: Optional[int] = Field(
-        title="The TCF purpose this preference was saved against"
-    )
-    special_purpose: Optional[int] = Field(
-        title="The TCF special purpose this preference was saved against"
-    )
-    vendor: Optional[str] = Field(
-        title="The TCF vendor this preference was saved against"
-    )
-    feature: Optional[int] = Field(
-        title="The TCF feature this preference was saved against"
-    )
 
 
-class CurrentPrivacyPreferenceSchema(FidesSchema):
+class CurrentPrivacyPreferenceSchema(TCFAttributes):
     """Schema to represent the latest saved preference for a given privacy notice
     Note that we return the privacy notice *history* record here though which has the
     contents of the notice the user consented to at the time.
@@ -181,13 +193,9 @@ class CurrentPrivacyPreferenceSchema(FidesSchema):
     preference: UserConsentPreference
     privacy_notice_history: Optional[PrivacyNoticeHistorySchema]
     privacy_preference_history_id: Optional[str]
-    purpose: Optional[int]
-    special_purpose: Optional[int]
-    vendor: Optional[str]
-    feature: Optional[int]
 
 
-class CurrentPrivacyPreferenceReportingSchema(FidesSchema):
+class CurrentPrivacyPreferenceReportingSchema(TCFAttributes):
     """Schema to represent the latest saved preference for a given privacy notice
     Note that we return the privacy notice *history* record here though which has the
     contents of the notice the user consented to at the time.
@@ -199,7 +207,3 @@ class CurrentPrivacyPreferenceReportingSchema(FidesSchema):
     privacy_preference_history_id: str
     provided_identity_id: Optional[str]
     created_at: datetime
-    purpose: Optional[int]
-    special_purpose: Optional[int]
-    vendor: Optional[str]
-    feature: Optional[int]

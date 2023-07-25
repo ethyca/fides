@@ -588,7 +588,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         assert response.status_code == 422
         assert (
             response.json()["detail"]
-            == f"The ServedNoticeHistory record '{served_notice_history_us_ca_provide_for_fides_user.id}' did not serve the Privacy Notice History '{privacy_notice.histories[0].id}'."
+            == f"The ServedNoticeHistory record '{served_notice_history_us_ca_provide_for_fides_user.id}' did not serve the privacy notice history '{privacy_notice.histories[0].id}'."
         )
 
     @pytest.mark.usefixtures(
