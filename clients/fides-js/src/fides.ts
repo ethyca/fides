@@ -175,7 +175,6 @@ const automaticallyApplyGPCPreferences = (
       consentMethod: ConsentMethod.gpc,
       userLocationString: fidesRegionString || undefined,
       cookie,
-
       debug,
     });
   }
