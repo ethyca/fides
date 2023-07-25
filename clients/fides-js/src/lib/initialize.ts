@@ -49,12 +49,6 @@ export type Fides = {
   shopify: typeof shopify;
 };
 
-declare global {
-  interface Window {
-    Fides: Fides;
-  }
-}
-
 const retrieveEffectiveRegionString = async (
   geolocation: UserGeolocation | undefined,
   options: FidesOptions

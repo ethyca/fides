@@ -61,6 +61,12 @@ import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
 import { isNewFidesCookie } from "./fides";
 
+declare global {
+  interface Window {
+    Fides: Fides;
+  }
+}
+
 // The global Fides object; this is bound to window.Fides if available
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;

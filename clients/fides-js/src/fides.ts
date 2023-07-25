@@ -60,6 +60,12 @@ import {
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 
+declare global {
+  interface Window {
+    Fides: Fides;
+  }
+}
+
 // The global Fides object; this is bound to window.Fides if available
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
