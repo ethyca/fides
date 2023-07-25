@@ -11,6 +11,8 @@ from fides.api.common_exceptions import ValidationError
 from fides.api.custom_types import SafeStr
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_experience import (
+    ComponentType,
+    PrivacyExperience,
     PrivacyExperienceConfig,
     upsert_privacy_experiences_after_notice_update,
 )
@@ -603,3 +605,54 @@ def create_default_experience_config(
         experience_config_schema.id,
     )
     return None
+
+
+EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
+    PrivacyNoticeRegion.be,
+    PrivacyNoticeRegion.bg,
+    PrivacyNoticeRegion.cz,
+    PrivacyNoticeRegion.dk,
+    PrivacyNoticeRegion.de,
+    PrivacyNoticeRegion.ee,
+    PrivacyNoticeRegion.ie,
+    PrivacyNoticeRegion.gr,
+    PrivacyNoticeRegion.es,
+    PrivacyNoticeRegion.fr,
+    PrivacyNoticeRegion.hr,
+    PrivacyNoticeRegion.it,
+    PrivacyNoticeRegion.cy,
+    PrivacyNoticeRegion.lv,
+    PrivacyNoticeRegion.lv,
+    PrivacyNoticeRegion.lt,
+    PrivacyNoticeRegion.lu,
+    PrivacyNoticeRegion.hu,
+    PrivacyNoticeRegion.mt,
+    PrivacyNoticeRegion.nl,
+    PrivacyNoticeRegion.at,
+    PrivacyNoticeRegion.pl,
+    PrivacyNoticeRegion.pt,
+    PrivacyNoticeRegion.ro,
+    PrivacyNoticeRegion.si,
+    PrivacyNoticeRegion.sk,
+    PrivacyNoticeRegion.fi,
+    PrivacyNoticeRegion.se,
+    PrivacyNoticeRegion.gb_eng,
+    PrivacyNoticeRegion.gb_sct,
+    PrivacyNoticeRegion.gb_wls,
+    PrivacyNoticeRegion.gb_nir,
+    PrivacyNoticeRegion.no,
+    PrivacyNoticeRegion["is"],
+    PrivacyNoticeRegion.li,
+]
+
+
+def create_tcf_experiences_on_startup(db: Session) -> None:
+    for region in EEA_COUNTRIES:
+        if not PrivacyExperience.get_experience_by_region_and_component(
+            db,
+            region.value,
+            ComponentType.tcf_overlay,
+        ):
+            PrivacyExperience.create_default_experience_for_region(
+                db, region, ComponentType.tcf_overlay
+            )

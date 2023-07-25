@@ -40,13 +40,13 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import (
+    create_tcf_experiences_on_startup,
     load_default_experience_configs_on_startup,
     load_default_notices_on_startup,
 )
 from fides.api.util.endpoint_utils import fides_limiter
 from fides.api.util.errors import FidesError
 from fides.api.util.logger import setup as setup_logging
-from fides.api.util.tcf_util import create_tcf_experiences_on_startup
 from fides.config import CONFIG
 
 VERSION = fides.__version__

@@ -9,8 +9,6 @@ from sqlalchemy.dialects.postgresql import array_agg
 from sqlalchemy.orm import Query, Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
-from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     PrivacyDeclaration,
     System,
@@ -20,6 +18,14 @@ from fides.api.schemas.tcf import (
     TCFPurposeRecord,
     TCFVendorRecord,
 )
+
+TCF_FIELD_LIST = [
+    "tcf_purposes",
+    "tcf_special_purposes",
+    "tcf_vendors",
+    "tcf_features",
+    "tcf_special_features",
+]
 
 
 def get_purposes_and_vendors(
@@ -110,58 +116,7 @@ def get_tcf_contents(
             vendors.append(special_purpose_vendor)
 
     tcf_consent_contents = TCFExperienceContents()
-    tcf_consent_contents.purposes = purposes
-    tcf_consent_contents.special_purposes = special_purposes
-    tcf_consent_contents.vendors = vendors
+    tcf_consent_contents.tcf_purposes = purposes
+    tcf_consent_contents.tcf_special_purposes = special_purposes
+    tcf_consent_contents.tcf_vendors = vendors
     return tcf_consent_contents
-
-
-EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
-    PrivacyNoticeRegion.be,
-    PrivacyNoticeRegion.bg,
-    PrivacyNoticeRegion.cz,
-    PrivacyNoticeRegion.dk,
-    PrivacyNoticeRegion.de,
-    PrivacyNoticeRegion.ee,
-    PrivacyNoticeRegion.ie,
-    PrivacyNoticeRegion.gr,
-    PrivacyNoticeRegion.es,
-    PrivacyNoticeRegion.fr,
-    PrivacyNoticeRegion.hr,
-    PrivacyNoticeRegion.it,
-    PrivacyNoticeRegion.cy,
-    PrivacyNoticeRegion.lv,
-    PrivacyNoticeRegion.lv,
-    PrivacyNoticeRegion.lt,
-    PrivacyNoticeRegion.lu,
-    PrivacyNoticeRegion.hu,
-    PrivacyNoticeRegion.mt,
-    PrivacyNoticeRegion.nl,
-    PrivacyNoticeRegion.at,
-    PrivacyNoticeRegion.pl,
-    PrivacyNoticeRegion.pt,
-    PrivacyNoticeRegion.ro,
-    PrivacyNoticeRegion.si,
-    PrivacyNoticeRegion.sk,
-    PrivacyNoticeRegion.fi,
-    PrivacyNoticeRegion.se,
-    PrivacyNoticeRegion.gb_eng,
-    PrivacyNoticeRegion.gb_sct,
-    PrivacyNoticeRegion.gb_wls,
-    PrivacyNoticeRegion.gb_nir,
-    PrivacyNoticeRegion.no,
-    PrivacyNoticeRegion["is"],
-    PrivacyNoticeRegion.li,
-]
-
-
-def create_tcf_experiences_on_startup(db: Session) -> None:
-    for region in EEA_COUNTRIES:
-        if not PrivacyExperience.get_experience_by_region_and_component(
-            db,
-            region.value,
-            ComponentType.tcf_overlay,
-        ):
-            PrivacyExperience.create_default_experience_for_region(
-                db, region, ComponentType.tcf_overlay
-            )

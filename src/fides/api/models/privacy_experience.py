@@ -24,7 +24,12 @@ from fides.api.models.privacy_preference import (
 )
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.schemas.tcf import TCFPurposeRecord, TCFVendorRecord
+from fides.api.schemas.tcf import (
+    TCFExperienceContents,
+    TCFPurposeRecord,
+    TCFVendorRecord,
+)
+from fides.api.util.tcf_util import TCF_FIELD_LIST, get_tcf_contents
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
     ConsentMechanism.notice_only,
@@ -268,6 +273,8 @@ class PrivacyExperience(Base):
         If fides user provided identity supplied, additionally lookup any saved
         preferences for that user id and attach if they exist.
         """
+        if self.component == ComponentType.tcf_overlay:
+            return []
         privacy_notice_query = get_privacy_notices_by_region_and_component(
             db, self.region, self.component  # type: ignore[arg-type]
         )
@@ -296,6 +303,27 @@ class PrivacyExperience(Base):
             notices.append(notice)
 
         return notices
+
+    def get_related_tcf_contents(
+        self, db: Session, fides_user_provided_identity: Optional[ProvidedIdentity]
+    ) -> TCFExperienceContents:
+        """Returns the contents of a TCF experience with any previous records of a user being served or
+        consenting to any of the individual line items"""
+        if self.component == ComponentType.tcf_overlay:
+            tcf_contents: TCFExperienceContents = get_tcf_contents(db)
+
+            for tcf_field_name in TCF_FIELD_LIST:
+                for record in getattr(tcf_contents, tcf_field_name):
+                    cache_saved_and_served_on_consent_record(
+                        db,
+                        record,
+                        fides_user_provided_identity=fides_user_provided_identity,
+                        preference_type=PreferenceType[
+                            tcf_field_name.strip("tcf_").rstrip("s")
+                        ],
+                    )
+            return tcf_contents
+        return TCFExperienceContents()
 
     @staticmethod
     def create_default_experience_for_region(

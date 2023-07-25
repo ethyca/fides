@@ -635,12 +635,14 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["tcf_purposes"] == []
         assert resp.json()["items"][0]["tcf_vendors"] == []
         assert resp.json()["items"][0]["tcf_features"] == []
+        assert resp.json()["items"][0]["tcf_special_purposes"] == []
+        assert resp.json()["items"][0]["tcf_special_features"] == []
 
     @pytest.mark.usefixtures(
         "privacy_experience_france_overlay",
         "privacy_notice_fr_provide_service_frontend_only",
     )
-    def test_tcf_enabled(
+    def test_tcf_enabled_but_no_relevant_systems(
         self, db, api_client, url, privacy_experience_france_tcf_overlay
     ):
         settings = ConsentSettings.get_or_create_with_defaults(db)
@@ -656,12 +658,16 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["tcf_purposes"] == []
         assert resp.json()["items"][0]["tcf_vendors"] == []
         assert resp.json()["items"][0]["tcf_features"] == []
+        assert resp.json()["items"][0]["tcf_special_purposes"] == []
+        assert resp.json()["items"][0]["tcf_special_features"] == []
 
     @pytest.mark.usefixtures(
         "privacy_experience_france_overlay",
         "privacy_preference_history_for_tcf_purpose",
+        "privacy_preference_history_for_tcf_special_purpose",
         "served_notice_history_for_tcf_purpose",
         "fides_user_provided_identity",
+        "served_notice_history_for_tcf_special_purpose",
     )
     def test_tcf_enabled_with_overlapping_systems(
         self,
@@ -719,14 +725,14 @@ class TestGetTCFPrivacyExperiences:
 
         assert (
             resp.json()["items"][0]["tcf_special_purposes"][0]["current_preference"]
-            is None
+            == "opt_in"
         )
         assert (
             resp.json()["items"][0]["tcf_special_purposes"][0]["outdated_preference"]
             is None
         )
         assert (
-            resp.json()["items"][0]["tcf_special_purposes"][0]["current_served"] is None
+            resp.json()["items"][0]["tcf_special_purposes"][0]["current_served"] is True
         )
         assert (
             resp.json()["items"][0]["tcf_special_purposes"][0]["outdated_served"]

@@ -31,7 +31,6 @@ api_router = APIRouter()
 api_router.include_router(config_endpoints.router)
 api_router.include_router(connection_type_endpoints.router)
 api_router.include_router(consent_settings_endpoints.router)
-
 api_router.include_router(connection_endpoints.router)
 api_router.include_router(consent_request_endpoints.router)
 api_router.include_router(dataset_endpoints.router)

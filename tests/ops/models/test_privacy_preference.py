@@ -354,7 +354,7 @@ class TestPrivacyPreferenceHistory:
         assert current_privacy_preference.purpose == 4
         assert current_privacy_preference.tcf_version == "2.2"
 
-        # Save preferences again with an "opt in" preference for this privacy notice
+        # Save preferences again with an "opt in" preference for this purpose
         next_preference_history_record = PrivacyPreferenceHistory.create(
             db=db,
             data={
@@ -393,6 +393,42 @@ class TestPrivacyPreferenceHistory:
 
         preference_history_record.delete(db)
         next_preference_history_record.delete(db)
+
+        # Save preferences again with an "opt in" preference for a special purpose
+
+        special_purpose_preference_history_record = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "preference": "opt_in",
+                "special_purpose": 1,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "request_origin": "tcf_overlay",
+                "secondary_user_ids": {"ga_client_id": "test"},
+                "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+                "user_geography": "fr",
+            },
+            check_name=False,
+        )
+
+        assert special_purpose_preference_history_record.special_purpose == 1
+        assert special_purpose_preference_history_record.purpose is None
+        assert special_purpose_preference_history_record.feature is None
+        assert special_purpose_preference_history_record.special_feature is None
+        assert (
+            special_purpose_preference_history_record.privacy_notice_history_id is None
+        )
+        current_special_purpose_preference = (
+            special_purpose_preference_history_record.current_privacy_preference
+        )
+
+        assert current_special_purpose_preference.special_purpose == 1
+        assert current_special_purpose_preference.purpose is None
+        assert current_special_purpose_preference.feature is None
+        assert current_special_purpose_preference.special_feature is None
+        assert current_special_purpose_preference.privacy_notice_history_id is None
+
+        current_special_purpose_preference.delete(db)
+        special_purpose_preference_history_record.delete(db)
 
     def test_create_privacy_preference_for_vendor(
         self, db, system, fides_user_provided_identity

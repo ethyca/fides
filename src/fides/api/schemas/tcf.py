@@ -60,11 +60,11 @@ class TCFFeatureRecord(UserSpecificConsentDetails):
 
 
 class TCFExperienceContents:
-    purposes: List[TCFPurposeRecord] = []
-    special_purposes: List[TCFPurposeRecord] = []
-    vendors: List[TCFVendorRecord] = []
-    features: List[TCFFeatureRecord] = []
-    special_features: List[TCFFeatureRecord] = []
+    tcf_purposes: List[TCFPurposeRecord] = []
+    tcf_special_purposes: List[TCFPurposeRecord] = []
+    tcf_vendors: List[TCFVendorRecord] = []
+    tcf_features: List[TCFFeatureRecord] = []
+    tcf_special_features: List[TCFFeatureRecord] = []
 
 
 class TCFPreferenceSave(FidesSchema):

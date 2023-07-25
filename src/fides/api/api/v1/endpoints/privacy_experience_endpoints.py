@@ -20,10 +20,8 @@ from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
     PrivacyExperienceConfig,
-    cache_saved_and_served_on_consent_record,
 )
 from fides.api.models.privacy_notice import PrivacyNotice
-from fides.api.models.privacy_preference import PreferenceType
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
 from fides.api.schemas.tcf import TCFExperienceContents
@@ -35,7 +33,7 @@ from fides.api.util.consent_util import (
     get_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, transform_fields
-from fides.api.util.tcf_util import get_tcf_contents
+from fides.api.util.tcf_util import TCF_FIELD_LIST
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 
@@ -98,12 +96,11 @@ def _filter_experiences_by_region_or_country(
         experience_ids.append(privacy_center.id)
 
     # Only return TCF overlay or a regular overlay here; not both
-    consent_settings = ConsentSettings.get_or_create_with_defaults(db)
+    consent_settings: ConsentSettings = ConsentSettings.get_or_create_with_defaults(db)
     if consent_settings.tcf_enabled and tcf_overlay:
         experience_ids.append(tcf_overlay.id)
-    else:
-        if overlay:
-            experience_ids.append(overlay.id)
+    elif overlay:
+        experience_ids.append(overlay.id)
 
     if experience_ids:
         return experience_query.filter(PrivacyExperience.id.in_(experience_ids))
@@ -226,62 +223,36 @@ def embed_experience_details(
     fides_user_provided_identity: Optional[ProvidedIdentity],
     should_unescape: Optional[str],
 ) -> None:
-    """At runtime, embed relevant privacy notices, tcf_purposes, tcf_special_purposes,
-    tcf_vendors, tcf_features, tcf_special_features into the response body for the given Experience
     """
+    At runtime embeds relevant Experience contents where applicable:
+        - Privacy Notices
+        - TCF Details: purposes, special purposes, vendors, features, and special features
+    """
+    # Reset any temporary cached items just in case
     privacy_experience.privacy_notices = []
-    privacy_experience.tcf_purposes = []
-    privacy_experience.tcf_special_purposes = []
-    privacy_experience.tcf_vendors = []
-    privacy_experience.tcf_features = []
-    privacy_experience.tcf_special_features = []
+    for field in TCF_FIELD_LIST:
+        setattr(privacy_experience, field, [])
 
-    if privacy_experience.component == ComponentType.tcf_overlay:
-        tcf_contents: TCFExperienceContents = get_tcf_contents(db)
-        for record in tcf_contents.purposes:
-            cache_saved_and_served_on_consent_record(
-                db,
-                record,
-                fides_user_provided_identity=fides_user_provided_identity,
-                preference_type=PreferenceType.purpose,
+    # Temporarily add TCF Contents to the Experience object if applicable
+    tcf_contents: TCFExperienceContents = privacy_experience.get_related_tcf_contents(
+        db, fides_user_provided_identity
+    )
+    for field in TCF_FIELD_LIST:
+        setattr(privacy_experience, field, getattr(tcf_contents, field))
+
+    # Temporarily add Privacy Notices to the Experience object if applicable
+    privacy_notices: List[
+        PrivacyNotice
+    ] = privacy_experience.get_related_privacy_notices(
+        db, show_disabled, systems_applicable, fides_user_provided_identity
+    )
+    if should_unescape:
+        privacy_notices = [
+            transform_fields(
+                transformation=unescape,
+                model=notice,
+                fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
             )
-
-        for record in tcf_contents.special_purposes:
-            cache_saved_and_served_on_consent_record(
-                db,
-                record,
-                fides_user_provided_identity=fides_user_provided_identity,
-                preference_type=PreferenceType.special_purpose,
-            )
-
-        for record in tcf_contents.vendors:
-            cache_saved_and_served_on_consent_record(
-                db,
-                record,
-                fides_user_provided_identity=fides_user_provided_identity,
-                preference_type=PreferenceType.vendor,
-            )
-
-        # TODO Add features, special features
-        # Temporarily cache relevant TCF Data Purposes and Vendors on the given Experience
-        privacy_experience.tcf_purposes = tcf_contents.purposes
-        privacy_experience.tcf_special_purposes = tcf_contents.special_purposes
-        privacy_experience.tcf_vendors = tcf_contents.vendors
-
-    else:
-        privacy_notices: List[
-            PrivacyNotice
-        ] = privacy_experience.get_related_privacy_notices(
-            db, show_disabled, systems_applicable, fides_user_provided_identity
-        )
-        if should_unescape:
-            privacy_notices = [
-                transform_fields(
-                    transformation=unescape,
-                    model=notice,
-                    fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
-                )
-                for notice in privacy_notices
-            ]
-        # Temporarily save privacy notices on the privacy experience object
-        privacy_experience.privacy_notices = privacy_notices
+            for notice in privacy_notices
+        ]
+    privacy_experience.privacy_notices = privacy_notices

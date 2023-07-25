@@ -207,6 +207,8 @@ class ConsentReportingMixin:
 
     @property
     def preference_type(self) -> PreferenceType:
+        """Determine the type of record for which a preference was saved
+        or served against based on which field exists"""
         if self.privacy_notice_history_id:
             return PreferenceType.privacy_notice_id
         if self.purpose:
@@ -230,12 +232,7 @@ class ServingComponent(Enum):
 def _validate_before_saving_consent_history(
     db: Session, data: dict[str, Any]
 ) -> Tuple[
-    Optional[PrivacyNoticeHistory],
-    Optional[int],
-    Optional[int],
-    Optional[str],
-    Optional[int],
-    Optional[int],
+    Optional[PrivacyNoticeHistory], Optional[str], Union[Optional[str], Optional[int]]
 ]:
     """
     Runs some final validation checks before saving that a user was served
@@ -243,8 +240,7 @@ def _validate_before_saving_consent_history(
 
     - Validates that a notice history exists if supplied
     - Validates that at least one provided identity type is supplied
-    - Validates that only one of a data use, special purpose, vendor, or
-    feature exists in request body
+    - Validates that only one of a data use, special purpose, vendor, or special feature exists in request body
     """
     privacy_notice_history = None
     if data.get("privacy_notice_history_id"):
@@ -261,38 +257,37 @@ def _validate_before_saving_consent_history(
             "Must supply a verified provided identity id or a fides_user_device_provided_identity_id"
         )
 
-    purpose = data.get("purpose")
-    vendor = data.get("vendor")
-    feature = data.get("feature")
-    special_purpose = data.get("special_purpose")
-    special_feature = data.get("special_feature")
+    tcf_items: Dict[str, Union[Optional[str], Optional[int]]] = {
+        "purpose": data.get("purpose"),
+        "special_purpose": data.get("special_purpose"),
+        "vendor": data.get("vendor"),
+        "feature": data.get("feature"),
+        "special_feature": data.get("special_feature"),
+    }
 
     if (
         sum(
             item is not None
             for item in [
                 privacy_notice_history,
-                purpose,
-                vendor,
-                feature,
-                special_purpose,
-                special_feature,
             ]
+            + list(tcf_items.values())
         )
         != 1
     ):
         raise PrivacyPreferenceSaveError(
-            "Can only save record against one of a privacy notice, data use, vendor, or feature."
+            "Can only save record against a single privacy notice or TCF attribute"
         )
 
-    return (
-        privacy_notice_history,
-        purpose,
-        special_purpose,
-        vendor,
-        feature,
-        special_feature,
-    )
+    tcf_key: Optional[str] = None
+    tcf_val: Optional[Union[str, int]] = None
+    for key, val in tcf_items.items():
+        if val:
+            tcf_key = key
+            tcf_val = val
+            break
+
+    return (privacy_notice_history, tcf_key, tcf_val)
 
 
 class ServedNoticeHistory(ConsentReportingMixin, Base):
@@ -351,14 +346,11 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
         """
         (
             privacy_notice_history,
-            purpose,
-            special_purpose,
-            vendor,
-            feature,
-            special_feature,
+            tcf_field,
+            tcf_val,
         ) = _validate_before_saving_consent_history(db, data)
 
-        if any([purpose, special_purpose, vendor, feature, special_feature]):
+        if tcf_field:
             data["tcf_version"] = CURRENT_TCF_VERSION
 
         created_served_notice_history = super().create(
@@ -377,13 +369,8 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
                 "privacy_notice_id"
             ] = privacy_notice_history.privacy_notice_id
 
-        last_served_data["purpose"] = purpose
-        last_served_data["special_purpose"] = special_purpose
-        last_served_data["vendor"] = vendor
-        last_served_data["feature"] = feature
-        last_served_data["special_feature"] = special_feature
-
-        if any([purpose, vendor, feature]):
+        if tcf_field:
+            last_served_data[tcf_field] = tcf_val
             last_served_data["tcf_version"] = CURRENT_TCF_VERSION
 
         upserted_last_served_notice_record = upsert_last_saved_record(
@@ -517,11 +504,8 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
         """
         (
             privacy_notice_history,
-            purpose,
-            special_purpose,
-            vendor,
-            feature,
-            special_feature,
+            tcf_field,
+            tcf_val,
         ) = _validate_before_saving_consent_history(db, data)
 
         if privacy_notice_history:
@@ -529,7 +513,7 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
                 "relevant_systems"
             ] = privacy_notice_history.calculate_relevant_systems(db)
 
-        if any([purpose, vendor, feature]):
+        if tcf_field:
             data["tcf_version"] = CURRENT_TCF_VERSION
 
         created_privacy_preference_history = super().create(
@@ -550,13 +534,8 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
                 "privacy_notice_history_id"
             ] = privacy_notice_history.id
 
-        current_privacy_preference_data["purpose"] = purpose
-        current_privacy_preference_data["special_purpose"] = purpose
-        current_privacy_preference_data["vendor"] = vendor
-        current_privacy_preference_data["feature"] = feature
-        current_privacy_preference_data["special_feature"] = feature
-
-        if any([purpose, special_purpose, vendor, feature, special_feature]):
+        if tcf_field:
+            current_privacy_preference_data[tcf_field] = tcf_val
             current_privacy_preference_data["tcf_version"] = CURRENT_TCF_VERSION
 
         current_preference = upsert_last_saved_record(

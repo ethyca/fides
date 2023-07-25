@@ -39,6 +39,6 @@ def patch_consent_settings(
     *, db: Session = Depends(deps.get_db), data: ConsentSettingsRequestSchema
 ) -> ConsentSettings:
     """Update organization-wide consent settings. Only the single record is updated."""
-    logger.info("Getting organization-wide consent settings")
+    logger.info("Updating organization-wide consent settings")
     consent_settings_record = ConsentSettings.get_or_create_with_defaults(db)
     return consent_settings_record.update(db=db, data=data.dict())  # type: ignore[return-value]
