@@ -1,4 +1,4 @@
-import { h } from "preact";
+import { ComponentChildren, h } from "preact";
 
 import { ConsentMechanism, PrivacyNotice } from "../lib/consent-types";
 import Toggle from "./Toggle";
@@ -6,14 +6,18 @@ import Divider from "./Divider";
 import { useDisclosure } from "../lib/hooks";
 import { GpcBadgeForNotice } from "./GpcBadge";
 
-const NoticeToggle = ({
+export const NoticeToggle = ({
   notice,
   checked,
   onToggle,
+  children,
+  badge,
 }: {
   notice: PrivacyNotice;
   checked: boolean;
   onToggle: (noticeKey: PrivacyNotice["notice_key"]) => void;
+  children: ComponentChildren;
+  badge?: string;
 }) => {
   const {
     isOpen,
@@ -46,7 +50,10 @@ const NoticeToggle = ({
           {...getButtonProps()}
           className="fides-notice-toggle-trigger"
         >
-          {notice.name}
+          <span className="fides-flex-center">
+            {notice.name}
+            {badge ? <span className="fides-notice-badge">{badge}</span> : null}
+          </span>
           <GpcBadgeForNotice notice={notice} value={checked} />
         </span>
 
@@ -58,7 +65,7 @@ const NoticeToggle = ({
           disabled={notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY}
         />
       </div>
-      <p {...getDisclosureProps()}>{notice.description}</p>
+      <div {...getDisclosureProps()}>{children}</div>
     </div>
   );
 };
@@ -94,7 +101,9 @@ const NoticeToggles = ({
               notice={notice}
               checked={checked}
               onToggle={handleToggle}
-            />
+            >
+              {notice.description}
+            </NoticeToggle>
             {!isLast ? <Divider /> : null}
           </div>
         );
