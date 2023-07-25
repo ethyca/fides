@@ -7,8 +7,8 @@
     "cluster_error": null
   },
   "dictionary": {
-      "enabled": true,
-      "service_health": null,
-      "service_error": null
+    "enabled": true,
+    "service_health": null,
+    "service_error": null
   }
 }
