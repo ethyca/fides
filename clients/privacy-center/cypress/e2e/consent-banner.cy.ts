@@ -1624,7 +1624,7 @@ describe("Consent banner", () => {
       });
     });
 
-    it.only("can set acknowledge mode to true", () => {
+    it("can set acknowledge mode to true", () => {
       stubConfig({
         experience: {
           id: experienceId,
