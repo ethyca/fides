@@ -233,7 +233,7 @@ export const SelectInput = ({
     boolean,
     GroupBase<Option>
   > = {};
-  if (isClearable) {
+  if (!isClearable) {
     components.ClearIndicator = ClearIndicator;
   }
 
