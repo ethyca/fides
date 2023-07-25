@@ -214,7 +214,6 @@ export enum ServingComponent {
   OVERLAY = "overlay",
   BANNER = "banner",
   PRIVACY_CENTER = "privacy_center",
-  GPC = "gpc",
 }
 /**
  * Request body when indicating that notices were served in the UI
