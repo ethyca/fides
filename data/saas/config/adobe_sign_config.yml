@@ -10,7 +10,6 @@ saas_config:
       default_value: api.na3.adobesign.com
     - name: client_id
       label: Client ID
-      sensitive: True
     - name: client_secret
       sensitive: True
     - name: redirect_uri
@@ -69,7 +68,7 @@ saas_config:
               "refresh_token": "<refresh_token>",
               "redirect_uri": "<redirect_uri>"
             }
-        
+
   test_request:
     method: GET
     path: /api/rest/v6/users
@@ -102,6 +101,7 @@ saas_config:
           postprocessors:
             - strategy: filter
               configuration:
-                field: displayParticipantSetInfos.0.displayUserSetMemberInfos.0.email
-                value: 
+                field: displayParticipantSetInfos
+                value:
                   identity: email
+                exact: False
