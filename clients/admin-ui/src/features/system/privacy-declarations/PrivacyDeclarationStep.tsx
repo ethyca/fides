@@ -29,7 +29,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
     ...dataProps,
     allDataCategories: allEnabledDataCategories,
     allDataUses: allEnabledDataUses,
-    allDataSubject: allEnabledDataSubjects,
+    allDataSubjects: allEnabledDataSubjects,
   };
 
   return (
