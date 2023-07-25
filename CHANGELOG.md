@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.17.0...main)
 
+### Added
+- Added vendor list dropdown [#3857](https://github.com/ethyca/fides/pull/3857)
+
 ### Changed
 - Simplified the file structure for HTML DSR packages [#3848](https://github.com/ethyca/fides/pull/3848)
 
