@@ -14,7 +14,6 @@ saas_config:
       sensitive: True
     - name: redirect_uri
       label: Redirect URI
-    - name: scope
 
   client_config:
     protocol: https
@@ -26,7 +25,7 @@ saas_config:
           method: GET
           client_config:
             protocol: https
-            host: secure.na1.adobesign.com
+            host: secure.na3.adobesign.com
           path: /public/oauth/v2
           query_params:
             - name: client_id
@@ -36,7 +35,9 @@ saas_config:
             - name: response_type
               value: code
             - name: scope
-              value: <scope>
+              value: user_read:account user_write:account agreement_read:account agreement_write:account
+            - name: state
+              value: <state>
         token_request:
           method: POST
           path: /oauth/v2/token
@@ -53,9 +54,6 @@ saas_config:
             }
         refresh_request:
           method: POST
-          client_config:
-            protocol: https
-            host: api.na1.adobesign.com
           path: /oauth/v2/refresh
           headers:
             - name: Content-Type
