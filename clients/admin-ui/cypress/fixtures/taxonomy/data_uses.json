@@ -11,7 +11,8 @@
     "recipients": ["marketing team", "dog shelter"],
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": "https://example.org/legitimate_interest_assessment",
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "provide.service",
@@ -25,7 +26,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "provide.service.operations",
@@ -39,7 +41,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "provide.service.operations.support",
@@ -53,7 +56,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "provide.service.operations.support.optimization",
@@ -67,7 +71,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "provide.service.upgrades",
@@ -81,7 +86,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "improve",
@@ -95,7 +101,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "improve.system",
@@ -109,7 +116,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "personalize",
@@ -123,7 +131,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "personalize.system",
@@ -137,7 +146,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "advertising",
@@ -151,7 +161,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "advertising.first_party",
@@ -165,7 +176,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "advertising.third_party",
@@ -179,7 +191,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "advertising.first_party.contextual",
@@ -193,7 +206,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "advertising.first_party.personalized",
@@ -207,7 +221,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "advertising.third_party.personalized",
@@ -221,7 +236,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "third_party_sharing",
@@ -235,7 +251,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "third_party_sharing.payment_processing",
@@ -249,7 +266,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "third_party_sharing.personalized_advertising",
@@ -263,7 +281,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "third_party_sharing.fraud_detection",
@@ -277,7 +296,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "third_party_sharing.legal_obligation",
@@ -291,7 +311,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "collect",
@@ -305,7 +326,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "train_ai_system",
@@ -319,7 +341,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": true
+    "is_default": true,
+    "active": true
   },
   {
     "fides_key": "custom",
@@ -333,7 +356,8 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": false
+    "is_default": false,
+    "active": true
   },
   {
     "fides_key": "custom.foo",
@@ -347,6 +371,7 @@
     "recipients": null,
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
-    "is_default": false
+    "is_default": false,
+    "active": true
   }
 ]
