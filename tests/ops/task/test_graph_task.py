@@ -30,15 +30,16 @@ from fides.privacy_requests.graph.config import (
 )
 from fides.privacy_requests.graph.graph import DatasetGraph
 from fides.privacy_requests.graph.traversal import Traversal, TraversalNode
+from fides.privacy_requests.graph.utils import collect_queries
+from fides.privacy_requests.graph.build_access_graph import _format_data_use_map_for_caching
 from fides.privacy_requests.graph_tasks.graph_task import (
     EMPTY_REQUEST,
     GraphTask,
     TaskResources,
-    _evaluate_erasure_dependencies,
-    _format_data_use_map_for_caching,
     build_affected_field_logs,
-    collect_queries,
-    start_function,
+)
+from fides.privacy_requests.graph.build_erasure_graph import (
+    _evaluate_erasure_dependencies,
     update_erasure_mapping_from_cache,
 )
 from fides.privacy_requests.graph_tasks.task_resources import Connections
