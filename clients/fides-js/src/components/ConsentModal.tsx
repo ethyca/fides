@@ -4,6 +4,7 @@ import {
   PrivacyNotice,
   ExperienceConfig,
   FidesOptions,
+  ComponentType,
 } from "../lib/consent-types";
 import NoticeToggles from "./NoticeToggles";
 import CloseButton from "./CloseButton";
@@ -19,7 +20,6 @@ const ConsentModal = ({
   enabledNoticeKeys,
   onChange,
   buttonGroup,
-  options,
 }: {
   attributes: Attributes;
   experience: ExperienceConfig;
@@ -31,7 +31,7 @@ const ConsentModal = ({
   options: FidesOptions;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
-  const showTcf = options.tcfEnabled;
+  const showTcf = experience.component === ComponentType.TCF_OVERLAY;
 
   return (
     // @ts-ignore A11yDialog ref obj type isn't quite the same

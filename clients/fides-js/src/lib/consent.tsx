@@ -39,7 +39,10 @@ export const initOverlay = async ({
         document.body.prepend(parentElem);
       }
 
-      if (experience.component === ComponentType.OVERLAY) {
+      if (
+        experience.component === ComponentType.OVERLAY ||
+        experience.component === ComponentType.TCF_OVERLAY
+      ) {
         // Render the Overlay to the DOM!
         render(
           <Overlay
