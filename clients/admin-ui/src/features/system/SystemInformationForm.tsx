@@ -91,12 +91,14 @@ const SystemInformationForm = ({
     useCreateSystemMutation();
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
     useUpdateSystemMutation();
-  const { data } = useGetAllDictionaryEntriesQuery();
+  const { data: dictionaryData } = useGetAllDictionaryEntriesQuery(undefined, {
+    skip: !features.dictionaryService
+  });
 
   const dictionaryOptions = useMemo(
     () =>
-      data?.items
-        ? data.items
+      dictionaryData?.items
+        ? dictionaryData.items
             .map((d) => ({
               label: d.display_name ? d.display_name : d.legal_name,
               value: d.id,
@@ -104,7 +106,7 @@ const SystemInformationForm = ({
             }))
             .sort((a, b) => (a.label > b.label ? 1 : -1))
         : [],
-    [data]
+    [dictionaryData]
   );
   const systems = useAppSelector(selectAllSystems);
   const isEditing = useMemo(
