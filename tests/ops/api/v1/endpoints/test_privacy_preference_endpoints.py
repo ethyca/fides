@@ -129,7 +129,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "subject_identity_verification_required", "automatically_approved", "system"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.privacy_requests.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
@@ -212,7 +212,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "subject_identity_verification_required", "automatically_approved", "system"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.privacy_requests.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
@@ -304,7 +304,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "subject_identity_verification_not_required", "automatically_approved"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.privacy_requests.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
@@ -597,7 +597,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     )
     @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.privacy_requests.request_runner_service.run_privacy_request.delay"
     )
     def test_set_privacy_preferences(
         self,
@@ -727,7 +727,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     )
     @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.privacy_requests.request_runner_service.run_privacy_request.delay"
     )
     def test_set_privacy_preferences_bad_policy_key(
         self,
@@ -788,7 +788,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @pytest.mark.usefixtures("automatically_approved", "system")
     @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.privacy_requests.request_runner_service.run_privacy_request.delay"
     )
     def test_set_privacy_preferences_without_verification_required(
         self,
@@ -853,7 +853,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "subject_identity_verification_required", "automatically_approved", "system"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.privacy_requests.request_runner_service.run_privacy_request.delay"
     )
     def test_verify_then_set_privacy_preferences_with_additional_fides_user_device_id(
         self,
@@ -1214,7 +1214,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.privacy_requests.request_runner_service.run_privacy_request.delay"
     )
     def test_save_privacy_preferences_with_respect_to_fides_user_device_id(
         self,
@@ -1314,7 +1314,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.privacy_requests.request_runner_service.run_privacy_request.delay"
     )
     def test_save_privacy_preferences_for_fides_user_device_id_no_notice_has_system_wide_enforcement(
         self,

@@ -595,7 +595,7 @@ def run_privacy_request_task(celery_session_app):
     registered to the `celery_app` fixture which uses the virtualised `celery_worker`
     """
     yield celery_session_app.tasks[
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request"
+        "fides.privacy_requests.request_runner_service.run_privacy_request"
     ]
 
 

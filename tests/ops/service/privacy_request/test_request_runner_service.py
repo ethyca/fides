@@ -79,8 +79,8 @@ def privacy_request_complete_email_notification_enabled(db):
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
-@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
-@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+@mock.patch("fides.privacy_requests.request_runner_service.dispatch_message")
+@mock.patch("fides.privacy_requests.request_runner_service.upload")
 def test_policy_upload_dispatch_message_called(
     upload_mock: Mock,
     mock_email_dispatch: Mock,
@@ -96,8 +96,8 @@ def test_policy_upload_dispatch_message_called(
     assert mock_email_dispatch.call_count == 1
 
 
-@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
-@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+@mock.patch("fides.privacy_requests.request_runner_service.dispatch_message")
+@mock.patch("fides.privacy_requests.request_runner_service.upload")
 def test_start_processing_sets_started_processing_at(
     upload_mock: Mock,
     mock_email_dispatch: Mock,
@@ -120,8 +120,8 @@ def test_start_processing_sets_started_processing_at(
     assert mock_email_dispatch.call_count == 1
 
 
-@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
-@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+@mock.patch("fides.privacy_requests.request_runner_service.dispatch_message")
+@mock.patch("fides.privacy_requests.request_runner_service.upload")
 def test_start_processing_doesnt_overwrite_started_processing_at(
     upload_mock: Mock,
     mock_email_dispatch: Mock,
@@ -146,9 +146,7 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
     assert mock_email_dispatch.call_count == 1
 
 
-@mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.upload_access_results"
-)
+@mock.patch("fides.privacy_requests.request_runner_service.upload_access_results")
 def test_halts_proceeding_if_cancelled(
     upload_access_results_mock,
     db: Session,
@@ -169,17 +167,13 @@ def test_halts_proceeding_if_cancelled(
     assert not upload_access_results_mock.called
 
 
-@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch("fides.privacy_requests.request_runner_service.dispatch_message")
+@mock.patch("fides.privacy_requests.request_runner_service.upload_access_results")
 @mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.upload_access_results"
+    "fides.privacy_requests.request_runner_service.run_webhooks_and_report_status",
 )
-@mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
-)
-@mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.run_access_request"
-)
-@mock.patch("fides.api.service.privacy_request.request_runner_service.run_erasure")
+@mock.patch("fides.privacy_requests.request_runner_service.run_access_request")
+@mock.patch("fides.privacy_requests.request_runner_service.run_erasure")
 def test_from_graph_resume_does_not_run_pre_webhooks(
     run_erasure,
     run_access,
@@ -217,14 +211,12 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     assert mock_email_dispatch.call_count == 1
 
 
-@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch("fides.privacy_requests.request_runner_service.dispatch_message")
 @mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+    "fides.privacy_requests.request_runner_service.run_webhooks_and_report_status",
 )
-@mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.run_access_request"
-)
-@mock.patch("fides.api.service.privacy_request.request_runner_service.run_erasure")
+@mock.patch("fides.privacy_requests.request_runner_service.run_access_request")
+@mock.patch("fides.privacy_requests.request_runner_service.run_erasure")
 def test_resume_privacy_request_from_erasure(
     run_erasure,
     run_access,
@@ -314,7 +306,7 @@ def get_privacy_request_results(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+@mock.patch("fides.privacy_requests.request_runner_service.upload")
 def test_upload_access_results_has_data_category_field_mapping(
     upload_mock: Mock,
     postgres_example_test_dataset_config_read_access,
@@ -377,7 +369,7 @@ def test_upload_access_results_has_data_category_field_mapping(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+@mock.patch("fides.privacy_requests.request_runner_service.upload")
 def test_upload_access_results_has_data_use_map(
     upload_mock: Mock,
     postgres_example_test_dataset_config_read_access,
@@ -1690,9 +1682,7 @@ class TestRunPrivacyRequestRunsWebhooks:
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.run_access_request"
-)
+@mock.patch("fides.privacy_requests.request_runner_service.run_access_request")
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_privacy_request_log_failure(
     _,
@@ -1715,7 +1705,7 @@ def test_privacy_request_log_failure(
     }
 
     with mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.fideslog_graph_failure"
+        "fides.privacy_requests.request_runner_service.fideslog_graph_failure"
     ) as mock_log_event:
         pr = get_privacy_request_results(
             db,
@@ -1748,9 +1738,7 @@ class TestPrivacyRequestsEmailNotifications:
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
-    )
+    @mock.patch("fides.privacy_requests.request_runner_service.dispatch_message")
     def test_email_complete_send_erasure(
         self,
         mailgun_send,
@@ -1784,10 +1772,8 @@ class TestPrivacyRequestsEmailNotifications:
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
-    )
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.privacy_requests.request_runner_service.dispatch_message")
+    @mock.patch("fides.privacy_requests.request_runner_service.upload")
     def test_email_complete_send_access(
         self,
         upload_mock,
@@ -1823,10 +1809,8 @@ class TestPrivacyRequestsEmailNotifications:
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
-    )
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.privacy_requests.request_runner_service.dispatch_message")
+    @mock.patch("fides.privacy_requests.request_runner_service.upload")
     def test_email_complete_send_access_and_erasure(
         self,
         upload_mock,
@@ -1888,7 +1872,7 @@ class TestPrivacyRequestsEmailNotifications:
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.privacy_requests.request_runner_service.upload")
     def test_email_complete_send_access_no_messaging_config(
         self,
         upload_mock,
@@ -1928,7 +1912,7 @@ class TestPrivacyRequestsEmailNotifications:
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.privacy_requests.request_runner_service.upload")
     def test_email_complete_send_access_no_email_identity(
         self,
         upload_mock,
@@ -1964,7 +1948,7 @@ class TestPrivacyRequestsEmailNotifications:
 
 
 class TestPrivacyRequestsManualWebhooks:
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.privacy_requests.request_runner_service.upload")
     def test_privacy_request_needs_manual_input_key_in_cache(
         self,
         mock_upload,
@@ -1991,8 +1975,8 @@ class TestPrivacyRequestsManualWebhooks:
         assert pr.status == PrivacyRequestStatus.requires_input
         assert not mock_upload.called
 
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.run_erasure")
+    @mock.patch("fides.privacy_requests.request_runner_service.upload")
+    @mock.patch("fides.privacy_requests.request_runner_service.run_erasure")
     def test_manual_input_not_required_for_erasure_only_policies(
         self,
         mock_erasure,
@@ -2024,7 +2008,7 @@ class TestPrivacyRequestsManualWebhooks:
         assert not mock_upload.called  # erasure only request, no data uploaded
         assert mock_erasure.called
 
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.privacy_requests.request_runner_service.upload")
     def test_pass_on_manually_added_input(
         self,
         mock_upload,
@@ -2048,7 +2032,7 @@ class TestPrivacyRequestsManualWebhooks:
             ]
         }
 
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.privacy_requests.request_runner_service.upload")
     def test_pass_on_partial_manually_added_input(
         self,
         mock_upload,
@@ -2077,7 +2061,7 @@ class TestPrivacyRequestsManualWebhooks:
             ]
         }
 
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+    @mock.patch("fides.privacy_requests.request_runner_service.upload")
     def test_pass_on_empty_confirmed_input(
         self,
         mock_upload,

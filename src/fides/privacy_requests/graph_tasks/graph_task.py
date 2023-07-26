@@ -763,6 +763,8 @@ async def run_access_request(
         # but we don't want those changes in our data use map.
         privacy_request.cache_data_use_map(_format_data_use_map_for_caching(env))
 
+        # This is where graph execution happens.
+        # TODO: Move this into a discrete execution function
         v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
         return v.compute()
 
