@@ -92,7 +92,7 @@ const SystemInformationForm = ({
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
     useUpdateSystemMutation();
   const { data: dictionaryData } = useGetAllDictionaryEntriesQuery(undefined, {
-    skip: !features.dictionaryService
+    skip: !features.dictionaryService,
   });
 
   const dictionaryOptions = useMemo(

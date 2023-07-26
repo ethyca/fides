@@ -2,10 +2,9 @@ import {
   CustomFieldsFormValues,
   CustomFieldValues,
 } from "~/features/common/custom-fields";
+import { Features } from "~/features/common/features";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { DataProtectionImpactAssessment, System } from "~/types/api";
-
-import { Features } from "~/features/common/features";
 
 export interface FormValues
   extends Omit<System, "data_protection_impact_assessment">,
@@ -97,16 +96,18 @@ export const transformFormValuesToSystem = (
         : formValues.administrating_department,
   };
   if (features.plus) {
-    if(!payload.meta){
-      payload.meta = {}
+    if (!payload.meta) {
+      payload.meta = {};
     }
 
-    
     if (features.dictionaryService && formValues?.meta?.vendor?.id) {
-      if(!("vendor" in payload.meta)){
+      if (!("vendor" in payload.meta)) {
         payload.meta.vendor = {};
       }
-      payload.meta.vendor = { ...payload.meta.vendor, id: formValues.meta.vendor.id}
+      payload.meta.vendor = {
+        ...payload.meta.vendor,
+        id: formValues.meta.vendor.id,
+      };
     }
   }
   return payload;
