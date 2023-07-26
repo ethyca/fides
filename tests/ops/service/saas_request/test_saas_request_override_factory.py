@@ -7,7 +7,6 @@ from fides.api.common_exceptions import (
     InvalidSaaSRequestOverrideException,
     NoSuchSaaSRequestOverrideException,
 )
-from fides.privacy_requests.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
@@ -17,6 +16,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.util.collection_util import Row
+from fides.privacy_requests.graph.traversal import TraversalNode
 
 
 def uuid():

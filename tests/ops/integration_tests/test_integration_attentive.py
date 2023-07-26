@@ -10,10 +10,7 @@ from fides.api.schemas.messaging.messaging import (
     EmailForActionType,
     MessagingActionType,
 )
-from fides.privacy_requests.email_batch_service import (
-    EmailExitState,
-    send_email_batch,
-)
+from fides.privacy_requests.email_batch_service import EmailExitState, send_email_batch
 from tests.ops.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
 )

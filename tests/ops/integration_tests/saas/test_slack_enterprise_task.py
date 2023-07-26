@@ -2,12 +2,12 @@ import random
 
 import pytest
 
-from fides.privacy_requests.graph.graph import DatasetGraph
-from fides.privacy_requests.graph_tasks import graph_task
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from fides.config import CONFIG
+from fides.privacy_requests.graph.graph import DatasetGraph
+from fides.privacy_requests.graph_tasks import graph_task
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.dataset_utils import update_dataset
 

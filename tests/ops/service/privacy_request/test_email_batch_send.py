@@ -18,12 +18,9 @@ from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.redis_cache import Identity
-from fides.privacy_requests.email_batch_service import (
-    EmailExitState,
-    send_email_batch,
-)
 from fides.api.util.cache import get_all_cache_keys_for_privacy_request, get_cache
 from fides.config import get_config
+from fides.privacy_requests.email_batch_service import EmailExitState, send_email_batch
 from tests.fixtures.application_fixtures import (
     _create_privacy_request_for_policy,
     privacy_preference_history_us_ca_provide,

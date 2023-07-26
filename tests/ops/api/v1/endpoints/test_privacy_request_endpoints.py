@@ -24,9 +24,6 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.privacy_requests.graph.config import CollectionAddress
-from fides.privacy_requests.graph.graph import DatasetGraph
-from fides.privacy_requests.graph_tasks import graph_task
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
@@ -94,6 +91,9 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
+from fides.privacy_requests.graph.config import CollectionAddress
+from fides.privacy_requests.graph.graph import DatasetGraph
+from fides.privacy_requests.graph_tasks import graph_task
 
 page_size = Params().size
 

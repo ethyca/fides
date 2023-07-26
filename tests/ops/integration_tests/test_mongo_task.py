@@ -8,6 +8,11 @@ import pytest
 from bson import ObjectId
 from fideslang.models import Dataset
 
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import convert_dataset_to_graph
+from fides.api.models.policy import Policy
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.service.connectors import get_connector
 from fides.privacy_requests.graph.config import (
     Collection,
     FieldAddress,
@@ -24,11 +29,6 @@ from fides.privacy_requests.graph.traversal import TraversalNode
 from fides.privacy_requests.graph_tasks import graph_task
 from fides.privacy_requests.graph_tasks.filter_results import filter_data_categories
 from fides.privacy_requests.graph_tasks.graph_task import get_cached_data_for_erasures
-from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.service.connectors import get_connector
 
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (

@@ -5,11 +5,6 @@ from fideslang.validation import FidesKey
 from sqlalchemy.engine import Engine
 
 from fides.api.db.base_class import FidesBase
-from fides.privacy_requests.graph.config import *
-from fides.privacy_requests.graph.traversal import *
-from fides.privacy_requests.graph.traversal import Traversal, TraversalNode
-from fides.privacy_requests.graph_tasks.graph_task import GraphTask
-from fides.privacy_requests.graph_tasks.task_resources import TaskResources
 
 # to avoid having faker spam the logs
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -18,6 +13,11 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.connectors import BaseConnector, MongoDBConnector
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.util.collection_util import Row
+from fides.privacy_requests.graph.config import *
+from fides.privacy_requests.graph.traversal import *
+from fides.privacy_requests.graph.traversal import Traversal, TraversalNode
+from fides.privacy_requests.graph_tasks.graph_task import GraphTask
+from fides.privacy_requests.graph_tasks.task_resources import TaskResources
 from tests.fixtures.application_fixtures import faker
 
 

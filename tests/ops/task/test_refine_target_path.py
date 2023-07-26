@@ -1,3 +1,4 @@
+from fides.api.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
 from fides.privacy_requests.graph.config import FieldPath
 from fides.privacy_requests.graph_tasks.refine_target_path import (
     _match_found,
@@ -5,7 +6,6 @@ from fides.privacy_requests.graph_tasks.refine_target_path import (
     join_detailed_path,
     refine_target_path,
 )
-from fides.api.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
 
 
 class TestRefineTargetPathToValue:

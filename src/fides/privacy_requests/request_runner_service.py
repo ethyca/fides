@@ -22,7 +22,6 @@ from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
-    ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
@@ -72,19 +71,20 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.privacy_requests.graph import (
+    run_access_request,
+    run_consent_request,
+    run_erasure_request,
+)
 from fides.privacy_requests.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
-from fides.privacy_requests.graph.config import CollectionAddress, GraphDataset
+from fides.privacy_requests.graph.build_consent_graph import build_consent_dataset_graph
+from fides.privacy_requests.graph.config import CollectionAddress
 from fides.privacy_requests.graph.graph import DatasetGraph
+from fides.privacy_requests.graph.utils import get_cached_data_for_erasures
 from fides.privacy_requests.graph_tasks.filter_results import filter_data_categories
-from fides.privacy_requests.graph_tasks.graph_task import (
-    get_cached_data_for_erasures,
-    run_access_request,
-    run_consent_request,
-    run_erasure,
-)
 
 
 class ManualWebhookResults(FidesSchema):
@@ -358,7 +358,7 @@ async def run_privacy_request(
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
-                access_result: Dict[str, List[Row]] = await run_access_request(
+                access_result = await run_access_request(
                     privacy_request=privacy_request,
                     policy=policy,
                     graph=dataset_graph,
@@ -382,7 +382,7 @@ async def run_privacy_request(
                 request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
             ):
                 # We only need to run the erasure once until masking strategies are handled
-                await run_erasure(
+                await run_erasure_request(
                     privacy_request=privacy_request,
                     policy=policy,
                     graph=dataset_graph,
@@ -482,31 +482,6 @@ async def run_privacy_request(
         privacy_request.status = PrivacyRequestStatus.complete
         logger.info("Privacy request {} run completed.", privacy_request.id)
         privacy_request.save(db=session)
-
-
-def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
-    """
-    Build the starting DatasetGraph for consent requests.
-
-    Consent Graph has one node per dataset.  Nodes must be of saas type and have consent requests defined.
-    """
-    consent_datasets: List[GraphDataset] = []
-
-    for dataset_config in datasets:
-        connection_type: ConnectionType = (
-            dataset_config.connection_config.connection_type  # type: ignore
-        )
-        saas_config: Optional[Dict] = dataset_config.connection_config.saas_config
-        if (
-            connection_type == ConnectionType.saas
-            and saas_config
-            and saas_config.get("consent_requests")
-        ):
-            consent_datasets.append(
-                dataset_config.get_dataset_with_stubbed_collection()
-            )
-
-    return DatasetGraph(*consent_datasets)
 
 
 def initiate_privacy_request_completion_email(

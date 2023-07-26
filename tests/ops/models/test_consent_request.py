@@ -4,7 +4,6 @@ from fides.api.api.v1.endpoints.consent_request_endpoints import (
     queue_privacy_request_to_propagate_consent_old_workflow,
 )
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
-from fides.privacy_requests.graph.config import CollectionAddress
 from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
@@ -19,6 +18,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestResponse,
 )
 from fides.api.schemas.redis_cache import Identity
+from fides.privacy_requests.graph.config import CollectionAddress
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 

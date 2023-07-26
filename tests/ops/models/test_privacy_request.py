@@ -14,7 +14,6 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.privacy_requests.graph.config import CollectionAddress
 from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
@@ -30,6 +29,7 @@ from fides.api.service.connectors.manual_connector import ManualAction
 from fides.api.util.cache import FidesopsRedis, get_identity_cache_key
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
+from fides.privacy_requests.graph.config import CollectionAddress
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 

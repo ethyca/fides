@@ -4,7 +4,6 @@ from typing import Tuple
 import pytest
 from httpx import Client
 
-from fides.privacy_requests.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
@@ -18,6 +17,7 @@ from fides.api.service.connectors.fides_connector import (
     filter_fides_connector_datasets,
 )
 from fides.privacy_requests import request_service
+from fides.privacy_requests.graph.traversal import TraversalNode
 from tests.ops.graph.graph_test_util import assert_rows_match, generate_node
 
 

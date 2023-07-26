@@ -2,7 +2,6 @@ from typing import Any, Dict, List, cast
 
 from requests import PreparedRequest
 
-from fides.privacy_requests.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -17,6 +16,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import assign_placeholders
+from fides.privacy_requests.graph.traversal import TraversalNode
 
 
 @register("planet_express_user_access", [SaaSRequestType.READ])

@@ -4,6 +4,9 @@ from typing import Any, Dict, Iterable, List, Optional
 import yaml
 from fideslang.models import Dataset
 
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
+from fides.api.util.collection_util import Row
 from fides.privacy_requests.graph.config import (
     Collection,
     Field,
@@ -16,9 +19,6 @@ from fides.privacy_requests.graph.data_type import (
     get_data_type,
     to_data_type_string,
 )
-from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
-from fides.api.util.collection_util import Row
 
 SAAS_DATASET_DIRECTORY = "data/saas/dataset/"
 
