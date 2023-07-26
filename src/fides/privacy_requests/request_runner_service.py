@@ -19,10 +19,7 @@ from fides.api.common_exceptions import (
 )
 from fides.api.db.session import get_db_session
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-)
+from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
@@ -71,11 +68,6 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.privacy_requests.graph import (
-    run_access_request,
-    run_consent_request,
-    run_erasure_request,
-)
 from fides.privacy_requests.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
@@ -83,6 +75,11 @@ from fides.privacy_requests.graph.analytics_events import (
 from fides.privacy_requests.graph.build_consent_graph import build_consent_dataset_graph
 from fides.privacy_requests.graph.config import CollectionAddress
 from fides.privacy_requests.graph.graph import DatasetGraph
+from fides.privacy_requests.graph.run import (
+    run_access_request,
+    run_consent_request,
+    run_erasure_request,
+)
 from fides.privacy_requests.graph.utils import get_cached_data_for_erasures
 from fides.privacy_requests.graph_tasks.filter_results import filter_data_categories
 
