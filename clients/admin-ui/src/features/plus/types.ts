@@ -8,6 +8,7 @@ export type Page<T> = {
 
 export type DictEntry = {
   id: string;
+  display_name: string;
   legal_name: string;
   privacy_policy: string;
   dpo: string;

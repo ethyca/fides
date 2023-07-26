@@ -98,7 +98,7 @@ const SystemInformationForm = ({
       data?.items
         ? data.items
             .map((d) => ({
-              label: d.legal_name.trim(),
+              label: d.display_name ? d.display_name : d.legal_name,
               value: d.id,
               description: d.description ? d.description : undefined,
             }))
