@@ -27,17 +27,6 @@ saas_config:
   endpoints:
     - name: privacy
       requests:
-        read:
-          method: POST
-          path: /v1/privacy/export
-          param_values:
-            - name: user_email
-              identity: email
-          body: |
-            {
-              "email": ["<user_email>"],
-              "description": "Fides generated privacy access request"
-            }
         delete:
           method: POST
           path: /v1/privacy/delete
