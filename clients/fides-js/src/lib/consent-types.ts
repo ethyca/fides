@@ -1,3 +1,9 @@
+import type {
+  TCFPurposeRecord,
+  TCFVendorRecord,
+  TCFFeatureRecord,
+} from "./tcf/types";
+
 export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.
   consent?: LegacyConsentConfig;
@@ -60,6 +66,11 @@ export type PrivacyExperience = {
   updated_at: string;
   show_banner?: boolean;
   privacy_notices?: Array<PrivacyNotice>;
+  tcf_purposes?: Array<TCFPurposeRecord>;
+  tcf_special_purposes?: Array<TCFPurposeRecord>;
+  tcf_vendors?: Array<TCFVendorRecord>;
+  tcf_features?: Array<TCFFeatureRecord>;
+  tcf_special_features?: Array<TCFFeatureRecord>;
 };
 
 export type ExperienceConfig = {
@@ -137,6 +148,7 @@ export enum UserConsentPreference {
 export enum ComponentType {
   OVERLAY = "overlay",
   PRIVACY_CENTER = "privacy_center",
+  TCF_OVERLAY = "tcf_overlay",
 }
 
 export enum BannerEnabled {
