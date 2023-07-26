@@ -36,7 +36,6 @@ from fides.api.models.policy import (
     RuleTarget,
 )
 from fides.api.models.privacy_experience import (
-    BannerEnabled,
     ComponentType,
     PrivacyExperience,
     PrivacyExperienceConfig,
@@ -86,6 +85,9 @@ from fides.api.service.connectors.fides.fides_client import FidesClient
 from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
+)
+from fides.api.service.masking.strategy.masking_strategy_random_string_rewrite import (
+    RandomStringRewriteMaskingStrategy,
 )
 from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
@@ -1095,16 +1097,33 @@ def erasure_policy_string_rewrite_name_and_email(
         },
     )
 
-    erasure_rule = Rule.create(
+    name_erasure_rule = Rule.create(
         db=db,
         data={
             "action_type": ActionType.erasure.value,
             "client_id": oauth_client.id,
-            "name": "string rewrite erasure rule",
+            "name": "name erasure rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
                 "strategy": StringRewriteMaskingStrategy.name,
                 "configuration": {"rewrite_value": "MASKED"},
+            },
+        },
+    )
+
+    email_erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "email erasure rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": RandomStringRewriteMaskingStrategy.name,
+                "configuration": {
+                    "length": "12",
+                    "format_preservation": {"suffix": "@example.com"},
+                },
             },
         },
     )
@@ -1114,7 +1133,7 @@ def erasure_policy_string_rewrite_name_and_email(
         data={
             "client_id": oauth_client.id,
             "data_category": DataCategory("user.name").value,
-            "rule_id": erasure_rule.id,
+            "rule_id": name_erasure_rule.id,
         },
     )
 
@@ -1123,7 +1142,7 @@ def erasure_policy_string_rewrite_name_and_email(
         data={
             "client_id": oauth_client.id,
             "data_category": DataCategory("user.contact.email").value,
-            "rule_id": erasure_rule.id,
+            "rule_id": email_erasure_rule.id,
         },
     )
 
@@ -1137,7 +1156,11 @@ def erasure_policy_string_rewrite_name_and_email(
     except ObjectDeletedError:
         pass
     try:
-        erasure_rule.delete(db)
+        name_erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        email_erasure_rule.delete(db)
     except ObjectDeletedError:
         pass
     try:
