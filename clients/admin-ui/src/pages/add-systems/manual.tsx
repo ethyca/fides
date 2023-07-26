@@ -6,36 +6,27 @@ import React, { useMemo } from "react";
 
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import Layout from "~/features/common/Layout";
-import {
-  ADD_SYSTEMS_MANUAL_ROUTE,
-  ADD_SYSTEMS_ROUTE,
-} from "~/features/common/nav/v2/routes";
+import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
-import SystemCatalog from "~/features/system/SystemCatalog";
 import SystemFormTabs from "~/features/system/SystemFormTabs";
 import { ConnectionSystemTypeMap } from "~/types/api";
 
 const DESCRIBE_SYSTEM_COPY =
   "Systems are anything that might store or process data in your organization, from a web application, to a database or data warehouse. Describe your system below to register it to the map. You may optionally complete data entry for the system using the additional tabs to navigate the sections.";
 
-
-const Header = ({
-  connector,
-}: {
-  connector?: ConnectionSystemTypeMap;
-}) => (
-    <Box display="flex" mb={2} alignItems="center" data-testid="header">
-      <ConnectionTypeLogo data={connector ?? "ethyca"} mr={2} />
-      <Heading fontSize="2xl" fontWeight="semibold">
-        Describe your {connector ? connector.human_readable : "new"} system
-      </Heading>
-    </Box>
+const Header = ({ connector }: { connector?: ConnectionSystemTypeMap }) => (
+  <Box display="flex" mb={2} alignItems="center" data-testid="header">
+    <ConnectionTypeLogo data={connector ?? "ethyca"} mr={2} />
+    <Heading fontSize="2xl" fontWeight="semibold">
+      Describe your {connector ? connector.human_readable : "new"} system
+    </Heading>
+  </Box>
 );
 
 const NewManualSystem: NextPage = () => {
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
   const router = useRouter();
-  const { step, connectorType } = router.query;
+  const { connectorType } = router.query;
 
   const connector: ConnectionSystemTypeMap | undefined = useMemo(() => {
     if (!connectorType) {
@@ -73,7 +64,7 @@ const NewManualSystem: NextPage = () => {
       </Box>
       <Box w={{ base: "100%", md: "75%" }}>
         <Text fontSize="sm" mb={8}>
-            {DESCRIBE_SYSTEM_COPY}
+          {DESCRIBE_SYSTEM_COPY}
         </Text>
         <SystemFormTabs isCreate />
       </Box>
