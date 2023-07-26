@@ -32,14 +32,14 @@ In order to get started quickly with Fides, a sample project is bundled within t
 Due to platform differences, the following dependencies and steps are also required:
 
 ```bash
-brew install freetds openssl
+brew install freetds openssl@1.1
 ```
 
 **Add the following to your run commands (i.e. `.zshrc`), updating any path/versions to match yours**
 
 ```bash
-export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"`
-export CFLAGS="-I/opt/homebrew/Cellar/freetds/1.3.18/include"
+export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18_1/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"
+export CFLAGS="-I/opt/homebrew/Cellar/freetds/1.3.18_1/include"
 ```
 
 #### Download and install Fides
