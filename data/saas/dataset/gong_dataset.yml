@@ -1,6 +1,6 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: gong
+    name: Gong
     description: A sample dataset representing the Gong connector for Fides
     collections:
       - name: data_privacy
@@ -43,7 +43,7 @@ dataset:
                       data_type: 'object[]'
                     fields:
                       - name: name
-                        data_categories: [system.operations]
+                        data_categories: [user.name]
                         fidesops_meta:
                           data_type: string
                       - name: value
@@ -90,7 +90,7 @@ dataset:
                       data_type: 'object[]'
                     fields:
                       - name: name
-                        data_categories: [system.operations]
+                        data_categories: [user.name]
                         fidesops_meta:
                           data_type: string
                       - name: value

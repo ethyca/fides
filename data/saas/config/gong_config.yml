@@ -41,26 +41,26 @@ saas_config:
             path: /v2/data-privacy/data-for-phone-number
             query_params:
               - name: phoneNumber
-                value: <phoneNumber>
+                value: <phone_number>
             param_values:
-              - name: phoneNumber
-                identity: phoneNumber
+              - name: phone_number
+                identity: phone_number
             ignore_errors: true
 
-        delete:
-            method: POST
-            path: /v2/data-privacy/erase-data-for-email-address
-            query_params:
-              - name: emailAddress
-                value: <email>
-            param_values:
-              - name: email
-                identity: email
-            method: POST
-            path: /v2/data-privacy/erase-data-for-phone-number
-            query_params:
-              - name: phoneNumber
-                value: <phoneNumber>
-            param_values:
-              - name: phoneNumber
-                identity: phoneNumber
+        # delete:
+        #     method: POST
+        #     path: /v2/data-privacy/erase-data-for-email-address
+        #     query_params:
+        #       - name: emailAddress
+        #         value: <email>
+        #     param_values:
+        #       - name: email
+        #         identity: email
+        #     method: POST
+        #     path: /v2/data-privacy/erase-data-for-phone-number
+        #     query_params:
+        #       - name: phoneNumber
+        #         value: <phone_number>
+        #     param_values:
+        #       - name: phone_number
+        #         identity: phone_number
