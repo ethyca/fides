@@ -1,18 +1,20 @@
 import { h } from "preact";
-import { NoticeToggle } from "../NoticeToggles";
+import { DataUseToggle } from "../NoticeToggles";
 import { PrivacyNotice } from "../../lib/consent-types";
 import FilterButtons from "./FilterButtons";
 import CookiesTable from "./CookiesTable";
 
 const TcfPurposes = ({ notices }: { notices: Array<PrivacyNotice> }) => {
   const handleToggle = () => {};
+  const firstDataUse = { key: notices[0].notice_key, name: notices[0].name };
+  const secondDataUse = { key: notices[1].notice_key, name: notices[1].name };
   return (
     <div>
       <FilterButtons />
-      <NoticeToggle notice={notices[0]} checked onToggle={handleToggle}>
+      <DataUseToggle dataUse={firstDataUse} checked onToggle={handleToggle}>
         <div style={{ padding: "0.5em" }}>
-          <NoticeToggle
-            notice={notices[1]}
+          <DataUseToggle
+            dataUse={secondDataUse}
             checked
             onToggle={handleToggle}
             badge="gvl"
@@ -34,9 +36,9 @@ const TcfPurposes = ({ notices }: { notices: Array<PrivacyNotice> }) => {
                 are in an urban zone.
               </p>
             </div>
-          </NoticeToggle>
+          </DataUseToggle>
         </div>
-      </NoticeToggle>
+      </DataUseToggle>
       <CookiesTable />
     </div>
   );

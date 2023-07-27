@@ -6,22 +6,21 @@ import { debugLog, hasActionNeededNotices } from "../../lib/consent-utils";
 
 import "../fides.css";
 import Overlay from "../Overlay";
-import ConsentButtons from "../ConsentButtons";
+import { TcfConsentButtons } from "../ConsentButtons";
 import { OverlayProps } from "../types";
 
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
   experience,
   options,
-
   cookie,
 }) => {
+  // TODO: how will we initialize TCF data?
   const initialEnabledKeys = useMemo(
     () => Object.keys(cookie.consent).filter((key) => cookie.consent[key]),
     [cookie.consent]
   );
 
-  const [draftEnabledKeys, setDraftEnabledKeys] =
-    useState<Array<string>>(initialEnabledKeys);
+  const [draftEnabledKeys] = useState<Array<string>>(initialEnabledKeys);
 
   const showBanner = useMemo(
     () => experience.show_banner && hasActionNeededNotices(experience),
@@ -60,7 +59,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             onClose={onClose}
             experience={experienceConfig}
             buttonGroup={
-              <ConsentButtons
+              <TcfConsentButtons
                 experience={experience}
                 onManagePreferencesClick={onManagePreferencesClick}
                 enabledKeys={draftEnabledKeys}
@@ -76,13 +75,14 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       renderModalContent={({ onClose }) => (
         <div>
           <div>TCF TODO</div>
-          <ConsentButtons
+          <TcfConsentButtons
             experience={experience}
             enabledKeys={draftEnabledKeys}
             onSave={(keys) => {
               handleUpdateAllPreferences(keys);
               onClose();
             }}
+            isInModal
           />
         </div>
       )}

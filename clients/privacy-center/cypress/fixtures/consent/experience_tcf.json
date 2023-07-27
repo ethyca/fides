@@ -12,7 +12,7 @@
         "is_default": true,
         "privacy_policy_link_label": "Privacy Policy",
         "privacy_policy_url": null,
-        "privacy_preferences_link_label": null,
+        "privacy_preferences_link_label": "Manage preferences",
         "regions": [
           "be",
           "bg",

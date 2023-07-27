@@ -1,4 +1,4 @@
-import { ComponentChildren, h } from "preact";
+import { ComponentChildren, VNode, h } from "preact";
 
 import { ConsentMechanism, PrivacyNotice } from "../lib/consent-types";
 import Toggle from "./Toggle";
@@ -6,18 +6,27 @@ import Divider from "./Divider";
 import { useDisclosure } from "../lib/hooks";
 import { GpcBadgeForNotice } from "./GpcBadge";
 
-export const NoticeToggle = ({
-  notice,
+interface DataUse {
+  key: string;
+  name?: string;
+}
+
+export const DataUseToggle = ({
+  dataUse,
   checked,
   onToggle,
   children,
   badge,
+  gpcBadge,
+  disabled,
 }: {
-  notice: PrivacyNotice;
+  dataUse: DataUse;
   checked: boolean;
-  onToggle: (noticeKey: PrivacyNotice["notice_key"]) => void;
+  onToggle: (noticeKey: DataUse["key"]) => void;
   children: ComponentChildren;
   badge?: string;
+  gpcBadge?: VNode;
+  disabled?: boolean;
 }) => {
   const {
     isOpen,
@@ -25,7 +34,7 @@ export const NoticeToggle = ({
     getDisclosureProps,
     onToggle: toggleDescription,
   } = useDisclosure({
-    id: notice.notice_key,
+    id: dataUse.key,
   });
 
   const handleKeyDown = (event: KeyboardEvent) => {
@@ -42,7 +51,7 @@ export const NoticeToggle = ({
           : "fides-notice-toggle"
       }
     >
-      <div key={notice.notice_key} className="fides-notice-toggle-title">
+      <div key={dataUse.key} className="fides-notice-toggle-title">
         <span
           role="button"
           tabIndex={0}
@@ -51,18 +60,18 @@ export const NoticeToggle = ({
           className="fides-notice-toggle-trigger"
         >
           <span className="fides-flex-center">
-            {notice.name}
+            {dataUse.name}
             {badge ? <span className="fides-notice-badge">{badge}</span> : null}
           </span>
-          <GpcBadgeForNotice notice={notice} value={checked} />
+          {gpcBadge}
         </span>
 
         <Toggle
-          name={notice.name || ""}
-          id={notice.notice_key}
+          name={dataUse.name || ""}
+          id={dataUse.key}
           checked={checked}
           onChange={onToggle}
-          disabled={notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY}
+          disabled={disabled}
         />
       </div>
       <div {...getDisclosureProps()}>{children}</div>
@@ -95,15 +104,20 @@ const NoticeToggles = ({
       {notices.map((notice, idx) => {
         const checked = enabledNoticeKeys.indexOf(notice.notice_key) !== -1;
         const isLast = idx === notices.length - 1;
+        const dataUse = { key: notice.notice_key, name: notice.name };
         return (
           <div>
-            <NoticeToggle
-              notice={notice}
+            <DataUseToggle
+              dataUse={dataUse}
               checked={checked}
               onToggle={handleToggle}
+              gpcBadge={<GpcBadgeForNotice notice={notice} value={checked} />}
+              disabled={
+                notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
+              }
             >
               {notice.description}
-            </NoticeToggle>
+            </DataUseToggle>
             {!isLast ? <Divider /> : null}
           </div>
         );

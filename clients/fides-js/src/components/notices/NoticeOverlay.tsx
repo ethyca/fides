@@ -16,7 +16,7 @@ import {
 
 import "../fides.css";
 import Overlay from "../Overlay";
-import ConsentButtons from "../ConsentButtons";
+import { NoticeConsentButtons } from "../ConsentButtons";
 import NoticeToggles from "../NoticeToggles";
 import { OverlayProps } from "../types";
 
@@ -91,7 +91,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             onClose={onClose}
             experience={experienceConfig}
             buttonGroup={
-              <ConsentButtons
+              <NoticeConsentButtons
                 experience={experience}
                 onManagePreferencesClick={onManagePreferencesClick}
                 enabledKeys={draftEnabledNoticeKeys}
@@ -113,7 +113,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               onChange={setDraftEnabledNoticeKeys}
             />
           </div>
-          <ConsentButtons
+          <NoticeConsentButtons
             experience={experience}
             enabledKeys={draftEnabledNoticeKeys}
             onSave={(keys) => {
