@@ -496,8 +496,8 @@ class TestLoadSamples:
             assert sorted([e.fides_key for e in systems]) == [
                 "cookie_house",
                 "cookie_house_marketing",
-                "cookie_house_mongo",
-                "cookie_house_postgres",
+                "cookie_house_customer_database",
+                "cookie_house_postgresql_database",
             ]
             assert sorted([e.fides_key for e in datasets]) == [
                 "mongo_test",

@@ -18,7 +18,6 @@ import { useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
-import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import TestConnectionMessage from "~/features/datastore-connections/system_portal_config/TestConnectionMessage";
 import TestData from "~/features/datastore-connections/TestData";
 import {
@@ -44,6 +43,23 @@ import ConnectorParametersForm, {
   TestConnectionResponse,
 } from "./ConnectorParametersForm";
 
+const generateIntegrationKey = (
+  systemFidesKey: string,
+  connectionOption: ConnectionSystemTypeMap
+): string => {
+  let integrationKey = systemFidesKey;
+
+  if (!systemFidesKey.includes(connectionOption.identifier)) {
+    integrationKey += "_" + connectionOption.identifier;
+  }
+
+  if (connectionOption.type === SystemType.SAAS) {
+    integrationKey += "_api";
+  }
+
+  return integrationKey;
+};
+
 /**
  * Only handles creating saas connectors. The BE handler automatically
  * configures the connector using the saas config and creates the
@@ -58,7 +74,7 @@ const createSaasConnector = async (
 ) => {
   const connectionConfig: Omit<CreateSaasConnectionConfigRequest, "name"> = {
     description: values.description,
-    instance_key: formatKey(values.instance_key as string),
+    instance_key: generateIntegrationKey(systemFidesKey, connectionOption),
     saas_connector_type: connectionOption.identifier,
     secrets: {},
   };
@@ -92,7 +108,7 @@ export const patchConnectionConfig = async (
     [SystemType.DATABASE, SystemType.EMAIL, SystemType.MANUAL].indexOf(
       connectionOption.type
     ) > -1
-      ? formatKey(values.instance_key as string)
+      ? generateIntegrationKey(systemFidesKey, connectionOption)
       : connectionConfig?.key;
 
   const params1: Omit<ConnectionConfigurationResponse, "created_at" | "name"> =
