@@ -40,6 +40,7 @@ import {
 import DeleteConnectionModal from "../DeleteConnectionModal";
 import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
+import _ from "lodash";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
@@ -232,25 +233,47 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         connectionConfig.connection_type === ConnectionType.SAAS
           ? (connectionConfig.saas_config?.fides_key as string)
           : connectionConfig.key;
+
       // @ts-ignore
-      initialValues.secrets = connectionConfig.secrets;
+      initialValues.secrets = { ...connectionConfig.secrets };
+
+      // check if we need we need to pre-process any secrets values
+      // we currently only need to do this for Fides dataset references
+      // to convert them from objects to dot-delimited strings
+      if (secretsSchema?.properties) {
+        for (const [key, schema] of Object.entries(secretsSchema.properties)) {
+          if (schema.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
+            const datasetReference = initialValues.secrets[key];
+            initialValues.secrets[
+              key
+            ] = `${datasetReference.dataset}.${datasetReference.field}`;
+          }
+        }
+      }
+
       return initialValues;
     }
     return fillInDefaults(initialValues, secretsSchema);
   };
 
-  const handleSubmit = (values: any, actions: any) => {
-    // convert each property value of type FidesopsDatasetReference
-    // from a dot delimited string to a FidesopsDatasetReference
-    const updatedValues = { ...values };
+  /**
+   * Preprocesses the input values.
+   * Currently, it is only used to convert FIDES_DATASET_REFERENCE fields.
+   * @param values ConnectionConfigFormValues - The original values.
+   * @returns ConnectionConfigFormValues - The processed values.
+   */
+  const preprocessValues = (
+    values: ConnectionConfigFormValues
+  ): ConnectionConfigFormValues => {
+    const updatedValues = _.cloneDeep(values);
     if (secretsSchema) {
       Object.keys(secretsSchema.properties).forEach((key) => {
         if (
           secretsSchema.properties[key].allOf?.[0].$ref ===
           FIDES_DATASET_REFERENCE
         ) {
-          const referencePath = values[key].split(".");
-          updatedValues[key] = {
+          const referencePath = updatedValues["secrets"][key].split(".");
+          updatedValues["secrets"][key] = {
             dataset: referencePath.shift(),
             field: referencePath.join("."),
             direction: "from",
@@ -258,7 +281,14 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         }
       });
     }
-    onSaveClick(updatedValues, actions);
+    return updatedValues;
+  };
+
+  const handleSubmit = (values: any, actions: any) => {
+    // convert each property value of type FidesopsDatasetReference
+    // from a dot delimited string to a FidesopsDatasetReference
+    const processedValues = preprocessValues(values);
+    onSaveClick(processedValues, actions);
   };
 
   const handleTestConnectionClick = async () => {

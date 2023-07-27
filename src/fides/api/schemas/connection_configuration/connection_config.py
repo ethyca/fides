@@ -66,6 +66,9 @@ def mask_sensitive_fields(
     if connection_secrets is None:
         return connection_secrets
 
+    if not secret_schema.get("properties"):
+        return connection_secrets
+
     connection_secret_keys = connection_secrets.keys()
     secret_schema_keys = secret_schema["properties"].keys()
     new_connection_secrets = {}
