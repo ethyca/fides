@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.17.0...main)
 
+### Fixed
+- Fix datamap zoom for low system counts [#3835](https://github.com/ethyca/fides/pull/3835)
+
 ### Added
 
 - HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
