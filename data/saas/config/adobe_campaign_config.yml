@@ -23,9 +23,6 @@ saas_config:
     - name: private_key
       description: PEM formatted
       sensitive: True
-    - name: namespace
-      default_value: defaultNamespace1
-      description: The namespace to use for data protections requests
     - name: regulation
       options: [CCPA, GDPR]
       description: The regulation to follow for data protection requests
