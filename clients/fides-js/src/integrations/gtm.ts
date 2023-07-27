@@ -50,7 +50,11 @@ export const gtm = () => {
   if (window.Fides?.initialized) {
     pushFidesVariableToGTM({
       type: "FidesInitialized",
-      detail: { consent: window.Fides.consent },
+      detail: {
+        consent: window.Fides.consent,
+        fides_meta: window.Fides.fides_meta,
+        identity: window.Fides.identity,
+      },
     });
   }
 };
