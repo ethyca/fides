@@ -43,4 +43,8 @@ export type DataSubject = {
    * Denotes whether the resource is part of the default taxonomy or not.
    */
   is_default?: boolean;
+  /**
+   * Indicates whether the resource is currently 'active'.
+   */
+  active?: boolean;
 };

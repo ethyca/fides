@@ -41,19 +41,21 @@ const EditCollectionOrFieldForm = ({ values, onSubmit, dataType }: Props) => {
     data_qualifier: values.data_qualifier,
     data_categories: values.data_categories,
   };
-  const allDataCategories = useSelector(selectDataCategories);
+  const allEnabledDataCategories = useSelector(selectDataCategories).filter(
+    (category) => category.active
+  );
 
   // This data is only relevant for editing a field. Maybe another reason to split the field/
   // collection cases into two components.
   const classifyField = useSelector(selectClassifyInstanceField);
   const mostLikelyCategories: DataCategoryWithConfidence[] | undefined =
     useMemo(() => {
-      if (!(allDataCategories && classifyField)) {
+      if (!(allEnabledDataCategories && classifyField)) {
         return undefined;
       }
 
       const dataCategoryMap = new Map(
-        allDataCategories.map((dc) => [dc.fides_key, dc])
+        allEnabledDataCategories.map((dc) => [dc.fides_key, dc])
       );
       return classifyField.classifications.map(
         ({ label, aggregated_score }) => {
@@ -66,7 +68,7 @@ const EditCollectionOrFieldForm = ({ values, onSubmit, dataType }: Props) => {
           };
         }
       );
-    }, [allDataCategories, classifyField]);
+    }, [allEnabledDataCategories, classifyField]);
 
   const [checkedDataCategories, setCheckedDataCategories] = useState<string[]>(
     () =>
@@ -117,7 +119,7 @@ const EditCollectionOrFieldForm = ({ values, onSubmit, dataType }: Props) => {
             data-testid="identifiability-input"
           />
           <DataCategoryInput
-            dataCategories={allDataCategories}
+            dataCategories={allEnabledDataCategories}
             mostLikelyCategories={mostLikelyCategories}
             checked={checkedDataCategories}
             onChecked={setCheckedDataCategories}

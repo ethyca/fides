@@ -20,13 +20,23 @@ The types of changes are:
 ### Fixed
 - Fix datamap zoom for low system counts [#3835](https://github.com/ethyca/fides/pull/3835)
 
+### Added
+
+- HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
+
+### Changed
+
+- Simplified the file structure for HTML DSR packages [#3848](https://github.com/ethyca/fides/pull/3848)
+- Changed max width of form components in "system information" form tab [#3864](https://github.com/ethyca/fides/pull/3864)
+
 ## [2.17.0](https://github.com/ethyca/fides/compare/2.16.0...2.17.0)
 
 ### Added
 
 - Tab component for `fides-js` [#3782](https://github.com/ethyca/fides/pull/3782)
+- Added toast for successfully linking an existing integration to a system [#3826](https://github.com/ethyca/fides/pull/3826)
 - Various other UI components for `fides-js` to support upcoming TCF modal [#3803](https://github.com/ethyca/fides/pull/3803)
-- Prefetches API calls as part of Fides.js [#3698](https://github.com/ethyca/fides/pull/3698)
+- Allow items in taxonomy to be enabled or disabled [#3844](https://github.com/ethyca/fides/pull/3844)
 
 ### Developer Experience
 
@@ -40,6 +50,7 @@ The types of changes are:
 - Show/hide integration values [#3775](https://github.com/ethyca/fides/pull/3775)
 - Sort system cards alphabetically by name on "View systems" page [#3781](https://github.com/ethyca/fides/pull/3781)
 - Update admin ui to use new integration delete route [#3785](https://github.com/ethyca/fides/pull/3785)
+- Pinned `pymssql` and `cython` dependencies to avoid build issues on ARM machines [#3829](https://github.com/ethyca/fides/pull/3829)
 
 ### Removed
 
@@ -54,6 +65,7 @@ The types of changes are:
 ### Fixed
 - Privacy notice UI's list of possible regions now matches the backend's list [#3787](https://github.com/ethyca/fides/pull/3787)
 - Admin UI "property does not existing" build issue [#3831](https://github.com/ethyca/fides/pull/3831)
+- Flagging sensitive inputs as passwords to mask values during entry [#3843](https://github.com/ethyca/fides/pull/3843)
 
 ## [2.16.0](https://github.com/ethyca/fides/compare/2.15.1...2.16.0)
 
