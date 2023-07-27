@@ -145,9 +145,12 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
 
 
 class UserSpecificConsentDetails(FidesSchema):
+    """Schema for surfacing previously-saved preferences or previously-served
+    consent components"""
+
     default_preference: Optional[
         UserConsentPreference
-    ]  # The default preference for this notice
+    ]  # The default preference for this notice or TCF component
     current_preference: Optional[
         UserConsentPreference
     ]  # The current saved preference for the given user if it exists
@@ -156,10 +159,10 @@ class UserSpecificConsentDetails(FidesSchema):
     ]  # If no current preference, check if we have a preference saved for a previous version.
     current_served: Optional[
         bool
-    ]  # Do we have a record of the most recent version of this notice being served to the user?
+    ]  # Do we have a record of the most recent version of this notice or TCF component being served to the user?
     outdated_served: Optional[
         bool
-    ]  # Have we served an older version of this notice to the user?
+    ]  # Have we served an older version of this notice or TCF component to the user?
 
 
 class PrivacyNoticeResponseWithUserPreferences(

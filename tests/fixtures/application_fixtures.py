@@ -36,7 +36,6 @@ from fides.api.models.policy import (
     RuleTarget,
 )
 from fides.api.models.privacy_experience import (
-    BannerEnabled,
     ComponentType,
     PrivacyExperience,
     PrivacyExperienceConfig,
@@ -1568,6 +1567,24 @@ def privacy_preference_history_us_ca_provide(
 
 
 @pytest.fixture(scope="function")
+def served_notice_history_us_provice_for_fides_user(
+    db: Session, privacy_notice_us_ca_provide, fides_user_provided_identity
+) -> Generator:
+    pref_1 = ServedNoticeHistory.create(
+        db=db,
+        data={
+            "acknowledge_mode": False,
+            "serving_component": "overlay",
+            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+            "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_preference_history_us_ca_provide_for_fides_user(
     db: Session, privacy_notice_us_ca_provide, fides_user_provided_identity
 ) -> Generator:
@@ -2243,6 +2260,7 @@ def privacy_preference_history_for_tcf_purpose(
     provided_identity_and_consent_request,
     privacy_experience_france_overlay,
     fides_user_provided_identity,
+    served_notice_history_for_tcf_purpose,
 ):
     """Fixture that saves a privacy preference against a TCF purpose directly"""
     preference_history_record = PrivacyPreferenceHistory.create(
@@ -2252,6 +2270,37 @@ def privacy_preference_history_for_tcf_purpose(
             "email": "test@email.com",
             "method": "button",
             "purpose": 8,
+            "privacy_experience_config_history_id": None,
+            "privacy_experience_id": privacy_experience_france_overlay.id,
+            "preference": "opt_out",
+            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+            "request_origin": "tcf_overlay",
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+            "user_geography": "fr_idg",
+            "url_recorded": "example.com/",
+            "served_notice_history_id": served_notice_history_for_tcf_purpose.id,
+        },
+        check_name=False,
+    )
+    yield preference_history_record
+    preference_history_record.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_preference_history_for_vendor(
+    db,
+    provided_identity_and_consent_request,
+    privacy_experience_france_overlay,
+    fides_user_provided_identity,
+):
+    """Fixture that saves a privacy preference against a TCF purpose directly"""
+    preference_history_record = PrivacyPreferenceHistory.create(
+        db=db,
+        data={
+            "anonymized_ip_address": "92.158.1.0",
+            "email": "test@email.com",
+            "method": "button",
+            "vendor": "amplitude",
             "privacy_experience_config_history_id": None,
             "privacy_experience_id": privacy_experience_france_overlay.id,
             "preference": "opt_out",

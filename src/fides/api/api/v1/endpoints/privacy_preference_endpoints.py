@@ -35,9 +35,9 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeHistory,
 )
 from fides.api.models.privacy_preference import (
+    ConsentRecordType,
     CurrentPrivacyPreference,
     LastServedNotice,
-    PreferenceType,
     PrivacyPreferenceHistory,
     RequestOrigin,
     ServedNoticeHistory,
@@ -50,7 +50,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.privacy_preference import (
-    TCF_PREFERENCES_FIELDS,
+    TCF_PREFERENCES_FIELD_MAPPING,
     ConsentOptionCreate,
     ConsentReportingSchema,
     CurrentPrivacyPreferenceReportingSchema,
@@ -73,7 +73,7 @@ from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, validate_start_and_end_filters
-from fides.api.util.tcf_util import TCF_FIELD_LIST, get_preference_type_by_field_name
+from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING
 from fides.common.api.scope_registry import (
     CURRENT_PRIVACY_PREFERENCE_READ,
     PRIVACY_PREFERENCE_HISTORY_READ,
@@ -219,6 +219,7 @@ def verify_previously_served_records(
                     detail=f"The ServedNoticeHistory record '{served_notice_history.id}' did not serve the {name_for_log} '{getattr(preference_record, saved_preference_field)}'.",
                 )
 
+    # Validate served record for privacy notice if applicable
     for preference in data.preferences:
         validate_served_record(
             preference_record=preference,
@@ -227,13 +228,15 @@ def verify_previously_served_records(
             name_for_log="privacy notice history",
         )
 
-    for preference_field in TCF_PREFERENCES_FIELDS:
-        for preference in getattr(data, preference_field):
+    # Validate previously record before saving it alongside privacy preferences
+    # for TCF components if applicable
+    for tcf_preference_type, field_name in TCF_PREFERENCES_FIELD_MAPPING.items():
+        for preference in getattr(data, tcf_preference_type):
             validate_served_record(
                 preference_record=preference,
-                served_record_field=preference_field.replace("_preferences", ""),
+                served_record_field=field_name,
                 saved_preference_field="id",
-                name_for_log=preference_field.replace("_preferences", ""),
+                name_for_log=field_name,
             )
 
 
@@ -411,7 +414,7 @@ def persist_tcf_preferences(
         return
 
     def save_tcf_preference(
-        field_type: str, preference: Union[TCFPreferenceSave, TCFVendorSave]
+        component_type: str, preference_request: Union[TCFPreferenceSave, TCFVendorSave]
     ) -> CurrentPrivacyPreference:
         (
             _,
@@ -421,9 +424,9 @@ def persist_tcf_preferences(
             data={
                 **user_data,
                 **{
-                    "preference": preference.preference,
-                    field_type: preference.id,
-                    "served_notice_history_id": preference.served_notice_history_id,
+                    "preference": preference_request.preference,
+                    component_type: preference_request.id,
+                    "served_notice_history_id": preference_request.served_notice_history_id,
                 },
             },
             check_name=False,
@@ -432,12 +435,12 @@ def persist_tcf_preferences(
 
     # Save TCF preferences separately with respect to purpose, special purpose, vendor, feature, and/or special feature.
     # Currently, we don't attempt to propagate these preferences to third party systems.
-    for tcf_preference_field in TCF_PREFERENCES_FIELDS:
+    for tcf_preference_field, component_type in TCF_PREFERENCES_FIELD_MAPPING.items():
         for preference in getattr(request_data, tcf_preference_field):
             upserted_current_preferences.append(
                 save_tcf_preference(
-                    preference=preference,
-                    field_type=tcf_preference_field.replace("_preferences", ""),
+                    preference_request=preference,
+                    component_type=component_type,
                 )
             )
 
@@ -621,9 +624,9 @@ def save_consent_served_for_identities(
     original_request_data: RecordConsentServedRequest,
 ) -> List[LastServedNotice]:
     """
-    Saves that consent was served to the end user.
+    Saves that consent components were served to the end user.
 
-    Saves that either a privacy notice, or individual TCF items like purposes, special purposes, vendors,
+    Saves that either privacy notices and individual TCF components like purposes, special purposes, vendors,
     special features, or features were served.
 
     We save a historical record every time a consent item was served to the user in the frontend,
@@ -642,15 +645,15 @@ def save_consent_served_for_identities(
     common_data["serving_component"] = original_request_data.serving_component
 
     def save_consent_served(
-        identifiers: Union[List[SafeStr], List[int]], field_name: PreferenceType
+        identifiers: Union[List[SafeStr], List[int]], field_name: ConsentRecordType
     ) -> None:
         """Internal helper for creating a ServedNoticeHistory record for various types
-        of preferences"""
+        of consent components"""
         for identifier in identifiers:
             (
                 _,
                 current_served,
-            ) = ServedNoticeHistory.save_notice_served_and_last_notice_served(
+            ) = ServedNoticeHistory.save_served_notice_history_and_last_notice_served(
                 db=db,
                 data={
                     **common_data,
@@ -663,14 +666,16 @@ def save_consent_served_for_identities(
             )
             upserted_last_served.append(current_served)
 
+    # Save consent served for privacy notices if applicable
     save_consent_served(
         original_request_data.privacy_notice_history_ids,
-        PreferenceType.privacy_notice_history_id,
+        ConsentRecordType.privacy_notice_history_id,
     )
-    for tcf_field_name in TCF_FIELD_LIST:
+    # Save consent served for TCF components if applicable
+    for tcf_component, field_name in TCF_COMPONENT_MAPPING.items():
         save_consent_served(
-            getattr(original_request_data, tcf_field_name),
-            get_preference_type_by_field_name(tcf_field_name),
+            getattr(original_request_data, tcf_component),
+            field_name,
         )
 
     return upserted_last_served

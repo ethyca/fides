@@ -8,21 +8,14 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_notice import UserSpecificConsentDetails
 
 
-class EmbeddedVendor(FidesSchema):
-    """Sparse details for an embedded vendor that is relevant for a specific purpose
-    Read-only.
-    """
-
-    id: str
-    name: str
-
-
-class TCFPurposeRecord(MappedPurpose, UserSpecificConsentDetails):
-    vendors: List[EmbeddedVendor] = []  # Vendors that use this purpose
+class TCFSavedandServedDetails(UserSpecificConsentDetails):
+    """Default Schema that is supplements provided TCF details with whether a consent item was
+    previously saved or served."""
 
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """For TCF data uses, vendors, and features, the default preferences are just 'opt-out'"""
+        """For TCF purposes/special purposes, vendors, features, and special features,
+        the default preferences are just 'opt-out'"""
         values["default_preference"] = UserConsentPreference.opt_out
 
         return values
@@ -31,12 +24,29 @@ class TCFPurposeRecord(MappedPurpose, UserSpecificConsentDetails):
         use_enum_values = True
 
 
+class EmbeddedVendor(FidesSchema):
+    """Sparse details for an embedded vendor.  Read-only."""
+
+    id: str
+    name: str
+
+
+class TCFPurposeRecord(MappedPurpose, TCFSavedandServedDetails):
+    """Schema for a TCF Purpose or a Special Purpose: returned in the TCF Overlay Experience"""
+
+    vendors: List[EmbeddedVendor] = []  # Vendors that use this purpose
+
+
 class EmbeddedPurpose(FidesSchema):
+    """Sparse details for an embedded purpose or special purpose. Read-only."""
+
     id: int
     name: str
 
 
 class TCFDataCategoryRecord(FidesSchema):
+    """Details for data categories on systems: Read-only"""
+
     id: str
     name: Optional[str]
     cookie: Optional[str]
@@ -44,7 +54,9 @@ class TCFDataCategoryRecord(FidesSchema):
     duration: Optional[str]
 
 
-class TCFVendorRecord(UserSpecificConsentDetails):
+class TCFVendorRecord(TCFSavedandServedDetails):
+    """Schema for a TCF Vendor: returned in the TCF Overlay Experience"""
+
     id: str
     name: Optional[str]
     description: Optional[str]
@@ -54,31 +66,25 @@ class TCFVendorRecord(UserSpecificConsentDetails):
     data_categories: List[TCFDataCategoryRecord] = []
 
 
-class TCFFeatureRecord(UserSpecificConsentDetails):
+class TCFFeatureRecord(TCFSavedandServedDetails):
+    """Schema for a TCF Feature or a special feature: returned in the TCF Overlay Experience"""
+
     id: int
     name: Optional[str]
 
 
-class TCFExperienceContents:
-    tcf_purposes: List[TCFPurposeRecord] = []
-    tcf_special_purposes: List[TCFPurposeRecord] = []
-    tcf_vendors: List[TCFVendorRecord] = []
-    tcf_features: List[TCFFeatureRecord] = []
-    tcf_special_features: List[TCFFeatureRecord] = []
-
-
 class TCFPreferenceSave(FidesSchema):
-    """Schema for saving a user's preference with respect to a TCF record with integer id: purpose, special purpose,
-    feature, or special feature"""
+    """Schema for saving a user's preference with respect to a component with an integer identifier on a TCF overlay:
+    either a purpose, special purpose, feature, or special feature"""
 
-    id: int  # Identifier vendor or feature
+    id: int
     preference: UserConsentPreference
     served_notice_history_id: Optional[str]
 
 
 class TCFVendorSave(FidesSchema):
-    """Schema for saving a user's preference with respect to a vendor"""
+    """Schema for saving a user's preference with respect to a vendor, which has a string identifier"""
 
-    id: str  # Identifier vendor or feature
+    id: str
     preference: UserConsentPreference
     served_notice_history_id: Optional[str]

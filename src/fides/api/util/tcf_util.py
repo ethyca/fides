@@ -9,29 +9,33 @@ from sqlalchemy.dialects.postgresql import array_agg
 from sqlalchemy.orm import Query, Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.privacy_preference import PreferenceType
+from fides.api.models.privacy_preference import ConsentRecordType
 from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     PrivacyDeclaration,
     System,
 )
-from fides.api.schemas.tcf import (
-    TCFExperienceContents,
-    TCFPurposeRecord,
-    TCFVendorRecord,
-)
+from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
 
-TCF_FIELD_LIST = [
-    "tcf_purposes",
-    "tcf_special_purposes",
-    "tcf_vendors",
-    "tcf_features",
-    "tcf_special_features",
-]
+# Each TCF sectios embedded in the TCF Overlay mapped to the
+# specific field name from which previously-saved values are retrieved
+TCF_COMPONENT_MAPPING: Dict[str, ConsentRecordType] = {
+    "tcf_purposes": ConsentRecordType.purpose,
+    "tcf_special_purposes": ConsentRecordType.special_purpose,
+    "tcf_vendors": ConsentRecordType.vendor,
+    "tcf_features": ConsentRecordType.feature,
+    "tcf_special_features": ConsentRecordType.special_feature,
+}
 
 
-def get_preference_type_by_field_name(tcf_field_name: str):
-    """Return PreferenceType Enum value given the TCF Field name"""
-    return PreferenceType[tcf_field_name.replace("tcf_", "").rstrip("s")]
+class TCFExperienceContents:
+    """Schema to serialize the initial contents of a TCF overlay when we pull mapped purposes and special purposes
+    from the GVL in Fideslang and combine them with system data."""
+
+    tcf_purposes: List[TCFPurposeRecord] = []
+    tcf_special_purposes: List[TCFPurposeRecord] = []
+    tcf_vendors: List[TCFVendorRecord] = []
+    tcf_features: List[TCFFeatureRecord] = []
+    tcf_special_features: List[TCFFeatureRecord] = []
 
 
 def get_purposes_and_vendors(
@@ -90,8 +94,8 @@ def get_tcf_contents(
     db: Session,
 ) -> TCFExperienceContents:
     """
-    Load TCF Purposes from TCF_PATH and then return purposes whose data uses are parents/exact matches
-    of data uses on systems, and vendors that contain these data uses.
+    Load TCF Purposes and Special Purposes from Fideslang and then return a subset of those whose data uses
+    are on systems. Return a reverse representation for the vendors themselves.
     """
     all_tcf_data_uses: List[str] = []
     for purpose in MAPPED_PURPOSES.values():

@@ -10,6 +10,7 @@ from fides.api.models.privacy_preference import (
     ConsentMethod,
     RequestOrigin,
     ServingComponent,
+    TCFAttributeType,
 )
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.schemas.base_class import FidesSchema
@@ -18,17 +19,19 @@ from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.tcf import TCFPreferenceSave, TCFVendorSave
 
-TCF_PREFERENCES_FIELDS = [
-    "purpose_preferences",
-    "special_purpose_preferences",
-    "vendor_preferences",
-    "feature_preferences",
-    "special_feature_preferences",
-]
+# Maps the sections in the request body for saving various TCF preferences
+# against the specific field name on which these preferences are saved
+TCF_PREFERENCES_FIELD_MAPPING: Dict[str, str] = {
+    "purpose_preferences": TCFAttributeType.purpose.value,
+    "special_purpose_preferences": TCFAttributeType.special_purpose.value,
+    "feature_preferences": TCFAttributeType.feature.value,
+    "special_feature_preferences": TCFAttributeType.special_feature.value,
+    "vendor_preferences": TCFAttributeType.vendor.value,
+}
 
 
 class TCFAttributes(FidesSchema):
-    """Common schema for storing the relevant TCF Attribute"""
+    """Common schema for storing values for the relevant TCF Attribute"""
 
     purpose: Optional[int] = Field(
         title="The TCF purpose that was served or saved against"

@@ -24,7 +24,6 @@ from fides.api.models.privacy_experience import (
 from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
-from fides.api.schemas.tcf import TCFExperienceContents
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
@@ -33,7 +32,7 @@ from fides.api.util.consent_util import (
     get_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, transform_fields
-from fides.api.util.tcf_util import TCF_FIELD_LIST
+from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, TCFExperienceContents
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 
@@ -230,15 +229,15 @@ def embed_experience_details(
     """
     # Reset any temporary cached items just in case
     privacy_experience.privacy_notices = []
-    for field in TCF_FIELD_LIST:
-        setattr(privacy_experience, field, [])
+    for component in TCF_COMPONENT_MAPPING:
+        setattr(privacy_experience, component, [])
 
     # Temporarily add TCF Contents to the Experience object if applicable
     tcf_contents: TCFExperienceContents = privacy_experience.get_related_tcf_contents(
         db, fides_user_provided_identity
     )
-    for field in TCF_FIELD_LIST:
-        setattr(privacy_experience, field, getattr(tcf_contents, field))
+    for component in TCF_COMPONENT_MAPPING:
+        setattr(privacy_experience, component, getattr(tcf_contents, component))
 
     # Temporarily add Privacy Notices to the Experience object if applicable
     privacy_notices: List[

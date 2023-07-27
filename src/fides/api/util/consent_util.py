@@ -622,7 +622,6 @@ EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
     PrivacyNoticeRegion.it,
     PrivacyNoticeRegion.cy,
     PrivacyNoticeRegion.lv,
-    PrivacyNoticeRegion.lv,
     PrivacyNoticeRegion.lt,
     PrivacyNoticeRegion.lu,
     PrivacyNoticeRegion.hu,
@@ -646,13 +645,20 @@ EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
 ]
 
 
-def create_tcf_experiences_on_startup(db: Session) -> None:
+def create_tcf_experiences_on_startup(db: Session) -> List[PrivacyExperience]:
+    """On startup, create TCF Overlay Experiences for all EEA Regions.  There
+    are no Privacy Notices associated with these Experiences."""
+    experiences_created: List[PrivacyExperience] = []
     for region in EEA_COUNTRIES:
         if not PrivacyExperience.get_experience_by_region_and_component(
             db,
             region.value,
             ComponentType.tcf_overlay,
         ):
-            PrivacyExperience.create_default_experience_for_region(
-                db, region, ComponentType.tcf_overlay
+            experiences_created.append(
+                PrivacyExperience.create_default_experience_for_region(
+                    db, region, ComponentType.tcf_overlay
+                )
             )
+
+    return experiences_created

@@ -18,20 +18,16 @@ from fides.api.models.privacy_notice import (
     update_if_modified,
 )
 from fides.api.models.privacy_preference import (
+    ConsentRecordType,
     CurrentPrivacyPreference,
     LastServedNotice,
-    PreferenceType,
 )
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.schemas.tcf import (
-    TCFExperienceContents,
-    TCFPurposeRecord,
-    TCFVendorRecord,
-)
+from fides.api.schemas.tcf import TCFPurposeRecord, TCFVendorRecord
 from fides.api.util.tcf_util import (
-    TCF_FIELD_LIST,
-    get_preference_type_by_field_name,
+    TCF_COMPONENT_MAPPING,
+    TCFExperienceContents,
     get_tcf_contents,
 )
 
@@ -303,7 +299,7 @@ class PrivacyExperience(Base):
                 db=db,
                 consent_record=notice,
                 fides_user_provided_identity=fides_user_provided_identity,
-                preference_type=PreferenceType.privacy_notice_id,
+                record_type=ConsentRecordType.privacy_notice_id,
             )
             notices.append(notice)
 
@@ -312,20 +308,18 @@ class PrivacyExperience(Base):
     def get_related_tcf_contents(
         self, db: Session, fides_user_provided_identity: Optional[ProvidedIdentity]
     ) -> TCFExperienceContents:
-        """Returns the contents of a TCF experience with any previous records of a user being served or
-        consenting to any of the individual line items"""
+        """Returns the contents of a TCF experience supplemented with any previous records of
+        a user being served or consenting to any of the individual TCF components"""
         if self.component == ComponentType.tcf_overlay:
             tcf_contents: TCFExperienceContents = get_tcf_contents(db)
 
-            for tcf_field_name in TCF_FIELD_LIST:
-                for record in getattr(tcf_contents, tcf_field_name):
+            for tcf_component, field_name in TCF_COMPONENT_MAPPING.items():
+                for record in getattr(tcf_contents, tcf_component):
                     cache_saved_and_served_on_consent_record(
                         db,
                         record,
                         fides_user_provided_identity=fides_user_provided_identity,
-                        preference_type=get_preference_type_by_field_name(
-                            tcf_field_name
-                        ),
+                        record_type=field_name,
                     )
             return tcf_contents
         return TCFExperienceContents()
@@ -583,7 +577,7 @@ def cache_saved_and_served_on_consent_record(
     db: Session,
     consent_record: Union[PrivacyNotice, TCFPurposeRecord, TCFVendorRecord],
     fides_user_provided_identity: Optional[ProvidedIdentity],
-    preference_type: PreferenceType,
+    record_type: ConsentRecordType,
 ) -> None:
     """For display purposes, cache whether the resource was served to the given user and/or the user has saved
     preferences for that resource.
@@ -600,7 +594,7 @@ def cache_saved_and_served_on_consent_record(
         CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
             db=db,
             fides_user_provided_identity=fides_user_provided_identity,
-            preference_type=preference_type,
+            preference_type=record_type,
             preference_value=consent_record.id,
         )
     )
@@ -612,10 +606,10 @@ def cache_saved_and_served_on_consent_record(
 
     served_record: Optional[
         LastServedNotice
-    ] = LastServedNotice.get_last_served_for_preference_type_and_fides_user_device(
+    ] = LastServedNotice.get_last_served_for_record_type_and_fides_user_device(
         db=db,
         fides_user_provided_identity=fides_user_provided_identity,
-        tcf_preference_type=preference_type,
+        record_type=record_type,
         preference_value=consent_record.id,
     )
 

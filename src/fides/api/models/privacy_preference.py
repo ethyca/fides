@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from sqlalchemy import ARRAY, Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -16,9 +16,9 @@ from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
 from fides.api.common_exceptions import (
+    ConsentHistorySaveError,
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
-    PrivacyPreferenceSaveError,
 )
 from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.models.privacy_notice import (
@@ -49,7 +49,15 @@ class ConsentMethod(Enum):
     individual_notice = "individual_notice"
 
 
-class PreferenceType(Enum):
+class TCFAttributeType(Enum):
+    purpose = "purpose"
+    special_purpose = "special_purpose"
+    vendor = "vendor"
+    feature = "feature"
+    special_feature = "special_feature"
+
+
+class ConsentRecordType(Enum):
     privacy_notice_id = "privacy_notice_id"
     privacy_notice_history_id = "privacy_notice_history_id"
     purpose = "purpose"
@@ -206,20 +214,20 @@ class ConsentReportingMixin:
         )
 
     @property
-    def preference_type(self) -> PreferenceType:
+    def consent_record_type(self) -> ConsentRecordType:
         """Determine the type of record for which a preference was saved
         or served against based on which field exists"""
         if self.privacy_notice_history_id:
-            return PreferenceType.privacy_notice_id
+            return ConsentRecordType.privacy_notice_id
         if self.purpose:
-            return PreferenceType.purpose
+            return ConsentRecordType.purpose
         if self.special_purpose:
-            return PreferenceType.special_purpose
+            return ConsentRecordType.special_purpose
         if self.vendor:
-            return PreferenceType.vendor
+            return ConsentRecordType.vendor
         if self.special_feature:
-            return PreferenceType.special_feature
-        return PreferenceType.feature
+            return ConsentRecordType.special_feature
+        return ConsentRecordType.feature
 
 
 class ServingComponent(Enum):
@@ -235,8 +243,8 @@ def _validate_before_saving_consent_history(
     Optional[PrivacyNoticeHistory], Optional[str], Union[Optional[str], Optional[int]]
 ]:
     """
-    Runs some final validation checks before saving that a user was served
-    consent preferences or saved consent preferences
+    Runs some final validation checks before saving that a user was *served*
+    consent components or they *saved* consent preferences
 
     - Validates that a notice history exists if supplied
     - Validates that at least one provided identity type is supplied
@@ -257,37 +265,29 @@ def _validate_before_saving_consent_history(
             "Must supply a verified provided identity id or a fides_user_device_provided_identity_id"
         )
 
-    tcf_items: Dict[str, Union[Optional[str], Optional[int]]] = {
-        "purpose": data.get("purpose"),
-        "special_purpose": data.get("special_purpose"),
-        "vendor": data.get("vendor"),
-        "feature": data.get("feature"),
-        "special_feature": data.get("special_feature"),
+    tcf_attributes: Dict[str, Union[Optional[str], Optional[int]]] = {
+        tcf_key: data[tcf_key]
+        for tcf_key in data.keys() & TCFAttributeType.__members__.keys()
+        if data[tcf_key]
     }
 
-    if (
-        sum(
-            item is not None
-            for item in [
-                privacy_notice_history,
-            ]
-            + list(tcf_items.values())
-        )
-        != 1
+    def only_one_value_supplied(values: List) -> bool:
+        """Readability helper to ensure only one type of consent preference is being saved here"""
+        return sum(item is not None for item in values) == 1
+
+    if not only_one_value_supplied(
+        [privacy_notice_history] + list(tcf_attributes.values())
     ):
-        raise PrivacyPreferenceSaveError(
+        raise ConsentHistorySaveError(
             "Can only save record against a single privacy notice or TCF attribute"
         )
 
-    tcf_key: Optional[str] = None
-    tcf_val: Optional[Union[str, int]] = None
-    for key, val in tcf_items.items():
-        if val:
-            tcf_key = key
-            tcf_val = val
-            break
+    tcf_key: Optional[str] = list(tcf_attributes.keys())[0] if tcf_attributes else None
+    tcf_val: Optional[Union[str, int]] = (
+        list(tcf_attributes.values())[0] if tcf_attributes else None
+    )
 
-    return (privacy_notice_history, tcf_key, tcf_val)
+    return privacy_notice_history, tcf_key, tcf_val
 
 
 class ServedNoticeHistory(ConsentReportingMixin, Base):
@@ -324,13 +324,13 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
         The only difference between this and ServedNoticeHistory.save_notice_served_and_last_notice_served
         is the response.
         """
-        history, _ = cls.save_notice_served_and_last_notice_served(
+        history, _ = cls.save_served_notice_history_and_last_notice_served(
             db, data=data, check_name=check_name
         )
         return history
 
     @classmethod
-    def save_notice_served_and_last_notice_served(
+    def save_served_notice_history_and_last_notice_served(
         cls: Type[ServedNoticeHistory],
         db: Session,
         *,
@@ -699,7 +699,7 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
         cls,
         db: Session,
         fides_user_provided_identity: ProvidedIdentity,
-        preference_type: PreferenceType,
+        preference_type: ConsentRecordType,
         preference_value: Union[int, str],
     ) -> Optional[CurrentPrivacyPreference]:
         """Retrieves the CurrentPrivacyPreference saved against a notice, TCF purpose,
@@ -797,11 +797,11 @@ class LastServedNotice(LastSavedMixin, Base):
     )
 
     @classmethod
-    def get_last_served_for_preference_type_and_fides_user_device(
+    def get_last_served_for_record_type_and_fides_user_device(
         cls,
         db: Session,
         fides_user_provided_identity: ProvidedIdentity,
-        tcf_preference_type: PreferenceType,
+        record_type: ConsentRecordType,
         preference_value: Union[str, int],
     ) -> Optional[LastServedNotice]:
         """Retrieves the CurrentPrivacyPreference for the user with the given identity
@@ -811,8 +811,7 @@ class LastServedNotice(LastSavedMixin, Base):
             .filter(
                 LastServedNotice.fides_user_device_provided_identity_id
                 == fides_user_provided_identity.id,
-                LastServedNotice.__table__.c[tcf_preference_type.value]
-                == preference_value,
+                LastServedNotice.__table__.c[record_type.value] == preference_value,
             )
             .first()
         )
@@ -838,7 +837,7 @@ def upsert_last_saved_record(
     ] = None
 
     field_val = getattr(
-        created_historical_record, created_historical_record.preference_type.value
+        created_historical_record, created_historical_record.consent_record_type.value
     )
 
     # Check if we have "current" records for the ProvidedIdentity (usu an email or phone)/Privacy Notice
@@ -849,7 +848,7 @@ def upsert_last_saved_record(
                 current_record_class.provided_identity_id
                 == created_historical_record.provided_identity_id,
                 current_record_class.__table__.c[
-                    created_historical_record.preference_type.value
+                    created_historical_record.consent_record_type.value
                 ]
                 == field_val,
             )
@@ -867,7 +866,7 @@ def upsert_last_saved_record(
                 current_record_class.fides_user_device_provided_identity_id
                 == created_historical_record.fides_user_device_provided_identity_id,
                 current_record_class.__table__.c[
-                    created_historical_record.preference_type.value
+                    created_historical_record.consent_record_type.value
                 ]
                 == field_val,
             )
