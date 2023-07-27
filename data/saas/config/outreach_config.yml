@@ -3,11 +3,13 @@ saas_config:
   name: Outreach
   type: outreach
   description: A sample schema representing the Outreach connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/outreach
   version: 0.0.2
 
   connector_params:
     - name: domain
       default_value: api.outreach.io
+      description: Your Outreach domain (default: `api.outreach.io`)
     - name: requester_email
       description: The email of the Outreach user to associate with each automated compliance request (data_protection_request)
     - name: client_id
