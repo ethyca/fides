@@ -50,7 +50,7 @@ const generateIntegrationKey = (
   let integrationKey = systemFidesKey;
 
   if (!systemFidesKey.includes(connectionOption.identifier)) {
-    integrationKey += "_" + connectionOption.identifier;
+    integrationKey += `_${  connectionOption.identifier}`;
   }
 
   if (connectionOption.type === SystemType.SAAS) {

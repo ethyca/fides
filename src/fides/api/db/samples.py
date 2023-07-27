@@ -51,20 +51,20 @@ class SampleConnection(CreateConnectionConfigurationWithSecrets):
     fields and then reformat this source model as needed to suit those APIs.
     """
 
+    dataset: Optional[FidesKey] = None
     """
     (Optional) Valid fides_key for an existing dataset that should be used
     for this ConnectionConfig. If a dataset does not exist for this key,
     creation will fail.
     """
-    dataset: Optional[FidesKey] = None
 
+    system_key: Optional[FidesKey] = None
     """
     (Optional) The connection config is linked to a system via the `system_id`,
     which is auto-generated when the system is created in the database.
     We include the system key here to be able to use a consistent identifier
     to query for a system and retrieve it's ID.
     """
-    system_key: Optional[FidesKey] = None
 
 
 def load_sample_connections_from_project() -> List[SampleConnection]:
