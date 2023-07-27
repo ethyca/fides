@@ -50,7 +50,7 @@ const generateIntegrationKey = (
   let integrationKey = systemFidesKey;
 
   if (!systemFidesKey.includes(connectionOption.identifier)) {
-    integrationKey += `_${  connectionOption.identifier}`;
+    integrationKey += `_${connectionOption.identifier}`;
   }
 
   if (connectionOption.type === SystemType.SAAS) {
@@ -104,12 +104,9 @@ export const patchConnectionConfig = async (
   connectionConfig: ConnectionConfigurationResponse,
   patchFunc: any
 ) => {
-  const key =
-    [SystemType.DATABASE, SystemType.EMAIL, SystemType.MANUAL].indexOf(
-      connectionOption.type
-    ) > -1
-      ? generateIntegrationKey(systemFidesKey, connectionOption)
-      : connectionConfig?.key;
+  const key = connectionConfig
+    ? connectionConfig.key
+    : generateIntegrationKey(systemFidesKey, connectionOption);
 
   const params1: Omit<ConnectionConfigurationResponse, "created_at" | "name"> =
     {
