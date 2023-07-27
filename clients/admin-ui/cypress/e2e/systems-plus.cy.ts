@@ -2,7 +2,7 @@ import {
   stubPlus,
   stubSystemCrud,
   stubTaxonomyEntities,
-  stubVendorList
+  stubVendorList,
 } from "cypress/support/stubs";
 
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
@@ -18,29 +18,32 @@ describe("System management with Plus features", () => {
     }).as("getSystems");
   });
 
-  describe("vendor list", ()=>{
-    beforeEach(()=>{
+  describe("vendor list", () => {
+    beforeEach(() => {
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
       stubVendorList();
-    })
+    });
 
-    it("can display the vendor list dropdown",()=>{
-      cy.getSelectValueContainer("input-meta.vendor.id")
-    })
+    it("can display the vendor list dropdown", () => {
+      cy.getSelectValueContainer("input-meta.vendor.id");
+    });
 
-    it("contains dictionary entries", ()=>{
-      cy.selectOption("input-meta.vendor.id", "Aniview LTD")
-    })
-    
-    it("can switch entries", ()=>{
-      cy.selectOption("input-meta.vendor.id", "Aniview LTD")
-      cy.getSelectValueContainer("input-meta.vendor.id").contains("Aniview LTD")
+    it("contains dictionary entries", () => {
+      cy.selectOption("input-meta.vendor.id", "Aniview LTD");
+    });
 
-      cy.selectOption("input-meta.vendor.id", "Jaduda GmbH")
-      cy.getSelectValueContainer("input-meta.vendor.id").contains("Jaduda GmbH")
-    })
-    
-  })
+    it("can switch entries", () => {
+      cy.selectOption("input-meta.vendor.id", "Aniview LTD");
+      cy.getSelectValueContainer("input-meta.vendor.id").contains(
+        "Aniview LTD"
+      );
+
+      cy.selectOption("input-meta.vendor.id", "Jaduda GmbH");
+      cy.getSelectValueContainer("input-meta.vendor.id").contains(
+        "Jaduda GmbH"
+      );
+    });
+  });
 
   describe("custom metadata", () => {
     beforeEach(() => {

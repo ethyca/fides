@@ -20,18 +20,16 @@ describe("System management page", () => {
     stubPlus(false);
   });
 
-
-
-  describe("plus features", ()=>{
-    beforeEach(()=>{
+  describe("plus features", () => {
+    beforeEach(() => {
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
-    })
+    });
 
-    it("doesn't display the vendor dropdown",()=>{
-      cy.getByTestId("input-meta.vendor.id").should("not.exist")
-    })
-  })
-  
+    it("doesn't display the vendor dropdown", () => {
+      cy.getByTestId("input-meta.vendor.id").should("not.exist");
+    });
+  });
+
   it("Can navigate to the system management page", () => {
     cy.visit("/");
     cy.contains("nav a", "Data map").click();

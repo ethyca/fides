@@ -36,11 +36,11 @@ export const stubSystemCrud = () => {
   });
 };
 
-export const stubVendorList = ()=>{
-  cy.intercept("GET",  "/api/v1/plus/dictionary/system*",{
-    fixture: "dictionary-entries.json"
-  })
-}
+export const stubVendorList = () => {
+  cy.intercept("GET", "/api/v1/plus/dictionary/system*", {
+    fixture: "dictionary-entries.json",
+  });
+};
 
 export const stubOrganizationCrud = () => {
   cy.intercept("POST", "/api/v1/organization", {
