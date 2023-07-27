@@ -25,6 +25,7 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
+import _ from "lodash";
 import React from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
@@ -40,7 +41,6 @@ import {
 import DeleteConnectionModal from "../DeleteConnectionModal";
 import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
-import _ from "lodash";
 
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
@@ -241,14 +241,14 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       // we currently only need to do this for Fides dataset references
       // to convert them from objects to dot-delimited strings
       if (secretsSchema?.properties) {
-        for (const [key, schema] of Object.entries(secretsSchema.properties)) {
+        Object.entries(secretsSchema.properties).forEach(([key, schema]) => {
           if (schema.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
             const datasetReference = initialValues.secrets[key];
             initialValues.secrets[
               key
             ] = `${datasetReference.dataset}.${datasetReference.field}`;
           }
-        }
+        });
       }
 
       return initialValues;
@@ -272,8 +272,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           secretsSchema.properties[key].allOf?.[0].$ref ===
           FIDES_DATASET_REFERENCE
         ) {
-          const referencePath = updatedValues["secrets"][key].split(".");
-          updatedValues["secrets"][key] = {
+          const referencePath = updatedValues.secrets[key].split(".");
+          updatedValues.secrets[key] = {
             dataset: referencePath.shift(),
             field: referencePath.join("."),
             direction: "from",
