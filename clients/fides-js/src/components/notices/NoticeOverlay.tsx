@@ -17,7 +17,7 @@ import {
 import "../fides.css";
 import Overlay from "../Overlay";
 import { NoticeConsentButtons } from "../ConsentButtons";
-import NoticeToggles from "../NoticeToggles";
+import NoticeToggles from "./NoticeToggles";
 import { OverlayProps } from "../types";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({

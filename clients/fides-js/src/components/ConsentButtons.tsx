@@ -22,41 +22,38 @@ const ConsentButtons = ({
   isInModal?: boolean;
   onAcceptAll: () => void;
   onRejectAll: () => void;
-}) => {
-  console.log({ isInModal, onManagePreferencesClick });
-  return (
-    <div id="fides-button-group">
-      {onManagePreferencesClick ? (
-        <div>
-          <Button
-            buttonType={ButtonType.TERTIARY}
-            label={experienceConfig.privacy_preferences_link_label}
-            onClick={onManagePreferencesClick}
-          />
-        </div>
-      ) : null}
-      <div className={isInModal ? "fides-modal-button-group" : undefined}>
-        {isInModal ? (
-          <Button
-            buttonType={ButtonType.SECONDARY}
-            label={experienceConfig.save_button_label}
-            onClick={onSave}
-          />
-        ) : null}
+}) => (
+  <div id="fides-button-group">
+    {onManagePreferencesClick ? (
+      <div>
         <Button
-          buttonType={ButtonType.PRIMARY}
-          label={experienceConfig.reject_button_label}
-          onClick={onRejectAll}
-        />
-        <Button
-          buttonType={ButtonType.PRIMARY}
-          label={experienceConfig.accept_button_label}
-          onClick={onAcceptAll}
+          buttonType={ButtonType.TERTIARY}
+          label={experienceConfig.privacy_preferences_link_label}
+          onClick={onManagePreferencesClick}
         />
       </div>
+    ) : null}
+    <div className={isInModal ? "fides-modal-button-group" : undefined}>
+      {isInModal ? (
+        <Button
+          buttonType={ButtonType.SECONDARY}
+          label={experienceConfig.save_button_label}
+          onClick={onSave}
+        />
+      ) : null}
+      <Button
+        buttonType={ButtonType.PRIMARY}
+        label={experienceConfig.reject_button_label}
+        onClick={onRejectAll}
+      />
+      <Button
+        buttonType={ButtonType.PRIMARY}
+        label={experienceConfig.accept_button_label}
+        onClick={onAcceptAll}
+      />
     </div>
-  );
-};
+  </div>
+);
 
 type NoticeKeys = Array<PrivacyNotice["notice_key"]>;
 
@@ -142,7 +139,6 @@ export const TcfConsentButtons = ({
   enabledKeys,
   isInModal,
 }: TcfConsentButtonProps) => {
-  console.log({ onManagePreferencesClick });
   if (!experience.experience_config) {
     return null;
   }
