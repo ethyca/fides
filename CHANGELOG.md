@@ -17,8 +17,17 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.17.0...main)
 
+### Fixed
+- Fix datamap zoom for low system counts [#3835](https://github.com/ethyca/fides/pull/3835)
+
+### Added
+
+- HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
+
 ### Changed
+
 - Simplified the file structure for HTML DSR packages [#3848](https://github.com/ethyca/fides/pull/3848)
+- Changed max width of form components in "system information" form tab [#3864](https://github.com/ethyca/fides/pull/3864)
 
 ## [2.17.0](https://github.com/ethyca/fides/compare/2.16.0...2.17.0)
 
