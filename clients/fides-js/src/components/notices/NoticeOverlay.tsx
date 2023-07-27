@@ -1,6 +1,7 @@
 import { h, FunctionComponent } from "preact";
 import { useState, useCallback, useMemo } from "preact/hooks";
 import {
+  ConsentMechanism,
   ConsentMethod,
   PrivacyNotice,
   SaveConsentPreference,
@@ -19,6 +20,7 @@ import Overlay from "../Overlay";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import NoticeToggles from "./NoticeToggles";
 import { OverlayProps } from "../types";
+import { useConsentServed } from "../../lib/hooks";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
@@ -45,6 +47,18 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     [experience.privacy_notices]
   );
 
+  const isAllNoticeOnly = privacyNotices.every(
+    (n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY
+  );
+
+  const { servedNotices } = useConsentServed({
+    notices: privacyNotices,
+    options,
+    userGeography: fidesRegionString,
+    acknowledgeMode: isAllNoticeOnly,
+    privacyExperienceId: experience.id,
+  });
+
   const handleUpdatePreferences = useCallback(
     (enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>) => {
       const consentPreferencesToSave = privacyNotices.map((notice) => {
@@ -61,6 +75,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         consentMethod: ConsentMethod.button,
         userLocationString: fidesRegionString,
         cookie,
+        servedNotices,
       });
       // Make sure our draft state also updates
       setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
@@ -71,6 +86,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       fidesRegionString,
       experience.id,
       options.fidesApiUrl,
+      servedNotices,
     ]
   );
 
@@ -84,6 +100,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     <Overlay
       options={options}
       experience={experience}
+      cookie={cookie}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) =>
         showBanner ? (
           <ConsentBanner
@@ -99,6 +116,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
                   handleUpdatePreferences(keys);
                   onSave();
                 }}
+                isAcknowledge={isAllNoticeOnly}
               />
             }
           />
@@ -121,6 +139,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               onClose();
             }}
             isInModal
+            isAcknowledge={isAllNoticeOnly}
           />
         </div>
       )}

@@ -17,6 +17,7 @@ import {
   selectUserRegion,
   selectPrivacyExperience,
   useUpdatePrivacyPreferencesMutation,
+  useUpdateNoticesServedMutation,
 } from "~/features/consent/consent.slice";
 
 import {
@@ -25,6 +26,7 @@ import {
   ConsentOptionCreate,
   PrivacyNoticeResponseWithUserPreferences,
   PrivacyPreferencesRequest,
+  ServingComponent,
   UserConsentPreference,
 } from "~/types/api";
 import { useRouter } from "next/router";
@@ -63,6 +65,12 @@ const NoticeDrivenConsent = () => {
     useUpdatePrivacyPreferencesMutation();
   const region = useAppSelector(selectUserRegion);
 
+  const browserIdentities = useMemo(() => {
+    const identities = inspectForBrowserIdentities();
+    const deviceIdentity = { fides_user_device_id: fidesUserDeviceId };
+    return identities ? { ...deviceIdentity, ...identities } : deviceIdentity;
+  }, [fidesUserDeviceId]);
+
   const initialDraftPreferences = useMemo(() => {
     const newPreferences = { ...serverPreferences };
     Object.entries(serverPreferences).forEach(([key, value]) => {
@@ -86,6 +94,30 @@ const NoticeDrivenConsent = () => {
   useEffect(() => {
     setDraftPreferences(initialDraftPreferences);
   }, [initialDraftPreferences]);
+
+  const [updateNoticesServedMutationTrigger, { data: servedNotices }] =
+    useUpdateNoticesServedMutation();
+
+  useEffect(() => {
+    if (experience && experience.privacy_notices) {
+      updateNoticesServedMutationTrigger({
+        id: consentRequestId,
+        body: {
+          browser_identity: browserIdentities,
+          privacy_experience_id: experience?.id,
+          privacy_notice_history_ids: experience.privacy_notices.map(
+            (p) => p.privacy_notice_history_id
+          ),
+          serving_component: ServingComponent.PRIVACY_CENTER,
+        },
+      });
+    }
+  }, [
+    consentRequestId,
+    updateNoticesServedMutationTrigger,
+    experience,
+    browserIdentities,
+  ]);
 
   const items = useMemo(() => {
     if (!experience) {
@@ -130,11 +162,6 @@ const NoticeDrivenConsent = () => {
    * 3. Delete any cookies that have been opted out of
    */
   const handleSave = async () => {
-    const browserIdentities = inspectForBrowserIdentities();
-    const deviceIdentity = { fides_user_device_id: fidesUserDeviceId };
-    const identities = browserIdentities
-      ? { ...deviceIdentity, ...browserIdentities }
-      : deviceIdentity;
     const notices = experience?.privacy_notices ?? [];
 
     // Reconnect preferences to notices
@@ -143,27 +170,32 @@ const NoticeDrivenConsent = () => {
         const notice = notices.find(
           (n) => n.privacy_notice_history_id === historyKey
         );
-        return { historyKey, preference, notice };
+        const servedNotice = servedNotices?.find(
+          (sn) => sn.privacy_notice_history.id === historyKey
+        );
+        return { historyKey, preference, notice, servedNotice };
       }
     );
 
     const preferences: ConsentOptionCreate[] = noticePreferences.map(
-      ({ historyKey, preference, notice }) => {
+      ({ historyKey, preference, notice, servedNotice }) => {
         if (notice?.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
           return {
             privacy_notice_history_id: historyKey,
             preference: UserConsentPreference.ACKNOWLEDGE,
+            served_notice_history_id: servedNotice?.served_notice_history_id,
           };
         }
         return {
           privacy_notice_history_id: historyKey,
           preference: preference ?? UserConsentPreference.OPT_OUT,
+          served_notice_history_id: servedNotice?.served_notice_history_id,
         };
       }
     );
 
     const payload: PrivacyPreferencesRequest = {
-      browser_identity: identities,
+      browser_identity: browserIdentities,
       preferences,
       user_geography: region,
       privacy_experience_id: experience?.id,
@@ -179,7 +211,8 @@ const NoticeDrivenConsent = () => {
     if ("error" in result) {
       toast({
         title: "An error occurred while saving user consent preferences",
-        description: result.error,
+        description:
+          typeof result.error === "string" ? result.error : undefined,
         ...ErrorToastOptions,
       });
       return;

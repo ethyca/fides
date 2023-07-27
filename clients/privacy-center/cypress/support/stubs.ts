@@ -56,7 +56,6 @@ export const stubConfig = (
           ? undefined
           : Object.assign(config.options, options),
     };
-    console.log({ updatedConfig, experience });
     // We conditionally stub these APIs because we need the exact API urls, which can change or not even exist
     // depending on the specific test case.
     if (
@@ -97,6 +96,11 @@ export const stubConfig = (
         }
       ).as("patchPrivacyPreference");
     }
+    cy.intercept(
+      "PATCH",
+      `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
+      { fixture: "consent/notices_served.json" }
+    ).as("patchNoticesServed");
     cy.visitConsentDemo(updatedConfig);
   });
 };

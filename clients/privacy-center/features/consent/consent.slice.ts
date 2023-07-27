@@ -9,6 +9,8 @@ import {
   ConsentPreferences,
   ConsentPreferencesWithVerificationCode,
   CurrentPrivacyPreferenceSchema,
+  LastServedNoticeSchema,
+  NoticesServedRequest,
   Page_PrivacyExperienceResponse_,
   PrivacyNoticeRegion,
   PrivacyPreferencesRequest,
@@ -91,6 +93,16 @@ export const consentApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    updateNoticesServed: build.mutation<
+      LastServedNoticeSchema[],
+      { id: string; body: NoticesServedRequest }
+    >({
+      query: ({ id, body }) => ({
+        url: `${VerificationType.ConsentRequest}/${id}/notices-served`,
+        method: "PATCH",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -101,6 +113,7 @@ export const {
   useGetPrivacyExperienceQuery,
   useUpdatePrivacyPreferencesMutation,
   useGetUserGeolocationQuery,
+  useUpdateNoticesServedMutation,
 } = consentApi;
 
 type State = {
