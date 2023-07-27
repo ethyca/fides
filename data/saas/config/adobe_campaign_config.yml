@@ -3,29 +3,39 @@ saas_config:
   name: Adobe Campaign
   type: adobe_campaign
   description: A schema representing the Adobe Campaign connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/adobe-campaign
   version: 0.0.3
 
   connector_params:
     - name: domain
-      default_value: mc.adobe.io
+      label: Domain
+      description: The specific URL used to access your organization's Adobe Campaign instance
     - name: organization
-      description: e.g. ORGANIZATION for production or ORGANIZATION-mkt-stage for staging
+      label: Organization
+      description: The name of the organization used in Adobe Campaign
     - name: organization_id
       label: Organization ID
-      description: e.g. ***@AdobeOrg
+      description: The ID of the organization used in Adobe Campaign
+    - name: technical_account_id
+      label: Technical account ID
+      description: The account ID that is assigned by Adobe
     - name: client_id
       label: Client ID
+      description: The Client ID used for OAuth 2.0 authentication
     - name: client_secret
       sensitive: True
-    - name: technical_account_id
-      label: Technical Account ID
-      description: e.g. ***@techacct.adobe.com
+      label: Client secret
     - name: private_key
-      description: PEM formatted
+      label: Private key
+      description: The personal access key that is used to encrypt & decrypt data in transit.
       sensitive: True
     - name: regulation
-      options: [CCPA, GDPR]
-      description: The regulation to follow for data protection requests
+      label: Regulation
+      description: The regulation to apply for request processing - pick from GDPR, CCPA, PDPA, LGPD.  
+    - name: namespace
+      label: Namespace
+      description: The schema or partition where the user data resides.
+
 
   client_config:
     protocol: https

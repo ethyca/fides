@@ -13,6 +13,7 @@ saas_config:
     - name: key_id
       label: Key ID
     - name: signing_secret
+      label: Secret
       sensitive: True
 
   external_references:

@@ -3,13 +3,17 @@ saas_config:
   name: Gorgias
   type: gorgias
   description: A sample schema representing the Gorgias connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/gorgias
   version: 0.1.1
 
   connector_params:
     - name: domain
+      description: Your Gorgias domain     
     - name: username
+      description: The email associated with your account
     - name: api_key
-      label: API Key
+      label: API key
+      description: Your API Key
       sensitive: True
 
   client_config:

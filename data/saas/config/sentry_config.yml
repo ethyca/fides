@@ -3,13 +3,17 @@ saas_config:
   name: Sentry
   type: sentry
   description: A sample schema representing the Sentry connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/sentry
   version: 0.0.2
 
   connector_params:
     - name: domain
       default_value: sentry.io
+      description: Your Sentry API URL
     - name: access_token
       sensitive: True
+      label: Access token
+      description: Your authentication token for Sentry
 
   client_config:
     protocol: https

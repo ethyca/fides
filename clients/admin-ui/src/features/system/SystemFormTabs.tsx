@@ -237,12 +237,8 @@ const SystemFormTabs = ({
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={2}>
             <Text fontSize="sm" lineHeight={5} fontWeight="medium">
-              Integrations are used to process privacy requests like access,
-              erasure, portability, rectification, and consent. Many common
-              systems have API integrations that we can use to automatically
-              process privacy requests. However, email and manual integrations
-              are also available for the systems & functions where API
-              integrations are not available or the preference.
+              Integrations are used to process privacy requests for access,
+              erasure, portability, rectification, and consent.
             </Text>
           </Box>
           <ConnectionForm
