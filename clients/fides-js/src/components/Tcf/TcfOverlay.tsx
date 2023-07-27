@@ -8,6 +8,7 @@ import "../fides.css";
 import Overlay from "../Overlay";
 import { TcfConsentButtons } from "../ConsentButtons";
 import { OverlayProps } from "../types";
+import TcfTabs from "./TcfTabs";
 
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
   experience,
@@ -74,7 +75,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       }
       renderModalContent={({ onClose }) => (
         <div>
-          <div>TCF TODO</div>
+          <TcfTabs experience={experience} />
           <TcfConsentButtons
             experience={experience}
             enabledKeys={draftEnabledKeys}

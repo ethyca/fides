@@ -1,14 +1,17 @@
 import { h } from "preact";
 import { useRef, useState } from "preact/hooks";
 import TcfPurposes from "./TcfPurposes";
-import { PrivacyNotice } from "~/fides";
+import { PrivacyExperience } from "~/fides";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
 
-const TcfTabs = ({ notices }: { notices: Array<PrivacyNotice> }) => {
+const TcfTabs = ({ experience }: { experience: PrivacyExperience }) => {
   const tcfTabs = [
-    { name: "Purposes", content: <TcfPurposes notices={notices} /> },
+    {
+      name: "Purposes",
+      content: <TcfPurposes purposes={experience.tcf_purposes} />,
+    },
     { name: "Features", content: "two" },
     { name: "Vendors", content: "three" },
   ];

@@ -1,13 +1,20 @@
 import { h } from "preact";
-import { DataUseToggle } from "../NoticeToggles";
-import { PrivacyNotice } from "../../lib/consent-types";
+import DataUseToggle from "../DataUseToggle";
+import { PrivacyExperience } from "../../lib/consent-types";
 import FilterButtons from "./FilterButtons";
 import CookiesTable from "./CookiesTable";
 
-const TcfPurposes = ({ notices }: { notices: Array<PrivacyNotice> }) => {
+const TcfPurposes = ({
+  purposes,
+}: {
+  purposes: PrivacyExperience["tcf_purposes"];
+}) => {
+  if (!purposes) {
+    return null;
+  }
   const handleToggle = () => {};
-  const firstDataUse = { key: notices[0].notice_key, name: notices[0].name };
-  const secondDataUse = { key: notices[1].notice_key, name: notices[1].name };
+  const firstDataUse = { key: `${purposes[0].id}`, name: purposes[0].name };
+  const secondDataUse = { key: `${purposes[1].id}`, name: purposes[1].name };
   return (
     <div>
       <FilterButtons />
