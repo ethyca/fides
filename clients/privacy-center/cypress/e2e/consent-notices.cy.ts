@@ -1,5 +1,6 @@
 import {
   ConsentOptionCreate,
+  LastServedNoticeSchema,
   PrivacyNoticeResponseWithUserPreferences,
 } from "~/types/api";
 import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
@@ -9,6 +10,9 @@ const VERIFICATION_CODE = "112358";
 const PRIVACY_NOTICE_ID_1 = "pri_b4360591-3cc7-400d-a5ff-a9f095ab3061";
 const PRIVACY_NOTICE_ID_2 = "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae821";
 const PRIVACY_NOTICE_ID_3 = "pri_4bed96d0-b9e3-4596-a807-26b783836375";
+const PRIVACY_NOTICE_HISTORY_ID_1 = "pri_df14051b-1eaf-4f07-ae63-232bffd2dc3e";
+const PRIVACY_NOTICE_HISTORY_ID_2 = "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707";
+const PRIVACY_NOTICE_HISTORY_ID_3 = "pri_b09058a7-9f54-4360-8da5-4521e8975d4e";
 const PRIVACY_EXPERIENCE_ID = "pri_041acb07-c99b-4085-a435-c0d6f3a42b6f";
 const GEOLOCATION_API_URL = "https://www.example.com/location";
 const SETTINGS = {
@@ -56,6 +60,12 @@ describe("Privacy notice driven consent", () => {
         fixture: "consent/privacy_preferences.json",
       }
     ).as("patchPrivacyPreference");
+    // Consent reporting intercept
+    cy.intercept(
+      "PATCH",
+      `${API_URL}/consent-request/consent-request-id/notices-served`,
+      { fixture: "consent/notices_served.json" }
+    ).as("patchNoticesServed");
   });
 
   describe("when user has not consented before", () => {
@@ -297,6 +307,49 @@ describe("Privacy notice driven consent", () => {
         expect(
           preferences.map((p: ConsentOptionCreate) => p.preference)
         ).to.eql(["opt_in", "opt_in", "acknowledge"]);
+      });
+    });
+  });
+
+  describe("consent reporting", () => {
+    beforeEach(() => {
+      // Make the fixture's privacy notice history Ids match
+      cy.fixture("consent/notices_served.json").then((fixture) => {
+        // the fixture only has 2 entries, so add a third to match the experience payload
+        const body = [...fixture, JSON.parse(JSON.stringify(fixture[0]))];
+        body[0].privacy_notice_history.id = PRIVACY_NOTICE_HISTORY_ID_1;
+        body[1].privacy_notice_history.id = PRIVACY_NOTICE_HISTORY_ID_2;
+        body[2].privacy_notice_history.id = PRIVACY_NOTICE_HISTORY_ID_3;
+        cy.intercept(
+          "PATCH",
+          `${API_URL}/consent-request/consent-request-id/notices-served`,
+          { body }
+        ).as("patchMatchingNoticesServed");
+      });
+      cy.visit("/consent");
+      cy.getByTestId("consent");
+      cy.overrideSettings(SETTINGS);
+    });
+
+    it("can make calls to consent reporting endpoints", () => {
+      cy.wait("@patchMatchingNoticesServed").then((interception) => {
+        expect(interception.request.body.privacy_notice_history_ids).to.eql([
+          PRIVACY_NOTICE_HISTORY_ID_1,
+          PRIVACY_NOTICE_HISTORY_ID_2,
+          PRIVACY_NOTICE_HISTORY_ID_3,
+        ]);
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchPrivacyPreference").then((preferenceInterception) => {
+          const { preferences } = preferenceInterception.request.body;
+          const expected = interception.response?.body.map(
+            (s: LastServedNoticeSchema) => s.served_notice_history_id
+          );
+          expect(
+            preferences.map(
+              (p: ConsentOptionCreate) => p.served_notice_history_id
+            )
+          ).to.eql(expected);
+        });
       });
     });
   });

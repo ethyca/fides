@@ -1,6 +1,7 @@
 import {
   ConsentMethod,
   ConsentOptionCreate,
+  LastServedNoticeSchema,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
   UserConsentPreference,
@@ -31,6 +32,7 @@ export const updateConsentPreferences = ({
   userLocationString,
   cookie,
   debug = false,
+  servedNotices,
 }: {
   consentPreferencesToSave: Array<SaveConsentPreference>;
   experienceId: string;
@@ -39,6 +41,7 @@ export const updateConsentPreferences = ({
   userLocationString?: string;
   cookie: FidesCookie;
   debug?: boolean;
+  servedNotices?: Array<LastServedNoticeSchema>;
 }) => {
   // Derive the CookieKeyConsent object from privacy notices
   const noticeMap = new Map<string, boolean>(
@@ -51,10 +54,19 @@ export const updateConsentPreferences = ({
 
   // Derive the Fides user preferences array from privacy notices
   const fidesUserPreferences: Array<ConsentOptionCreate> =
-    consentPreferencesToSave.map(({ notice, consentPreference }) => ({
-      privacy_notice_history_id: notice.privacy_notice_history_id,
-      preference: consentPreference,
-    }));
+    consentPreferencesToSave.map(({ notice, consentPreference }) => {
+      const servedNotice = servedNotices
+        ? servedNotices.find(
+            (n) =>
+              n.privacy_notice_history.id === notice.privacy_notice_history_id
+          )
+        : undefined;
+      return {
+        privacy_notice_history_id: notice.privacy_notice_history_id,
+        preference: consentPreference,
+        served_notice_history_id: servedNotice?.served_notice_history_id,
+      };
+    });
 
   // Update the cookie object
   // eslint-disable-next-line no-param-reassign
