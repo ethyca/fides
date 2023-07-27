@@ -1341,6 +1341,88 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         current_preference.delete(db)
         privacy_preference_history.delete(db)
 
+    def test_invalid_tcf_purpose_in_request_body(
+        self,
+        api_client,
+        url,
+        privacy_experience_france_tcf_overlay,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
+            },
+            "purpose_preferences": [
+                {
+                    "id": 1000,
+                    "preference": "opt_out",
+                }
+            ],
+            "user_geography": "fr",
+            "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Cannot save preferences against invalid purpose id: '1000'"
+        )
+
+    def test_invalid_tcf_special_purpose_in_request_body(
+        self,
+        api_client,
+        url,
+        privacy_experience_france_tcf_overlay,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
+            },
+            "special_purpose_preferences": [
+                {
+                    "id": 3,
+                    "preference": "opt_out",
+                }
+            ],
+            "user_geography": "fr",
+            "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Cannot save preferences against invalid special purpose id: '3'"
+        )
+
+    def test_duplicate_tcf_preferences_in_request_body(
+        self,
+        api_client,
+        url,
+        privacy_experience_france_tcf_overlay,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
+            },
+            "special_purpose_preferences": [
+                {
+                    "id": 2,
+                    "preference": "opt_out",
+                },
+                {
+                    "id": 2,
+                    "preference": "opt_in",
+                },
+            ],
+            "user_geography": "fr",
+            "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Duplicate preferences saved against TCF component: 'special_purpose_preferences'"
+        )
+
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
@@ -1672,6 +1754,7 @@ class TestHistoricalPreferences:
         )
         assert response_body["privacy_notice_history_id"] is not None
         assert response_body["preference"] == "opt_out"
+        assert response_body["tcf_version"] is None
         assert response_body["user_geography"] == "us_ca"
         assert response_body["relevant_systems"] == [system.fides_key]
         assert response_body["affected_system_status"] == {system.fides_key: "complete"}
@@ -1691,6 +1774,67 @@ class TestHistoricalPreferences:
             == privacy_experience_privacy_center.id
         )
         assert response_body["served_notice_history_id"] == served_notice_history.id
+
+    def test_get_historical_preferences_tcf(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_preference_history_for_tcf_purpose,
+        served_notice_history_for_tcf_purpose,
+        privacy_experience_france_overlay,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[PRIVACY_PREFERENCE_HISTORY_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert len(response.json()["items"]) == 1
+        assert response.json()["total"] == 1
+        assert response.json()["page"] == 1
+        assert response.json()["size"] == 50
+
+        response_body = response.json()["items"][0]
+
+        assert response_body["id"] == privacy_preference_history_for_tcf_purpose.id
+        assert response_body["privacy_request_id"] is None
+        assert response_body["email"] == "test@email.com"
+        assert response_body["phone_number"] is None
+        assert (
+            response_body["fides_user_device_id"]
+            == "051b219f-20e4-45df-82f7-5eb68a00889f"
+        )
+        assert response_body["purpose"] == 8
+        assert response_body["special_purpose"] is None
+        assert response_body["vendor"] is None
+        assert response_body["feature"] is None
+        assert response_body["special_feature"] is None
+        assert response_body["tcf_version"] == "2.2"
+
+        assert response_body["request_timestamp"] is not None
+        assert response_body["request_origin"] == "tcf_overlay"
+        assert response_body["request_status"] is None
+        assert response_body["request_type"] == "consent"
+        assert response_body["approver_id"] is None
+        assert response_body["privacy_notice_history_id"] is None
+        assert response_body["preference"] == "opt_out"
+        assert response_body["user_geography"] == "fr_idg"
+        assert response_body["relevant_systems"] == []
+        assert response_body["affected_system_status"] == {}
+        assert response_body["url_recorded"] == "example.com/"
+        assert (
+            response_body["user_agent"]
+            == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24"
+        )
+        assert response_body["method"] == "button"
+        assert response_body["truncated_ip_address"] == "92.158.1.0"
+        assert response_body["experience_config_history_id"] is None
+        assert (
+            response_body["privacy_experience_id"]
+            == privacy_experience_france_overlay.id
+        )
+        assert (
+            response_body["served_notice_history_id"]
+            == served_notice_history_for_tcf_purpose.id
+        )
 
     def test_get_historical_preferences_user_geography_unsupported(
         self,
@@ -2172,6 +2316,70 @@ class TestSaveNoticesServedForFidesDeviceId:
         last_served_notice.delete(db)
         served_notice_history.delete(db)
 
+    def test_duplicate_tcf_item_served(
+        self,
+        db,
+        api_client,
+        url,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
+            },
+            "tcf_special_purposes": [1, 1],
+            "user_geography": "us_ca",
+            "acknowledge_mode": False,
+            "serving_component": ServingComponent.tcf_overlay.value,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Duplicate served records saved against TCF component: 'tcf_special_purposes'"
+        )
+
+    def test_invalid_tcf_purpose_served(
+        self,
+        api_client,
+        url,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
+            },
+            "tcf_purposes": [1000],
+            "user_geography": "us_ca",
+            "acknowledge_mode": False,
+            "serving_component": ServingComponent.tcf_overlay.value,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Invalid values for TCF Purposes served'"
+        )
+
+    def test_invalid_tcf_special_purpose_served(
+        self,
+        api_client,
+        url,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
+            },
+            "tcf_special_purposes": [3],
+            "user_geography": "us_ca",
+            "acknowledge_mode": False,
+            "serving_component": ServingComponent.tcf_overlay.value,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Invalid values for TCF Special Purposes served'"
+        )
+
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
@@ -2189,7 +2397,6 @@ class TestSaveNoticesServedForFidesDeviceId:
         along with two LastServedNotice records.
 
         """
-        test_device_id = "f7e54703-cd57-495e-866d-042e67c81734"
         masked_ip = "12.214.31.0"
         mock_anonymize.return_value = masked_ip
         response = api_client.patch(

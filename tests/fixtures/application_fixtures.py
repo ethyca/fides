@@ -2268,6 +2268,7 @@ def privacy_preference_history_for_tcf_purpose(
         data={
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
+            "fides_user_device": "051b219f-20e4-45df-82f7-5eb68a00889f",
             "method": "button",
             "purpose": 8,
             "privacy_experience_config_history_id": None,
@@ -2529,6 +2530,27 @@ def privacy_notice_france(db: Session) -> Generator:
     )
 
     yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def system_with_no_uses(db: Session) -> System:
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_fides_key",
+            "name": f"system-{uuid4()}",
+            "description": "tcf_relevant_system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "data_responsibility_title": "Processor",
+            "data_protection_impact_assessment": {
+                "is_required": False,
+                "progress": None,
+                "link": None,
+            },
+        },
+    )
+    return system
 
 
 @pytest.fixture(scope="function")

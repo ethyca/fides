@@ -59,12 +59,17 @@ def filter_privacy_preferences_for_propagation(
     system: Optional[System], privacy_preferences: List[PrivacyPreferenceHistory]
 ) -> List[PrivacyPreferenceHistory]:
     """Filter privacy preferences on a privacy request to just the ones that should be considered for third party
-    consent propagation"""
+    consent propagation.
+
+    Only applies to preferences saved for privacy notices here, not against individual TCF components.
+    """
 
     propagatable_preferences: List[PrivacyPreferenceHistory] = [
         pref
         for pref in privacy_preferences
-        if pref.privacy_notice_history.enforcement_level == EnforcementLevel.system_wide
+        if pref.privacy_notice_history
+        and pref.privacy_notice_history.enforcement_level
+        == EnforcementLevel.system_wide
         and pref.preference != UserConsentPreference.acknowledge
     ]
 
@@ -73,7 +78,10 @@ def filter_privacy_preferences_for_propagation(
 
     filtered_on_use: List[PrivacyPreferenceHistory] = []
     for pref in propagatable_preferences:
-        if pref.privacy_notice_history.applies_to_system(system):
+        if (
+            pref.privacy_notice_history
+            and pref.privacy_notice_history.applies_to_system(system)
+        ):
             filtered_on_use.append(pref)
     return filtered_on_use
 

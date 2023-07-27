@@ -590,6 +590,7 @@ def cache_saved_and_served_on_consent_record(
     consent_record.current_served = None
     consent_record.outdated_served = None
 
+    # Check if we have any previously saved preferences for this user on this record type
     saved_preference = (
         CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
             db=db,
@@ -604,6 +605,7 @@ def cache_saved_and_served_on_consent_record(
         else:
             consent_record.outdated_preference = saved_preference.preference
 
+    # Check if we have previously served this record to this user
     served_record: Optional[
         LastServedNotice
     ] = LastServedNotice.get_last_served_for_record_type_and_fides_user_device(

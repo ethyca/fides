@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 from sqlalchemy.exc import InvalidRequestError
 
@@ -18,6 +20,7 @@ from fides.api.models.privacy_preference import (
     RequestOrigin,
     ServedNoticeHistory,
     ServingComponent,
+    TCFAttributeType,
     UserConsentPreference,
     _validate_before_saving_consent_history,
 )
@@ -26,6 +29,8 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     ProvidedIdentityType,
 )
+from fides.api.models.sql_models import PrivacyDeclaration, System
+from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
 
 class TestPrivacyPreferenceHistory:
@@ -292,7 +297,7 @@ class TestPrivacyPreferenceHistory:
             )
 
     def test_create_privacy_preference_for_purpose(
-        self, db, system, fides_user_provided_identity
+        self, db, system, tcf_system, fides_user_provided_identity
     ):
         (
             fides_user_device_id,
@@ -304,7 +309,7 @@ class TestPrivacyPreferenceHistory:
         preference_history_record = PrivacyPreferenceHistory.create(
             db=db,
             data={
-                "purpose": 4,
+                "purpose": 8,
                 "email": None,
                 "fides_user_device": fides_user_device_id,
                 "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
@@ -340,7 +345,7 @@ class TestPrivacyPreferenceHistory:
             preference_history_record.fides_user_device_provided_identity
             == fides_user_provided_identity
         )
-        assert preference_history_record.purpose == 4
+        assert preference_history_record.purpose == 8
         assert preference_history_record.feature is None
         assert preference_history_record.special_feature is None
         assert preference_history_record.vendor is None
@@ -354,7 +359,7 @@ class TestPrivacyPreferenceHistory:
         assert preference_history_record.privacy_notice_history is None
         assert preference_history_record.privacy_request is None
         assert preference_history_record.provided_identity is None
-        assert preference_history_record.relevant_systems is None
+        assert preference_history_record.relevant_systems == [tcf_system.fides_key]
         assert preference_history_record.request_origin == RequestOrigin.tcf_overlay
         assert preference_history_record.secondary_user_ids == {"ga_client_id": "test"}
         assert (
@@ -371,7 +376,7 @@ class TestPrivacyPreferenceHistory:
         current_privacy_preference_id = current_privacy_preference.id
         assert current_privacy_preference.preference == UserConsentPreference.opt_out
         assert current_privacy_preference.privacy_notice_history is None
-        assert current_privacy_preference.purpose == 4
+        assert current_privacy_preference.purpose == 8
         assert current_privacy_preference.feature is None
         assert current_privacy_preference.special_feature is None
         assert current_privacy_preference.vendor is None
@@ -383,7 +388,7 @@ class TestPrivacyPreferenceHistory:
             db=db,
             data={
                 "preference": "opt_in",
-                "purpose": 4,
+                "purpose": 8,
                 "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
                 "request_origin": "tcf_overlay",
                 "secondary_user_ids": {"ga_client_id": "test"},
@@ -395,13 +400,13 @@ class TestPrivacyPreferenceHistory:
 
         assert next_preference_history_record.preference == UserConsentPreference.opt_in
         assert next_preference_history_record.privacy_notice_history is None
-        assert next_preference_history_record.purpose == 4
+        assert next_preference_history_record.purpose == 8
 
         # Assert CurrentPrivacyPreference record upserted
         db.refresh(current_privacy_preference)
         assert current_privacy_preference.preference == UserConsentPreference.opt_in
         assert current_privacy_preference.privacy_notice_history is None
-        assert current_privacy_preference.purpose == 4
+        assert current_privacy_preference.purpose == 8
         assert (
             next_preference_history_record.current_privacy_preference
             == current_privacy_preference
@@ -435,6 +440,9 @@ class TestPrivacyPreferenceHistory:
         )
 
         assert special_purpose_preference_history_record.special_purpose == 1
+        assert special_purpose_preference_history_record.relevant_systems == [
+            tcf_system.fides_key
+        ]
         assert special_purpose_preference_history_record.purpose is None
         assert special_purpose_preference_history_record.feature is None
         assert special_purpose_preference_history_record.special_feature is None
@@ -519,7 +527,7 @@ class TestPrivacyPreferenceHistory:
         assert preference_history_record.privacy_notice_history is None
         assert preference_history_record.privacy_request is None
         assert preference_history_record.provided_identity is None
-        assert preference_history_record.relevant_systems is None
+        assert preference_history_record.relevant_systems == []
         assert preference_history_record.request_origin == RequestOrigin.tcf_overlay
         assert preference_history_record.secondary_user_ids == {"ga_client_id": "test"}
         assert (
@@ -1255,6 +1263,149 @@ class TestPrivacyPreferenceHistory:
         assert privacy_notice_history == privacy_notice.histories[0]
         assert tcf_key is None
         assert tcf_val is None
+
+
+class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
+    def test_determine_relevant_systems_for_notice(
+        self, db, privacy_notice, system_with_no_uses
+    ):
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db, privacy_notice_history=privacy_notice.histories[0]
+            )
+            == []
+        )
+
+        # Add relevant data use to system for notice
+        pd_1 = PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Collect data for content performance",
+                "system_id": system_with_no_uses.id,
+                "data_categories": ["user.device.cookie_id"],
+                "data_use": privacy_notice.data_uses[0],
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "egress": None,
+                "ingress": None,
+            },
+        )
+
+        assert PrivacyPreferenceHistory.determine_relevant_systems(
+            db, privacy_notice_history=privacy_notice.histories[0]
+        ) == [system_with_no_uses.fides_key]
+
+        pd_1.delete(db)
+
+    def test_determine_relevant_systems_for_tcf_purpose(self, db, system_with_no_uses):
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db, tcf_field=TCFAttributeType.purpose.value, tcf_value=3
+            )
+            == []
+        )
+
+        # Add relevant data use to system for notice
+        pd_1 = PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Collect data for content performance",
+                "system_id": system_with_no_uses.id,
+                "data_categories": ["user.device.cookie_id"],
+                "data_use": "marketing.advertising.profiling",
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "egress": None,
+                "ingress": None,
+            },
+        )
+
+        assert PrivacyPreferenceHistory.determine_relevant_systems(
+            db, tcf_field=TCFAttributeType.purpose.value, tcf_value=3
+        ) == [system_with_no_uses.fides_key]
+
+        pd_1.delete(db)
+
+    def test_determine_relevant_systems_for_tcf_special_purpose(
+        self, db, system_with_no_uses
+    ):
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db, tcf_field=TCFAttributeType.special_purpose.value, tcf_value=2
+            )
+            == []
+        )
+
+        # Add relevant data use to system for notice
+        pd_1 = PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Collect data for content performance",
+                "system_id": system_with_no_uses.id,
+                "data_categories": ["user.device.cookie_id"],
+                "data_use": "marketing.advertising.ad_serving",
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "egress": None,
+                "ingress": None,
+            },
+        )
+
+        assert PrivacyPreferenceHistory.determine_relevant_systems(
+            db, tcf_field=TCFAttributeType.special_purpose.value, tcf_value=2
+        ) == [system_with_no_uses.fides_key]
+
+        pd_1.delete(db)
+
+    def test_determine_relevant_systems_for_tcf_vendor(self, db, system_with_no_uses):
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db, tcf_field=TCFAttributeType.vendor.value, tcf_value="amplitude"
+            )
+            == []
+        )
+
+        secrets = {
+            "domain": "test_amplitude_domain",
+            "api_key": "test_amplitude_api_key",
+            "secret_key": "test_amplitude_secret",
+        }
+        connection_config, dataset_config = instantiate_connector(
+            db,
+            "amplitude",
+            "amplitude_instance",
+            "Amplitude ConnectionConfig description",
+            secrets,
+        )
+        connection_config.system_id = system_with_no_uses.id
+        connection_config.save(db)
+
+        assert PrivacyPreferenceHistory.determine_relevant_systems(
+            db, tcf_field=TCFAttributeType.vendor.value, tcf_value="amplitude"
+        ) == [system_with_no_uses.fides_key]
+
+        dataset_config.delete(db)
+        connection_config.delete(db)
+
+    def test_determine_relevant_systems_for_tcf_special_feature_and_features(
+        self, db, system_with_no_uses
+    ):
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db, tcf_field=TCFAttributeType.special_feature.value, tcf_value=1
+            )
+            == []
+        )
+
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db, tcf_field=TCFAttributeType.feature.value, tcf_value=1
+            )
+            == []
+        )
 
 
 class TestCurrentPrivacyPreference:

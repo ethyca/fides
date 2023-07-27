@@ -119,7 +119,9 @@ def privacy_experience_list(
     show_disabled: Optional[bool] = True,
     region: Optional[str] = None,
     component: Optional[ComponentType] = None,
-    has_notices: Optional[bool] = None,
+    has_notices: Optional[
+        bool
+    ] = None,  # Does this experience have content? Notices or TCF details?
     has_config: Optional[bool] = None,
     fides_user_device_id: Optional[str] = None,
     systems_applicable: Optional[bool] = False,
@@ -183,7 +185,7 @@ def privacy_experience_list(
     for privacy_experience in experience_query.order_by(
         PrivacyExperience.created_at.desc()
     ):
-        embed_experience_details(
+        content_exists = embed_experience_details(
             db,
             privacy_experience=privacy_experience,
             show_disabled=show_disabled,
@@ -205,10 +207,7 @@ def privacy_experience_list(
                 fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
             )
 
-        if (
-            not (has_notices and not privacy_experience.privacy_notices)
-            or privacy_experience.component == ComponentType.tcf_overlay
-        ):
+        if not (has_notices and not content_exists):
             results.append(privacy_experience)
 
     return fastapi_paginate(results, params=params)
@@ -221,11 +220,13 @@ def embed_experience_details(
     systems_applicable: Optional[bool],
     fides_user_provided_identity: Optional[ProvidedIdentity],
     should_unescape: Optional[str],
-) -> None:
+) -> bool:
     """
     At runtime embeds relevant Experience contents where applicable:
         - Privacy Notices
-        - TCF Details: purposes, special purposes, vendors, features, and special features
+        - TCF Components: purposes, special purposes, vendors, features, and special features
+
+    Returns whether content exists on the experience.
     """
     # Reset any temporary cached items just in case
     privacy_experience.privacy_notices = []
@@ -245,6 +246,7 @@ def embed_experience_details(
     ] = privacy_experience.get_related_privacy_notices(
         db, show_disabled, systems_applicable, fides_user_provided_identity
     )
+
     if should_unescape:
         privacy_notices = [
             transform_fields(
@@ -255,3 +257,7 @@ def embed_experience_details(
             for notice in privacy_notices
         ]
     privacy_experience.privacy_notices = privacy_notices
+
+    return bool(privacy_notices) or any(
+        getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
+    )

@@ -67,7 +67,13 @@ from fides.api.schemas.privacy_request import (
     VerificationCode,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.schemas.tcf import TCFPreferenceSave, TCFVendorSave
+from fides.api.schemas.tcf import (
+    TCFFeatureSave,
+    TCFPurposeSave,
+    TCFSpecialFeatureSave,
+    TCFSpecialPurposeSave,
+    TCFVendorSave,
+)
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
@@ -200,7 +206,14 @@ def verify_previously_served_records(
     """
 
     def validate_served_record(
-        preference_record: Union[ConsentOptionCreate, TCFVendorSave, TCFPreferenceSave],
+        preference_record: Union[
+            ConsentOptionCreate,
+            TCFPurposeSave,
+            TCFSpecialPurposeSave,
+            TCFVendorSave,
+            TCFFeatureSave,
+            TCFSpecialFeatureSave,
+        ],
         served_record_field: str,
         saved_preference_field: str,
         name_for_log: str,
@@ -404,18 +417,26 @@ def persist_tcf_preferences(
     request_data: PrivacyPreferencesRequest,
     upserted_current_preferences: List[CurrentPrivacyPreference],
 ) -> None:
-    """Save TCF preferences with respect to purpose, vendor, or feature if applicable.
+    """Save TCF preferences with respect to individual TCF components if applicable.
 
     All TCF Preferences have frontend-only enforcement at the moment, so no Privacy Requests
-    are created to propagate consent. The upserted_current_preferences list is updated in place.
+    are created to propagate consent. The "upserted_current_preferences" list is updated in place.
     """
     consent_settings = ConsentSettings.get_or_create_with_defaults(db)
     if not consent_settings.tcf_enabled:
         return
 
     def save_tcf_preference(
-        component_type: str, preference_request: Union[TCFPreferenceSave, TCFVendorSave]
+        component_type: str,
+        preference_request: Union[
+            TCFPurposeSave,
+            TCFSpecialPurposeSave,
+            TCFVendorSave,
+            TCFFeatureSave,
+            TCFSpecialFeatureSave,
+        ],
     ) -> CurrentPrivacyPreference:
+        """Internal helper method for saving a preference against a specific TCF component"""
         (
             _,
             current_preference,
@@ -435,12 +456,12 @@ def persist_tcf_preferences(
 
     # Save TCF preferences separately with respect to purpose, special purpose, vendor, feature, and/or special feature.
     # Currently, we don't attempt to propagate these preferences to third party systems.
-    for tcf_preference_field, component_type in TCF_PREFERENCES_FIELD_MAPPING.items():
+    for tcf_preference_field, field_name in TCF_PREFERENCES_FIELD_MAPPING.items():
         for preference in getattr(request_data, tcf_preference_field):
             upserted_current_preferences.append(
                 save_tcf_preference(
                     preference_request=preference,
-                    component_type=component_type,
+                    component_type=field_name,
                 )
             )
 
@@ -455,7 +476,8 @@ def update_request_body_for_consent_served_or_saved(
         Type[PrivacyPreferencesCreate], Type[RecordConsentServedCreate]
     ],
 ) -> Dict[str, Union[Optional[RequestOrigin], Optional[str]]]:
-    """Build a starting payload to save that consent was served or saved for a given user"""
+    """Common method to share building the starting details to save that consent
+    was served or saved for a given user"""
 
     request_data = _supplement_request_data_from_request_headers(
         db, request, original_request_data, resource_type=resource_type
@@ -506,7 +528,7 @@ def save_privacy_preferences_for_identities(
     original_request_data: PrivacyPreferencesRequest,
 ) -> List[CurrentPrivacyPreference]:
     """
-    Saves privacy preferences for an end user.
+    Shared method to save privacy preferences for an end user across multiple endpoints.
 
     Saves preferences for either a privacy notice, or individual TCF items like purposes, special purposes, vendors,
     features, or special features.
@@ -539,7 +561,7 @@ def save_privacy_preferences_for_identities(
         upserted_current_preferences=upserted_current_preferences,
     )
 
-    # Separately persist preferences with respect to Privacy Notices where appliable.
+    # Separately persist preferences with respect to Privacy Notices where applicable.
     # Create a privacy request to propagate third party preferences if needed.
     needs_server_side_propagation: bool = False
     for privacy_preference in original_request_data.preferences:
@@ -562,7 +584,8 @@ def save_privacy_preferences_for_identities(
         upserted_current_preferences.append(current_preference)
 
         if (
-            historical_preference.privacy_notice_history.enforcement_level
+            historical_preference.privacy_notice_history
+            and historical_preference.privacy_notice_history.enforcement_level
             == EnforcementLevel.system_wide
         ):
             # At least one privacy notice has expected system wide enforcement
@@ -626,7 +649,7 @@ def save_consent_served_for_identities(
     """
     Saves that consent components were served to the end user.
 
-    Saves that either privacy notices and individual TCF components like purposes, special purposes, vendors,
+    Saves that either privacy notices or individual TCF components like purposes, special purposes, vendors,
     special features, or features were served.
 
     We save a historical record every time a consent item was served to the user in the frontend,
@@ -817,10 +840,11 @@ def get_historical_consent_report(
                 "served_notice_history_id"
             ),
             PrivacyPreferenceHistory.purpose.label("purpose"),
-            PrivacyPreferenceHistory.purpose.label("special_purpose"),
+            PrivacyPreferenceHistory.special_purpose.label("special_purpose"),
             PrivacyPreferenceHistory.vendor.label("vendor"),
             PrivacyPreferenceHistory.feature.label("feature"),
-            PrivacyPreferenceHistory.feature.label("special_feature"),
+            PrivacyPreferenceHistory.special_feature.label("special_feature"),
+            PrivacyPreferenceHistory.tcf_version.label("tcf_version"),
         )
         .outerjoin(
             PrivacyRequest,

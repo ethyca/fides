@@ -661,6 +661,13 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
         assert resp.json()["items"][0]["tcf_special_features"] == []
 
+        # Has notices = True flag will keep this experience from appearing altogether
+        resp = api_client.get(
+            url + "?region=fr&has_notices=True",
+        )
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 0
+
     @pytest.mark.usefixtures(
         "privacy_experience_france_overlay",
         "privacy_preference_history_for_tcf_purpose",
@@ -695,7 +702,7 @@ class TestGetTCFPrivacyExperiences:
         settings.update(db=db, data={"tcf_enabled": True})
         resp = api_client.get(
             url
-            + "?region=fr&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f",
+            + "?region=fr&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f&has_notices=True",
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1

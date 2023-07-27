@@ -1,9 +1,9 @@
 from collections import defaultdict
 from functools import lru_cache
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 
 from fideslang.gvl import MAPPED_PURPOSES, MAPPED_SPECIAL_PURPOSES, data_use_to_purpose
-from fideslang.gvl.models import MappedPurpose
+from fideslang.gvl.models import Purpose
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import array_agg
 from sqlalchemy.orm import Query, Session
@@ -16,7 +16,7 @@ from fides.api.models.sql_models import (  # type:ignore[attr-defined]
 )
 from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
 
-# Each TCF sectios embedded in the TCF Overlay mapped to the
+# Each TCF sections embedded in the TCF Overlay mapped to the
 # specific field name from which previously-saved values are retrieved
 TCF_COMPONENT_MAPPING: Dict[str, ConsentRecordType] = {
     "tcf_purposes": ConsentRecordType.purpose,
@@ -39,8 +39,8 @@ class TCFExperienceContents:
 
 
 def get_purposes_and_vendors(
-    db: Session, relevant_data_uses: List[str], purpose_field: str, purpose_map
-):
+    db: Session, relevant_data_uses: List[str], purpose_field: str, purpose_map: Dict
+) -> Tuple[List[TCFPurposeRecord], List[TCFVendorRecord]]:
     systems_uses_vendors: Query = (
         db.query(
             System.id,
@@ -55,7 +55,7 @@ def get_purposes_and_vendors(
         .filter(PrivacyDeclaration.data_use.in_(relevant_data_uses))
     )
 
-    relevant_purpose_ids: Dict[int, List[str]] = defaultdict(list)
+    relevant_purpose_ids: Dict[int, List[Dict[str, str]]] = defaultdict(list)
     relevant_vendors: List[TCFVendorRecord] = []
     for record in systems_uses_vendors:
         vendor: Optional[str] = next(
@@ -64,7 +64,7 @@ def get_purposes_and_vendors(
 
         system_purpose_ids: Set[int] = set()
         for use in record.data_uses:
-            system_purpose: Optional[MappedPurpose] = data_use_to_purpose(use)
+            system_purpose: Purpose = data_use_to_purpose(use)
             if system_purpose:
                 system_purpose_ids.add(system_purpose.id)
                 relevant_purpose_ids[system_purpose.id].extend(
