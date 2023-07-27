@@ -9,17 +9,23 @@ saas_config:
   connector_params:
     - name: domain
       default_value: api.outreach.io
-      description: Your Outreach domain (default: `api.outreach.io`)
+      description: Your Outreach domain
     - name: requester_email
-      description: The email of the Outreach user to associate with each automated compliance request (data_protection_request)
+      label: Requester email
+      description: The email address of the Outreach user that created your custom app
     - name: client_id
       label: Client ID
+      description: The application ID of your Outreach custom app, sometimes referred to as the OAuth client ID.
     - name: client_secret
+      label: Client secret
+      description: The application secret of your Outreach custom app, sometimes referred to as the OAuth client secret.
       sensitive: True
     - name: redirect_uri
-      label: Redirect URI
+      label: Redirect URL
+      description: The redirect URL for your custom Outreach app, sometimes referred to as the OAuth redirect URI.
     - name: page_size
-      description: The number of entries to return per page
+      label: Page size
+      description: The number of results to return on each page.
 
   client_config:
     protocol: https
