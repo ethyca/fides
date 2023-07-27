@@ -495,8 +495,8 @@ class TestLoadSamples:
 
             assert sorted([e.fides_key for e in systems]) == [
                 "cookie_house",
-                "cookie_house_marketing",
                 "cookie_house_customer_database",
+                "cookie_house_marketing_system",
                 "cookie_house_postgresql_database",
             ]
             assert sorted([e.fides_key for e in datasets]) == [
@@ -585,7 +585,7 @@ class TestLoadSamples:
         # Assert that only the connections with all their secrets are returned
         assert len(connections) == 2
         assert sorted([e.key for e in connections]) == [
-            "postgres_connector",
+            "cookie_house_postgresql_database",
             "stripe_connector",
         ]
 
