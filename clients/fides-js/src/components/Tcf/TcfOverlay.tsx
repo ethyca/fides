@@ -53,6 +53,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     <Overlay
       options={options}
       experience={experience}
+      cookie={cookie}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) =>
         showBanner ? (
           <ConsentBanner
