@@ -1,54 +1,42 @@
-import { h, FunctionComponent } from "preact";
+import { h, FunctionComponent, VNode } from "preact";
 import { useEffect, useState, useCallback, useMemo } from "preact/hooks";
-import {
-  ConsentMethod,
-  FidesOptions,
-  PrivacyExperience,
-  PrivacyNotice,
-  SaveConsentPreference,
-} from "../lib/consent-types";
-import ConsentBanner from "./ConsentBanner";
+import { FidesOptions, PrivacyExperience } from "../lib/consent-types";
 
-import { updateConsentPreferences } from "../lib/preferences";
-import {
-  debugLog,
-  hasActionNeededNotices,
-  transformConsentToFidesUserPreference,
-} from "../lib/consent-utils";
-import { FidesCookie } from "../lib/cookie";
+import { debugLog, hasActionNeededNotices } from "../lib/consent-utils";
 
 import "./fides.css";
 import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
-import ConsentButtons from "./ConsentButtons";
 
-export interface OverlayProps {
-  options: FidesOptions;
-  experience: PrivacyExperience;
-  cookie: FidesCookie;
-  fidesRegionString: string;
+interface RenderBannerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: () => void;
+  onManagePreferencesClick: () => void;
 }
 
-const Overlay: FunctionComponent<OverlayProps> = ({
+interface RenderModalContent {
+  onClose: () => void;
+}
+
+interface Props {
+  options: FidesOptions;
+  experience: PrivacyExperience;
+  renderBanner: (props: RenderBannerProps) => VNode | null;
+  renderModalContent: (props: RenderModalContent) => VNode;
+}
+
+const Overlay: FunctionComponent<Props> = ({
   experience,
   options,
-  fidesRegionString,
-  cookie,
+  renderBanner,
+  renderModalContent,
 }) => {
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
-
-  const initialEnabledNoticeKeys = useMemo(
-    () => Object.keys(cookie.consent).filter((key) => cookie.consent[key]),
-    [cookie.consent]
-  );
-
-  const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
-    Array<PrivacyNotice["notice_key"]>
-  >(initialEnabledNoticeKeys);
 
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
@@ -105,40 +93,6 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     [experience]
   );
 
-  const privacyNotices = useMemo(
-    () => experience.privacy_notices ?? [],
-    [experience.privacy_notices]
-  );
-
-  const handleUpdatePreferences = useCallback(
-    (enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>) => {
-      const consentPreferencesToSave = privacyNotices.map((notice) => {
-        const userPreference = transformConsentToFidesUserPreference(
-          enabledPrivacyNoticeKeys.includes(notice.notice_key),
-          notice.consent_mechanism
-        );
-        return new SaveConsentPreference(notice, userPreference);
-      });
-      updateConsentPreferences({
-        consentPreferencesToSave,
-        experienceId: experience.id,
-        fidesApiUrl: options.fidesApiUrl,
-        consentMethod: ConsentMethod.button,
-        userLocationString: fidesRegionString,
-        cookie,
-      });
-      // Make sure our draft state also updates
-      setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
-    },
-    [
-      privacyNotices,
-      cookie,
-      fidesRegionString,
-      experience.id,
-      options.fidesApiUrl,
-    ]
-  );
-
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();
     setBannerIsOpen(false);
@@ -155,46 +109,55 @@ const Overlay: FunctionComponent<OverlayProps> = ({
 
   return (
     <div>
-      {showBanner ? (
-        <ConsentBanner
-          experience={experience.experience_config}
-          bannerIsOpen={bannerIsOpen}
-          onClose={() => {
-            setBannerIsOpen(false);
-          }}
-          buttonGroup={
-            <ConsentButtons
-              experience={experience}
-              onManagePreferencesClick={handleManagePreferencesClick}
-              enabledKeys={draftEnabledNoticeKeys}
-              onSave={(keys) => {
-                handleUpdatePreferences(keys);
-                setBannerIsOpen(false);
-              }}
-            />
-          }
-        />
-      ) : null}
+      {showBanner
+        ? renderBanner({
+            isOpen: bannerIsOpen,
+            onClose: () => {
+              setBannerIsOpen(false);
+            },
+            onSave: () => {
+              setBannerIsOpen(false);
+            },
+            onManagePreferencesClick: handleManagePreferencesClick,
+          })
+        : // <ConsentBanner
+          //   experience={experience.experience_config}
+          //   bannerIsOpen={bannerIsOpen}
+          //   onClose={() => {
+          //     setBannerIsOpen(false);
+          //   }}
+          //   buttonGroup={
+          //     <ConsentButtons
+          //       experience={experience}
+          //       onManagePreferencesClick={handleManagePreferencesClick}
+          //       enabledKeys={draftEnabledNoticeKeys}
+          //       onSave={(keys) => {
+          //         handleUpdatePreferences(keys);
+          //         setBannerIsOpen(false);
+          //       }}
+          //     />
+          //   }
+          // />
+          null}
+
+      {/* {renderModal({onSave: handleCloseModal, onClose: handleCloseModal});} */}
       <ConsentModal
         attributes={attributes}
         experience={experience.experience_config}
-        enabledNoticeKeys={draftEnabledNoticeKeys}
-        onChange={setDraftEnabledNoticeKeys}
-        notices={privacyNotices}
-        onClose={handleCloseModal}
-        buttonGroup={
-          <ConsentButtons
-            experience={experience}
-            enabledKeys={draftEnabledNoticeKeys}
-            isInModal
-            onSave={(keys) => {
-              handleUpdatePreferences(keys);
-              handleCloseModal();
-            }}
-          />
-        }
-        options={options}
-      />
+        // buttonGroup={
+        //   <ConsentButtons
+        //     experience={experience}
+        //     enabledKeys={draftEnabledNoticeKeys}
+        //     isInModal
+        //     onSave={(keys) => {
+        //       handleUpdatePreferences(keys);
+        //       handleCloseModal();
+        //     }}
+        //   />
+        // }
+      >
+        {renderModalContent({ onClose: handleCloseModal })}
+      </ConsentModal>
     </div>
   );
 };

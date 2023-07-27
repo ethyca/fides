@@ -3,7 +3,9 @@ import { h, render } from "preact";
 import { ComponentType } from "./consent-types";
 import { debugLog } from "./consent-utils";
 
-import Overlay, { OverlayProps } from "../components/Overlay";
+import NoticeOverlay from "../components/notices/NoticeOverlay";
+import TcfOverlay from "../components/tcf/TcfOverlay";
+import { OverlayProps } from "../components/types";
 
 /**
  * Initialize the Fides Consent overlay components.
@@ -39,13 +41,12 @@ export const initOverlay = async ({
         document.body.prepend(parentElem);
       }
 
-      if (
-        experience.component === ComponentType.OVERLAY ||
-        experience.component === ComponentType.TCF_OVERLAY
-      ) {
+      // DEFER: use a separate TCF bundle instead of this if statement
+      // so that the vanilla fides-js bundle does not need to know about TCF
+      if (experience.component === ComponentType.OVERLAY) {
         // Render the Overlay to the DOM!
         render(
-          <Overlay
+          <NoticeOverlay
             options={options}
             experience={experience}
             cookie={cookie}
@@ -54,6 +55,16 @@ export const initOverlay = async ({
           parentElem
         );
         debugLog(options.debug, "Fides overlay is now showing!");
+      } else if (experience.component === ComponentType.TCF_OVERLAY) {
+        render(
+          <TcfOverlay
+            options={options}
+            experience={experience}
+            cookie={cookie}
+            fidesRegionString={fidesRegionString}
+          />,
+          parentElem
+        );
       }
       return await Promise.resolve();
     } catch (e) {

@@ -78,7 +78,7 @@ import {
 import { dispatchFidesEvent } from "./lib/events";
 import { fetchExperience } from "./services/fides/api";
 import { getGeolocation } from "./services/external/geolocation";
-import { OverlayProps } from "./components/Overlay";
+import { OverlayProps } from "./components/types";
 import { updateConsentPreferences } from "./lib/preferences";
 import { resolveConsentValue } from "./lib/consent-value";
 
