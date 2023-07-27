@@ -1,6 +1,6 @@
 """Contains all of the ungrouped CLI commands for fides."""
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Dict
 
 import rich_click as click
 import yaml
@@ -107,7 +107,7 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
     else:
         if resources:
             sorted_fides_keys = sorted(
-                {resource["fides_key"] for resource in resources if resource}
+                {resource["fides_key"] for resource in resources if resource}  # type: ignore[index]
             )
             formatted_fides_keys = "\n  ".join(sorted_fides_keys)
             echo_green(

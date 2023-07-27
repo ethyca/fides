@@ -42,6 +42,7 @@ def audit_systems(
         pretty_echo(
             f"Auditing System: {system.name if isinstance(system, FidesModel) else system['name']}"
         )
+        assert isinstance(system, System)
         new_findings = validate_system_attributes(system, url, headers)
         audit_findings = audit_findings + new_findings
 
@@ -73,14 +74,16 @@ def validate_system_attributes(
         data_use = get_server_resource(
             url, "data_use", privacy_declaration.data_use, headers
         )
-        data_use_findings = audit_data_use_attributes(data_use, system.name)
+        assert isinstance(data_use, DataUse)
+        data_use_findings = audit_data_use_attributes(data_use, system.name or "")
         new_findings = new_findings + data_use_findings
         for data_subject_fides_key in privacy_declaration.data_subjects:
             data_subject = get_server_resource(
                 url, "data_subject", data_subject_fides_key, headers
             )
+            assert isinstance(data_subject, DataSubject)
             data_subject_findings = audit_data_subject_attributes(
-                data_subject, system.name
+                data_subject, system.name or ""
             )
             new_findings += data_subject_findings
     return new_findings
@@ -162,6 +165,7 @@ def audit_organizations(
         print(
             f"Auditing Organization: {organization.name if isinstance(organization, FidesModel) else organization['name']}"
         )
+        assert isinstance(organization, Organization)
         new_findings = audit_organization_attributes(organization)
         audit_findings += new_findings
     if audit_findings > 0:
@@ -188,7 +192,7 @@ def audit_organization_attributes(organization: Organization) -> int:
     for attribute in organization_attributes:
         attribute_is_set = getattr(organization, attribute) is not None
         compliance_messaging(
-            attribute_is_set, organization.fides_key, attribute, organization.name
+            attribute_is_set, organization.fides_key, attribute, organization.name or ""
         )
         if not attribute_is_set:
             audit_findings += 1

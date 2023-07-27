@@ -55,6 +55,7 @@ def get_evaluation_policies(
             resource_key=evaluate_fides_key,
             headers=headers,
         )
+        assert isinstance(server_policy_found, Policy)
         return [server_policy_found] if server_policy_found else []
 
     local_policy_keys = (
@@ -87,7 +88,7 @@ def get_all_server_policies(
     policy_list = get_server_resources(
         url=url, resource_type="policy", headers=headers, existing_keys=policy_keys
     )
-    return policy_list
+    return policy_list  # type: ignore[return-value]
 
 
 def validate_policies_exist(policies: List[Policy], evaluate_fides_key: str) -> None:
@@ -114,7 +115,7 @@ def get_fides_key_parent_hierarchy(
     current_key = fides_key
     fides_key_parent_hierarchy = []
     while True:
-        fides_key_parent_hierarchy.append(current_key)
+        fides_key_parent_hierarchy.append(FidesKey(current_key))
         found_resource_map = get_resource_by_fides_key(
             taxonomy=taxonomy, fides_key=current_key
         )

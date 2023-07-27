@@ -67,20 +67,21 @@ def get_server_resource(
         )
     )
 
-    server_resource: Optional[FidesModel] = (
+    raw_server_resource: Optional[Dict] = (
         raw_server_response.json()
         if raw_server_response.status_code >= 200
         and raw_server_response.status_code <= 299
         else None
     )
-    if not raw and server_resource:
-        server_resource = parse_dict(
+    if not raw and raw_server_resource:
+        parsed_server_resource: FidesModel = parse_dict(
             resource_type=resource_type,
             resource=raw_server_response.json(),
             from_server=True,
         )
+        return parsed_server_resource
 
-    return server_resource or {}
+    return raw_server_resource or {}
 
 
 def list_server_resources(
@@ -98,7 +99,7 @@ def list_server_resources(
     response: Response = check_response_auth(
         api.ls(url=url, resource_type=resource_type, headers=headers)
     )
-    server_resources = (
+    raw_server_resources: Optional[List[Dict]] = (
         [
             resource
             for resource in response.json()
@@ -108,14 +109,15 @@ def list_server_resources(
         else []
     )
 
-    if not raw and server_resources:
-        server_resources = [
+    if not raw and raw_server_resources:
+        parsed_server_resources: List[FidesModel] = [
             parse_dict(
                 resource_type=resource_type,
                 resource=resource_dict,
                 from_server=True,
             )
-            for resource_dict in server_resources
+            for resource_dict in raw_server_resources
         ]
+        return parsed_server_resources
 
-    return server_resources
+    return raw_server_resources

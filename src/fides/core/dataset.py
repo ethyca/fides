@@ -259,7 +259,9 @@ def scan_dataset_db(
     datasets in a local manifest (if one is provided).
     """
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
-    manifest_datasets = manifest_taxonomy.dataset if manifest_taxonomy else []
+    manifest_datasets = []
+    if manifest_taxonomy:
+        manifest_datasets = manifest_taxonomy.dataset or []
 
     if not local:
         server_datasets = (
