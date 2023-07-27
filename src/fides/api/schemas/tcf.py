@@ -70,7 +70,9 @@ class TCFVendorRecord(TCFSavedandServedDetails):
 
 
 class TCFFeatureRecord(TCFSavedandServedDetails):
-    """Schema for a TCF Feature or a special feature: returned in the TCF Overlay Experience"""
+    """Schema for a TCF Feature or a special feature: returned in the TCF Overlay Experience
+    TODO: TCF Flesh out TCFFeatureRecord
+    """
 
     id: int
     name: Optional[str]

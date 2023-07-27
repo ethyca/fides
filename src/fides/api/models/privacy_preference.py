@@ -56,7 +56,9 @@ class ConsentMethod(Enum):
     individual_notice = "individual_notice"
 
 
-class TCFAttributeType(Enum):
+class TCFComponentType(Enum):
+    """A particular element of the TCF form"""
+
     purpose = "purpose"
     special_purpose = "special_purpose"
     vendor = "vendor"
@@ -65,6 +67,8 @@ class TCFAttributeType(Enum):
 
 
 class ConsentRecordType(Enum):
+    """All of the relevant consent items that can be served or have preferences saved against"""
+
     privacy_notice_id = "privacy_notice_id"
     privacy_notice_history_id = "privacy_notice_history_id"
     purpose = "purpose"
@@ -274,7 +278,7 @@ def _validate_before_saving_consent_history(
 
     tcf_attributes: Dict[str, Union[Optional[str], Optional[int]]] = {
         tcf_key: data[tcf_key]
-        for tcf_key in data.keys() & TCFAttributeType.__members__.keys()
+        for tcf_key in data.keys() & TCFComponentType.__members__.keys()
         if data[tcf_key]
     }
 
@@ -492,17 +496,17 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
         if privacy_notice_history:
             return privacy_notice_history.calculate_relevant_systems(db)
 
-        if tcf_field == TCFAttributeType.purpose.value:
-            purpose_data_uses: List[str] = purpose_to_data_use(tcf_value)
+        if tcf_field == TCFComponentType.purpose.value:
+            purpose_data_uses: List[str] = purpose_to_data_use(tcf_value)  # type: ignore[arg-type]
             return systems_that_match_tcf_data_uses(db, purpose_data_uses)
 
-        if tcf_field == TCFAttributeType.special_purpose.value:
+        if tcf_field == TCFComponentType.special_purpose.value:
             special_purpose_data_uses: List[str] = purpose_to_data_use(
-                tcf_value, special_purpose=True
+                tcf_value, special_purpose=True  # type: ignore[arg-type]
             )
             return systems_that_match_tcf_data_uses(db, special_purpose_data_uses)
 
-        if tcf_field == TCFAttributeType.vendor.value:
+        if tcf_field == TCFComponentType.vendor.value:
             return systems_that_match_vendor_string(db, tcf_value)
 
         return []

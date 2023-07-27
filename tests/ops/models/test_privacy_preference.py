@@ -20,7 +20,7 @@ from fides.api.models.privacy_preference import (
     RequestOrigin,
     ServedNoticeHistory,
     ServingComponent,
-    TCFAttributeType,
+    TCFComponentType,
     UserConsentPreference,
     _validate_before_saving_consent_history,
 )
@@ -1301,7 +1301,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
     def test_determine_relevant_systems_for_tcf_purpose(self, db, system_with_no_uses):
         assert (
             PrivacyPreferenceHistory.determine_relevant_systems(
-                db, tcf_field=TCFAttributeType.purpose.value, tcf_value=3
+                db, tcf_field=TCFComponentType.purpose.value, tcf_value=3
             )
             == []
         )
@@ -1323,7 +1323,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
         )
 
         assert PrivacyPreferenceHistory.determine_relevant_systems(
-            db, tcf_field=TCFAttributeType.purpose.value, tcf_value=3
+            db, tcf_field=TCFComponentType.purpose.value, tcf_value=3
         ) == [system_with_no_uses.fides_key]
 
         pd_1.delete(db)
@@ -1333,7 +1333,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
     ):
         assert (
             PrivacyPreferenceHistory.determine_relevant_systems(
-                db, tcf_field=TCFAttributeType.special_purpose.value, tcf_value=2
+                db, tcf_field=TCFComponentType.special_purpose.value, tcf_value=2
             )
             == []
         )
@@ -1355,7 +1355,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
         )
 
         assert PrivacyPreferenceHistory.determine_relevant_systems(
-            db, tcf_field=TCFAttributeType.special_purpose.value, tcf_value=2
+            db, tcf_field=TCFComponentType.special_purpose.value, tcf_value=2
         ) == [system_with_no_uses.fides_key]
 
         pd_1.delete(db)
@@ -1363,7 +1363,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
     def test_determine_relevant_systems_for_tcf_vendor(self, db, system_with_no_uses):
         assert (
             PrivacyPreferenceHistory.determine_relevant_systems(
-                db, tcf_field=TCFAttributeType.vendor.value, tcf_value="amplitude"
+                db, tcf_field=TCFComponentType.vendor.value, tcf_value="amplitude"
             )
             == []
         )
@@ -1384,7 +1384,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
         connection_config.save(db)
 
         assert PrivacyPreferenceHistory.determine_relevant_systems(
-            db, tcf_field=TCFAttributeType.vendor.value, tcf_value="amplitude"
+            db, tcf_field=TCFComponentType.vendor.value, tcf_value="amplitude"
         ) == [system_with_no_uses.fides_key]
 
         dataset_config.delete(db)
@@ -1395,14 +1395,14 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
     ):
         assert (
             PrivacyPreferenceHistory.determine_relevant_systems(
-                db, tcf_field=TCFAttributeType.special_feature.value, tcf_value=1
+                db, tcf_field=TCFComponentType.special_feature.value, tcf_value=1
             )
             == []
         )
 
         assert (
             PrivacyPreferenceHistory.determine_relevant_systems(
-                db, tcf_field=TCFAttributeType.feature.value, tcf_value=1
+                db, tcf_field=TCFComponentType.feature.value, tcf_value=1
             )
             == []
         )

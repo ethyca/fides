@@ -1,6 +1,5 @@
-from collections import defaultdict
 from functools import lru_cache
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from fideslang.gvl import MAPPED_PURPOSES, MAPPED_SPECIAL_PURPOSES, data_use_to_purpose
 from fideslang.gvl.models import Purpose
@@ -14,7 +13,12 @@ from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     PrivacyDeclaration,
     System,
 )
-from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
+from fides.api.schemas.tcf import (
+    EmbeddedVendor,
+    TCFFeatureRecord,
+    TCFPurposeRecord,
+    TCFVendorRecord,
+)
 
 # Each TCF sections embedded in the TCF Overlay mapped to the
 # specific field name from which previously-saved values are retrieved
@@ -39,9 +43,21 @@ class TCFExperienceContents:
 
 
 def get_purposes_and_vendors(
-    db: Session, relevant_data_uses: List[str], purpose_field: str, purpose_map: Dict
-) -> Tuple[List[TCFPurposeRecord], List[TCFVendorRecord]]:
-    systems_uses_vendors: Query = (
+    db: Session,
+    relevant_data_uses: List[str],
+    purpose_field: str,
+    system_map: Dict[str, TCFVendorRecord],
+) -> Tuple[Dict[int, TCFPurposeRecord], Dict[str, TCFVendorRecord]]:
+    """Helper method for building data for purposes/special purposes and vendors
+
+    - Vendor data is summarized on each purpose and purpose data is summarized on each vendor.
+    - System map is passed in as an argument instead of being constructed here, because both
+    special purposes and purposes are added to it and we modify that mapping multiple times.
+
+    """
+    purpose_map: Dict[int, TCFPurposeRecord] = {}
+    # Get rows of system ids, data uses, and vendors identifiers that match "relevant_data_uses"
+    matching_systems: Query = (
         db.query(
             System.id,
             array_agg(PrivacyDeclaration.data_use).label("data_uses"),
@@ -55,38 +71,37 @@ def get_purposes_and_vendors(
         .filter(PrivacyDeclaration.data_use.in_(relevant_data_uses))
     )
 
-    relevant_purpose_ids: Dict[int, List[Dict[str, str]]] = defaultdict(list)
-    relevant_vendors: List[TCFVendorRecord] = []
-    for record in systems_uses_vendors:
+    for record in matching_systems:
+        # Get looked-up vendor if it exists
         vendor: Optional[str] = next(
             (vendor for vendor in record.vendor if vendor is not None), None
         )
+        if vendor and vendor not in system_map:
+            system_map[vendor] = TCFVendorRecord(id=vendor)
 
-        system_purpose_ids: Set[int] = set()
         for use in record.data_uses:
+            # Get the matching purpose or special purpose
             system_purpose: Purpose = data_use_to_purpose(use)
-            if system_purpose:
-                system_purpose_ids.add(system_purpose.id)
-                relevant_purpose_ids[system_purpose.id].extend(
-                    [{"id": vendor, "name": vendor}] if vendor else []
+            if not system_purpose:
+                continue
+
+            if system_purpose.id not in purpose_map:
+                # Collect relevant purpose or special purposes
+                purpose_map[system_purpose.id] = TCFPurposeRecord(
+                    **system_purpose.dict()
                 )
 
-        if vendor:
-            vendor_record = TCFVendorRecord(id=vendor)
-            setattr(
-                vendor_record,
-                purpose_field,
-                [purpose_map.get(purpose_id) for purpose_id in system_purpose_ids],
-            )
-            relevant_vendors.append(vendor_record)
+            if vendor:
+                # Embed vendor on the given purpose or special purpose
+                purpose_map[system_purpose.id].vendors.extend(
+                    [EmbeddedVendor(id=vendor, name=vendor.capitalize())]
+                )
+                # Do the reverse, and append the purpose or the special purpose to the vendor
+                getattr(system_map[vendor], purpose_field).append(system_purpose)
 
-    purpose_records = []
-    for purpose_id, vendors in relevant_purpose_ids.items():
-        purpose_record = TCFPurposeRecord(**purpose_map.get(purpose_id).dict())
-        purpose_record.vendors = vendors
-        purpose_records.append(purpose_record)
-
-    return purpose_records, relevant_vendors
+    for purpose in purpose_map.values():
+        purpose.vendors.sort(key=lambda x: x.id)
+    return purpose_map, system_map
 
 
 @lru_cache()
@@ -96,37 +111,44 @@ def get_tcf_contents(
     """
     Load TCF Purposes and Special Purposes from Fideslang and then return a subset of those whose data uses
     are on systems. Return a reverse representation for the vendors themselves.
+
+    TODO: TCF Populate TCF Experience with Features and Special Features
+    TODO: TCF Return more Vendor information
+    TODO: TCF Pull Vendor field from System instead of Integration
     """
+    system_map: Dict[str, TCFVendorRecord] = {}
+
+    # Collect purposes and systems
     all_tcf_data_uses: List[str] = []
     for purpose in MAPPED_PURPOSES.values():
         all_tcf_data_uses.extend(purpose.data_uses)
-
-    purposes, vendors = get_purposes_and_vendors(
-        db, all_tcf_data_uses, purpose_field="purposes", purpose_map=MAPPED_PURPOSES
+    purpose_map, updated_system_map = get_purposes_and_vendors(
+        db, all_tcf_data_uses, purpose_field="purposes", system_map=system_map
     )
 
+    # Collect special purposes and update system map
     special_purpose_data_uses: List[str] = []
     for special_purpose in MAPPED_SPECIAL_PURPOSES.values():
         special_purpose_data_uses.extend(special_purpose.data_uses)
-
-    special_purposes, special_purpose_vendors = get_purposes_and_vendors(
+    special_purpose_map, second_round_updated_system_map = get_purposes_and_vendors(
         db,
         special_purpose_data_uses,
         purpose_field="special_purposes",
-        purpose_map=MAPPED_SPECIAL_PURPOSES,
+        system_map=updated_system_map,
     )
-    for special_purpose_vendor in special_purpose_vendors:
-        matching_vendor = next(
-            (vendor for vendor in vendors if vendor.id == special_purpose_vendor.id),
-            None,
-        )
-        if matching_vendor:
-            matching_vendor.special_purposes = special_purpose_vendor.special_purposes
-        else:
-            vendors.append(special_purpose_vendor)
 
     tcf_consent_contents = TCFExperienceContents()
-    tcf_consent_contents.tcf_purposes = purposes
-    tcf_consent_contents.tcf_special_purposes = special_purposes
-    tcf_consent_contents.tcf_vendors = vendors
+    tcf_consent_contents.tcf_purposes = sorted(
+        list(purpose_map.values()), key=lambda x: x.id
+    )
+    tcf_consent_contents.tcf_special_purposes = sorted(
+        list(special_purpose_map.values()), key=lambda x: x.id
+    )
+    tcf_consent_contents.tcf_vendors = sorted(
+        list(second_round_updated_system_map.values()), key=lambda x: x.id
+    )
+    for vendor in tcf_consent_contents.tcf_vendors:
+        vendor.purposes.sort(key=lambda x: x.id)
+        vendor.special_purposes.sort(key=lambda x: x.id)
+
     return tcf_consent_contents

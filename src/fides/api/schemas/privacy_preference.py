@@ -11,7 +11,7 @@ from fides.api.models.privacy_preference import (
     ConsentMethod,
     RequestOrigin,
     ServingComponent,
-    TCFAttributeType,
+    TCFComponentType,
 )
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.schemas.base_class import FidesSchema
@@ -30,11 +30,11 @@ from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING
 # Maps the sections in the request body for saving various TCF preferences
 # against the specific field name on which these preferences are saved
 TCF_PREFERENCES_FIELD_MAPPING: Dict[str, str] = {
-    "purpose_preferences": TCFAttributeType.purpose.value,
-    "special_purpose_preferences": TCFAttributeType.special_purpose.value,
-    "feature_preferences": TCFAttributeType.feature.value,
-    "special_feature_preferences": TCFAttributeType.special_feature.value,
-    "vendor_preferences": TCFAttributeType.vendor.value,
+    "purpose_preferences": TCFComponentType.purpose.value,
+    "special_purpose_preferences": TCFComponentType.special_purpose.value,
+    "feature_preferences": TCFComponentType.feature.value,
+    "special_feature_preferences": TCFComponentType.special_feature.value,
+    "vendor_preferences": TCFComponentType.vendor.value,
 }
 
 
