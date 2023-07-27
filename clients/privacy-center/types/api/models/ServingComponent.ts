@@ -5,8 +5,9 @@
 /**
  * An enumeration.
  */
-export enum ConsentMethod {
-  BUTTON = "button",
+export enum ServingComponent {
+  OVERLAY = "overlay",
+  BANNER = "banner",
+  PRIVACY_CENTER = "privacy_center",
   GPC = "gpc",
-  INDIVIDUAL_NOTICE = "individual_notice",
 }
