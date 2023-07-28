@@ -3,18 +3,22 @@ saas_config:
   name: Universal Analytics
   type: universal_analytics
   description: A schema representing the Universal Analytics connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/universal-analytics
   version: 0.0.2
 
   connector_params:
     - name: client_id
       label: Client ID
-      sensitive: True
+      description: The OAuth 2.0 client ID for your application
     - name: client_secret
       sensitive: True
+      label: Client secret
+      description: The OAuth 2.0 client secret for your application
     - name: redirect_uri
-      label: Redirect URI
+      label: Redirect URL
+      description: The URL to which Fides will be redirected after successful authentication.
     - name: web_property_id
-      label: Web Property ID
+      label: Property ID
       description: Web property ID of the form UA-XXXXX-YY.
 
   client_config:

@@ -3,22 +3,28 @@ saas_config:
   name: Doordash
   type: doordash
   description: A sample schema representing the Doordash connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/doordash
   version: 0.0.2
 
   connector_params:
     - name: domain
       default_value: openapi.doordash.com
+      description: Your Doordash API Domain
     - name: developer_id
       label: Developer ID
+      description: Your Doordash Developer ID
     - name: key_id
       label: Key ID
+      descriptionL Your Doordash access key ID
     - name: signing_secret
       label: Secret
+      description: Your Doordash signing secret
       sensitive: True
 
   external_references:
     - name: doordash_delivery_id
-      label: Doordash Delivery ID
+      label: Delivery ID field
+      description: The location in your owned database where you store Doordash delivery IDs
 
   client_config:
     protocol: https
