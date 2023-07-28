@@ -20,18 +20,16 @@ The types of changes are:
 ### Added
 - Additional consent reporting calls from `fides-js` [#3845](https://github.com/ethyca/fides/pull/3845)
 - Additional consent reporting calls from privacy center [#3847](https://github.com/ethyca/fides/pull/3847)
+- HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
 
 ### Fixed
 - Fix datamap zoom for low system counts [#3835](https://github.com/ethyca/fides/pull/3835)
-
-### Added
-
-- HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
 
 ### Changed
 
 - Simplified the file structure for HTML DSR packages [#3848](https://github.com/ethyca/fides/pull/3848)
 - Changed max width of form components in "system information" form tab [#3864](https://github.com/ethyca/fides/pull/3864)
+- Refactored `fides.js` components so that they can take data structures that are not necessarily privacy notices [#3870](https://github.com/ethyca/fides/pull/3870)
 
 ## [2.17.0](https://github.com/ethyca/fides/compare/2.16.0...2.17.0)
 
