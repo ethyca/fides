@@ -1,6 +1,6 @@
 import type { UserConsentPreference } from "../consent-types";
 
-export type EmbeddedPurpose = {
+export type EmbeddedLineItem = {
   id: number;
   name: string;
 };
@@ -28,7 +28,7 @@ export type TCFFeatureRecord = {
   name?: string;
 };
 
-export type TCFPreferenceSave = {
+export type TCFFeatureSave = {
   id: number;
   preference: UserConsentPreference;
   served_notice_history_id?: string;
@@ -63,6 +63,24 @@ export type TCFPurposeRecord = {
   vendors?: Array<EmbeddedVendor>;
 };
 
+export type TCFPurposeSave = {
+  id: number;
+  preference: UserConsentPreference;
+  served_notice_history_id?: string;
+};
+
+export type TCFSpecialFeatureSave = {
+  id: number;
+  preference: UserConsentPreference;
+  served_notice_history_id?: string;
+};
+
+export type TCFSpecialPurposeSave = {
+  id: number;
+  preference: UserConsentPreference;
+  served_notice_history_id?: string;
+};
+
 export type TCFVendorRecord = {
   default_preference?: UserConsentPreference;
   current_preference?: UserConsentPreference;
@@ -73,9 +91,11 @@ export type TCFVendorRecord = {
   name?: string;
   description?: string;
   is_gvl?: boolean;
-  purposes?: Array<EmbeddedPurpose>;
-  special_purposes?: Array<EmbeddedPurpose>;
+  purposes?: Array<EmbeddedLineItem>;
+  special_purposes?: Array<EmbeddedLineItem>;
   data_categories?: Array<TCFDataCategoryRecord>;
+  features?: Array<EmbeddedLineItem>;
+  special_features?: Array<EmbeddedLineItem>;
 };
 
 export type TCFVendorSave = {
