@@ -4,7 +4,7 @@ import { ComponentType } from "./consent-types";
 import { debugLog } from "./consent-utils";
 
 import NoticeOverlay from "../components/notices/NoticeOverlay";
-import TcfOverlay from "../components/tcf/TcfOverlay";
+import TcfOverlay from "../components/Tcf/TcfOverlay";
 import { OverlayProps } from "../components/types";
 
 /**
