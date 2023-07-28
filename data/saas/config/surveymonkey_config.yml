@@ -11,8 +11,8 @@ saas_config:
       default_value: api.surveymonkey.com
       description: Your SurveyMonkey API URL
     - name: api_token
-      label: API token
-      description: Your SurveyMonkey API token
+      label: Access token
+      description: Your SurveyMonkey access token
       sensitive: True
 
 
