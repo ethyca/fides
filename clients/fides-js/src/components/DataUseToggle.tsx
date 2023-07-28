@@ -19,7 +19,7 @@ const DataUseToggle = ({
   dataUse: DataUse;
   checked: boolean;
   onToggle: (noticeKey: DataUse["key"]) => void;
-  children: ComponentChildren;
+  children?: ComponentChildren;
   badge?: string;
   gpcBadge?: VNode;
   disabled?: boolean;
@@ -70,7 +70,7 @@ const DataUseToggle = ({
           disabled={disabled}
         />
       </div>
-      <div {...getDisclosureProps()}>{children}</div>
+      {children ? <div {...getDisclosureProps()}>{children}</div> : null}
     </div>
   );
 };
