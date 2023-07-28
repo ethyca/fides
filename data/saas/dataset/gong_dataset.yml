@@ -1,6 +1,6 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: Gong
+    name: Gong Dataset
     description: A sample dataset representing the Gong connector for Fides
     collections:
       - name: data_privacy
