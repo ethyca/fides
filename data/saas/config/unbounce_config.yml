@@ -3,18 +3,23 @@ saas_config:
   name: Unbounce
   type: unbounce
   description: A sample schema representing the Unbounce connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/unbounce
   version: 0.1.1
 
   connector_params:
     - name: domain
       default_value: api.unbounce.com
+      description: Your Unbounce URL 
     - name: client_id
       label: Client ID
-      sensitive: True
+      description: Your Unbounce client ID.
     - name: client_secret
       sensitive: True
+      label: Client secret
+      description: Your Unbounce client secret
     - name: redirect_uri
-      label: Redirect URI
+      label: Redirect URL
+      description: The URL to which Fides will be redirected after successful authentication.
 
   client_config:
     protocol: https
