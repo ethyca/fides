@@ -2,46 +2,108 @@ import { h, FunctionComponent } from "preact";
 import { useState, useCallback, useMemo } from "preact/hooks";
 import ConsentBanner from "../ConsentBanner";
 
-import { debugLog, hasActionNeededNotices } from "../../lib/consent-utils";
+import {
+  debugLog,
+  hasActionNeededNotices,
+  transformUserPreferenceToBoolean,
+} from "../../lib/consent-utils";
 
 import "../fides.css";
 import Overlay from "../Overlay";
-import { TcfConsentButtons } from "../ConsentButtons";
+import { TcfConsentButtons } from "./TcfConsentButtons";
 import { OverlayProps } from "../types";
 import TcfTabs from "./TcfTabs";
+import {
+  TCFFeatureRecord,
+  TCFPurposeRecord,
+  TCFVendorRecord,
+} from "../../lib/tcf/types";
+
+const resolveConsentValueFromTcfModel = (
+  model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
+) => {
+  if (model.current_preference) {
+    return transformUserPreferenceToBoolean(model.current_preference);
+  }
+
+  return transformUserPreferenceToBoolean(model.default_preference);
+};
+
+const getEnabledIds = (
+  modelList:
+    | TCFPurposeRecord[]
+    | TCFFeatureRecord[]
+    | TCFVendorRecord[]
+    | undefined
+) => {
+  if (!modelList) {
+    return [];
+  }
+  return modelList
+    .map((model) => {
+      const value = resolveConsentValueFromTcfModel(model);
+      return { ...model, consentValue: value };
+    })
+    .filter((model) => model.consentValue)
+    .map((model) => `${model.id}`);
+};
+
+export interface EnabledIds {
+  purposes: string[];
+  specialPurposes: string[];
+  features: string[];
+  specialFeatures: string[];
+  vendors: string[];
+}
+
+export interface UpdateEnabledIds {
+  newEnabledIds: string[];
+  modelType: keyof EnabledIds;
+}
 
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
   experience,
   options,
   cookie,
 }) => {
-  // TODO: how will we initialize TCF data?
-  const initialEnabledKeys = useMemo(
-    () => Object.keys(cookie.consent).filter((key) => cookie.consent[key]),
-    [cookie.consent]
-  );
+  // TODO: should we get this from the cookie?
+  const initialEnabledIds: EnabledIds = useMemo(() => {
+    const {
+      tcf_purposes: purposes,
+      tcf_special_purposes: specialPurposes,
+      tcf_features: features,
+      tcf_special_features: specialFeatures,
+      tcf_vendors: vendors,
+    } = experience;
 
-  const [draftEnabledKeys] = useState<Array<string>>(initialEnabledKeys);
+    return {
+      purposes: getEnabledIds(purposes),
+      specialPurposes: getEnabledIds(specialPurposes),
+      features: getEnabledIds(features),
+      specialFeatures: getEnabledIds(specialFeatures),
+      vendors: getEnabledIds(vendors),
+    };
+  }, [experience]);
+
+  const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
   const showBanner = useMemo(
     () => experience.show_banner && hasActionNeededNotices(experience),
     [experience]
   );
 
-  // TODO: figure out how keys will work here
-  const handleUpdatePurposes = useCallback(() => {}, []);
-  const handleUpdateFeatures = useCallback(() => {}, []);
-  const handleUpdateVendors = useCallback(() => {}, []);
-
-  const handleUpdateAllPreferences = useCallback(
-    (enabledKeys: string[]) => {
-      console.log({ enabledKeys });
-      handleUpdatePurposes();
-      handleUpdateFeatures();
-      handleUpdateVendors();
+  const handleUpdateDraftState = useCallback(
+    ({ newEnabledIds, modelType }: UpdateEnabledIds) => {
+      const updated = { ...draftIds, [modelType]: newEnabledIds };
+      setDraftIds(updated);
     },
-    [handleUpdatePurposes, handleUpdateFeatures, handleUpdateVendors]
+    [draftIds]
   );
+
+  const handleUpdateAllPreferences = useCallback((enabledIds: EnabledIds) => {
+    console.log({ enabledIds });
+    // TODO: PATCH
+  }, []);
 
   if (!experience.experience_config) {
     debugLog(options.debug, "No experience config found");
@@ -64,7 +126,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               <TcfConsentButtons
                 experience={experience}
                 onManagePreferencesClick={onManagePreferencesClick}
-                enabledKeys={draftEnabledKeys}
+                enabledKeys={draftIds}
                 onSave={(keys) => {
                   handleUpdateAllPreferences(keys);
                   onSave();
@@ -76,10 +138,14 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       }
       renderModalContent={({ onClose }) => (
         <div>
-          <TcfTabs experience={experience} />
+          <TcfTabs
+            experience={experience}
+            enabledIds={draftIds}
+            onChange={handleUpdateDraftState}
+          />
           <TcfConsentButtons
             experience={experience}
-            enabledKeys={draftEnabledKeys}
+            enabledKeys={draftIds}
             onSave={(keys) => {
               handleUpdateAllPreferences(keys);
               onClose();

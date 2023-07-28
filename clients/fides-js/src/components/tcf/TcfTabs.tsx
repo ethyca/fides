@@ -2,15 +2,32 @@ import { h } from "preact";
 import { useRef, useState } from "preact/hooks";
 import TcfPurposes from "./TcfPurposes";
 import { PrivacyExperience } from "~/fides";
+import type { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
 
-const TcfTabs = ({ experience }: { experience: PrivacyExperience }) => {
+const TcfTabs = ({
+  experience,
+  enabledIds,
+  onChange,
+}: {
+  experience: PrivacyExperience;
+  enabledIds: EnabledIds;
+  onChange: (payload: UpdateEnabledIds) => void;
+}) => {
   const tcfTabs = [
     {
       name: "Purposes",
-      content: <TcfPurposes purposes={experience.tcf_purposes} />,
+      content: (
+        <TcfPurposes
+          allPurposes={experience.tcf_purposes}
+          allSpecialPurposes={experience.tcf_special_purposes}
+          enabledPurposeIds={enabledIds.purposes}
+          enabledSpecialPurposeIds={enabledIds.specialPurposes}
+          onChange={onChange}
+        />
+      ),
     },
     { name: "Features", content: "two" },
     { name: "Vendors", content: "three" },

@@ -2,17 +2,20 @@ import { h } from "preact";
 import DataUseToggle from "../DataUseToggle";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { TCFPurposeRecord } from "~/lib/tcf/types";
+import { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
 
 const PurposeToggle = ({
   purpose,
   onToggle,
+  checked,
 }: {
   purpose: TCFPurposeRecord;
   onToggle: () => void;
+  checked: boolean;
 }) => {
   const dataUse = { key: purpose.name, name: purpose.name };
   return (
-    <DataUseToggle dataUse={dataUse} checked={false} onToggle={onToggle}>
+    <DataUseToggle dataUse={dataUse} checked={checked} onToggle={onToggle}>
       <div>
         <p className="fides-tcf-toggle-content">{purpose.description}</p>
         <p className="fides-tcf-illustration fides-background-dark">
@@ -36,51 +39,74 @@ const PurposeToggle = ({
 };
 
 const TcfPurposes = ({
-  purposes,
-  specialPurposes,
+  allPurposes,
+  allSpecialPurposes,
+  enabledPurposeIds,
+  enabledSpecialPurposeIds,
+  onChange,
 }: {
-  purposes: PrivacyExperience["tcf_purposes"];
-  specialPurposes: PrivacyExperience["tcf_special_purposes"];
+  allPurposes: PrivacyExperience["tcf_purposes"];
+  allSpecialPurposes: PrivacyExperience["tcf_special_purposes"];
+  enabledPurposeIds: string[];
+  enabledSpecialPurposeIds: string[];
+  onChange: (payload: UpdateEnabledIds) => void;
 }) => {
   const handleToggleAllPurposes = () => {};
   const handleToggleAllSpecialPurposes = () => {};
 
-  const handleTogglePurpose = (purpose: TCFPurposeRecord) => {
-    console.log({ purpose });
+  const handleTogglePurpose = (
+    purpose: TCFPurposeRecord,
+    modelType: keyof EnabledIds
+  ) => {
+    const purposeId = `${purpose.id}`;
+    let enabled = enabledPurposeIds;
+    if (modelType === "specialPurposes") {
+      enabled = enabledSpecialPurposeIds;
+    }
+    // handle toggle off
+    let updated = [];
+    if (enabled.indexOf(purposeId) !== -1) {
+      updated = enabled.filter((e) => e === purposeId);
+    } else {
+      updated = [...enabled, purposeId];
+    }
+    onChange({ newEnabledIds: updated, modelType });
   };
 
   return (
     <div>
-      {purposes ? (
+      {allPurposes ? (
         <div>
           <DataUseToggle
             dataUse={{ key: "purposes", name: "Purposes" }}
             onToggle={handleToggleAllPurposes}
             checked={false}
           />
-          {purposes.map((p) => (
+          {allPurposes.map((p) => (
             <PurposeToggle
               purpose={p}
               onToggle={() => {
-                handleTogglePurpose(p);
+                handleTogglePurpose(p, "purposes");
               }}
+              checked={enabledPurposeIds.indexOf(`${p.id}`) !== -1}
             />
           ))}
         </div>
       ) : null}
-      {specialPurposes ? (
+      {allSpecialPurposes ? (
         <div>
           <DataUseToggle
             dataUse={{ key: "specialPurposes", name: "Special purposes" }}
             onToggle={handleToggleAllSpecialPurposes}
             checked={false}
           />
-          {specialPurposes.map((p) => (
+          {allSpecialPurposes.map((p) => (
             <PurposeToggle
               purpose={p}
               onToggle={() => {
-                handleTogglePurpose(p);
+                handleTogglePurpose(p, "specialPurposes");
               }}
+              checked={enabledSpecialPurposeIds.indexOf(`${p.id}`) !== -1}
             />
           ))}
         </div>
