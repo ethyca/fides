@@ -1,8 +1,9 @@
 import { h } from "preact";
+
 import DataUseToggle from "../DataUseToggle";
 import { PrivacyExperience } from "../../lib/consent-types";
-import { TCFPurposeRecord } from "~/lib/tcf/types";
-import { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
+import { TCFPurposeRecord } from "../../lib/tcf/types";
+import { UpdateEnabledIds } from "./TcfOverlay";
 
 const PurposeToggle = ({
   purpose,
@@ -38,6 +39,58 @@ const PurposeToggle = ({
   );
 };
 
+const PurposeBlock = ({
+  label,
+  allPurposes,
+  enabledIds,
+  onChange,
+}: {
+  label: string;
+  allPurposes: TCFPurposeRecord[] | undefined;
+  enabledIds: string[];
+  onChange: (newIds: string[]) => void;
+}) => {
+  if (!allPurposes || allPurposes.length === 0) {
+    return null;
+  }
+
+  const allChecked = allPurposes.length === enabledIds.length;
+  const handleToggle = (purpose: TCFPurposeRecord) => {
+    const purposeId = `${purpose.id}`;
+    if (enabledIds.indexOf(purposeId) !== -1) {
+      onChange(enabledIds.filter((e) => e === purposeId));
+    } else {
+      onChange([...enabledIds, purposeId]);
+    }
+  };
+  const handleToggleAll = () => {
+    if (allChecked) {
+      onChange([]);
+    } else {
+      onChange(allPurposes.map((p) => `${p.id}`));
+    }
+  };
+
+  return (
+    <div>
+      <DataUseToggle
+        dataUse={{ key: label, name: label }}
+        onToggle={handleToggleAll}
+        checked={allChecked}
+      />
+      {allPurposes.map((p) => (
+        <PurposeToggle
+          purpose={p}
+          onToggle={() => {
+            handleToggle(p);
+          }}
+          checked={enabledIds.indexOf(`${p.id}`) !== -1}
+        />
+      ))}
+    </div>
+  );
+};
+
 const TcfPurposes = ({
   allPurposes,
   allSpecialPurposes,
@@ -50,69 +103,25 @@ const TcfPurposes = ({
   enabledPurposeIds: string[];
   enabledSpecialPurposeIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
-}) => {
-  const handleToggleAllPurposes = () => {};
-  const handleToggleAllSpecialPurposes = () => {};
-
-  const handleTogglePurpose = (
-    purpose: TCFPurposeRecord,
-    modelType: keyof EnabledIds
-  ) => {
-    const purposeId = `${purpose.id}`;
-    let enabled = enabledPurposeIds;
-    if (modelType === "specialPurposes") {
-      enabled = enabledSpecialPurposeIds;
-    }
-    // handle toggle off
-    let updated = [];
-    if (enabled.indexOf(purposeId) !== -1) {
-      updated = enabled.filter((e) => e === purposeId);
-    } else {
-      updated = [...enabled, purposeId];
-    }
-    onChange({ newEnabledIds: updated, modelType });
-  };
-
-  return (
-    <div>
-      {allPurposes ? (
-        <div>
-          <DataUseToggle
-            dataUse={{ key: "purposes", name: "Purposes" }}
-            onToggle={handleToggleAllPurposes}
-            checked={false}
-          />
-          {allPurposes.map((p) => (
-            <PurposeToggle
-              purpose={p}
-              onToggle={() => {
-                handleTogglePurpose(p, "purposes");
-              }}
-              checked={enabledPurposeIds.indexOf(`${p.id}`) !== -1}
-            />
-          ))}
-        </div>
-      ) : null}
-      {allSpecialPurposes ? (
-        <div>
-          <DataUseToggle
-            dataUse={{ key: "specialPurposes", name: "Special purposes" }}
-            onToggle={handleToggleAllSpecialPurposes}
-            checked={false}
-          />
-          {allSpecialPurposes.map((p) => (
-            <PurposeToggle
-              purpose={p}
-              onToggle={() => {
-                handleTogglePurpose(p, "specialPurposes");
-              }}
-              checked={enabledSpecialPurposeIds.indexOf(`${p.id}`) !== -1}
-            />
-          ))}
-        </div>
-      ) : null}
-    </div>
-  );
-};
+}) => (
+  <div>
+    <PurposeBlock
+      label="Purposes"
+      allPurposes={allPurposes}
+      enabledIds={enabledPurposeIds}
+      onChange={(newEnabledIds) =>
+        onChange({ newEnabledIds, modelType: "purposes" })
+      }
+    />
+    <PurposeBlock
+      label="Special purposes"
+      allPurposes={allSpecialPurposes}
+      enabledIds={enabledSpecialPurposeIds}
+      onChange={(newEnabledIds) =>
+        onChange({ newEnabledIds, modelType: "specialPurposes" })
+      }
+    />
+  </div>
+);
 
 export default TcfPurposes;

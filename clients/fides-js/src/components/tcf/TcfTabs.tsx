@@ -3,6 +3,7 @@ import { useRef, useState } from "preact/hooks";
 import TcfPurposes from "./TcfPurposes";
 import { PrivacyExperience } from "~/fides";
 import type { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
+import TcfFeatures from "./TcfFeatures";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
@@ -29,7 +30,18 @@ const TcfTabs = ({
         />
       ),
     },
-    { name: "Features", content: "two" },
+    {
+      name: "Features",
+      content: (
+        <TcfFeatures
+          allFeatures={experience.tcf_features}
+          allSpecialFeatures={experience.tcf_special_features}
+          enabledFeatureIds={enabledIds.features}
+          enabledSpecialFeatureIds={enabledIds.specialFeatures}
+          onChange={onChange}
+        />
+      ),
+    },
     { name: "Vendors", content: "three" },
   ];
   const [activeTabIndex, setActiveTabIndex] = useState(0);

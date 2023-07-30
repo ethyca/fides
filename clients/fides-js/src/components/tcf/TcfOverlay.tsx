@@ -103,6 +103,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   const handleUpdateAllPreferences = useCallback((enabledIds: EnabledIds) => {
     console.log({ enabledIds });
     // TODO: PATCH
+    setDraftIds(enabledIds);
   }, []);
 
   if (!experience.experience_config) {
