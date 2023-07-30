@@ -4,6 +4,7 @@ import TcfPurposes from "./TcfPurposes";
 import { PrivacyExperience } from "~/fides";
 import type { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
 import TcfFeatures from "./TcfFeatures";
+import TcfVendors from "./TcfVendors";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
@@ -42,7 +43,16 @@ const TcfTabs = ({
         />
       ),
     },
-    { name: "Vendors", content: "three" },
+    {
+      name: "Vendors",
+      content: (
+        <TcfVendors
+          allVendors={experience.tcf_vendors}
+          enabledIds={enabledIds.vendors}
+          onChange={onChange}
+        />
+      ),
+    },
   ];
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const inputRefs = [

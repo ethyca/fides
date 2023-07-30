@@ -137,7 +137,7 @@
           "current_served": null,
           "outdated_served": null,
           "id": "adobe_campaign",
-          "name": null,
+          "name": "Adobe campaign",
           "description": null,
           "is_gvl": null,
           "purposes": [

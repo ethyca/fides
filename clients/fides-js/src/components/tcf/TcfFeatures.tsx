@@ -16,7 +16,7 @@ const FeatureBlock = ({
   enabledIds: string[];
   onChange: (newIds: string[]) => void;
 }) => {
-  if (!allFeatures) {
+  if (!allFeatures || allFeatures.length === 0) {
     return null;
   }
 
