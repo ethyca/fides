@@ -1,5 +1,6 @@
 import type { NextApiRequest } from "next";
-import { UserGeolocation } from "fides-js";
+import { getGeolocation, UserGeolocation } from "fides-js";
+import {PrivacyCenterClientSettings} from "~/app/server-environment";
 
 // Regex to validate a location string, which must:
 // 1) Start with a 2-3 character country code (e.g. "US")
@@ -11,9 +12,11 @@ const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
 // (see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/adding-cloudfront-headers.html#cloudfront-headers-viewer-location)
 const CLOUDFRONT_HEADER_COUNTRY = "cloudfront-viewer-country";
 const CLOUDFRONT_HEADER_REGION = "cloudfront-viewer-country-region";
+const X_FORWARDED_FOR = "X-Forwarded-For";
 export const LOCATION_HEADERS = [
   CLOUDFRONT_HEADER_COUNTRY,
   CLOUDFRONT_HEADER_REGION,
+  X_FORWARDED_FOR,
 ];
 
 /**
@@ -26,7 +29,8 @@ export const LOCATION_HEADERS = [
  *
  */
 export const lookupGeolocation = async (
-  req: NextApiRequest
+  req: NextApiRequest,
+  settings: PrivacyCenterClientSettings
 ): Promise<UserGeolocation | null> => {
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;
@@ -61,7 +65,17 @@ export const lookupGeolocation = async (
     }
   }
 
-  // DEFER: read headers to determine & return the request's IP address
-  // Get geolocation if settings.IS_OVERLAY_ENABLED && settings.IS_GEOLOCATION_ENABLED && settings.GEOLOCATION_API_URL
+  if (settings.IS_OVERLAY_ENABLED && settings.IS_PREFETCH_ENABLED) {
+    // read headers to determine if we have request's IP address
+    if (typeof req.headers[X_FORWARDED_FOR] === "string") {
+      const forwarded_ip_info = req.headers[X_FORWARDED_FOR];
+      return getGeolocation(
+          settings.IS_GEOLOCATION_ENABLED,
+          settings.GEOLOCATION_API_URL,
+          forwarded_ip_info,
+          settings.DEBUG
+      );
+    }
+  }
   return null;
 };

@@ -74,7 +74,8 @@ services:
       - ${FIDES_DEPLOY_ENV_FILE:-sample.env}
     environment:
       - FIDES_PRIVACY_CENTER__FIDES_API_URL=http://localhost:8080/api/v1
-      - FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL=http://localhost:3001
+      - FIDES_PRIVACY_CENTER__SERVER_SIDE_FIDES_API_URL=http://localhost:8080/api/v1
+      - FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL=http://host.docker.internal:8080/api/v1
     ports:
       - "3001:3000"
     volumes:

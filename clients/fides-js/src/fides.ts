@@ -120,6 +120,7 @@ const retrieveEffectiveRegionString = async (
       await getGeolocation(
         options.isGeolocationEnabled,
         options.geolocationApiUrl,
+        null,
         options.debug
       )
     );
@@ -310,6 +311,7 @@ _Fides = {
   options: {
     debug: true,
     isOverlayEnabled: false,
+    isPrefetchEnabled: false,
     isGeolocationEnabled: false,
     geolocationApiUrl: "",
     overlayParentId: null,

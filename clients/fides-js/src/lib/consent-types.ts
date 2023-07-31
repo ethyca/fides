@@ -21,6 +21,9 @@ export type FidesOptions = {
   // Whether or not the banner should be globally enabled
   isOverlayEnabled: boolean;
 
+  // Whether we should pre-fetch geolocation and experience server-side
+  isPrefetchEnabled: boolean;
+
   // Whether user geolocation should be enabled. Requires geolocationApiUrl
   isGeolocationEnabled: boolean;
 

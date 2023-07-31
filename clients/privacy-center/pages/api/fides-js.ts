@@ -3,7 +3,13 @@ import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { CacheControl, stringify } from "cache-control-parser";
 
-import { ConsentOption, FidesConfig } from "fides-js";
+import {
+  ConsentOption,
+  FidesConfig,
+  constructFidesRegionString,
+  CONSENT_COOKIE_NAME,
+  fetchExperience,
+} from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import { lookupGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
 
@@ -66,7 +72,31 @@ export default async function handler(
 
   // Check if a geolocation was provided via headers, query param, or obtainable via a geolocation URL;
   // if so, inject into the bundle, along with privacy experience
-  const geolocation = await lookupGeolocation(req);
+  const geolocation = await lookupGeolocation(req, environment.settings);
+
+  let experience;
+  if (geolocation && environment.settings.IS_OVERLAY_ENABLED && environment.settings.IS_PREFETCH_ENABLED) {
+    const fidesRegionString = constructFidesRegionString(geolocation);
+    if (fidesRegionString) {
+      let fidesUserDeviceId = null;
+      if (Object.keys(req.cookies).length) {
+        const fidesCookie = req.cookies[CONSENT_COOKIE_NAME];
+        if (fidesCookie) {
+          fidesUserDeviceId =
+              JSON.parse(fidesCookie)?.identity?.fides_user_device_id;
+        }
+      }
+      if (environment.settings.DEBUG) {
+        console.log("Fetching relevant experiences from server-side...");
+      }
+      experience = await fetchExperience(
+          fidesRegionString,
+          environment.settings.SERVER_SIDE_FIDES_API_URL,
+          fidesUserDeviceId,
+          environment.settings.DEBUG
+      );
+    }
+  }
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {
@@ -78,12 +108,14 @@ export default async function handler(
       geolocationApiUrl: environment.settings.GEOLOCATION_API_URL,
       isGeolocationEnabled: environment.settings.IS_GEOLOCATION_ENABLED,
       isOverlayEnabled: environment.settings.IS_OVERLAY_ENABLED,
+      isPrefetchEnabled: environment.settings.IS_PREFETCH_ENABLED,
       overlayParentId: environment.settings.OVERLAY_PARENT_ID,
       modalLinkId: environment.settings.MODAL_LINK_ID,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
       fidesApiUrl: environment.settings.FIDES_API_URL,
       tcfEnabled: environment.settings.TCF_ENABLED,
     },
+    experience: experience || undefined,
     geolocation: geolocation || undefined,
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);

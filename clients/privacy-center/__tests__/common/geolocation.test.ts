@@ -6,10 +6,12 @@ import { PrivacyCenterClientSettings } from "~/app/server-environment";
 describe("getGeolocation", () => {
   const privacyCenterSettings: PrivacyCenterClientSettings = {
     FIDES_API_URL: "",
+    SERVER_SIDE_FIDES_API_URL: "",
     DEBUG: false,
     GEOLOCATION_API_URL: "",
     IS_GEOLOCATION_ENABLED: false,
     IS_OVERLAY_ENABLED: false,
+    IS_PREFETCH_ENABLED: false,
     TCF_ENABLED: false,
     OVERLAY_PARENT_ID: null,
     MODAL_LINK_ID: null,

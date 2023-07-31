@@ -7,6 +7,7 @@ import { debugLog } from "../../lib/consent-utils";
 export const getGeolocation = async (
   isGeolocationEnabled?: boolean,
   geolocationApiUrl?: string,
+  forwarded_ip_info?: string | null,
   debug: boolean = false
 ): Promise<UserGeolocation | null> => {
   debugLog(debug, "Running getLocation...");
@@ -31,6 +32,11 @@ export const getGeolocation = async (
   const fetchOptions: RequestInit = {
     mode: "cors",
   };
+  if (forwarded_ip_info) {
+    const headers: Headers = new Headers();
+    headers.set("X-Forwarded-For", forwarded_ip_info)
+    fetchOptions.headers = headers
+  }
   const response = await fetch(geolocationApiUrl, fetchOptions);
 
   if (!response.ok) {
