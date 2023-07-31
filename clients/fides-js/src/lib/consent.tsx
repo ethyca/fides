@@ -41,7 +41,7 @@ export const initOverlay = async ({
         document.body.prepend(parentElem);
       }
 
-      // DEFER: use a separate TCF bundle instead of this if statement
+      // DEFER(fides#3859): use a separate TCF bundle instead of this if statement
       // so that the vanilla fides-js bundle does not need to know about TCF
       if (experience.component === ComponentType.OVERLAY) {
         // Render the Overlay to the DOM!
