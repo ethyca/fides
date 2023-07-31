@@ -3,6 +3,7 @@
  */
 
 import {
+  Badge,
   Box,
   EyeIcon,
   Flex,
@@ -11,6 +12,7 @@ import {
   FormLabel,
   FormLabelProps,
   Grid,
+  HStack,
   IconButton,
   Input,
   InputGroup,
@@ -716,7 +718,7 @@ export const CustomRadioGroup = ({
 interface CustomSwitchProps {
   label: string;
   tooltip?: string;
-  variant?: "inline" | "condensed";
+  variant?: "inline" | "condensed" | "stacked";
   isDisabled?: boolean;
 }
 export const CustomSwitch = ({
@@ -735,7 +737,7 @@ export const CustomSwitch = ({
       isChecked={field.checked}
       onChange={field.onChange}
       onBlur={field.onBlur}
-      colorScheme="secondary"
+      colorScheme="purple"
       mr={2}
       data-testid={`input-${field.name}`}
       disabled={isDisabled}
@@ -757,6 +759,34 @@ export const CustomSwitch = ({
       </FormControl>
     );
   }
+
+  if (variant === "stacked") {
+    return (
+      <FormControl isInvalid={isInvalid} width="full">
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <HStack spacing={1}>
+            <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={0}>
+              {label}
+            </Label>
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            {/* <Badge
+              variant="outline"
+              colorScheme="pink"
+              height="18px"
+              lineHeight="18px"
+              textAlign="center"
+              borderRadius="2px"
+              mr={1}
+            >
+              ALL
+            </Badge> */}
+          </HStack>
+          <HStack>{innerSwitch}</HStack>
+        </Box>
+      </FormControl>
+    );
+  }
+
   return (
     <FormControl isInvalid={isInvalid} width="fit-content">
       <Box display="flex" alignItems="center">

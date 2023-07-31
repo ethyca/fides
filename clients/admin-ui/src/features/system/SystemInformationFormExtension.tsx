@@ -22,21 +22,6 @@ const DescribeSystemsFormExtension = ({ values }: { values: FormValues }) => {
 
   return (
     <>
-      <CustomCreatableSelect
-        id="tags"
-        name="tags"
-        label="System Tags"
-        options={
-          initialValues.tags
-            ? initialValues.tags.map((s) => ({
-                value: s,
-                label: s,
-              }))
-            : []
-        }
-        tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
-        isMulti
-      />
       <CustomSelect
         label="Data responsibility title"
         name="data_responsibility_title"

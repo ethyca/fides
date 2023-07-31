@@ -112,4 +112,5 @@ export type System = {
    *
    */
   data_protection_impact_assessment?: DataProtectionImpactAssessment;
+  processes_personal_data?: boolean;
 };
