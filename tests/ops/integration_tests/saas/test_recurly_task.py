@@ -1,6 +1,5 @@
 import pytest
 
-from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
@@ -16,4 +15,7 @@ class TestRecurlyConnector:
             access_policy=policy, identities={"email": recurly_identity_email}
         )
 
-        assert access_results["recurly_instance:accounts"][0]["email"] == recurly_identity_email
+        assert (
+            access_results["recurly_instance:accounts"][0]["email"]
+            == recurly_identity_email
+        )
