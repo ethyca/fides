@@ -28,6 +28,7 @@ The types of changes are:
 ### Added
 
 - HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
+- UI support for OAuth2 authorization flow [#3819](https://github.com/ethyca/fides/pull/3819)
 
 ### Changed
 

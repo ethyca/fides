@@ -65,7 +65,10 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
         return ["client_id", "client_secret", "redirect_uri"]
 
     def get_authorization_url(
-        self, db: Session, connection_config: ConnectionConfig
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        referer: Optional[str] = None,
     ) -> Optional[str]:
         """
         Returns the authorization URL to initiate the OAuth2 workflow.
@@ -78,7 +81,12 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
         # generate the state that will be used to link this authorization request to this connector
         state = self._generate_state()
         AuthenticationRequest.create_or_update(
-            db, data={"connection_key": connection_config.key, "state": state}
+            db,
+            data={
+                "connection_key": connection_config.key,
+                "state": state,
+                "referer": referer,
+            },
         )
         # add state to secrets
         connection_config.secrets["state"] = state  # type: ignore
