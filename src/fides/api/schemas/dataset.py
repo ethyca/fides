@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Type, Sequence
+from typing import Any, List, Optional, Sequence, Type
 
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.validation import FidesKey
@@ -38,17 +38,17 @@ def validate_data_categories_against_db(
             return _valid_data_categories(v, defined_data_categories)
 
     class FieldDataCategoryValidation(DatasetField, DataCategoryValidationMixin):
-        fields: Optional[List["FieldDataCategoryValidation"]]
+        fields: Optional[List["FieldDataCategoryValidation"]]  # type: ignore[assignment]
 
     FieldDataCategoryValidation.update_forward_refs()
 
     class CollectionDataCategoryValidation(
         DatasetCollection, DataCategoryValidationMixin
     ):
-        fields: Sequence[FieldDataCategoryValidation] = []
+        fields: Sequence[FieldDataCategoryValidation] = [] # type: ignore[assignment]
 
     class DatasetDataCategoryValidation(Dataset, DataCategoryValidationMixin):
-        collections: Sequence[CollectionDataCategoryValidation]
+        collections: Sequence[CollectionDataCategoryValidation]  # type: ignore[assignment]
 
     DatasetDataCategoryValidation(**dataset.dict())
 

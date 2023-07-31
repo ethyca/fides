@@ -20,7 +20,7 @@ class PrivacyDeclarationResponse(PrivacyDeclaration):
 class SystemResponse(System):
     """Extension of base pydantic model to include `privacy_declarations.id` fields in responses"""
 
-    privacy_declarations: Sequence[PrivacyDeclarationResponse] = Field(
+    privacy_declarations: Sequence[PrivacyDeclarationResponse] = Field(  # type: ignore[assignment]
         description=PrivacyDeclarationResponse.__doc__,
     )
 

@@ -88,12 +88,14 @@ async def verify_oauth_client_for_system_from_request_body(
 
     Yields a 403 forbidden error if not.
     """
-    return has_system_permissions(
+    permissions = has_system_permissions(
         system_auth_data=system_auth_data,
         authorization=authorization,
         security_scopes=security_scopes,
         db=db,
     )
+    assert isinstance(permissions, SystemSchema)
+    return permissions
 
 
 async def verify_oauth_client_for_system_from_fides_key(
@@ -111,12 +113,14 @@ async def verify_oauth_client_for_system_from_fides_key(
 
     Yields a 403 forbidden error if not.
     """
-    return has_system_permissions(
+    permissions = has_system_permissions(
         system_auth_data=system_auth_data,
         authorization=authorization,
         security_scopes=security_scopes,
         db=db,
     )
+    assert isinstance(permissions, str)
+    return permissions
 
 
 def has_system_permissions(

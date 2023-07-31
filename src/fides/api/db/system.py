@@ -4,7 +4,6 @@ Functions for interacting with System objects in the database.
 from typing import Dict, List, Optional, Tuple
 
 from fastapi import HTTPException
-from fideslang.models import Cookies as CookieSchema
 from fideslang.models import System as SystemSchema
 from loguru import logger as log
 from sqlalchemy import and_, delete, insert, select, update

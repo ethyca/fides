@@ -8,8 +8,8 @@ Mostly used for `ctl`-related objects.
 from typing import Dict, List
 
 from fastapi import Depends, HTTPException, Response, Security, status
-from fideslang.models import Dataset
 from fideslang import FidesModelType
+from fideslang.models import Dataset
 from fideslang.validation import FidesKey
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.ext.asyncio import AsyncSession

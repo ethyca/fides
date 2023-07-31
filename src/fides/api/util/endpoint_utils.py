@@ -10,10 +10,14 @@ from slowapi.util import get_remote_address  # type: ignore
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_400_BAD_REQUEST
 
-from fides.api.db.base import Base  # type: ignore[attr-defined]
+from fides.api.db.base import Base  # type: ignore
 from fides.api.db.crud import get_resource, list_resource
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     models_with_default_field,
+    DataCategory as SQLDataCategory,
+    DataUse as SQLDataUse,
+    DataSubject as SQLDataSubject,
+    DataQualifier as SQLDataQualifier,
 )
 from fides.api.util import errors
 from fides.common.api.scope_registry import (
@@ -69,6 +73,23 @@ async def forbid_if_editing_is_default(
     """
     if sql_model in models_with_default_field:
         resource = await get_resource(sql_model, fides_key, async_session)
+
+        assert (
+            isinstance(resource, SQLDataCategory)
+            or isinstance(resource, SQLDataQualifier)
+            or isinstance(resource, SQLDataSubject)
+            or isinstance(resource, SQLDataUse)
+        )
+
+        assert (
+            isinstance(payload, SQLDataCategory)
+            or isinstance(payload, SQLDataQualifier)
+            or isinstance(payload, SQLDataSubject)
+            or isinstance(payload, SQLDataUse)
+        )
+
+        assert hasattr(resource, "is_default")
+
         if resource.is_default != payload.is_default:
             raise errors.ForbiddenError(sql_model.__name__, fides_key)
 

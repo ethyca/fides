@@ -1,6 +1,6 @@
 """Contains all of the ungrouped CLI commands for fides."""
 from datetime import datetime, timezone
-from typing import Optional, Dict
+from typing import Optional
 
 import rich_click as click
 import yaml
@@ -76,7 +76,6 @@ def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None
         resource_type=resource_type,
         resource_key=fides_key,
         headers=config.user.auth_header,
-        raw=True,
     )
     print_divider()
     echo_green(yaml.dump({resource_type: [resource]}))
@@ -99,7 +98,6 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
         resource_type=resource_type,
         headers=config.user.auth_header,
         exclude_keys=[],
-        raw=True,
     )
     print_divider()
     if verbose:

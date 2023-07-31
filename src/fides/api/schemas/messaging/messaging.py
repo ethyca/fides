@@ -125,7 +125,7 @@ class ConsentPreferencesByUser(BaseModel):
             preference.data_use = next(
                 (
                     data_use.name
-                    for data_use in DEFAULT_TAXONOMY.data_use
+                    for data_use in DEFAULT_TAXONOMY.data_use or []
                     if data_use.fides_key == preference.data_use
                 ),
                 preference.data_use,

@@ -469,7 +469,7 @@ sql_model_map: Dict = {
 
 models_with_default_field = [
     sql_model
-    for _, sql_model in sql_model_map.items()
+    for sql_model in sql_model_map.values()
     if hasattr(sql_model, "is_default")
 ]
 
