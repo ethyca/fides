@@ -5,12 +5,22 @@
       "dependsOn": ["^build"],
       "outputs": [".next/*", "!.next/cache/*", "dist/*"]
     },
+    "build:windows": {
+      "dependsOn": ["^build:windows"],
+      "outputs": [".next/*", "!.next/cache/*", "dist/*"]
+    },
     "clean": {
       "dependsOn": [],
       "cache": false
     },
     "dev": {
       "dependsOn": ["^build"],
+      "outputs": [".next/*", "!.next/cache/*"],
+      "cache": false,
+      "persistent": true
+    },
+    "dev:windows": {
+      "dependsOn": ["^build:windows"],
       "outputs": [".next/*", "!.next/cache/*"],
       "cache": false,
       "persistent": true

@@ -152,10 +152,10 @@ const SystemInformationForm = ({
     >
       {({ dirty, values, isValid }) => (
         <Form>
-          <Stack spacing={6}>
+          <Stack spacing={6} maxWidth={{ base: "100%", lg: "70%" }}>
             {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
-            <Text fontSize="sm">
+            <Text fontSize="sm" fontWeight="medium">
               By providing a small amount of additional context for each system
               we can make reporting and understanding our tech stack much easier
               for everyone from engineering to legal teams. So let’s do this
@@ -165,13 +165,7 @@ const SystemInformationForm = ({
               System details
             </Heading>
             <Stack spacing={4}>
-              {/* While we support both designs of extra form items existing, change the width only 
-              when there are extra form items. When we move to only supporting one design, 
-              the parent container should control the width */}
-              <Stack
-                spacing={4}
-                maxWidth={!abridged ? { base: "100%", lg: "50%" } : undefined}
-              >
+              <Stack spacing={4}>
                 <CustomTextInput
                   id="name"
                   name="name"
