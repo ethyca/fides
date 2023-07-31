@@ -12,7 +12,7 @@ recursive-include src/fides/data *
 recursive-include src/fides/ui-build *
 
 graft src/fides/api/email_templates/templates
-graft src/fides/api/service/privacy_request/dsr_package/templates
-graft src/fides/api/service/privacy_request/dsr_package/assets
+graft src/fides/api/privacy_request/dsr_package/templates
+graft src/fides/api/privacy_request/dsr_package/assets
 
 global-exclude *.pyc
