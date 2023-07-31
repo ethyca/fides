@@ -1,8 +1,9 @@
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
+from fideslang.gvl import MAPPED_PURPOSES, MAPPED_SPECIAL_PURPOSES
 from fideslang.validation import FidesKey
-from pydantic import Field, conlist
+from pydantic import Field, conlist, root_validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.privacy_notice import UserConsentPreference
@@ -10,12 +11,51 @@ from fides.api.models.privacy_preference import (
     ConsentMethod,
     RequestOrigin,
     ServingComponent,
+    TCFComponentType,
 )
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.tcf import (
+    TCFFeatureSave,
+    TCFPurposeSave,
+    TCFSpecialFeatureSave,
+    TCFSpecialPurposeSave,
+    TCFVendorSave,
+)
+from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING
+
+# Maps the sections in the request body for saving various TCF preferences
+# against the specific field name on which these preferences are saved
+TCF_PREFERENCES_FIELD_MAPPING: Dict[str, str] = {
+    "purpose_preferences": TCFComponentType.purpose.value,
+    "special_purpose_preferences": TCFComponentType.special_purpose.value,
+    "feature_preferences": TCFComponentType.feature.value,
+    "special_feature_preferences": TCFComponentType.special_feature.value,
+    "vendor_preferences": TCFComponentType.vendor.value,
+}
+
+
+class TCFAttributes(FidesSchema):
+    """Common schema for storing values for the relevant TCF Attribute"""
+
+    purpose: Optional[int] = Field(
+        title="The TCF purpose that was served or saved against"
+    )
+    special_purpose: Optional[int] = Field(
+        title="The TCF special purpose that was served or saved against"
+    )
+    vendor: Optional[str] = Field(
+        title="The TCF vendor that was served or saved against"
+    )
+    feature: Optional[int] = Field(
+        title="The TCF feature that was served or saved against"
+    )
+    special_feature: Optional[int] = Field(
+        title="The TCF special feature that was served or saved against"
+    )
 
 
 class ConsentOptionCreate(FidesSchema):
@@ -31,11 +71,35 @@ class PrivacyPreferencesRequest(FidesSchema):
 
     browser_identity: Identity
     code: Optional[SafeStr]
-    preferences: conlist(ConsentOptionCreate, max_items=50)  # type: ignore
+    preferences: conlist(ConsentOptionCreate, max_items=50) = []  # type: ignore
+    purpose_preferences: conlist(TCFPurposeSave, max_items=50) = []  # type: ignore
+    special_purpose_preferences: conlist(TCFSpecialPurposeSave, max_items=50) = []  # type: ignore
+    vendor_preferences: conlist(TCFVendorSave, max_items=50) = []  # type: ignore
+    feature_preferences: conlist(TCFFeatureSave, max_items=50) = []  # type: ignore
+    special_feature_preferences: conlist(TCFSpecialFeatureSave, max_items=50) = []  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
     method: Optional[ConsentMethod]
+
+    @root_validator()
+    @classmethod
+    def validate_tcf_duplicates(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Check that there are no duplicates preferences against TCF components
+        to avoid confusing responses
+        """
+
+        def tcf_duplicates_detected(preference_list: List) -> bool:
+            identifiers = [preference.id for preference in preference_list]
+            return len(identifiers) != len(set(identifiers))
+
+        for field_name in TCF_PREFERENCES_FIELD_MAPPING:
+            if tcf_duplicates_detected(values.get(field_name, [])):
+                raise ValueError(
+                    f"Duplicate preferences saved against TCF component: '{field_name}'"
+                )
+        return values
 
 
 class PrivacyPreferencesCreate(PrivacyPreferencesRequest):
@@ -56,20 +120,53 @@ class MinimalPrivacyPreferenceHistorySchema(FidesSchema):
     privacy_notice_history: PrivacyNoticeHistorySchema
 
 
-class NoticesServedRequest(FidesSchema):
-    """Request body when indicating that notices were served in the UI"""
+class RecordConsentServedRequest(FidesSchema):
+    """Request body to use when saving that consent was served"""
 
     browser_identity: Identity
     code: Optional[SafeStr]  # For verified identity workflow only
-    privacy_notice_history_ids: List[SafeStr]
+    privacy_notice_history_ids: List[SafeStr] = []
+    tcf_purposes: List[int] = []
+    tcf_special_purposes: List[int] = []
+    tcf_vendors: List[SafeStr] = []
+    tcf_features: List[int] = []
+    tcf_special_features: List[int] = []
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
     acknowledge_mode: Optional[bool]
     serving_component: ServingComponent
 
+    @root_validator()
+    @classmethod
+    def validate_tcf_served(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Check that TCF values are valid and that there are no duplicates
+        TODO: TCF Add validation against vendors, features, and special features that are being recorded as served
+        """
 
-class NoticesServedCreate(NoticesServedRequest):
-    """Schema used on the backend only where we supplement the NoticesServedRequest request body
+        def tcf_duplicates_detected(preference_list: List) -> bool:
+            return len(preference_list) != len(set(preference_list))
+
+        for field_name in TCF_COMPONENT_MAPPING:
+            if tcf_duplicates_detected(values.get(field_name, [])):
+                raise ValueError(
+                    f"Duplicate served records saved against TCF component: '{field_name}'"
+                )
+        if not set(values.get("tcf_purposes", [])).issubset(
+            set(MAPPED_PURPOSES.keys())
+        ):
+            raise ValueError("Invalid values for TCF Purposes served'")
+
+        if not set(values.get("tcf_special_purposes", [])).issubset(
+            set(MAPPED_SPECIAL_PURPOSES.keys())
+        ):
+            raise ValueError("Invalid values for TCF Special Purposes served'")
+
+        return values
+
+
+class RecordConsentServedCreate(RecordConsentServedRequest):
+    """Schema used on the backend only where we supplement the RecordConsentServedRequest request body
     with information obtained from the request headers and the experience"""
 
     anonymized_ip_address: Optional[str]
@@ -79,16 +176,16 @@ class NoticesServedCreate(NoticesServedRequest):
     user_agent: Optional[SafeStr]
 
 
-class LastServedNoticeSchema(FidesSchema):
-    """Schema that surfaces the last version of a notice that was shown to a user"""
+class LastServedConsentSchema(TCFAttributes):
+    """Schema that surfaces the the last time a consent item that was shown to a user"""
 
     id: str
     updated_at: datetime
-    privacy_notice_history: PrivacyNoticeHistorySchema
     served_notice_history_id: str
+    privacy_notice_history: Optional[PrivacyNoticeHistorySchema]
 
 
-class ConsentReportingSchema(FidesSchema):
+class ConsentReportingSchema(TCFAttributes):
     """Schema for consent reporting - largely a join of PrivacyPreferenceHistory and PrivacyRequest"""
 
     id: str = Field(title="The PrivacyPreferenceHistory id")
@@ -114,7 +211,7 @@ class ConsentReportingSchema(FidesSchema):
     approver_id: Optional[str] = Field(
         title="The username of the user who approved the Privacy Request if applicable"
     )
-    privacy_notice_history_id: str = Field(
+    privacy_notice_history_id: Optional[str] = Field(
         title="The id of the specific Privacy Notice History that the user consented to"
     )
     preference: UserConsentPreference = Field(
@@ -142,9 +239,10 @@ class ConsentReportingSchema(FidesSchema):
     served_notice_history_id: Optional[str] = Field(
         title="The id of the record where the notice was served to the end user"
     )
+    tcf_version: Optional[str] = Field(title="The TCF version where applicable")
 
 
-class CurrentPrivacyPreferenceSchema(FidesSchema):
+class CurrentPrivacyPreferenceSchema(TCFAttributes):
     """Schema to represent the latest saved preference for a given privacy notice
     Note that we return the privacy notice *history* record here though which has the
     contents of the notice the user consented to at the time.
@@ -152,11 +250,11 @@ class CurrentPrivacyPreferenceSchema(FidesSchema):
 
     id: str
     preference: UserConsentPreference
-    privacy_notice_history: PrivacyNoticeHistorySchema
-    privacy_preference_history_id: str
+    privacy_notice_history: Optional[PrivacyNoticeHistorySchema]
+    privacy_preference_history_id: Optional[str]
 
 
-class CurrentPrivacyPreferenceReportingSchema(FidesSchema):
+class CurrentPrivacyPreferenceReportingSchema(TCFAttributes):
     """Schema to represent the latest saved preference for a given privacy notice
     Note that we return the privacy notice *history* record here though which has the
     contents of the notice the user consented to at the time.
@@ -164,7 +262,7 @@ class CurrentPrivacyPreferenceReportingSchema(FidesSchema):
 
     id: str
     preference: UserConsentPreference
-    privacy_notice_history_id: str
+    privacy_notice_history_id: Optional[str]
     privacy_preference_history_id: str
     provided_identity_id: Optional[str]
     created_at: datetime

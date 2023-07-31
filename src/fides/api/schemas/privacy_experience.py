@@ -9,6 +9,7 @@ from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_notice import PrivacyNoticeResponseWithUserPreferences
+from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
 from fides.api.util.endpoint_utils import human_friendly_list
 
 
@@ -190,4 +191,9 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
     updated_at: datetime
     show_banner: Optional[bool]
     privacy_notices: Optional[List[PrivacyNoticeResponseWithUserPreferences]]
+    tcf_purposes: Optional[List[TCFPurposeRecord]]
+    tcf_special_purposes: Optional[List[TCFPurposeRecord]]
+    tcf_vendors: Optional[List[TCFVendorRecord]]
+    tcf_features: Optional[List[TCFFeatureRecord]]
+    tcf_special_features: Optional[List[TCFFeatureRecord]]
     experience_config: Optional[ExperienceConfigResponse]
