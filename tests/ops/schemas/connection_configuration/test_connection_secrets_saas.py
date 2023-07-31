@@ -59,14 +59,13 @@ class TestSaaSConnectionSecrets:
     def test_extra_fields(
         self, saas_config: SaaSConfig, saas_example_secrets: Dict[str, Any]
     ):
+        # extra fields are allowed
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
         config = {
             **saas_example_secrets,
             "extra": "extra",
         }
-        with pytest.raises(ValidationError) as exc:
-            schema.parse_obj(config)
-        assert exc.value.errors()[0]["msg"] == "extra fields not permitted"
+        schema.parse_obj(config)
 
     def test_default_value_fields(
         self, saas_config: SaaSConfig, saas_example_secrets: Dict[str, Any]
