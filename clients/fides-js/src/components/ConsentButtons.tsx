@@ -14,12 +14,14 @@ const ConsentButtons = ({
   onManagePreferencesClick,
   onSave,
   enabledKeys,
+  isAcknowledge,
   isInModal,
 }: {
   experience: PrivacyExperience;
   onSave: (noticeKeys: NoticeKeys) => void;
   onManagePreferencesClick?: () => void;
   enabledKeys: NoticeKeys;
+  isAcknowledge: boolean;
   isInModal?: boolean;
 }) => {
   if (!experience.experience_config || !experience.privacy_notices) {
@@ -27,9 +29,6 @@ const ConsentButtons = ({
   }
 
   const { experience_config: config, privacy_notices: notices } = experience;
-  const isAllNoticeOnly = notices.every(
-    (n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY
-  );
 
   const handleAcceptAll = () => {
     onSave(notices.map((n) => n.notice_key));
@@ -43,7 +42,7 @@ const ConsentButtons = ({
     );
   };
 
-  if (isAllNoticeOnly) {
+  if (isAcknowledge) {
     return (
       <div
         className={`fides-acknowledge-button-container ${
