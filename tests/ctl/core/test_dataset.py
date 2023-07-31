@@ -4,7 +4,7 @@ from typing import Dict, Generator, List
 from urllib.parse import quote_plus
 from uuid import uuid4
 
-# import pymssql TODO: temporary workaround because of cython 3.0 issues -  see https://github.com/ethyca/fides/issues/3800
+import pymssql
 import pytest
 import sqlalchemy
 from fideslang.manifests import write_manifest
@@ -471,17 +471,15 @@ class TestDatabase:
                     for query in queries:
                         engine.execute(sqlalchemy.sql.text(query))
                 else:
-                    pass  # TODO: temporary workaround because of cython 3.0 issues -  see https://github.com/ethyca/fides/issues/3800
-                    # This special MSSQL case is required due to how autocommit is activated
-                    # with pymssql.connect(
-                    #     database_parameters["server"],
-                    #     database_parameters["username"],
-                    #     database_parameters["password"],
-                    #     autocommit=True,
-                    # ) as connection:
-                    #     for query in queries:
-                    #         with connection.cursor() as cursor:
-                    #             cursor.execute(query)
+                    with pymssql.connect(
+                        database_parameters["server"],
+                        database_parameters["username"],
+                        database_parameters["password"],
+                        autocommit=True,
+                    ) as connection:
+                        for query in queries:
+                            with connection.cursor() as cursor:
+                                cursor.execute(query)
             except:
                 print(f"> FAILED DB SETUP: {database_parameters.get('setup_url')}")
                 # We don't want to error all tests if a single setup fails

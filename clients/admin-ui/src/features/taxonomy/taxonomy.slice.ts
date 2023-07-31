@@ -79,6 +79,12 @@ export const selectDataCategories: (state: RootState) => DataCategory[] =
     ({ data }) => data ?? emptyDataCategories
   );
 
+export const selectEnabledDataCategories: (state: RootState) => DataCategory[] =
+  createSelector(
+    taxonomyApi.endpoints.getAllDataCategories.select(),
+    ({ data }) => data?.filter((dc) => dc.active) ?? emptyDataCategories
+  );
+
 export const selectDataCategoriesMap: (
   state: RootState
 ) => Map<string, DataCategory> = createSelector(

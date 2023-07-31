@@ -1,10 +1,12 @@
 import { useAppSelector } from "~/app/hooks";
 import {
   selectDataSubjects,
+  selectEnabledDataSubjects,
   useGetAllDataSubjectsQuery,
 } from "~/features/data-subjects/data-subject.slice";
 import {
   selectDataUses,
+  selectEnabledDataUses,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
 import {
@@ -13,6 +15,7 @@ import {
 } from "~/features/dataset";
 import {
   selectDataCategories,
+  selectEnabledDataCategories,
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy";
 
@@ -23,8 +26,10 @@ import {
  */
 export const usePrivacyDeclarationData = ({
   includeDatasets,
+  includeDisabled,
 }: {
   includeDatasets?: boolean;
+  includeDisabled?: boolean;
 }) => {
   // Query subscriptions:
   const { isLoading: isLoadingDataCategories } = useGetAllDataCategoriesQuery();
@@ -40,8 +45,11 @@ export const usePrivacyDeclarationData = ({
   );
 
   const allDataCategories = useAppSelector(selectDataCategories);
+  const enabledDataCategories = useAppSelector(selectEnabledDataCategories);
   const allDataSubjects = useAppSelector(selectDataSubjects);
+  const enabledDataSubjects = useAppSelector(selectEnabledDataSubjects);
   const allDataUses = useAppSelector(selectDataUses);
+  const enabledDataUses = useAppSelector(selectEnabledDataUses);
   const allDatasets = useAppSelector(selectAllFilteredDatasets);
 
   const isLoading =
@@ -51,9 +59,11 @@ export const usePrivacyDeclarationData = ({
     isLoadingDatasets;
 
   return {
-    allDataCategories,
-    allDataSubjects,
-    allDataUses,
+    allDataCategories: includeDisabled
+      ? allDataCategories
+      : enabledDataCategories,
+    allDataSubjects: includeDisabled ? allDataSubjects : enabledDataSubjects,
+    allDataUses: includeDisabled ? allDataUses : enabledDataUses,
     allDatasets: includeDatasets ? allDatasets : undefined,
     isLoading,
   };

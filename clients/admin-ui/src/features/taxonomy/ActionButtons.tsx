@@ -1,4 +1,12 @@
-import { Button, ButtonGroup } from "@fidesui/react";
+import {
+  ButtonGroup,
+  DeleteIcon,
+  EditIcon,
+  HStack,
+  IconButton,
+  Switch,
+  Text,
+} from "@fidesui/react";
 
 import { TaxonomyEntityNode } from "./types";
 
@@ -6,26 +14,46 @@ interface ActionButtonProps {
   node: TaxonomyEntityNode;
   onEdit: (node: TaxonomyEntityNode) => void;
   onDelete: (node: TaxonomyEntityNode) => void;
+  onDisable: (node: TaxonomyEntityNode) => void;
 }
-const ActionButtons = ({ node, onEdit, onDelete }: ActionButtonProps) => {
+const ActionButtons = ({
+  node,
+  onEdit,
+  onDelete,
+  onDisable,
+}: ActionButtonProps) => {
   const showDelete = !node.is_default;
   return (
-    <ButtonGroup
-      size="xs"
-      isAttached
-      variant="outline"
-      data-testid="action-btns"
-      mr="2"
-    >
-      <Button data-testid="edit-btn" onClick={() => onEdit(node)}>
-        Edit
-      </Button>
-      {showDelete ? (
-        <Button data-testid="delete-btn" onClick={() => onDelete(node)}>
-          Delete
-        </Button>
-      ) : null}
-    </ButtonGroup>
+    <HStack mr={4}>
+      <ButtonGroup
+        size="xs"
+        variant="outline"
+        colorScheme="gray"
+        data-testid="action-btns"
+      >
+        <IconButton
+          aria-label="Edit"
+          icon={<EditIcon boxSize={3} />}
+          onClick={() => onEdit(node)}
+          data-testid="edit-btn"
+        />
+        {showDelete ? (
+          <IconButton
+            aria-label="Delete"
+            icon={<DeleteIcon boxSize={3} />}
+            onClick={() => onDelete(node)}
+            data-testid="delete-btn"
+          />
+        ) : null}
+      </ButtonGroup>
+      <Switch
+        size="sm"
+        colorScheme="purple"
+        defaultChecked={node.active}
+        onChange={() => onDisable(node)}
+      />
+      <Text>Enabled</Text>
+    </HStack>
   );
 };
 

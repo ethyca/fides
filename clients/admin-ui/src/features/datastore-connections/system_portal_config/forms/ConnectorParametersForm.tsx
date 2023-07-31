@@ -13,6 +13,7 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
+  Spacer,
   Tooltip,
   VStack,
 } from "@fidesui/react";
@@ -24,6 +25,7 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
+import _ from "lodash";
 import React from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
@@ -67,7 +69,7 @@ type ConnectorParametersFormProps = {
   connectionOption: ConnectionSystemTypeMap;
   isCreatingConnectionConfig: boolean;
   datasetDropdownOptions: Option[];
-  onDelete: (id: string) => void;
+  onDelete: () => void;
   deleteResult: any;
 };
 
@@ -171,6 +173,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               {item.type !== "integer" && (
                 <Input
                   {...field}
+                  type={item.sensitive ? "password" : "text"}
                   placeholder={getPlaceholder(item)}
                   autoComplete="off"
                   color="gray.700"
@@ -184,7 +187,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   onChange={(value) => {
                     form.setFieldValue(field.name, value);
                   }}
-                  defaultValue={field.value ?? 0}
+                  value={field.value ?? 0}
                   min={0}
                   size="sm"
                 >
@@ -230,25 +233,47 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         connectionConfig.connection_type === ConnectionType.SAAS
           ? (connectionConfig.saas_config?.fides_key as string)
           : connectionConfig.key;
+
       // @ts-ignore
-      initialValues.secrets = connectionConfig.secrets;
+      initialValues.secrets = { ...connectionConfig.secrets };
+
+      // check if we need we need to pre-process any secrets values
+      // we currently only need to do this for Fides dataset references
+      // to convert them from objects to dot-delimited strings
+      if (secretsSchema?.properties) {
+        Object.entries(secretsSchema.properties).forEach(([key, schema]) => {
+          if (schema.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
+            const datasetReference = initialValues.secrets[key];
+            initialValues.secrets[
+              key
+            ] = `${datasetReference.dataset}.${datasetReference.field}`;
+          }
+        });
+      }
+
       return initialValues;
     }
     return fillInDefaults(initialValues, secretsSchema);
   };
 
-  const handleSubmit = (values: any, actions: any) => {
-    // convert each property value of type FidesopsDatasetReference
-    // from a dot delimited string to a FidesopsDatasetReference
-    const updatedValues = { ...values };
+  /**
+   * Preprocesses the input values.
+   * Currently, it is only used to convert FIDES_DATASET_REFERENCE fields.
+   * @param values ConnectionConfigFormValues - The original values.
+   * @returns ConnectionConfigFormValues - The processed values.
+   */
+  const preprocessValues = (
+    values: ConnectionConfigFormValues
+  ): ConnectionConfigFormValues => {
+    const updatedValues = _.cloneDeep(values);
     if (secretsSchema) {
       Object.keys(secretsSchema.properties).forEach((key) => {
         if (
           secretsSchema.properties[key].allOf?.[0].$ref ===
           FIDES_DATASET_REFERENCE
         ) {
-          const referencePath = values[key].split(".");
-          updatedValues[key] = {
+          const referencePath = updatedValues.secrets[key].split(".");
+          updatedValues.secrets[key] = {
             dataset: referencePath.shift(),
             field: referencePath.join("."),
             direction: "from",
@@ -256,7 +281,14 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         }
       });
     }
-    onSaveClick(updatedValues, actions);
+    return updatedValues;
+  };
+
+  const handleSubmit = (values: any, actions: any) => {
+    // convert each property value of type FidesopsDatasetReference
+    // from a dot delimited string to a FidesopsDatasetReference
+    const processedValues = preprocessValues(values);
+    onSaveClick(processedValues, actions);
   };
 
   const handleTestConnectionClick = async () => {
@@ -278,6 +310,24 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {(props: FormikProps<Values>) => (
         <Form noValidate>
           <VStack align="stretch" gap="16px">
+            <ButtonGroup size="sm" spacing="8px" variant="outline">
+              {connectionConfig ? (
+                <DisableConnectionModal
+                  connection_key={connectionConfig?.key}
+                  disabled={isDisabledConnection}
+                  connection_type={connectionConfig?.connection_type}
+                  access_type={connectionConfig?.access}
+                  name={connectionConfig?.name ?? connectionConfig.key}
+                  isSwitch
+                />
+              ) : null}
+              {connectionConfig ? (
+                <DeleteConnectionModal
+                  onDelete={onDelete}
+                  deleteResult={deleteResult}
+                />
+              ) : null}
+            </ButtonGroup>
             {/* Connection Identifier */}
             <Field
               id="instance_key"
@@ -345,7 +395,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             ) : null}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
-                colorScheme="gray.700"
                 isDisabled={
                   !connectionConfig?.key ||
                   isSubmitting ||
@@ -361,6 +410,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               {connectionOption.type === SystemType.MANUAL ? (
                 <DSRCustomizationModal connectionConfig={connectionConfig} />
               ) : null}
+              <Spacer />
               <Button
                 bg="primary.800"
                 color="white"
@@ -375,23 +425,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               >
                 Save
               </Button>
-              {connectionConfig ? (
-                <DisableConnectionModal
-                  connection_key={connectionConfig?.key}
-                  disabled={isDisabledConnection}
-                  connection_type={connectionConfig?.connection_type}
-                  access_type={connectionConfig?.access}
-                  name={connectionConfig?.name ?? connectionConfig.key}
-                  isSwitch
-                />
-              ) : null}
-              {connectionConfig ? (
-                <DeleteConnectionModal
-                  connectionKey={connectionConfig.key}
-                  onDelete={onDelete}
-                  deleteResult={deleteResult}
-                />
-              ) : null}
             </ButtonGroup>
           </VStack>
         </Form>

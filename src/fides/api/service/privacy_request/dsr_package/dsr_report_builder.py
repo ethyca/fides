@@ -96,7 +96,7 @@ class DsrReportBuilder:
 
         # generate dataset index page
         self._add_file(
-            f"/{dataset_name}/index.html",
+            f"/data/{dataset_name}/index.html",
             self._populate_template(
                 "templates/dataset_index.html",
                 dataset_name,
@@ -113,7 +113,7 @@ class DsrReportBuilder:
         for index, item in enumerate(rows, 1):
             detail_url = f"{index}.html"
             self._add_file(
-                f"/{dataset_name}/{collection_name}/{index}.html",
+                f"/data/{dataset_name}/{collection_name}/{index}.html",
                 self._populate_template(
                     "templates/item.html",
                     f"{collection_name} (item #{index})",
@@ -125,7 +125,7 @@ class DsrReportBuilder:
 
         # generate detail index page
         self._add_file(
-            f"/{dataset_name}/{collection_name}/index.html",
+            f"/data/{dataset_name}/{collection_name}/index.html",
             self._populate_template(
                 "templates/collection_index.html",
                 collection_name,
@@ -142,11 +142,11 @@ class DsrReportBuilder:
         try:
             # all the css for the pages is in main.css
             self._add_file(
-                "/main.css",
+                "/data/main.css",
                 self._populate_template("templates/main.css"),
             )
             self._add_file(
-                "/back.svg",
+                "/data/back.svg",
                 Path(os.path.join(DSR_DIRECTORY, "assets/back.svg")).read_text(
                     encoding="utf-8"
                 ),
@@ -163,13 +163,13 @@ class DsrReportBuilder:
 
             for dataset_name, collections in datasets.items():
                 self._add_dataset(dataset_name, collections)
-                self.main_links[dataset_name] = f"{dataset_name}/index.html"
+                self.main_links[dataset_name] = f"data/{dataset_name}/index.html"
 
             # create the main index once all the datasets have been added
             self._add_file(
-                "/index.html",
+                "/welcome.html",
                 self._populate_template(
-                    "templates/index.html", "DSR Report", None, self.main_links
+                    "templates/welcome.html", "DSR Report", None, self.main_links
                 ),
             )
         finally:

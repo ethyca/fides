@@ -38,7 +38,7 @@ describe("Taxonomy management page", () => {
       // clicking should open up accordions to render more items visible
       cy.getByTestId("accordion-item-User Data").click();
       cy.getByTestId("accordion-item-Credentials").should("be.visible");
-      cy.getByTestId("accordion-item-Credentials").click();
+      cy.getByTestId("accordion-item-Credentials").click({ force: true });
       cy.getByTestId("item-Password").should("be.visible");
     });
 
@@ -161,7 +161,7 @@ describe("Taxonomy management page", () => {
     it("Can render the parent field", () => {
       cy.getByTestId("tab-Data Categories").click();
       cy.getByTestId(`accordion-item-User Data`).click();
-      cy.getByTestId("accordion-item-Credentials").click();
+      cy.getByTestId("accordion-item-Credentials").click({ force: true });
       cy.getByTestId("item-Password").trigger("mouseover");
       cy.getByTestId("edit-btn").click();
       cy.getByTestId("input-parent_key").should(
@@ -257,7 +257,9 @@ describe("Taxonomy management page", () => {
       cy.getByTestId("input-strategy").should("contain", "INCLUDE");
       cy.getByTestId("input-automatic_decisions_or_profiling").within(() => {
         cy.getByTestId("option-true").should("have.attr", "data-checked");
-        cy.getByTestId("option-false").click();
+        // For some reason Cypress can accidentally click the dropdown selector above,
+        // so we force click the radio
+        cy.getByTestId("option-false").click({ force: true });
         cy.getByTestId("option-false").should("have.attr", "data-checked");
         cy.getByTestId("option-true").should("not.have.attr", "data-checked");
       });

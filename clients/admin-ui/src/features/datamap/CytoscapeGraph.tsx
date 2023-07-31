@@ -154,6 +154,14 @@ const CytoscapeGraph = ({
     };
     if (datamapGraphRef.current) {
       datamapGraphRef.current.on("click", "node", setNode);
+      datamapGraphRef.current.on("layoutstop", () => {
+        // solution found here: https://github.com/cytoscape/cytoscape.js/issues/941#issuecomment-104501028
+        if (datamapGraphRef.current && elements.length < 5) {
+          datamapGraphRef.current.maxZoom(2.5);
+          datamapGraphRef.current.fit();
+          datamapGraphRef.current.maxZoom(100);
+        }
+      });
     }
 
     return () => {

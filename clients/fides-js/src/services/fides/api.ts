@@ -1,5 +1,7 @@
 import {
   ComponentType,
+  LastServedNoticeSchema,
+  NoticesServedRequest,
   PrivacyExperience,
   PrivacyPreferencesRequest,
 } from "../../lib/consent-types";
@@ -8,6 +10,7 @@ import { debugLog } from "../../lib/consent-utils";
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",
   PRIVACY_PREFERENCES = "/privacy-preferences",
+  NOTICES_SERVED = "/notices-served",
 }
 
 /**
@@ -77,6 +80,14 @@ export const fetchExperience = async (
   }
 };
 
+const PATCH_FETCH_OPTIONS: RequestInit = {
+  method: "PATCH",
+  mode: "cors",
+  headers: {
+    "Content-Type": "application/json",
+  },
+};
+
 /**
  * Sends user consent preference downstream to Fides
  */
@@ -87,12 +98,8 @@ export const patchUserPreferenceToFidesServer = async (
 ): Promise<void> => {
   debugLog(debug, "Saving user consent preference...", preferences);
   const fetchOptions: RequestInit = {
-    method: "PATCH",
-    mode: "cors",
+    ...PATCH_FETCH_OPTIONS,
     body: JSON.stringify(preferences),
-    headers: {
-      "Content-Type": "application/json",
-    },
   };
   const response = await fetch(
     `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`,
@@ -106,4 +113,29 @@ export const patchUserPreferenceToFidesServer = async (
     );
   }
   return Promise.resolve();
+};
+
+export const patchNoticesServed = async ({
+  request,
+  fidesApiUrl,
+  debug,
+}: {
+  request: NoticesServedRequest;
+  fidesApiUrl: string;
+  debug: boolean;
+}): Promise<Array<LastServedNoticeSchema> | null> => {
+  debugLog(debug, "Saving that notices were served...");
+  const fetchOptions: RequestInit = {
+    ...PATCH_FETCH_OPTIONS,
+    body: JSON.stringify(request),
+  };
+  const response = await fetch(
+    `${fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
+    fetchOptions
+  );
+  if (!response.ok) {
+    debugLog(debug, "Error patching notices served. Response:", response);
+    return null;
+  }
+  return response.json();
 };
