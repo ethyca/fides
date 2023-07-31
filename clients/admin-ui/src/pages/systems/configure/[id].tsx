@@ -22,6 +22,8 @@ import {
 } from "~/features/system";
 import EditSystemFlow from "~/features/system/EditSystemFlow";
 
+const INTEGRATION_TAB_INDEX = 3; // this needs to be updated if the order of the tabs changes
+
 const ConfigureSystem: NextPage = () => {
   const toast = useToast();
   const router = useRouter();
@@ -62,7 +64,7 @@ const ConfigureSystem: NextPage = () => {
       // replace the current history entry
       router.replace(newUrl, undefined, { shallow: true });
 
-      setInitialTabIndex(3);
+      setInitialTabIndex(INTEGRATION_TAB_INDEX);
     }
   }, [router, toast]);
 

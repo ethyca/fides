@@ -283,8 +283,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const handleAuthorizeConnectionClick = async (
     values: ConnectionConfigFormValues,
-    // @ts-ignore
-    props: FormikProps<Values>
+    props: FormikProps<ConnectionConfigFormValues>
   ) => {
     const errors = await props.validateForm();
 
@@ -296,8 +295,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     onAuthorizeConnectionClick(processedValues);
   };
 
-  // @ts-ignore
-  const handleTestConnectionClick = async (props: FormikProps<Values>) => {
+  const handleTestConnectionClick = async (
+    props: FormikProps<ConnectionConfigFormValues>
+  ) => {
     const errors = await props.validateForm();
 
     if (Object.keys(errors).length > 0) {
@@ -318,8 +318,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       validateOnBlur={false}
       validateOnChange={false}
     >
-      {/* @ts-ignore */}
-      {(props: FormikProps<Values>) => {
+      {(props: FormikProps<ConnectionConfigFormValues>) => {
         const authorized = !props.dirty && connectionConfig?.authorized;
         return (
           <Form noValidate>
@@ -353,7 +352,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     display="flex"
                     isRequired
                     isInvalid={
-                      props.errors.instance_key && props.touched.instance_key
+                      !!(
+                        props.errors.instance_key && props.touched.instance_key
+                      )
                     }
                   >
                     {getFormLabel("instance_key", "Integration Identifier")}

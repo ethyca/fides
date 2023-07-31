@@ -781,7 +781,7 @@ class TestGetConnections:
             "created_at",
             "disabled",
             "description",
-            "authorized"
+            "authorized",
         }
 
         assert connection["key"] == "my_postgres_db_1"
@@ -1193,7 +1193,7 @@ class TestGetConnection:
             "description",
             "saas_config",
             "secrets",
-            "authorized"
+            "authorized",
         }
 
         assert response_body["key"] == "my_postgres_db_1"
