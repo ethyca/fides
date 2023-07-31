@@ -15,6 +15,7 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
+from fides.api.models.consent_settings import ConsentSettings
 from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
@@ -31,6 +32,7 @@ from fides.api.util.consent_util import (
     get_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, transform_fields
+from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, TCFExperienceContents
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 
@@ -58,8 +60,9 @@ def _filter_experiences_by_region_or_country(
     db: Session, region: Optional[str], experience_query: Query
 ) -> Query:
     """
-    Return at most two privacy experiences, one overlay and one privacy center experience matching the given region.
-    Experiences are looked up by supplied region first.  If nothing is found, we attempt to look up by country code.
+    Return at most two privacy experiences: a privacy center experience and an overlay (regular or TCF type)
+    that matches the given region. Experiences are looked up by supplied region first.  If nothing is found,
+    we attempt to look up by country code.
 
     For example, if region was "fr_idg" and no experiences were saved under this code, we'd look again for experiences
     saved with "fr".
@@ -80,12 +83,23 @@ def _filter_experiences_by_region_or_country(
     ) or PrivacyExperience.get_experience_by_region_and_component(
         db, country, ComponentType.privacy_center
     )
+    tcf_overlay = PrivacyExperience.get_experience_by_region_and_component(
+        db, region, ComponentType.tcf_overlay
+    ) or PrivacyExperience.get_experience_by_region_and_component(
+        db, country, ComponentType.tcf_overlay
+    )
 
     experience_ids: List[str] = []
-    if overlay:
-        experience_ids.append(overlay.id)
+
     if privacy_center:
         experience_ids.append(privacy_center.id)
+
+    # Only return TCF overlay or a regular overlay here; not both
+    consent_settings: ConsentSettings = ConsentSettings.get_or_create_with_defaults(db)
+    if consent_settings.tcf_enabled and tcf_overlay:
+        experience_ids.append(tcf_overlay.id)
+    elif overlay:
+        experience_ids.append(overlay.id)
 
     if experience_ids:
         return experience_query.filter(PrivacyExperience.id.in_(experience_ids))
@@ -105,7 +119,9 @@ def privacy_experience_list(
     show_disabled: Optional[bool] = True,
     region: Optional[str] = None,
     component: Optional[ComponentType] = None,
-    has_notices: Optional[bool] = None,
+    has_notices: Optional[
+        bool
+    ] = None,  # Does this experience have content? Notices or TCF details?
     has_config: Optional[bool] = None,
     fides_user_device_id: Optional[str] = None,
     systems_applicable: Optional[bool] = False,
@@ -165,38 +181,83 @@ def privacy_experience_list(
         )
 
     results: List[PrivacyExperience] = []
-    should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
+    should_unescape: Optional[str] = request.headers.get(UNESCAPE_SAFESTR_HEADER)
     for privacy_experience in experience_query.order_by(
         PrivacyExperience.created_at.desc()
     ):
-        privacy_notices: List[
-            PrivacyNotice
-        ] = privacy_experience.get_related_privacy_notices(
-            db, show_disabled, systems_applicable, fides_user_provided_identity
+        content_exists = embed_experience_details(
+            db,
+            privacy_experience=privacy_experience,
+            show_disabled=show_disabled,
+            systems_applicable=systems_applicable,
+            fides_user_provided_identity=fides_user_provided_identity,
+            should_unescape=should_unescape,
         )
+
+        # Temporarily save "show_banner" on the privacy experience object
+        privacy_experience.show_banner = privacy_experience.get_should_show_banner(
+            db, show_disabled
+        )
+
         if should_unescape:
-            # Unescape both the experience config and the embedded privacy notices
+            # Unescape the experience config details
             privacy_experience.experience_config = transform_fields(
                 transformation=unescape,
                 model=privacy_experience.experience_config,
                 fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
             )
 
-            privacy_notices = [
-                transform_fields(
-                    transformation=unescape,
-                    model=notice,
-                    fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
-                )
-                for notice in privacy_notices
-            ]
-        # Temporarily save privacy notices on the privacy experience object
-        privacy_experience.privacy_notices = privacy_notices
-        # Temporarily save "show_banner" on the privacy experience object
-        privacy_experience.show_banner = privacy_experience.get_should_show_banner(
-            db, show_disabled
-        )
-        if not (has_notices and not privacy_notices):
+        if not (has_notices and not content_exists):
             results.append(privacy_experience)
 
     return fastapi_paginate(results, params=params)
+
+
+def embed_experience_details(
+    db: Session,
+    privacy_experience: PrivacyExperience,
+    show_disabled: Optional[bool],
+    systems_applicable: Optional[bool],
+    fides_user_provided_identity: Optional[ProvidedIdentity],
+    should_unescape: Optional[str],
+) -> bool:
+    """
+    At runtime embeds relevant Experience contents where applicable:
+        - Privacy Notices
+        - TCF Components: purposes, special purposes, vendors, features, and special features
+
+    Returns whether content exists on the experience.
+    """
+    # Reset any temporary cached items just in case
+    privacy_experience.privacy_notices = []
+    for component in TCF_COMPONENT_MAPPING:
+        setattr(privacy_experience, component, [])
+
+    # Temporarily add TCF Contents to the Experience object if applicable
+    tcf_contents: TCFExperienceContents = privacy_experience.get_related_tcf_contents(
+        db, fides_user_provided_identity
+    )
+    for component in TCF_COMPONENT_MAPPING:
+        setattr(privacy_experience, component, getattr(tcf_contents, component))
+
+    # Temporarily add Privacy Notices to the Experience object if applicable
+    privacy_notices: List[
+        PrivacyNotice
+    ] = privacy_experience.get_related_privacy_notices(
+        db, show_disabled, systems_applicable, fides_user_provided_identity
+    )
+
+    if should_unescape:
+        privacy_notices = [
+            transform_fields(
+                transformation=unescape,
+                model=notice,
+                fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
+            )
+            for notice in privacy_notices
+        ]
+    privacy_experience.privacy_notices = privacy_notices
+
+    return bool(privacy_notices) or any(
+        getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
+    )

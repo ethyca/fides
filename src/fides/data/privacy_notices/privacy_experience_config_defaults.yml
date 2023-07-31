@@ -25,3 +25,15 @@ privacy_experience_configs:
   reject_button_label: Opt out of all
   save_button_label: Save
   title: Manage your consent preferences
+
+- id: a4974670-abad-471f-9084-2cb-tcf-over
+  accept_button_label: Opt in to all
+  acknowledge_button_label: OK
+  component: tcf_overlay
+  description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
+  disabled: false
+  is_default: true
+  privacy_policy_link_label: Privacy Policy
+  reject_button_label: Opt out of all
+  save_button_label: Save
+  title: Manage your consent preferences

@@ -24,11 +24,13 @@ from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.sql_models import DataUse as sql_DataUse
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.util.consent_util import (
+    EEA_COUNTRIES,
     add_complete_system_status_for_consent_reporting,
     add_errored_system_status_for_consent_reporting,
     cache_initial_status_and_identities_for_consent_reporting,
     create_default_experience_config,
     create_privacy_notices_util,
+    create_tcf_experiences_on_startup,
     get_fides_user_device_id_provided_identity,
     load_default_notices_on_startup,
     should_opt_in_to_service,
@@ -1252,3 +1254,16 @@ class TestValidateDataUses:
             custom_data_use.fides_key,
         ]
         validate_notice_data_uses([privacy_notice_request], db)
+
+
+class TestLoadTCFExperiences:
+    def test_create_tcf_experiences_on_startup(self, db):
+        """Sanity check on creating TCF experiences"""
+        experiences_created = create_tcf_experiences_on_startup(db)
+        assert len(experiences_created) == len(EEA_COUNTRIES)
+        be_exp = experiences_created[0]
+        assert be_exp.component == ComponentType.tcf_overlay
+        assert be_exp.region == PrivacyNoticeRegion.be
+        experience_config = be_exp.experience_config
+        assert experience_config.is_default
+        assert experience_config.component == ComponentType.tcf_overlay
