@@ -38,7 +38,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
       <Heading as="h3" size="md">
         Data uses
       </Heading>
-      <Text fontSize="sm">
+      <Text fontSize="sm" fontWeight="medium">
         Data Uses describe the business purpose for which the personal data is
         processed or collected. Within a Data Use, you assign which categories
         of personal information are collected for this purpose and for which

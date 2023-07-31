@@ -211,16 +211,10 @@ const SystemInformationForm = ({
     >
       {({ dirty, values, isValid }) => (
         <Form>
-          {/* <Stack spacing={6} maxWidth="720px">
+          <Stack spacing={6} maxWidth={{ base: "100%", lg: "70%" }}>
+            {withHeader ? <SystemHeading system={passedInSystem} /> : null}
+
             <Text fontSize="sm" fontWeight="medium">
-              By providing a small amount of additional context for each system
-              we can make reporting and understanding our tech stack much easier
-              for everyone from engineering to legal teams. So let’s do this
-              now.
-            </Text>
-          </Stack> */}
-          <Stack spacing={6} maxWidth={"720px"}>
-            <Text fontSize="sm">
               By providing a small amount of additional context for each system
               we can make reporting and understanding our tech stack much easier
               for everyone from engineering to legal teams. So let’s do this
