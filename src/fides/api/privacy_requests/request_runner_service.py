@@ -35,6 +35,22 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
+from fides.api.privacy_requests.graph.analytics_events import (
+    failed_graph_analytics_event,
+    fideslog_graph_failure,
+)
+from fides.api.privacy_requests.graph.build_consent_graph import (
+    build_consent_dataset_graph,
+)
+from fides.api.privacy_requests.graph.config import CollectionAddress
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph.run import (
+    run_access_request,
+    run_consent_request,
+    run_erasure_request,
+)
+from fides.api.privacy_requests.graph.utils import get_cached_data_for_erasures
+from fides.api.privacy_requests.graph_tasks.filter_results import filter_data_categories
 from fides.api.scheduler import DatabaseTask, celery_app
 from fides.api.scheduler.scheduler import scheduler
 from fides.api.schemas.base_class import FidesSchema
@@ -68,20 +84,6 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.privacy_requests.graph.analytics_events import (
-    failed_graph_analytics_event,
-    fideslog_graph_failure,
-)
-from fides.privacy_requests.graph.build_consent_graph import build_consent_dataset_graph
-from fides.privacy_requests.graph.config import CollectionAddress
-from fides.privacy_requests.graph.graph import DatasetGraph
-from fides.privacy_requests.graph.run import (
-    run_access_request,
-    run_consent_request,
-    run_erasure_request,
-)
-from fides.privacy_requests.graph.utils import get_cached_data_for_erasures
-from fides.privacy_requests.graph_tasks.filter_results import filter_data_categories
 
 
 class ManualWebhookResults(FidesSchema):

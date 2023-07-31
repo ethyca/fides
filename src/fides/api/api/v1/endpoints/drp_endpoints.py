@@ -21,6 +21,11 @@ from fides.api.api.v1.endpoints.privacy_request_endpoints import (
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.oauth.utils import verify_oauth_client
+from fides.api.privacy_requests.request_runner_service import queue_privacy_request
+from fides.api.privacy_requests.request_service import (
+    build_required_privacy_request_kwargs,
+    cache_data,
+)
 from fides.api.schemas.drp_privacy_request import (
     DRP_VERSION,
     DrpDataRightsResponse,
@@ -42,11 +47,6 @@ from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.privacy_requests.request_runner_service import queue_privacy_request
-from fides.privacy_requests.request_service import (
-    build_required_privacy_request_kwargs,
-    cache_data,
-)
 
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
 

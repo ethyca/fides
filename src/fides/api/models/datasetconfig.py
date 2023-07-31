@@ -9,8 +9,7 @@ from sqlalchemy.orm import Session, relationship
 from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import Base
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.util.saas_util import merge_datasets
-from fides.privacy_requests.graph.config import (
+from fides.api.privacy_requests.graph.config import (
     Collection,
     CollectionAddress,
     Field,
@@ -19,7 +18,8 @@ from fides.privacy_requests.graph.config import (
     GraphDataset,
     generate_field,
 )
-from fides.privacy_requests.graph.data_type import parse_data_type_string
+from fides.api.privacy_requests.graph.data_type import parse_data_type_string
+from fides.api.util.saas_util import merge_datasets
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,

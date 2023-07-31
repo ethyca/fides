@@ -12,6 +12,18 @@ from sqlalchemy.sql.elements import ColumnElement, TextClause
 
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import ManualAction, PrivacyRequest
+from fides.api.privacy_requests.graph.config import (
+    ROOT_COLLECTION_ADDRESS,
+    CollectionAddress,
+    Field,
+    FieldPath,
+    MaskingOverride,
+)
+from fides.api.privacy_requests.graph.traversal import TraversalNode
+from fides.api.privacy_requests.graph_tasks.refine_target_path import (
+    build_refined_target_paths,
+    join_detailed_path,
+)
 from fides.api.schemas.policy import ActionType
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
@@ -20,18 +32,6 @@ from fides.api.service.masking.strategy.masking_strategy_nullify import (
 from fides.api.util.collection_util import Row, append, filter_nonempty_values
 from fides.api.util.logger import Pii
 from fides.api.util.querytoken import QueryToken
-from fides.privacy_requests.graph.config import (
-    ROOT_COLLECTION_ADDRESS,
-    CollectionAddress,
-    Field,
-    FieldPath,
-    MaskingOverride,
-)
-from fides.privacy_requests.graph.traversal import TraversalNode
-from fides.privacy_requests.graph_tasks.refine_target_path import (
-    build_refined_target_paths,
-    join_detailed_path,
-)
 
 T = TypeVar("T")
 

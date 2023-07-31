@@ -11,15 +11,15 @@ from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from fides.api.common_exceptions import FidesopsException, ValidationError
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.saas.saas_config import SaaSRequest
-from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
-from fides.config.helpers import load_file
-from fides.privacy_requests.graph.config import (
+from fides.api.privacy_requests.graph.config import (
     Collection,
     CollectionAddress,
     Field,
     GraphDataset,
 )
+from fides.api.schemas.saas.saas_config import SaaSRequest
+from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.config.helpers import load_file
 
 FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
 PRIVACY_REQUEST_ID = "privacy_request_id"

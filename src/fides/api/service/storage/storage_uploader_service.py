@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.storage import StorageConfig
+from fides.api.privacy_requests.graph.graph import DataCategoryFieldMapping
 from fides.api.scheduler.storage import upload_to_local, upload_to_s3
 from fides.api.schemas.storage.storage import (
     FileNaming,
@@ -14,7 +15,6 @@ from fides.api.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
-from fides.privacy_requests.graph.graph import DataCategoryFieldMapping
 
 
 def upload(

@@ -20,6 +20,13 @@ from fides.api.schemas.policy import ActionType
 from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
 )
+from fides.privacy_requests.graph.build_access_graph import (
+    _format_data_use_map_for_caching,
+)
+from fides.privacy_requests.graph.build_erasure_graph import (
+    _evaluate_erasure_dependencies,
+    update_erasure_mapping_from_cache,
+)
 from fides.privacy_requests.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -31,16 +38,11 @@ from fides.privacy_requests.graph.config import (
 from fides.privacy_requests.graph.graph import DatasetGraph
 from fides.privacy_requests.graph.traversal import Traversal, TraversalNode
 from fides.privacy_requests.graph.utils import collect_queries
-from fides.privacy_requests.graph.build_access_graph import _format_data_use_map_for_caching
 from fides.privacy_requests.graph_tasks.graph_task import (
     EMPTY_REQUEST,
     GraphTask,
     TaskResources,
     build_affected_field_logs,
-)
-from fides.privacy_requests.graph.build_erasure_graph import (
-    _evaluate_erasure_dependencies,
-    update_erasure_mapping_from_cache,
 )
 from fides.privacy_requests.graph_tasks.task_resources import Connections
 

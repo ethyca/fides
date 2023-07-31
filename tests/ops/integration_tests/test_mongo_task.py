@@ -26,9 +26,9 @@ from fides.privacy_requests.graph.data_type import (
 )
 from fides.privacy_requests.graph.graph import DatasetGraph, Edge, Node
 from fides.privacy_requests.graph.traversal import TraversalNode
+from fides.privacy_requests.graph.utils import get_cached_data_for_erasures
 from fides.privacy_requests.graph_tasks import graph_task
 from fides.privacy_requests.graph_tasks.filter_results import filter_data_categories
-from fides.privacy_requests.graph.utils import get_cached_data_for_erasures
 
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (

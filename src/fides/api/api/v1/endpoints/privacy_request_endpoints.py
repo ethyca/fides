@@ -62,6 +62,18 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.oauth.utils import verify_callback_oauth, verify_oauth_client
+from fides.api.privacy_requests.graph.config import CollectionAddress
+from fides.api.privacy_requests.graph.graph import DatasetGraph, Node
+from fides.api.privacy_requests.graph.traversal import Traversal
+from fides.api.privacy_requests.graph.utils import collect_queries
+from fides.api.privacy_requests.graph_tasks.filter_results import filter_data_categories
+from fides.api.privacy_requests.graph_tasks.graph_task import EMPTY_REQUEST
+from fides.api.privacy_requests.graph_tasks.task_resources import TaskResources
+from fides.api.privacy_requests.request_runner_service import queue_privacy_request
+from fides.api.privacy_requests.request_service import (
+    build_required_privacy_request_kwargs,
+    cache_data,
+)
 from fides.api.scheduler import MESSAGING_QUEUE_NAME
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
@@ -131,18 +143,6 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.privacy_requests.graph.config import CollectionAddress
-from fides.privacy_requests.graph.graph import DatasetGraph, Node
-from fides.privacy_requests.graph.traversal import Traversal
-from fides.privacy_requests.graph.utils import collect_queries
-from fides.privacy_requests.graph_tasks.filter_results import filter_data_categories
-from fides.privacy_requests.graph_tasks.graph_task import EMPTY_REQUEST
-from fides.privacy_requests.graph_tasks.task_resources import TaskResources
-from fides.privacy_requests.request_runner_service import queue_privacy_request
-from fides.privacy_requests.request_service import (
-    build_required_privacy_request_kwargs,
-    cache_data,
-)
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 

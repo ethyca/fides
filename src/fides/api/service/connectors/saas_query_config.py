@@ -11,6 +11,8 @@ from loguru import logger
 from fides.api.common_exceptions import FidesopsException
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.privacy_requests.graph.config import ScalarField
+from fides.api.privacy_requests.graph.traversal import TraversalNode
 from fides.api.schemas.saas.saas_config import Endpoint, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.connectors.query_config import QueryConfig
@@ -25,8 +27,6 @@ from fides.api.util.saas_util import (
     unflatten_dict,
 )
 from fides.config import CONFIG
-from fides.privacy_requests.graph.config import ScalarField
-from fides.privacy_requests.graph.traversal import TraversalNode
 
 T = TypeVar("T")
 

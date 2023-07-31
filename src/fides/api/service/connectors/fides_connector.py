@@ -9,6 +9,7 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.privacy_requests.graph.traversal import TraversalNode
 from fides.api.schemas.connection_configuration.connection_secrets_fides import (
     FidesConnectorSchema,
 )
@@ -19,7 +20,6 @@ from fides.api.service.connectors.fides.fides_client import FidesClient
 from fides.api.service.connectors.query_config import QueryConfig
 from fides.api.util.collection_util import Row
 from fides.api.util.errors import FidesError
-from fides.privacy_requests.graph.traversal import TraversalNode
 
 DEFAULT_POLLING_TIMEOUT: int = 1800
 DEFAULT_POLLING_INTERVAL: int = 30

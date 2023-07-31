@@ -5,10 +5,7 @@ from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator, validator
 
 from fides.api.common_exceptions import ValidationError
-from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
-from fides.api.schemas.saas.shared_schemas import HTTPMethod
-from fides.privacy_requests.graph.config import (
+from fides.api.privacy_requests.graph.config import (
     Collection,
     CollectionAddress,
     Field,
@@ -16,6 +13,9 @@ from fides.privacy_requests.graph.config import (
     GraphDataset,
     ScalarField,
 )
+from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
+from fides.api.schemas.saas.shared_schemas import HTTPMethod
 
 
 class ParamValue(BaseModel):

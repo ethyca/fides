@@ -9,11 +9,14 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.privacy_requests.graph.config import TERMINATOR_ADDRESS, CollectionAddress
-from fides.privacy_requests.graph.graph import DatasetGraph, GraphDataset
-from fides.privacy_requests.graph.traversal import TraversalNode
-from fides.privacy_requests.graph_tasks.graph_task import GraphTask
-from fides.privacy_requests.graph_tasks.task_resources import TaskResources
+from fides.api.privacy_requests.graph.config import (
+    TERMINATOR_ADDRESS,
+    CollectionAddress,
+)
+from fides.api.privacy_requests.graph.graph import DatasetGraph, GraphDataset
+from fides.api.privacy_requests.graph.traversal import TraversalNode
+from fides.api.privacy_requests.graph_tasks.graph_task import GraphTask
+from fides.api.privacy_requests.graph_tasks.task_resources import TaskResources
 
 
 def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:

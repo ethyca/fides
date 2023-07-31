@@ -36,6 +36,8 @@ from fides.api.models.datasetconfig import (
     to_graph_field,
 )
 from fides.api.oauth.utils import verify_oauth_client
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph.traversal import Traversal
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
     BulkPutDataset,
@@ -63,8 +65,6 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
-from fides.privacy_requests.graph.graph import DatasetGraph
-from fides.privacy_requests.graph.traversal import Traversal
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,

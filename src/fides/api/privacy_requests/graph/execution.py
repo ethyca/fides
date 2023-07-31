@@ -7,8 +7,11 @@ import dask
 from dask import delayed  # type: ignore[attr-defined]
 from dask.threaded import get
 
+from fides.api.privacy_requests.graph.config import (
+    TERMINATOR_ADDRESS,
+    CollectionAddress,
+)
 from fides.api.util.collection_util import Row
-from fides.privacy_requests.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 
 dask.config.set(scheduler="threads")
 

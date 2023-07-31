@@ -9,27 +9,29 @@ from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequest
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.schemas.policy import ActionType
-from fides.api.service.connectors.base_connector import BaseConnector
-from fides.api.util.collection_util import NodeInput, Row, append, partition
-from fides.api.util.logger import Pii
-from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
-from fides.privacy_requests.graph.config import (
+from fides.api.privacy_requests.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
     Field,
     FieldAddress,
     FieldPath,
 )
-from fides.privacy_requests.graph.graph import Edge, Node
-from fides.privacy_requests.graph.traversal import TraversalNode
-from fides.privacy_requests.graph_tasks.consolidate_query_matches import (
+from fides.api.privacy_requests.graph.graph import Edge, Node
+from fides.api.privacy_requests.graph.traversal import TraversalNode
+from fides.api.privacy_requests.graph_tasks.consolidate_query_matches import (
     consolidate_query_matches,
 )
-from fides.privacy_requests.graph_tasks.filter_element_match import filter_element_match
-from fides.privacy_requests.graph_tasks.refine_target_path import FieldPathNodeInput
-from fides.privacy_requests.graph_tasks.task_resources import TaskResources
-from fides.privacy_requests.graph_tasks.utils import retry
+from fides.api.privacy_requests.graph_tasks.filter_element_match import (
+    filter_element_match,
+)
+from fides.api.privacy_requests.graph_tasks.refine_target_path import FieldPathNodeInput
+from fides.api.privacy_requests.graph_tasks.task_resources import TaskResources
+from fides.api.privacy_requests.graph_tasks.utils import retry
+from fides.api.schemas.policy import ActionType
+from fides.api.service.connectors.base_connector import BaseConnector
+from fides.api.util.collection_util import NodeInput, Row, append, partition
+from fides.api.util.logger import Pii
+from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
 
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
 

@@ -10,6 +10,7 @@ from fides.api.common_exceptions import ConnectionException
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.privacy_requests.graph.traversal import TraversalNode
 from fides.api.schemas.connection_configuration.connection_secrets_dynamodb import (
     DynamoDBSchema,
 )
@@ -22,7 +23,6 @@ from fides.connectors.models import (
     ConnectorAuthFailureException,
     ConnectorFailureException,
 )
-from fides.privacy_requests.graph.traversal import TraversalNode
 
 
 class DynamoDBConnector(BaseConnector[Any]):  # type: ignore

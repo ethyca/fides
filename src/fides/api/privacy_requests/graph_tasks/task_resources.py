@@ -12,6 +12,7 @@ from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
 )
+from fides.api.privacy_requests.graph.config import CollectionAddress
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors import (
     BaseConnector,
@@ -32,7 +33,6 @@ from fides.api.service.connectors import (
 from fides.api.service.connectors.base_email_connector import BaseEmailConnector
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row, extract_key_for_address
-from fides.privacy_requests.graph.config import CollectionAddress
 
 
 class Connections:

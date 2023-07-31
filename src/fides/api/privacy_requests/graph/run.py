@@ -8,12 +8,15 @@ from sqlalchemy.orm import Session
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.privacy_requests.graph.build_access_graph import build_access_graph
+from fides.api.privacy_requests.graph.build_consent_graph import build_consent_graph
+from fides.api.privacy_requests.graph.build_erasure_graph import build_erasure_graph
+from fides.api.privacy_requests.graph.execution import (
+    execute_consent_graph,
+    execute_graph,
+)
+from fides.api.privacy_requests.graph.graph import DatasetGraph
 from fides.api.util.collection_util import Row
-from fides.privacy_requests.graph.build_access_graph import build_access_graph
-from fides.privacy_requests.graph.build_consent_graph import build_consent_graph
-from fides.privacy_requests.graph.build_erasure_graph import build_erasure_graph
-from fides.privacy_requests.graph.execution import execute_consent_graph, execute_graph
-from fides.privacy_requests.graph.graph import DatasetGraph
 
 
 async def run_access_request(

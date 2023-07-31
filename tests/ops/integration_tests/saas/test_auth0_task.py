@@ -7,8 +7,8 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from fides.config import CONFIG
 from fides.privacy_requests.graph.graph import DatasetGraph
-from fides.privacy_requests.graph_tasks import graph_task
 from fides.privacy_requests.graph.utils import get_cached_data_for_erasures
+from fides.privacy_requests.graph_tasks import graph_task
 from tests.fixtures.saas.auth0_fixtures import _user_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence

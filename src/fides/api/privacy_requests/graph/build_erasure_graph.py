@@ -10,21 +10,21 @@ from fides.api.common_exceptions import TraversalError
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.policy import ActionType
-from fides.api.util.collection_util import Row
-from fides.privacy_requests.graph.analytics_events import (
+from fides.api.privacy_requests.graph.analytics_events import (
     fideslog_graph_rerun,
     prepare_rerun_graph_analytics_event,
 )
-from fides.privacy_requests.graph.config import (
+from fides.api.privacy_requests.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     CollectionAddress,
 )
-from fides.privacy_requests.graph.graph import DatasetGraph
-from fides.privacy_requests.graph.traversal import Traversal, TraversalNode
-from fides.privacy_requests.graph_tasks.graph_task import GraphTask
-from fides.privacy_requests.graph_tasks.task_resources import TaskResources
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph.traversal import Traversal, TraversalNode
+from fides.api.privacy_requests.graph_tasks.graph_task import GraphTask
+from fides.api.privacy_requests.graph_tasks.task_resources import TaskResources
+from fides.api.schemas.policy import ActionType
+from fides.api.util.collection_util import Row
 
 
 def _evaluate_erasure_dependencies(

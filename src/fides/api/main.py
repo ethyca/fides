@@ -24,6 +24,11 @@ from fides.api.app_setup import (
 )
 from fides.api.common_exceptions import MalisciousUrlException
 from fides.api.middleware import handle_audit_log_resource
+
+# pylint: disable=wildcard-import, unused-wildcard-import
+from fides.api.privacy_requests.email_batch_service import (
+    initiate_scheduled_batch_email_send,
+)
 from fides.api.scheduler.scheduler import scheduler
 from fides.api.schemas.analytics import Event, ExtraData
 from fides.api.ui import (
@@ -37,11 +42,6 @@ from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
-
-# pylint: disable=wildcard-import, unused-wildcard-import
-from fides.privacy_requests.email_batch_service import (
-    initiate_scheduled_batch_email_send,
-)
 
 IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 

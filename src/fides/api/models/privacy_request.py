@@ -49,6 +49,8 @@ from fides.api.models.policy import (
     WebhookTypes,
 )
 from fides.api.oauth.jwt import generate_jwe
+from fides.api.privacy_requests.graph.config import CollectionAddress
+from fides.api.privacy_requests.graph.graph_differences import GraphRepr
 from fides.api.scheduler import celery_app
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
@@ -71,8 +73,6 @@ from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.common.api.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fides.config import CONFIG
-from fides.privacy_requests.graph.config import CollectionAddress
-from fides.privacy_requests.graph.graph_differences import GraphRepr
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [

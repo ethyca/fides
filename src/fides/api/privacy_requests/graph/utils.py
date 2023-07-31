@@ -1,12 +1,12 @@
 """Utilities used when building Graphs."""
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+from fides.api.privacy_requests.graph.config import CollectionAddress
+from fides.api.privacy_requests.graph.traversal import Traversal, TraversalNode
+from fides.api.privacy_requests.graph_tasks.graph_task import GraphTask
+from fides.api.privacy_requests.graph_tasks.task_resources import TaskResources
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row, extract_key_for_address
-from fides.privacy_requests.graph.config import CollectionAddress
-from fides.privacy_requests.graph.traversal import Traversal, TraversalNode
-from fides.privacy_requests.graph_tasks.graph_task import GraphTask
-from fides.privacy_requests.graph_tasks.task_resources import TaskResources
 
 
 def collect_queries(

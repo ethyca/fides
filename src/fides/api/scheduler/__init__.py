@@ -65,8 +65,8 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
         [
             "fides.api.tasks",
             "fides.api.tasks.scheduled",
-            "fides.privacy_requests",
-            "fides.privacy_requests.request_runner_service",
+            "fides.api.privacy_requests",
+            "fides.api.privacy_requests.request_runner_service",
         ]
     )
 

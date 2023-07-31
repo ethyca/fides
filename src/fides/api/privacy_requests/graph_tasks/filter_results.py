@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional, Set, Union
 from fideslang.validation import FidesKey
 from loguru import logger
 
+from fides.api.privacy_requests.graph.config import CollectionAddress, FieldPath
 from fides.api.util.collection_util import Row
-from fides.privacy_requests.graph.config import CollectionAddress, FieldPath
 
 
 def filter_data_categories(

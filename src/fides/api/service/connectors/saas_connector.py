@@ -14,6 +14,7 @@ from fides.api.common_exceptions import (
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.privacy_requests.graph.traversal import TraversalNode
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.saas.saas_config import (
     ClientConfig,
@@ -40,7 +41,6 @@ from fides.api.util.consent_util import (
     should_opt_in_to_service,
 )
 from fides.api.util.saas_util import assign_placeholders, map_param_values
-from fides.privacy_requests.graph.traversal import TraversalNode
 
 
 class SaaSConnector(BaseConnector[AuthenticatedClient]):

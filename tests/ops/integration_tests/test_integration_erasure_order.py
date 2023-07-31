@@ -19,8 +19,8 @@ from fides.api.util.collection_util import Row
 from fides.config import get_config
 from fides.privacy_requests.graph.graph import DatasetGraph
 from fides.privacy_requests.graph.traversal import TraversalNode
-from fides.privacy_requests.graph_tasks import graph_task
 from fides.privacy_requests.graph.utils import get_cached_data_for_erasures
+from fides.privacy_requests.graph_tasks import graph_task
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()

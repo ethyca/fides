@@ -5,14 +5,14 @@ from typing import Any, Dict, List
 import pydash
 from loguru import logger
 
-from fides.api.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
-from fides.api.util.logger import Pii
-from fides.privacy_requests.graph_tasks.refine_target_path import (
+from fides.api.privacy_requests.graph_tasks.refine_target_path import (
     DetailedPath,
     FieldPathNodeInput,
     build_refined_target_paths,
     join_detailed_path,
 )
+from fides.api.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
+from fides.api.util.logger import Pii
 
 
 def filter_element_match(
