@@ -29,6 +29,7 @@ The types of changes are:
 
 - HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
 - UI support for OAuth2 authorization flow [#3819](https://github.com/ethyca/fides/pull/3819)
+- Changes in the `data` directory now trigger a server reload (for local development) [#3874](https://github.com/ethyca/fides/pull/3874)
 
 ### Changed
 
