@@ -45,7 +45,7 @@ def validate_data_categories_against_db(
     class CollectionDataCategoryValidation(
         DatasetCollection, DataCategoryValidationMixin
     ):
-        fields: Sequence[FieldDataCategoryValidation] = [] # type: ignore[assignment]
+        fields: Sequence[FieldDataCategoryValidation] = []  # type: ignore[assignment]
 
     class DatasetDataCategoryValidation(Dataset, DataCategoryValidationMixin):
         collections: Sequence[CollectionDataCategoryValidation]  # type: ignore[assignment]

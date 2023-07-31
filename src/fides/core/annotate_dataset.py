@@ -5,9 +5,9 @@ from typing import List, Union
 
 import click
 from fideslang import manifests
-from fideslang.parse import parse_dict
 from fideslang.manifests import ingest_manifests
-from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesModel
+from fideslang.models import Dataset, DatasetCollection, DatasetField
+from fideslang.parse import parse_dict
 from fideslang.validation import FidesKey, FidesValidationError
 
 from fides.common.utils import echo_green
