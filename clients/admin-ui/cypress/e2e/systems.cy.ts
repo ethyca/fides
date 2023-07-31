@@ -85,7 +85,6 @@ describe("System management page", () => {
           cy.url().should("contain", ADD_SYSTEMS_MANUAL_ROUTE);
           cy.wait("@getSystems");
           cy.getByTestId("input-name").type(system.name);
-          cy.getByTestId("input-fides_key").type(system.fides_key);
           cy.getByTestId("input-description").type(system.description);
 
           cy.getByTestId("save-btn").click();
@@ -154,7 +153,6 @@ describe("System management page", () => {
           cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
           cy.wait("@getSystems");
           cy.getByTestId("input-name").type(system.name);
-          cy.getByTestId("input-fides_key").type(system.fides_key);
           cy.getByTestId("input-description").type(system.description);
           cy.getByTestId("save-btn").click();
           cy.wait("@postSystem");
