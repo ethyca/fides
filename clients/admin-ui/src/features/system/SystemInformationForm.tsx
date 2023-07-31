@@ -40,6 +40,7 @@ import {
 } from "~/features/system/system.slice";
 import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
 import { ResourceTypes, System } from "~/types/api";
+import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
@@ -58,35 +59,6 @@ const SystemHeading = ({ system }: { system?: System }) => {
     </Heading>
   );
 };
-
-const SystemInformationFormGroup = ({
-  heading,
-  children,
-}: {
-  heading: string;
-  children?: React.ReactNode;
-}) => (
-  <Stack spacing={4}>
-    <Box maxWidth="720px" border="1px" borderColor="gray.200" borderRadius={6}>
-      <Box
-        backgroundColor="gray.50"
-        px={6}
-        py={4}
-        borderBottom="1px"
-        borderColor="gray.200"
-        borderTopRadius={6}
-      >
-        <Heading as="h3" size="xs">
-          {heading}
-        </Heading>
-      </Box>
-
-      <Stack spacing={4} px={6} py={6}>
-        {children}
-      </Stack>
-    </Box>
-  </Stack>
-);
 
 interface Props {
   onSuccess: (system: System) => void;
@@ -222,15 +194,7 @@ const SystemInformationForm = ({
             </Text>
             {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
-            <SystemInformationFormGroup heading="System details">
-              {/* <CustomSelect
-                id="vendor"
-                name="vendor"
-                label="Vendor"
-                tooltip="tooltip TBD"
-                variant="stacked"
-                options={testSelectOptions}
-              /> */}
+            <SystemFormInputGroup heading="System details">
               <CustomTextInput
                 id="name"
                 name="name"
@@ -271,8 +235,8 @@ const SystemInformationForm = ({
                 tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
                 isMulti
               />
-            </SystemInformationFormGroup>
-            <SystemInformationFormGroup heading="Dataset reference">
+            </SystemFormInputGroup>
+            <SystemFormInputGroup heading="Dataset reference">
               <CustomSelect
                 name="dataset_references"
                 label="Dataset references"
@@ -281,8 +245,8 @@ const SystemInformationForm = ({
                 isMulti
                 variant="stacked"
               />
-            </SystemInformationFormGroup>
-            <SystemInformationFormGroup heading="Data processing properties">
+            </SystemFormInputGroup>
+            <SystemFormInputGroup heading="Data processing properties">
               <CustomSwitch
                 name="processes_personal_data"
                 label="This system processes personal data"
@@ -337,8 +301,8 @@ const SystemInformationForm = ({
                 tooltip="Location where the DPAs or DPIAs can be found."
                 variant="stacked"
               />
-            </SystemInformationFormGroup>
-            <SystemInformationFormGroup heading="Administrative properties">
+            </SystemFormInputGroup>
+            <SystemFormInputGroup heading="Administrative properties">
               <CustomTextInput
                 label="Data steward"
                 name="data_steward"
@@ -394,21 +358,7 @@ const SystemInformationForm = ({
                 tooltip="A description of the data security practices employed."
                 variant="stacked"
               />
-            </SystemInformationFormGroup>
-            {/* {!abridged ? (
-              <>
-                <Box py={6}>
-                  <Divider />
-                </Box>
-                <SystemInformationFormExtension values={values} />
-              </>
-            ) : null}
-            {isEditing && (
-              <CustomFieldsList
-                resourceFidesKey={passedInSystem?.fides_key}
-                resourceType={ResourceTypes.SYSTEM}
-              />
-            )} */}
+            </SystemFormInputGroup>
           </Stack>
           <Box mt={6}>
             <Button

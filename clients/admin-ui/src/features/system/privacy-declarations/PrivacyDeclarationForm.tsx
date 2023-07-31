@@ -26,6 +26,7 @@ import ConfirmationModal from "~/features/common/ConfirmationModal";
 import {
   CustomCreatableSelect,
   CustomSelect,
+  CustomSwitch,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
@@ -37,6 +38,7 @@ import {
   PrivacyDeclarationResponse,
   ResourceTypes,
 } from "~/types/api";
+import SystemFormInputGroup from "../SystemFormInputGroup";
 
 export const ValidationSchema = Yup.object().shape({
   data_categories: Yup.array(Yup.string())
@@ -115,104 +117,138 @@ export const PrivacyDeclarationFormComponents = ({
 
   const deleteDisabled = initialValues.data_use === "";
 
+  const testSelectOptions = [
+    "Test option 1",
+    "Test option 2",
+    "Test option 3",
+  ].map((opt) => ({
+    value: opt,
+    label: opt,
+  }));
+
   return (
     <Stack spacing={4}>
-      <CustomSelect
-        id="data_use"
-        label="Data use"
-        name="data_use"
-        options={allDataUses.map((data) => ({
-          value: data.fides_key,
-          label: data.fides_key,
-        }))}
-        tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
-        variant="stacked"
-        singleValueBlock
-        isDisabled={!!privacyDeclarationId}
-      />
-      <CustomTextInput
-        id="name"
-        label="Processing Activity"
-        name="name"
-        variant="stacked"
-        tooltip="The personal data processing activity or activities associated with this data use."
-        disabled={!!privacyDeclarationId}
-      />
-      <CustomSelect
-        name="data_categories"
-        label="Data categories"
-        options={allDataCategories.map((data) => ({
-          value: data.fides_key,
-          label: data.fides_key,
-        }))}
-        tooltip="What type of data is your system processing? This could be various types of user or system data."
-        isMulti
-        variant="stacked"
-      />
-      <CustomSelect
-        name="data_subjects"
-        label="Data subjects"
-        options={allDataSubjects.map((data) => ({
-          value: data.fides_key,
-          label: data.fides_key,
-        }))}
-        tooltip="Whose data are you processing? This could be customers, employees or any other type of user in your system."
-        isMulti
-        variant="stacked"
-      />
-      {includeCookies ? (
-        <CustomCreatableSelect
+      <SystemFormInputGroup heading="Data use declaration">
+        <CustomTextInput
+          id="declaration_name"
+          label="Declaration name (optional)"
+          name="declaration_name"
+          tooltip="Would you like to append anything to the system name?"
+          variant="stacked"
+        />
+        <CustomSelect
+          id="data_use"
+          label="Data use"
+          name="data_use"
+          options={allDataUses.map((data) => ({
+            value: data.fides_key,
+            label: data.fides_key,
+          }))}
+          tooltip="For which business purposes is this data processed?"
+          variant="stacked"
+          singleValueBlock
+          isRequired
+          isDisabled={!!privacyDeclarationId}
+        />
+        <CustomSelect
+          name="data_categories"
+          label="Data categories"
+          options={allDataCategories.map((data) => ({
+            value: data.fides_key,
+            label: data.fides_key,
+          }))}
+          tooltip="Which categories of personal data are collected for this purpose?"
+          isMulti
+          isRequired
+          variant="stacked"
+        />
+        <CustomSelect
+          name="data_subjects"
+          label="Data subjects"
+          options={allDataSubjects.map((data) => ({
+            value: data.fides_key,
+            label: data.fides_key,
+          }))}
+          tooltip="Who are the subjects for this personal data?"
+          isMulti
+          variant="stacked"
+        />
+        <CustomSelect
+          name="data_sources"
+          label="Data sources"
+          options={testSelectOptions}
+          tooltip="Where do these categories of data come from?"
+          isMulti
+          variant="stacked"
+        />
+        <CustomSelect
+          name="legal_basis_for_processing"
+          label="Legal basis for processing"
+          options={testSelectOptions}
+          tooltip="What is the legal basis under which personal data is processed for this purpose?"
+          variant="stacked"
+        />
+        <CustomTextInput
+          name="data_retention"
+          label="Retention period (days)"
+          tooltip="How long is personal data retained for this purpose?"
+          variant="stacked"
+        />
+        {/* technically supposed to be a numerical input, handle later */}
+      </SystemFormInputGroup>
+      <SystemFormInputGroup heading="Features">
+        <CustomTextInput
+          name="features"
+          label="Features"
+          tooltip="What are some features of how data is processed?"
+          variant="stacked"
+        />
+      </SystemFormInputGroup>
+      <SystemFormInputGroup heading="Special categories of processing">
+        <CustomSwitch
+          name="processes_special_categories"
+          label="This system processes Special Category data"
+          tooltip="Is this system processing special category data as defined by GDPR Article 9?"
+          variant="stacked"
+        />
+        <CustomSelect
+          name="legal_basis_for_special_category_processing"
+          label="Legal basis for processing"
+          options={testSelectOptions}
+          tooltip="What is the legal basis under which the special category data is processed?"
+          variant="stacked"
+        />
+      </SystemFormInputGroup>
+      <SystemFormInputGroup heading="Third parties">
+        <CustomSwitch
+          name="shares_data"
+          label="This system shares data with 3rd parties for this purpose"
+          tooltip="Does this system disclose, sell, or share personal data collected for this business use with 3rd parties?"
+          variant="stacked"
+        />
+        <CustomTextInput
+          name="third_parties"
+          label="Third parties"
+          tooltip="Which type of third parties is the data shared with?"
+          variant="stacked"
+        />
+        <CustomSelect
+          name="shared_categories"
+          label="Shared categories"
+          options={testSelectOptions}
+          tooltip="Which categories of personal data does this system share with third parties?"
+          variant="stacked"
+        />
+      </SystemFormInputGroup>
+      <SystemFormInputGroup heading="Cookies">
+        <CustomSelect
           name="cookies"
           label="Cookies"
-          options={[]}
-          isMulti
-          variant="stacked"
-          isClearable={false}
-        />
-      ) : null}
-      {allDatasets ? (
-        <CustomSelect
-          name="dataset_references"
-          label="Dataset references"
-          options={datasetOptions}
-          tooltip="Referenced Dataset fides keys used by the system."
-          isMulti
+          options={testSelectOptions}
+          tooltip="Which cookies are placed on consumer domains for this purpose?"
           variant="stacked"
         />
-      ) : null}
-      {includeCustomFields ? (
-        <CustomFieldsList
-          resourceType={ResourceTypes.PRIVACY_DECLARATION}
-          resourceFidesKey={privacyDeclarationId}
-        />
-      ) : null}
-      <ButtonGroup size="sm" display="flex" justifyContent="space-between">
-        <Button
-          variant="outline"
-          onClick={deleteModal.onOpen}
-          disabled={deleteDisabled}
-          data-testid="delete-btn"
-        >
-          Delete
-        </Button>
-        <Button
-          type="submit"
-          colorScheme="primary"
-          disabled={!dirty || !isValid}
-          isLoading={isSubmitting}
-          data-testid="save-btn"
-        >
-          Save
-        </Button>
-      </ButtonGroup>
-      <ConfirmationModal
-        onConfirm={handleDelete}
-        title="Delete data use"
-        message="Are you sure you want to delete this data use? This action can't be undone."
-        isOpen={deleteModal.isOpen}
-        onClose={deleteModal.onClose}
-        isCentered
-      />
+      </SystemFormInputGroup>
     </Stack>
   );
 };

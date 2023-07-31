@@ -4,7 +4,11 @@ import {
   ButtonProps,
   Stack,
   Tooltip,
+  Text,
   useToast,
+  WarningTwoIcon,
+  HStack,
+  Heading,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
@@ -22,6 +26,7 @@ import { isErrorResult } from "~/types/errors";
 
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 import { DataProps, PrivacyDeclarationForm } from "./PrivacyDeclarationForm";
+import { PrivacyDeclarationFormModal } from "./PrivacyDeclarationFormModal";
 
 interface Props {
   system: SystemResponse;
@@ -193,47 +198,56 @@ const PrivacyDeclarationManager = ({
 
   return (
     <Stack spacing={3}>
-      <PrivacyDeclarationAccordion
-        privacyDeclarations={accordionDeclarations}
-        onEdit={handleEditDeclaration}
-        onDelete={handleDelete}
-        includeCustomFields={includeCustomFields}
-        includeCookies={includeCookies}
-        {...dataProps}
-      />
-      {showNewForm ? (
-        <Box backgroundColor="gray.50" p={4} data-testid="new-declaration-form">
-          <PrivacyDeclarationForm
-            initialValues={newDeclaration}
-            onSubmit={saveNewDeclaration}
-            onDelete={handleDeleteNew}
-            includeCustomFields={includeCustomFields}
-            includeCookies={includeCookies}
-            {...dataProps}
-          />
+      {system.privacy_declarations.length === 0 ? (
+        <Box
+          display="flex"
+          flexDirection="row"
+          p={4}
+          mt={6}
+          border="1px"
+          borderColor="blue.400"
+          borderRadius={8}
+          backgroundColor="gray.50"
+        >
+          <HStack spacing={2} display="flex" alignItems="start">
+            <WarningTwoIcon color="blue.400" boxSize={"18px"} />
+            <Stack spacing={1}>
+              <Heading as="h4" size="md">
+                You don't have a data use set up for this system yet.
+              </Heading>
+              <Text size="sm">[copy]</Text>
+              <HStack>
+                {showAddDataUseButton ? (
+                  <Button
+                    variant="outline"
+                    size="md"
+                    data-testid="add-btn"
+                    onClick={handleShowNewForm}
+                    disabled={showNewForm && !newDeclaration}
+                    mt={2}
+                    {...addButtonProps}
+                  >
+                    Add data use
+                  </Button>
+                ) : null}
+              </HStack>
+            </Stack>
+          </HStack>
         </Box>
       ) : null}
-      {showAddDataUseButton ? (
-        <Box py={2}>
-          <Tooltip
-            label="Add a Data Use"
-            hasArrow
-            placement="top"
-            isDisabled={accordionDeclarations.length === 0}
-          >
-            <Button
-              colorScheme="primary"
-              size="xs"
-              data-testid="add-btn"
-              onClick={handleShowNewForm}
-              disabled={showNewForm && !newDeclaration}
-              {...addButtonProps}
-            >
-              Add a Data Use +
-            </Button>
-          </Tooltip>
-        </Box>
-      ) : null}
+      <PrivacyDeclarationFormModal
+        isOpen={showNewForm}
+        onClose={() => setShowNewForm(false)}
+      >
+        <PrivacyDeclarationForm
+          initialValues={newDeclaration}
+          onSubmit={saveNewDeclaration}
+          onDelete={handleDeleteNew}
+          includeCustomFields={includeCustomFields}
+          includeCookies={includeCookies}
+          {...dataProps}
+        />
+      </PrivacyDeclarationFormModal>
     </Stack>
   );
 };
