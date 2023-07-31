@@ -31,6 +31,68 @@ class TestMaskSenstiveValues:
         }
 
     @pytest.fixture(scope="function")
+    def secret_schema_with_dataset_references(self):
+        return {
+            "title": "doordash_schema",
+            "description": "Doordash secrets schema",
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "title": "Domain",
+                    "default": "openapi.doordash.com",
+                    "sensitive": False,
+                    "type": "string",
+                },
+                "developer_id": {
+                    "title": "Developer ID",
+                    "sensitive": False,
+                    "type": "string",
+                },
+                "key_id": {"title": "Key ID", "sensitive": False, "type": "string"},
+                "signing_secret": {
+                    "title": "Signing Secret",
+                    "sensitive": True,
+                    "type": "string",
+                },
+                "doordash_delivery_id": {
+                    "title": "Doordash Delivery ID",
+                    "external_reference": True,
+                    "allOf": [{"$ref": "#/definitions/FidesDatasetReference"}],
+                },
+            },
+            "required": [
+                "developer_id",
+                "key_id",
+                "signing_secret",
+                "doordash_delivery_id",
+            ],
+            "additionalProperties": False,
+            "definitions": {
+                "EdgeDirection": {
+                    "title": "EdgeDirection",
+                    "description": "Direction of a FidesDataSetReference",
+                    "enum": ["from", "to"],
+                    "type": "string",
+                },
+                "FidesDatasetReference": {
+                    "title": "FidesDatasetReference",
+                    "description": "Reference to a field from another Collection",
+                    "type": "object",
+                    "properties": {
+                        "dataset": {
+                            "title": "Dataset",
+                            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+                            "type": "string",
+                        },
+                        "field": {"title": "Field", "type": "string"},
+                        "direction": {"$ref": "#/definitions/EdgeDirection"},
+                    },
+                    "required": ["dataset", "field"],
+                },
+            },
+        }
+
+    @pytest.fixture(scope="function")
     def connection_secrets(self):
         return {
             "api_id": "secret-test",
@@ -44,6 +106,33 @@ class TestMaskSenstiveValues:
             "api_id": "secret-test",
             "api_token": "**********",
             "domain": "api.aircall.io",
+        }
+
+    def test_mask_dataset_reference_fields(self, secret_schema_with_dataset_references):
+        masked_secrets = mask_sensitive_fields(
+            {
+                "domain": "openapi.doordash.com",
+                "developer_id": "123",
+                "key_id": "123",
+                "signing_secret": "123",
+                "doordash_delivery_id": {
+                    "dataset": "shop",
+                    "field": "customer.id",
+                    "direction": "from",
+                },
+            },
+            secret_schema_with_dataset_references,
+        )
+        assert masked_secrets == {
+            "domain": "openapi.doordash.com",
+            "developer_id": "123",
+            "key_id": "123",
+            "signing_secret": "**********",
+            "doordash_delivery_id": {
+                "dataset": "shop",
+                "field": "customer.id",
+                "direction": "from",
+            },
         }
 
     def test_mask_sensitive_fields_remove_non_schema_values(
