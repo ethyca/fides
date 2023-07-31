@@ -45,7 +45,7 @@ def get_data_categories_annotation(
     dataset_member: Union[Dataset, DatasetCollection, DatasetField],
     valid_categories: List[str],
     validate: bool = True,
-) -> List[str]:
+) -> List[FidesKey]:
     """
     Request the user's input to supply a list of data categories
 
@@ -82,7 +82,7 @@ def get_data_categories_annotation(
                 dataset_member, valid_categories
             )
 
-    return user_response
+    return [FidesKey(value) for value in user_response]
 
 
 def annotate_dataset(

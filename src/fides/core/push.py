@@ -80,14 +80,14 @@ def get_orphan_datasets(taxonomy: Taxonomy) -> List:
     referenced_datasets.update(
         [
             dataset_reference
-            for resource in taxonomy.system
+            for resource in taxonomy.system or []
             for privacy_declaration in resource.privacy_declarations
             if privacy_declaration.dataset_references is not None
             for dataset_reference in privacy_declaration.dataset_references
         ]
     )
 
-    datasets.update([resource.fides_key for resource in taxonomy.dataset])
+    datasets.update([resource.fides_key for resource in taxonomy.dataset or []])
 
     missing_datasets = list(datasets - referenced_datasets)
 

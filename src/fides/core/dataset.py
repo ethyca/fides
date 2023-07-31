@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple
 import sqlalchemy
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
+from fideslang.validation import FidesKey
 from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import text
@@ -41,13 +42,11 @@ def get_all_server_datasets(
     dataset_list = list_server_resources(
         url=url,
         resource_type="dataset",
-        exclude_keys=exclude_dataset_keys,
+        exclude_keys=[str(x) for x in exclude_dataset_keys],
         headers=headers,
     )
-    if not dataset_list:
-        return None
 
-    return dataset_list
+    return dataset_list  # type: ignore[return-value]
 
 
 def include_dataset_schema(schema: str, database_type: str) -> bool:
@@ -135,8 +134,8 @@ def make_dataset_key_unique(
     to avoid naming collisions.
     """
 
-    dataset.fides_key = generate_unique_fides_key(
-        dataset.fides_key, database_host, database_name
+    dataset.fides_key = FidesKey(
+        generate_unique_fides_key(dataset.fides_key, database_host, database_name)
     )
     dataset.meta = {"database_host": database_host, "database_name": database_name}
     return dataset
@@ -227,7 +226,7 @@ def print_dataset_db_scan_result(
     Prints uncategorized fields and raises an exception if coverage
     is lower than provided threshold.
     """
-    dataset_names = [dataset.name for dataset in datasets]
+    dataset_names: List[str] = [dataset.name or "" for dataset in datasets]
     output: str = "Successfully scanned the following datasets:\n"
     output += "\t{}\n".format("\n\t".join(dataset_names))
     echo_green(output)

@@ -25,7 +25,7 @@ def get_server_resources(
     If the resource does not exist on the server, an error will _not_ be thrown.
     Instead, an empty object will be stored and then filtered out.
     """
-    server_resources: List[FidesModel] = list(
+    server_resources = list(
         filter(
             None,
             [
@@ -34,11 +34,17 @@ def get_server_resources(
                     resource_type=resource_type,
                     resource_key=key,
                     headers=headers,
+                    raw=True,
                 )
                 for key in existing_keys
             ],
         )
     )
+    server_resources = [
+        parse_dict(resource_type=resource_type, resource=resource, from_server=True)
+        for resource in server_resources
+    ]
+
     return server_resources
 
 

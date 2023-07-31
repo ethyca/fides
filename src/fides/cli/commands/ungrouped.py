@@ -278,6 +278,7 @@ def evaluate(
     )
 
     if audit:
+        taxonomy = _parse.parse(manifests_dir)
         print_divider()
         pretty_echo("Auditing Organization Resource Compliance")
         _audit.audit_organizations(
@@ -292,7 +293,7 @@ def evaluate(
         _audit.audit_systems(
             url=config.cli.server_url,
             headers=config.user.auth_header,
-            include_keys=[system.fides_key for system in taxonomy.system],
+            include_keys=[system.fides_key for system in taxonomy.system or []],
         )
 
 

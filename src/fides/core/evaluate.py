@@ -541,6 +541,7 @@ def evaluate(
 
     # Determine which Policies will be evaluated
     policies = taxonomy.policy
+    assert policies, "At least one Policy must be present"
     if not local:
         # Append server-side Policies if not running in local_mode
         policies = get_evaluation_policies(
