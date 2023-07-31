@@ -18,6 +18,11 @@ import {
   InputGroup,
   InputProps,
   InputRightElement,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
   Radio,
   RadioGroup,
   Stack,
@@ -715,6 +720,72 @@ export const CustomRadioGroup = ({
   );
 };
 
+interface CustomNumberInputProps {
+  label: string;
+  tooltip?: string;
+  variant?: "inline" | "condensed" | "stacked";
+  isDisabled?: boolean;
+  isRequired?: boolean;
+}
+export const CustomNumberInput = ({
+  label,
+  tooltip,
+  variant = "inline",
+  isDisabled,
+  isRequired = false,
+  ...props
+}: CustomNumberInputProps & FieldHookConfig<number>) => {
+  const [field, meta] = useField({ ...props, type: "number" });
+  const isInvalid = !!(meta.touched && meta.error);
+
+  if (variant === "inline") {
+    return (
+      <FormControl isInvalid={isInvalid} isRequired={isRequired}>
+        <Grid templateColumns="1fr 3fr">
+          <Label htmlFor={props.id || props.name}>{label}</Label>
+          <Flex alignItems="center">
+            <Flex flexDir="column" flexGrow={1} mr="2">
+              <NumberInput>
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+            </Flex>
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Flex>
+        </Grid>
+      </FormControl>
+    );
+  }
+  return (
+    <FormControl isInvalid={isInvalid} isRequired={isRequired}>
+      <VStack alignItems="start" w="100%">
+        <Flex alignItems="center">
+          <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
+            {label}
+          </Label>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Flex>
+        <NumberInput
+          {...field}
+          size="sm"
+          w="100%"
+          isDisabled={isDisabled}
+          data-testid={`input-${field.name}`}
+        >
+          <NumberInputField />
+          <NumberInputStepper>
+            <NumberIncrementStepper />
+            <NumberDecrementStepper />
+          </NumberInputStepper>
+        </NumberInput>
+      </VStack>
+    </FormControl>
+  );
+};
+
 interface CustomSwitchProps {
   label: string;
   tooltip?: string;
@@ -769,17 +840,6 @@ export const CustomSwitch = ({
               {label}
             </Label>
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-            {/* <Badge
-              variant="outline"
-              colorScheme="pink"
-              height="18px"
-              lineHeight="18px"
-              textAlign="center"
-              borderRadius="2px"
-              mr={1}
-            >
-              ALL
-            </Badge> */}
           </HStack>
           <HStack>{innerSwitch}</HStack>
         </Box>

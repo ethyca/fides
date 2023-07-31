@@ -25,6 +25,7 @@ import * as Yup from "yup";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import {
   CustomCreatableSelect,
+  CustomNumberInput,
   CustomSelect,
   CustomSwitch,
   CustomTextInput,
@@ -188,7 +189,7 @@ export const PrivacyDeclarationFormComponents = ({
           tooltip="What is the legal basis under which personal data is processed for this purpose?"
           variant="stacked"
         />
-        <CustomTextInput
+        <CustomNumberInput
           name="data_retention"
           label="Retention period (days)"
           tooltip="How long is personal data retained for this purpose?"
