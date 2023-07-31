@@ -37,9 +37,6 @@ from fides.api.models.datasetconfig import (
     convert_dataset_to_graph,
     to_graph_field,
 )
-from fides.api.models.sql_models import ( # type: ignore[attr-defined]
-    Dataset as CtlDataset,
-)
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
@@ -67,6 +64,10 @@ from fides.common.api.v1.urn_registry import (
     DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
+)
+
+from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
+    Dataset as CtlDataset,
 )
 
 X_YAML = "application/x-yaml"

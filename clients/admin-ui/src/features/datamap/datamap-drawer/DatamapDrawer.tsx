@@ -28,6 +28,7 @@ const DatamapDrawer = ({
   const isOpen = useMemo(() => Boolean(selectedSystemId), [selectedSystemId]);
   const { isLoading, ...dataProps } = usePrivacyDeclarationData({
     includeDatasets: false,
+    includeDisabled: false,
   });
 
   const { data: system } = useGetSystemByFidesKeyQuery(selectedSystemId!, {

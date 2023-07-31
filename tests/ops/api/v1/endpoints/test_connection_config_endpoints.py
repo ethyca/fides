@@ -310,7 +310,8 @@ class TestPatchConnections:
         assert postgres_connection["updated_at"] is not None
         assert postgres_connection["last_test_timestamp"] is None
         assert postgres_connection["disabled"] is False
-        assert "secrets" not in postgres_connection
+        assert postgres_connection["secrets"]["password"] == "**********"
+        # assert "secrets" not in postgres_connection
 
         mongo_connection = response_body["succeeded"][1]
         mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
@@ -322,7 +323,7 @@ class TestPatchConnections:
         assert mongo_connection["created_at"] is not None
         assert mongo_connection["updated_at"] is not None
         assert mongo_connection["last_test_timestamp"] is None
-        assert "secrets" not in mongo_connection
+        assert mongo_connection["secrets"] is None
 
         assert response_body["failed"] == []  # No failures
 
@@ -510,7 +511,7 @@ class TestPatchConnections:
         postgres_connection = response_body["succeeded"][0]
         assert postgres_connection["access"] == "read"
         assert postgres_connection["disabled"] is True
-        assert "secrets" not in postgres_connection
+        assert postgres_connection["secrets"]["password"] == "**********"
         assert postgres_connection["updated_at"] is not None
         postgres_resource = (
             db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
@@ -525,7 +526,7 @@ class TestPatchConnections:
         assert mongo_connection["updated_at"] is not None
         mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
         assert mongo_resource.access.value == "write"
-        assert "secrets" not in mongo_connection
+        assert mongo_connection["secrets"] is None
         assert not mongo_resource.disabled
 
         mysql_connection = response_body["succeeded"][2]
@@ -533,14 +534,14 @@ class TestPatchConnections:
         assert mysql_connection["updated_at"] is not None
         mysql_resource = db.query(ConnectionConfig).filter_by(key="my_mysql_db").first()
         assert mysql_resource.access.value == "read"
-        assert "secrets" not in mysql_connection
+        assert mysql_connection["secrets"] is None
 
         mssql_connection = response_body["succeeded"][3]
         assert mssql_connection["access"] == "write"
         assert mssql_connection["updated_at"] is not None
         mssql_resource = db.query(ConnectionConfig).filter_by(key="my_mssql_db").first()
         assert mssql_resource.access.value == "write"
-        assert "secrets" not in mssql_connection
+        assert mssql_connection["secrets"] is None
 
         mariadb_connection = response_body["succeeded"][4]
         assert mariadb_connection["access"] == "write"
@@ -549,7 +550,7 @@ class TestPatchConnections:
             db.query(ConnectionConfig).filter_by(key="my_mariadb_db").first()
         )
         assert mariadb_resource.access.value == "write"
-        assert "secrets" not in mariadb_connection
+        assert mariadb_connection["secrets"] is None
 
         bigquery_connection = response_body["succeeded"][5]
         assert bigquery_connection["access"] == "write"
@@ -558,7 +559,7 @@ class TestPatchConnections:
             db.query(ConnectionConfig).filter_by(key="my_bigquery_db").first()
         )
         assert bigquery_resource.access.value == "write"
-        assert "secrets" not in bigquery_connection
+        assert bigquery_connection["secrets"] is None
 
         redshift_connection = response_body["succeeded"][6]
         assert redshift_connection["access"] == "read"
@@ -567,7 +568,7 @@ class TestPatchConnections:
             db.query(ConnectionConfig).filter_by(key="my_redshift_cluster").first()
         )
         assert redshift_resource.access.value == "read"
-        assert "secrets" not in redshift_connection
+        assert redshift_connection["secrets"] is None
 
         snowflake_connection = response_body["succeeded"][7]
         assert snowflake_connection["access"] == "write"
@@ -578,7 +579,7 @@ class TestPatchConnections:
         )
         assert snowflake_resource.access.value == "write"
         assert snowflake_resource.description == "Backup snowflake db"
-        assert "secrets" not in snowflake_connection
+        assert snowflake_connection["secrets"] is None
 
         manual_webhook_connection = response_body["succeeded"][8]
         assert manual_webhook_connection["access"] == "read"
@@ -588,7 +589,7 @@ class TestPatchConnections:
         )
         assert manual_webhook_resource.access.value == "read"
         assert manual_webhook_resource.connection_type == ConnectionType.manual_webhook
-        assert "secrets" not in manual_webhook_connection
+        assert manual_webhook_connection["secrets"] is None
 
         postgres_resource.delete(db)
         mongo_resource.delete(db)
@@ -706,14 +707,36 @@ class TestPatchConnections:
         assert call_args[4] is None
         assert call_args[5] is None
 
-    def test_patch_connections_no_name(
-        self, api_client, generate_auth_header, url, payload
-    ):
+    def test_patch_connections_no_name(self, api_client, generate_auth_header, url):
+        # two connection configs without names
+        payload = [
+            {
+                "key": "postgres_db_1",
+                "connection_type": "postgres",
+                "access": "write",
+                "secrets": {
+                    "url": None,
+                    "host": "http://localhost",
+                    "port": 5432,
+                    "dbname": "test",
+                    "db_schema": "test",
+                    "username": "test",
+                    "password": "test",
+                },
+            },
+            {
+                "key": "mongo_db_1",
+                "connection_type": "mongodb",
+                "access": "read",
+            },
+        ]
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        del payload[0]["name"]
         response = api_client.patch(url, headers=auth_header, json=payload)
+
         assert 200 == response.status_code
+        assert len(response.json()["succeeded"]) == 2
         assert response.json()["succeeded"][0]["name"] is None
+        assert response.json()["succeeded"][1]["name"] is None
 
 
 class TestGetConnections:
@@ -750,6 +773,7 @@ class TestGetConnections:
             "access",
             "updated_at",
             "saas_config",
+            "secrets",
             "name",
             "last_test_timestamp",
             "last_test_succeeded",
@@ -757,6 +781,7 @@ class TestGetConnections:
             "created_at",
             "disabled",
             "description",
+            "authorized",
         }
 
         assert connection["key"] == "my_postgres_db_1"
@@ -1167,6 +1192,8 @@ class TestGetConnection:
             "disabled",
             "description",
             "saas_config",
+            "secrets",
+            "authorized",
         }
 
         assert response_body["key"] == "my_postgres_db_1"
@@ -1343,14 +1370,17 @@ class TestPutConnectionConfigSecrets:
         self, url, api_client: TestClient, generate_auth_header, connection_config
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = {"incorrect_postgres_uri_component": "test-1"}
+        payload = {
+            "host": "host.docker.internal",
+            "dbname": "postgres_example",
+            "incorrect_postgres_uri_component": "test-1",
+        }
         resp = api_client.put(
             url,
             headers=auth_header,
             json=payload,
         )
-        assert resp.status_code == 422
-        assert json.loads(resp.text)["detail"][0]["msg"] == "extra fields not permitted"
+        assert resp.status_code == 200
 
         payload = {"dbname": "my_db"}
         resp = api_client.put(
@@ -1359,12 +1389,17 @@ class TestPutConnectionConfigSecrets:
             json=payload,
         )
         assert resp.status_code == 422
+        assert json.loads(resp.text)["detail"][0]["msg"] == "field required"
         assert (
-            json.loads(resp.text)["detail"][0]["msg"]
-            == "PostgreSQLSchema must be supplied a 'url' or all of: ['host']."
+            json.loads(resp.text)["detail"][1]["msg"]
+            == "PostgreSQLSchema must be supplied all of: ['host', 'dbname']."
         )
 
-        payload = {"port": "cannot be turned into an integer"}
+        payload = {
+            "host": "host.docker.internal",
+            "dbname": "postgres_example",
+            "port": "cannot be turned into an integer",
+        }
         resp = api_client.put(
             url,
             headers=auth_header,
@@ -1407,30 +1442,6 @@ class TestPutConnectionConfigSecrets:
             "dbname": "my_test_db",
             "username": None,
             "password": None,
-            "url": None,
-            "db_schema": None,
-            "ssh_required": False,
-        }
-
-        payload = {"url": "postgresql://test_user:test_pass@localhost:1234/my_test_db"}
-        resp = api_client.put(
-            url + "?verify=False",
-            headers=auth_header,
-            json=payload,
-        )
-        assert resp.status_code == 200
-        assert (
-            json.loads(resp.text)["msg"]
-            == f"Secrets updated for ConnectionConfig with key: {connection_config.key}."
-        )
-        db.refresh(connection_config)
-        assert connection_config.secrets == {
-            "host": None,
-            "port": None,
-            "dbname": None,
-            "username": None,
-            "password": None,
-            "url": payload["url"],
             "db_schema": None,
             "ssh_required": False,
         }
@@ -1543,11 +1554,10 @@ class TestPutConnectionConfigSecrets:
         assert redshift_connection_config.secrets == {
             "host": "examplecluster.abc123xyz789.us-west-1.redshift.amazonaws.com",
             "port": 5439,
-            "database": "dev",
             "user": "awsuser",
             "password": "test_password",
+            "database": "dev",
             "db_schema": "test",
-            "url": None,
             "ssh_required": False,
         }
         assert redshift_connection_config.last_test_timestamp is None
@@ -1590,8 +1600,6 @@ class TestPutConnectionConfigSecrets:
         )
         db.refresh(bigquery_connection_config_without_secrets)
         assert bigquery_connection_config_without_secrets.secrets == {
-            "url": None,
-            "dataset": "some-dataset",
             "keyfile_creds": {
                 "type": "service_account",
                 "project_id": "project-12345",
@@ -1604,6 +1612,7 @@ class TestPutConnectionConfigSecrets:
                 "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
                 "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/something%40project-12345.iam.gserviceaccount.com",
             },
+            "dataset": "some-dataset",
         }
         assert bigquery_connection_config_without_secrets.last_test_timestamp is None
         assert bigquery_connection_config_without_secrets.last_test_succeeded is None
@@ -1623,6 +1632,8 @@ class TestPutConnectionConfigSecrets:
             "password": "test_password",
             "account_identifier": "flso2222test",
             "database_name": "test",
+            "warehouse_name": "warehouse",
+            "schema_name": "schema",
         }
 
         resp = api_client.put(
@@ -1641,10 +1652,9 @@ class TestPutConnectionConfigSecrets:
             "password": "test_password",
             "account_identifier": "flso2222test",
             "database_name": "test",
-            "schema_name": None,
-            "warehouse_name": None,
+            "schema_name": "schema",
+            "warehouse_name": "warehouse",
             "role_name": None,
-            "url": None,
         }
         assert snowflake_connection_config.last_test_timestamp is None
         assert snowflake_connection_config.last_test_succeeded is None

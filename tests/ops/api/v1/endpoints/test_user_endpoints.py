@@ -163,6 +163,19 @@ class TestCreateUser:
             VIEWER
         ], "User given viewer role by default on create"
 
+    def test_underscore_in_password(
+        self,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+        body = {"username": "test_user", "password": str_to_b64_str("Test_passw0rd")}
+
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        assert HTTP_201_CREATED == response.status_code
+
     def test_create_user_as_root(
         self,
         db,

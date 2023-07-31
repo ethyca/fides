@@ -138,6 +138,7 @@ class ConnectionConfig(Base):
     datasets = relationship(  # type: ignore[misc]
         "DatasetConfig",
         back_populates="connection_config",
+        cascade="all, delete",
     )
 
     access_manual_webhook = relationship(  # type: ignore[misc]
@@ -162,6 +163,24 @@ class ConnectionConfig(Base):
         # TODO: Remove this fallback once all connection configs are linked to systems
         # This will always be None in the future. `self.system` will always be set.
         return self.name
+
+    @property
+    def authorized(self) -> bool:
+        """Returns True if the connection config has an access token, used for OAuth2 connections"""
+
+        saas_config = self.get_saas_config()
+        if not saas_config:
+            return False
+
+        authentication = saas_config.client_config.authentication
+        if not authentication:
+            return False
+
+        # hard-coding to avoid cyclic dependency
+        if authentication.strategy != "oauth2_authorization_code":
+            return False
+
+        return bool(self.secrets and self.secrets.get("access_token"))
 
     @classmethod
     def create_without_saving(

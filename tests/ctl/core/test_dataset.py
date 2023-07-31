@@ -471,7 +471,6 @@ class TestDatabase:
                     for query in queries:
                         engine.execute(sqlalchemy.sql.text(query))
                 else:
-                    # This special MSSQL case is required due to how autocommit is activated
                     with pymssql.connect(
                         database_parameters["server"],
                         database_parameters["username"],

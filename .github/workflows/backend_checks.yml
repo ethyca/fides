@@ -12,7 +12,7 @@ on:
 
 env:
   IMAGE: ethyca/fides:local
-  DEFAULT_PYTHON_VERSION: "3.10.11"
+  DEFAULT_PYTHON_VERSION: "3.10.12"
 
 jobs:
   ###############
@@ -41,7 +41,7 @@ jobs:
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
-        python_version: ["3.8.16", "3.9.16", "3.10.11"]
+        python_version: ["3.8.17", "3.9.17", "3.10.12"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -183,7 +183,7 @@ jobs:
     needs: Check-Container-Startup
     strategy:
       matrix:
-        python_version: ["3.8.16", "3.9.16", "3.10.11"]
+        python_version: ["3.8.17", "3.9.17", "3.10.12"]
         test_selection:
           - "ctl-not-external"
           - "ops-unit"
@@ -234,7 +234,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.16", "3.9.16", "3.10.11"]
+        python_version: ["3.8.17", "3.9.17", "3.10.12"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -274,7 +274,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.16", "3.9.16", "3.10.11"]
+        python_version: ["3.8.17", "3.9.17", "3.10.12"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -297,14 +297,23 @@ jobs:
 
       - name: Integration Tests (External)
         env:
-          REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
-          REDSHIFT_TEST_DB_SCHEMA: fidesops_test
           BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
           BIGQUERY_DATASET: fidesopstest
-          SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
           DYNAMODB_REGION: ${{ secrets.DYNAMODB_REGION }}
           DYNAMODB_ACCESS_KEY_ID: ${{ secrets.DYNAMODB_ACCESS_KEY_ID }}
           DYNAMODB_ACCESS_KEY: ${{ secrets.DYNAMODB_ACCESS_KEY }}
+          REDSHIFT_TEST_HOST: ${{ secrets.REDSHIFT_TEST_HOST }}
+          REDSHIFT_TEST_PORT: ${{ secrets.REDSHIFT_TEST_PORT }}
+          REDSHIFT_TEST_USER: ${{ secrets.REDSHIFT_TEST_USER }}
+          REDSHIFT_TEST_PASSWORD: ${{ secrets.REDSHIFT_TEST_PASSWORD }}
+          REDSHIFT_TEST_DATABASE: ${{ secrets.REDSHIFT_TEST_DATABASE }}
+          REDSHIFT_TEST_DB_SCHEMA: ${{ secrets.REDSHIFT_TEST_DB_SCHEMA }}
+          SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER: ${{ secrets.SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER }}
+          SNOWFLAKE_TEST_USER_LOGIN_NAME: ${{ secrets.SNOWFLAKE_TEST_USER_LOGIN_NAME }}
+          SNOWFLAKE_TEST_PASSWORD: ${{ secrets.SNOWFLAKE_TEST_PASSWORD }}
+          SNOWFLAKE_TEST_WAREHOUSE_NAME: ${{ secrets.SNOWFLAKE_TEST_WAREHOUSE_NAME }}
+          SNOWFLAKE_TEST_DATABASE_NAME: ${{ secrets.SNOWFLAKE_TEST_DATABASE_NAME }}
+          SNOWFLAKE_TEST_SCHEMA_NAME: ${{ secrets.SNOWFLAKE_TEST_SCHEMA_NAME }}
 
         run: nox -s "pytest(ops-external-datastores)"
 
@@ -320,7 +329,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.16", "3.9.16", "3.10.11"]
+        python_version: ["3.8.17", "3.9.17", "3.10.12"]
     steps:
       - name: Download container
         uses: actions/download-artifact@v3

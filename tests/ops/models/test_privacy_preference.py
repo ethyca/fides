@@ -9,9 +9,13 @@ from fides.api.common_exceptions import (
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
 )
+from fides.api.models.privacy_experience import PrivacyExperienceConfig
 from fides.api.models.privacy_preference import (
+    LastServedNotice,
     PrivacyPreferenceHistory,
     RequestOrigin,
+    ServedNoticeHistory,
+    ServingComponent,
     UserConsentPreference,
 )
 from fides.api.models.privacy_request import (
@@ -640,4 +644,185 @@ class TestAnonymizeIpAddress:
         assert (
             anonymize_ip_address("2001:0db8:85a3:0000:0000:8a2e:0370:7334")
             == "2001:0db8:85a3:0000:0000:0000:0000:0000"
+        )
+
+
+class TestServedNoticeHistory:
+    def test_created_record_of_notice_served_and_upsert_last_served_notice(
+        self,
+        db,
+        privacy_notice,
+        privacy_experience_privacy_center,
+        experience_config_privacy_center,
+    ):
+        provided_identity_data = {
+            "privacy_request_id": None,
+            "field_name": "email",
+            "hashed_value": ProvidedIdentity.hash_value("ethyca@email.com"),
+            "encrypted_value": {"value": "ethyca@email.com"},
+        }
+        fides_user_provided_identity_data = {
+            "privacy_request_id": None,
+            "field_name": "fides_user_device_id",
+            "hashed_value": ProvidedIdentity.hash_value(
+                "test_fides_user_device_id_abcdefg"
+            ),
+            "encrypted_value": {"value": "test_fides_user_device_id_abcdefg"},
+        }
+        provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+        fides_user_provided_identity = ProvidedIdentity.create(
+            db, data=fides_user_provided_identity_data
+        )
+
+        privacy_notice_history = privacy_notice.histories[0]
+
+        email, hashed_email = extract_identity_from_provided_identity(
+            provided_identity, ProvidedIdentityType.email
+        )
+        phone_number, hashed_phone_number = extract_identity_from_provided_identity(
+            provided_identity, ProvidedIdentityType.phone_number
+        )
+        (
+            fides_user_device_id,
+            hashed_device_id,
+        ) = extract_identity_from_provided_identity(
+            fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
+        )
+
+        served_notice_history_record = ServedNoticeHistory.create(
+            db=db,
+            data={
+                "anonymized_ip_address": "12.214.31.0",
+                "email": email,
+                "fides_user_device": fides_user_device_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "hashed_email": hashed_email,
+                "hashed_fides_user_device": hashed_device_id,
+                "hashed_phone_number": hashed_phone_number,
+                "phone_number": phone_number,
+                "privacy_notice_history_id": privacy_notice_history.id,
+                "provided_identity_id": provided_identity.id,
+                "request_origin": "privacy_center",
+                "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+                "user_geography": "us_co",
+                "url_recorded": "example.com/privacy_center",
+                "acknowledge_mode": False,
+                "serving_component": ServingComponent.privacy_center,
+                "privacy_experience_id": privacy_experience_privacy_center.id,
+                "privacy_experience_config_history_id": experience_config_privacy_center.histories[
+                    0
+                ].id,
+            },
+            check_name=False,
+        )
+        assert served_notice_history_record.email == "ethyca@email.com"
+        assert (
+            served_notice_history_record.hashed_email
+            == provided_identity.hashed_value
+            is not None
+        )
+        assert (
+            served_notice_history_record.fides_user_device
+            == fides_user_device_id
+            is not None
+        )
+        assert (
+            served_notice_history_record.hashed_fides_user_device
+            == hashed_device_id
+            is not None
+        )
+        assert (
+            served_notice_history_record.fides_user_device_provided_identity
+            == fides_user_provided_identity
+        )
+
+        assert served_notice_history_record.phone_number is None
+        assert served_notice_history_record.hashed_phone_number is None
+        assert (
+            served_notice_history_record.privacy_notice_history
+            == privacy_notice_history
+        )
+        assert served_notice_history_record.provided_identity == provided_identity
+        assert (
+            served_notice_history_record.request_origin == RequestOrigin.privacy_center
+        )
+        assert (
+            served_notice_history_record.user_agent
+            == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24"
+        )
+        assert served_notice_history_record.user_geography == "us_co"
+        assert served_notice_history_record.url_recorded == "example.com/privacy_center"
+
+        # Assert ServedNoticeHistory record upserted
+        last_served_notice = served_notice_history_record.last_served_notice
+        assert last_served_notice.privacy_notice_history == privacy_notice_history
+        assert last_served_notice.privacy_notice_id == privacy_notice.id
+        assert last_served_notice.provided_identity_id == provided_identity.id
+        assert (
+            last_served_notice.fides_user_device_provided_identity_id
+            == fides_user_provided_identity.id
+        )
+        assert (
+            last_served_notice.served_notice_history_id
+            == served_notice_history_record.id
+        )
+
+        served_notice_history_record.delete(db)
+        last_served_notice.delete(db)
+
+
+class TestLastServedNotice:
+    def test_served_latest_version(
+        self,
+        db,
+        served_notice_history_us_ca_provide_for_fides_user,
+        privacy_notice_us_ca_provide,
+    ):
+        last_served = (
+            served_notice_history_us_ca_provide_for_fides_user.last_served_notice
+        )
+        assert last_served.served_latest_version is True
+
+        privacy_notice_us_ca_provide.update(db, data={"description": "new_description"})
+        assert privacy_notice_us_ca_provide.version == 2.0
+        assert privacy_notice_us_ca_provide.description == "new_description"
+
+        assert last_served.served_latest_version is False
+
+    def test_get_last_served_for_notice_and_fides_user_device(
+        self,
+        db,
+        fides_user_provided_identity,
+        served_notice_history_us_ca_provide_for_fides_user,
+        privacy_notice_us_ca_provide,
+        empty_provided_identity,
+        privacy_notice,
+    ):
+        retrieved_record = (
+            LastServedNotice.get_last_served_for_notice_and_fides_user_device(
+                db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                privacy_notice=privacy_notice_us_ca_provide,
+            )
+        )
+        assert (
+            retrieved_record
+            == served_notice_history_us_ca_provide_for_fides_user.last_served_notice
+        )
+
+        assert (
+            LastServedNotice.get_last_served_for_notice_and_fides_user_device(
+                db,
+                fides_user_provided_identity=empty_provided_identity,
+                privacy_notice=privacy_notice_us_ca_provide,
+            )
+            is None
+        )
+        assert (
+            LastServedNotice.get_last_served_for_notice_and_fides_user_device(
+                db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                privacy_notice=privacy_notice,
+            )
+            is None
         )

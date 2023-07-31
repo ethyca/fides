@@ -5,7 +5,7 @@ import { CacheControl, stringify } from "cache-control-parser";
 
 import { ConsentOption, FidesConfig } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
-import { getGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
+import { lookupGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
 
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
 
@@ -52,9 +52,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Check if a geolocation was provided via headers or query param; if so, inject into the bundle
-  const geolocation = getGeolocation(req);
-
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await loadPrivacyCenterEnvironment();
   let options: ConsentOption[] = [];
@@ -66,6 +63,10 @@ export default async function handler(
       cookieKeys: option.cookieKeys,
     }));
   }
+
+  // Check if a geolocation was provided via headers, query param, or obtainable via a geolocation URL;
+  // if so, inject into the bundle, along with privacy experience
+  const geolocation = await lookupGeolocation(req);
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {
@@ -81,8 +82,9 @@ export default async function handler(
       modalLinkId: environment.settings.MODAL_LINK_ID,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
       fidesApiUrl: environment.settings.FIDES_API_URL,
+      tcfEnabled: environment.settings.TCF_ENABLED,
     },
-    geolocation,
+    geolocation: geolocation || undefined,
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
@@ -96,6 +98,11 @@ export default async function handler(
   }
   const script = `
   (function () {
+    // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request 
+    var script = document.createElement('script');
+    script.src = 'https://polyfill.io/v3/polyfill.min.js?features=fetch';
+    document.head.appendChild(script);
+    
     // Include generic fides.js script
     ${fidesJS}
 

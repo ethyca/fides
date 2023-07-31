@@ -2,7 +2,7 @@ import pytest
 
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.models.policy import ActionType
-from fides.api.schemas.connection_configuration.connection_config import SystemType
+from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
@@ -20,6 +20,7 @@ def test_get_connection_types():
         "type": SystemType.database.value,
         "human_readable": "PostgreSQL",
         "encoded_icon": None,
+        "authorization_required": False,
     } in data
     first_saas_type = ConnectorRegistry.connector_types().pop()
     first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
@@ -28,6 +29,7 @@ def test_get_connection_types():
         "type": SystemType.saas.value,
         "human_readable": first_saas_template.human_readable,
         "encoded_icon": first_saas_template.icon,
+        "authorization_required": first_saas_template.authorization_required,
     } in data
 
     assert "saas" not in [item.identifier for item in data]
@@ -40,6 +42,7 @@ def test_get_connection_types():
         "type": SystemType.email.value,
         "human_readable": "Sovrn",
         "encoded_icon": None,
+        "authorization_required": False,
     } in data
 
 
@@ -70,60 +73,70 @@ def connection_type_objects():
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
             "encoded_icon": None,
+            "authorization_required": False,
         },
         ConnectionType.manual_webhook.value: {
             "identifier": ConnectionType.manual_webhook.value,
             "type": SystemType.manual.value,
             "human_readable": "Manual Process",
             "encoded_icon": None,
+            "authorization_required": False,
         },
         GOOGLE_ANALYTICS: {
             "identifier": GOOGLE_ANALYTICS,
             "type": SystemType.saas.value,
             "human_readable": google_analytics_template.human_readable,
             "encoded_icon": google_analytics_template.icon,
+            "authorization_required": google_analytics_template.authorization_required,
         },
         MAILCHIMP_TRANSACTIONAL: {
             "identifier": MAILCHIMP_TRANSACTIONAL,
             "type": SystemType.saas.value,
             "human_readable": mailchimp_transactional_template.human_readable,
             "encoded_icon": mailchimp_transactional_template.icon,
+            "authorization_required": mailchimp_transactional_template.authorization_required,
         },
         SEGMENT: {
             "identifier": SEGMENT,
             "type": SystemType.saas.value,
             "human_readable": segment_template.human_readable,
             "encoded_icon": segment_template.icon,
+            "authorization_required": segment_template.authorization_required,
         },
         STRIPE: {
             "identifier": STRIPE,
             "type": SystemType.saas.value,
             "human_readable": stripe_template.human_readable,
             "encoded_icon": stripe_template.icon,
+            "authorization_required": stripe_template.authorization_required,
         },
         ZENDESK: {
             "identifier": ZENDESK,
             "type": SystemType.saas.value,
             "human_readable": zendesk_template.human_readable,
             "encoded_icon": zendesk_template.icon,
+            "authorization_required": zendesk_template.authorization_required,
         },
         DOORDASH: {
             "identifier": DOORDASH,
             "type": SystemType.saas.value,
             "human_readable": doordash_template.human_readable,
             "encoded_icon": doordash_template.icon,
+            "authorization_required": doordash_template.authorization_required,
         },
         ConnectionType.sovrn.value: {
             "identifier": ConnectionType.sovrn.value,
             "type": SystemType.email.value,
             "human_readable": "Sovrn",
             "encoded_icon": None,
+            "authorization_required": False,
         },
         ConnectionType.attentive.value: {
             "identifier": ConnectionType.attentive.value,
             "type": SystemType.email.value,
             "human_readable": "Attentive",
             "encoded_icon": None,
+            "authorization_required": False,
         },
     }
 

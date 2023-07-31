@@ -19,10 +19,11 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.data_type import parse_data_type_string
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.models.sql_models import (  # type: ignore[attr-defined]
+from fides.api.util.saas_util import merge_datasets
+
+from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
 )
-from fides.api.util.saas_util import merge_datasets
 
 
 class DatasetConfig(Base):
@@ -120,7 +121,7 @@ class DatasetConfig(Base):
         return dataset
 
     @classmethod
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "DatasetConfig":
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "DatasetConfig":  # type: ignore[override]
         """
         Look up dataset by config and fides_key. If found, update this dataset, otherwise
         create a new one.

@@ -36,7 +36,6 @@ import { ResourceTypes, System } from "~/types/api";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
-  fides_key: Yup.string().required().label("System key"),
 });
 
 const SystemHeading = ({ system }: { system?: System }) => {
@@ -152,10 +151,10 @@ const SystemInformationForm = ({
     >
       {({ dirty, values, isValid }) => (
         <Form>
-          <Stack spacing={6}>
+          <Stack spacing={6} maxWidth={{ base: "100%", lg: "70%" }}>
             {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
-            <Text fontSize="sm">
+            <Text fontSize="sm" fontWeight="medium">
               By providing a small amount of additional context for each system
               we can make reporting and understanding our tech stack much easier
               for everyone from engineering to legal teams. So let’s do this
@@ -165,13 +164,7 @@ const SystemInformationForm = ({
               System details
             </Heading>
             <Stack spacing={4}>
-              {/* While we support both designs of extra form items existing, change the width only 
-              when there are extra form items. When we move to only supporting one design, 
-              the parent container should control the width */}
-              <Stack
-                spacing={4}
-                maxWidth={!abridged ? { base: "100%", lg: "50%" } : undefined}
-              >
+              <Stack spacing={4}>
                 <CustomTextInput
                   id="name"
                   name="name"
@@ -179,14 +172,16 @@ const SystemInformationForm = ({
                   tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
                   variant="stacked"
                 />
-                <CustomTextInput
-                  id="fides_key"
-                  name="fides_key"
-                  label="System Fides key"
-                  disabled={isEditing}
-                  tooltip="A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters, underscores, and hyphens. ([A-Za-z0-9_.-])."
-                  variant="stacked"
-                />
+                {isEditing && (
+                  <CustomTextInput
+                    id="fides_key"
+                    name="fides_key"
+                    label="System Fides key"
+                    disabled
+                    tooltip="A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters, underscores, and hyphens. ([A-Za-z0-9_.-])."
+                    variant="stacked"
+                  />
+                )}
                 <CustomTextInput
                   id="description"
                   name="description"

@@ -13,4 +13,5 @@ export type ConnectionSystemTypeMap = {
   type: SystemType;
   human_readable: string;
   encoded_icon?: string;
+  authorization_required?: boolean;
 };

@@ -1,5 +1,6 @@
 import {
   Button,
+  Flex,
   MenuItem,
   Modal,
   ModalBody,
@@ -9,6 +10,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
+  Switch,
   Text,
   useDisclosure,
 } from "@fidesui/react";
@@ -25,6 +27,7 @@ type DataConnectionProps = {
   name: string;
   access_type: AccessLevel;
   connection_type: ConnectionType;
+  isSwitch: boolean;
 };
 
 const DisableConnectionModal: React.FC<DataConnectionProps> = ({
@@ -33,6 +36,7 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
   name,
   access_type,
   connection_type,
+  isSwitch,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [patchConnection, patchConnectionResult] =
@@ -40,13 +44,14 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
 
   const handleDisableConnection = async () => {
     const shouldDisable = !disabled;
-    patchConnection({
+    await patchConnection({
       key: connection_key,
       name,
       disabled: shouldDisable,
       access: access_type,
       connection_type,
     });
+    onClose();
   };
 
   const closeIfComplete = () => {
@@ -57,12 +62,24 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
 
   return (
     <>
-      <MenuItem
-        _focus={{ color: "complimentary.500", bg: "gray.100" }}
-        onClick={onOpen}
-      >
-        <Text fontSize="sm">{disabled ? "Enable" : "Disable"}</Text>
-      </MenuItem>
+      {isSwitch ? (
+        <Flex justifyContent="space-between" alignItems="center">
+          <Text fontSize="sm">Enable integration</Text>
+          <Switch
+            marginLeft="8px"
+            colorScheme="complimentary"
+            isChecked={!disabled}
+            onChange={onOpen}
+          />
+        </Flex>
+      ) : (
+        <MenuItem
+          _focus={{ color: "complimentary.500", bg: "gray.100" }}
+          onClick={onOpen}
+        >
+          <Text fontSize="sm">{disabled ? "Enable" : "Disable"}</Text>
+        </MenuItem>
+      )}
       <Modal isCentered isOpen={isOpen} onClose={closeIfComplete}>
         <ModalOverlay />
         <ModalContent>

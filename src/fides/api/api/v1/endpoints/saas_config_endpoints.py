@@ -2,7 +2,7 @@ from io import BytesIO
 from typing import Optional
 from zipfile import BadZipFile, ZipFile
 
-from fastapi import Body, Depends, HTTPException
+from fastapi import Body, Depends, HTTPException, Request
 from fastapi.params import Security
 from fastapi.responses import JSONResponse
 from fideslang.validation import FidesKey
@@ -25,6 +25,8 @@ from fides.api.models.sql_models import System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateResponse,
+)
+from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
@@ -255,10 +257,14 @@ def delete_saas_config(
     response_model=str,
 )
 def authorize_connection(
+    request: Request,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
 ) -> Optional[str]:
     """Returns the authorization URL for the SaaS Connector (if available)"""
+
+    # store the referer (if available) so that we can redirect back to the UI
+    referer = request.headers.get("Referer")
 
     verify_oauth_connection_config(connection_config)
     authentication = connection_config.get_saas_config().client_config.authentication  # type: ignore
@@ -267,7 +273,7 @@ def authorize_connection(
         auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = AuthenticationStrategy.get_strategy(
             authentication.strategy, authentication.configuration  # type: ignore
         )
-        return auth_strategy.get_authorization_url(db, connection_config)
+        return auth_strategy.get_authorization_url(db, connection_config, referer)
     except FidesopsException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))
 

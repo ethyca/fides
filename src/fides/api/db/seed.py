@@ -24,11 +24,14 @@ from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Dataset,
+    System,
     sql_model_map,
 )
 from fides.api.oauth.roles import OWNER
 from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
+)
+from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
 from fides.api.schemas.dataset import DatasetConfigCtlDataset
@@ -466,6 +469,9 @@ async def load_samples(async_session: AsyncSession) -> None:
                     saas_template_data.pop(
                         "dataset", None
                     )  # not supported by this API!
+                    saas_template_data.pop(
+                        "system_key", None
+                    )  # not supported by this API!
                     instantiate_connection_from_template(
                         db=db_session,
                         saas_connector_type=connection.saas_connector_type,
@@ -491,6 +497,9 @@ async def load_samples(async_session: AsyncSession) -> None:
                 connection_config_data = dict(connection)
                 connection_config_data.pop(
                     "dataset", None
+                )  # not supported by this API!
+                connection_config_data.pop(
+                    "system_key", None
                 )  # not supported by this API!
                 patch_connection_configs(
                     db=db_session,
@@ -538,6 +547,35 @@ async def load_samples(async_session: AsyncSession) -> None:
                     if not dataset_config:
                         log.debug(
                             f"Failed to create dataset config '{dataset_key}' for sample connection '{connection.key}'"
+                        )
+                        continue
+
+                # Link the connection to an existing system
+                system_key = connection.system_key
+                if system_key:
+                    log.debug(
+                        f"Linking sample connection with key '{connection.key}' to system '{system_key}'..."
+                    )
+                    system = System.get_by(
+                        db=db_session, field="fides_key", value=system_key
+                    )
+                    if not system:
+                        log.debug(
+                            f"Could not find existing system '{system_key}' for sample connection '{connection.key}'"
+                        )
+                        continue
+
+                    linked_connection_config = ConnectionConfig.create_or_update(
+                        db=db_session,
+                        data={
+                            **connection_config.__dict__,
+                            **{"system_id": system.id},
+                        },
+                        check_name=False,
+                    )
+                    if not linked_connection_config:
+                        log.debug(
+                            f"Failed to link sample connection '{connection.key}' to system '{system_key}'"
                         )
                         continue
 

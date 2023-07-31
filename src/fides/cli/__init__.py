@@ -64,7 +64,7 @@ APP = fides.__name__
 PACKAGE = "ethyca-fides"
 
 
-@group(
+@group(  # type: ignore
     context_settings=CONTEXT_SETTINGS,
     invoke_without_command=True,
     name="fides",

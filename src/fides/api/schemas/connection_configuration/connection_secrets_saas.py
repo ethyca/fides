@@ -80,9 +80,12 @@ class SaaSSchema(BaseModel, abc.ABC):
         ]
 
     class Config:
-        """Only permit selected secret fields to be stored."""
+        """
+        Certain SaaS workflows need to save secrets that are not part of the schema,
+        such as access and refresh tokens for OAuth2. So we allow extra fields
+        """
 
-        extra = Extra.forbid
+        extra = Extra.ignore
         orm_mode = True
 
 

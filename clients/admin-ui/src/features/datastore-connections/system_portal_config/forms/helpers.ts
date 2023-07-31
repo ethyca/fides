@@ -14,10 +14,16 @@ export const fillInDefaults = (
     Object.entries(connectionSchema.properties).forEach((key) => {
       const [name, schema] = key;
 
+      if (!("secrets" in filledInValues)) {
+        filledInValues.secrets = {};
+      }
+
       if (schema.type === "integer") {
-        filledInValues[name] = schema.default ? Number(schema.default) : 0;
+        filledInValues.secrets[name] = schema.default
+          ? Number(schema.default)
+          : 0;
       } else {
-        filledInValues[name] = schema.default ?? "";
+        filledInValues.secrets[name] = schema.default ?? "";
       }
     });
   }
