@@ -66,6 +66,13 @@ def mask_sensitive_fields(
     if connection_secrets is None:
         return connection_secrets
 
+    # The function `mask_sensitive_fields` is called recursively. The recursion can be stopped
+    # if no properties are found at the current level, indicating that the current value is a dictionary.
+    # Since individual fields within the dictionary do not need to be masked,
+    # the function can return early in this case.
+    if not secret_schema.get("properties"):
+        return connection_secrets
+
     connection_secret_keys = connection_secrets.keys()
     secret_schema_keys = secret_schema["properties"].keys()
     new_connection_secrets = {}

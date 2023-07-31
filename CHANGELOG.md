@@ -15,7 +15,29 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.17.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.17.1...main)
+
+### Added
+- Additional consent reporting calls from `fides-js` [#3845](https://github.com/ethyca/fides/pull/3845)
+- Additional consent reporting calls from privacy center [#3847](https://github.com/ethyca/fides/pull/3847)
+
+### Fixed
+- Fix datamap zoom for low system counts [#3835](https://github.com/ethyca/fides/pull/3835)
+
+### Added
+
+- HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
+
+### Changed
+
+- Simplified the file structure for HTML DSR packages [#3848](https://github.com/ethyca/fides/pull/3848)
+- Changed max width of form components in "system information" form tab [#3864](https://github.com/ethyca/fides/pull/3864)
+- Remove manual system selection screen [#3865](https://github.com/ethyca/fides/pull/3865)
+
+## [2.17.1](https://github.com/ethyca/fides/compare/2.17.0...2.17.1)
+
+### Fixed
+- Fixed connector forms with external dataset reference fields [#3873](https://github.com/ethyca/fides/pull/3873)
 
 ## [2.17.0](https://github.com/ethyca/fides/compare/2.16.0...2.17.0)
 
@@ -72,7 +94,7 @@ The types of changes are:
 - Privacy center and fides-js now pass in `Unescape-Safestr` as a header so that special characters can be rendered properly [#3706](https://github.com/ethyca/fides/pull/3706)
 - Fixed ValidationError for saving PrivacyPreferences [#3719](https://github.com/ethyca/fides/pull/3719)
 - Fixed issue preventing ConnectionConfigs with duplicate names from saving [#3770](https://github.com/ethyca/fides/pull/3770)
-- Fixed creating and editing manual integrations [#3772](https://github.com/ethyca/fides/pull/3772) 
+- Fixed creating and editing manual integrations [#3772](https://github.com/ethyca/fides/pull/3772)
 - Fix lingering integration artifacts by cascading deletes from System [#3771](https://github.com/ethyca/fides/pull/3771)
 
 ### Developer Experience
