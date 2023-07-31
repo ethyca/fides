@@ -1,4 +1,4 @@
-from fides.privacy_requests.graph_tasks.task_resources import TaskResources
+from fides.api.privacy_requests.graph_tasks.task_resources import TaskResources
 
 
 class TestTaskResources:

@@ -7,7 +7,7 @@ from fides.api.util.saas_util import (
     replace_version,
     unflatten_dict,
 )
-from fides.privacy_requests.graph.config import (
+from fides.api.privacy_requests.graph.config import (
     Collection,
     FieldAddress,
     FieldPath,

@@ -1,5 +1,7 @@
 from fides.api.common_exceptions import FidesopsException
-from fides.privacy_requests.graph.analytics_events import failed_graph_analytics_event
+from fides.api.privacy_requests.graph.analytics_events import (
+    failed_graph_analytics_event,
+)
 
 
 class TestFailedGraphAnalyticsEvent:

@@ -10,8 +10,8 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
 )
 from fides.config import CONFIG
-from fides.privacy_requests.graph.config import CollectionAddress
-from fides.privacy_requests.graph_tasks import graph_task
+from fides.api.privacy_requests.graph.config import CollectionAddress
+from fides.api.privacy_requests.graph_tasks import graph_task
 
 from ..graph.graph_test_util import assert_rows_match
 from ..task.traversal_data import postgres_and_manual_nodes

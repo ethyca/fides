@@ -1,6 +1,6 @@
 from fides.api.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
-from fides.privacy_requests.graph.config import FieldPath
-from fides.privacy_requests.graph_tasks.refine_target_path import (
+from fides.api.privacy_requests.graph.config import FieldPath
+from fides.api.privacy_requests.graph_tasks.refine_target_path import (
     _match_found,
     build_refined_target_paths,
     join_detailed_path,

@@ -17,8 +17,8 @@ from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSReque
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas_connector import SaaSConnector
-from fides.privacy_requests.graph.graph import Node
-from fides.privacy_requests.graph.traversal import TraversalNode
+from fides.api.privacy_requests.graph.graph import Node
+from fides.api.privacy_requests.graph.traversal import TraversalNode
 from tests.ops.graph.graph_test_util import generate_node
 
 

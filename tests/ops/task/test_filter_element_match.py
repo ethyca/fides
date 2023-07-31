@@ -3,8 +3,8 @@ import copy
 import pytest
 
 from fides.api.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
-from fides.privacy_requests.graph.config import FieldPath
-from fides.privacy_requests.graph_tasks.filter_element_match import (
+from fides.api.privacy_requests.graph.config import FieldPath
+from fides.api.privacy_requests.graph_tasks.filter_element_match import (
     _expand_array_paths_to_preserve,
     _remove_paths_from_row,
     filter_element_match,

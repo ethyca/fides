@@ -1,7 +1,7 @@
 import pytest
 
 from fides.api.common_exceptions import ValidationError
-from fides.privacy_requests.graph.graph import *
+from fides.api.privacy_requests.graph.graph import *
 
 
 class TestEdge:

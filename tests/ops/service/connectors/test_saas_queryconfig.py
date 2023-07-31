@@ -12,9 +12,9 @@ from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSReque
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors.saas_query_config import SaaSQueryConfig
 from fides.config import CONFIG
-from fides.privacy_requests.graph.config import CollectionAddress
-from fides.privacy_requests.graph.graph import DatasetGraph
-from fides.privacy_requests.graph.traversal import Traversal, TraversalNode
+from fides.api.privacy_requests.graph.config import CollectionAddress
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph.traversal import Traversal, TraversalNode
 from tests.ops.graph.graph_test_util import generate_node
 
 privacy_request = PrivacyRequest(id="234544")

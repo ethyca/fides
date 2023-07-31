@@ -28,8 +28,8 @@ from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.privacy_requests.graph.graph import DatasetGraph
-from fides.privacy_requests.graph_tasks import graph_task
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph_tasks import graph_task
 
 
 @pytest.fixture

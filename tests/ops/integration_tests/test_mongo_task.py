@@ -13,22 +13,22 @@ from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.connectors import get_connector
-from fides.privacy_requests.graph.config import (
+from fides.api.privacy_requests.graph.config import (
     Collection,
     FieldAddress,
     GraphDataset,
     ScalarField,
 )
-from fides.privacy_requests.graph.data_type import (
+from fides.api.privacy_requests.graph.data_type import (
     IntTypeConverter,
     ObjectIdTypeConverter,
     StringTypeConverter,
 )
-from fides.privacy_requests.graph.graph import DatasetGraph, Edge, Node
-from fides.privacy_requests.graph.traversal import TraversalNode
-from fides.privacy_requests.graph.utils import get_cached_data_for_erasures
-from fides.privacy_requests.graph_tasks import graph_task
-from fides.privacy_requests.graph_tasks.filter_results import filter_data_categories
+from fides.api.privacy_requests.graph.graph import DatasetGraph, Edge, Node
+from fides.api.privacy_requests.graph.traversal import TraversalNode
+from fides.api.privacy_requests.graph.utils import get_cached_data_for_erasures
+from fides.api.privacy_requests.graph_tasks import graph_task
+from fides.api.privacy_requests.graph_tasks.filter_results import filter_data_categories
 
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (

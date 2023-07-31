@@ -2,12 +2,12 @@ import yaml
 from fideslang.models import Dataset
 
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.privacy_requests.graph.graph import *
+from fides.api.privacy_requests.graph.graph import *
 
 #  -------------------------------------------
 #   graph object tests
 #  -------------------------------------------
-from fides.privacy_requests.graph.traversal import Traversal
+from fides.api.privacy_requests.graph.traversal import Traversal
 
 from . import sql_data_generator
 

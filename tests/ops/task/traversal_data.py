@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 from fideslang.validation import FidesKey
 
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.privacy_requests.graph.config import (
+from fides.api.privacy_requests.graph.config import (
     Collection,
     CollectionAddress,
     FieldAddress,
@@ -11,7 +11,7 @@ from fides.privacy_requests.graph.config import (
     ObjectField,
     ScalarField,
 )
-from fides.privacy_requests.graph.data_type import (
+from fides.api.privacy_requests.graph.data_type import (
     DataType,
     IntTypeConverter,
     NoOpTypeConverter,
@@ -19,8 +19,8 @@ from fides.privacy_requests.graph.data_type import (
     ObjectTypeConverter,
     StringTypeConverter,
 )
-from fides.privacy_requests.graph.graph import DatasetGraph
-from fides.privacy_requests.graph.traversal import Traversal
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph.traversal import Traversal
 
 str_converter = DataType.string.value
 bool_converter = DataType.boolean.value

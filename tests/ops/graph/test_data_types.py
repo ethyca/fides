@@ -1,6 +1,6 @@
 from bson import ObjectId
 
-from fides.privacy_requests.graph.data_type import (
+from fides.api.privacy_requests.graph.data_type import (
     DataType,
     NoOpTypeConverter,
     StringTypeConverter,

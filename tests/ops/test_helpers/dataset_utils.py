@@ -7,14 +7,14 @@ from fideslang.models import Dataset
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
 from fides.api.util.collection_util import Row
-from fides.privacy_requests.graph.config import (
+from fides.api.privacy_requests.graph.config import (
     Collection,
     Field,
     FieldPath,
     ObjectField,
     ScalarField,
 )
-from fides.privacy_requests.graph.data_type import (
+from fides.api.privacy_requests.graph.data_type import (
     DataType,
     get_data_type,
     to_data_type_string,

@@ -2,8 +2,8 @@ import pydantic
 import pytest
 
 from fides.api.common_exceptions import ValidationError
-from fides.privacy_requests.graph.config import *
-from fides.privacy_requests.graph.data_type import (
+from fides.api.privacy_requests.graph.config import *
+from fides.api.privacy_requests.graph.data_type import (
     BooleanTypeConverter,
     IntTypeConverter,
     NoOpTypeConverter,

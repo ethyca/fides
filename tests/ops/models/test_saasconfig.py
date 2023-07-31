@@ -13,7 +13,7 @@ from fides.api.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSRequest,
 )
-from fides.privacy_requests.graph.config import CollectionAddress, FieldAddress
+from fides.api.privacy_requests.graph.config import CollectionAddress, FieldAddress
 
 
 @pytest.mark.unit_saas

@@ -1,6 +1,6 @@
 import pytest
 
-from fides.privacy_requests.graph.graph import *
+from fides.api.privacy_requests.graph.graph import *
 
 from .graph_test_util import *
 

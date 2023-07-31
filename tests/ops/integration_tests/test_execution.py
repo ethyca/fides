@@ -20,10 +20,10 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
 )
 from fides.config import CONFIG
-from fides.privacy_requests.graph.config import CollectionAddress
-from fides.privacy_requests.graph.graph import DatasetGraph
-from fides.privacy_requests.graph.utils import get_cached_data_for_erasures
-from fides.privacy_requests.graph_tasks import graph_task
+from fides.api.privacy_requests.graph.config import CollectionAddress
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph.utils import get_cached_data_for_erasures
+from fides.api.privacy_requests.graph_tasks import graph_task
 from tests.fixtures.application_fixtures import integration_secrets
 
 from ..service.privacy_request.test_request_runner_service import (

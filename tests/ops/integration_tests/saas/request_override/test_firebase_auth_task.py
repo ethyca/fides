@@ -11,9 +11,9 @@ from fides.api.service.saas_request.override_implementations.firebase_auth_reque
     initialize_firebase,
 )
 from fides.config import CONFIG
-from fides.privacy_requests.graph.graph import DatasetGraph
-from fides.privacy_requests.graph.utils import get_cached_data_for_erasures
-from fides.privacy_requests.graph_tasks import graph_task
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph.utils import get_cached_data_for_erasures
+from fides.api.privacy_requests.graph_tasks import graph_task
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
