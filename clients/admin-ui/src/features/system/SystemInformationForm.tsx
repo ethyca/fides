@@ -177,7 +177,7 @@ const SystemInformationForm = ({
                     id="fides_key"
                     name="fides_key"
                     label="System Fides key"
-                    disabled={isEditing}
+                    disabled
                     tooltip="A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters, underscores, and hyphens. ([A-Za-z0-9_.-])."
                     variant="stacked"
                   />
