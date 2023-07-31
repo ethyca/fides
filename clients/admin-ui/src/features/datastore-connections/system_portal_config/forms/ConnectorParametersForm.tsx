@@ -25,6 +25,7 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
+import _ from "lodash";
 import React from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
@@ -239,8 +240,24 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         connectionConfig.connection_type === ConnectionType.SAAS
           ? (connectionConfig.saas_config?.fides_key as string)
           : connectionConfig.key;
+
       // @ts-ignore
-      initialValues.secrets = connectionConfig.secrets;
+      initialValues.secrets = { ...connectionConfig.secrets };
+
+      // check if we need we need to pre-process any secrets values
+      // we currently only need to do this for Fides dataset references
+      // to convert them from objects to dot-delimited strings
+      if (secretsSchema?.properties) {
+        Object.entries(secretsSchema.properties).forEach(([key, schema]) => {
+          if (schema.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
+            const datasetReference = initialValues.secrets[key];
+            initialValues.secrets[
+              key
+            ] = `${datasetReference.dataset}.${datasetReference.field}`;
+          }
+        });
+      }
+
       return initialValues;
     }
     return fillInDefaults(initialValues, secretsSchema);
@@ -255,15 +272,15 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   const preprocessValues = (
     values: ConnectionConfigFormValues
   ): ConnectionConfigFormValues => {
-    const updatedValues = { ...values };
+    const updatedValues = _.cloneDeep(values);
     if (secretsSchema) {
       Object.keys(secretsSchema.properties).forEach((key) => {
         if (
           secretsSchema.properties[key].allOf?.[0].$ref ===
           FIDES_DATASET_REFERENCE
         ) {
-          const referencePath = values[key].split(".");
-          updatedValues[key] = {
+          const referencePath = updatedValues.secrets[key].split(".");
+          updatedValues.secrets[key] = {
             dataset: referencePath.shift(),
             field: referencePath.join("."),
             direction: "from",
