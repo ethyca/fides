@@ -21,7 +21,7 @@ system:
           - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 
-  - fides_key: cookie_house_postgres
+  - fides_key: cookie_house_postgresql_database
     name: Cookie House PostgreSQL Database
     description: Primary database for Cookie House orders.
     system_type: Database
@@ -41,7 +41,7 @@ system:
         dataset_references:
           - postgres_example_test_dataset
 
-  - fides_key: cookie_house_mongo
+  - fides_key: cookie_house_customer_database
     name: Cookie House Customer Database
     description: Additional database to store detailed data about users.
     system_type: Database
@@ -60,14 +60,14 @@ system:
         dataset_references:
           - mongo_test
 
-  - fides_key: cookie_house_marketing
+  - fides_key: cookie_house_marketing_system
     name: Cookie House Marketing System
     description: Marketing application for audience analysis, targeted ads, etc.
     system_type: Application
     administrating_department: Marketing
     data_responsibility_title: Processor
     egress:
-      - fides_key: cookie_house_mongo
+      - fides_key: cookie_house_customer_database
         type: system
     privacy_declarations:
       - data_categories:
