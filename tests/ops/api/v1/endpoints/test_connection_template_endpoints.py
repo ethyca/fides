@@ -65,6 +65,7 @@ class TestGetConnections:
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
             "encoded_icon": None,
+            "authorization_required": False,
         } in data
         first_saas_type = ConnectorRegistry.connector_types().pop()
         first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
@@ -73,6 +74,7 @@ class TestGetConnections:
             "type": SystemType.saas.value,
             "human_readable": first_saas_template.human_readable,
             "encoded_icon": first_saas_template.icon,
+            "authorization_required": first_saas_template.authorization_required,
         } in data
 
         assert "saas" not in [item["identifier"] for item in data]
@@ -150,6 +152,7 @@ class TestGetConnections:
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
                 "encoded_icon": saas_template[1].icon,
+                "authorization_required": saas_template[1].authorization_required,
             }
             for saas_template in expected_saas_templates
         ]
@@ -176,6 +179,7 @@ class TestGetConnections:
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
                 "encoded_icon": saas_template[1].icon,
+                "authorization_required": saas_template[1].authorization_required,
             }
             for saas_template in expected_saas_templates
         ]
@@ -192,15 +196,17 @@ class TestGetConnections:
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
             "encoded_icon": None,
+            "authorization_required": False,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
             "type": SystemType.database.value,
             "human_readable": "Amazon Redshift",
             "encoded_icon": None,
+            "authorization_required": False,
         } in data
         for expected_data in expected_saas_data:
-            assert expected_data in data
+            assert expected_data in data, f"{expected_data} not in"
 
     def test_search_connection_types_case_insensitive(
         self, api_client, generate_auth_header, url
@@ -222,6 +228,7 @@ class TestGetConnections:
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
                 "encoded_icon": saas_template[1].icon,
+                "authorization_required": saas_template[1].authorization_required,
             }
             for saas_template in expected_saas_types
         ]
@@ -237,10 +244,11 @@ class TestGetConnections:
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
             "encoded_icon": None,
+            "authorization_required": False,
         } in data
 
         for expected_data in expected_saas_data:
-            assert expected_data in data
+            assert expected_data in data, f"{expected_data} not in"
 
         search = "Re"
         expected_saas_types = [
@@ -257,6 +265,7 @@ class TestGetConnections:
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
                 "encoded_icon": saas_template[1].icon,
+                "authorization_required": saas_template[1].authorization_required,
             }
             for saas_template in expected_saas_types
         ]
@@ -271,16 +280,18 @@ class TestGetConnections:
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
             "encoded_icon": None,
+            "authorization_required": False,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
             "type": SystemType.database.value,
             "human_readable": "Amazon Redshift",
             "encoded_icon": None,
+            "authorization_required": False,
         } in data
 
         for expected_data in expected_saas_data:
-            assert expected_data in data
+            assert expected_data in data, f"{expected_data} not in"
 
     def test_search_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -339,6 +350,7 @@ class TestGetConnections:
                 "type": "manual",
                 "human_readable": "Manual Process",
                 "encoded_icon": None,
+                "authorization_required": False,
             }
         ]
 
@@ -355,24 +367,28 @@ class TestGetConnections:
                 "human_readable": "Attentive",
                 "identifier": "attentive",
                 "type": "email",
+                "authorization_required": False,
             },
             {
                 "encoded_icon": None,
                 "human_readable": "Generic Consent Email",
                 "identifier": "generic_consent_email",
                 "type": "email",
+                "authorization_required": False,
             },
             {
                 "encoded_icon": None,
                 "human_readable": "Generic Erasure Email",
                 "identifier": "generic_erasure_email",
                 "type": "email",
+                "authorization_required": False,
             },
             {
                 "encoded_icon": None,
                 "human_readable": "Sovrn",
                 "identifier": "sovrn",
                 "type": "email",
+                "authorization_required": False,
             },
         ]
 
@@ -428,60 +444,70 @@ class TestGetConnectionsActionTypeParams:
                 "type": SystemType.database.value,
                 "human_readable": "PostgreSQL",
                 "encoded_icon": None,
+                "authorization_required": False,
             },
             ConnectionType.manual_webhook.value: {
                 "identifier": ConnectionType.manual_webhook.value,
                 "type": SystemType.manual.value,
                 "human_readable": "Manual Process",
                 "encoded_icon": None,
+                "authorization_required": False,
             },
             GOOGLE_ANALYTICS: {
                 "identifier": GOOGLE_ANALYTICS,
                 "type": SystemType.saas.value,
                 "human_readable": google_analytics_template.human_readable,
                 "encoded_icon": google_analytics_template.icon,
+                "authorization_required": True,
             },
             MAILCHIMP_TRANSACTIONAL: {
                 "identifier": MAILCHIMP_TRANSACTIONAL,
                 "type": SystemType.saas.value,
                 "human_readable": mailchimp_transactional_template.human_readable,
                 "encoded_icon": mailchimp_transactional_template.icon,
+                "authorization_required": False,
             },
             SEGMENT: {
                 "identifier": SEGMENT,
                 "type": SystemType.saas.value,
                 "human_readable": segment_template.human_readable,
                 "encoded_icon": segment_template.icon,
+                "authorization_required": False,
             },
             STRIPE: {
                 "identifier": STRIPE,
                 "type": SystemType.saas.value,
                 "human_readable": stripe_template.human_readable,
                 "encoded_icon": stripe_template.icon,
+                "authorization_required": False,
             },
             ZENDESK: {
                 "identifier": ZENDESK,
                 "type": SystemType.saas.value,
                 "human_readable": zendesk_template.human_readable,
                 "encoded_icon": zendesk_template.icon,
+                "authorization_required": False,
             },
             DOORDASH: {
                 "identifier": DOORDASH,
                 "type": SystemType.saas.value,
                 "human_readable": doordash_template.human_readable,
                 "encoded_icon": doordash_template.icon,
+                "authorization_required": False,
             },
             ConnectionType.sovrn.value: {
                 "identifier": ConnectionType.sovrn.value,
                 "type": SystemType.email.value,
                 "human_readable": "Sovrn",
                 "encoded_icon": None,
+                "authorization_required": False,
             },
             ConnectionType.attentive.value: {
                 "identifier": ConnectionType.attentive.value,
                 "type": SystemType.email.value,
                 "human_readable": "Attentive",
                 "encoded_icon": None,
+                "authorization_required": False,
             },
         }
 
@@ -1149,7 +1175,6 @@ class TestGetConnectionSecretSchema:
                 },
             },
             "required": ["private_app_token"],
-            "additionalProperties": False,
         }
 
     def test_get_connection_secrets_manual_webhook(
@@ -1264,10 +1289,11 @@ class TestInstantiateConnectionFromTemplate:
             "msg": "field required",
             "type": "value_error.missing",
         }
+        # extra values should be permitted, but the system should return an error if there are missing fields.
         assert resp.json()["detail"][1] == {
-            "loc": ["bad_mailchimp_secret_key"],
-            "msg": "extra fields not permitted",
-            "type": "value_error.extra",
+            "loc": ["__root__"],
+            "msg": "mailchimp_schema must be supplied all of: [domain, username, api_key].",
+            "type": "value_error",
         }
 
         connection_config = ConnectionConfig.filter(

@@ -28,12 +28,15 @@ The types of changes are:
 ### Added
 
 - HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
+- UI support for OAuth2 authorization flow [#3819](https://github.com/ethyca/fides/pull/3819)
+- Changes in the `data` directory now trigger a server reload (for local development) [#3874](https://github.com/ethyca/fides/pull/3874)
 
 ### Changed
 
 - Simplified the file structure for HTML DSR packages [#3848](https://github.com/ethyca/fides/pull/3848)
 - Changed max width of form components in "system information" form tab [#3864](https://github.com/ethyca/fides/pull/3864)
 - Remove manual system selection screen [#3865](https://github.com/ethyca/fides/pull/3865)
+- System and integration identifiers are now auto-generated [#3868](https://github.com/ethyca/fides/pull/3868)
 
 ## [2.17.0](https://github.com/ethyca/fides/compare/2.16.0...2.17.0)
 

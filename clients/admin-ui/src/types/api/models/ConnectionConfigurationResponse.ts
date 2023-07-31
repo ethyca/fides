@@ -9,7 +9,6 @@ import type { SaaSConfigBase } from "./SaaSConfigBase";
 /**
  * Describes the returned schema for a ConnectionConfiguration.
  *
- * Do *NOT* add "secrets" to this schema.
  */
 export type ConnectionConfigurationResponse = {
   name?: string;
@@ -23,5 +22,6 @@ export type ConnectionConfigurationResponse = {
   last_test_timestamp?: string;
   last_test_succeeded?: boolean;
   saas_config?: SaaSConfigBase;
-  secrets?: any;
+  secrets?: object; // sensitive values are masked before being returned
+  authorized?: boolean; // for API integrations with OAuth2 authorization
 };
