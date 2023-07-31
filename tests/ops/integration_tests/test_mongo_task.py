@@ -12,7 +12,6 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.service.connectors import get_connector
 from fides.api.privacy_requests.graph.config import (
     Collection,
     FieldAddress,
@@ -25,10 +24,11 @@ from fides.api.privacy_requests.graph.data_type import (
     StringTypeConverter,
 )
 from fides.api.privacy_requests.graph.graph import DatasetGraph, Edge, Node
+from fides.api.privacy_requests.graph.run import run_access_request, run_erasure_request
 from fides.api.privacy_requests.graph.traversal import TraversalNode
 from fides.api.privacy_requests.graph.utils import get_cached_data_for_erasures
-from fides.api.privacy_requests.graph_tasks import graph_task
 from fides.api.privacy_requests.graph_tasks.filter_results import filter_data_categories
+from fides.api.service.connectors import get_connector
 
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (
@@ -108,7 +108,7 @@ async def test_combined_erasure_task(
 
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
-    await graph_task.run_access_request(
+    await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -117,7 +117,7 @@ async def test_combined_erasure_task(
         db,
     )
 
-    x = await graph_task.run_erasure(
+    x = await run_erasure_request(
         privacy_request,
         policy,
         graph,
@@ -145,7 +145,7 @@ async def test_combined_erasure_task(
     }
 
     privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
-    rerun_access = await graph_task.run_access_request(
+    rerun_access = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -267,7 +267,7 @@ async def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config)
     field([dataset], "mongo_test", "address", "zip").data_categories = ["C"]
     field([dataset], "mongo_test", "customer", "name").data_categories = ["A"]
 
-    await graph_task.run_access_request(
+    await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -275,7 +275,7 @@ async def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config)
         {"email": seed_email},
         db,
     )
-    v = await graph_task.run_erasure(
+    v = await run_erasure_request(
         privacy_request,
         policy,
         graph,
@@ -300,7 +300,7 @@ async def test_dask_mongo_task(
 ) -> None:
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
 
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         empty_policy,
         integration_db_graph("mongo_test", integration_mongodb_config.key),
@@ -382,7 +382,7 @@ async def test_composite_key_erasure(
         connection_key=integration_mongodb_config.key,
     )
 
-    access_request_data = await graph_task.run_access_request(
+    access_request_data = await run_access_request_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -398,7 +398,7 @@ async def test_composite_key_erasure(
     assert composite_pk_test["customer_id"] == 1
 
     # erasure
-    erasure = await graph_task.run_erasure(
+    erasure = await run_erasure_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -413,7 +413,7 @@ async def test_composite_key_erasure(
     # re-run access request. Description has been
     # nullified here.
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
-    access_request_data = await graph_task.run_access_request(
+    access_request_data = await run_access_request_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -477,7 +477,7 @@ async def test_access_erasure_type_conversion(
         connection_key=integration_mongodb_config.key,
     )
 
-    access_request_data = await graph_task.run_access_request(
+    access_request_data = await run_access_request_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -493,7 +493,7 @@ async def test_access_erasure_type_conversion(
     assert link["_id"] == ObjectId("000000000000000000000001")
 
     # erasure
-    erasure = await graph_task.run_erasure(
+    erasure = await run_erasure_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -526,7 +526,7 @@ async def test_object_querying_mongo(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
-    access_request_results = await graph_task.run_access_request(
+    access_request_results = await run_access_request_request(
         privacy_request,
         policy,
         dataset_graph,
@@ -617,7 +617,7 @@ async def test_get_cached_data_for_erasures(
     )
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
-    access_request_results = await graph_task.run_access_request(
+    access_request_results = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -676,7 +676,7 @@ async def test_return_all_elements_config_access_request(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
-    access_request_results = await graph_task.run_access_request(
+    access_request_results = await run_access_request_request(
         privacy_request,
         policy,
         dataset_graph,
@@ -736,7 +736,7 @@ async def test_return_all_elements_config_erasure(
     seed_email = postgres_inserts["customer"][0]["email"]
     seed_phone = mongo_inserts["rewards"][0]["owner"][0]["phone"]
 
-    await graph_task.run_access_request(
+    await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -745,7 +745,7 @@ async def test_return_all_elements_config_erasure(
         db,
     )
 
-    x = await graph_task.run_erasure(
+    x = await run_erasure_request(
         privacy_request,
         policy,
         graph,
@@ -799,7 +799,7 @@ async def test_array_querying_mongo(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
-    access_request_results = await graph_task.run_access_request(
+    access_request_results = await run_access_request_request(
         privacy_request,
         policy,
         dataset_graph,
@@ -1046,7 +1046,7 @@ async def test_array_querying_mongo(
 
     # Run again with different email
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
-    access_request_results = await graph_task.run_access_request(
+    access_request_results = await run_access_request_request(
         privacy_request,
         policy,
         dataset_graph,

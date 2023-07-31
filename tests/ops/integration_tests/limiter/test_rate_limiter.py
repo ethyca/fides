@@ -17,6 +17,8 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph.run import run_access_request, run_erasure_request
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiter,
@@ -28,8 +30,6 @@ from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.api.privacy_requests.graph.graph import DatasetGraph
-from fides.api.privacy_requests.graph_tasks import graph_task
 
 
 @pytest.fixture
@@ -245,7 +245,7 @@ async def test_rate_limiter_full_integration(
     # create call log spy and execute request
     spy = call_log_spy(Session.send)
     with mock.patch.object(Session, "send", spy):
-        v = await graph_task.run_access_request(
+        v = await run_access_request_request(
             privacy_request,
             policy,
             graph,

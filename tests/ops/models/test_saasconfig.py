@@ -6,6 +6,7 @@ from pydantic import ValidationError
 
 from fides.api.common_exceptions import ValidationError as FidesopsValidationError
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.privacy_requests.graph.config import CollectionAddress, FieldAddress
 from fides.api.schemas.saas.saas_config import (
     ConnectorParam,
     Endpoint,
@@ -13,7 +14,6 @@ from fides.api.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSRequest,
 )
-from fides.api.privacy_requests.graph.config import CollectionAddress, FieldAddress
 
 
 @pytest.mark.unit_saas

@@ -6,6 +6,9 @@ from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.connectionconfig import AccessLevel, ConnectionTestStatus
 from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
 from fides.api.models.privacy_preference import UserConsentPreference
+from fides.api.privacy_requests.request_runner_service import (
+    get_consent_email_connection_configs,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
     ExtendedEmailSchema,
@@ -23,9 +26,6 @@ from fides.api.service.connectors.consent_email_connector import (
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
     send_single_consent_email,
-)
-from fides.api.privacy_requests.request_runner_service import (
-    get_consent_email_connection_configs,
 )
 
 

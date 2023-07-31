@@ -1,12 +1,6 @@
 import pytest
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.util.saas_util import (
-    assign_placeholders,
-    merge_datasets,
-    replace_version,
-    unflatten_dict,
-)
 from fides.api.privacy_requests.graph.config import (
     Collection,
     FieldAddress,
@@ -14,6 +8,12 @@ from fides.api.privacy_requests.graph.config import (
     GraphDataset,
     ObjectField,
     ScalarField,
+)
+from fides.api.util.saas_util import (
+    assign_placeholders,
+    merge_datasets,
+    replace_version,
+    unflatten_dict,
 )
 
 

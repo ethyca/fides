@@ -24,12 +24,12 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     can_run_checkpoint,
 )
+from fides.api.privacy_requests.graph.config import CollectionAddress
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.manual_connector import ManualAction
 from fides.api.util.cache import FidesopsRedis, get_identity_cache_key
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
-from fides.api.privacy_requests.graph.config import CollectionAddress
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 

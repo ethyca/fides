@@ -13,6 +13,10 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.privacy_requests.graph.config import GraphDataset
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph.run import run_access_request, run_erasure_request
+from fides.api.privacy_requests.graph.utils import get_cached_data_for_erasures
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from fides.api.util.cache import FidesopsRedis
@@ -22,10 +26,6 @@ from fides.api.util.saas_util import (
     load_dataset_with_replacement,
 )
 from fides.config import get_config
-from fides.api.privacy_requests.graph.config import GraphDataset
-from fides.api.privacy_requests.graph.graph import DatasetGraph
-from fides.api.privacy_requests.graph.utils import get_cached_data_for_erasures
-from fides.api.privacy_requests.graph_tasks import graph_task
 
 CONFIG = get_config()
 
@@ -97,7 +97,7 @@ class ConnectorRunner:
         _process_external_references(self.db, graph_list, connection_config_list)
         dataset_graph = DatasetGraph(*graph_list)
 
-        access_results = await graph_task.run_access_request(
+        access_results = await run_access_request_request(
             privacy_request,
             access_policy,
             dataset_graph,
@@ -184,7 +184,7 @@ class ConnectorRunner:
         _process_external_references(self.db, graph_list, connection_config_list)
         dataset_graph = DatasetGraph(*graph_list)
 
-        access_results = await graph_task.run_access_request(
+        access_results = await run_access_request_request(
             privacy_request,
             access_policy,
             dataset_graph,
@@ -199,7 +199,7 @@ class ConnectorRunner:
                 access_results[f"{fides_key}:{collection['name']}"]
             ), f"No rows returned for collection '{collection['name']}'"
 
-        erasure_results = await graph_task.run_erasure(
+        erasure_results = await run_erasure_request(
             privacy_request,
             erasure_policy,
             dataset_graph,

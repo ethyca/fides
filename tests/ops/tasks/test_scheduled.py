@@ -3,8 +3,6 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 
 from fides.api.models.privacy_request import PrivacyRequestStatus
-from fides.api.scheduler.scheduler import scheduler
-from fides.config import get_config
 from fides.api.privacy_requests.email_batch_service import (
     BATCH_EMAIL_SEND,
     initiate_scheduled_batch_email_send,
@@ -12,6 +10,8 @@ from fides.api.privacy_requests.email_batch_service import (
 from fides.api.privacy_requests.request_runner_service import (
     initiate_paused_privacy_request_followup,
 )
+from fides.api.scheduler.scheduler import scheduler
+from fides.config import get_config
 
 CONFIG = get_config()
 

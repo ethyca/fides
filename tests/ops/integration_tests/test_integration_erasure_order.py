@@ -8,6 +8,10 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import TraversalError
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph.run import run_access_request, run_erasure_request
+from fides.api.privacy_requests.graph.traversal import TraversalNode
+from fides.api.privacy_requests.graph.utils import get_cached_data_for_erasures
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
@@ -17,10 +21,6 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.util.collection_util import Row
 from fides.config import get_config
-from fides.api.privacy_requests.graph.graph import DatasetGraph
-from fides.api.privacy_requests.graph.traversal import TraversalNode
-from fides.api.privacy_requests.graph.utils import get_cached_data_for_erasures
-from fides.api.privacy_requests.graph_tasks import graph_task
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
@@ -86,7 +86,7 @@ async def test_saas_erasure_order_request_task(
     merged_graph = saas_erasure_order_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -113,7 +113,7 @@ async def test_saas_erasure_order_request_task(
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
-    x = await graph_task.run_erasure(
+    x = await run_erasure_request(
         privacy_request,
         erasure_policy_complete_mask,
         graph,
@@ -185,7 +185,7 @@ async def test_saas_erasure_order_request_task_with_cycle(
     merged_graph = saas_erasure_order_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -213,7 +213,7 @@ async def test_saas_erasure_order_request_task_with_cycle(
     CONFIG.execution.masking_strict = False
 
     with pytest.raises(TraversalError) as exc:
-        await graph_task.run_erasure(
+        await run_erasure_request(
             privacy_request,
             erasure_policy_complete_mask,
             graph,
@@ -255,7 +255,7 @@ async def test_saas_erasure_order_request_task_resume_from_error(
     merged_graph = saas_erasure_order_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -292,7 +292,7 @@ async def test_saas_erasure_order_request_task_resume_from_error(
     mock_mask_data.side_effect = side_effect
 
     with pytest.raises(Exception):
-        await graph_task.run_erasure(
+        await run_erasure_request(
             privacy_request,
             erasure_policy_complete_mask,
             graph,
@@ -307,7 +307,7 @@ async def test_saas_erasure_order_request_task_resume_from_error(
         lambda node, policy, privacy_request, rows, input_data: 1
     )
 
-    x = await graph_task.run_erasure(
+    x = await run_erasure_request(
         privacy_request,
         erasure_policy_complete_mask,
         graph,

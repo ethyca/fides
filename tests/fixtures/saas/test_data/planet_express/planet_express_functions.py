@@ -5,6 +5,7 @@ from requests import PreparedRequest
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.privacy_requests.graph.traversal import TraversalNode
 from fides.api.schemas.saas.strategy_configuration import StrategyConfiguration
 from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -16,7 +17,6 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import assign_placeholders
-from fides.api.privacy_requests.graph.traversal import TraversalNode
 
 
 @register("planet_express_user_access", [SaaSRequestType.READ])

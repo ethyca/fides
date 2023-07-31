@@ -4,6 +4,9 @@ import pytest
 
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.connectionconfig import AccessLevel, ConnectionTestStatus
+from fides.api.privacy_requests.request_runner_service import (
+    get_erasure_email_connection_configs,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettings,
     EmailSchema,
@@ -15,9 +18,6 @@ from fides.api.service.connectors.erasure_email_connector import (
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
     send_single_erasure_email,
-)
-from fides.api.privacy_requests.request_runner_service import (
-    get_erasure_email_connection_configs,
 )
 
 

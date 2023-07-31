@@ -5,15 +5,15 @@ from firebase_admin import auth
 from firebase_admin.auth import UserNotFoundError, UserRecord
 
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph.run import run_access_request, run_erasure_request
+from fides.api.privacy_requests.graph.utils import get_cached_data_for_erasures
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.saas_request.override_implementations.firebase_auth_request_overrides import (
     firebase_auth_user_delete,
     initialize_firebase,
 )
 from fides.config import CONFIG
-from fides.api.privacy_requests.graph.graph import DatasetGraph
-from fides.api.privacy_requests.graph.utils import get_cached_data_for_erasures
-from fides.api.privacy_requests.graph_tasks import graph_task
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
@@ -37,7 +37,7 @@ async def test_firebase_auth_access_request(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -121,7 +121,7 @@ async def test_firebase_auth_access_request_non_existent_users(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
     # just ensure we don't error out here
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -166,7 +166,7 @@ async def test_firebase_auth_access_request_phone_number_identity(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -247,7 +247,7 @@ async def test_firebase_auth_update_request(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -268,7 +268,7 @@ async def test_firebase_auth_update_request(
         ],
     )
 
-    await graph_task.run_erasure(
+    await run_erasure_request(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
@@ -337,7 +337,7 @@ async def test_firebase_auth_update_request_phone_number_identity(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -358,7 +358,7 @@ async def test_firebase_auth_update_request_phone_number_identity(
         ],
     )
 
-    await graph_task.run_erasure(
+    await run_erasure_request(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
@@ -424,7 +424,7 @@ async def test_firebase_auth_delete_request(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -448,7 +448,7 @@ async def test_firebase_auth_delete_request(
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
-    x = await graph_task.run_erasure(
+    x = await run_erasure_request(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
@@ -496,7 +496,7 @@ async def test_firebase_auth_delete_request_phone_number_identity(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -520,7 +520,7 @@ async def test_firebase_auth_delete_request_phone_number_identity(
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
-    x = await graph_task.run_erasure(
+    x = await run_erasure_request(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

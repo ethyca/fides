@@ -41,6 +41,9 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, VIEWER
+from fides.api.privacy_requests.graph.config import CollectionAddress
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph.run import run_access_request, run_erasure_request
 from fides.api.scheduler import MESSAGING_QUEUE_NAME
 from fides.api.schemas.dataset import DryRunDatasetResponse
 from fides.api.schemas.masking.masking_secrets import SecretType
@@ -91,9 +94,6 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
-from fides.api.privacy_requests.graph.config import CollectionAddress
-from fides.api.privacy_requests.graph.graph import DatasetGraph
-from fides.api.privacy_requests.graph_tasks import graph_task
 
 page_size = Params().size
 
@@ -4446,7 +4446,7 @@ class TestPrivacyReqeustDataTransfer:
         # execute the privacy request to mimic the expected workflow on the "child"
         # this will populate the access results in the cache, which is required for the
         # transfer endpoint to work
-        await graph_task.run_access_request(
+        await run_access_request(
             privacy_request,
             policy,
             graph,

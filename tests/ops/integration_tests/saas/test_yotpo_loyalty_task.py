@@ -4,12 +4,12 @@ from time import sleep
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.graph.run import run_access_request, run_erasure_request
+from fides.api.privacy_requests.graph.utils import get_cached_data_for_erasures
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from fides.config import get_config
-from fides.api.privacy_requests.graph.graph import DatasetGraph
-from fides.api.privacy_requests.graph.utils import get_cached_data_for_erasures
-from fides.api.privacy_requests.graph_tasks import graph_task
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
@@ -44,7 +44,7 @@ async def test_yotpo_loyalty_access_request_task_with_email(
     merged_graph = yotpo_loyalty_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -108,7 +108,7 @@ async def test_yotpo_loyalty_access_request_task_with_phone_number(
     merged_graph = yotpo_loyalty_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -181,7 +181,7 @@ async def test_yotpo_loyalty_erasure_request_task(
     merged_graph = yotpo_loyalty_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = await run_access_request_request(
         privacy_request,
         policy,
         graph,
@@ -219,7 +219,7 @@ async def test_yotpo_loyalty_erasure_request_task(
         ],
     )
 
-    x = await graph_task.run_erasure(
+    x = await run_erasure_request(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

@@ -10,14 +10,14 @@ from fides.api.db.base_class import FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.service.connectors import BaseConnector, MongoDBConnector
-from fides.api.service.connectors.sql_connector import SQLConnector
-from fides.api.util.collection_util import Row
 from fides.api.privacy_requests.graph.config import *
 from fides.api.privacy_requests.graph.traversal import *
 from fides.api.privacy_requests.graph.traversal import Traversal, TraversalNode
 from fides.api.privacy_requests.graph_tasks.graph_task import GraphTask
 from fides.api.privacy_requests.graph_tasks.task_resources import TaskResources
+from fides.api.service.connectors import BaseConnector, MongoDBConnector
+from fides.api.service.connectors.sql_connector import SQLConnector
+from fides.api.util.collection_util import Row
 from tests.fixtures.application_fixtures import faker
 
 

@@ -29,6 +29,13 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
+from fides.api.privacy_requests.graph.config import CollectionAddress, FieldPath
+from fides.api.privacy_requests.graph.graph import DatasetGraph
+from fides.api.privacy_requests.request_runner_service import (
+    build_consent_dataset_graph,
+    needs_batch_email_send,
+    run_webhooks_and_report_status,
+)
 from fides.api.schemas.external_https import SecondPartyResponseFormat
 from fides.api.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
@@ -55,13 +62,6 @@ from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fides.api.util.data_category import DataCategory
 from fides.config import CONFIG
-from fides.api.privacy_requests.graph.config import CollectionAddress, FieldPath
-from fides.api.privacy_requests.graph.graph import DatasetGraph
-from fides.api.privacy_requests.request_runner_service import (
-    build_consent_dataset_graph,
-    needs_batch_email_send,
-    run_webhooks_and_report_status,
-)
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return

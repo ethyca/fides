@@ -6,13 +6,13 @@ import pytest as pytest
 from fides.api.email_templates import get_email_template
 from fides.api.models.connectionconfig import AccessLevel
 from fides.api.models.privacy_request import PrivacyRequestStatus
-from fides.api.schemas.messaging.messaging import (
-    EmailForActionType,
-    MessagingActionType,
-)
 from fides.api.privacy_requests.email_batch_service import (
     EmailExitState,
     send_email_batch,
+)
+from fides.api.schemas.messaging.messaging import (
+    EmailForActionType,
+    MessagingActionType,
 )
 from tests.ops.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,

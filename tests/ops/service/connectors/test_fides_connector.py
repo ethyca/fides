@@ -8,6 +8,8 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestSt
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.privacy_requests import request_service
+from fides.api.privacy_requests.graph.traversal import TraversalNode
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors.fides.fides_client import FidesClient
 from fides.api.service.connectors.fides_connector import (
@@ -16,8 +18,6 @@ from fides.api.service.connectors.fides_connector import (
     FidesConnector,
     filter_fides_connector_datasets,
 )
-from fides.api.privacy_requests import request_service
-from fides.api.privacy_requests.graph.traversal import TraversalNode
 from tests.ops.graph.graph_test_util import assert_rows_match, generate_node
 
 

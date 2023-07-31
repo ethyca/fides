@@ -16,10 +16,6 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import ExecutionLog, ExecutionLogStatus
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.schemas.policy import ActionType
-from fides.api.util.consent_util import (
-    cache_initial_status_and_identities_for_consent_reporting,
-)
 from fides.api.privacy_requests.graph.build_access_graph import (
     _format_data_use_map_for_caching,
 )
@@ -45,6 +41,10 @@ from fides.api.privacy_requests.graph_tasks.graph_task import (
     build_affected_field_logs,
 )
 from fides.api.privacy_requests.graph_tasks.task_resources import Connections
+from fides.api.schemas.policy import ActionType
+from fides.api.util.consent_util import (
+    cache_initial_status_and_identities_for_consent_reporting,
+)
 
 from ..graph.graph_test_util import (
     MockMongoTask,

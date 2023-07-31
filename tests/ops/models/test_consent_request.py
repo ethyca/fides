@@ -10,6 +10,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
+from fides.api.privacy_requests.graph.config import CollectionAddress
 from fides.api.schemas.policy import PolicyResponse
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -18,7 +19,6 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestResponse,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.privacy_requests.graph.config import CollectionAddress
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
