@@ -50,7 +50,7 @@ const TcfVendors = ({
   const handleToggle = (vendor: TCFVendorRecord) => {
     if (enabledIds.indexOf(vendor.id) !== -1) {
       onChange({
-        newEnabledIds: enabledIds.filter((e) => e === vendor.id),
+        newEnabledIds: enabledIds.filter((e) => e !== vendor.id),
         modelType: "vendors",
       });
     } else {
