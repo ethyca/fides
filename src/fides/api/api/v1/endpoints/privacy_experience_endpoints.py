@@ -1,6 +1,6 @@
 import uuid
 from html import escape, unescape
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from fastapi import Depends, HTTPException, Request, Response
 from fastapi_pagination import Page, Params
@@ -168,8 +168,14 @@ def privacy_experience_list(
         )
 
     if component is not None:
+        # If searching for "overlay" - return both overlay types: the regular overlay and the TCF Overlay
+        component_search_map: Dict = {
+            ComponentType.overlay: [ComponentType.overlay, ComponentType.tcf_overlay]
+        }
         experience_query = experience_query.filter(
-            PrivacyExperience.component == component
+            PrivacyExperience.component.in_(
+                component_search_map.get(component, [component])
+            )
         )
     if has_config is True:
         experience_query = experience_query.filter(

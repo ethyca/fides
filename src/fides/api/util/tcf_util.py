@@ -60,6 +60,8 @@ def get_purposes_and_vendors(
     matching_systems: Query = (
         db.query(
             System.id,
+            System.name,
+            System.description,
             array_agg(PrivacyDeclaration.data_use).label("data_uses"),
             array_agg(func.distinct(ConnectionConfig.saas_config["type"])).label(
                 "vendor"
@@ -77,7 +79,9 @@ def get_purposes_and_vendors(
             (vendor for vendor in record.vendor if vendor is not None), None
         )
         if vendor and vendor not in system_map:
-            system_map[vendor] = TCFVendorRecord(id=vendor)
+            system_map[vendor] = TCFVendorRecord(
+                id=vendor, name=record.name, description=record.description
+            )
 
         for use in record.data_uses:
             # Get the matching purpose or special purpose
@@ -94,7 +98,7 @@ def get_purposes_and_vendors(
             if vendor:
                 # Embed vendor on the given purpose or special purpose
                 purpose_map[system_purpose.id].vendors.extend(
-                    [EmbeddedVendor(id=vendor, name=vendor.capitalize())]
+                    [EmbeddedVendor(id=vendor, name=record.name)]
                 )
                 # Do the reverse, and append the purpose or the special purpose to the vendor
                 getattr(system_map[vendor], purpose_field).append(system_purpose)
