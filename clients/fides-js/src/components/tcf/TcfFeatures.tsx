@@ -43,6 +43,7 @@ const FeatureBlock = ({
         dataUse={{ key: label, name: label }}
         onToggle={handleToggleAll}
         checked={allChecked}
+        isHeader
       />
       {allFeatures.map((f) => (
         <DataUseToggle

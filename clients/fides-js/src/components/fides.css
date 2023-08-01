@@ -470,6 +470,11 @@ div#fides-modal .fides-modal-button-group {
   background-color: var(--fides-overlay-row-hover-color);
 }
 
+.fides-notice-toggle-header {
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
 /* GPC */
 .fides-gpc-banner {
   border: 1px solid var(--fides-overlay-primary-color);

@@ -77,6 +77,7 @@ const PurposeBlock = ({
         dataUse={{ key: label, name: label }}
         onToggle={handleToggleAll}
         checked={allChecked}
+        isHeader
       />
       {allPurposes.map((p) => (
         <PurposeToggle

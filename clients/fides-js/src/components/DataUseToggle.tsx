@@ -15,6 +15,7 @@ const DataUseToggle = ({
   badge,
   gpcBadge,
   disabled,
+  isHeader,
 }: {
   dataUse: DataUse;
   checked: boolean;
@@ -23,6 +24,7 @@ const DataUseToggle = ({
   badge?: string;
   gpcBadge?: VNode;
   disabled?: boolean;
+  isHeader?: boolean;
 }) => {
   const {
     isOpen,
@@ -39,10 +41,13 @@ const DataUseToggle = ({
     }
   };
 
+  const isClickable = children != null;
+  const buttonProps = isClickable ? getButtonProps() : {};
+
   return (
     <div
       className={
-        isOpen
+        isOpen && isClickable
           ? "fides-notice-toggle fides-notice-toggle-expanded"
           : "fides-notice-toggle"
       }
@@ -51,9 +56,13 @@ const DataUseToggle = ({
         <span
           role="button"
           tabIndex={0}
-          onKeyDown={handleKeyDown}
-          {...getButtonProps()}
-          className="fides-notice-toggle-trigger"
+          onKeyDown={isClickable ? handleKeyDown : undefined}
+          {...buttonProps}
+          className={
+            isHeader
+              ? "fides-notice-toggle-trigger fides-notice-toggle-header"
+              : "fides-notice-toggle-trigger"
+          }
         >
           <span className="fides-flex-center">
             {dataUse.name}
