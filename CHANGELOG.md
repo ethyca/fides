@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Additional consent reporting calls from `fides-js` [#3845](https://github.com/ethyca/fides/pull/3845)
 - Additional consent reporting calls from privacy center [#3847](https://github.com/ethyca/fides/pull/3847)
+- Access support for Recurly [#3595](https://github.com/ethyca/fides/pull/3595)
 
 ### Fixed
 - Fix datamap zoom for low system counts [#3835](https://github.com/ethyca/fides/pull/3835)
