@@ -164,7 +164,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: company
-            data_categories: [user.location]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: created_at
@@ -232,7 +232,7 @@ dataset:
               data_type: string
           - name: shipping_addresses
             fidesops_meta:
-              data_type: 'object[]'
+              data_type: "object[]"
             fields:
               - name: object
                 data_categories: [system.operations]
@@ -247,7 +247,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: company
-                data_categories: [user.location]
+                data_categories: [system.operations]
                 fidesops_meta:
                   data_type: string
               - name: phone
@@ -357,7 +357,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: company
-            data_categories: [user.location]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: address
@@ -406,24 +406,24 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: card_type
-                data_categories: [system.operations]
+                data_categories: [user.financial]
                 fidesops_meta:
                   data_type: string
               - name: first_six
-                data_categories: [system.operations]
+                data_categories: [user.financial]
                 fidesops_meta:
                   data_type: string
               - name: last_four
-                data_categories: [system.operations]
+                data_categories: [user.financial]
                 fidesops_meta:
                   data_type: string
               - name: cc_bin_country
               - name: exp_month
-                data_categories: [system.operations]
+                data_categories: [user.financial]
                 fidesops_meta:
                   data_type: integer
               - name: exp_year
-                data_categories: [system.operations]
+                data_categories: [user.financial]
                 fidesops_meta:
                   data_type: integer
           - name: fraud
@@ -456,7 +456,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: company
-            data_categories: [user.location]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: phone
