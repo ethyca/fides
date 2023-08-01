@@ -797,7 +797,7 @@ export const CustomNumberInput = ({
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start" w="100%">
         <Flex alignItems="center">
-          <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
+          <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
