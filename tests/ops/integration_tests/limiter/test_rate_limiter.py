@@ -245,7 +245,7 @@ async def test_rate_limiter_full_integration(
     # create call log spy and execute request
     spy = call_log_spy(Session.send)
     with mock.patch.object(Session, "send", spy):
-        v = await run_access_request_request(
+        v = await run_access_request(
             privacy_request,
             policy,
             graph,

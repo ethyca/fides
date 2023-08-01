@@ -48,7 +48,7 @@ async def test_twilio_conversations_access_request_task(
     merged_graph = twilio_conversations_dataset_config.get_graph()
     graph = DatasetGraph(*[merged_graph, twilio_postgres_dataset_config.get_graph()])
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -168,7 +168,7 @@ async def test_twilio_conversations_erasure_request_task(
     merged_graph = twilio_conversations_dataset_config.get_graph()
     graph = DatasetGraph(*[merged_graph, twilio_postgres_dataset_config.get_graph()])
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,

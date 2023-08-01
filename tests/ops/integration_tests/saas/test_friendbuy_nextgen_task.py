@@ -49,7 +49,7 @@ async def test_friendbuy_nextgen_access_request_task(
     merged_graph = friendbuy_nextgen_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -110,7 +110,7 @@ async def test_friendbuy_nextgen_erasure_request_task(
     # Adding 30 seconds sleep because sometimes Friendbuy Nextgen system takes around 30 seconds for user to be available
 
     sleep(30)
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,

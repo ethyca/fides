@@ -108,7 +108,7 @@ async def test_combined_erasure_task(
 
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
-    await run_access_request_request(
+    await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -145,7 +145,7 @@ async def test_combined_erasure_task(
     }
 
     privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
-    rerun_access = await run_access_request_request(
+    rerun_access = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -267,7 +267,7 @@ async def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config)
     field([dataset], "mongo_test", "address", "zip").data_categories = ["C"]
     field([dataset], "mongo_test", "customer", "name").data_categories = ["A"]
 
-    await run_access_request_request(
+    await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -300,7 +300,7 @@ async def test_dask_mongo_task(
 ) -> None:
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         empty_policy,
         integration_db_graph("mongo_test", integration_mongodb_config.key),
@@ -382,7 +382,7 @@ async def test_composite_key_erasure(
         connection_key=integration_mongodb_config.key,
     )
 
-    access_request_data = await run_access_request_request(
+    access_request_data = await run_access_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -413,7 +413,7 @@ async def test_composite_key_erasure(
     # re-run access request. Description has been
     # nullified here.
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
-    access_request_data = await run_access_request_request(
+    access_request_data = await run_access_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -477,7 +477,7 @@ async def test_access_erasure_type_conversion(
         connection_key=integration_mongodb_config.key,
     )
 
-    access_request_data = await run_access_request_request(
+    access_request_data = await run_access_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -526,7 +526,7 @@ async def test_object_querying_mongo(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
-    access_request_results = await run_access_request_request(
+    access_request_results = await run_access_request(
         privacy_request,
         policy,
         dataset_graph,
@@ -617,7 +617,7 @@ async def test_get_cached_data_for_erasures(
     )
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
-    access_request_results = await run_access_request_request(
+    access_request_results = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -676,7 +676,7 @@ async def test_return_all_elements_config_access_request(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
-    access_request_results = await run_access_request_request(
+    access_request_results = await run_access_request(
         privacy_request,
         policy,
         dataset_graph,
@@ -736,7 +736,7 @@ async def test_return_all_elements_config_erasure(
     seed_email = postgres_inserts["customer"][0]["email"]
     seed_phone = mongo_inserts["rewards"][0]["owner"][0]["phone"]
 
-    await run_access_request_request(
+    await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -799,7 +799,7 @@ async def test_array_querying_mongo(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
-    access_request_results = await run_access_request_request(
+    access_request_results = await run_access_request(
         privacy_request,
         policy,
         dataset_graph,
@@ -1046,7 +1046,7 @@ async def test_array_querying_mongo(
 
     # Run again with different email
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
-    access_request_results = await run_access_request_request(
+    access_request_results = await run_access_request(
         privacy_request,
         policy,
         dataset_graph,

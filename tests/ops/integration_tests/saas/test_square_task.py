@@ -41,7 +41,7 @@ async def test_square_access_request_task_by_email(
     merged_graph = square_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -126,7 +126,7 @@ async def test_square_access_request_task_by_phone_number(
     merged_graph = square_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -187,7 +187,7 @@ async def test_square_erasure_request_task(
     dataset_name = square_connection_config.get_saas_config().fides_key
     merged_graph = square_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,

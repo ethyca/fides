@@ -151,7 +151,7 @@ class TestDeleteCollection:
             id=f"test_postgres_access_request_task_{uuid.uuid4()}"
         )
 
-        results = await run_access_request_request(
+        results = await run_access_request(
             privacy_request,
             policy,
             dataset_graph,
@@ -206,7 +206,7 @@ class TestDeleteCollection:
         )
 
         with pytest.raises(ValidationError):
-            await run_access_request_request(
+            await run_access_request(
                 privacy_request,
                 policy,
                 mongo_postgres_dataset_graph,
@@ -240,7 +240,7 @@ class TestDeleteCollection:
         )
         postgres_only_dataset_graph = DatasetGraph(*[graph])
 
-        results = await run_access_request_request(
+        results = await run_access_request(
             privacy_request,
             policy,
             postgres_only_dataset_graph,
@@ -335,7 +335,7 @@ class TestSkipDisabledCollection:
             id=f"test_postgres_access_request_task_{uuid.uuid4()}"
         )
 
-        results = await run_access_request_request(
+        results = await run_access_request(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,
@@ -420,7 +420,7 @@ class TestSkipDisabledCollection:
             id=f"test_postgres_access_request_task_{uuid.uuid4()}"
         )
 
-        results = await run_access_request_request(
+        results = await run_access_request(
             privacy_request,
             policy,
             dataset_graph,
@@ -473,7 +473,7 @@ class TestSkipDisabledCollection:
         )
 
         with pytest.raises(ValidationError):
-            await run_access_request_request(
+            await run_access_request(
                 privacy_request,
                 policy,
                 mongo_postgres_dataset_graph,
@@ -501,7 +501,7 @@ class TestSkipDisabledCollection:
         integration_mongodb_config.disabled = True
         integration_mongodb_config.save(db)
 
-        results = await run_access_request_request(
+        results = await run_access_request(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,
@@ -608,7 +608,7 @@ async def test_restart_graph_from_failure(
 
     # Attempt to run the graph; execution will stop when we reach one of the mongo nodes
     with pytest.raises(Exception) as exc:
-        await run_access_request_request(
+        await run_access_request(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,
@@ -649,7 +649,7 @@ async def test_restart_graph_from_failure(
 
     # Rerun access request using cached results
     with mock.patch("fides.api.task.graph_task.fideslog_graph_rerun") as mock_log_event:
-        await run_access_request_request(
+        await run_access_request(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,

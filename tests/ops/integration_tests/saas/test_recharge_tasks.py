@@ -42,7 +42,7 @@ async def test_recharge_access_request_task(
     dataset_name = recharge_connection_config.get_saas_config().fides_key
     merged_graph = recharge_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -149,7 +149,7 @@ async def test_recharge_erasure_request_task(
 
     merged_graph = recharge_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,

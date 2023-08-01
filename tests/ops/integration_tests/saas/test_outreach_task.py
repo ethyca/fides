@@ -43,7 +43,7 @@ async def test_outreach_access_request_task(
     merged_graph = outreach_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -122,7 +122,7 @@ async def test_outreach_erasure_request_task(
     merged_graph = outreach_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,

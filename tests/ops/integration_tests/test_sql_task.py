@@ -78,7 +78,7 @@ async def test_sql_erasure_ignores_collections_without_pk(
 
     graph = DatasetGraph(dataset)
     privacy_request = PrivacyRequest(id=str(uuid4()))
-    await run_access_request_request(
+    await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -177,7 +177,7 @@ async def test_composite_key_erasure(
         connection_key=integration_postgres_config.key,
     )
 
-    access_request_data = await run_access_request_request(
+    access_request_data = await run_access_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -210,7 +210,7 @@ async def test_composite_key_erasure(
     # re-run access request. Description has been
     # nullified here.
     privacy_request = PrivacyRequest(id=str(uuid4()))
-    access_request_data = await run_access_request_request(
+    access_request_data = await run_access_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -243,7 +243,7 @@ async def test_sql_erasure_task(db, postgres_inserts, integration_postgres_confi
     field([dataset], "postgres_example", "customer", "name").data_categories = ["A"]
     graph = DatasetGraph(dataset)
     privacy_request = PrivacyRequest(id=str(uuid4()))
-    await run_access_request_request(
+    await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -280,7 +280,7 @@ async def test_postgres_access_request_task(
 ) -> None:
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         integration_db_graph("postgres_example"),
@@ -377,7 +377,7 @@ async def test_postgres_privacy_requests_against_non_default_schema(
     )
     graph = DatasetGraph(dataset)
 
-    access_results = await run_access_request_request(
+    access_results = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -452,7 +452,7 @@ async def test_mssql_access_request_task(
 ) -> None:
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         integration_db_graph("my_mssql_db_1"),
@@ -539,7 +539,7 @@ async def test_mysql_access_request_task(
 ) -> None:
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         integration_db_graph("my_mysql_db_1"),
@@ -626,7 +626,7 @@ async def test_mariadb_access_request_task(
 ) -> None:
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         integration_db_graph("my_maria_db_1"),
@@ -739,7 +739,7 @@ async def test_filter_on_data_categories(
     graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
     dataset_graph = DatasetGraph(*[graph])
 
-    access_request_results = await run_access_request_request(
+    access_request_results = await run_access_request(
         privacy_request,
         policy,
         dataset_graph,
@@ -892,7 +892,7 @@ async def test_access_erasure_type_conversion(
         connection_key=integration_postgres_config.key,
     )
 
-    access_request_data = await run_access_request_request(
+    access_request_data = await run_access_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -1064,7 +1064,7 @@ class TestRetryIntegration:
 
         # Call run_access_request with an email that isn't in the database
         with pytest.raises(Exception) as exc:
-            await run_access_request_request(
+            await run_access_request(
                 privacy_request,
                 sample_postgres_configuration_policy,
                 dataset_graph,
@@ -1172,7 +1172,7 @@ async def test_timescale_access_request_task(
     database_name = "my_timescale_db_1"
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         integration_db_graph(database_name),
@@ -1412,7 +1412,7 @@ async def test_timescale_query_and_mask_hypertable(
     dataset.collections.append(onsite_personnel_collection)
     graph = DatasetGraph(dataset)
 
-    access_results = await run_access_request_request(
+    access_results = await run_access_request(
         privacy_request,
         policy,
         graph,

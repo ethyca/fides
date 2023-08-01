@@ -86,7 +86,7 @@ async def test_saas_erasure_order_request_task(
     merged_graph = saas_erasure_order_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -185,7 +185,7 @@ async def test_saas_erasure_order_request_task_with_cycle(
     merged_graph = saas_erasure_order_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -255,7 +255,7 @@ async def test_saas_erasure_order_request_task_resume_from_error(
     merged_graph = saas_erasure_order_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,

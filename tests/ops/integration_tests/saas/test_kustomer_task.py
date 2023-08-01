@@ -43,7 +43,7 @@ async def test_kustomer_access_request_task_with_email(
     merged_graph = kustomer_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -87,7 +87,7 @@ async def test_kustomer_access_request_task_with_non_existent_email(
     merged_graph = kustomer_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -122,7 +122,7 @@ async def test_kustomer_access_request_task_with_phone_number(
     merged_graph = kustomer_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -171,7 +171,7 @@ async def test_kustomer_erasure_request_task(
     merged_graph = kustomer_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,

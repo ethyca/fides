@@ -42,7 +42,7 @@ async def test_sendgrid_access_request_task(
     merged_graph = sendgrid_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -102,7 +102,7 @@ async def test_sendgrid_erasure_request_task(
     graph = DatasetGraph(merged_graph)
 
     # access our erasure identity
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,

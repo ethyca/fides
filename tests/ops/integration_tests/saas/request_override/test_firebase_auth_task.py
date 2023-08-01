@@ -37,7 +37,7 @@ async def test_firebase_auth_access_request(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -121,7 +121,7 @@ async def test_firebase_auth_access_request_non_existent_users(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
     # just ensure we don't error out here
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -166,7 +166,7 @@ async def test_firebase_auth_access_request_phone_number_identity(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -247,7 +247,7 @@ async def test_firebase_auth_update_request(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -337,7 +337,7 @@ async def test_firebase_auth_update_request_phone_number_identity(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -424,7 +424,7 @@ async def test_firebase_auth_delete_request(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -496,7 +496,7 @@ async def test_firebase_auth_delete_request_phone_number_identity(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,

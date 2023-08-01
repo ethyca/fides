@@ -34,7 +34,7 @@ async def test_postgres_with_manual_input_access_request_task(
 
     # ATTEMPT 1 - storage unit node will throw an exception. Waiting on manual input.
     with pytest.raises(PrivacyRequestPaused):
-        await run_access_request_request(
+        await run_access_request(
             privacy_request,
             policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -65,7 +65,7 @@ async def test_postgres_with_manual_input_access_request_task(
 
     # Attempt 2 - Filing cabinet node will throw an exception. Waiting on manual input.
     with pytest.raises(PrivacyRequestPaused):
-        await run_access_request_request(
+        await run_access_request(
             privacy_request,
             policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -97,7 +97,7 @@ async def test_postgres_with_manual_input_access_request_task(
     )
 
     # Attempt 3 - All manual data has been retrieved.
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -233,7 +233,7 @@ async def test_no_manual_input_found(
 
     # ATTEMPT 1 - storage unit node will throw an exception. Waiting on manual input.
     with pytest.raises(PrivacyRequestPaused):
-        await run_access_request_request(
+        await run_access_request(
             privacy_request,
             policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -257,7 +257,7 @@ async def test_no_manual_input_found(
 
     # Attempt 2 - Filing cabinet node will throw an exception. Waiting on manual input.
     with pytest.raises(PrivacyRequestPaused):
-        await run_access_request_request(
+        await run_access_request(
             privacy_request,
             policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -279,7 +279,7 @@ async def test_no_manual_input_found(
     )
 
     # Attempt 3 - All manual data has been retrieved/attempted to be retrieved
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         postgres_and_manual_nodes("postgres_example", "manual_example"),

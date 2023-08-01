@@ -97,7 +97,7 @@ class ConnectorRunner:
         _process_external_references(self.db, graph_list, connection_config_list)
         dataset_graph = DatasetGraph(*graph_list)
 
-        access_results = await run_access_request_request(
+        access_results = await run_access_request(
             privacy_request,
             access_policy,
             dataset_graph,
@@ -184,7 +184,7 @@ class ConnectorRunner:
         _process_external_references(self.db, graph_list, connection_config_list)
         dataset_graph = DatasetGraph(*graph_list)
 
-        access_results = await run_access_request_request(
+        access_results = await run_access_request(
             privacy_request,
             access_policy,
             dataset_graph,

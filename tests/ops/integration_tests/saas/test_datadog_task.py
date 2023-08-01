@@ -41,7 +41,7 @@ async def test_datadog_access_request_task_with_email(
     dataset_name = datadog_connection_config.get_saas_config().fides_key
     merged_graph = datadog_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -103,7 +103,7 @@ async def test_datadog_access_request_task_with_phone_number(
     dataset_name = datadog_connection_config.get_saas_config().fides_key
     merged_graph = datadog_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,

@@ -46,7 +46,7 @@ async def test_hubspot_access_request_task(
     merged_graph = dataset_config_hubspot.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request,
         policy,
         graph,
@@ -154,7 +154,7 @@ async def test_hubspot_erasure_request_task(
     merged_graph = dataset_config_hubspot.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await run_access_request_request(
+    v = await run_access_request(
         privacy_request, policy, graph, [connection_config_hubspot], identity_kwargs, db
     )
 
