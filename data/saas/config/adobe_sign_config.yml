@@ -99,7 +99,7 @@ saas_config:
           postprocessors:
             - strategy: filter
               configuration:
-                field: displayParticipantSetInfos
+                field: displayParticipantSetInfos.0.displayUserSetMemberInfos.0.email
                 value:
                   identity: email
                 exact: False
