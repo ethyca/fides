@@ -2,6 +2,11 @@ import type {
   TCFPurposeRecord,
   TCFVendorRecord,
   TCFFeatureRecord,
+  TCFPurposeSave,
+  TCFSpecialPurposeSave,
+  TCFFeatureSave,
+  TCFSpecialFeatureSave,
+  TCFVendorSave,
 } from "./tcf/types";
 
 export interface FidesConfig {
@@ -185,7 +190,12 @@ export enum ConsentMethod {
 export type PrivacyPreferencesRequest = {
   browser_identity: Identity;
   code?: string;
-  preferences: Array<ConsentOptionCreate>;
+  preferences?: Array<ConsentOptionCreate>;
+  purpose_preferences?: Array<TCFPurposeSave>;
+  special_purpose_preferences?: Array<TCFSpecialPurposeSave>;
+  vendor_preferences?: Array<TCFVendorSave>;
+  feature_preferences?: Array<TCFFeatureSave>;
+  special_feature_preferences?: Array<TCFSpecialFeatureSave>;
   policy_key?: string; // Will use default consent policy if not supplied
   privacy_experience_id?: string;
   user_geography?: string;
