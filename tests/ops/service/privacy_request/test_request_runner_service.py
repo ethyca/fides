@@ -172,8 +172,8 @@ def test_halts_proceeding_if_cancelled(
 @mock.patch(
     "fides.api.privacy_requests.request_runner_service.run_webhooks_and_report_status",
 )
-@mock.patch("fides.api.privacy_requests.graph.run.run_access_request")
-@mock.patch("fides.api.privacy_requests.graph.run.run_erasure_request")
+@mock.patch("fides.api.privacy_requests.request_runner_service.run_access_request")
+@mock.patch("fides.api.privacy_requests.request_runner_service.run_erasure_request")
 def test_from_graph_resume_does_not_run_pre_webhooks(
     run_erasure,
     run_access,
@@ -215,8 +215,8 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
 @mock.patch(
     "fides.api.privacy_requests.request_runner_service.run_webhooks_and_report_status",
 )
-@mock.patch("fides.api.privacy_requests.graph.run.run_access_request")
-@mock.patch("fides.api.privacy_requests.graph.run.run_erasure_request")
+@mock.patch("fides.api.privacy_requests.request_runner_service.run_access_request")
+@mock.patch("fides.api.privacy_requests.request_runner_service.run_erasure_request")
 def test_resume_privacy_request_from_erasure(
     run_erasure,
     run_access,
@@ -1976,7 +1976,7 @@ class TestPrivacyRequestsManualWebhooks:
         assert not mock_upload.called
 
     @mock.patch("fides.api.privacy_requests.request_runner_service.upload")
-    @mock.patch("fides.api.privacy_requests.graph.run.run_erasure_request")
+    @mock.patch("fides.api.privacy_requests.request_runner_service.run_erasure_request")
     def test_manual_input_not_required_for_erasure_only_policies(
         self,
         mock_erasure,
