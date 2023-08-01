@@ -38,11 +38,6 @@ saas_config:
             - name: email
               value: <email>
           data_path: data
-          pagination:
-            strategy: link
-            configuration:
-              source: body
-              path: next
           param_values:
             - name: email
               identity: email
@@ -75,3 +70,8 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: accounts.id
                   direction: from
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: next
