@@ -63,11 +63,13 @@ class TestGetTCFPurposesAndVendors:
             "analytics.reporting.content_performance"
         ]
         assert tcf_contents.tcf_purposes[0].vendors == [
-            EmbeddedVendor(id="sendgrid", name="Sendgrid")
+            EmbeddedVendor(id="sendgrid", name="TCF System Test")
         ]
 
         assert len(tcf_contents.tcf_vendors) == 1
         assert tcf_contents.tcf_vendors[0].id == "sendgrid"
+        assert tcf_contents.tcf_vendors[0].name == "TCF System Test"
+        assert tcf_contents.tcf_vendors[0].description == "My TCF System Description"
         assert len(tcf_contents.tcf_vendors[0].purposes) == 1
         assert tcf_contents.tcf_vendors[0].purposes[0].id == 8
         assert tcf_contents.tcf_features == []
@@ -105,7 +107,7 @@ class TestGetTCFPurposesAndVendors:
             "marketing.advertising.negative_targeting",
         ]
         assert tcf_contents.tcf_purposes[0].vendors == [
-            EmbeddedVendor(id="sendgrid", name="Sendgrid")
+            EmbeddedVendor(id="sendgrid", name="TCF System Test")
         ]
 
         assert len(tcf_contents.tcf_vendors) == 1
@@ -140,7 +142,7 @@ class TestGetTCFPurposesAndVendors:
             == "Ensure security, prevent and detect fraud, and fix errors\n"
         )
         assert tcf_contents.tcf_special_purposes[0].vendors == [
-            EmbeddedVendor(id="sendgrid", name="Sendgrid")
+            EmbeddedVendor(id="sendgrid", name="TCF System Test")
         ]
 
         assert len(tcf_contents.tcf_purposes) == 1
