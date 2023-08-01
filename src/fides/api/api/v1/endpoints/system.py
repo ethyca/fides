@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from fastapi import Depends, Response, Security, HTTPException
+from fastapi import Depends, HTTPException, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -28,7 +28,7 @@ from fides.api.db.system import (
     upsert_system,
     validate_privacy_declarations,
 )
-from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key,
@@ -160,7 +160,7 @@ def patch_connection_secrets(
     """
 
     system = get_system(db, fides_key)
-    connection_config = get_connection_config_or_error(
+    connection_config: ConnectionConfig = get_connection_config_or_error(
         db, system.connection_configs.key
     )
     # Inserts unchanged sensitive values. The FE does not send masked values sensitive secrets.
@@ -177,6 +177,15 @@ def patch_connection_secrets(
 
     for key, value in validated_secrets.items():
         connection_config.secrets[key] = value  # type: ignore
+
+    # Deauthorize an OAuth connection when the secrets are updated. This is necessary because
+    # the existing access tokens may not be valid anymore. This only applies to SaaS connection
+    # configurations that use the "oauth2_authorization_code" authentication strategy.
+    if (
+        connection_config.authorized
+        and connection_config.connection_type == ConnectionType.saas
+    ):
+        del connection_config.secrets["access_token"]
 
     # Save validated secrets, regardless of whether they've been verified.
     logger.info("Updating connection config secrets for '{}'", connection_config.key)

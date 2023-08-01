@@ -44,7 +44,6 @@ import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
-  fides_key: Yup.string().required().label("System key"),
 });
 
 const SystemHeading = ({ system }: { system?: System }) => {
