@@ -22,6 +22,7 @@ The types of changes are:
 - Additional consent reporting calls from privacy center [#3847](https://github.com/ethyca/fides/pull/3847)
 - HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
 - Fides-js can now display preliminary TCF data [#3879](https://github.com/ethyca/fides/pull/3879)
+- Fides-js can persist TCF preferences to the backend [#3887](https://github.com/ethyca/fides/pull/3887)
 
 ### Fixed
 - Fix datamap zoom for low system counts [#3835](https://github.com/ethyca/fides/pull/3835)
