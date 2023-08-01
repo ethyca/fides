@@ -58,7 +58,7 @@ const PurposeBlock = ({
   const handleToggle = (purpose: TCFPurposeRecord) => {
     const purposeId = `${purpose.id}`;
     if (enabledIds.indexOf(purposeId) !== -1) {
-      onChange(enabledIds.filter((e) => e === purposeId));
+      onChange(enabledIds.filter((e) => e !== purposeId));
     } else {
       onChange([...enabledIds, purposeId]);
     }

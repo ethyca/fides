@@ -9,8 +9,10 @@ import FilterButtons from "./FilterButtons";
 const FILTERS = [{ name: "All vendors" }, { name: "GVL vendors" }];
 
 const VendorDetails = ({
+  label,
   lineItems,
 }: {
+  label: string;
   lineItems: EmbeddedLineItem[] | undefined;
 }) => {
   if (!lineItems || lineItems.length === 0) {
@@ -18,8 +20,8 @@ const VendorDetails = ({
   }
 
   return (
-    <p className="fides-tcf-purpose-vendor fides-tcf-toggle-content">
-      <span className="fides-tcf-purpose-vendor-title">Purposes</span>
+    <p className="fides-tcf-purpose-vendor fides-tcf-toggle-content fides-background-dark">
+      <span className="fides-tcf-purpose-vendor-title">{label}</span>
       <ul className="fides-tcf-purpose-vendor-list">
         {lineItems.map((item) => (
           <li key={item.id}>{item.name}</li>
@@ -83,12 +85,18 @@ const TcfVendors = ({
           checked={enabledIds.indexOf(vendor.id) !== -1}
           badge={vendor.is_gvl ? "GVL" : undefined}
         >
-          <div className="fides-background-dark ">
+          <div>
             <p>{vendor.description}</p>
-            <VendorDetails lineItems={vendor.purposes} />
-            <VendorDetails lineItems={vendor.special_purposes} />
-            <VendorDetails lineItems={vendor.features} />
-            <VendorDetails lineItems={vendor.special_features} />
+            <VendorDetails label="Purposes" lineItems={vendor.purposes} />
+            <VendorDetails
+              label="Special purposes"
+              lineItems={vendor.special_purposes}
+            />
+            <VendorDetails label="Features" lineItems={vendor.features} />
+            <VendorDetails
+              label="Special features"
+              lineItems={vendor.special_features}
+            />
           </div>
         </DataUseToggle>
       ))}

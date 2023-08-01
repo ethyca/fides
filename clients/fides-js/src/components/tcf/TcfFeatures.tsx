@@ -24,7 +24,7 @@ const FeatureBlock = ({
   const handleToggle = (feature: TCFFeatureRecord) => {
     const featureId = `${feature.id}`;
     if (enabledIds.indexOf(featureId) !== -1) {
-      onChange(enabledIds.filter((e) => e === featureId));
+      onChange(enabledIds.filter((e) => e !== featureId));
     } else {
       onChange([...enabledIds, featureId]);
     }
