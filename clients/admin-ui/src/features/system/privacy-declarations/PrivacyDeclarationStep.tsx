@@ -13,6 +13,7 @@ interface Props {
 const PrivacyDeclarationStep = ({ system }: Props) => {
   const { isLoading, ...dataProps } = usePrivacyDeclarationData({
     includeDatasets: true,
+    includeDisabled: false,
   });
 
   const allEnabledDataCategories = dataProps.allDataCategories.filter(
