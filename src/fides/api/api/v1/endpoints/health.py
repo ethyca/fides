@@ -97,6 +97,7 @@ async def health(
     fides_is_using_workers = not celery_app.conf["task_always_eager"]
     if fides_is_using_workers:
         response["workers_enabled"] = True
+        # Figure out a way to make this faster
         response["workers"] = get_worker_ids()
 
     for _, value in response.items():
