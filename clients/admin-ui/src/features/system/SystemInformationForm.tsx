@@ -36,7 +36,6 @@ import { ResourceTypes, System } from "~/types/api";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
-  fides_key: Yup.string().required().label("System key"),
 });
 
 const SystemHeading = ({ system }: { system?: System }) => {
@@ -173,14 +172,16 @@ const SystemInformationForm = ({
                   tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
                   variant="stacked"
                 />
-                <CustomTextInput
-                  id="fides_key"
-                  name="fides_key"
-                  label="System Fides key"
-                  disabled={isEditing}
-                  tooltip="A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters, underscores, and hyphens. ([A-Za-z0-9_.-])."
-                  variant="stacked"
-                />
+                {isEditing && (
+                  <CustomTextInput
+                    id="fides_key"
+                    name="fides_key"
+                    label="System Fides key"
+                    disabled
+                    tooltip="A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters, underscores, and hyphens. ([A-Za-z0-9_.-])."
+                    variant="stacked"
+                  />
+                )}
                 <CustomTextInput
                   id="description"
                   name="description"

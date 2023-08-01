@@ -13,6 +13,7 @@ class AuthenticationRequest(Base):
 
     connection_key = Column(String, index=False, unique=True, nullable=False)
     state = Column(String, index=True, unique=True, nullable=False)
+    referer = Column(String, index=False, unique=False, nullable=True)
 
     @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "AuthenticationRequest":  # type: ignore[override]

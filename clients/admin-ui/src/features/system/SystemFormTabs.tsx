@@ -69,12 +69,14 @@ const ToastMessage = ({
 };
 
 const SystemFormTabs = ({
+  initialTabIndex = 0,
   isCreate,
 }: {
   /** If true, then some editing features will not be enabled */
+  initialTabIndex?: number;
   isCreate?: boolean;
 }) => {
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useState(initialTabIndex);
   const [queuedIndex, setQueuedIndex] = useState<number | undefined>(undefined);
   const [showSaveMessage, setShowSaveMessage] = useState(false);
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
