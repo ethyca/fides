@@ -238,10 +238,27 @@ export const SelectInput = ({
           ...provided,
           display: "none",
         }),
+        multiValueLabel: (provided) => ({
+          ...provided,
+          display: "flex",
+          height: "16px",
+          alignItems: "center",
+        }),
         multiValue: (provided) => ({
           ...provided,
-          background: "primary.400",
-          color: "white",
+          fontWeight: "400",
+          background: "gray.200",
+          color: "gray.600",
+          borderRadius: "2px",
+          py: 1,
+          px: 2,
+        }),
+        multiValueRemove: (provided) => ({
+          ...provided,
+          ml: 1,
+          size: "lg",
+          width: 3,
+          height: 3,
         }),
         singleValue: singleValueBlock
           ? (provided) => ({
@@ -338,10 +355,27 @@ const CreatableSelectInput = ({
           ...provided,
           display: "none",
         }),
+        multiValueLabel: (provided) => ({
+          ...provided,
+          display: "flex",
+          height: "16px",
+          alignItems: "center",
+        }),
         multiValue: (provided) => ({
           ...provided,
-          background: "primary.400",
-          color: "white",
+          fontWeight: "400",
+          background: "gray.200",
+          color: "gray.600",
+          borderRadius: "2px",
+          py: 1,
+          px: 2,
+        }),
+        multiValueRemove: (provided) => ({
+          ...provided,
+          ml: 1,
+          size: "lg",
+          width: 3,
+          height: 3,
         }),
       }}
       components={components}
@@ -398,7 +432,7 @@ export const CustomTextInput = ({
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
+          <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
@@ -483,7 +517,7 @@ export const CustomSelect = ({
           {label ? (
             <Label
               htmlFor={props.id || props.name}
-              fontSize="sm"
+              fontSize="xs"
               my={0}
               mr={1}
               {...labelProps}
@@ -559,7 +593,7 @@ export const CustomCreatableSelect = ({
     <FormControl isInvalid={isInvalid}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
+          <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
@@ -654,7 +688,7 @@ export const CustomTextArea = ({
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
+          <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
@@ -812,6 +846,7 @@ export const CustomSwitch = ({
       mr={2}
       data-testid={`input-${field.name}`}
       disabled={isDisabled}
+      size="sm"
     />
   );
 
