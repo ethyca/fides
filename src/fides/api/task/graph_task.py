@@ -11,6 +11,7 @@ from dask.core import getcycle
 from dask.threaded import get
 from loguru import logger
 from sqlalchemy.orm import Session
+from fides.api.task.populate_tasks import create_tasks
 
 from fides.api.common_exceptions import (
     CollectionDisabled,
@@ -762,6 +763,7 @@ async def run_access_request(
         privacy_request.cache_data_use_map(_format_data_use_map_for_caching(env))
 
         # Add Tasks here
+        create_tasks(dsk)
         v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
         return v.compute()
 
