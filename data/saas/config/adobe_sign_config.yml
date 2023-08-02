@@ -99,10 +99,6 @@ saas_config:
           postprocessors:
             - strategy: filter
               configuration:
-<<<<<<< HEAD
-                field: displayParticipantSetInfos.0.displayUserSetMemberInfos.0.email
-=======
                 field: displayParticipantSetInfos.displayUserSetMemberInfos.email
->>>>>>> 334d62877ddf3c9597ab2bfbda5f366966ee06fa
                 value:
                   identity: email
