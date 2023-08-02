@@ -12,6 +12,7 @@ import {
 } from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { selectDictEntry } from "~/features/plus/plus.slice";
+import { DictEntry } from "~/features/plus/types";
 import {
   selectSuggestions,
   setSuggestions,
@@ -48,24 +49,22 @@ export const DictSuggestionTextInput = ({
     if (
       isShowingSuggestions === "showing" &&
       dictEntry &&
-      dictField in dictEntry &&
-      dictEntry[dictField as keyof typeof DictEntry]
+      dictField in dictEntry
     ) {
-      if (field.value !== dictEntry[dictField]) {
+      if (field.value !== dictEntry[dictField as keyof DictEntry]) {
         setPreSuggestionValue(field.value);
-        form.setFieldValue(props.id, dictEntry[dictField]);
+        form.setFieldValue(props.id!, dictEntry[dictField as keyof DictEntry]);
       }
     }
     if (isShowingSuggestions === "hiding") {
-      form.setFieldValue(props.id, preSuggestionValue);
+      form.setFieldValue(props.id!, preSuggestionValue);
     }
     if (
       isShowingSuggestions === "reset" &&
       dictEntry &&
-      dictField in dictEntry &&
-      dictEntry[dictField as keyof typeof DictEntry]
+      dictField in dictEntry
     ) {
-      form.setFieldValue(props.id, dictEntry[dictField]);
+      form.setFieldValue(props.id!, dictEntry[dictField as keyof DictEntry]);
       dispatch(setSuggestions("showing"));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
