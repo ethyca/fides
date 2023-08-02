@@ -285,7 +285,7 @@ def oauth2_authorization_code_configuration() -> OAuth2AuthorizationCodeConfigur
 
 @pytest.fixture(scope="function")
 def oauth2_authorization_code_connection_config(
-    db: Session, oauth2_authorization_code_configuration
+    db: Session, oauth2_authorization_code_configuration, system
 ) -> Generator:
     secrets = {
         "domain": "localhost",
@@ -324,6 +324,7 @@ def oauth2_authorization_code_connection_config(
             "access": AccessLevel.write,
             "secrets": secrets,
             "saas_config": saas_config,
+            "system_id": system.id,
         },
     )
     yield connection_config
