@@ -80,11 +80,9 @@ def get_cache_health() -> str:
         },
     },
 )
-async def health(
-    db: Session = Depends(get_db),
-) -> Dict:  # Intentionally injecting the ops get_db
+async def health() -> Dict:
     """Confirm that the API is running and healthy."""
-    database_health = get_db_health(CONFIG.database.sync_database_uri, db=db)
+    database_health = get_db_health(CONFIG.database.sync_database_uri)
     cache_health = get_cache_health()
     response = CoreHealthCheck(
         webserver="healthy",
@@ -97,6 +95,7 @@ async def health(
     fides_is_using_workers = not celery_app.conf["task_always_eager"]
     if fides_is_using_workers:
         response["workers_enabled"] = True
+        # Figure out a way to make this faster
         response["workers"] = get_worker_ids()
 
     for _, value in response.items():
