@@ -9,6 +9,9 @@ import {
   WarningTwoIcon,
   HStack,
   Heading,
+  Divider,
+  DeleteIcon,
+  IconButton,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
@@ -24,9 +27,13 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
-import { DataProps, PrivacyDeclarationForm } from "./PrivacyDeclarationForm";
-import { PrivacyDeclarationFormModal } from "./PrivacyDeclarationFormModal";
+import PrivacyDeclarationAccordion from "~/features/system/privacy-declarations/PrivacyDeclarationAccordion";
+import PrivacyDeclarationDisplayGroup from "~/features/system/privacy-declarations/PrivacyDeclarationDisplayGroup";
+import {
+  DataProps,
+  PrivacyDeclarationForm,
+} from "~/features/system/privacy-declarations/PrivacyDeclarationForm";
+import { PrivacyDeclarationFormModal } from "~/features/system/privacy-declarations/PrivacyDeclarationFormModal";
 
 interface Props {
   system: SystemResponse;
@@ -234,7 +241,14 @@ const PrivacyDeclarationManager = ({
             </Stack>
           </HStack>
         </Box>
-      ) : null}
+      ) : (
+        <PrivacyDeclarationDisplayGroup
+          heading="Data use"
+          declarations={system.privacy_declarations}
+          handleAdd={handleShowNewForm}
+          handleDelete={handleDelete}
+        />
+      )}
       <PrivacyDeclarationFormModal
         isOpen={showNewForm}
         onClose={() => setShowNewForm(false)}
