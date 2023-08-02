@@ -35,6 +35,7 @@ The types of changes are:
 ### Changed
 
 - Simplified the file structure for HTML DSR packages [#3848](https://github.com/ethyca/fides/pull/3848)
+- Simplified the database health check to improve `/health` performance [#3884](https://github.com/ethyca/fides/pull/3884)
 - Changed max width of form components in "system information" form tab [#3864](https://github.com/ethyca/fides/pull/3864)
 - Remove manual system selection screen [#3865](https://github.com/ethyca/fides/pull/3865)
 - System and integration identifiers are now auto-generated [#3868](https://github.com/ethyca/fides/pull/3868)
