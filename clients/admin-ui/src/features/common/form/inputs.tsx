@@ -44,7 +44,7 @@ import QuestionTooltip from "~/features/common/QuestionTooltip";
 
 type Variant = "inline" | "stacked" | "block";
 
-interface CustomInputProps {
+export interface CustomInputProps {
   disabled?: boolean;
   label: string;
   tooltip?: string;
@@ -72,7 +72,7 @@ export const Label = ({
   </FormLabel>
 );
 
-const TextInput = ({
+export const TextInput = ({
   isPassword,
   ...props
 }: InputProps & { isPassword: boolean }) => {

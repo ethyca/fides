@@ -42,7 +42,7 @@ interface ClassifyInstancesParams {
   resource_type: GenerateTypes;
 }
 
-const plusApi = baseApi.injectEndpoints({
+export const plusApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<HealthCheck, void>({
       query: () => "plus/health",

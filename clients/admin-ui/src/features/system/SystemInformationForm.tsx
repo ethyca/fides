@@ -35,6 +35,7 @@ import {
 } from "~/features/system/system.slice";
 import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
 import { ResourceTypes, System } from "~/types/api";
+import { DictSuggestionForm, DictSuggestionTextInput  } from "~/features/system/dictionary-form/DictSuggestionForm";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
@@ -165,7 +166,7 @@ const SystemInformationForm = ({
     customFields.isLoading;
 
   return (
-    <Formik
+    <DictSuggestionForm
       initialValues={initialValues}
       enableReinitialize
       onSubmit={handleSubmit}
@@ -206,7 +207,7 @@ const SystemInformationForm = ({
                     variant="stacked"
                   />
                 ) : null}
-                <CustomTextInput
+                <DictSuggestionTextInput
                   id="name"
                   name="name"
                   label="System name"
@@ -260,7 +261,7 @@ const SystemInformationForm = ({
           </Stack>
         </Form>
       )}
-    </Formik>
+    </DictSuggestionForm>
   );
 };
 export default SystemInformationForm;
