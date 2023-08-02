@@ -21,7 +21,10 @@ import {
 import { useFeatures } from "~/features/common/features/features.slice";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
+import {
+  useGetAllDictionaryEntriesQuery,
+  selectAllDictEnties,
+} from "~/features/plus/plus.slice";
 import {
   defaultInitialValues,
   FormValues,
@@ -35,7 +38,7 @@ import {
 } from "~/features/system/system.slice";
 import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
 import { ResourceTypes, System } from "~/types/api";
-import { DictSuggestionForm, DictSuggestionTextInput  } from "~/features/system/dictionary-form/DictSuggestionForm";
+import { DictSuggestionTextInput } from "~/features/system/dictionary-form/DictSuggestionForm";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
@@ -92,23 +95,12 @@ const SystemInformationForm = ({
     useCreateSystemMutation();
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
     useUpdateSystemMutation();
-  const { data: dictionaryData } = useGetAllDictionaryEntriesQuery(undefined, {
+  useGetAllDictionaryEntriesQuery(undefined, {
     skip: !features.dictionaryService,
   });
 
-  const dictionaryOptions = useMemo(
-    () =>
-      dictionaryData?.items
-        ? dictionaryData.items
-            .map((d) => ({
-              label: d.display_name ? d.display_name : d.legal_name,
-              value: d.id,
-              description: d.description ? d.description : undefined,
-            }))
-            .sort((a, b) => (a.label > b.label ? 1 : -1))
-        : [],
-    [dictionaryData]
-  );
+  const dictionaryOptions = useAppSelector(selectAllDictEnties);
+
   const systems = useAppSelector(selectAllSystems);
   const isEditing = useMemo(
     () =>
@@ -166,7 +158,7 @@ const SystemInformationForm = ({
     customFields.isLoading;
 
   return (
-    <DictSuggestionForm
+    <Formik
       initialValues={initialValues}
       enableReinitialize
       onSubmit={handleSubmit}
@@ -261,7 +253,7 @@ const SystemInformationForm = ({
           </Stack>
         </Form>
       )}
-    </DictSuggestionForm>
+    </Formik>
   );
 };
 export default SystemInformationForm;

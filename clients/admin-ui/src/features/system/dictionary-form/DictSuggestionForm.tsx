@@ -1,44 +1,26 @@
 import React, { createContext, useContext } from "react";
-import { Formik, FormikValues, FormikConfig, useField, useFormikContext } from "formik";
+import {
+  Formik,
+  FormikValues,
+  FormikConfig,
+  useField,
+  useFormikContext,
+} from "formik";
 import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { Flex, FormControl, VStack } from "@fidesui/react";
-import { Label, ErrorMessage,StringField ,TextInput, type CustomInputProps } from "~/features/common/form/inputs";
+import {
+  Label,
+  ErrorMessage,
+  StringField,
+  TextInput,
+  type CustomInputProps,
+} from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { useAppSelector } from "~/app/hooks";
 import { selectDictEntry } from "~/features/system/dictionary-form/dict-suggestion.slice";
 
-
-export const DictSuggestionContext = createContext({});
-
-
-export function DictSuggestionForm<
-  Values extends FormikValues = FormikValues,
-  ExtraProps = {}
->(props: FormikConfig<Values> & ExtraProps){
-
-  const features = useFeatures();
-  const { data: dictionaryData } = useGetAllDictionaryEntriesQuery(undefined, {
-    skip: !features.dictionaryService,
-  });
-
-
-  
-  
-
-  return (
-    <DictSuggestionContext.Provider value={{testing:  dictionaryData}}>
-      <Formik {...props}>
-        {props.children}
-      </Formik> 
-    </DictSuggestionContext.Provider >
-  )
-}
-
-
-
-export const DictSuggestionTextInput =
-({
+export const DictSuggestionTextInput = ({
   label,
   tooltip,
   disabled,
@@ -51,7 +33,9 @@ export const DictSuggestionTextInput =
   const field = { ...initialField, value: initialField.value ?? "" };
   const isPassword = initialType === "password";
   const form = useFormikContext();
-  const dictEntry = useAppSelector(selectDictEntry(form.values?.meta?.vendor?.id || ""))
+  const dictEntry = useAppSelector(
+    selectDictEntry(form.values?.meta?.vendor?.id || "")
+  );
 
   console.log("loaded dict entry", dictEntry);
   return (
@@ -78,4 +62,4 @@ export const DictSuggestionTextInput =
       </VStack>
     </FormControl>
   );
-}
+};

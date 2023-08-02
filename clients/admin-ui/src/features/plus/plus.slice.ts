@@ -381,3 +381,27 @@ export const selectAllCustomFieldDefinitions = createSelector(
   plusApi.endpoints.getAllCustomFieldDefinitions.select(),
   ({ data }) => data || emptySelectAllCustomFields
 );
+
+type DictOption = {
+  label: string;
+  value: string;
+  descriptiong?: string;
+};
+
+const EMPTY_DICT_ENTRIES: DictOption[] = [];
+export const selectAllDictEnties = createSelector(
+  [
+    (RootState) => RootState,
+    plusApi.endpoints.getAllDictionaryEntries.select(),
+  ],
+  (RootState, { data }) =>
+    data
+      ? (data.items
+          .map((d) => ({
+            label: d.display_name ? d.display_name : d.legal_name,
+            value: d.id,
+            description: d.description ? d.description : undefined,
+          }))
+          .sort((a, b) => (a.label > b.label ? 1 : -1)) as DictOption[])
+      : EMPTY_DICT_ENTRIES
+);

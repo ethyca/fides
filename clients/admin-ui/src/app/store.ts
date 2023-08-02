@@ -86,7 +86,7 @@ const reducer = {
   [systemSlice.name]: systemSlice.reducer,
   [taxonomySlice.name]: taxonomySlice.reducer,
   [userManagementSlice.name]: userManagementSlice.reducer,
-  [dictSuggestionsSlice.name]: dictSuggestionsSlice.reducer
+  [dictSuggestionsSlice.name]: dictSuggestionsSlice.reducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
@@ -111,7 +111,11 @@ const persistConfig = {
     and restored which could leave you with phantom subscriptions from components that do not exist any more.
     (https://redux-toolkit.js.org/usage/usage-guide#use-with-redux-persist)
   */
-  blacklist: [baseApi.reducerPath, healthApi.reducerPath, dictSuggestionsSlice.name],
+  blacklist: [
+    baseApi.reducerPath,
+    healthApi.reducerPath,
+    dictSuggestionsSlice.name,
+  ],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
