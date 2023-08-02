@@ -42,7 +42,7 @@ interface ClassifyInstancesParams {
   resource_type: GenerateTypes;
 }
 
-export const plusApi = baseApi.injectEndpoints({
+const plusApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<HealthCheck, void>({
       query: () => "plus/health",
@@ -405,3 +405,16 @@ export const selectAllDictEnties = createSelector(
           .sort((a, b) => (a.label > b.label ? 1 : -1)) as DictOption[])
       : EMPTY_DICT_ENTRIES
 );
+
+const EMPTY_DICT_ENTRY = undefined;
+export const selectDictEntry = (vendorId: number) =>
+  createSelector(
+    [(state) => state, plusApi.endpoints.getAllDictionaryEntries.select()],
+    (state, { data }) => {
+      const dictEntry = data?.items.find(
+        (d) => d.id.toString() === vendorId.toString()
+      );
+
+      return dictEntry || EMPTY_DICT_ENTRY;
+    }
+  );

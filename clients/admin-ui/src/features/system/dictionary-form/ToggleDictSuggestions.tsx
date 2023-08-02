@@ -13,7 +13,6 @@ import { useFeatures } from "~/features/common/features";
 import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
 import {
   resetSuggestions,
-  selectDictEntry,
   selectSuggestions,
   toggleSuggestions,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
@@ -24,11 +23,9 @@ export const DictSuggestionToggle = () => {
   const form = useFormikContext();
 
   const vendorId = form.values?.meta?.vendor?.id;
-  const dictEntry = useAppSelector(selectDictEntry(vendorId || ""));
   const { plus: isPlusEnabled, dictionaryService: isDictionaryServiceEnabled } =
     useFeatures();
   const isShowingSuggestions = useAppSelector(selectSuggestions);
-  console.log("test", isShowingSuggestions);
   if (!isPlusEnabled || !isDictionaryServiceEnabled) {
     return null;
   }
@@ -66,7 +63,6 @@ export const DictSuggestionToggle = () => {
         <MenuItem
           onClick={() => {
             dispatch(toggleSuggestions());
-            console.log("test");
           }}
         >
           <Text
@@ -90,4 +86,4 @@ export const DictSuggestionToggle = () => {
       </MenuList>
     </Menu>
   );
-}
+};

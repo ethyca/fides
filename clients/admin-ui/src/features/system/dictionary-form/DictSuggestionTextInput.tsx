@@ -1,15 +1,8 @@
 import { Flex, FormControl, VStack } from "@fidesui/react";
-import {
-  Formik,
-  FormikConfig,
-  FormikValues,
-  useField,
-  useFormikContext,
-} from "formik";
-import React, { createContext, useContext, useMemo, useState } from "react";
+import { useField, useFormikContext } from "formik";
+import React, { useMemo, useState } from "react";
 
-import { useAppDispatch,useAppSelector } from "~/app/hooks";
-import { useFeatures } from "~/features/common/features/features.slice";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
   type CustomInputProps,
   ErrorMessage,
@@ -18,10 +11,8 @@ import {
   TextInput,
 } from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
-import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
-import { DictEntry } from "~/features/plus/types";
+import { selectDictEntry } from "~/features/plus/plus.slice";
 import {
-  selectDictEntry,
   selectSuggestions,
   setSuggestions,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
@@ -77,6 +68,7 @@ export const DictSuggestionTextInput = ({
       form.setFieldValue(props.id, dictEntry[dictField]);
       dispatch(setSuggestions("showing"));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isShowingSuggestions]);
 
   return (

@@ -1,9 +1,6 @@
-import { createSelector, createSlice,PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { RootState } from "~/app/store";
-import { plusApi } from "~/features/plus/plus.slice";
-import { DictEntry, Page } from "~/features/plus/types";
-import { TestStatus } from "~/types/api";
+import { type RootState } from "~/app/store";
 
 export type Suggestions = "showing" | "hiding" | "reset";
 
@@ -40,19 +37,3 @@ export const selectSuggestions = createSelector(
   selectDictSuggestionSlice,
   (state) => state.suggestions
 );
-
-const EMPTY_DICT_ENTRY = undefined;
-export const selectDictEntry = (vendorId: number) =>
-  createSelector(
-    [
-      (RootState) => RootState,
-      plusApi.endpoints.getAllDictionaryEntries.select(),
-    ],
-    (RootState, { data }) => {
-      const dictEntry = data?.items.find(
-        (d) => d.id.toString() === vendorId.toString()
-      );
-
-      return dictEntry || EMPTY_DICT_ENTRY;
-    }
-  );
