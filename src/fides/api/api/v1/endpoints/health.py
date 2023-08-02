@@ -1,13 +1,11 @@
 from typing import Dict, List, Literal, Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException, status
 from loguru import logger
 from pydantic import BaseModel
 from redis.exceptions import ResponseError
-from sqlalchemy.orm import Session
 
 import fides
-from fides.api.api.deps import get_db
 from fides.api.common_exceptions import RedisConnectionError
 from fides.api.db.database import DatabaseHealth, get_db_health
 from fides.api.tasks import celery_app, get_worker_ids
