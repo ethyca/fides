@@ -13,7 +13,7 @@ import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
-import { useAppSelector } from "~/app/hooks";
+import { useAppSelector, useAppDispatch } from "~/app/hooks";
 import {
   CustomFieldsList,
   useCustomFields,
@@ -38,7 +38,9 @@ import {
 } from "~/features/system/system.slice";
 import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
 import { ResourceTypes, System } from "~/types/api";
-import { DictSuggestionTextInput } from "~/features/system/dictionary-form/DictSuggestionForm";
+import { DictSuggestionTextInput } from "~/features/system/dictionary-form/DictSuggestionTextInput";
+import { setSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
+import { DictSuggestionToggle } from "./dictionary-form/ToggleDictSuggestions";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
@@ -73,6 +75,7 @@ const SystemInformationForm = ({
   withHeader,
   children,
 }: Props) => {
+  const dispatch = useAppDispatch();
   const customFields = useCustomFields({
     resourceType: ResourceTypes.SYSTEM,
     resourceFidesKey: passedInSystem?.fides_key,
@@ -137,6 +140,7 @@ const SystemInformationForm = ({
         // Reset state such that isDirty will be checked again before next save
         formikHelpers.resetForm({ values });
         onSuccess(systemBody);
+        dispatch(setSuggestions("hiding"));
       }
     };
 
@@ -178,6 +182,7 @@ const SystemInformationForm = ({
             <Heading as="h4" size="sm">
               System details
             </Heading>
+            <DictSuggestionToggle />
             <Stack spacing={4}>
               {/* While we support both designs of extra form items existing, change the width only 
               when there are extra form items. When we move to only supporting one design, 
@@ -202,9 +207,9 @@ const SystemInformationForm = ({
                 <DictSuggestionTextInput
                   id="name"
                   name="name"
+                  dictField="legal_name"
                   label="System name"
                   tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                  variant="stacked"
                 />
                 <CustomTextInput
                   id="fides_key"
