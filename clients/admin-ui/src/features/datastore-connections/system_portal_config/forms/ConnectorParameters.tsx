@@ -6,6 +6,7 @@ import {
   CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
   useGetConnectionConfigDatasetConfigsQuery,
+  useLazyGetAuthorizationUrlQuery,
 } from "datastore-connections/datastore-connection.slice";
 import { useDatasetConfigField } from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
@@ -18,7 +19,6 @@ import { useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
-import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import TestConnectionMessage from "~/features/datastore-connections/system_portal_config/TestConnectionMessage";
 import TestData from "~/features/datastore-connections/TestData";
 import {
@@ -44,6 +44,23 @@ import ConnectorParametersForm, {
   TestConnectionResponse,
 } from "./ConnectorParametersForm";
 
+const generateIntegrationKey = (
+  systemFidesKey: string,
+  connectionOption: ConnectionSystemTypeMap
+): string => {
+  let integrationKey = systemFidesKey;
+
+  if (!systemFidesKey.includes(connectionOption.identifier)) {
+    integrationKey += `_${connectionOption.identifier}`;
+  }
+
+  if (connectionOption.type === SystemType.SAAS) {
+    integrationKey += "_api";
+  }
+
+  return integrationKey;
+};
+
 /**
  * Only handles creating saas connectors. The BE handler automatically
  * configures the connector using the saas config and creates the
@@ -58,7 +75,7 @@ const createSaasConnector = async (
 ) => {
   const connectionConfig: Omit<CreateSaasConnectionConfigRequest, "name"> = {
     description: values.description,
-    instance_key: formatKey(values.instance_key as string),
+    instance_key: generateIntegrationKey(systemFidesKey, connectionOption),
     saas_connector_type: connectionOption.identifier,
     secrets: {},
   };
@@ -88,12 +105,9 @@ export const patchConnectionConfig = async (
   connectionConfig: ConnectionConfigurationResponse,
   patchFunc: any
 ) => {
-  const key =
-    [SystemType.DATABASE, SystemType.EMAIL, SystemType.MANUAL].indexOf(
-      connectionOption.type
-    ) > -1
-      ? formatKey(values.instance_key as string)
-      : connectionConfig?.key;
+  const key = connectionConfig
+    ? connectionConfig.key
+    : generateIntegrationKey(systemFidesKey, connectionOption);
 
   const params1: Omit<ConnectionConfigurationResponse, "created_at" | "name"> =
     {
@@ -183,6 +197,7 @@ export const useConnectorForm = ({
   const dispatch = useAppDispatch();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAuthorizing, setIsAuthorizing] = useState(false);
 
   const {
     dropdownOptions: datasetDropdownOptions,
@@ -194,6 +209,7 @@ export const useConnectorForm = ({
   });
 
   const [createSassConnectionConfig] = useCreateSassConnectionConfigMutation();
+  const [getAuthorizationUrl] = useLazyGetAuthorizationUrlQuery();
   const [updateSystemConnectionSecrets] =
     usePatchSystemConnectionSecretsMutation();
   const [patchDatastoreConnection] = usePatchSystemConnectionConfigsMutation();
@@ -304,9 +320,51 @@ export const useConnectorForm = ({
     }
   };
 
+  const handleAuthorization = async (values: ConnectionConfigFormValues) => {
+    const isCreatingConnectionConfig = !connectionConfig;
+    try {
+      setIsAuthorizing(true);
+      if (isCreatingConnectionConfig) {
+        const response = await createSaasConnector(
+          values, // pre-process dataset references
+          secretsSchema!,
+          connectionOption,
+          systemFidesKey,
+          createSassConnectionConfig
+        );
+        // eslint-disable-next-line no-param-reassign
+        connectionConfig = response.connection;
+      } else {
+        await upsertConnectionConfigSecrets(
+          values,
+          secretsSchema!,
+          systemFidesKey,
+          originalSecrets,
+          updateSystemConnectionSecrets
+        );
+      }
+      const authorizationUrl = (await getAuthorizationUrl(
+        connectionConfig!.key
+      ).unwrap()) as string;
+
+      setIsAuthorizing(false);
+
+      // workaround to make sure isAuthorizing is set to false before redirecting
+      setTimeout(() => {
+        window.location.href = authorizationUrl;
+      }, 0);
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setIsAuthorizing(false);
+    }
+  };
+
   return {
     isSubmitting,
+    isAuthorizing,
     handleSubmit,
+    handleAuthorization,
     datasetDropdownOptions,
     selectedDatasetConfigOption,
     handleDelete,
@@ -346,7 +404,9 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 
   const {
     isSubmitting,
+    isAuthorizing,
     handleSubmit,
+    handleAuthorization,
     datasetDropdownOptions,
     selectedDatasetConfigOption,
     handleDelete,
@@ -391,8 +451,10 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         secretsSchema={secretsSchema}
         defaultValues={defaultValues}
         isSubmitting={isSubmitting}
+        isAuthorizing={isAuthorizing}
         onSaveClick={handleSubmit}
         onTestConnectionClick={handleTestConnectionClick}
+        onAuthorizeConnectionClick={handleAuthorization}
         connectionOption={connectionOption}
         connectionConfig={connectionConfig}
         datasetDropdownOptions={datasetDropdownOptions}

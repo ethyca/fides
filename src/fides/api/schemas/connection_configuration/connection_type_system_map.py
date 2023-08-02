@@ -15,6 +15,7 @@ class ConnectionSystemTypeMap(BaseModel):
     type: SystemType
     human_readable: str
     encoded_icon: Optional[str]
+    authorization_required: Optional[bool] = False
 
     class Config:
         """Use enum values and set orm mode"""
