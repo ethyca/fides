@@ -13,7 +13,7 @@ import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
-import { useAppSelector, useAppDispatch } from "~/app/hooks";
+import { useAppDispatch,useAppSelector } from "~/app/hooks";
 import {
   CustomFieldsList,
   useCustomFields,
@@ -22,9 +22,11 @@ import { useFeatures } from "~/features/common/features/features.slice";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
-  useGetAllDictionaryEntriesQuery,
   selectAllDictEnties,
+  useGetAllDictionaryEntriesQuery,
 } from "~/features/plus/plus.slice";
+import { setSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
+import { DictSuggestionTextInput } from "~/features/system/dictionary-form/DictSuggestionTextInput";
 import {
   defaultInitialValues,
   FormValues,
@@ -38,8 +40,7 @@ import {
 } from "~/features/system/system.slice";
 import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
 import { ResourceTypes, System } from "~/types/api";
-import { DictSuggestionTextInput } from "~/features/system/dictionary-form/DictSuggestionTextInput";
-import { setSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
+
 import { DictSuggestionToggle } from "./dictionary-form/ToggleDictSuggestions";
 
 const ValidationSchema = Yup.object().shape({

@@ -1,23 +1,24 @@
 import {
+  IconButton,
   Menu,
   MenuButton,
-  MenuList,
   MenuItem,
-  IconButton,
+  MenuList,
   Text,
 } from "@fidesui/react";
-import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import {
-  toggleSuggestions,
-  selectSuggestions,
-  selectDictEntry,
-  resetSuggestions,
-} from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { useFormikContext } from "formik";
-import { useFeatures } from "~/features/common/features";
 
-export function DictSuggestionToggle() {
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useFeatures } from "~/features/common/features";
+import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
+import {
+  resetSuggestions,
+  selectDictEntry,
+  selectSuggestions,
+  toggleSuggestions,
+} from "~/features/system/dictionary-form/dict-suggestion.slice";
+
+export const DictSuggestionToggle = () => {
   const dispatch = useAppDispatch();
 
   const form = useFormikContext();
@@ -34,7 +35,7 @@ export function DictSuggestionToggle() {
 
   return (
     <Menu>
-      {/* @ts-ignore*/}
+      {/* @ts-ignore */}
       <MenuButton
         bg={
           isShowingSuggestions === "showing" ? "complimentary.500" : "gray.100"

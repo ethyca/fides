@@ -1,29 +1,30 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+import { Flex, FormControl, VStack } from "@fidesui/react";
 import {
   Formik,
-  FormikValues,
   FormikConfig,
+  FormikValues,
   useField,
   useFormikContext,
 } from "formik";
-import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
+import React, { createContext, useContext, useMemo, useState } from "react";
+
+import { useAppDispatch,useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features/features.slice";
-import { Flex, FormControl, VStack } from "@fidesui/react";
 import {
-  Label,
+  type CustomInputProps,
   ErrorMessage,
+  Label,
   StringField,
   TextInput,
-  type CustomInputProps,
 } from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
-import { useAppSelector, useAppDispatch } from "~/app/hooks";
+import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
+import { DictEntry } from "~/features/plus/types";
 import {
   selectDictEntry,
   selectSuggestions,
   setSuggestions,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
-import { DictEntry } from "~/features/plus/types";
 
 type Props = {
   dictField: string;

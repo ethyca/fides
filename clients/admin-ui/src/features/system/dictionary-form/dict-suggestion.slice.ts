@@ -1,4 +1,5 @@
-import { PayloadAction, createSelector, createSlice } from "@reduxjs/toolkit";
+import { createSelector, createSlice,PayloadAction } from "@reduxjs/toolkit";
+
 import { RootState } from "~/app/store";
 import { plusApi } from "~/features/plus/plus.slice";
 import { DictEntry, Page } from "~/features/plus/types";
@@ -52,6 +53,6 @@ export const selectDictEntry = (vendorId: number) =>
         (d) => d.id.toString() === vendorId.toString()
       );
 
-      return dictEntry ? dictEntry : EMPTY_DICT_ENTRY;
+      return dictEntry || EMPTY_DICT_ENTRY;
     }
   );

@@ -36,9 +36,9 @@ import { privacyExperienceConfigSlice } from "~/features/privacy-experience/priv
 import { privacyNoticesSlice } from "~/features/privacy-notices/privacy-notices.slice";
 import { subjectRequestsSlice } from "~/features/privacy-requests";
 import { systemSlice } from "~/features/system";
+import { dictSuggestionsSlice } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { taxonomySlice } from "~/features/taxonomy";
 import { userManagementSlice } from "~/features/user-management";
-import { dictSuggestionsSlice } from "~/features/system/dictionary-form/dict-suggestion.slice";
 
 /**
  * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"
