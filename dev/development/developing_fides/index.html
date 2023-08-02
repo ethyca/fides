@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://ethyca.github.io/fides/dev/development/developing_fides/">
       
       <link rel="icon" href="../../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-8.2.7">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-8.2.7">
     
     
       
@@ -705,10 +705,71 @@ You're not viewing the latest version.
   
   
   
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5_6" type="checkbox" id="__nav_1_5_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_5_6">
+          UI Development
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="UI Development" data-md-level="3">
+        <label class="md-nav__title" for="__nav_1_5_6">
+          <span class="md-nav__icon md-icon"></span>
+          UI Development
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../ui/" class="md-nav__link">
-        UI Development
+      <a href="../ui/overview/" class="md-nav__link">
+        Overview
       </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/privacy_center/" class="md-nav__link">
+        Privacy Center
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/admin_ui/" class="md-nav__link">
+        Admin UI
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -1199,42 +1260,42 @@ You're not viewing the latest version.
 <table>
 <thead>
 <tr>
-<th align="center">Command</th>
-<th align="left">Description</th>
+<th style="text-align: center;">Command</th>
+<th style="text-align: left;">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="center"><code>nox</code></td>
-<td align="left">This is the default session that runs when no other session is provided. Automatically opens this page.</td>
+<td style="text-align: center;"><code>nox</code></td>
+<td style="text-align: left;">This is the default session that runs when no other session is provided. Automatically opens this page.</td>
 </tr>
 <tr>
-<td align="center"><code>nox -l</code></td>
-<td align="left">Provides a list of all available <code>nox</code> sessions.</td>
+<td style="text-align: center;"><code>nox -l</code></td>
+<td style="text-align: left;">Provides a list of all available <code>nox</code> sessions.</td>
 </tr>
 <tr>
-<td align="center"><code>nox -s usage -- &lt;command&gt;</code></td>
-<td align="left">Shows the full docstring for a single session. The name of the session is provided as a positional argument. Use this whenever you want to know more about a specific session's usage.</td>
+<td style="text-align: center;"><code>nox -s usage -- &lt;command&gt;</code></td>
+<td style="text-align: left;">Shows the full docstring for a single session. The name of the session is provided as a positional argument. Use this whenever you want to know more about a specific session's usage.</td>
 </tr>
 <tr>
-<td align="center"><code>nox -s dev</code></td>
-<td align="left">Spins up the Fides webserver with all required infrastructure.</td>
+<td style="text-align: center;"><code>nox -s dev</code></td>
+<td style="text-align: left;">Spins up the Fides webserver with all required infrastructure.</td>
 </tr>
 <tr>
-<td align="center"><code>nox -s shell</code></td>
-<td align="left">Opens an interactive shell in a running Fides webserver container.</td>
+<td style="text-align: center;"><code>nox -s shell</code></td>
+<td style="text-align: left;">Opens an interactive shell in a running Fides webserver container.</td>
 </tr>
 <tr>
-<td align="center"><code>nox -s build</code></td>
-<td align="left">Builds and tags docker containers.</td>
+<td style="text-align: center;"><code>nox -s build</code></td>
+<td style="text-align: left;">Builds and tags docker containers.</td>
 </tr>
 <tr>
-<td align="center"><code>nox -s clean</code></td>
-<td align="left">Completely wipes out all Docker volumes, images, and caches across the entire machine. <em>Note: This should only be used as a last resort! If you find yourself running this command often, there is probably an issue that needs to be addressed.</em></td>
+<td style="text-align: center;"><code>nox -s clean</code></td>
+<td style="text-align: left;">Completely wipes out all Docker volumes, images, and caches across the entire machine. <em>Note: This should only be used as a last resort! If you find yourself running this command often, there is probably an issue that needs to be addressed.</em></td>
 </tr>
 <tr>
-<td align="center"><code>nox -s teardown</code></td>
-<td align="left">Spins down all of the Docker containers for the Fides project. Including the <code>-- volumes</code> posarg will also delete the application database data.</td>
+<td style="text-align: center;"><code>nox -s teardown</code></td>
+<td style="text-align: left;">Spins down all of the Docker containers for the Fides project. Including the <code>-- volumes</code> posarg will also delete the application database data.</td>
 </tr>
 </tbody>
 </table>
