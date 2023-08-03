@@ -35,6 +35,7 @@ const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => (
             alignItems="center"
             justifyContent="start"
             pl="24px"
+            pr="24px"
             color="gray.700"
             fontSize="14px"
             fontStyle="normal"
