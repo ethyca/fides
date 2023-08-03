@@ -104,8 +104,8 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresFlag: "privacyExperience",
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
-      }
-    ]
+      },
+    ],
   },
   {
     title: "Management",
@@ -175,13 +175,17 @@ export type NavGroup = {
   children: Array<NavGroupChild>;
 };
 
-const navAllGroupReqsPlus = ( group: NavConfigGroup, hasPlus: boolean ) => {
-  //if all routes in the group require plus and plus is not running then return true 
-  if (group.routes.filter((route) => route.requiresPlus === true).length === group.routes.length && !hasPlus) {
+const navAllGroupReqsPlus = (group: NavConfigGroup, hasPlus: boolean) => {
+  // if all routes in the group require plus and plus is not running then return true
+  if (
+    group.routes.filter((route) => route.requiresPlus === true).length ===
+      group.routes.length &&
+    !hasPlus
+  ) {
     return true;
   }
   return false;
-} 
+};
 /**
  * If a group contains only routes that the user cannot access, return false.
  * An empty list of scopes is a special case where any scope works.
@@ -294,8 +298,11 @@ export const configureNavGroups = ({
   const navGroups: NavGroup[] = [];
 
   config.forEach((group) => {
-    //if no nav routes are scoped for the user or all require plus 
-    if (!navGroupInScope(group, userScopes) || navAllGroupReqsPlus(group, hasPlus)) {
+    // if no nav routes are scoped for the user or all require plus
+    if (
+      !navGroupInScope(group, userScopes) ||
+      navAllGroupReqsPlus(group, hasPlus)
+    ) {
       return;
     }
 
