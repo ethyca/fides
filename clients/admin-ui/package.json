@@ -27,6 +27,7 @@
     "test:ci": "jest"
   },
   "dependencies": {
+    "@chakra-ui/icons": "1.1.7",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@fidesui/components": "^0.7.1",
@@ -35,7 +36,6 @@
     "@monaco-editor/react": "^4.4.6",
     "@reduxjs/toolkit": "^1.9.3",
     "chakra-react-select": "^3.3.7",
-    "@chakra-ui/icons": "1.1.7",
     "csv-stringify": "^6.3.0",
     "cytoscape": "^3.23.0",
     "cytoscape-klay": "^3.1.4",
@@ -46,6 +46,7 @@
     "i18n-iso-countries": "^7.5.0",
     "immer": "^9.0.21",
     "js-yaml": "^4.1.0",
+    "lodash": "^4.17.21",
     "lodash.snakecase": "^4.1.1",
     "msw": "^1.2.1",
     "narrow-minded": "^1.2.1",
