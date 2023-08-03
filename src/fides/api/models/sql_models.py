@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
 from pydantic import BaseModel
-from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
+from sqlalchemy import ARRAY, BOOLEAN, JSON, Column, INTEGER
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
     ForeignKey,
@@ -322,12 +322,35 @@ class System(Base, FidesBase):
     fidesctl_meta = Column(JSON)
     system_type = Column(String)
     data_responsibility_title = Column(String)
-    joint_controller = Column(PGEncryptedString, nullable=True)
     third_country_transfers = Column(ARRAY(String))
     administrating_department = Column(String)
     data_protection_impact_assessment = Column(JSON)
     egress = Column(JSON)
     ingress = Column(JSON)
+
+    vendor_id = Column(String)
+    dataset_references = Column(ARRAY(String), server_default="{}")
+    processes_personal_data = Column(BOOLEAN(), server_default="t", nullable=False)
+    exempt_from_privacy_regulations = Column(
+        BOOLEAN(), server_default="f", nullable=False
+    )
+    reason_for_exemption = Column(String)
+    uses_profiling = Column(BOOLEAN(), server_default="f", nullable=False)
+    legal_basis_for_profiling = Column(String)
+    does_international_transfers = Column(BOOLEAN(), server_default="f", nullable=False)
+    legal_basis_for_transfers = Column(String)
+    requires_data_protection_assessments = Column(
+        BOOLEAN(), server_default="f", nullable=False
+    )
+    dpa_location = Column(String)
+    dpa_progress = Column(String)
+    privacy_policy = Column(String)
+    legal_name = Column(String)
+    legal_address = Column(String)
+    responsibility = Column(ARRAY(String), server_default="{}")
+    dpo = Column(String)
+    joint_controller = Column(String)
+    data_security_practices = Column(String)
 
     privacy_declarations = relationship(
         "PrivacyDeclaration",
@@ -391,6 +414,20 @@ class PrivacyDeclaration(Base):
     data_qualifier = Column(String)
     data_subjects = Column(ARRAY(String))
     dataset_references = Column(ARRAY(String))
+
+    features = Column(ARRAY(String), server_default="{}", nullable=False)
+    legal_basis_for_processing = Column(String)
+    impact_assessment_location = Column(String)
+    retention_period = Column(INTEGER)
+    processes_special_category_data = Column(
+        BOOLEAN(), server_default="f", nullable=False
+    )
+    special_category_legal_basis = Column(String)
+    data_shared_with_third_parties = Column(
+        BOOLEAN(), server_default="f", nullable=False
+    )
+    third_parties = Column(String)
+    shared_categories = Column(ARRAY(String), server_default="{}")
 
     ### proper FK references to other tables
     # System
