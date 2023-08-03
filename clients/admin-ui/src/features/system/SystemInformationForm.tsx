@@ -2,7 +2,9 @@ import {
   Box,
   Button,
   Divider,
+  Flex,
   Heading,
+  Spacer,
   Stack,
   Text,
   useToast,
@@ -180,10 +182,13 @@ const SystemInformationForm = ({
               for everyone from engineering to legal teams. So let’s do this
               now.
             </Text>
-            <Heading as="h4" size="sm">
-              System details
-            </Heading>
-            <DictSuggestionToggle />
+            <Flex>
+              <Heading as="h4" size="sm">
+                System details
+              </Heading>
+              <Spacer />
+              <DictSuggestionToggle />
+            </Flex>
             <Stack spacing={4}>
               {/* While we support both designs of extra form items existing, change the width only 
               when there are extra form items. When we move to only supporting one design, 

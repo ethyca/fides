@@ -45,6 +45,7 @@ export const DictSuggestionToggle = () => {
             color={isShowingSuggestions === "showing" ? "white" : "gray.700"}
           />
         }
+        width="32px"
         variant="outline"
         _active={{
           background:

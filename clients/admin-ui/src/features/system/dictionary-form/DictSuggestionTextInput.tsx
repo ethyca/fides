@@ -33,6 +33,7 @@ export const DictSuggestionTextInput = ({
 }: Props) => {
   const dispatch = useAppDispatch();
   const [preSuggestionValue, setPreSuggestionValue] = useState("");
+  const [hasRenderedOnce, setHasRenderedOnce] = useState(false);
   const [initialField, meta] = useField(props);
   const { type: initialType, placeholder } = props;
   const isInvalid = !!(meta.touched && meta.error);
@@ -56,7 +57,10 @@ export const DictSuggestionTextInput = ({
         form.setFieldValue(props.id!, dictEntry[dictField as keyof DictEntry]);
       }
     }
-    if (isShowingSuggestions === "hiding") {
+    if (isShowingSuggestions === "hiding" && hasRenderedOnce) {
+      // hasRenderedOnce is needed to prevent updating the
+      // form during it's initial render. It throws an
+      // error otherwise.
       form.setFieldValue(props.id!, preSuggestionValue);
     }
     if (
@@ -69,6 +73,10 @@ export const DictSuggestionTextInput = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isShowingSuggestions]);
+
+  useMemo(() => {
+    setHasRenderedOnce(true);
+  }, []);
 
   return (
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
