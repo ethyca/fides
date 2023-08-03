@@ -1,10 +1,12 @@
 """
-Perform all setup and run a privacy request.
+Perform all setup and then run an Access + Erasure requests.
 
 This script is intended to be run "locally" after spinning up
 the required Docker containers.
 
-Run `nox - dev -- postgres mongodb` first to get things set up!
+Steps to run:
+1. `nox -s dev -- postgres mongodb`
+2. After everything is running, use another terminal windows: `python scripts/run_privacy_request.py`
 """
 import json
 import os
@@ -25,9 +27,7 @@ from fides.config import get_config
 
 CONFIG = get_config()
 
-# NOTE: In a real application, these secrets and config values would be provided
-# via ENV vars or similar, but we've inlined everything here for simplicity
-
+# Defined as Global Constants for simplicity
 FIDES_URL = os.getenv("FIDES__CLI__SERVER_HOST") or "localhost"
 API_URL = f"http://{FIDES_URL}:8080{ops_urls.V1_URL_PREFIX}"
 ROOT_CLIENT_ID = "fidesadmin"
