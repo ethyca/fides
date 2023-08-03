@@ -5,8 +5,8 @@ from typing import Generator
 from unittest.mock import patch
 
 import pytest
-from fideslang.models import DataCategory, Organization
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
+from fideslang.models import DataCategory, Organization
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 

@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from fastapi import HTTPException
 from fideslang import FidesModelType
+from fideslang.models import DataCategory, DataQualifier, DataSubject, DataUse
 from slowapi import Limiter
 from slowapi.util import get_remote_address  # type: ignore
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,7 +14,6 @@ from starlette.status import HTTP_400_BAD_REQUEST
 from fides.api.db.base import Base  # type: ignore
 from fides.api.db.crud import get_resource, list_resource
 from fides.api.util import errors
-from fideslang.models import DataCategory, DataQualifier, DataUse, DataSubject
 from fides.common.api.scope_registry import (
     CTL_DATASET,
     CTL_POLICY,
@@ -88,10 +88,10 @@ async def forbid_if_editing_is_default(
 
         assert isinstance(
             resource, (SQLDataCategory, SQLDataQualifier, SQLDataSubject, SQLDataUse)
-        ), f"Provided Resource is not the right type!"
+        ), "Provided Resource is not the right type!"
         assert isinstance(
             payload, (DataCategory, DataQualifier, DataSubject, DataUse)
-        ), f"Provided Payload is not the right type!"
+        ), "Provided Payload is not the right type!"
 
         if resource.is_default != payload.is_default:
             raise errors.ForbiddenError(sql_model.__name__, fides_key)
