@@ -78,7 +78,7 @@ async def verify_oauth_client_for_system_from_request_body(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
     system_auth_data: SystemAuthContainer = Depends(_get_system_from_request_body),
-) -> None:
+) -> Union[str, System]:
     """
     Verifies that the access token provided in the authorization header contains the necessary scopes to be
     able to access the System found in the *request body*
@@ -88,12 +88,14 @@ async def verify_oauth_client_for_system_from_request_body(
 
     Yields a 403 forbidden error if not.
     """
-    has_system_permissions(
+
+    system = has_system_permissions(
         system_auth_data=system_auth_data,
         authorization=authorization,
         security_scopes=security_scopes,
         db=db,
     )
+    return system
 
 
 async def verify_oauth_client_for_system_from_fides_key(
@@ -101,7 +103,7 @@ async def verify_oauth_client_for_system_from_fides_key(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
     system_auth_data: SystemAuthContainer = Depends(_get_system_from_fides_key),
-) -> None:
+) -> Union[str, System]:
     """
     Verifies that the access token provided in the authorization header contains the necessary scopes to be
     able to access the System from the given *fides_key* in the path parameter.
@@ -111,12 +113,13 @@ async def verify_oauth_client_for_system_from_fides_key(
 
     Yields a 403 forbidden error if not.
     """
-    has_system_permissions(
+    system = has_system_permissions(
         system_auth_data=system_auth_data,
         authorization=authorization,
         security_scopes=security_scopes,
         db=db,
     )
+    return system
 
 
 def has_system_permissions(
@@ -124,7 +127,7 @@ def has_system_permissions(
     authorization: str,
     security_scopes: SecurityScopes,
     db: Session,
-) -> None:
+) -> Union[str, System]:
     """
     Helper method that verifies that the token has the proper permissions to access the system(s).
 
@@ -142,12 +145,12 @@ def has_system_permissions(
         token_data, client, security_scopes, system_auth_data.system
     )
 
-    has_correct_permissions: bool = (
-        has_model_level_permissions or has_system_manager_permissions
-    )
+    has_perms: bool = has_model_level_permissions or has_system_manager_permissions
 
-    if not has_correct_permissions:
+    if not has_perms:
         raise AuthorizationError(detail="Not Authorized for this action")
+
+    return system_auth_data.original_data
 
 
 def _has_scope_as_system_manager(

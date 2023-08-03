@@ -743,7 +743,7 @@ class TestSystemUpdate:
     updated_system_name = "Updated System Name"
 
     @pytest.fixture(scope="function", autouse=True)
-    def remove_all_systems(self, db) -> SystemSchema:
+    def remove_all_systems(self, db) -> None:
         """Remove any systems (and privacy declarations) before test execution for clean state"""
         for privacy_declaration in PrivacyDeclaration.all(db):
             privacy_declaration.delete(db)
@@ -767,6 +767,8 @@ class TestSystemUpdate:
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
+                    ingress=None,
+                    egress=None,
                 )
             ],
         )
