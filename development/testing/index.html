@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://ethyca.github.io/fides/development/testing/">
       
       <link rel="icon" href="../../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-8.2.7">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-8.2.7">
     
     
       
@@ -1170,83 +1170,83 @@ pytest<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;n
 <table>
 <thead>
 <tr>
-<th align="center">Session (with Param)</th>
-<th align="center">Mark(s)</th>
-<th align="center">Test Path</th>
-<th align="center">Requires Credentials?</th>
-<th align="center">Description</th>
+<th style="text-align: center;">Session (with Param)</th>
+<th style="text-align: center;">Mark(s)</th>
+<th style="text-align: center;">Test Path</th>
+<th style="text-align: center;">Requires Credentials?</th>
+<th style="text-align: center;">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="center">pytest(ctl-unit)</td>
-<td align="center">unit</td>
-<td align="center">tests/ctl</td>
-<td align="center">No</td>
-<td align="center">Simplest set of <code>ctl</code> tests Should generally avoid the webserver but not guaranteed.</td>
+<td style="text-align: center;">pytest(ctl-unit)</td>
+<td style="text-align: center;">unit</td>
+<td style="text-align: center;">tests/ctl</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Simplest set of <code>ctl</code> tests Should generally avoid the webserver but not guaranteed.</td>
 </tr>
 <tr>
-<td align="center">pytest(ctl-integration)</td>
-<td align="center">integration</td>
-<td align="center">tests/ctl</td>
-<td align="center">No</td>
-<td align="center">Tests that are known to require the webserver.</td>
+<td style="text-align: center;">pytest(ctl-integration)</td>
+<td style="text-align: center;">integration</td>
+<td style="text-align: center;">tests/ctl</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Tests that are known to require the webserver.</td>
 </tr>
 <tr>
-<td align="center">pytest(ctl-not-external)</td>
-<td align="center">not external</td>
-<td align="center">tests/ctl</td>
-<td align="center">No</td>
-<td align="center">Tests unit/integration but without touching external resources.</td>
+<td style="text-align: center;">pytest(ctl-not-external)</td>
+<td style="text-align: center;">not external</td>
+<td style="text-align: center;">tests/ctl</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Tests unit/integration but without touching external resources.</td>
 </tr>
 <tr>
-<td align="center">pytest(ctl-external)</td>
-<td align="center">external</td>
-<td align="center">tests/ctl</td>
-<td align="center">Yes</td>
-<td align="center">Tests that require external resources such as Snowflake or BigQuery.</td>
+<td style="text-align: center;">pytest(ctl-external)</td>
+<td style="text-align: center;">external</td>
+<td style="text-align: center;">tests/ctl</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Tests that require external resources such as Snowflake or BigQuery.</td>
 </tr>
 <tr>
-<td align="center">pytest(ops-unit)</td>
-<td align="center">not integration and not integration_external and not integration_saas</td>
-<td align="center">tests/ops</td>
-<td align="center">No</td>
-<td align="center">As there is no "unit" tag within the ops tests, it is instead achieved via numerous "not" marks.</td>
+<td style="text-align: center;">pytest(ops-unit)</td>
+<td style="text-align: center;">not integration and not integration_external and not integration_saas</td>
+<td style="text-align: center;">tests/ops</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">As there is no "unit" tag within the ops tests, it is instead achieved via numerous "not" marks.</td>
 </tr>
 <tr>
-<td align="center">pytest(ops-integration)</td>
-<td align="center">N/A</td>
-<td align="center">N/A</td>
-<td align="center">No</td>
-<td align="center">This is a special test case, as the handling of test running is done by <code>run_infrastructure.py</code>. More information and logic can be found there.</td>
+<td style="text-align: center;">pytest(ops-integration)</td>
+<td style="text-align: center;">N/A</td>
+<td style="text-align: center;">N/A</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">This is a special test case, as the handling of test running is done by <code>run_infrastructure.py</code>. More information and logic can be found there.</td>
 </tr>
 <tr>
-<td align="center">pytest(ops-external-datastores)</td>
-<td align="center">integration_external</td>
-<td align="center">tests/ops</td>
-<td align="center">Yes</td>
-<td align="center">Runs tests that connect to external datastores such as Snowflake.</td>
+<td style="text-align: center;">pytest(ops-external-datastores)</td>
+<td style="text-align: center;">integration_external</td>
+<td style="text-align: center;">tests/ops</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Runs tests that connect to external datastores such as Snowflake.</td>
 </tr>
 <tr>
-<td align="center">pytest(ops-saas)</td>
-<td align="center">integration_saas</td>
-<td align="center">tests/ops</td>
-<td align="center">Yes</td>
-<td align="center">Runs tests related to the <code>connectors</code> code. Spins up additional local resources and connects to outside resources.</td>
+<td style="text-align: center;">pytest(ops-saas)</td>
+<td style="text-align: center;">integration_saas</td>
+<td style="text-align: center;">tests/ops</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Runs tests related to the <code>connectors</code> code. Spins up additional local resources and connects to outside resources.</td>
 </tr>
 <tr>
-<td align="center">pytest(lib)</td>
-<td align="center">N/A</td>
-<td align="center">tests/lib</td>
-<td align="center">No</td>
-<td align="center">Test <code>lib</code> module functionality.</td>
+<td style="text-align: center;">pytest(lib)</td>
+<td style="text-align: center;">N/A</td>
+<td style="text-align: center;">tests/lib</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Test <code>lib</code> module functionality.</td>
 </tr>
 <tr>
-<td align="center">pytest(nox)</td>
-<td align="center">N/A</td>
-<td align="center">tests/nox</td>
-<td align="center">No</td>
-<td align="center">Tests functionality related to the nox session.</td>
+<td style="text-align: center;">pytest(nox)</td>
+<td style="text-align: center;">N/A</td>
+<td style="text-align: center;">tests/nox</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Tests functionality related to the nox session.</td>
 </tr>
 </tbody>
 </table>
