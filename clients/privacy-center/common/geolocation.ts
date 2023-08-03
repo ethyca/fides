@@ -1,6 +1,7 @@
 import type { NextApiRequest } from "next";
+import requestIp from "request-ip";
 import { getGeolocation, UserGeolocation } from "fides-js";
-import {PrivacyCenterClientSettings} from "~/app/server-environment";
+import { PrivacyCenterClientSettings } from "~/app/server-environment";
 
 // Regex to validate a location string, which must:
 // 1) Start with a 2-3 character country code (e.g. "US")
@@ -12,10 +13,12 @@ const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
 // (see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/adding-cloudfront-headers.html#cloudfront-headers-viewer-location)
 const CLOUDFRONT_HEADER_COUNTRY = "cloudfront-viewer-country";
 const CLOUDFRONT_HEADER_REGION = "cloudfront-viewer-country-region";
-const X_FORWARDED_FOR = "X-Forwarded-For";
+const CLOUDFRONT_VIEWER_ADDRESS = "cloudfront-viewer-address";
+const X_FORWARDED_FOR = "x-forwarded-for";
 export const LOCATION_HEADERS = [
   CLOUDFRONT_HEADER_COUNTRY,
   CLOUDFRONT_HEADER_REGION,
+  CLOUDFRONT_VIEWER_ADDRESS,
   X_FORWARDED_FOR,
 ];
 
@@ -66,16 +69,22 @@ export const lookupGeolocation = async (
   }
 
   if (settings.IS_OVERLAY_ENABLED && settings.IS_PREFETCH_ENABLED) {
-    // read headers to determine if we have request's IP address
-    if (typeof req.headers[X_FORWARDED_FOR] === "string") {
-      const forwarded_ip_info = req.headers[X_FORWARDED_FOR];
+    // Infer location based on ip headers / req defaults
+    const clientIp =
+      req.headers[CLOUDFRONT_VIEWER_ADDRESS] || requestIp.getClientIp(req);
+    if (clientIp) {
+      if (settings.DEBUG) {
+        // eslint-disable-next-line no-console
+        console.log("Fetching geolocation from server-side...");
+      }
       return getGeolocation(
-          settings.IS_GEOLOCATION_ENABLED,
-          settings.GEOLOCATION_API_URL,
-          forwarded_ip_info,
-          settings.DEBUG
+        settings.IS_GEOLOCATION_ENABLED,
+        settings.GEOLOCATION_API_URL,
+        clientIp as string,
+        settings.DEBUG
       );
     }
+    return null;
   }
   return null;
 };

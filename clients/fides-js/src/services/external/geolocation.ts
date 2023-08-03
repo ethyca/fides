@@ -7,7 +7,7 @@ import { debugLog } from "../../lib/consent-utils";
 export const getGeolocation = async (
   isGeolocationEnabled?: boolean,
   geolocationApiUrl?: string,
-  forwarded_ip_info?: string | null,
+  forwarded_ip?: string | null,
   debug: boolean = false
 ): Promise<UserGeolocation | null> => {
   debugLog(debug, "Running getLocation...");
@@ -32,10 +32,10 @@ export const getGeolocation = async (
   const fetchOptions: RequestInit = {
     mode: "cors",
   };
-  if (forwarded_ip_info) {
+  if (forwarded_ip) {
     const headers: Headers = new Headers();
-    headers.set("X-Forwarded-For", forwarded_ip_info)
-    fetchOptions.headers = headers
+    headers.set("cloudfront-viewer-address", forwarded_ip);
+    fetchOptions.headers = headers;
   }
   const response = await fetch(geolocationApiUrl, fetchOptions);
 

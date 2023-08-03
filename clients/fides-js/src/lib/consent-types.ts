@@ -39,6 +39,9 @@ export type FidesOptions = {
   // URL for the Fides API, used to fetch and save consent preferences. Required.
   fidesApiUrl: string;
 
+  // URL for Server-side Fides API, used to fetch geolocation and consent preference. Optional.
+  serverSideFidesApiUrl: string;
+
   // Whether we should show the TCF modal
   tcfEnabled: boolean;
 };

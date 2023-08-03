@@ -75,25 +75,29 @@ export default async function handler(
   const geolocation = await lookupGeolocation(req, environment.settings);
 
   let experience;
-  if (geolocation && environment.settings.IS_OVERLAY_ENABLED && environment.settings.IS_PREFETCH_ENABLED) {
+  if (
+    geolocation &&
+    environment.settings.IS_OVERLAY_ENABLED &&
+    environment.settings.IS_PREFETCH_ENABLED
+  ) {
     const fidesRegionString = constructFidesRegionString(geolocation);
     if (fidesRegionString) {
-      let fidesUserDeviceId = null;
+      let fidesUserDeviceId = "";
       if (Object.keys(req.cookies).length) {
         const fidesCookie = req.cookies[CONSENT_COOKIE_NAME];
         if (fidesCookie) {
           fidesUserDeviceId =
-              JSON.parse(fidesCookie)?.identity?.fides_user_device_id;
+            JSON.parse(fidesCookie)?.identity?.fides_user_device_id;
         }
       }
       if (environment.settings.DEBUG) {
         console.log("Fetching relevant experiences from server-side...");
       }
       experience = await fetchExperience(
-          fidesRegionString,
-          environment.settings.SERVER_SIDE_FIDES_API_URL,
-          fidesUserDeviceId,
-          environment.settings.DEBUG
+        fidesRegionString,
+        environment.settings.SERVER_SIDE_FIDES_API_URL,
+        fidesUserDeviceId,
+        environment.settings.DEBUG
       );
     }
   }
@@ -113,6 +117,7 @@ export default async function handler(
       modalLinkId: environment.settings.MODAL_LINK_ID,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
       fidesApiUrl: environment.settings.FIDES_API_URL,
+      serverSideFidesApiUrl: environment.settings.SERVER_SIDE_FIDES_API_URL,
       tcfEnabled: environment.settings.TCF_ENABLED,
     },
     experience: experience || undefined,

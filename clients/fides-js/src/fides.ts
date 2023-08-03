@@ -318,6 +318,7 @@ _Fides = {
     modalLinkId: null,
     privacyCenterUrl: "",
     fidesApiUrl: "",
+    serverSideFidesApiUrl: "",
     tcfEnabled: false,
   },
   fides_meta: {},
