@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from fastapi import Depends, HTTPException
 from fideslang.validation import FidesKey

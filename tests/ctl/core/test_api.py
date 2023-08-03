@@ -2009,7 +2009,7 @@ def test_404_on_api_routes(test_config: FidesConfig) -> None:
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "database_health, expected_status_code",
-    [("healthy", 200), ("needs migration", 200), ("unhealthy", 503)],
+    [("healthy", 200), ("unhealthy", 503)],
 )
 def test_api_ping(
     test_config: FidesConfig,
@@ -2018,7 +2018,7 @@ def test_api_ping(
     monkeypatch: MonkeyPatch,
     test_client: TestClient,
 ) -> None:
-    def mock_get_db_health(url: str, db) -> str:
+    def mock_get_db_health(url: str) -> str:
         return database_health
 
     monkeypatch.setattr(health, "get_db_health", mock_get_db_health)

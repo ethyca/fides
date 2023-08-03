@@ -58,6 +58,14 @@ class SampleConnection(CreateConnectionConfigurationWithSecrets):
     creation will fail.
     """
 
+    system_key: Optional[FidesKey] = None
+    """
+    (Optional) The connection config is linked to a system via the `system_id`,
+    which is auto-generated when the system is created in the database.
+    We include the system key here to be able to use a consistent identifier
+    to query for a system and retrieve it's ID.
+    """
+
 
 def load_sample_connections_from_project() -> List[SampleConnection]:
     """

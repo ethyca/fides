@@ -74,41 +74,6 @@ describe("System management page", () => {
         }).as("getConnectionTypes");
       });
 
-      it("shows available system types and lets the user choose one", () => {
-        cy.visit(ADD_SYSTEMS_ROUTE);
-        cy.getByTestId("manual-btn").click();
-        cy.url().should("contain", ADD_SYSTEMS_MANUAL_ROUTE);
-        cy.wait("@getConnectionTypes");
-        cy.getByTestId("header").contains("Choose a type of system");
-        cy.getByTestId("bigquery-item");
-        cy.getByTestId("mariadb-item");
-        // Click into one of the connectors
-        cy.getByTestId("mongodb-item").click();
-        cy.getByTestId("header").contains("Describe your MongoDB system");
-
-        // Go back to choosing to add a new type of system
-        cy.getByTestId("breadcrumbs").contains("Choose your system").click();
-        cy.getByTestId("create-system-btn").click();
-        cy.getByTestId("header").contains("Describe your new system");
-      });
-
-      it("should allow searching", () => {
-        cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
-        cy.wait("@getConnectionTypes");
-        cy.getByTestId("bigquery-item");
-        cy.getByTestId("system-catalog-search").type("db");
-        cy.getByTestId("bigquery-item").should("not.exist");
-        cy.getByTestId("mariadb-item");
-        cy.getByTestId("mongodb-item");
-        cy.getByTestId("timescale-item");
-
-        // empty state
-        cy.getByTestId("system-catalog-search")
-          .clear()
-          .type("a very specific system that we do not have");
-        cy.getByTestId("no-systems-found");
-      });
-
       it("Can step through the flow", () => {
         cy.fixture("systems/system.json").then((system) => {
           cy.intercept("GET", "/api/v1/system/*", {
@@ -119,10 +84,7 @@ describe("System management page", () => {
           cy.getByTestId("manual-btn").click();
           cy.url().should("contain", ADD_SYSTEMS_MANUAL_ROUTE);
           cy.wait("@getSystems");
-          cy.wait("@getConnectionTypes");
-          cy.getByTestId("create-system-btn").click();
           cy.getByTestId("input-name").type(system.name);
-          cy.getByTestId("input-fides_key").type(system.fides_key);
           cy.getByTestId("input-description").type(system.description);
 
           cy.getByTestId("save-btn").click();
@@ -190,10 +152,7 @@ describe("System management page", () => {
           }).as("getDemoSystem");
           cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
           cy.wait("@getSystems");
-          cy.wait("@getConnectionTypes");
-          cy.getByTestId("create-system-btn").click();
           cy.getByTestId("input-name").type(system.name);
-          cy.getByTestId("input-fides_key").type(system.fides_key);
           cy.getByTestId("input-description").type(system.description);
           cy.getByTestId("save-btn").click();
           cy.wait("@postSystem");
