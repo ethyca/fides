@@ -1198,6 +1198,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     )
                 ]
             ),
@@ -1212,6 +1214,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     ),
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
@@ -1221,6 +1225,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     ),
                 ]
             ),
@@ -1235,6 +1241,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        ingress=None,
+                        egress=None,
                     ),
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
@@ -1244,6 +1252,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        ingress=None,
+                        egress=None,
                     ),
                 ]
             ),
@@ -1258,6 +1268,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     ),
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
@@ -1267,6 +1279,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     ),
                 ]
             ),
