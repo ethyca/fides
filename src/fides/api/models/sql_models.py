@@ -321,12 +321,15 @@ class System(Base, FidesBase):
     meta = Column(JSON)
     fidesctl_meta = Column(JSON)
     system_type = Column(String)
+    joint_controller = Column(PGEncryptedString, nullable=True)
     data_responsibility_title = Column(String)
     third_country_transfers = Column(ARRAY(String))
     administrating_department = Column(String)
     data_protection_impact_assessment = Column(JSON)
     egress = Column(JSON)
     ingress = Column(JSON)
+    destination = Column(JSON)
+    source = Column(JSON)
 
     vendor_id = Column(String)
     dataset_references = Column(ARRAY(String), server_default="{}")
@@ -349,7 +352,7 @@ class System(Base, FidesBase):
     legal_address = Column(String)
     responsibility = Column(ARRAY(String), server_default="{}")
     dpo = Column(String)
-    joint_controller = Column(String)
+    joint_controller_info = Column(String)
     data_security_practices = Column(String)
 
     privacy_declarations = relationship(
