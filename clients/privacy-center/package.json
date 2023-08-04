@@ -44,7 +44,6 @@
     "react-phone-number-input": "^3.2.19",
     "react-redux": "^8.0.5",
     "redux-persist": "^6.0.0",
-    "request-ip": "^3.3.0",
     "swagger-ui-react": "^4.18.3",
     "yup": "^0.32.11"
   },
@@ -55,7 +54,6 @@
     "@testing-library/user-event": "^13.5.0",
     "@types/node": "18.15.10",
     "@types/react": "17.0.38",
-    "@types/request-ip": "^0.0.38",
     "@types/swagger-ui-react": "^4.18.0",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.57.0",

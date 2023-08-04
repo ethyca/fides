@@ -120,7 +120,6 @@ const retrieveEffectiveRegionString = async (
       await getGeolocation(
         options.isGeolocationEnabled,
         options.geolocationApiUrl,
-        null,
         options.debug
       )
     );

@@ -1,7 +1,5 @@
 import type { NextApiRequest } from "next";
-import requestIp from "request-ip";
-import { getGeolocation, UserGeolocation } from "fides-js";
-import { PrivacyCenterClientSettings } from "~/app/server-environment";
+import { UserGeolocation } from "fides-js";
 
 // Regex to validate a location string, which must:
 // 1) Start with a 2-3 character country code (e.g. "US")
@@ -13,13 +11,9 @@ const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
 // (see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/adding-cloudfront-headers.html#cloudfront-headers-viewer-location)
 const CLOUDFRONT_HEADER_COUNTRY = "cloudfront-viewer-country";
 const CLOUDFRONT_HEADER_REGION = "cloudfront-viewer-country-region";
-const CLOUDFRONT_VIEWER_ADDRESS = "cloudfront-viewer-address";
-const X_FORWARDED_FOR = "x-forwarded-for";
 export const LOCATION_HEADERS = [
   CLOUDFRONT_HEADER_COUNTRY,
   CLOUDFRONT_HEADER_REGION,
-  CLOUDFRONT_VIEWER_ADDRESS,
-  X_FORWARDED_FOR,
 ];
 
 /**
@@ -32,8 +26,7 @@ export const LOCATION_HEADERS = [
  *
  */
 export const lookupGeolocation = async (
-  req: NextApiRequest,
-  settings: PrivacyCenterClientSettings
+  req: NextApiRequest
 ): Promise<UserGeolocation | null> => {
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;
@@ -66,25 +59,6 @@ export const lookupGeolocation = async (
         region,
       };
     }
-  }
-
-  if (settings.IS_OVERLAY_ENABLED && settings.IS_PREFETCH_ENABLED) {
-    // Infer location based on ip headers / req defaults
-    const clientIp =
-      req.headers[CLOUDFRONT_VIEWER_ADDRESS] || requestIp.getClientIp(req);
-    if (clientIp) {
-      if (settings.DEBUG) {
-        // eslint-disable-next-line no-console
-        console.log("Fetching geolocation from server-side...");
-      }
-      return getGeolocation(
-        settings.IS_GEOLOCATION_ENABLED,
-        settings.GEOLOCATION_API_URL,
-        clientIp as string,
-        settings.DEBUG
-      );
-    }
-    return null;
   }
   return null;
 };

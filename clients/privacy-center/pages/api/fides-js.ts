@@ -70,9 +70,11 @@ export default async function handler(
     }));
   }
 
-  // Check if a geolocation was provided via headers, query param, or obtainable via a geolocation URL;
-  // if so, inject into the bundle, along with privacy experience
-  const geolocation = await lookupGeolocation(req, environment.settings);
+  // Check if a geolocation was provided via headers or query param
+  const geolocation = await lookupGeolocation(req);
+
+  // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
+  // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
 
   let experience;
   if (
@@ -95,7 +97,8 @@ export default async function handler(
       }
       experience = await fetchExperience(
         fidesRegionString,
-        environment.settings.SERVER_SIDE_FIDES_API_URL,
+        environment.settings.SERVER_SIDE_FIDES_API_URL ||
+          environment.settings.FIDES_API_URL,
         fidesUserDeviceId,
         environment.settings.DEBUG
       );
@@ -117,7 +120,9 @@ export default async function handler(
       modalLinkId: environment.settings.MODAL_LINK_ID,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
       fidesApiUrl: environment.settings.FIDES_API_URL,
-      serverSideFidesApiUrl: environment.settings.SERVER_SIDE_FIDES_API_URL,
+      serverSideFidesApiUrl:
+        environment.settings.SERVER_SIDE_FIDES_API_URL ||
+        environment.settings.FIDES_API_URL,
       tcfEnabled: environment.settings.TCF_ENABLED,
     },
     experience: experience || undefined,
