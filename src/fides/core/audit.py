@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Union
 
 from fideslang.models import DataSubject, DataUse, FidesModel, Organization, System
+from fideslang.parse import parse_dict
 
 from fides.common.utils import echo_green, echo_red, pretty_echo
 from fides.core.api_helpers import (
@@ -71,15 +72,23 @@ def validate_system_attributes(
         new_findings += 1
 
     for privacy_declaration in system.privacy_declarations:
-        data_use = get_server_resource(
+        raw_data_use = get_server_resource(
             url, "data_use", privacy_declaration.data_use, headers
+        )
+        data_use = parse_dict(
+            resource_type="data_use", resource=raw_data_use, from_server=True
         )
         assert isinstance(data_use, DataUse)
         data_use_findings = audit_data_use_attributes(data_use, system.name or "")
         new_findings = new_findings + data_use_findings
         for data_subject_fides_key in privacy_declaration.data_subjects:
-            data_subject = get_server_resource(
+            raw_data_subject = get_server_resource(
                 url, "data_subject", data_subject_fides_key, headers
+            )
+            data_subject = parse_dict(
+                resource_type="data_subject",
+                resource=raw_data_subject,
+                from_server=True,
             )
             assert isinstance(data_subject, DataSubject)
             data_subject_findings = audit_data_subject_attributes(
@@ -143,16 +152,29 @@ def audit_organizations(
     correctly populated
     """
 
-    organization_resources: Optional[Union[List[FidesModel], List[dict]]]
+    organization_resources: Optional[List[FidesModel]]
 
     if include_keys:
         organization_resources = get_server_resources(
             url, "organization", include_keys, headers
         )
     else:
-        organization_resources = list_server_resources(
+        raw_organization_resources = list_server_resources(
             url, headers, "organization", exclude_keys=[]
         )
+        if raw_organization_resources:
+            organization_resources = [
+                # Parse this into a FidesModel here so we know we're
+                # always using a FidesModel downstream
+                parse_dict(
+                    resource=organization,
+                    resource_type="organization",
+                    from_server=True,
+                )
+                for organization in raw_organization_resources
+            ]
+        else:
+            organization_resources = []
 
     if not organization_resources:
         print("No organization resources were found.")
@@ -162,9 +184,7 @@ def audit_organizations(
 
     audit_findings = 0
     for organization in organization_resources:
-        print(
-            f"Auditing Organization: {organization.name if isinstance(organization, FidesModel) else organization['name']}"
-        )
+        print(f"Auditing Organization: {organization.name or organization.fides_key}")
         assert isinstance(organization, Organization)
         new_findings = audit_organization_attributes(organization)
         audit_findings += new_findings

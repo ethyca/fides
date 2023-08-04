@@ -35,7 +35,7 @@ def test_cli_runner() -> Generator:
 @pytest.mark.integration
 def test_init(test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
-        cli, ["init"], env={"FIDES__USER__ANALYTICS_OPT_OUT": "true"}
+        cli, ["init"], tenv={"FIDES__USER__ANALYTICS_OPT_OUT": "true"}
     )
     print(result.output)
     assert result.exit_code == 0
