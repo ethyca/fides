@@ -10,6 +10,8 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.sql import text
 
 from fides.common.utils import echo_green, echo_red
+from fideslang.parse import parse_dict
+from fideslang.models import FidesModel
 from fides.connectors.aws import (
     create_dynamodb_dataset,
     describe_dynamo_tables,
@@ -33,20 +35,27 @@ SCHEMA_EXCLUSION = {
 
 def get_all_server_datasets(
     url: AnyHttpUrl, headers: Dict[str, str], exclude_datasets: List[Dataset]
-) -> Optional[List[Dataset]]:
+) -> List[Dataset]:
     """
     Get a list of all of the Datasets that exist on the server. Excludes any datasets
     provided in exclude_datasets
     """
     exclude_dataset_keys = [dataset.fides_key for dataset in exclude_datasets]
-    dataset_list = list_server_resources(
-        url=url,
-        resource_type="dataset",
-        exclude_keys=[str(x) for x in exclude_dataset_keys],
-        headers=headers,
+    raw_dataset_list = (
+        list_server_resources(
+            url=url,
+            resource_type="dataset",
+            exclude_keys=[str(x) for x in exclude_dataset_keys],
+            headers=headers,
+        )
+        or []
     )
+    dataset_list = [
+        Dataset.parse_obj(dataset)
+        for dataset in raw_dataset_list
+    ]
 
-    return dataset_list  # type: ignore[return-value]
+    return dataset_list
 
 
 def include_dataset_schema(schema: str, database_type: str) -> bool:
@@ -257,10 +266,11 @@ def scan_dataset_db(
     and fields and compares them to existing datasets and prioritizes
     datasets in a local manifest (if one is provided).
     """
-    manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
-    manifest_datasets = []
-    if manifest_taxonomy:
-        manifest_datasets = manifest_taxonomy.dataset or []
+
+    if manifest_dir:
+        manifest_datasets = parse(manifest_dir).dataset or []
+    else:
+        manifest_datasets = []
 
     if not local:
         server_datasets = (
@@ -272,9 +282,9 @@ def scan_dataset_db(
     else:
         server_datasets = []
 
-    dataset_keys = [
-        dataset.fides_key for dataset in manifest_datasets + server_datasets
-    ]
+    all_datasets = manifest_datasets + server_datasets
+
+    dataset_keys = [dataset.fides_key for dataset in all_datasets]
     echo_green(
         "Loaded the following dataset manifests:\n\t{}".format(
             "\n\t".join(dataset_keys)
@@ -284,7 +294,7 @@ def scan_dataset_db(
     # Generate the collections and fields for the target database
     db_datasets = generate_db_datasets(connection_string=connection_string)
     uncategorized_fields, db_field_count = find_all_uncategorized_dataset_fields(
-        existing_datasets=manifest_datasets + server_datasets,
+        existing_datasets=all_datasets,
         source_datasets=db_datasets,
     )
     if db_field_count < 1:
