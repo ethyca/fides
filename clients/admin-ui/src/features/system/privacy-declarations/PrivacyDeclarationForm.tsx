@@ -113,7 +113,7 @@ export const PrivacyDeclarationFormComponents = ({
     deleteModal.onClose();
   };
 
-  const deleteDisabled = initialValues.data_use === "";
+  const deleteDisabled = true;
 
   return (
     <Stack spacing={4}>
@@ -148,6 +148,7 @@ export const PrivacyDeclarationFormComponents = ({
         tooltip="What type of data is your system processing? This could be various types of user or system data."
         isMulti
         variant="stacked"
+        isDisabled={true}
       />
       <CustomSelect
         name="data_subjects"
@@ -159,6 +160,7 @@ export const PrivacyDeclarationFormComponents = ({
         tooltip="Whose data are you processing? This could be customers, employees or any other type of user in your system."
         isMulti
         variant="stacked"
+        isDisabled={true}
       />
       {includeCookies ? (
         <CustomCreatableSelect
@@ -186,33 +188,6 @@ export const PrivacyDeclarationFormComponents = ({
           resourceFidesKey={privacyDeclarationId}
         />
       ) : null}
-      <ButtonGroup size="sm" display="flex" justifyContent="space-between">
-        <Button
-          variant="outline"
-          onClick={deleteModal.onOpen}
-          disabled={deleteDisabled}
-          data-testid="delete-btn"
-        >
-          Delete
-        </Button>
-        <Button
-          type="submit"
-          colorScheme="primary"
-          disabled={!dirty || !isValid}
-          isLoading={isSubmitting}
-          data-testid="save-btn"
-        >
-          Save
-        </Button>
-      </ButtonGroup>
-      <ConfirmationModal
-        onConfirm={handleDelete}
-        title="Delete data use"
-        message="Are you sure you want to delete this data use? This action can't be undone."
-        isOpen={deleteModal.isOpen}
-        onClose={deleteModal.onClose}
-        isCentered
-      />
     </Stack>
   );
 };
