@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.17.1"
+    "version": "2.17.1b0.post0.dev16"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13808,9 +13808,14 @@
           "secrets": {
             "title": "Secrets",
             "type": "object"
+          },
+          "authorized": {
+            "title": "Authorized",
+            "type": "boolean",
+            "default": false
           }
         },
-        "description": "Describes the returned schema for a ConnectionConfiguration.\n\nDo *NOT* add \"secrets\" to this schema."
+        "description": "Describes the returned schema for a ConnectionConfiguration."
       },
       "ConnectionSystemTypeMap": {
         "title": "ConnectionSystemTypeMap",
@@ -13842,6 +13847,11 @@
           "encoded_icon": {
             "title": "Encoded Icon",
             "type": "string"
+          },
+          "authorization_required": {
+            "title": "Authorization Required",
+            "type": "boolean",
+            "default": false
           }
         },
         "description": "Describes the returned schema for connection types"
@@ -14391,8 +14401,7 @@
             "title": "Database",
             "enum": [
               "healthy",
-              "unhealthy",
-              "needs migration"
+              "unhealthy"
             ],
             "type": "string"
           },
@@ -20192,7 +20201,6 @@
         "title": "SaaSSchema",
         "type": "object",
         "properties": {},
-        "additionalProperties": false,
         "description": "Abstract base schema for updating SaaS connection configuration secrets.\nFields are added during runtime based on the connector_params and any\nexternal_references in the passed in saas_config"
       },
       "SaasConnectionTemplateResponse": {
@@ -21088,7 +21096,7 @@
                 "$ref": "#/components/schemas/ConnectionConfigurationResponse"
               }
             ],
-            "description": "\n    Describes the returned schema for a ConnectionConfiguration.\n\n    Do *NOT* add \"secrets\" to this schema.\n    "
+            "description": "\n    Describes the returned schema for a ConnectionConfiguration.\n    "
           },
           "cookies": {
             "title": "Cookies",
