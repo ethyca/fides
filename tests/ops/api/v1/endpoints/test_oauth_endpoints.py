@@ -15,7 +15,7 @@ from fides.api.cryptography.schemas.jwt import (
 )
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail
-from fides.api.models.connectionconfig import ConnectionTestStatus
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import OWNER
 from fides.api.oauth.utils import extract_payload
@@ -550,7 +550,7 @@ class TestCallback:
         db,
         api_client: TestClient,
         callback_url,
-        oauth2_authorization_code_connection_config,
+        oauth2_authorization_code_connection_config: ConnectionConfig,
     ):
         get_access_token_mock.return_value = None
         connection_status_mock.return_value = Mock(
@@ -572,7 +572,7 @@ class TestCallback:
         assert response.history[0].status_code == 307  # HTTP status for redirection
         assert (
             response.history[0].headers["location"]
-            == "http://test.com?status=succeeded"
+            == f"http://test.com/systems/configure/{oauth2_authorization_code_connection_config.system.fides_key}?status=succeeded"
         )
 
         authentication_request.delete(db)
@@ -588,7 +588,7 @@ class TestCallback:
         db,
         api_client: TestClient,
         callback_url,
-        oauth2_authorization_code_connection_config,
+        oauth2_authorization_code_connection_config: ConnectionConfig,
     ):
         get_access_token_mock.return_value = None
         connection_status_mock.return_value = Mock(
@@ -609,7 +609,8 @@ class TestCallback:
         get_access_token_mock.assert_called_once()
         assert response.history[0].status_code == 307  # HTTP status for redirection
         assert (
-            response.history[0].headers["location"] == "http://test.com?status=failed"
+            response.history[0].headers["location"]
+            == f"http://test.com/systems/configure/{oauth2_authorization_code_connection_config.system.fides_key}?status=failed"
         )
 
         authentication_request.delete(db)
