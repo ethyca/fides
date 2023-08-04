@@ -1,12 +1,10 @@
-from typing import Any, Dict, Generator
-from time import sleep
+from typing import Any, Dict
 
 import pydash
 import pytest
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
-    generate_random_email,
 )
 from tests.ops.test_helpers.vault_client import get_secrets
 
@@ -29,43 +27,15 @@ def qualtrics_identity_email(saas_config) -> str:
         pydash.get(saas_config, "qualtrics.identity_email") or secrets["identity_email"]
     )
 
-
-@pytest.fixture
-def qualtrics_erasure_identity_email() -> str:
-    return generate_random_email()
-
-
-@pytest.fixture
-def qualtrics_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def qualtrics_erasure_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def qualtrics_erasure_data(
-    qualtrics_erasure_identity_email: str, 
-) -> Generator:
-
-    yield {}
-
-
 @pytest.fixture
 def qualtrics_runner(
     db,
     cache,
-    qualtrics_secrets,
-    qualtrics_external_references,
-    qualtrics_erasure_external_references,
+    qualtrics_secrets
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
         "qualtrics",
-        qualtrics_secrets,
-        external_references=qualtrics_external_references,
-        erasure_external_references=qualtrics_erasure_external_references,
+        qualtrics_secrets
     )
