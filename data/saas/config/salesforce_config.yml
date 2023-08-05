@@ -18,7 +18,7 @@ saas_config:
       description: Your Salesforce OAuth client secret
     - name: redirect_uri
       label: Redirect URL
-      description: The URL to which Fides will be redirected after successful authentication
+      description: The Fides URL to which users will be redirected upon successful authentication
 
   client_config:
     protocol: https

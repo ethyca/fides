@@ -12,14 +12,14 @@ saas_config:
       description: Your Unbounce URL 
     - name: client_id
       label: Client ID
-      description: Your Unbounce client ID.
+      description: The OAuth 2.0 client ID for your application
     - name: client_secret
       sensitive: True
       label: Client secret
-      description: Your Unbounce client secret
+      description: The OAuth 2.0 client secret for your application
     - name: redirect_uri
       label: Redirect URL
-      description: The URL to which Fides will be redirected after successful authentication.
+      description: The Fides URL to which users will be redirected upon successful authentication
 
   client_config:
     protocol: https

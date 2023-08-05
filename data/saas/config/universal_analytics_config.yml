@@ -16,7 +16,7 @@ saas_config:
       description: The OAuth 2.0 client secret for your application
     - name: redirect_uri
       label: Redirect URL
-      description: The URL to which Fides will be redirected after successful authentication.
+      description: The Fides URL to which users will be redirected upon successful authentication
     - name: web_property_id
       label: Property ID
       description: Web property ID of the form UA-XXXXX-YY.
