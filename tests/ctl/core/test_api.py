@@ -1324,15 +1324,15 @@ class TestSystemUpdate:
 
         # assert the declarations in our responses match those in our requests
         response_decs: List[dict] = result.json()["privacy_declarations"]
-        # remove the IDs from the response decs for easier matching with request payload
-        # we also are implicitly affirming the response declarations DO have an
-        # 'id' field, as we expect
+
         for response_dec in response_decs:
-            response_dec.pop("id")
-        for update_dec in update_declarations:
-            response_decs.remove(update_dec.dict())
-        # and assert we don't have any extra response declarations
-        assert len(response_decs) == 0
+            assert "id" in response_dec.keys()
+            parsed_response_declaration = models.PrivacyDeclaration.parse_obj(
+                response_dec
+            )
+            assert parsed_response_declaration in update_declarations
+
+        assert len(response_decs) == len(update_declarations)
 
         # do the same for the declarations in our db record
         system = System.all(db)[0]
