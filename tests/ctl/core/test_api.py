@@ -1325,14 +1325,22 @@ class TestSystemUpdate:
         # assert the declarations in our responses match those in our requests
         response_decs: List[dict] = result.json()["privacy_declarations"]
 
+        assert len(response_decs) == len(
+            update_declarations
+        ), "Response declaration count doesn't match the number sent!"
         for response_dec in response_decs:
-            assert "id" in response_dec.keys()
+            assert (
+                "id" in response_dec.keys()
+            ), "No 'id' field in the response declaration!"
+
             parsed_response_declaration = models.PrivacyDeclaration.parse_obj(
                 response_dec
             )
-            assert parsed_response_declaration in update_declarations
-
-        assert len(response_decs) == len(update_declarations)
+            assert (
+                parsed_response_declaration in update_declarations
+            ), "The response declaration '{}' doesn't match anything in the request declarations!".format(
+                parsed_response_declaration.name
+            )
 
         # do the same for the declarations in our db record
         system = System.all(db)[0]
