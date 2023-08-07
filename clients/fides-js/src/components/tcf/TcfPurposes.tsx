@@ -1,54 +1,128 @@
 import { h } from "preact";
+
 import DataUseToggle from "../DataUseToggle";
 import { PrivacyExperience } from "../../lib/consent-types";
-import FilterButtons from "./FilterButtons";
-import CookiesTable from "./CookiesTable";
+import { TCFPurposeRecord } from "../../lib/tcf/types";
+import { UpdateEnabledIds } from "./TcfOverlay";
 
-const TcfPurposes = ({
-  purposes,
+const PurposeToggle = ({
+  purpose,
+  onToggle,
+  checked,
 }: {
-  purposes: PrivacyExperience["tcf_purposes"];
+  purpose: TCFPurposeRecord;
+  onToggle: () => void;
+  checked: boolean;
 }) => {
-  if (!purposes) {
+  const dataUse = { key: purpose.name, name: purpose.name };
+  return (
+    <DataUseToggle dataUse={dataUse} checked={checked} onToggle={onToggle}>
+      <div>
+        <p className="fides-tcf-toggle-content">{purpose.description}</p>
+        <p className="fides-tcf-illustration fides-background-dark">
+          {purpose.illustrations[0]}
+        </p>
+        {purpose.vendors && purpose.vendors.length ? (
+          <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
+            <span className="fides-tcf-purpose-vendor-title">
+              Vendors we use for this purpose
+            </span>
+            <ul className="fides-tcf-purpose-vendor-list">
+              {purpose.vendors.map((v) => (
+                <li>{v.name}</li>
+              ))}
+            </ul>
+          </p>
+        ) : null}
+      </div>
+    </DataUseToggle>
+  );
+};
+
+const PurposeBlock = ({
+  label,
+  allPurposes,
+  enabledIds,
+  onChange,
+}: {
+  label: string;
+  allPurposes: TCFPurposeRecord[] | undefined;
+  enabledIds: string[];
+  onChange: (newIds: string[]) => void;
+}) => {
+  if (!allPurposes || allPurposes.length === 0) {
     return null;
   }
-  const handleToggle = () => {};
-  const firstDataUse = { key: `${purposes[0].id}`, name: purposes[0].name };
-  const secondDataUse = { key: `${purposes[1].id}`, name: purposes[1].name };
+
+  const allChecked = allPurposes.length === enabledIds.length;
+  const handleToggle = (purpose: TCFPurposeRecord) => {
+    const purposeId = `${purpose.id}`;
+    if (enabledIds.indexOf(purposeId) !== -1) {
+      onChange(enabledIds.filter((e) => e !== purposeId));
+    } else {
+      onChange([...enabledIds, purposeId]);
+    }
+  };
+  const handleToggleAll = () => {
+    if (allChecked) {
+      onChange([]);
+    } else {
+      onChange(allPurposes.map((p) => `${p.id}`));
+    }
+  };
+
   return (
     <div>
-      <FilterButtons />
-      <DataUseToggle dataUse={firstDataUse} checked onToggle={handleToggle}>
-        <div style={{ padding: "0.5em" }}>
-          <DataUseToggle
-            dataUse={secondDataUse}
-            checked
-            onToggle={handleToggle}
-            badge="gvl"
-          >
-            <div style={{ padding: "0.5em" }}>
-              <p>
-                Advertising presented to you on this service can be based on
-                limited data, such as the website or app you are using, your
-                non-precise location, your device type or which content you are
-                (or have been) interacting with (for example, to limit the
-                number of times an ad is presented to you).
-              </p>
-              <p className="fides-background-dark" style={{ padding: "0.5em" }}>
-                A car manufacturer wants to promote its electric vehicles to
-                environmentally conscious users living in the city after office
-                hours. The advertising is presented on a page with related
-                content (such as an article on climate change actions) after
-                6:30 p.m. to users whose non-precise location suggests that they
-                are in an urban zone.
-              </p>
-            </div>
-          </DataUseToggle>
-        </div>
-      </DataUseToggle>
-      <CookiesTable />
+      <DataUseToggle
+        dataUse={{ key: label, name: label }}
+        onToggle={handleToggleAll}
+        checked={allChecked}
+        isHeader
+      />
+      {allPurposes.map((p) => (
+        <PurposeToggle
+          purpose={p}
+          onToggle={() => {
+            handleToggle(p);
+          }}
+          checked={enabledIds.indexOf(`${p.id}`) !== -1}
+        />
+      ))}
     </div>
   );
 };
+
+const TcfPurposes = ({
+  allPurposes,
+  allSpecialPurposes,
+  enabledPurposeIds,
+  enabledSpecialPurposeIds,
+  onChange,
+}: {
+  allPurposes: PrivacyExperience["tcf_purposes"];
+  allSpecialPurposes: PrivacyExperience["tcf_special_purposes"];
+  enabledPurposeIds: string[];
+  enabledSpecialPurposeIds: string[];
+  onChange: (payload: UpdateEnabledIds) => void;
+}) => (
+  <div>
+    <PurposeBlock
+      label="Purposes"
+      allPurposes={allPurposes}
+      enabledIds={enabledPurposeIds}
+      onChange={(newEnabledIds) =>
+        onChange({ newEnabledIds, modelType: "purposes" })
+      }
+    />
+    <PurposeBlock
+      label="Special purposes"
+      allPurposes={allSpecialPurposes}
+      enabledIds={enabledSpecialPurposeIds}
+      onChange={(newEnabledIds) =>
+        onChange({ newEnabledIds, modelType: "specialPurposes" })
+      }
+    />
+  </div>
+);
 
 export default TcfPurposes;

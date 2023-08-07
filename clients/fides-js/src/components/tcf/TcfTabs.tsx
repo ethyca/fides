@@ -2,18 +2,57 @@ import { h } from "preact";
 import { useRef, useState } from "preact/hooks";
 import TcfPurposes from "./TcfPurposes";
 import { PrivacyExperience } from "~/fides";
+import type { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
+import TcfFeatures from "./TcfFeatures";
+import TcfVendors from "./TcfVendors";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
 
-const TcfTabs = ({ experience }: { experience: PrivacyExperience }) => {
+const TcfTabs = ({
+  experience,
+  enabledIds,
+  onChange,
+}: {
+  experience: PrivacyExperience;
+  enabledIds: EnabledIds;
+  onChange: (payload: UpdateEnabledIds) => void;
+}) => {
   const tcfTabs = [
     {
       name: "Purposes",
-      content: <TcfPurposes purposes={experience.tcf_purposes} />,
+      content: (
+        <TcfPurposes
+          allPurposes={experience.tcf_purposes}
+          allSpecialPurposes={experience.tcf_special_purposes}
+          enabledPurposeIds={enabledIds.purposes}
+          enabledSpecialPurposeIds={enabledIds.specialPurposes}
+          onChange={onChange}
+        />
+      ),
     },
-    { name: "Features", content: "two" },
-    { name: "Vendors", content: "three" },
+    {
+      name: "Features",
+      content: (
+        <TcfFeatures
+          allFeatures={experience.tcf_features}
+          allSpecialFeatures={experience.tcf_special_features}
+          enabledFeatureIds={enabledIds.features}
+          enabledSpecialFeatureIds={enabledIds.specialFeatures}
+          onChange={onChange}
+        />
+      ),
+    },
+    {
+      name: "Vendors",
+      content: (
+        <TcfVendors
+          allVendors={experience.tcf_vendors}
+          enabledIds={enabledIds.vendors}
+          onChange={onChange}
+        />
+      ),
+    },
   ];
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const inputRefs = [

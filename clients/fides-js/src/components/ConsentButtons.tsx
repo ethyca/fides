@@ -8,7 +8,7 @@ import {
   ExperienceConfig,
 } from "../lib/consent-types";
 
-const ConsentButtons = ({
+export const ConsentButtons = ({
   experienceConfig,
   onManagePreferencesClick,
   onSave,
@@ -114,44 +114,6 @@ export const NoticeConsentButtons = ({
   return (
     <ConsentButtons
       experienceConfig={config}
-      onManagePreferencesClick={onManagePreferencesClick}
-      onSave={handleSave}
-      onAcceptAll={handleAcceptAll}
-      onRejectAll={handleRejectAll}
-      isInModal={isInModal}
-    />
-  );
-};
-
-interface TcfConsentButtonProps {
-  experience: PrivacyExperience;
-  onManagePreferencesClick?: () => void;
-  onSave: (keys: string[]) => void;
-  enabledKeys: string[];
-  isInModal?: boolean;
-}
-
-export const TcfConsentButtons = ({
-  experience,
-  onManagePreferencesClick,
-  onSave,
-  enabledKeys,
-  isInModal,
-}: TcfConsentButtonProps) => {
-  if (!experience.experience_config) {
-    return null;
-  }
-
-  // TODO: figure out what accepting all/rejecting all looks like here
-  const handleAcceptAll = () => {};
-  const handleRejectAll = () => {};
-  const handleSave = () => {
-    onSave(enabledKeys);
-  };
-
-  return (
-    <ConsentButtons
-      experienceConfig={experience.experience_config}
       onManagePreferencesClick={onManagePreferencesClick}
       onSave={handleSave}
       onAcceptAll={handleAcceptAll}

@@ -429,6 +429,7 @@ div#fides-modal .fides-modal-button-group {
 /* Disclosure */
 
 .fides-disclosure-hidden {
+  display: flex;
   visibility: hidden;
   height: 0px;
   margin-top: 0px;
@@ -456,12 +457,22 @@ div#fides-modal .fides-modal-button-group {
   background-color: var(--fides-overlay-row-hover-color);
 }
 
-.fides-notice-toggle .disclosure-visible {
-  padding-left: 0.5em;
+.fides-notice-toggle .fides-disclosure-visible {
+  padding-inline: 0.5em;
+}
+
+.fides-notice-toggle p {
+  margin: 0;
+  margin-bottom: 1.1em;
 }
 
 .fides-notice-toggle-expanded {
   background-color: var(--fides-overlay-row-hover-color);
+}
+
+.fides-notice-toggle-header {
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
 /* GPC */
@@ -613,4 +624,34 @@ div#fides-modal .fides-modal-button-group {
 .fides-flex-center {
   display: flex;
   align-items: center;
+}
+
+/* TCF toggles */
+.fides-tcf-toggle-content {
+  margin-right: 60px;
+  font-size: 0.9em;
+  font-weight: 400;
+}
+
+.fides-tcf-purpose-vendor-title {
+  font-weight: 500;
+}
+
+.fides-tcf-illustration {
+  font-size: 0.9em;
+  padding: 0.8em;
+  padding-right: 60px;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-tcf-purpose-vendor {
+  padding: 0.8em;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-tcf-purpose-vendor-list {
+  font-weight: 400;
+  padding-left: 0;
+  list-style: none;
+  margin-left: 0;
 }

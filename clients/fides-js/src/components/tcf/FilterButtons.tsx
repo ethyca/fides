@@ -1,9 +1,22 @@
 import { h } from "preact";
 import { useState } from "preact/hooks";
 
-const FilterButtons = () => {
-  const filters = [{ name: "All vendors" }, { name: "Global vendors" }];
+interface Filter {
+  name: string;
+}
+
+const FilterButtons = ({
+  filters,
+  onChange,
+}: {
+  filters: Filter[];
+  onChange: (idx: number) => void;
+}) => {
   const [activeButtonIndex, setActiveButtonIndex] = useState(0);
+  const handleClick = (idx: number) => {
+    setActiveButtonIndex(idx);
+    onChange(idx);
+  };
 
   return (
     <div className="fides-filter-button-group">
@@ -14,7 +27,7 @@ const FilterButtons = () => {
             role="radio"
             type="button"
             aria-checked={selected}
-            onClick={() => setActiveButtonIndex(idx)}
+            onClick={() => handleClick(idx)}
             className="fides-filter-button"
           >
             {name}

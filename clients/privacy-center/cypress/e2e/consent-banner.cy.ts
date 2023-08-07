@@ -161,12 +161,12 @@ describe("Consent banner", () => {
           cy.contains("button", "Manage preferences").click();
           // Notice should start off toggled off
           cy.getByTestId("toggle-Test privacy notice").within(() => {
-            cy.get("input").should("not.have.attr", "checked");
+            cy.get("input").should("not.be.checked");
           });
           cy.getByTestId("toggle-Test privacy notice").click();
           // Notice-only should start off toggled on
           cy.getByTestId("toggle-Essential").within(() => {
-            cy.get("input").should("have.attr", "checked");
+            cy.get("input").should("be.checked");
           });
 
           cy.getByTestId("Save test-btn").click();
@@ -243,10 +243,10 @@ describe("Consent banner", () => {
         // Now check that the change persisted by opening the modal
         cy.get("[id='fides-modal-link']").click();
         cy.getByTestId("toggle-Test privacy notice").within(() => {
-          cy.get("input").should("have.attr", "checked");
+          cy.get("input").should("be.checked");
         });
         cy.getByTestId("toggle-Essential").within(() => {
-          cy.get("input").should("have.attr", "checked");
+          cy.get("input").should("be.checked");
         });
         // Now reject all
         cy.getByTestId("fides-modal-content").within(() => {
@@ -255,11 +255,11 @@ describe("Consent banner", () => {
         // Check the modal again
         cy.get("[id='fides-modal-link']").click();
         cy.getByTestId("toggle-Test privacy notice").within(() => {
-          cy.get("input").should("not.have.attr", "checked");
+          cy.get("input").should("not.be.checked");
         });
         // Notice-only should still be checked
         cy.getByTestId("toggle-Essential").within(() => {
-          cy.get("input").should("have.attr", "checked");
+          cy.get("input").should("be.checked");
         });
       });
 
@@ -348,7 +348,7 @@ describe("Consent banner", () => {
         cy.contains("button", "Manage preferences").click();
         cy.getByTestId("toggle-Essential").within(() => {
           cy.get("input").should("be.disabled");
-          cy.get("input").should("have.attr", "checked");
+          cy.get("input").should("be.checked");
         });
       });
 
