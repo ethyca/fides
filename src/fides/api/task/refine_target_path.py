@@ -116,6 +116,10 @@ def refine_target_path(
         next_levels = _enter_array(current_elem, target_path[1:], only)
         return _update_path(current_level, next_levels)
 
+    # stop recursion if current_elem is None
+    if current_elem is None:
+        return []
+
     # Simple case - value is a scalar
     return [current_level] if _match_found(current_elem, only) else []
 
