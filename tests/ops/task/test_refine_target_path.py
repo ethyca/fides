@@ -105,7 +105,7 @@ class TestRefineTargetPathToValue:
 
     def test_refine_target_path_with_none_value(self):
         data = {"A": None}
-        assert refine_target_path(data, ["A.B"]) == []
+        assert refine_target_path(data, ["A", "B"]) == []
 
     def test_refine_target_path_large_data(self, sample_data):
         result = refine_target_path(
