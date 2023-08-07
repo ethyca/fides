@@ -234,7 +234,10 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
                         target.append({})
                     target = target[int(current_key)]
         try:
-            target[keys[-1]] = value
+            if isinstance(target, list):
+                target.append(value)
+            else:
+                target[keys[-1]] = value
         except TypeError as exc:
             raise FidesopsException(
                 f"Error unflattening dictionary, conflicting levels detected: {exc}"
