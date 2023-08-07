@@ -8,7 +8,13 @@ const SystemFormInputGroup = ({
   children?: React.ReactNode;
 }) => (
   <Stack spacing={4}>
-    <Box maxWidth="720px" border="1px" borderColor="gray.200" borderRadius={6}>
+    <Box
+      maxWidth="720px"
+      border="1px"
+      borderColor="gray.200"
+      borderRadius={6}
+      mt={6}
+    >
       <Box
         backgroundColor="gray.50"
         px={6}
