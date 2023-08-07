@@ -42,15 +42,27 @@ THIRD_PARTIES = "third_parties"
 
 def _system_transform_joint_controller_info(
     joint_controller_decrypted: Optional[Dict],
+    datasets_joint_controller_decrypted: List[Optional[Dict]],
 ) -> Optional[str]:
-    """System.joint_controller is currently stored as an encrypted json string.  Decrypt and combine into
+    """System.joint_controller and datasets.joint_controller are currently stored as an encrypted json string.  Decrypt and combine into
     a string where applicable"""
     new_joint_controller_info: Optional[str] = None
-    if joint_controller_decrypted and isinstance(joint_controller_decrypted, dict):
-        name = joint_controller_decrypted.get("name")
-        address = joint_controller_decrypted.get("address")
-        email = joint_controller_decrypted.get("email")
-        phone = joint_controller_decrypted.get("phone")
+    joint_controller_data = (
+        joint_controller_decrypted
+        or next(  # Multiple datasets can be related to a system, so we use the first non null one if applicable
+            (
+                item
+                for item in datasets_joint_controller_decrypted or []
+                if item is not None
+            ),
+            None,
+        )
+    )  # Prioritize system data over dataset data
+    if joint_controller_data and isinstance(joint_controller_data, dict):
+        name = joint_controller_data.get("name")
+        address = joint_controller_data.get("address")
+        email = joint_controller_data.get("email")
+        phone = joint_controller_data.get("phone")
 
         for i, item in enumerate([name, address, email, phone]):
             if item and item != "N/A":
@@ -63,10 +75,10 @@ def _system_transform_joint_controller_info(
 
 
 def _system_calculate_does_international_transfers(
-    system_third_country_transfers: Optional[List[str]],
+    system_third_country_transfers: Optional[List[str]], dataset_third_country_transfers
 ) -> bool:
     """Return true if third country transfers exist"""
-    return bool(system_third_country_transfers)
+    return bool(system_third_country_transfers) or bool(dataset_third_country_transfers)
 
 
 def _system_transform_data_responsibility_title_type(
@@ -113,14 +125,18 @@ def system_dictionary_additive_migration(bind: Connection):
     get_systems_query: TextClause = text(
         """
         SELECT 
-            id,
-            pgp_sym_decrypt(joint_controller::bytea, :encryption_key) AS joint_controller_decrypted,
-            third_country_transfers,
-            data_responsibility_title,
-            data_protection_impact_assessment,
-            ingress,
-            egress
-        FROM ctl_systems;
+            ctl_systems.id,
+            pgp_sym_decrypt(ctl_systems.joint_controller::bytea, 'test_encryption_key') AS joint_controller_decrypted,
+            ctl_systems.third_country_transfers,
+            ctl_systems.data_responsibility_title,
+            ctl_systems.data_protection_impact_assessment,
+            ctl_systems.ingress,
+            ctl_systems.egress,
+            array_accum(ctl_datasets.third_country_transfers) as dataset_third_country_transfers,
+            array_agg(pgp_sym_decrypt(ctl_datasets.joint_controller::bytea, 'test_encryption_key')) AS datasets_joint_controller_decrypted
+        FROM ctl_systems
+        LEFT JOIN privacydeclaration ON ctl_systems.id = privacydeclaration.system_id 
+        LEFT JOIN ctl_datasets on ctl_datasets.fides_key = ANY(privacydeclaration.dataset_references) GROUP BY ctl_systems.id
         """
     )
     for row in bind.execute(
@@ -130,12 +146,17 @@ def system_dictionary_additive_migration(bind: Connection):
         system_dict[system_id][
             JOINT_CONTROLLER_INFO
         ] = _system_transform_joint_controller_info(
-            json.loads(row["joint_controller_decrypted"] or "null")
+            json.loads(row["joint_controller_decrypted"] or "null"),
+            [
+                json.loads(item)
+                for item in row["datasets_joint_controller_decrypted"] or "null"
+                if item
+            ],
         )
         system_dict[system_id][
             DOES_INTERNATIONAL_TRANSFERS
         ] = _system_calculate_does_international_transfers(
-            row["third_country_transfers"]
+            row["third_country_transfers"], row["dataset_third_country_transfers"]
         )
         system_dict[system_id][
             RESPONSIBILITY
@@ -328,6 +349,19 @@ def privacy_declaration_additive_migration(bind: Connection):
 
 def upgrade():
     bind: Connection = op.get_bind()
+    bind.execute(text("DROP AGGREGATE IF EXISTS array_accum(anyarray);"))
+    bind.execute(
+        text(
+            """
+            CREATE AGGREGATE array_accum (anyarray)
+            (
+                sfunc = array_cat,
+                stype = anyarray,
+                initcond = '{}'
+            );  
+             """
+        )
+    )
     system_dictionary_additive_migration(bind)
     privacy_declaration_additive_migration(bind)
 
