@@ -10,8 +10,6 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.sql import text
 
 from fides.common.utils import echo_green, echo_red
-from fideslang.parse import parse_dict
-from fideslang.models import FidesModel
 from fides.connectors.aws import (
     create_dynamodb_dataset,
     describe_dynamo_tables,
@@ -50,10 +48,7 @@ def get_all_server_datasets(
         )
         or []
     )
-    dataset_list = [
-        Dataset.parse_obj(dataset)
-        for dataset in raw_dataset_list
-    ]
+    dataset_list = [Dataset.parse_obj(dataset) for dataset in raw_dataset_list]
 
     return dataset_list
 
