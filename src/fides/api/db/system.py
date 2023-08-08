@@ -137,7 +137,7 @@ async def upsert_privacy_declarations(
 
 async def upsert_cookies(
     async_session: AsyncSession,
-    cookies: Optional[List[Dict]],  # CookieSchema
+    cookies: List[Dict],  # CookieSchema
     privacy_declaration: PrivacyDeclaration,
     system: System,
 ) -> None:
@@ -147,9 +147,6 @@ async def upsert_cookies(
 
     Remove any existing cookies that aren't specified here.
     """
-
-    if not cookies:
-        return
 
     for cookie_data in cookies:
         # Check if cookie exists for this name/system/privacy declaration
