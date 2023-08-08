@@ -103,7 +103,7 @@ class TestRefineTargetPathToValue:
             ["A", 0, 4],
         ]
 
-    def test_refine_target_path_with_none_value(self):
+    def test_refine_target_path_with_incomplete_path(self):
         data = {"A": None}
         assert refine_target_path(data, ["A", "B"]) == []
 
