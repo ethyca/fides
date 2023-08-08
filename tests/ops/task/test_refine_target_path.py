@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from fides.api.graph.config import FieldPath
 from fides.api.task.refine_target_path import (
     _match_found,
@@ -10,6 +12,10 @@ from fides.api.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
 
 class TestRefineTargetPathToValue:
     """Test target paths built to specific matched values"""
+
+    def test_refine_target_path_empty_input_data(self):
+        data: Dict[str, Any] = {}
+        assert refine_target_path(data, ["A"]) == []
 
     def test_refine_target_path_value_does_not_match(self):
         data = {"A": "a", "B": "b"}
@@ -106,6 +112,10 @@ class TestRefineTargetPathToValue:
     def test_refine_target_path_with_incomplete_path(self):
         data = {"A": None}
         assert refine_target_path(data, ["A", "B"]) == []
+
+    def test_refine_target_path_none_value_at_top_level(self):
+        data = {"A": None}
+        assert refine_target_path(data, ["A"]) == ["A"]
 
     def test_refine_target_path_with_nested_none_value(self):
         data = {"A": {"B": None}}
