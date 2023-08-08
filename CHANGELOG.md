@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.17.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.18.0...main)
+
+## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
 ### Added
 - Additional consent reporting calls from `fides-js` [#3845](https://github.com/ethyca/fides/pull/3845)

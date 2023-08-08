@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional
+from urllib.parse import urlparse
 
 from fastapi import Body, Depends, HTTPException, Request, Response, Security
 from fastapi.responses import PlainTextResponse, RedirectResponse
@@ -254,8 +255,16 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Resp
         )
 
         if authentication_request.referer:
+            # We generate the base URL using only the scheme and netloc (host and port),
+            # and omit the path. This is done to ensure the correct redirection URL, as the
+            # user might not be on the system's unique page when they follow the
+            # authorization link out of Fides.
+
+            parsed_url = urlparse(authentication_request.referer)
+            base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+            system_key = connection_config.system.fides_key
             return RedirectResponse(
-                url=f"{authentication_request.referer}?status={test_status_value}"
+                url=f"{base_url}/systems/configure/{system_key}?status={test_status_value}"
             )
         return PlainTextResponse(
             content=f"Connection test status: {test_status_value}. No referer URL available. Please navigate back to the Fides Admin UI.",
