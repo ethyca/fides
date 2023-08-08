@@ -1,12 +1,12 @@
 from typing import List, Optional
 
-from fides.api.schemas.user import UserResponse
 from fideslang.models import Cookies, PrivacyDeclaration, System
 from pydantic import Field
 
 from fides.api.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
 )
+from fides.api.schemas.user import UserResponse
 
 
 class PrivacyDeclarationResponse(PrivacyDeclaration):

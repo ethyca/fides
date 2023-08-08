@@ -77,8 +77,6 @@ def upgrade():
     )
     op.add_column("ctl_systems", sa.Column("dpa_location", sa.String(), nullable=True))
     op.add_column("ctl_systems", sa.Column("dpa_progress", sa.String(), nullable=True))
-    op.add_column("ctl_systems", sa.Column("source", sa.JSON(), nullable=True))
-    op.add_column("ctl_systems", sa.Column("destination", sa.JSON(), nullable=True))
 
     op.add_column(
         "ctl_systems", sa.Column("privacy_policy", sa.String(), nullable=True)
@@ -170,8 +168,6 @@ def downgrade():
     op.drop_column("ctl_systems", "legal_address")
     op.drop_column("ctl_systems", "legal_name")
     op.drop_column("ctl_systems", "privacy_policy")
-    op.drop_column("ctl_systems", "source")
-    op.drop_column("ctl_systems", "destination")
     op.drop_column("ctl_systems", "dpa_progress")
     op.drop_column("ctl_systems", "dpa_location")
     op.drop_column("ctl_systems", "requires_data_protection_assessments")
