@@ -3,17 +3,22 @@ saas_config:
   name: Salesforce Classic
   type: salesforce
   description: A sample schema representing the Salesforce Classic connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/salesforce
   version: 0.0.3
 
   connector_params:
     - name: domain
-      description: yourdomain.my.salesforce.com
+      description: Your Salesforce URL
     - name: client_id
       label: Client ID
+      description: Your Salesforce OAuth client ID.
     - name: client_secret
       sensitive: True
+      label: Client secret
+      description: Your Salesforce OAuth client secret
     - name: redirect_uri
-      label: Redirect URI
+      label: Redirect URL
+      description: The Fides URL to which users will be redirected upon successful authentication
 
   client_config:
     protocol: https

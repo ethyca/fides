@@ -3,19 +3,22 @@ saas_config:
   name: Fullstory
   type: fullstory
   description: A sample schema representing the Fullstory connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/fullstory
   version: 0.0.2
 
   connector_params:
     - name: domain
       default_value: api.fullstory.com
+      description: FullStory API Domain
     - name: api_key
-      label: API Key
+      label: API key
       sensitive: True
+      description: Your FullStory API Key
 
   external_references:
     - name: fullstory_user_id
-      label: Fullstory User ID
-      description: Dataset reference to the location of Fullstory user IDs
+      label: User ID field
+      description: The location in your owned database where you store FullStory User IDs
 
   client_config:
     protocol: https
