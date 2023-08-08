@@ -44,8 +44,12 @@ def _system_transform_joint_controller_info(
     joint_controller_decrypted: Optional[Dict],
     datasets_joint_controller_decrypted: List[Optional[Dict]],
 ) -> Optional[str]:
-    """System.joint_controller and datasets.joint_controller are currently stored as an encrypted json string.  Decrypt and combine into
-    a string where applicable"""
+    """ Migrating systems.joint_controller and datasets.joint_controller encrypted json string fields to
+    System.joint_controller_info which is just a string.
+
+    Prioritizing system joint_controller info if it exists, or taking the first non-null entry from datasets
+    otherwise.
+    """
     new_joint_controller_info: Optional[str] = None
     joint_controller_data = (
         joint_controller_decrypted
@@ -75,16 +79,19 @@ def _system_transform_joint_controller_info(
 
 
 def _system_calculate_does_international_transfers(
-    system_third_country_transfers: Optional[List[str]], dataset_third_country_transfers
+    system_third_country_transfers: Optional[List[str]], dataset_third_country_transfers: Optional[List[str]]
 ) -> bool:
-    """Return true if third country transfers exist"""
+    """Migrating System.third_country_transfers and Dataset.third_country_transfers to System.does_international_transfers
+    If any countries listed, System.does_international_transfers will be set to true
+    """
     return bool(system_third_country_transfers) or bool(dataset_third_country_transfers)
 
 
 def _system_transform_data_responsibility_title_type(
     dept_str: Optional[str],
 ) -> List[str]:
-    """data_responsibility_title (str) is becoming responsibility(list)"""
+    """Migrating System.data_responsibility_title (str) to System.responsibility(list).  There can now be potentially many
+    items listed here"""
     if not dept_str:
         return []
     return [dept_str]
@@ -93,7 +100,8 @@ def _system_transform_data_responsibility_title_type(
 def _consolidate_privacy_declaration_dataset_references(
     existing_references: List[str], privacy_declaration_references: List[str]
 ) -> List[str]:
-    """Take all dataset references across all of a system's privacy declarations and consolidate into a single list"""
+    """Migrating PrivacyDeclaration.dataset_references to System.dataset_references:
+    Take all dataset references across all of a system's privacy declarations and consolidate into a single list"""
     if not existing_references:
         existing_references = []
     for ref in privacy_declaration_references:
@@ -105,7 +113,9 @@ def _consolidate_privacy_declaration_dataset_references(
 def _flatten_data_protection_impact_assessment(
     data_protection_impact_assessment: Optional[Dict],
 ) -> Tuple[bool, Optional[str], Optional[str]]:
-    """Data protection impact assessment is currently a dictionary: flatten its contents into three pieces"""
+    """Flattening data from System.data_protection_impact_assessment into three separate fields:
+    System.requires_data_protection_assessments, System.dpa_location, and System.dpa_progress
+    """
     if not data_protection_impact_assessment or not isinstance(
         data_protection_impact_assessment, dict
     ):
@@ -120,29 +130,32 @@ def _flatten_data_protection_impact_assessment(
 
 
 def system_dictionary_additive_migration(bind: Connection):
-    """Migrate existing data to new Systems fields"""
+    """Copy and/or transform existing data in Datasets, PrivacyDeclarations and the System itself to new
+     Systems fields to support dictionary work"""
     system_dict: Dict = defaultdict(lambda: {})
     get_systems_query: TextClause = text(
         """
         SELECT 
             ctl_systems.id,
-            pgp_sym_decrypt(ctl_systems.joint_controller::bytea, 'test_encryption_key') AS joint_controller_decrypted,
+            pgp_sym_decrypt(ctl_systems.joint_controller::bytea, :encryption_key) AS joint_controller_decrypted,
             ctl_systems.third_country_transfers,
             ctl_systems.data_responsibility_title,
             ctl_systems.data_protection_impact_assessment,
             ctl_systems.ingress,
             ctl_systems.egress,
             array_accum(ctl_datasets.third_country_transfers) as dataset_third_country_transfers,
-            array_agg(pgp_sym_decrypt(ctl_datasets.joint_controller::bytea, 'test_encryption_key')) AS datasets_joint_controller_decrypted
+            array_agg(pgp_sym_decrypt(ctl_datasets.joint_controller::bytea, :encryption_key)) AS datasets_joint_controller_decrypted
         FROM ctl_systems
         LEFT JOIN privacydeclaration ON ctl_systems.id = privacydeclaration.system_id 
-        LEFT JOIN ctl_datasets on ctl_datasets.fides_key = ANY(privacydeclaration.dataset_references) GROUP BY ctl_systems.id
+        LEFT JOIN ctl_datasets ON ctl_datasets.fides_key = ANY(privacydeclaration.dataset_references) GROUP BY ctl_systems.id
         """
     )
     for row in bind.execute(
         get_systems_query, {"encryption_key": CONFIG.user.encryption_key}
     ):
         system_id: str = row["id"]
+        # System.joint_controller_info populated from flattened data from either System.joint_controller
+        # or any of the Datasets.joint_controller. New field isn't as rigid on structure required.
         system_dict[system_id][
             JOINT_CONTROLLER_INFO
         ] = _system_transform_joint_controller_info(
@@ -153,11 +166,15 @@ def system_dictionary_additive_migration(bind: Connection):
                 if item
             ],
         )
+        # System.does_international_transfers is populated based on whether System.third_country_transfers or
+        # Dataset.third_country_transfers exist
         system_dict[system_id][
             DOES_INTERNATIONAL_TRANSFERS
         ] = _system_calculate_does_international_transfers(
             row["third_country_transfers"], row["dataset_third_country_transfers"]
         )
+        # Populate System.requires_data_protection_assessments, System.dpa_progress, and System.dpa_location from
+        # nested fields in System.data_responsibility_title
         system_dict[system_id][
             RESPONSIBILITY
         ] = _system_transform_data_responsibility_title_type(
@@ -175,11 +192,14 @@ def system_dictionary_additive_migration(bind: Connection):
         ] = requires_data_protection_assessments
         system_dict[system_id][DPA_LOCATION] = dpa_location
         system_dict[system_id][DPA_PROGRESS] = dpa_progress
+        # Copying over System.ingress/egress to new Systems.source/destination fields as-is
         system_dict[system_id][SOURCE] = json.dumps(row["ingress"])
         system_dict[system_id][DESTINATION] = json.dumps(row["egress"])
+        # Making dataset references on the system an empty list here for now, so we have a starting value,
+        # even if the system doesn't have any privacy declarations in the next step
         system_dict[system_id][
             DATASET_REFERENCES
-        ] = []  # Potentially overwritten by privacy declarations if applicable
+        ] = []
 
     privacy_declaration_query: TextClause = text(
         """
@@ -191,6 +211,8 @@ def system_dictionary_additive_migration(bind: Connection):
         """
     )
     for row in bind.execute(privacy_declaration_query):
+        # Consolidating all the dataset references across all of a System's Privacy Declarations into a single
+        # System.dataset_references field.
         system_dict[row["system_id"]][
             DATASET_REFERENCES
         ] = _consolidate_privacy_declaration_dataset_references(
@@ -254,6 +276,8 @@ def _get_privacy_declaration_legal_basis_for_processing(
     data_use_legal_basis: Optional[str],
     legitimate_interest_impact_assessment: Optional[str],
 ) -> Optional[str]:
+    """Use DataUse.legal_basis or DataUse.legitimate_interest_impact_assessment to set the value of
+    PrivacyDeclaration.legal_basis_for_processing """
     if legitimate_interest_impact_assessment:
         return "Legitimate interests"
     if data_use_legal_basis:
@@ -264,13 +288,15 @@ def _get_privacy_declaration_legal_basis_for_processing(
 def _get_third_party_data(
     recipients: Optional[List[str]],
 ) -> Tuple[bool, Optional[str]]:
-    """Translate data from recipients field to new privacy declaration fields"""
+    """Migrate data from DataUse.recipients field to new PrivacyDeclaration.third_parties and PrivacyDeclaration.data_shared_with_third_parties
+     be true
+     """
     data_shared_with_third_parties: bool = False
     third_parties: Optional[str] = None
+
     if recipients:
         data_shared_with_third_parties = True
 
-    if recipients:
         third_parties = ""
         for i, recipient in enumerate(recipients):
             if i != 0:
