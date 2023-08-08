@@ -372,6 +372,12 @@ class TestUnflattenDict:
             {"A.0.B": "C", "A.0.D": "E", "A.1.F": "G", "A.1.H": "I"}
         ) == {"A": [{"B": "C", "D": "E"}, {"F": "G", "H": "I"}]}
 
+    def test_array_with_scalar_value(self):
+        assert unflatten_dict({"A.0": "B"}) == {"A": ["B"]}
+
+    def test_array_with_scalar_values(self):
+        assert unflatten_dict({"A.0": "B", "A.1": "C"}) == {"A": ["B", "C"]}
+
     def test_overwrite_existing_values(self):
         assert unflatten_dict({"A.B": 1, "A.B": 2}) == {"A": {"B": 2}}
 
