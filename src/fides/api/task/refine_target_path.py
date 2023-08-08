@@ -108,17 +108,13 @@ def refine_target_path(
         logger.warning("Could not locate target path {} on row", target_path)
         return []
 
-    if isinstance(current_elem, dict):
-        next_levels = refine_target_path(current_elem, target_path[1:], only)
-        return _update_path(current_level, next_levels)
-
     if isinstance(current_elem, list):
         next_levels = _enter_array(current_elem, target_path[1:], only)
         return _update_path(current_level, next_levels)
 
-    # stop recursion if current_elem is None
-    if current_elem is None:
-        return []
+    if len(target_path[1:]):
+        next_levels = refine_target_path(current_elem, target_path[1:], only)
+        return _update_path(current_level, next_levels)
 
     # Simple case - value is a scalar
     return [current_level] if _match_found(current_elem, only) else []
