@@ -6,3 +6,4 @@ export { default as GearLightIcon } from "./GearLightIcon";
 export { default as GlobeIcon } from "./Globe";
 export { default as ManualSetupIcon } from "./ManualSetup";
 export { default as OktaLogoIcon } from "./OktaLogo";
+export { default as AWSS3Logo } from "./AWSS3logo"

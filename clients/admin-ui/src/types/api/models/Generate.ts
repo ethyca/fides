@@ -13,7 +13,7 @@ import type { ValidTargets } from "./ValidTargets";
  * Defines attributes for generating resources included in a request.
  */
 export type Generate = {
-  config: AWSConfig | OktaConfig | DatabaseConfig | BigQueryConfig;
+  config: AWSConfig | OktaConfig | DatabaseConfig | BigQueryConfig 
   target: ValidTargets;
   type: GenerateTypes;
 };
