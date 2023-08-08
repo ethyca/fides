@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.18.0...main)
 
+### Fixed
+- Fixed issue when generating masked values for invalid data paths (#3906)[https://github.com/ethyca/fides/pull/3906]
+
 ### Changed
 
 - Systems and Privacy Declaration schema and data migration to support the Dictionary [#3901](https://github.com/ethyca/fides/pull/3901)
