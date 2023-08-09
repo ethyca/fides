@@ -35,6 +35,7 @@ PROCESSES_SPECIAL_CATEGORY_DATA = "processes_special_category_data"
 SPECIAL_CATEGORY_LEGAL_BASIS = "special_category_legal_basis"
 DATA_SHARED_WITH_THIRD_PARTIES = "data_shared_with_third_parties"
 THIRD_PARTIES = "third_parties"
+RETENTION_PERIOD = "retention_period"
 
 
 def _system_transform_joint_controller_info(
@@ -83,7 +84,7 @@ def _system_calculate_does_international_transfers(
     dataset_third_country_transfers: Optional[List[str]],
 ) -> bool:
     """Migrating System.third_country_transfers and Dataset.third_country_transfers to System.does_international_transfers
-    If any countries listed, System.does_international_transfers will be set to true
+    If any countries are listed, regardless of which country it is, System.does_international_transfers will be set to true.
     """
     return bool(system_third_country_transfers) or bool(dataset_third_country_transfers)
 
@@ -132,7 +133,8 @@ def system_dictionary_additive_migration(bind: Connection):
             array_agg(pgp_sym_decrypt(ctl_datasets.joint_controller::bytea, :encryption_key)) AS datasets_joint_controller_decrypted
         FROM ctl_systems
         LEFT JOIN privacydeclaration ON ctl_systems.id = privacydeclaration.system_id 
-        LEFT JOIN ctl_datasets ON ctl_datasets.fides_key = ANY(privacydeclaration.dataset_references) GROUP BY ctl_systems.id
+        LEFT JOIN ctl_datasets ON ctl_datasets.fides_key = ANY(privacydeclaration.dataset_references) 
+        GROUP BY ctl_systems.id
         """
     )
     for row in bind.execute(
@@ -204,7 +206,7 @@ legal_basis_for_processing_map: Dict = {
     "Legitimate interests": "Legitimate interests",
 }
 
-# Language is changing
+# Language/casing is changing
 special_category_map: Dict = {
     "Consent": "Explicit consent",
     "Employment": "Employment, social security and social protection",
@@ -250,17 +252,37 @@ def _get_third_party_data(
     return data_shared_with_third_parties, third_parties
 
 
+def _get_retention_period(
+    retention_periods: Optional[List[str]],
+) -> Optional[str]:
+    """Migrate data from Dataset.retention field all related PrivacyDeclaration.retention_periods"""
+    if not retention_periods:
+        return None
+
+    for retention_period in retention_periods:
+        # There may be multiple datasets associated with a privacy declaration.  Choosing the first retention
+        # period that does not equal "No retention or erasure policy" if applicable.
+        if (
+            retention_period is not None
+            and retention_period != "No retention or erasure policy"
+        ):
+            return retention_period
+    return "No retention or erasure policy"
+
+
 def privacy_declaration_additive_migration(bind: Connection):
-    """Copy/transform existing data from DataUse fields to new Privacy Declaration fields"""
+    """Copy/transform existing data from DataUse and Datasets fields to new Privacy Declaration fields"""
+    all_privacy_declarations: Dict[str, Dict] = {}
+
+    # Selecting relevant DataUse fields to move over to PrivacyDeclaration
     get_privacy_declarations_query: TextClause = text(
         """
         SELECT 
             privacydeclaration.id,
-            legal_basis,
-            legitimate_interest_impact_assessment,
-            special_category,
-            recipients,
-            data_use
+            ctl_data_uses.legal_basis,
+            ctl_data_uses.legitimate_interest_impact_assessment,
+            ctl_data_uses.special_category,
+            ctl_data_uses.recipients
         FROM privacydeclaration
         LEFT JOIN ctl_data_uses ON privacydeclaration.data_use = ctl_data_uses.fides_key;
         """
@@ -283,6 +305,26 @@ def privacy_declaration_additive_migration(bind: Connection):
             THIRD_PARTIES: third_parties,
         }
 
+        all_privacy_declarations[row["id"]] = privacy_declaration_data
+
+    # Select first retention periods from associated datasets to migrate over to PrivacyDeclaration
+    data_retention_query: TextClause = text(
+        """
+        SELECT 
+            privacydeclaration.id,
+            array_agg(ctl_datasets.retention) as retention_periods
+        FROM privacydeclaration
+        LEFT JOIN ctl_datasets ON ctl_datasets.fides_key = ANY(privacydeclaration.dataset_references)
+        GROUP BY privacydeclaration.id;
+        """
+    )
+
+    for row in bind.execute(data_retention_query):
+        all_privacy_declarations[row["id"]][RETENTION_PERIOD] = _get_retention_period(
+            row["retention_periods"]
+        )
+
+    for privacy_declaration_id, update_data in all_privacy_declarations.items():
         update_privacy_declarations_query: TextClause = text(
             """
                 UPDATE privacydeclaration
@@ -292,7 +334,8 @@ def privacy_declaration_additive_migration(bind: Connection):
                     processes_special_category_data = :processes_special_category_data,
                     special_category_legal_basis = :special_category_legal_basis,
                     data_shared_with_third_parties = :data_shared_with_third_parties,
-                    third_parties = :third_parties
+                    third_parties = :third_parties,
+                    retention_period = :retention_period
                 WHERE id = :id;
             """
         )
@@ -300,8 +343,8 @@ def privacy_declaration_additive_migration(bind: Connection):
         bind.execute(
             update_privacy_declarations_query,
             {
-                "id": row["id"],
-                **privacy_declaration_data,
+                "id": privacy_declaration_id,
+                **update_data,
             },
         )
 

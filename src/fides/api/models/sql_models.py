@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
 from pydantic import BaseModel
-from sqlalchemy import ARRAY, BOOLEAN, INTEGER, JSON, Column
+from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
     ForeignKey,
