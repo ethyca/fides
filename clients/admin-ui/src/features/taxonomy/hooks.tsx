@@ -16,10 +16,7 @@ import {
 } from "~/types/api";
 
 import { YesNoOptions } from "../common/constants";
-import {
-  CustomRadioGroup,
-  CustomSelect,
-} from "../common/form/inputs";
+import { CustomRadioGroup, CustomSelect } from "../common/form/inputs";
 import { enumToOptions } from "../common/helpers";
 import {
   useCreateDataSubjectMutation,
@@ -296,9 +293,9 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
 
   const renderExtraFormFields = (formValues: DataUse) => (
     <CustomFieldsList
-        resourceFidesKey={formValues.fides_key}
-        resourceType={resourceType}
-      />
+      resourceFidesKey={formValues.fides_key}
+      resourceType={resourceType}
+    />
   );
 
   return {
