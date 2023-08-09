@@ -20,6 +20,8 @@ The types of changes are:
 ### Changed
 - Removed deprecated fields from the taxonomy editor [#3909](https://github.com/ethyca/fides/pull/3909)
 
+### Fixed
+- Fixed issue when generating masked values for invalid data paths (#3906)[https://github.com/ethyca/fides/pull/3906]
 
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
