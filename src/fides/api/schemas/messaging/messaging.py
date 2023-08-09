@@ -56,11 +56,11 @@ class MessagingActionType(str, Enum):
     CONSENT_REQUEST_EMAIL_FULFILLMENT = "consent_request_email_fulfillment"
     MESSAGE_ERASURE_REQUEST_FULFILLMENT = "message_erasure_fulfillment"
     PRIVACY_REQUEST_ERROR_NOTIFICATION = "privacy_request_error_notification"
-    PRIVACY_REQUEST_RECEIPT = "privacy_request_receipt"
-    PRIVACY_REQUEST_COMPLETE_ACCESS = "privacy_request_complete_access"
-    PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
-    PRIVACY_REQUEST_REVIEW_DENY = "privacy_request_review_deny"
-    PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
+    PRIVACY_REQUEST_RECEIPT = "privacy_request_received"
+    PRIVACY_REQUEST_COMPLETE_ACCESS = "privacy_request_access_complete"
+    PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_erasure_complete"
+    PRIVACY_REQUEST_REVIEW_DENY = "privacy_request_denied"
+    PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_approved"
     TEST_MESSAGE = "test_message"
 
 
@@ -144,6 +144,8 @@ class ConsentEmailFulfillmentBodyParams(BaseModel):
 
 
 class ErasureRequestBodyParams(BaseModel):
+    """Body params required to send batched user erasure requests by email"""
+
     controller: str
     third_party_vendor_name: str
     identities: List[str]
@@ -170,10 +172,15 @@ class FidesopsMessage(
 
 
 class EmailForActionType(BaseModel):
-    """Email details that depend on action type"""
+    """
+    Represents email details for a specific action type, including subject and body.
+    Template variables may be included if provided for the given action type and can be
+    used by the downstream mailing service to customize messages, if supported.
+    """
 
     subject: str
     body: str
+    template_variables: Optional[Dict[str, Any]] = {}
 
 
 class MessagingServiceDetails(Enum):

@@ -155,6 +155,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
       },
       {
+        title: "Email templates",
+        path: routes.EMAIL_TEMPLATES_ROUTE,
+        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
+      },
+      {
         title: "About Fides",
         path: routes.ABOUT_ROUTE,
         scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features

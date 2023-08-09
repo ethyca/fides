@@ -33,7 +33,7 @@ import {
   Size,
 } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
-import { useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
@@ -355,11 +355,27 @@ export const CustomTextInput = ({
   ...props
 }: CustomInputProps & StringField) => {
   const [initialField, meta] = useField(props);
-  const { type: initialType, placeholder } = props;
+  const { type: initialType = "text", placeholder } = props;
   const isInvalid = !!(meta.touched && meta.error);
   const field = { ...initialField, value: initialField.value ?? "" };
 
   const isPassword = initialType === "password";
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const resizeTextarea = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto"; // Reset height to calculate the new height
+      textarea.style.height = `${textarea.scrollHeight}px`; // Set height to match the content
+    }
+  };
+
+  useEffect(() => {
+    if (initialType === "textarea") {
+      resizeTextarea(); // Resize the textarea when the component mounts
+    }
+  }, [initialType]);
 
   if (variant === "inline") {
     return (
@@ -368,13 +384,29 @@ export const CustomTextInput = ({
           <Label htmlFor={props.id || props.name}>{label}</Label>
           <Flex alignItems="center">
             <Flex flexDir="column" flexGrow={1} mr="2">
-              <TextInput
-                {...field}
-                isDisabled={disabled}
-                data-testid={`input-${field.name}`}
-                placeholder={placeholder}
-                isPassword={isPassword}
-              />
+              {initialType == "textarea" ? (
+                <Textarea
+                  ref={textareaRef}
+                  size="sm"
+                  {...field}
+                  isDisabled={disabled}
+                  data-testid={`input-${field.name}`}
+                  placeholder={placeholder}
+                  style={{ overflowY: "hidden" }}
+                  onChange={(event) => {
+                    resizeTextarea(); // Resize the textarea
+                    field.onChange(event); // Handle Formik's onChange
+                  }}
+                />
+              ) : (
+                <TextInput
+                  {...field}
+                  isDisabled={disabled}
+                  data-testid={`input-${field.name}`}
+                  placeholder={placeholder}
+                  isPassword={isPassword}
+                />
+              )}
               <ErrorMessage
                 isInvalid={isInvalid}
                 message={meta.error}
@@ -396,13 +428,29 @@ export const CustomTextInput = ({
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
-        <TextInput
-          {...field}
-          isDisabled={disabled}
-          data-testid={`input-${field.name}`}
-          placeholder={placeholder}
-          isPassword={isPassword}
-        />
+        {initialType == "textarea" ? (
+          <Textarea
+            ref={textareaRef}
+            size="sm"
+            {...field}
+            isDisabled={disabled}
+            data-testid={`input-${field.name}`}
+            placeholder={placeholder}
+            style={{ overflowY: "hidden" }}
+            onChange={(event) => {
+              resizeTextarea(event); // Resize the textarea
+              field.onChange(event); // Handle Formik's onChange
+            }}
+          />
+        ) : (
+          <TextInput
+            {...field}
+            isDisabled={disabled}
+            data-testid={`input-${field.name}`}
+            placeholder={placeholder}
+            isPassword={isPassword}
+          />
+        )}
         <ErrorMessage
           isInvalid={isInvalid}
           message={meta.error}

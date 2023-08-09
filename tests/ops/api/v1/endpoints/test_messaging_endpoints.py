@@ -21,6 +21,7 @@ from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     MESSAGING_READ,
+    MESSAGING_TEMPLATE_UPDATE,
 )
 from fides.common.api.v1.urn_registry import (
     MESSAGING_ACTIVE_DEFAULT,
@@ -31,6 +32,7 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
     MESSAGING_STATUS,
+    MESSAGING_TEMPLATES,
     MESSAGING_TEST,
     V1_URL_PREFIX,
 )
@@ -1828,7 +1830,7 @@ class TestGetMessagingStatus:
         assert MessagingServiceType.twilio_text.value in (response.detail)
 
 
-class TestTestMesage:
+class TestTestMessage:
     @pytest.fixture
     def url(self):
         return f"{V1_URL_PREFIX}{MESSAGING_TEST}"
@@ -1879,3 +1881,27 @@ class TestTestMesage:
         )
         assert response.status_code == 400
         assert mock_dispatch_message.called
+
+
+class TestGetMessagingTemplates:
+    @pytest.fixture
+    def url(self) -> str:
+        return V1_URL_PREFIX + MESSAGING_TEMPLATES
+
+    def test_get_messaging_templates(
+        self, url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+
+
+class TestPostMessagingTemplates:
+    @pytest.fixture
+    def url(self) -> str:
+        return V1_URL_PREFIX + MESSAGING_TEMPLATES
+
+    def test_post_messaging_templates(
+        self, url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        pass

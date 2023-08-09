@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import Depends, Security
 from fastapi_pagination import Page, Params
@@ -28,6 +28,12 @@ from fides.api.models.messaging import (
     default_messaging_config_name,
     get_schema_for_secrets,
 )
+from fides.api.models.messaging_template import (
+    DEFAULT_MESSAGING_TEMPLATES,
+    MessagingTemplate,
+    MessagingTemplateRequest,
+    MessagingTemplateResponse,
+)
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
@@ -47,6 +53,7 @@ from fides.api.service.messaging.message_dispatch_service import dispatch_messag
 from fides.api.service.messaging.messaging_crud_service import (
     create_or_update_messaging_config,
     delete_messaging_config,
+    get_all_messaging_templates,
     get_messaging_config_by_key,
     update_messaging_config,
 )
@@ -56,6 +63,7 @@ from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     MESSAGING_READ,
+    MESSAGING_TEMPLATE_UPDATE,
 )
 from fides.common.api.v1.urn_registry import (
     MESSAGING_ACTIVE_DEFAULT,
@@ -66,6 +74,7 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
     MESSAGING_STATUS,
+    MESSAGING_TEMPLATES,
     MESSAGING_TEST,
     V1_URL_PREFIX,
 )
@@ -478,3 +487,38 @@ def send_test_message(
             status_code=400, detail=f"There was an error sending the test message: {e}"
         )
     return {"details": "Test message successfully sent"}
+
+
+@router.get(
+    MESSAGING_TEMPLATES,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
+    response_model=List[MessagingTemplateResponse],
+)
+def get_messaging_templates(
+    *, db: Session = Depends(deps.get_db)
+) -> List[MessagingTemplate]:
+    return get_all_messaging_templates(db=db)
+
+
+@router.post(
+    MESSAGING_TEMPLATES,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
+)
+def update_messaging_templates(
+    templates: List[MessagingTemplateRequest], *, db: Session = Depends(deps.get_db)
+) -> Dict[str, Any]:
+    for template in templates:
+        key = template.key
+        content = template.content
+
+        # use default values if the update payload is missing a value
+        content["subject"] = (
+            content.get("subject") or DEFAULT_MESSAGING_TEMPLATES[key]["subject"]
+        )
+        content["body"] = (
+            content.get("body") or DEFAULT_MESSAGING_TEMPLATES[key]["body"]
+        )
+
+        MessagingTemplate.create_or_update(db, data={"key": key, "content": content})
+
+    return {"message": "Email templates updated successfully."}
