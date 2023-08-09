@@ -597,15 +597,62 @@ class TestSystemCreate:
         )
 
         assert result.status_code == HTTP_201_CREATED
-        assert result.json()["name"] == "Test System"
-        assert result.json()["cookies"] == [
+        json_results = result.json()
+        assert json_results["name"] == "Test System"
+        assert json_results["cookies"] == [
             {"name": "essential_cookie", "path": "/", "domain": "example.com"}
         ]
-        assert result.json()["privacy_declarations"][0]["cookies"] == [
+        assert json_results["privacy_declarations"][0]["cookies"] == [
             {"name": "essential_cookie", "path": "/", "domain": "example.com"}
         ]
-        assert result.json()["privacy_declarations"][1]["cookies"] == []
-        assert len(result.json()["privacy_declarations"]) == 2
+        assert json_results["privacy_declarations"][1]["cookies"] == []
+        assert len(json_results["privacy_declarations"]) == 2
+
+        assert json_results["vendor_id"] == "test_vendor"
+        assert json_results["dataset_references"] == ["another_system_reference"]
+        assert json_results["processes_personal_data"] is True
+        assert json_results["exempt_from_privacy_regulations"] is False
+        assert json_results["reason_for_exemption"] is None
+        assert json_results["uses_profiling"] is True
+        assert json_results["legal_basis_for_profiling"] == "Authorised by law"
+        assert json_results["does_international_transfers"] is True
+        assert json_results["legal_basis_for_transfers"] == "Binding corporate rules"
+        assert json_results["requires_data_protection_assessments"] is True
+        assert json_results["dpa_location"] == "https://www.example.com/dpa"
+        assert json_results["dpa_progress"] == "pending"
+        assert (
+            json_results["privacy_policy"] == "https://www.example.com/privacy_policy"
+        )
+        assert json_results["legal_name"] == "Sunshine Corporation"
+        assert json_results["legal_address"] == "35925 Test Lane, Test Town, TX 24924"
+        assert json_results["responsibility"] == ["Processor"]
+        assert json_results["dpo"] == "John Doe, CIPT"
+        assert json_results["joint_controller_info"] == "Jane Doe"
+        assert (
+            json_results["data_security_practices"]
+            == "We encrypt all your data in transit and at rest"
+        )
+        assert json_results["data_stewards"] == []
+        privacy_decl = json_results["privacy_declarations"]
+        assert len(privacy_decl) == 2
+
+        assert privacy_decl[0]["name"] == "declaration-name"
+        assert privacy_decl[0]["dataset_references"] == ["another_system_reference"]
+        assert privacy_decl[0]["features"] == ["Link different devices"]
+        assert privacy_decl[0]["legal_basis_for_processing"] == "Public interest"
+        assert (
+            privacy_decl[0]["impact_assessment_location"]
+            == "https://www.example.com/impact_assessment_location"
+        )
+        assert privacy_decl[0]["retention_period"] == "3-5 years"
+        assert privacy_decl[0]["processes_special_category_data"] is True
+        assert (
+            privacy_decl[0]["special_category_legal_basis"]
+            == "Reasons of substantial public interest (with a basis in law)"
+        )
+        assert privacy_decl[0]["data_shared_with_third_parties"] is True
+        assert privacy_decl[0]["third_parties"] == "Third Party Marketing Dept."
+        assert privacy_decl[0]["shared_categories"] == ["user"]
 
         systems = System.all(db)
         assert len(systems) == 1
@@ -616,6 +663,50 @@ class TestSystemCreate:
             cookie.name for cookie in systems[0].privacy_declarations[0].cookies
         ] == ["essential_cookie"]
         assert systems[0].privacy_declarations[1].cookies == []
+        system = systems[0]
+
+        assert system.vendor_id == "test_vendor"
+        assert system.dataset_references == ["another_system_reference"]
+        assert system.processes_personal_data is True
+        assert system.exempt_from_privacy_regulations is False
+        assert system.reason_for_exemption is None
+        assert system.uses_profiling is True
+        assert system.legal_basis_for_profiling == "Authorised by law"
+        assert system.does_international_transfers is True
+        assert system.legal_basis_for_transfers == "Binding corporate rules"
+        assert system.requires_data_protection_assessments is True
+        assert system.dpa_location == "https://www.example.com/dpa"
+        assert system.dpa_progress == "pending"
+        assert system.privacy_policy == "https://www.example.com/privacy_policy"
+        assert system.legal_name == "Sunshine Corporation"
+        assert system.legal_address == "35925 Test Lane, Test Town, TX 24924"
+        assert system.responsibility == ["Processor"]
+        assert system.dpo == "John Doe, CIPT"
+        assert system.joint_controller_info == "Jane Doe"
+        assert (
+            system.data_security_practices
+            == "We encrypt all your data in transit and at rest"
+        )
+        assert system.data_stewards == []
+
+        privacy_decl = system.privacy_declarations[0]
+        assert privacy_decl.name == "declaration-name"
+        assert privacy_decl.dataset_references == ["another_system_reference"]
+        assert privacy_decl.features == ["Link different devices"]
+        assert privacy_decl.legal_basis_for_processing == "Public interest"
+        assert (
+            privacy_decl.impact_assessment_location
+            == "https://www.example.com/impact_assessment_location"
+        )
+        assert privacy_decl.retention_period == "3-5 years"
+        assert privacy_decl.processes_special_category_data is True
+        assert (
+            privacy_decl.special_category_legal_basis
+            == "Reasons of substantial public interest (with a basis in law)"
+        )
+        assert privacy_decl.data_shared_with_third_parties is True
+        assert privacy_decl.third_parties == "Third Party Marketing Dept."
+        assert privacy_decl.shared_categories == ["user"]
 
     async def test_system_create_custom_metadata_saas_config(
         self,
@@ -759,6 +850,49 @@ class TestSystemCreate:
             len(PrivacyDeclaration.all(db)) == 0
         )  # ensure neither of our declarations were created
 
+    async def test_system_create_invalid_legal_basis_for_profiling(
+        self, generate_auth_header, test_config, system_create_request_body
+    ):
+        system_create_request_body.legal_basis_for_profiling = "bad_basis"
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+
+        assert result.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert result.json()["detail"][0]["loc"] == [
+            "body",
+            "legal_basis_for_profiling",
+        ]
+
+
+@pytest.mark.unit
+class TestSystemGet:
+    def test_data_stewards_included_in_response(
+        self, test_config, system, system_manager
+    ):
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            resource_id=system.fides_key,
+        )
+        assert result.status_code == 200
+        assert result.json()["fides_key"] == system.fides_key
+
+        data_stewards = result.json()["data_stewards"]
+        assert len(data_stewards) == 1
+        steward = data_stewards[0]
+
+        assert steward["id"] == system_manager.id
+        assert steward["username"] == system_manager.username
+        assert steward["first_name"] is None
+        assert steward["last_name"] is None
+
 
 @pytest.mark.unit
 class TestSystemUpdate:
@@ -813,6 +947,63 @@ class TestSystemUpdate:
                     cookies=[
                         {"name": "my_cookie", "domain": "example.com"},
                         {"name": "my_other_cookie"},
+                    ],
+                )
+            ],
+        )
+
+    @pytest.fixture(scope="function")
+    def system_update_request_body_with_new_dictionary_fields(
+        self, system
+    ) -> SystemSchema:
+        return SystemSchema(
+            organization_fides_key=1,
+            registryId=1,
+            fides_key=system.fides_key,
+            system_type="SYSTEM",
+            name=self.updated_system_name,
+            description="Test Policy",
+            vendor_id="test_vendor",
+            dataset_references=["another_system_reference"],
+            processes_personal_data=True,
+            exempt_from_privacy_regulations=False,
+            reason_for_exemption=None,
+            uses_profiling=True,
+            legal_basis_for_profiling="Authorised by law",
+            does_international_transfers=True,
+            legal_basis_for_transfers="Binding corporate rules",
+            requires_data_protection_assessments=True,
+            dpa_location="https://www.example.com/dpa",
+            dpa_progress="pending",
+            privacy_policy="https://www.example.com/privacy_policy",
+            legal_name="Sunshine Corporation",
+            legal_address="35925 Test Lane, Test Town, TX 24924",
+            responsibility=["Processor"],
+            dpo="John Doe, CIPT",
+            joint_controller_info="Jane Doe",
+            data_security_practices="We encrypt all your data in transit and at rest",
+            privacy_declarations=[
+                models.PrivacyDeclaration(
+                    name="declaration-name",
+                    data_categories=[],
+                    data_use="essential",
+                    data_subjects=[],
+                    dataset_references=["another_system_reference"],
+                    features=["Link different devices"],
+                    legal_basis_for_processing="Public interest",
+                    impact_assessment_location="https://www.example.com/impact_assessment_location",
+                    retention_period="3-5 years",
+                    processes_special_category_data=True,
+                    special_category_legal_basis="Reasons of substantial public interest (with a basis in law)",
+                    data_shared_with_third_parties=True,
+                    third_parties="Third Party Marketing Dept.",
+                    shared_categories=["user"],
+                    cookies=[
+                        {
+                            "name": "essential_cookie",
+                            "path": "/",
+                            "domain": "example.com",
+                        }
                     ],
                 )
             ],
@@ -1176,6 +1367,119 @@ class TestSystemUpdate:
             system.privacy_declarations[0].name == "new declaration 1"
             and system.privacy_declarations[1].name == "new declaration 1"
         )
+
+    def test_system_update_dictionary_fields(
+        self,
+        test_config,
+        system_update_request_body_with_new_dictionary_fields,
+        system,
+        db,
+        generate_system_manager_header,
+    ):
+        assert system.name != self.updated_system_name
+
+        auth_header = generate_system_manager_header([system.id])
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body_with_new_dictionary_fields.json(
+                exclude_none=True
+            ),
+        )
+
+        json_results = result.json()
+        assert result.status_code == HTTP_200_OK
+        assert json_results["vendor_id"] == "test_vendor"
+        assert json_results["dataset_references"] == ["another_system_reference"]
+        assert json_results["processes_personal_data"] is True
+        assert json_results["exempt_from_privacy_regulations"] is False
+        assert json_results["reason_for_exemption"] is None
+        assert json_results["uses_profiling"] is True
+        assert json_results["legal_basis_for_profiling"] == "Authorised by law"
+        assert json_results["does_international_transfers"] is True
+        assert json_results["legal_basis_for_transfers"] == "Binding corporate rules"
+        assert json_results["requires_data_protection_assessments"] is True
+        assert json_results["dpa_location"] == "https://www.example.com/dpa"
+        assert json_results["dpa_progress"] == "pending"
+        assert (
+            json_results["privacy_policy"] == "https://www.example.com/privacy_policy"
+        )
+        assert json_results["legal_name"] == "Sunshine Corporation"
+        assert json_results["legal_address"] == "35925 Test Lane, Test Town, TX 24924"
+        assert json_results["responsibility"] == ["Processor"]
+        assert json_results["dpo"] == "John Doe, CIPT"
+        assert json_results["joint_controller_info"] == "Jane Doe"
+        assert (
+            json_results["data_security_practices"]
+            == "We encrypt all your data in transit and at rest"
+        )
+        assert json_results["data_stewards"] == []
+        privacy_decl = json_results["privacy_declarations"]
+        assert len(privacy_decl) == 1
+
+        assert privacy_decl[0]["name"] == "declaration-name"
+        assert privacy_decl[0]["dataset_references"] == ["another_system_reference"]
+        assert privacy_decl[0]["features"] == ["Link different devices"]
+        assert privacy_decl[0]["legal_basis_for_processing"] == "Public interest"
+        assert (
+            privacy_decl[0]["impact_assessment_location"]
+            == "https://www.example.com/impact_assessment_location"
+        )
+        assert privacy_decl[0]["retention_period"] == "3-5 years"
+        assert privacy_decl[0]["processes_special_category_data"] is True
+        assert (
+            privacy_decl[0]["special_category_legal_basis"]
+            == "Reasons of substantial public interest (with a basis in law)"
+        )
+        assert privacy_decl[0]["data_shared_with_third_parties"] is True
+        assert privacy_decl[0]["third_parties"] == "Third Party Marketing Dept."
+        assert privacy_decl[0]["shared_categories"] == ["user"]
+
+        db.refresh(system)
+        assert system.name == self.updated_system_name
+        assert system.vendor_id == "test_vendor"
+        assert system.dataset_references == ["another_system_reference"]
+        assert system.processes_personal_data is True
+        assert system.exempt_from_privacy_regulations is False
+        assert system.reason_for_exemption is None
+        assert system.uses_profiling is True
+        assert system.legal_basis_for_profiling == "Authorised by law"
+        assert system.does_international_transfers is True
+        assert system.legal_basis_for_transfers == "Binding corporate rules"
+        assert system.requires_data_protection_assessments is True
+        assert system.dpa_location == "https://www.example.com/dpa"
+        assert system.dpa_progress == "pending"
+        assert system.privacy_policy == "https://www.example.com/privacy_policy"
+        assert system.legal_name == "Sunshine Corporation"
+        assert system.legal_address == "35925 Test Lane, Test Town, TX 24924"
+        assert system.responsibility == ["Processor"]
+        assert system.dpo == "John Doe, CIPT"
+        assert system.joint_controller_info == "Jane Doe"
+        assert (
+            system.data_security_practices
+            == "We encrypt all your data in transit and at rest"
+        )
+        assert system.data_stewards == []
+
+        privacy_decl = system.privacy_declarations[0]
+        assert privacy_decl.name == "declaration-name"
+        assert privacy_decl.dataset_references == ["another_system_reference"]
+        assert privacy_decl.features == ["Link different devices"]
+        assert privacy_decl.legal_basis_for_processing == "Public interest"
+        assert (
+            privacy_decl.impact_assessment_location
+            == "https://www.example.com/impact_assessment_location"
+        )
+        assert privacy_decl.retention_period == "3-5 years"
+        assert privacy_decl.processes_special_category_data is True
+        assert (
+            privacy_decl.special_category_legal_basis
+            == "Reasons of substantial public interest (with a basis in law)"
+        )
+        assert privacy_decl.data_shared_with_third_parties is True
+        assert privacy_decl.third_parties == "Third Party Marketing Dept."
+        assert privacy_decl.shared_categories == ["user"]
 
     def test_system_update_privacy_declaration_cookies(
         self,

@@ -242,7 +242,7 @@ def _get_third_party_data(
     data_shared_with_third_parties: bool = False
     third_parties: Optional[str] = None
 
-    if recipients:
+    if recipients and isinstance(recipients, list):
         data_shared_with_third_parties = True
         third_parties = "; ".join([elem for elem in recipients if elem])
         if not third_parties:
@@ -254,10 +254,10 @@ def _get_third_party_data(
 
 def _get_retention_period(
     retention_periods: Optional[List[str]],
-) -> Optional[str]:
+) -> str:
     """Migrate data from Dataset.retention field all related PrivacyDeclaration.retention_periods"""
     if not retention_periods:
-        return None
+        return "No retention or erasure policy"
 
     for retention_period in retention_periods:
         # There may be multiple datasets associated with a privacy declaration.  Choosing the first retention
