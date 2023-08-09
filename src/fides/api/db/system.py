@@ -4,6 +4,7 @@ Functions for interacting with System objects in the database.
 from typing import Dict, List, Optional, Tuple
 
 from fastapi import HTTPException
+from fideslang.models import Cookies as CookieSchema
 from fideslang.models import System as SystemSchema
 from loguru import logger as log
 from sqlalchemy import and_, delete, insert, select, update
@@ -137,7 +138,7 @@ async def upsert_privacy_declarations(
 
 async def upsert_cookies(
     async_session: AsyncSession,
-    cookies: List[Dict],  # CookieSchema
+    cookies: Optional[List[Dict]],
     privacy_declaration: PrivacyDeclaration,
     system: System,
 ) -> None:
@@ -148,12 +149,16 @@ async def upsert_cookies(
     Remove any existing cookies that aren't specified here.
     """
 
-    for cookie_data in cookies:
+    parsed_cookies = (
+        [CookieSchema.parse_obj(cookie) for cookie in cookies] if cookies else []
+    )
+
+    for cookie_data in parsed_cookies:
         # Check if cookie exists for this name/system/privacy declaration
         result = await async_session.execute(
             select(Cookies).where(
                 and_(
-                    Cookies.name == cookie_data["name"],
+                    Cookies.name == cookie_data.name,
                     Cookies.system_id == system.id,
                     Cookies.privacy_declaration_id == privacy_declaration.id,
                 )
@@ -162,16 +167,16 @@ async def upsert_cookies(
         row: Optional[Cookies] = result.scalars().first()
         if row:
             await async_session.execute(
-                update(Cookies).where(Cookies.id == row.id).values(cookie_data)
+                update(Cookies).where(Cookies.id == row.id).values(cookie_data.dict())
             )
 
         else:
             await async_session.execute(
                 insert(Cookies).values(
                     {
-                        "name": cookie_data.get("name"),
-                        "path": cookie_data.get("path"),
-                        "domain": cookie_data.get("domain"),
+                        "name": cookie_data.name,
+                        "path": cookie_data.path,
+                        "domain": cookie_data.domain,
                         "privacy_declaration_id": privacy_declaration.id,
                         "system_id": system.id,
                     }
@@ -182,7 +187,7 @@ async def upsert_cookies(
     delete_result = await async_session.execute(
         select(Cookies).where(
             and_(
-                Cookies.name.notin_([cookie["name"] for cookie in cookies]),
+                Cookies.name.notin_([cookie.name for cookie in parsed_cookies]),
                 Cookies.system_id == system.id,
                 Cookies.privacy_declaration_id == privacy_declaration.id,
             )
