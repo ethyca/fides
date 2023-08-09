@@ -441,7 +441,7 @@ class PrivacyDeclaration(Base):
     features = Column(ARRAY(String), server_default="{}", nullable=False)
     legal_basis_for_processing = Column(String)
     impact_assessment_location = Column(String)
-    retention_period = Column(INTEGER)
+    retention_period = Column(String)
     processes_special_category_data = Column(
         BOOLEAN(), server_default="f", nullable=False
     )

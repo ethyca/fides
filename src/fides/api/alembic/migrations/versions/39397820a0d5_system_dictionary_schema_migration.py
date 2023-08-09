@@ -111,7 +111,7 @@ def upgrade():
         sa.Column("impact_assessment_location", sa.String(), nullable=True),
     )
     op.add_column(
-        "privacydeclaration", sa.Column("retention_period", sa.INTEGER(), nullable=True)
+        "privacydeclaration", sa.Column("retention_period", sa.String(), nullable=True)
     )
     op.add_column(
         "privacydeclaration",

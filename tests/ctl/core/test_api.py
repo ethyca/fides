@@ -484,7 +484,7 @@ class TestSystemCreate:
                     features=["Link different devices"],
                     legal_basis_for_processing="Public interest",
                     impact_assessment_location="https://www.example.com/impact_assessment_location",
-                    retention_period=180,
+                    retention_period="3-5 years",
                     processes_special_category_data=True,
                     special_category_legal_basis="Reasons of substantial public interest (with a basis in law)",
                     data_shared_with_third_parties=True,
