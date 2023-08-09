@@ -17,22 +17,23 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.18.0...main)
 
+### Changed
+- Removed deprecated fields from the taxonomy editor [#3909](https://github.com/ethyca/fides/pull/3909)
+
+
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
 ### Added
 - Additional consent reporting calls from `fides-js` [#3845](https://github.com/ethyca/fides/pull/3845)
 - Additional consent reporting calls from privacy center [#3847](https://github.com/ethyca/fides/pull/3847)
 - Access support for Recurly [#3595](https://github.com/ethyca/fides/pull/3595)
+- HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
+- UI support for OAuth2 authorization flow [#3819](https://github.com/ethyca/fides/pull/3819)
+- Changes in the `data` directory now trigger a server reload (for local development) [#3874](https://github.com/ethyca/fides/pull/3874)
 
 ### Fixed
 - Fix datamap zoom for low system counts [#3835](https://github.com/ethyca/fides/pull/3835)
 - Fixed connector forms with external dataset reference fields [#3873](https://github.com/ethyca/fides/pull/3873)
-
-### Added
-
-- HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
-- UI support for OAuth2 authorization flow [#3819](https://github.com/ethyca/fides/pull/3819)
-- Changes in the `data` directory now trigger a server reload (for local development) [#3874](https://github.com/ethyca/fides/pull/3874)
 
 ### Changed
 
