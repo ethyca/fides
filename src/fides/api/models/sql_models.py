@@ -248,7 +248,7 @@ class Dataset(Base, FidesBase):
 
     meta = Column(JSON)
     data_categories = Column(ARRAY(String))
-    data_qualifier = Column(String)  # Pending deprecation
+    data_qualifier = Column(String)  # Deprecated
     collections = Column(JSON)
     fides_meta = Column(JSON)
     joint_controller = Column(
@@ -337,22 +337,22 @@ class System(Base, FidesBase):
     system_type = Column(String)
     joint_controller = Column(
         PGEncryptedString, nullable=True
-    )  # Will be deprecated in favor of System.joint_controller_info
+    )  # Deprecated in favor of System.joint_controller_info
     data_responsibility_title = Column(
         String
-    )  # Will be deprecated in favor of System.responsibility
+    )  # Deprecated in favor of System.responsibility
     third_country_transfers = Column(
         ARRAY(String)
-    )  # Will be deprecated in favor of System.does_international_transfers
+    )  # Deprecated in favor of System.does_international_transfers
     administrating_department = Column(String)
     data_protection_impact_assessment = Column(
         JSON
-    )  # Will be deprecated in favor of System.requires_data_protection_assessments, System.dpa_location, and System.dpa_progress
+    )  # Deprecated in favor of System.requires_data_protection_assessments, System.dpa_location, and System.dpa_progress
     egress = Column(JSON)
     ingress = Column(JSON)
 
     vendor_id = Column(String)
-    dataset_references = Column(ARRAY(String), server_default="{}")
+    dataset_references = Column(ARRAY(String), server_default="{}", nullable=False)
     processes_personal_data = Column(BOOLEAN(), server_default="t", nullable=False)
     exempt_from_privacy_regulations = Column(
         BOOLEAN(), server_default="f", nullable=False
@@ -434,7 +434,7 @@ class PrivacyDeclaration(Base):
     ### references to other tables, but kept as 'soft reference' strings for now
     data_use = Column(String, index=True, nullable=False)
     data_categories = Column(ARRAY(String))
-    data_qualifier = Column(String)  # Pending deprecation
+    data_qualifier = Column(String)  # Deprecated
     data_subjects = Column(ARRAY(String))
     dataset_references = Column(ARRAY(String))
 

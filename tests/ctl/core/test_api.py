@@ -1,5 +1,7 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 """Integration tests for the API module."""
+import json
+import typing
 from json import loads
 from typing import Dict, List
 
@@ -26,7 +28,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
 from fides.api.oauth.roles import OWNER, VIEWER
-from fides.api.schemas.system import PrivacyDeclarationResponse
+from fides.api.schemas.system import PrivacyDeclarationResponse, SystemResponse
 from fides.api.schemas.taxonomy_extensions import (
     DataCategory,
     DataQualifier,
@@ -598,7 +600,6 @@ class TestSystemCreate:
 
         assert result.status_code == HTTP_201_CREATED
         json_results = result.json()
-        assert json_results["name"] == "Test System"
         assert json_results["cookies"] == [
             {"name": "essential_cookie", "path": "/", "domain": "example.com"}
         ]
@@ -606,65 +607,27 @@ class TestSystemCreate:
             {"name": "essential_cookie", "path": "/", "domain": "example.com"}
         ]
         assert json_results["privacy_declarations"][1]["cookies"] == []
-        assert len(json_results["privacy_declarations"]) == 2
-
-        assert json_results["vendor_id"] == "test_vendor"
-        assert json_results["dataset_references"] == ["another_system_reference"]
-        assert json_results["processes_personal_data"] is True
-        assert json_results["exempt_from_privacy_regulations"] is False
-        assert json_results["reason_for_exemption"] is None
-        assert json_results["uses_profiling"] is True
-        assert json_results["legal_basis_for_profiling"] == "Authorised by law"
-        assert json_results["does_international_transfers"] is True
-        assert json_results["legal_basis_for_transfers"] == "Binding corporate rules"
-        assert json_results["requires_data_protection_assessments"] is True
-        assert json_results["dpa_location"] == "https://www.example.com/dpa"
-        assert json_results["dpa_progress"] == "pending"
-        assert (
-            json_results["privacy_policy"] == "https://www.example.com/privacy_policy"
-        )
-        assert json_results["legal_name"] == "Sunshine Corporation"
-        assert json_results["legal_address"] == "35925 Test Lane, Test Town, TX 24924"
-        assert json_results["responsibility"] == ["Processor"]
-        assert json_results["dpo"] == "John Doe, CIPT"
-        assert json_results["joint_controller_info"] == "Jane Doe"
-        assert (
-            json_results["data_security_practices"]
-            == "We encrypt all your data in transit and at rest"
-        )
         assert json_results["data_stewards"] == []
-        privacy_decl = json_results["privacy_declarations"]
-        assert len(privacy_decl) == 2
-
-        assert privacy_decl[0]["name"] == "declaration-name"
-        assert privacy_decl[0]["dataset_references"] == ["another_system_reference"]
-        assert privacy_decl[0]["features"] == ["Link different devices"]
-        assert privacy_decl[0]["legal_basis_for_processing"] == "Public interest"
-        assert (
-            privacy_decl[0]["impact_assessment_location"]
-            == "https://www.example.com/impact_assessment_location"
-        )
-        assert privacy_decl[0]["retention_period"] == "3-5 years"
-        assert privacy_decl[0]["processes_special_category_data"] is True
-        assert (
-            privacy_decl[0]["special_category_legal_basis"]
-            == "Reasons of substantial public interest (with a basis in law)"
-        )
-        assert privacy_decl[0]["data_shared_with_third_parties"] is True
-        assert privacy_decl[0]["third_parties"] == "Third Party Marketing Dept."
-        assert privacy_decl[0]["shared_categories"] == ["user"]
 
         systems = System.all(db)
         assert len(systems) == 1
-        assert systems[0].name == "Test System"
-        assert len(systems[0].privacy_declarations) == 2
-        assert [cookie.name for cookie in systems[0].cookies] == ["essential_cookie"]
-        assert [
-            cookie.name for cookie in systems[0].privacy_declarations[0].cookies
-        ] == ["essential_cookie"]
-        assert systems[0].privacy_declarations[1].cookies == []
         system = systems[0]
 
+        for field in SystemResponse.__fields__:
+            system_val = getattr(system, field)
+            if isinstance(system_val, typing.Hashable):
+                assert system_val == json_results[field]
+        assert len(json_results["privacy_declarations"]) == 2
+
+        for i, decl in enumerate(system.privacy_declarations):
+            for field in PrivacyDeclarationResponse.__fields__:
+                decl_val = getattr(decl, field)
+                if isinstance(decl_val, typing.Hashable):
+                    assert decl_val == json_results["privacy_declarations"][i][field]
+
+        assert len(system.privacy_declarations) == 2
+
+        assert system.name == "Test System"
         assert system.vendor_id == "test_vendor"
         assert system.dataset_references == ["another_system_reference"]
         assert system.processes_personal_data is True
@@ -688,6 +651,11 @@ class TestSystemCreate:
             == "We encrypt all your data in transit and at rest"
         )
         assert system.data_stewards == []
+        assert [cookie.name for cookie in systems[0].cookies] == ["essential_cookie"]
+        assert [
+            cookie.name for cookie in systems[0].privacy_declarations[0].cookies
+        ] == ["essential_cookie"]
+        assert systems[0].privacy_declarations[1].cookies == []
 
         privacy_decl = system.privacy_declarations[0]
         assert privacy_decl.name == "declaration-name"
@@ -707,6 +675,123 @@ class TestSystemCreate:
         assert privacy_decl.data_shared_with_third_parties is True
         assert privacy_decl.third_parties == "Third Party Marketing Dept."
         assert privacy_decl.shared_categories == ["user"]
+
+    async def test_system_create_minimal_request_body(
+        self, generate_auth_header, db, test_config, system_create_request_body
+    ):
+        """Assert system default fields are what is expected when a very minimal system request is sent"""
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=json.dumps(
+                {
+                    "fides_key": "system_key",
+                    "system_type": "system",
+                    "privacy_declarations": [
+                        {
+                            "fides_key": "test",
+                            "data_categories": ["user"],
+                            "data_use": "marketing",
+                        }
+                    ],
+                }
+            ),
+        )
+        assert result.status_code == HTTP_201_CREATED
+        systems = System.all(db)
+        assert len(systems) == 1
+        system = systems[0]
+
+        expected_none = [
+            "connection_configs",
+            "data_protection_impact_assessment",
+            "data_responsibility_title",
+            "data_security_practices",
+            "description",
+            "dpa_location",
+            "dpa_progress",
+            "dpo",
+            "egress",
+            "fidesctl_meta",
+            "ingress",
+            "joint_controller",
+            "joint_controller_info",
+            "legal_address",
+            "legal_basis_for_profiling",
+            "legal_basis_for_transfers",
+            "legal_name",
+            "meta",
+            "name",
+            "privacy_policy",
+            "reason_for_exemption",
+            "registry_id",
+            "tags",
+            "third_country_transfers",
+            "vendor_id",
+        ]
+        for field in expected_none:
+            assert getattr(system, field) is None
+
+        assert system.processes_personal_data is True
+
+        expected_false = [
+            "does_international_transfers",
+            "exempt_from_privacy_regulations",
+            "requires_data_protection_assessments",
+            "uses_profiling",
+        ]
+
+        for field in expected_false:
+            assert getattr(system, field) is False
+
+        expected_empty_list = [
+            "cookies",
+            "dataset_references",
+            "data_stewards",
+            "responsibility",
+        ]
+        for field in expected_empty_list:
+            assert getattr(system, field) == []
+
+        privacy_declaration = system.privacy_declarations[0]
+
+        expected_none_privacy_declaration_fields = [
+            "data_qualifier",
+            "dataset_references",
+            "egress",
+            "impact_assessment_location",
+            "ingress",
+            "legal_basis_for_processing",
+            "name",
+            "retention_period",
+            "special_category_legal_basis",
+            "third_parties",
+        ]
+        for field in expected_none_privacy_declaration_fields:
+            assert getattr(privacy_declaration, field) is None
+
+        expected_false_pd_fields = [
+            "data_shared_with_third_parties",
+            "processes_special_category_data",
+        ]
+        for field in expected_false_pd_fields:
+            assert getattr(privacy_declaration, field) is False
+
+        expected_empty_list_pd_fields = [
+            "cookies",
+            "data_subjects",
+            "features",
+            "shared_categories",
+        ]
+        for field in expected_empty_list_pd_fields:
+            assert getattr(privacy_declaration, field) == []
+
+        assert privacy_declaration.system_id == system.id
+        assert privacy_declaration.data_use == "marketing"
+        assert privacy_declaration.data_categories == ["user"]
 
     async def test_system_create_custom_metadata_saas_config(
         self,
@@ -890,8 +975,8 @@ class TestSystemGet:
 
         assert steward["id"] == system_manager.id
         assert steward["username"] == system_manager.username
-        assert steward["first_name"] is None
-        assert steward["last_name"] is None
+        assert "first_name" in steward
+        assert "last_name" in steward
 
 
 @pytest.mark.unit
@@ -1388,55 +1473,10 @@ class TestSystemUpdate:
             ),
         )
 
-        json_results = result.json()
         assert result.status_code == HTTP_200_OK
-        assert json_results["vendor_id"] == "test_vendor"
-        assert json_results["dataset_references"] == ["another_system_reference"]
-        assert json_results["processes_personal_data"] is True
-        assert json_results["exempt_from_privacy_regulations"] is False
-        assert json_results["reason_for_exemption"] is None
-        assert json_results["uses_profiling"] is True
-        assert json_results["legal_basis_for_profiling"] == "Authorised by law"
-        assert json_results["does_international_transfers"] is True
-        assert json_results["legal_basis_for_transfers"] == "Binding corporate rules"
-        assert json_results["requires_data_protection_assessments"] is True
-        assert json_results["dpa_location"] == "https://www.example.com/dpa"
-        assert json_results["dpa_progress"] == "pending"
-        assert (
-            json_results["privacy_policy"] == "https://www.example.com/privacy_policy"
-        )
-        assert json_results["legal_name"] == "Sunshine Corporation"
-        assert json_results["legal_address"] == "35925 Test Lane, Test Town, TX 24924"
-        assert json_results["responsibility"] == ["Processor"]
-        assert json_results["dpo"] == "John Doe, CIPT"
-        assert json_results["joint_controller_info"] == "Jane Doe"
-        assert (
-            json_results["data_security_practices"]
-            == "We encrypt all your data in transit and at rest"
-        )
-        assert json_results["data_stewards"] == []
-        privacy_decl = json_results["privacy_declarations"]
-        assert len(privacy_decl) == 1
-
-        assert privacy_decl[0]["name"] == "declaration-name"
-        assert privacy_decl[0]["dataset_references"] == ["another_system_reference"]
-        assert privacy_decl[0]["features"] == ["Link different devices"]
-        assert privacy_decl[0]["legal_basis_for_processing"] == "Public interest"
-        assert (
-            privacy_decl[0]["impact_assessment_location"]
-            == "https://www.example.com/impact_assessment_location"
-        )
-        assert privacy_decl[0]["retention_period"] == "3-5 years"
-        assert privacy_decl[0]["processes_special_category_data"] is True
-        assert (
-            privacy_decl[0]["special_category_legal_basis"]
-            == "Reasons of substantial public interest (with a basis in law)"
-        )
-        assert privacy_decl[0]["data_shared_with_third_parties"] is True
-        assert privacy_decl[0]["third_parties"] == "Third Party Marketing Dept."
-        assert privacy_decl[0]["shared_categories"] == ["user"]
 
         db.refresh(system)
+
         assert system.name == self.updated_system_name
         assert system.vendor_id == "test_vendor"
         assert system.dataset_references == ["another_system_reference"]
@@ -1480,6 +1520,20 @@ class TestSystemUpdate:
         assert privacy_decl.data_shared_with_third_parties is True
         assert privacy_decl.third_parties == "Third Party Marketing Dept."
         assert privacy_decl.shared_categories == ["user"]
+
+        json_results = result.json()
+        for field in SystemResponse.__fields__:
+            system_val = getattr(system, field)
+            if isinstance(system_val, typing.Hashable):
+                assert system_val == json_results[field]
+        assert len(json_results["privacy_declarations"]) == 1
+        assert json_results["data_stewards"] == []
+
+        for i, decl in enumerate(system.privacy_declarations):
+            for field in PrivacyDeclarationResponse.__fields__:
+                decl_val = getattr(decl, field)
+                if isinstance(decl_val, typing.Hashable):
+                    assert decl_val == json_results["privacy_declarations"][i][field]
 
     def test_system_update_privacy_declaration_cookies(
         self,

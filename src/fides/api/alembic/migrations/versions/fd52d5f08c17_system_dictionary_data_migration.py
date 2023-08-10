@@ -69,12 +69,11 @@ def _system_transform_joint_controller_info(
             joint_controller_data.get("phone"),
         ]
 
-        new_joint_controller_info = "; ".join(
-            [elem for elem in separated_fields if elem and elem != "N/A"]
+        # Defaults to None value if the join ends up being an empty string
+        new_joint_controller_info = (
+            "; ".join([elem for elem in separated_fields if elem and elem != "N/A"])
+            or None
         )
-        if not new_joint_controller_info:
-            # If this is an empty string, let's set it back to None
-            new_joint_controller_info = None
 
     return new_joint_controller_info
 
@@ -86,7 +85,7 @@ def _system_calculate_does_international_transfers(
     """Migrating System.third_country_transfers and Dataset.third_country_transfers to System.does_international_transfers
     If any countries are listed, regardless of which country it is, System.does_international_transfers will be set to true.
     """
-    return bool(system_third_country_transfers) or bool(dataset_third_country_transfers)
+    return any([system_third_country_transfers, dataset_third_country_transfers])
 
 
 def _system_transform_data_responsibility_title_type(
@@ -94,9 +93,7 @@ def _system_transform_data_responsibility_title_type(
 ) -> List[str]:
     """Migrating System.data_responsibility_title (str) to System.responsibility(list).  There can now be potentially many
     items listed here"""
-    if not dept_str:
-        return []
-    return [dept_str]
+    return [dept_str] if dept_str else []
 
 
 def _flatten_data_protection_impact_assessment(
@@ -113,8 +110,8 @@ def _flatten_data_protection_impact_assessment(
     requires_data_protection_assessments = data_protection_impact_assessment.get(
         "is_required", False
     )
-    dpa_progress = data_protection_impact_assessment.get("progress", None)
-    dpa_location = data_protection_impact_assessment.get("link", None)
+    dpa_progress = data_protection_impact_assessment.get("progress")
+    dpa_location = data_protection_impact_assessment.get("link")
     return requires_data_protection_assessments, dpa_progress, dpa_location
 
 
@@ -148,14 +145,19 @@ def system_dictionary_additive_migration(bind: Connection):
             row["data_protection_impact_assessment"]
         )
 
+        system_joint_controller_data: Optional[Dict] = json.loads(
+            row["joint_controller_decrypted"] or "null"
+        )
+        # Potentially multiple datasets on systems that have joint controller info
+        datasets_joint_controller_data: List[Optional[Dict]] = [
+            json.loads(item)
+            for item in row["datasets_joint_controller_decrypted"] or "null"
+            if item
+        ]
+
         system_data = {
             JOINT_CONTROLLER_INFO: _system_transform_joint_controller_info(
-                json.loads(row["joint_controller_decrypted"] or "null"),
-                [  # Potentially multiple datasets on systems that have joint controller info so this is a list
-                    json.loads(item)
-                    for item in row["datasets_joint_controller_decrypted"] or "null"
-                    if item
-                ],
+                system_joint_controller_data, datasets_joint_controller_data
             ),  # System.joint_controller_info populated from flattened data from either System.joint_controller
             # or Datasets.joint_controller. New field is not as rigid
             DOES_INTERNATIONAL_TRANSFERS: _system_calculate_does_international_transfers(
@@ -239,15 +241,11 @@ def _get_third_party_data(
     """Migrate data from DataUse.recipients field to new PrivacyDeclaration.third_parties and
     PrivacyDeclaration.data_shared_with_third_parties be true
     """
-    data_shared_with_third_parties: bool = False
+    data_shared_with_third_parties: bool = bool(recipients)
     third_parties: Optional[str] = None
 
-    if recipients and isinstance(recipients, list):
-        data_shared_with_third_parties = True
-        third_parties = "; ".join([elem for elem in recipients if elem])
-        if not third_parties:
-            # If this ends up being an empty string, set back to None
-            third_parties = None
+    if isinstance(recipients, list):
+        third_parties = "; ".join([elem for elem in recipients if elem]) or None
 
     return data_shared_with_third_parties, third_parties
 

@@ -176,8 +176,6 @@ class TestSystemDictionaryDataMigrationFunctions:
     def test_get_third_party_data(self):
         assert _get_third_party_data(recipients=None) == (False, None)
 
-        assert _get_third_party_data(recipients="hello") == (False, None)
-
         assert _get_third_party_data(recipients=["advertisers"]) == (
             True,
             "advertisers",

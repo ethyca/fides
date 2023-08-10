@@ -24,7 +24,7 @@ def upgrade():
             "dataset_references",
             sa.ARRAY(sa.String()),
             server_default="{}",
-            nullable=True,
+            nullable=False,
         ),
     )
     op.add_column(
