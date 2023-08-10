@@ -61,7 +61,7 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
 
 class MessagingTemplateBase(BaseModel):
     key: str
-    content: Dict[str, str]
+    content: Dict[str, Any]
 
 
 class MessagingTemplateRequest(MessagingTemplateBase):

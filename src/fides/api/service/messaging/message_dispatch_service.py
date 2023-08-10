@@ -202,7 +202,6 @@ def dispatch_message(
         to_identity.email
         if messaging_method == MessagingMethod.EMAIL
         else to_identity.phone_number,
-        message_body_params,
     )
 
 
@@ -316,7 +315,6 @@ def _build_email(  # pylint: disable=too-many-return-statements
         return EmailForActionType(
             subject="Notification of users' consent preference changes",
             body=base_template.render({"body": body_params}),
-            template_variables=variables,
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
         variables = {"request_types": body_params.request_types}

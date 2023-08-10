@@ -100,15 +100,12 @@ def get_all_messaging_templates(db: Session) -> List[MessagingTemplate]:
     return templates
 
 
-def get_messaging_template_by_key(db: Session, key: str) -> MessagingTemplate:
+def get_messaging_template_by_key(db: Session, key: str) -> Optional[MessagingTemplate]:
     template = MessagingTemplate.get_by(db, field="key", value=key)
 
     # If no template is found in the database, use the default
-    if template is None:
-        content = DEFAULT_MESSAGING_TEMPLATES.get(key)
-        template = MessagingTemplate(
-            key=key,
-            content=content,
-        )
+    if not template and key in DEFAULT_MESSAGING_TEMPLATES:
+        content = DEFAULT_MESSAGING_TEMPLATES[key]["content"]
+        template = MessagingTemplate(key=key, content=content)
 
     return template

@@ -1,4 +1,5 @@
 import json
+from typing import Any, Dict, List
 from unittest import mock
 from unittest.mock import Mock, patch
 
@@ -10,6 +11,7 @@ from starlette.testclient import TestClient
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.messaging import MessagingConfig
+from fides.api.models.messaging_template import MessagingTemplateResponse
 from fides.api.schemas.messaging.messaging import (
     MessagingConfigStatus,
     MessagingConfigStatusMessage,
@@ -1888,6 +1890,20 @@ class TestGetMessagingTemplates:
     def url(self) -> str:
         return V1_URL_PREFIX + MESSAGING_TEMPLATES
 
+    def test_get_messaging_templates_unauthorized(
+        self, url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_messaging_templates_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[MESSAGING_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
     def test_get_messaging_templates(
         self, url, api_client: TestClient, generate_auth_header
     ) -> None:
@@ -1895,13 +1911,108 @@ class TestGetMessagingTemplates:
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 200
 
+        # Validate the response conforms to the expected model
+        [MessagingTemplateResponse(**item) for item in response.json()]
+
 
 class TestPostMessagingTemplates:
     @pytest.fixture
     def url(self) -> str:
         return V1_URL_PREFIX + MESSAGING_TEMPLATES
 
-    def test_post_messaging_templates(
-        self, url, api_client: TestClient, generate_auth_header
+    @pytest.fixture
+    def payload(self) -> List[Dict[str, Any]]:
+        return [
+            {
+                "key": "subject_identity_verification",
+                "content": {
+                    "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. This code will expire in {{minutes}} minutes.",
+                    "subject": "Your one-time code is {{code}}",
+                },
+            },
+        ]
+
+    def test_post_messaging_templates_unauthorized(
+        self, url, api_client: TestClient, generate_auth_header, payload
     ) -> None:
-        pass
+        auth_header = generate_auth_header(scopes=[])
+        response = api_client.post(url, headers=auth_header, json=payload)
+        assert response.status_code == 403
+
+    def test_post_messaging_templates_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header, payload
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[MESSAGING_READ])
+        response = api_client.post(url, headers=auth_header, json=payload)
+        assert response.status_code == 403
+
+    def test_post_messaging_templates(
+        self, url, api_client: TestClient, generate_auth_header, payload
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        response = api_client.post(url, headers=auth_header, json=payload)
+        assert response.status_code == 200
+        assert response.json() == {"message": "Email templates updated successfully."}
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.messaging_endpoints.MessagingTemplate.create_or_update"
+    )
+    def test_post_messaging_templates_missing_values(
+        self,
+        mock_create_or_update,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        """Verify templates with empty subject/body values are reverted to their default values."""
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json=[
+                {
+                    "key": "subject_identity_verification",
+                    "content": {
+                        "body": None,
+                        "subject": None,
+                    },
+                },
+            ],
+        )
+        assert response.status_code == 200
+        assert mock_create_or_update.called_once_with(
+            db=mock.ANY,
+            key="subject_identity_verification",
+            content={
+                "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. This code will expire in {{minutes}} minutes.",
+                "subject": "Your one-time code is {{code}}",
+            },
+        )
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.messaging_endpoints.MessagingTemplate.create_or_update"
+    )
+    def test_post_messaging_templates_invalid_key(
+        self,
+        mock_create_or_update,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        """Invalid keys are silently ignored."""
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json=[
+                {
+                    "key": "invalid_key",
+                    "content": {
+                        "body": None,
+                        "subject": None,
+                    },
+                },
+            ],
+        )
+        assert response.status_code == 200
+        mock_create_or_update.assert_not_called()

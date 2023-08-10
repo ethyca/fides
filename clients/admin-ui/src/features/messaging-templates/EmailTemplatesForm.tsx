@@ -52,9 +52,8 @@ export const EmailTemplatesForm = ({
 
     // Transform the values object back into an array of MessagingTemplates
     const messagingTemplates = Object.entries(values).map(
-      ([key, { label, content }]) => ({
+      ([key, { content }]) => ({
         key,
-        label,
         content,
       })
     ) as MessagingTemplate[];
