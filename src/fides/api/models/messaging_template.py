@@ -9,10 +9,8 @@ from sqlalchemy.ext.mutable import MutableDict
 from fides.api.db.base_class import Base
 from fides.api.schemas.messaging.messaging import MessagingActionType
 
-"""
-Provides default values for initializing the database or replacing deleted values for messaging templates.
-Note: There are additional MessagingActionTypes that are internally used but are not exposed for user customization.
-"""
+# Provides default values for initializing the database or replacing deleted values for messaging templates.
+# Note: There are additional MessagingActionTypes that are internally used but are not exposed for user customization.
 DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
     MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value: {
         "label": "Subject identity verification",
