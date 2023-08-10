@@ -496,8 +496,16 @@ def send_test_message(
 )
 def get_messaging_templates(
     *, db: Session = Depends(deps.get_db)
-) -> List[MessagingTemplate]:
-    return get_all_messaging_templates(db=db)
+) -> List[MessagingTemplateResponse]:
+    """Returns the available messaging templates, augments the models with labels to be used in the UI."""
+    return [
+        MessagingTemplateResponse(
+            key=template.key,
+            content=template.content,
+            label=DEFAULT_MESSAGING_TEMPLATES.get(template.key, {}).get("label", None),
+        )
+        for template in get_all_messaging_templates(db=db)
+    ]
 
 
 @router.post(
@@ -507,18 +515,22 @@ def get_messaging_templates(
 def update_messaging_templates(
     templates: List[MessagingTemplateRequest], *, db: Session = Depends(deps.get_db)
 ) -> Dict[str, Any]:
+    """Updates the messaging templates and reverts empty subject or body values to the default values."""
     for template in templates:
         key = template.key
         content = template.content
 
-        # use default values if the update payload is missing a value
-        content["subject"] = (
-            content.get("subject") or DEFAULT_MESSAGING_TEMPLATES[key]["subject"]
-        )
-        content["body"] = (
-            content.get("body") or DEFAULT_MESSAGING_TEMPLATES[key]["body"]
-        )
+        default_template = DEFAULT_MESSAGING_TEMPLATES.get(key)
+        if default_template:
+            content["subject"] = (
+                content.get("subject") or default_template["content"]["subject"]
+            )
+            content["body"] = content.get("body") or default_template["content"]["body"]
 
-        MessagingTemplate.create_or_update(db, data={"key": key, "content": content})
+            MessagingTemplate.create_or_update(
+                db, data={"key": key, "content": content}
+            )
+        else:
+            logger.debug("Invalid template key: {}, skipping creation.", key)
 
     return {"message": "Email templates updated successfully."}

@@ -88,10 +88,14 @@ def get_all_messaging_templates(db: Session) -> List[MessagingTemplate]:
 
     # Create a list of MessagingTemplate models, using defaults if a key is not found in the database
     templates = []
-    for key, default_content in DEFAULT_MESSAGING_TEMPLATES.items():
-        content = templates_from_db.get(key, default_content)
-        template_model = MessagingTemplate(key=key, content=content)
-        templates.append(template_model)
+    for key, template in DEFAULT_MESSAGING_TEMPLATES.items():
+        content = templates_from_db.get(key, template["content"])
+        templates.append(
+            MessagingTemplate(
+                key=key,
+                content=content,
+            )
+        )
 
     return templates
 
@@ -99,8 +103,12 @@ def get_all_messaging_templates(db: Session) -> List[MessagingTemplate]:
 def get_messaging_template_by_key(db: Session, key: str) -> MessagingTemplate:
     template = MessagingTemplate.get_by(db, field="key", value=key)
 
+    # If no template is found in the database, use the default
     if template is None:
         content = DEFAULT_MESSAGING_TEMPLATES.get(key)
-        template = MessagingTemplate(key=key, content=content)
+        template = MessagingTemplate(
+            key=key,
+            content=content,
+        )
 
     return template

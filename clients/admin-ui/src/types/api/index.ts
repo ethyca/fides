@@ -113,7 +113,6 @@ export type { DrpRevokeRequest } from "./models/DrpRevokeRequest";
 export type { DryRunDatasetResponse } from "./models/DryRunDatasetResponse";
 export type { DynamoDBDocsSchema } from "./models/DynamoDBDocsSchema";
 export { EdgeDirection } from "./models/EdgeDirection";
-export type { EmailTemplates } from "./models/EmailTemplates";
 export type { EmailDocsSchema } from "./models/EmailDocsSchema";
 export type { Endpoint } from "./models/Endpoint";
 export { EnforcementLevel } from "./models/EnforcementLevel";

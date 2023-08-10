@@ -13,6 +13,17 @@ interface EmailTemplatesFormProps {
   emailTemplates: MessagingTemplate[];
 }
 
+type EmailTemplatesFormValues = Record<
+  string,
+  {
+    label: string;
+    content: {
+      subject: string;
+      body: string;
+    };
+  }
+>;
+
 export const EmailTemplatesForm = ({
   emailTemplates,
 }: EmailTemplatesFormProps) => {
@@ -21,10 +32,8 @@ export const EmailTemplatesForm = ({
   const toast = useToast();
 
   const handleSubmit = async (
-    values: Record<string, { subject: string; body: string }>,
-    formikHelpers: FormikHelpers<
-      Record<string, { subject: string; body: string }>
-    >
+    values: EmailTemplatesFormValues,
+    formikHelpers: FormikHelpers<EmailTemplatesFormValues>
   ) => {
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
@@ -42,26 +51,22 @@ export const EmailTemplatesForm = ({
     };
 
     // Transform the values object back into an array of MessagingTemplates
-    const messagingTemplates = Object.entries(values).map(([key, content]) => ({
-      key,
-      content,
-    })) as MessagingTemplate[];
+    const messagingTemplates = Object.entries(values).map(
+      ([key, { label, content }]) => ({
+        key,
+        label,
+        content,
+      })
+    ) as MessagingTemplate[];
 
     const result = await updateMessagingTemplates(messagingTemplates);
     handleResult(result);
   };
 
   const initialValues = emailTemplates.reduce((acc, template) => {
-    acc[template.key] = template.content;
+    acc[template.key] = { label: template.label, content: template.content };
     return acc;
-  }, {} as Record<string, { subject: string; body: string }>);
-
-  function toTitleCase(str: string) {
-    return str
-      .replace(/_/g, " ")
-      .toLowerCase()
-      .replace(/^\w/, (char) => char.toUpperCase());
-  }
+  }, {} as EmailTemplatesFormValues);
 
   return (
     <Formik
@@ -76,17 +81,17 @@ export const EmailTemplatesForm = ({
             paddingBottom: "12px",
           }}
         >
-          {Object.entries(initialValues).map(([key], index) => (
+          {Object.entries(initialValues).map(([key, value], index) => (
             <Box key={index} py={3}>
-              <FormSection title={toTitleCase(key)}>
+              <FormSection title={value.label}>
                 <CustomTextInput
                   label="Message subject"
-                  name={`${key}.subject`}
+                  name={`${key}.content.subject`}
                   variant="stacked"
                 />
                 <CustomTextInput
                   label="Message body"
-                  name={`${key}.body`}
+                  name={`${key}.content.body`}
                   type="textarea"
                   variant="stacked"
                 />
