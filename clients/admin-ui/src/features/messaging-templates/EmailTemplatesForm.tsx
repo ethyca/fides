@@ -64,7 +64,11 @@ export const EmailTemplatesForm = ({
   }
 
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+    <Formik
+      enableReinitialize
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+    >
       {() => (
         <Form
           style={{
