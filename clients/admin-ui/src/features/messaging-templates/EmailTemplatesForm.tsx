@@ -1,13 +1,17 @@
 import { Box, Button, Flex, useToast } from "@fidesui/react";
-import { Form, Formik, FormikHelpers } from "formik";
-import FormSection from "~/features/common/form/FormSection";
-import { CustomTextInput } from "~/features/common/form/inputs";
-import { useUpdateMessagingTemplatesMutation } from "./messaging-templates.slice";
-import { MessagingTemplate } from "./messaging-templates.slice";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { isErrorResult, getErrorMessage } from "~/features/common/helpers";
+import { Form, Formik, FormikHelpers } from "formik";
+
+import FormSection from "~/features/common/form/FormSection";
+import { CustomTextInput } from "~/features/common/form/inputs";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+
+import {
+  MessagingTemplate,
+  useUpdateMessagingTemplatesMutation,
+} from "./messaging-templates.slice";
 
 interface EmailTemplatesFormProps {
   emailTemplates: MessagingTemplate[];
@@ -24,9 +28,7 @@ type EmailTemplatesFormValues = Record<
   }
 >;
 
-export const EmailTemplatesForm = ({
-  emailTemplates,
-}: EmailTemplatesFormProps) => {
+const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
   const [updateMessagingTemplates, { isLoading }] =
     useUpdateMessagingTemplatesMutation();
   const toast = useToast();
@@ -62,10 +64,13 @@ export const EmailTemplatesForm = ({
     handleResult(result);
   };
 
-  const initialValues = emailTemplates.reduce((acc, template) => {
-    acc[template.key] = { label: template.label, content: template.content };
-    return acc;
-  }, {} as EmailTemplatesFormValues);
+  const initialValues = emailTemplates.reduce(
+    (acc, template) => ({
+      ...acc,
+      [template.key]: { label: template.label, content: template.content },
+    }),
+    {} as EmailTemplatesFormValues
+  );
 
   return (
     <Formik
@@ -80,8 +85,8 @@ export const EmailTemplatesForm = ({
             paddingBottom: "12px",
           }}
         >
-          {Object.entries(initialValues).map(([key, value], index) => (
-            <Box key={index} py={3}>
+          {Object.entries(initialValues).map(([key, value]) => (
+            <Box key={key} py={3}>
               <FormSection title={value.label}>
                 <CustomTextInput
                   label="Message subject"

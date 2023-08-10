@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+
 import { baseApi } from "~/features/common/api.slice";
 
 export type MessagingTemplate = {

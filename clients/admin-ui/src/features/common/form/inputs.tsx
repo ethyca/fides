@@ -33,7 +33,7 @@ import {
   Size,
 } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
@@ -384,7 +384,7 @@ export const CustomTextInput = ({
           <Label htmlFor={props.id || props.name}>{label}</Label>
           <Flex alignItems="center">
             <Flex flexDir="column" flexGrow={1} mr="2">
-              {initialType == "textarea" ? (
+              {initialType === "textarea" ? (
                 <Textarea
                   ref={textareaRef}
                   size="sm"
@@ -428,7 +428,7 @@ export const CustomTextInput = ({
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
-        {initialType == "textarea" ? (
+        {initialType === "textarea" ? (
           <Textarea
             ref={textareaRef}
             size="sm"
@@ -438,8 +438,8 @@ export const CustomTextInput = ({
             placeholder={placeholder}
             style={{ overflowY: "hidden" }}
             onChange={(event) => {
-              resizeTextarea(event); // Resize the textarea
-              field.onChange(event); // Handle Formik's onChange
+              resizeTextarea();
+              field.onChange(event);
             }}
           />
         ) : (

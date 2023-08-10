@@ -3,7 +3,6 @@ import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";
 import EmailTemplatesForm from "~/features/messaging-templates/EmailTemplatesForm";
-
 import { useGetMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice";
 
 const EmailTemplates: NextPage = () => {
