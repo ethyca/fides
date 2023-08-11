@@ -1,6 +1,5 @@
 from typing import Any, Dict
 
-from pydantic import BaseModel
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
@@ -55,19 +54,6 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
         },
     },
 }
-
-
-class MessagingTemplateBase(BaseModel):
-    key: str
-    content: Dict[str, Any]
-
-
-class MessagingTemplateRequest(MessagingTemplateBase):
-    pass
-
-
-class MessagingTemplateResponse(MessagingTemplateBase):
-    label: str
 
 
 class MessagingTemplate(Base):

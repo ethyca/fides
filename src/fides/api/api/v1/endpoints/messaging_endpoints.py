@@ -31,8 +31,6 @@ from fides.api.models.messaging import (
 from fides.api.models.messaging_template import (
     DEFAULT_MESSAGING_TEMPLATES,
     MessagingTemplate,
-    MessagingTemplateRequest,
-    MessagingTemplateResponse,
 )
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.messaging.messaging import (
@@ -43,6 +41,8 @@ from fides.api.schemas.messaging.messaging import (
     MessagingConfigStatus,
     MessagingConfigStatusMessage,
     MessagingServiceType,
+    MessagingTemplateRequest,
+    MessagingTemplateResponse,
     TestMessagingStatusMessage,
 )
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (

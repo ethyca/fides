@@ -412,3 +412,16 @@ class MessagingConfigStatusMessage(BaseModel):
 
     config_status: Optional[MessagingConfigStatus] = None
     detail: Optional[str] = None
+
+
+class MessagingTemplateBase(BaseModel):
+    key: str
+    content: Dict[str, Any]
+
+
+class MessagingTemplateRequest(MessagingTemplateBase):
+    pass
+
+
+class MessagingTemplateResponse(MessagingTemplateBase):
+    label: str

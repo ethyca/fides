@@ -4,7 +4,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { Form, Formik, FormikHelpers } from "formik";
 
 import FormSection from "~/features/common/form/FormSection";
-import { CustomTextInput } from "~/features/common/form/inputs";
+import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 
@@ -93,11 +93,11 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
                   name={`${key}.content.subject`}
                   variant="stacked"
                 />
-                <CustomTextInput
+                <CustomTextArea
                   label="Message body"
                   name={`${key}.content.body`}
-                  type="textarea"
                   variant="stacked"
+                  resize
                 />
               </FormSection>
             </Box>

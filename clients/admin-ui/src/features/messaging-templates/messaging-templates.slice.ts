@@ -1,5 +1,3 @@
-import { createSlice } from "@reduxjs/toolkit";
-
 import { baseApi } from "~/features/common/api.slice";
 
 export type MessagingTemplate = {
@@ -33,11 +31,3 @@ export const {
   useGetMessagingTemplatesQuery,
   useUpdateMessagingTemplatesMutation,
 } = messagingTemplatesApi;
-
-export const messagingTemplatesSlice = createSlice({
-  name: "messagingTemplates",
-  initialState: {},
-  reducers: {},
-});
-
-export const { reducer } = messagingTemplatesSlice;

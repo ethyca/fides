@@ -11,13 +11,13 @@ from starlette.testclient import TestClient
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.messaging import MessagingConfig
-from fides.api.models.messaging_template import MessagingTemplateResponse
 from fides.api.schemas.messaging.messaging import (
     MessagingConfigStatus,
     MessagingConfigStatusMessage,
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
+    MessagingTemplateResponse,
 )
 from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
