@@ -16,7 +16,7 @@ import {
   Tooltip,
 } from "@fidesui/react";
 import { debounce } from "common/utils";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useRef } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -143,6 +143,8 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
   onChange,
   selectedValue,
 }) => {
+  const inputRef = useRef(null);
+
   // Hooks
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -167,7 +169,8 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
   const handleSearchChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length === 0 || event.target.value.length > 1) {
-        setSearchTerm(event.target.value);
+        setSearchTerm(event.target.value.toLowerCase());
+        setTimeout(() => inputRef.current?.focus(), 0);
       }
     },
     []
@@ -229,6 +232,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
                 <SearchLineIcon color="gray.300" h="17px" w="17px" />
               </InputLeftElement>
               <Input
+                ref={inputRef}
                 autoComplete="off"
                 autoFocus
                 borderRadius="md"
