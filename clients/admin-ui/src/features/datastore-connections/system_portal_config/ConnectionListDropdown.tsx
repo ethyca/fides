@@ -167,7 +167,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
   const handleSearchChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length === 0 || event.target.value.length > 1) {
-        setSearchTerm(event.target.value);
+        setSearchTerm(event.target.value.toLowerCase());
       }
     },
     []
@@ -179,7 +179,10 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
   );
 
   const filteredListItems = useMemo(
-    () => [...list].filter((l) => l[0].toLowerCase().includes(searchTerm)),
+    () =>
+      [...list].filter((l) =>
+        l[0].toLowerCase().includes(searchTerm.toLowerCase())
+      ),
     [list, searchTerm]
   );
 
@@ -229,6 +232,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
                 <SearchLineIcon color="gray.300" h="17px" w="17px" />
               </InputLeftElement>
               <Input
+                data-testid="input-search-integrations"
                 autoComplete="off"
                 autoFocus
                 borderRadius="md"
