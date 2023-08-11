@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.18.0...main)
 
+### Fixed
+- Fixed issue when generating masked values for invalid data paths (#3906)[https://github.com/ethyca/fides/pull/3906]
+- Code reload now works when running `nox -s dev` (#3914)[https://github.com/ethyca/fides/pull/3914]
+
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
 ### Added
