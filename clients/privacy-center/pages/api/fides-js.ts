@@ -88,6 +88,7 @@ export default async function handler(
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
   if (process.env.NODE_ENV === "development") {
+    // eslint-disable-next-line no-console
     console.log(
       "Bundling generic fides.js & Privacy Center configuration together..."
     );
