@@ -16,7 +16,7 @@ import {
   Tooltip,
 } from "@fidesui/react";
 import { debounce } from "common/utils";
-import { useCallback, useMemo, useState, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -143,7 +143,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
   onChange,
   selectedValue,
 }) => {
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Hooks
   const [isOpen, setIsOpen] = useState(false);
