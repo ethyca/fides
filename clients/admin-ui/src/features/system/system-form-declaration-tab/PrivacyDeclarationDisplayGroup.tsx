@@ -20,10 +20,10 @@ const PrivacyDeclarationRow = ({
 }: {
   declaration: PrivacyDeclarationResponse;
   handleDelete: (dec: PrivacyDeclarationResponse) => void;
-  handleEdit: () => void;
+  handleEdit: (dec: PrivacyDeclarationResponse) => void;
 }) => {
   return (
-    <Link onClick={handleEdit}>
+    <Link onClick={() => handleEdit(declaration)}>
       <Box px={6} py={4}>
         <HStack>
           <Text>{declaration.name}</Text>
@@ -54,7 +54,7 @@ const PrivacyDeclarationDisplayGroup = ({
   declarations: PrivacyDeclarationResponse[];
   handleAdd?: () => void;
   handleDelete: (dec: PrivacyDeclarationResponse) => void;
-  handleEdit: () => void;
+  handleEdit: (dec: PrivacyDeclarationResponse) => void;
 }) => (
   <Stack spacing={4}>
     <Box maxWidth="720px" border="1px" borderColor="gray.200" borderRadius={6}>

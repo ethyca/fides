@@ -46,30 +46,7 @@ export const PrivacyDeclarationFormModal: React.FC<DataUseFormModalProps> = ({
             </Heading>
           </Box>
         </ModalHeader>
-        <ModalBody>
-          {children}
-          <ModalFooter>
-            <Flex w="100%">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onClose}
-                data-testid="cancel-btn"
-              >
-                Cancel
-              </Button>
-              <Spacer />
-              <Button
-                colorScheme="primary"
-                size="sm"
-                type="submit"
-                data-testid="submit-btn"
-              >
-                Save (nothing yet)
-              </Button>
-            </Flex>
-          </ModalFooter>
-        </ModalBody>
+        <ModalBody pb={4}>{children}</ModalBody>
       </ModalContent>
     </Modal>
   );

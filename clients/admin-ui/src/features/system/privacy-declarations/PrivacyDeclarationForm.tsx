@@ -7,8 +7,11 @@ import {
   BoxProps,
   Button,
   ButtonGroup,
+  Collapse,
+  Flex,
   GreenCheckCircleIcon,
   Heading,
+  Spacer,
   Stack,
   Text,
   useDisclosure,
@@ -21,6 +24,8 @@ import {
 import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
+
+import { MockDeclarationsData } from "../MockSystemData";
 
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import {
@@ -40,6 +45,7 @@ import {
   ResourceTypes,
 } from "~/types/api";
 import SystemFormInputGroup from "../SystemFormInputGroup";
+import { NewDeclaration } from "../newSystemMockType";
 
 export const ValidationSchema = Yup.object().shape({
   data_categories: Yup.array(Yup.string())
@@ -51,23 +57,33 @@ export const ValidationSchema = Yup.object().shape({
     .label("Data subjects"),
 });
 
-export type FormValues = Omit<PrivacyDeclarationResponse, "cookies"> & {
-  customFieldValues: CustomFieldValues;
+export type FormValues = Omit<NewDeclaration, "cookies"> & {
+  // customFieldValues: CustomFieldValues;
   cookies: string[];
 };
 
 const defaultInitialValues: FormValues = {
+  name: "",
   data_categories: [],
-  data_subjects: [],
   data_use: "",
-  dataset_references: [],
-  customFieldValues: {},
-  id: "",
+  data_subjects: [],
+  egress: "",
+  ingress: "",
+  features: [],
+  legal_basis_for_processing: "",
+  impact_assessment_location: "",
+  retention_period: 0,
+  processes_special_category_data: false,
+  special_category_legal_basis: "",
+  data_shared_with_third_parties: false,
+  third_parties: "",
+  shared_categories: [],
   cookies: [],
+  id: "",
 };
 
 const transformFormValueToDeclaration = (values: FormValues) => {
-  const { customFieldValues, ...declaration } = values;
+  const { ...declaration } = values;
 
   return {
     ...declaration,
@@ -90,16 +106,16 @@ export const PrivacyDeclarationFormComponents = ({
   allDataCategories,
   allDataSubjects,
   allDatasets,
-  onDelete,
+  values,
   privacyDeclarationId,
   includeCookies,
   includeCustomFields,
-}: DataProps &
-  Pick<Props, "onDelete"> & {
-    privacyDeclarationId?: string;
-    includeCookies?: boolean;
-    includeCustomFields?: boolean;
-  }) => {
+}: DataProps & {
+  values: FormValues;
+  privacyDeclarationId?: string;
+  includeCookies?: boolean;
+  includeCustomFields?: boolean;
+}) => {
   const { dirty, isSubmitting, isValid, initialValues } =
     useFormikContext<FormValues>();
   const deleteModal = useDisclosure();
@@ -110,13 +126,6 @@ export const PrivacyDeclarationFormComponents = ({
         value: d.fides_key,
       }))
     : [];
-
-  const handleDelete = async () => {
-    await onDelete(transformFormValueToDeclaration(initialValues));
-    deleteModal.onClose();
-  };
-
-  const deleteDisabled = initialValues.data_use === "";
 
   const testSelectOptions = [
     "Test option 1",
@@ -131,9 +140,9 @@ export const PrivacyDeclarationFormComponents = ({
     <Stack spacing={4}>
       <SystemFormInputGroup heading="Data use declaration">
         <CustomTextInput
-          id="declaration_name"
+          id="name"
           label="Declaration name (optional)"
-          name="declaration_name"
+          name="name"
           tooltip="Would you like to append anything to the system name?"
           variant="stacked"
         />
@@ -147,7 +156,6 @@ export const PrivacyDeclarationFormComponents = ({
           }))}
           tooltip="For which business purposes is this data processed?"
           variant="stacked"
-          singleValueBlock
           isRequired
           isDisabled={!!privacyDeclarationId}
         />
@@ -206,40 +214,52 @@ export const PrivacyDeclarationFormComponents = ({
         />
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Special categories of processing">
-        <CustomSwitch
-          name="processes_special_categories"
-          label="This system processes Special Category data"
-          tooltip="Is this system processing special category data as defined by GDPR Article 9?"
-          variant="stacked"
-        />
-        <CustomSelect
-          name="legal_basis_for_special_category_processing"
-          label="Legal basis for processing"
-          options={testSelectOptions}
-          tooltip="What is the legal basis under which the special category data is processed?"
-          variant="stacked"
-        />
+        <Stack spacing={0}>
+          <CustomSwitch
+            name="processes_special_category_data"
+            label="This system processes Special Category data"
+            tooltip="Is this system processing special category data as defined by GDPR Article 9?"
+            variant="stacked"
+          />
+          <Collapse in={values.processes_special_category_data} animateOpacity>
+            <Box mt={4}>
+              <CustomSelect
+                name="legal_basis_for_special_category_processing"
+                label="Legal basis for processing"
+                options={testSelectOptions}
+                tooltip="What is the legal basis under which the special category data is processed?"
+                variant="stacked"
+              />
+            </Box>
+          </Collapse>
+        </Stack>
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Third parties">
-        <CustomSwitch
-          name="shares_data"
-          label="This system shares data with 3rd parties for this purpose"
-          tooltip="Does this system disclose, sell, or share personal data collected for this business use with 3rd parties?"
-          variant="stacked"
-        />
-        <CustomTextInput
-          name="third_parties"
-          label="Third parties"
-          tooltip="Which type of third parties is the data shared with?"
-          variant="stacked"
-        />
-        <CustomSelect
-          name="shared_categories"
-          label="Shared categories"
-          options={testSelectOptions}
-          tooltip="Which categories of personal data does this system share with third parties?"
-          variant="stacked"
-        />
+        <Stack spacing={0}>
+          <CustomSwitch
+            name="data_shared_with_third_parties"
+            label="This system shares data with 3rd parties for this purpose"
+            tooltip="Does this system disclose, sell, or share personal data collected for this business use with 3rd parties?"
+            variant="stacked"
+          />
+          <Collapse in={values.data_shared_with_third_parties} animateOpacity>
+            <Stack mt={4} spacing={4}>
+              <CustomTextInput
+                name="third_parties"
+                label="Third parties"
+                tooltip="Which type of third parties is the data shared with?"
+                variant="stacked"
+              />
+              <CustomSelect
+                name="shared_categories"
+                label="Shared categories"
+                options={testSelectOptions}
+                tooltip="Which categories of personal data does this system share with third parties?"
+                variant="stacked"
+              />
+            </Stack>
+          </Collapse>
+        </Stack>
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Cookies">
         <CustomSelect
@@ -261,8 +281,8 @@ export const transformPrivacyDeclarationToFormValues = (
   privacyDeclaration
     ? {
         ...privacyDeclaration,
-        customFieldValues: customFieldValues || {},
-        cookies: privacyDeclaration.cookies?.map((cookie) => cookie.name) ?? [],
+        // customFieldValues: customFieldValues || {},
+        // cookies: privacyDeclaration.cookies?.map((cookie) => cookie.name) ?? [],
       }
     : defaultInitialValues;
 
@@ -304,33 +324,12 @@ export const usePrivacyDeclarationForm = ({
     return undefined;
   }, [allDataUses, initialValues]);
 
-  const handleSubmit = async (
+  const handleSubmit = (
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    const { customFieldValues: formCustomFieldValues } = values;
-    const declarationToSubmit = transformFormValueToDeclaration(values);
-
-    const success = await onSubmit(declarationToSubmit, formikHelpers);
-    if (success) {
-      // find the matching resource based on data use and name
-      const customFieldResource = success.filter(
-        (pd) =>
-          pd.data_use === values.data_use &&
-          // name can be undefined, so avoid comparing undefined == ""
-          // (which we want to be true) - they both mean the PD has no name
-          (pd.name ? pd.name === values.name : true)
-      );
-      if (customFieldResource.length > 0) {
-        await upsertCustomFields({
-          customFieldValues: formCustomFieldValues,
-          fides_key: customFieldResource[0].id,
-        });
-      }
-      // Reset state such that isDirty will be checked again before next save
-      formikHelpers.resetForm({ values });
-      setShowSaved(true);
-    }
+    console.log(`submitting ...`);
+    console.log(values);
   };
 
   const renderHeader = ({
@@ -370,9 +369,6 @@ interface Props {
     values: PrivacyDeclarationResponse,
     formikHelpers: FormikHelpers<FormValues>
   ) => Promise<PrivacyDeclarationResponse[] | undefined>;
-  onDelete: (
-    declaration: PrivacyDeclarationResponse
-  ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   initialValues?: PrivacyDeclarationResponse;
   privacyDeclarationId?: string;
   includeCustomFields?: boolean;
@@ -382,7 +378,6 @@ interface Props {
 export const PrivacyDeclarationForm = ({
   onSubmit,
   initialValues: passedInInitialValues,
-  onDelete,
   ...dataProps
 }: Props & DataProps) => {
   const { handleSubmit, renderHeader, initialValues } =
@@ -400,15 +395,30 @@ export const PrivacyDeclarationForm = ({
       onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
-      {({ dirty }) => (
+      {({ dirty, values }) => (
         <Form>
           <FormGuard id="PrivacyDeclaration" name="New Privacy Declaration" />
           <Stack spacing={4}>
-            <Box data-testid="header">{renderHeader({ dirty })}</Box>
-            <PrivacyDeclarationFormComponents
-              onDelete={onDelete}
-              {...dataProps}
-            />
+            <PrivacyDeclarationFormComponents values={values} {...dataProps} />
+            <Flex w="100%">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => console.log("close modal")}
+                data-testid="cancel-btn"
+              >
+                Cancel
+              </Button>
+              <Spacer />
+              <Button
+                colorScheme="primary"
+                size="sm"
+                type="submit"
+                data-testid="submit-btn"
+              >
+                Save (nothing yet)
+              </Button>
+            </Flex>
           </Stack>
         </Form>
       )}

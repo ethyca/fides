@@ -43,7 +43,7 @@ import SystemInformationFormExtension from "~/features/system/SystemInformationF
 import { ResourceTypes, System } from "~/types/api";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 
-import MockSystemData from "./MockSystemData"; // temp
+import { MockSystemData } from "./MockSystemData"; // temp
 import { NewSystem } from "./newSystemMockType";
 import { transformNewSystemToFormValues, FormValues } from "./newForm";
 

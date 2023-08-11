@@ -28,12 +28,14 @@ import {
 import { isErrorResult } from "~/types/errors";
 
 import PrivacyDeclarationAccordion from "~/features/system/privacy-declarations/PrivacyDeclarationAccordion";
-import PrivacyDeclarationDisplayGroup from "~/features/system/privacy-declarations/PrivacyDeclarationDisplayGroup";
+import PrivacyDeclarationDisplayGroup from "~/features/system/system-form-declaration-tab/PrivacyDeclarationDisplayGroup";
 import {
   DataProps,
   PrivacyDeclarationForm,
 } from "~/features/system/privacy-declarations/PrivacyDeclarationForm";
 import { PrivacyDeclarationFormModal } from "~/features/system/privacy-declarations/PrivacyDeclarationFormModal";
+
+import { MockDeclarationsData } from "../MockSystemData";
 
 interface Props {
   system: SystemResponse;
@@ -43,7 +45,7 @@ interface Props {
   onSave?: (system: System) => void;
 }
 
-const PrivacyDeclarationManager = ({
+const PrivacyDeclarationFormTab = ({
   system,
   addButtonProps,
   includeCustomFields,
@@ -54,25 +56,28 @@ const PrivacyDeclarationManager = ({
   const toast = useToast();
 
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
-  const [showNewForm, setShowNewForm] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [currentDeclaration, setCurrentDeclaration] = useState<
+    PrivacyDeclarationResponse | undefined
+  >(undefined);
   const [newDeclaration, setNewDeclaration] = useState<
     PrivacyDeclarationResponse | undefined
   >(undefined);
 
   // Accordion declarations include all declarations but the newly created one (if it exists)
-  const accordionDeclarations = useMemo(() => {
-    if (!newDeclaration) {
-      return system.privacy_declarations;
-    }
+  //   const accordionDeclarations = useMemo(() => {
+  //     if (!newDeclaration) {
+  //       return system.privacy_declarations;
+  //     }
 
-    return system.privacy_declarations.filter(
-      (pd) => pd.id !== newDeclaration.id
-    );
-  }, [newDeclaration, system]);
+  //     return system.privacy_declarations.filter(
+  //       (pd) => pd.id !== newDeclaration.id
+  //     );
+  //   }, [newDeclaration, system]);
 
   const checkAlreadyExists = (values: PrivacyDeclarationResponse) => {
     if (
-      accordionDeclarations.filter(
+      system.privacy_declarations.filter(
         (d) => d.data_use === values.data_use && d.name === values.name
       ).length > 0
     ) {
@@ -156,7 +161,7 @@ const PrivacyDeclarationManager = ({
     }
 
     toast.closeAll();
-    const updatedDeclarations = [...accordionDeclarations, values];
+    const updatedDeclarations = [...system.privacy_declarations, values];
     const res = await handleSave(updatedDeclarations);
     if (res) {
       const savedDeclaration = res.filter(
@@ -169,9 +174,21 @@ const PrivacyDeclarationManager = ({
     return res;
   };
 
-  const handleShowNewForm = () => {
-    setShowNewForm(true);
-    setNewDeclaration(undefined);
+  const handleOpenNewForm = () => {
+    setShowForm(true);
+    setCurrentDeclaration(undefined);
+  };
+
+  const handleOpenEditForm = (
+    declarationToEdit: PrivacyDeclarationResponse
+  ) => {
+    setShowForm(true);
+    setCurrentDeclaration(declarationToEdit);
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setCurrentDeclaration(undefined);
   };
 
   const handleDelete = async (
@@ -183,29 +200,14 @@ const PrivacyDeclarationManager = ({
     return handleSave(updatedDeclarations, true);
   };
 
-  const handleDeleteNew = async (
-    declarationToDelete: PrivacyDeclarationResponse
-  ) => {
-    const success = await handleDelete(declarationToDelete);
-    if (success) {
-      setShowNewForm(false);
-      setNewDeclaration(undefined);
-    }
-    return success;
-  };
-
-  const showAddDataUseButton =
-    system.privacy_declarations.length > 0 ||
-    (system.privacy_declarations.length === 0 && !showNewForm);
-
   // Reset the new form when the system changes (i.e. when clicking on a new datamap node)
   useEffect(() => {
-    setShowNewForm(false);
+    setShowForm(false);
   }, [system.fides_key]);
 
   return (
     <Stack spacing={3}>
-      {system.privacy_declarations.length === 0 ? (
+      {MockDeclarationsData.length === 0 ? (
         <Box
           display="flex"
           flexDirection="row"
@@ -224,19 +226,16 @@ const PrivacyDeclarationManager = ({
               </Heading>
               <Text size="sm">[copy]</Text>
               <HStack>
-                {showAddDataUseButton ? (
-                  <Button
-                    variant="outline"
-                    size="md"
-                    data-testid="add-btn"
-                    onClick={handleShowNewForm}
-                    disabled={showNewForm && !newDeclaration}
-                    mt={2}
-                    {...addButtonProps}
-                  >
-                    Add data use
-                  </Button>
-                ) : null}
+                <Button
+                  variant="outline"
+                  size="md"
+                  data-testid="add-btn"
+                  onClick={handleOpenNewForm}
+                  mt={2}
+                  {...addButtonProps}
+                >
+                  Add data use
+                </Button>
               </HStack>
             </Stack>
           </HStack>
@@ -244,20 +243,16 @@ const PrivacyDeclarationManager = ({
       ) : (
         <PrivacyDeclarationDisplayGroup
           heading="Data use"
-          declarations={system.privacy_declarations}
-          handleAdd={handleShowNewForm}
+          declarations={MockDeclarationsData}
+          handleAdd={handleOpenNewForm}
+          handleEdit={handleOpenEditForm}
           handleDelete={handleDelete}
-          handleEdit={() => console.log("go to edit form...")}
         />
       )}
-      <PrivacyDeclarationFormModal
-        isOpen={showNewForm}
-        onClose={() => setShowNewForm(false)}
-      >
+      <PrivacyDeclarationFormModal isOpen={showForm} onClose={handleCloseForm}>
         <PrivacyDeclarationForm
-          initialValues={newDeclaration}
+          initialValues={currentDeclaration}
           onSubmit={saveNewDeclaration}
-          onDelete={handleDeleteNew}
           includeCustomFields={includeCustomFields}
           includeCookies={includeCookies}
           {...dataProps}
@@ -267,4 +262,4 @@ const PrivacyDeclarationManager = ({
   );
 };
 
-export default PrivacyDeclarationManager;
+export default PrivacyDeclarationFormTab;

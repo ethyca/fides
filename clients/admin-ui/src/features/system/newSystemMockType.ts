@@ -6,13 +6,13 @@ export type NewDeclaration = {
   egress?: string;
   ingress?: string;
   features?: string[];
-  legal_basis_for_processing: string;
+  legal_basis_for_processing?: string;
   impact_assessment_location: string;
   retention_period: number;
   processes_special_category_data: boolean;
   special_category_legal_basis?: string;
   data_shared_with_third_parties: boolean;
-  third_parties: string;
+  third_parties?: string;
   shared_categories: string[];
   cookies: string[];
   id: string;
