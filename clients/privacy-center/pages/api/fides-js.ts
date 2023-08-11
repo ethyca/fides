@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { CacheControl, stringify } from "cache-control-parser";
@@ -88,9 +87,11 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-  console.log(
-    "Bundling generic fides.js & Privacy Center configuration together..."
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "Bundling generic fides.js & Privacy Center configuration together..."
+    );
+  }
   const fidesJSBuffer = await fsPromises.readFile("public/lib/fides.js");
   const fidesJS: string = fidesJSBuffer.toString();
   if (!fidesJS || fidesJS === "") {
