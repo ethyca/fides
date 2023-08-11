@@ -1,9 +1,4 @@
-import {
-  stubDatasetCrud,
-  stubPlus,
-  stubSystemCrud,
-  stubTaxonomyEntities,
-} from "cypress/support/stubs";
+import { stubPlus, stubSystemCrud } from "cypress/support/stubs";
 
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 
