@@ -1,4 +1,7 @@
-import type { UserConsentPreference } from "../consent-types";
+import type {
+  PrivacyPreferencesRequest,
+  UserConsentPreference,
+} from "../consent-types";
 
 export type EmbeddedLineItem = {
   id: number;
@@ -103,3 +106,12 @@ export type TCFVendorSave = {
   preference: UserConsentPreference;
   served_notice_history_id?: string;
 };
+
+export type TcfSavePreferences = Pick<
+  PrivacyPreferencesRequest,
+  | "purpose_preferences"
+  | "special_purpose_preferences"
+  | "feature_preferences"
+  | "special_feature_preferences"
+  | "vendor_preferences"
+>;

@@ -5,6 +5,7 @@ import ConsentBanner from "../ConsentBanner";
 import {
   debugLog,
   hasActionNeededNotices,
+  transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "../../lib/consent-utils";
 
@@ -13,11 +14,20 @@ import Overlay from "../Overlay";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import { OverlayProps } from "../types";
 import TcfTabs from "./TcfTabs";
-import {
+import type {
   TCFFeatureRecord,
+  TCFFeatureSave,
   TCFPurposeRecord,
+  TCFPurposeSave,
+  TCFSpecialFeatureSave,
+  TCFSpecialPurposeSave,
   TCFVendorRecord,
+  TCFVendorSave,
+  TcfSavePreferences,
 } from "../../lib/tcf/types";
+
+import { updateConsentPreferences } from "../../lib/preferences";
+import { ConsentMethod, PrivacyExperience } from "../../lib/consent-types";
 
 const resolveConsentValueFromTcfModel = (
   model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
@@ -29,13 +39,20 @@ const resolveConsentValueFromTcfModel = (
   return transformUserPreferenceToBoolean(model.default_preference);
 };
 
-const getEnabledIds = (
-  modelList:
-    | TCFPurposeRecord[]
-    | TCFFeatureRecord[]
-    | TCFVendorRecord[]
-    | undefined
-) => {
+type TcfModels =
+  | TCFPurposeRecord[]
+  | TCFFeatureRecord[]
+  | TCFVendorRecord[]
+  | undefined;
+
+type TcfSave =
+  | TCFPurposeSave
+  | TCFSpecialPurposeSave
+  | TCFFeatureSave
+  | TCFSpecialFeatureSave
+  | TCFVendorSave;
+
+const getEnabledIds = (modelList: TcfModels) => {
   if (!modelList) {
     return [];
   }
@@ -61,7 +78,58 @@ export interface UpdateEnabledIds {
   modelType: keyof EnabledIds;
 }
 
+const transformTcfModelToTcfSave = ({
+  modelList,
+  enabledIds,
+}: {
+  modelList: TcfModels;
+  enabledIds: string[];
+}): TcfSave[] | null => {
+  if (!modelList) {
+    return [];
+  }
+  return modelList.map((model) => {
+    const preference = transformConsentToFidesUserPreference(
+      enabledIds.includes(`${model.id}`)
+    );
+    return {
+      id: model.id,
+      preference,
+    };
+  }) as TcfSave[];
+};
+
+const createTcfSavePayload = ({
+  experience,
+  enabledIds,
+}: {
+  experience: PrivacyExperience;
+  enabledIds: EnabledIds;
+}): TcfSavePreferences => ({
+  purpose_preferences: transformTcfModelToTcfSave({
+    modelList: experience.tcf_purposes,
+    enabledIds: enabledIds.purposes,
+  }) as TCFPurposeSave[],
+  special_purpose_preferences: transformTcfModelToTcfSave({
+    modelList: experience.tcf_special_purposes,
+    enabledIds: enabledIds.specialPurposes,
+  }) as TCFSpecialPurposeSave[],
+  feature_preferences: transformTcfModelToTcfSave({
+    modelList: experience.tcf_features,
+    enabledIds: enabledIds.features,
+  }) as TCFFeatureSave[],
+  special_feature_preferences: transformTcfModelToTcfSave({
+    modelList: experience.tcf_special_features,
+    enabledIds: enabledIds.specialFeatures,
+  }) as TCFSpecialFeatureSave[],
+  vendor_preferences: transformTcfModelToTcfSave({
+    modelList: experience.tcf_vendors,
+    enabledIds: enabledIds.vendors,
+  }) as TCFVendorSave[],
+});
+
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
+  fidesRegionString,
   experience,
   options,
   cookie,
@@ -100,11 +168,23 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     [draftIds]
   );
 
-  const handleUpdateAllPreferences = useCallback((enabledIds: EnabledIds) => {
-    console.log({ enabledIds });
-    // TODO: PATCH
-    setDraftIds(enabledIds);
-  }, []);
+  const handleUpdateAllPreferences = useCallback(
+    (enabledIds: EnabledIds) => {
+      const tcf = createTcfSavePayload({ experience, enabledIds });
+      updateConsentPreferences({
+        consentPreferencesToSave: [],
+        experienceId: experience.id,
+        fidesApiUrl: options.fidesApiUrl,
+        consentMethod: ConsentMethod.button,
+        userLocationString: fidesRegionString,
+        cookie,
+        tcf,
+        // TODO: served notices
+      });
+      setDraftIds(enabledIds);
+    },
+    [cookie, experience, fidesRegionString, options]
+  );
 
   if (!experience.experience_config) {
     debugLog(options.debug, "No experience config found");

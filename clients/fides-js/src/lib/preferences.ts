@@ -15,6 +15,7 @@ import {
 } from "./cookie";
 import { dispatchFidesEvent } from "./events";
 import { patchUserPreferenceToFidesServer } from "../services/fides/api";
+import { TcfSavePreferences } from "./tcf/types";
 
 /**
  * Updates the user's consent preferences, going through the following steps:
@@ -33,6 +34,7 @@ export const updateConsentPreferences = ({
   cookie,
   debug = false,
   servedNotices,
+  tcf,
 }: {
   consentPreferencesToSave: Array<SaveConsentPreference>;
   experienceId: string;
@@ -42,6 +44,7 @@ export const updateConsentPreferences = ({
   cookie: FidesCookie;
   debug?: boolean;
   servedNotices?: Array<LastServedNoticeSchema>;
+  tcf?: TcfSavePreferences;
 }) => {
   // Derive the CookieKeyConsent object from privacy notices
   const noticeMap = new Map<string, boolean>(
@@ -80,6 +83,7 @@ export const updateConsentPreferences = ({
     privacy_experience_id: experienceId,
     user_geography: userLocationString,
     method: consentMethod,
+    ...(tcf ?? []),
   };
   patchUserPreferenceToFidesServer(privacyPreferenceCreate, fidesApiUrl, debug);
 
