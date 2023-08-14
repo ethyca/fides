@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
+import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
 import type { FidesDocsSchema } from "./FidesDocsSchema";
 import type { ManualWebhookSchemaforDocs } from "./ManualWebhookSchemaforDocs";
@@ -21,7 +22,7 @@ import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
  * Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template
  */
 export type SaasConnectionTemplateValues = {
-  name: string;
+  name?: string;
   key?: string;
   description?: string;
   secrets:
@@ -38,6 +39,7 @@ export type SaasConnectionTemplateValues = {
     | ManualWebhookSchemaforDocs
     | TimescaleDocsSchema
     | FidesDocsSchema
-    | SovrnDocsSchema;
+    | SovrnDocsSchema
+    | DynamoDBDocsSchema;
   instance_key: string;
 };

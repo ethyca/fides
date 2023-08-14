@@ -7,7 +7,7 @@ import {
 } from "connection-type/connection-type.slice";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import {
-  useCreateSassConnectionConfigMutation,
+  useCreateUnlinkedSassConnectionConfigMutation,
   usePatchDatastoreConnectionMutation,
   useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
@@ -56,7 +56,8 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     selectConnectionTypeState
   );
 
-  const [createSassConnectionConfig] = useCreateSassConnectionConfigMutation();
+  const [createSassConnectionConfig] =
+    useCreateUnlinkedSassConnectionConfigMutation();
   const [patchDatastoreConnection] = usePatchDatastoreConnectionMutation();
   const [updateDatastoreConnectionSecrets] =
     useUpdateDatastoreConnectionSecretsMutation();
@@ -114,6 +115,8 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         Object.entries(data.properties).forEach((key) => {
           params.secrets[key[0]] = values[key[0]];
         });
+
+        // @ts-ignore
         const payload = await createSassConnectionConfig(params).unwrap();
         dispatch(setConnection(payload.connection));
         successAlert(`Connector successfully added!`);

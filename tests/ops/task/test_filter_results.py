@@ -4,8 +4,8 @@ from datetime import datetime
 import pytest
 from bson import ObjectId
 
-from fides.api.ops.graph.config import CollectionAddress, FieldPath
-from fides.api.ops.task.filter_results import (
+from fides.api.graph.config import CollectionAddress, FieldPath
+from fides.api.task.filter_results import (
     filter_data_categories,
     remove_empty_containers,
     select_and_save_field,

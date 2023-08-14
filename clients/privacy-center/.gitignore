@@ -1,5 +1,5 @@
 # A copy of fides.js is vendored into public/lib/ at build-time
-public/lib/fides.js
+public/lib/*
 
 # Logs
 logs

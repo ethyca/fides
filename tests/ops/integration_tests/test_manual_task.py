@@ -2,16 +2,16 @@ import uuid
 
 import pytest
 
-from fides.api.ops.common_exceptions import PrivacyRequestPaused
-from fides.api.ops.graph.config import CollectionAddress
-from fides.api.ops.models.policy import CurrentStep
-from fides.api.ops.models.privacy_request import (
+from fides.api.common_exceptions import PrivacyRequestPaused
+from fides.api.graph.config import CollectionAddress
+from fides.api.models.policy import CurrentStep
+from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
 )
-from fides.api.ops.task import graph_task
-from fides.core.config import CONFIG
+from fides.api.task import graph_task
+from fides.config import CONFIG
 
 from ..graph.graph_test_util import assert_rows_match
 from ..task.traversal_data import postgres_and_manual_nodes

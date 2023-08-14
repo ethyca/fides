@@ -1,7 +1,7 @@
 import pytest
 
-from fides.api.ops.common_exceptions import FidesopsException
-from fides.api.ops.graph.config import (
+from fides.api.common_exceptions import FidesopsException
+from fides.api.graph.config import (
     Collection,
     FieldAddress,
     FieldPath,
@@ -9,7 +9,7 @@ from fides.api.ops.graph.config import (
     ObjectField,
     ScalarField,
 )
-from fides.api.ops.util.saas_util import (
+from fides.api.util.saas_util import (
     assign_placeholders,
     merge_datasets,
     replace_version,
@@ -329,50 +329,69 @@ class TestAssignPlaceholders:
         )
 
 
-def test_unflatten_dict():
-    # empty dictionary
-    assert unflatten_dict({}) == {}
+class TestUnflattenDict:
+    def test_empty_dict(self):
+        assert unflatten_dict({}) == {}
 
-    # empty dictionary value
-    assert unflatten_dict({"A": {}}) == {"A": {}}
+    def test_empty_dict_value(self):
+        assert unflatten_dict({"A": {}}) == {"A": {}}
 
-    # unflattened dictionary
-    assert unflatten_dict({"A": "1"}) == {"A": "1"}
+    def test_unflattened_dict(self):
+        assert unflatten_dict({"A": "1"}) == {"A": "1"}
 
-    # same level
-    assert unflatten_dict({"A.B": "1", "A.C": "2"}) == {"A": {"B": "1", "C": "2"}}
+    def test_same_level(self):
+        assert unflatten_dict({"A.B": "1", "A.C": "2"}) == {"A": {"B": "1", "C": "2"}}
 
-    # mixed levels
-    assert unflatten_dict(
-        {
+    def test_mixed_levels(self):
+        assert unflatten_dict(
+            {
+                "A": "1",
+                "B.C": "2",
+                "B.D": "3",
+            }
+        ) == {
             "A": "1",
-            "B.C": "2",
-            "B.D": "3",
+            "B": {"C": "2", "D": "3"},
         }
-    ) == {
-        "A": "1",
-        "B": {"C": "2", "D": "3"},
-    }
 
-    # long path
-    assert unflatten_dict({"A.B.C.D.E.F.G": "1"}) == {
-        "A": {"B": {"C": {"D": {"E": {"F": {"G": "1"}}}}}}
-    }
+    def test_long_path(self):
+        assert unflatten_dict({"A.B.C.D.E.F.G": "1"}) == {
+            "A": {"B": {"C": {"D": {"E": {"F": {"G": "1"}}}}}}
+        }
 
-    # incoming values should overwrite existing values
-    assert unflatten_dict({"A.B": 1, "A.B": 2}) == {"A": {"B": 2}}
+    def test_single_item_array(self):
+        assert unflatten_dict({"A.0.B": "C"}) == {"A": [{"B": "C"}]}
 
-    # conflicting types
-    with pytest.raises(FidesopsException):
-        unflatten_dict({"A.B": 1, "A": 2, "A.C": 3})
+    def test_multi_item_array(self):
+        assert unflatten_dict({"A.0.B": "C", "A.1.D": "E"}) == {
+            "A": [{"B": "C"}, {"D": "E"}]
+        }
 
-    # data passed in is not completely flattened
-    with pytest.raises(FidesopsException):
-        unflatten_dict({"A.B.C": 1, "A": {"B.D": 2}})
+    def test_multi_value_array(self):
+        assert unflatten_dict(
+            {"A.0.B": "C", "A.0.D": "E", "A.1.F": "G", "A.1.H": "I"}
+        ) == {"A": [{"B": "C", "D": "E"}, {"F": "G", "H": "I"}]}
 
-    # unflatten_dict shouldn't be called with a None separator
-    with pytest.raises(IndexError):
-        unflatten_dict({"": "1"}, separator=None)
+    def test_array_with_scalar_value(self):
+        assert unflatten_dict({"A.0": "B"}) == {"A": ["B"]}
+
+    def test_array_with_scalar_values(self):
+        assert unflatten_dict({"A.0": "B", "A.1": "C"}) == {"A": ["B", "C"]}
+
+    def test_overwrite_existing_values(self):
+        assert unflatten_dict({"A.B": 1, "A.B": 2}) == {"A": {"B": 2}}
+
+    def test_conflicting_types(self):
+        with pytest.raises(FidesopsException):
+            unflatten_dict({"A.B": 1, "A": 2, "A.C": 3})
+
+    def test_data_not_completely_flattened(self):
+        with pytest.raises(FidesopsException):
+            unflatten_dict({"A.B.C": 1, "A": {"B.D": 2}})
+
+    def test_none_separator(self):
+        with pytest.raises(IndexError):
+            unflatten_dict({"": "1"}, separator=None)
 
 
 def test_replace_version():

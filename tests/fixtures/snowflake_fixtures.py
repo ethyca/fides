@@ -5,14 +5,14 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.schemas.connection_configuration.connection_secrets_snowflake import (
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.schemas.connection_configuration.connection_secrets_snowflake import (
     SnowflakeSchema,
 )
 
@@ -48,15 +48,50 @@ def snowflake_connection_config(
     Returns a Snowflake ConectionConfig with secrets attached if secrets are present
     in the configuration.
     """
-    snowflake_connection_config = snowflake_connection_config_without_secrets
-    uri = integration_config.get("snowflake", {}).get("external_uri") or os.environ.get(
-        "SNOWFLAKE_TEST_URI"
-    )
-    if uri is not None:
-        schema = SnowflakeSchema(url=uri)
-        snowflake_connection_config.secrets = schema.dict()
-        snowflake_connection_config.save(db=db)
-    yield snowflake_connection_config
+    connection_config = snowflake_connection_config_without_secrets
+
+    account_identifier = integration_config.get("snowflake", {}).get(
+        "account_identifier"
+    ) or os.environ.get("SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER")
+    user_login_name = integration_config.get("snowflake", {}).get(
+        "user_login_name"
+    ) or os.environ.get("SNOWFLAKE_TEST_USER_LOGIN_NAME")
+    password = integration_config.get("snowflake", {}).get(
+        "password"
+    ) or os.environ.get("SNOWFLAKE_TEST_PASSWORD")
+    warehouse_name = integration_config.get("snowflake", {}).get(
+        "warehouse_name"
+    ) or os.environ.get("SNOWFLAKE_TEST_WAREHOUSE_NAME")
+    database_name = integration_config.get("snowflake", {}).get(
+        "database_name"
+    ) or os.environ.get("SNOWFLAKE_TEST_DATABASE_NAME")
+    schema_name = integration_config.get("snowflake", {}).get(
+        "schema_name"
+    ) or os.environ.get("SNOWFLAKE_TEST_SCHEMA_NAME")
+
+    if all(
+        [
+            account_identifier,
+            user_login_name,
+            password,
+            warehouse_name,
+            database_name,
+            schema_name,
+        ]
+    ):
+        schema = SnowflakeSchema(
+            account_identifier=account_identifier,
+            user_login_name=user_login_name,
+            password=password,
+            warehouse_name=warehouse_name,
+            database_name=database_name,
+            schema_name=schema_name,
+        )
+        connection_config.secrets = schema.dict()
+        connection_config.save(db=db)
+
+    yield connection_config
+    connection_config.delete(db)
 
 
 @pytest.fixture

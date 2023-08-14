@@ -8,13 +8,13 @@ from typing import Any, List
 import pytest
 from bson.objectid import ObjectId
 
-from fides.api.ops.util.cache import (
+from fides.api.util.cache import (
     ENCODED_BYTES_PREFIX,
     ENCODED_DATE_PREFIX,
     ENCODED_MONGO_OBJECT_ID_PREFIX,
     FidesopsRedis,
 )
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from tests.fixtures.application_fixtures import faker
 
 

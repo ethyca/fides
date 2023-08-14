@@ -43,7 +43,6 @@ export const DATASET_RETENTION = "dataset.retention";
 export const SYSTEM_ADMINISTRATING_DEPARTMENT =
   "system.administrating_department";
 export const DATASET_NAME = "dataset.name";
-export const SYSTEM_SYSTEM_DEPENDENCIES = "system.system_dependencies";
 export const SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_RIGHTS_AVAILABLE =
   "system.privacy_declaration.data_subjects.rights_available";
 export const SYSTEM_PRIVACY_DECLARATION_NAME =

@@ -17,10 +17,11 @@
         "data_use": "improve.system",
         "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         "data_subjects": ["anonymous_user"],
-        "dataset_references": ["public"]
+        "dataset_references": ["public"],
+        "cookies": [],
+        "id": "pri_ac9d4dfb-d033-4b06-bc7f-968df8d125ff"
       }
     ],
-    "system_dependencies": null,
     "joint_controller": null,
     "third_country_transfers": null,
     "administrating_department": "Not defined",
@@ -60,10 +61,11 @@
         "data_subjects": ["customer"],
         "dataset_references": ["demo_users_dataset"],
         "egress": null,
-        "ingress": null
+        "ingress": null,
+        "cookies": [],
+        "id": "pri_ac9d4dfb-d033-4b06-bc7f-968df8d125ff"
       }
     ],
-    "system_dependencies": null,
     "joint_controller": null,
     "third_country_transfers": ["USA", "CAN"],
     "administrating_department": "Engineering",
@@ -101,10 +103,11 @@
         "data_subjects": ["customer"],
         "dataset_references": null,
         "egress": null,
-        "ingress": null
+        "ingress": null,
+        "cookies": [],
+        "id": "pri_06430a1c-1365-422e-90a7-d444ddb32181"
       }
     ],
-    "system_dependencies": ["demo_analytics_system"],
     "joint_controller": null,
     "third_country_transfers": null,
     "administrating_department": "Marketing",

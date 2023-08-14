@@ -25,13 +25,12 @@ system:
       - name: Share Political Opinions
         data_categories:
           - user
-        data_use: advertising
+        data_use: marketing.advertising
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         data_subjects:
           - customer
         dataset_references:
           - test_db_dataset_failing_dataset
-    system_dependencies: []
 
 policy:
   - fides_key: primary_privacy_policy
@@ -47,7 +46,7 @@ policy:
         data_uses:
           matches: ANY
           values:
-            - advertising
+            - marketing.advertising
         data_subjects:
           matches: ANY
           values:

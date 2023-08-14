@@ -1,9 +1,9 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.sql_models import System
-from fides.api.ops.common_exceptions import SystemManagerException
-from fides.api.ops.models.fides_user import FidesUser
+from fides.api.common_exceptions import SystemManagerException
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.sql_models import System
 
 
 class TestSystemManager:
@@ -11,17 +11,17 @@ class TestSystemManager:
         self, db: Session, user: FidesUser, system: System
     ):
         assert user.systems == []
-        assert system.users == []
+        assert system.data_stewards == []
         assert user.client.systems == []
 
         user.set_as_system_manager(db, system)
         assert user.systems == [system]
-        assert system.users == [user]
+        assert system.data_stewards == [user]
         assert user.client.systems == [system.id]
 
         user.remove_as_system_manager(db, system)
         assert user.systems == []
-        assert system.users == []
+        assert system.data_stewards == []
         assert user.client.systems == []
 
     def test_add_as_manager_of_bad_resource_type(
@@ -44,7 +44,7 @@ class TestSystemManager:
         self, db: Session, system_manager, system
     ):
         assert system_manager.systems == [system]
-        assert system.users == [system_manager]
+        assert system.data_stewards == [system_manager]
 
         with pytest.raises(SystemManagerException) as exc:
             system_manager.set_as_system_manager(db, system)
@@ -59,7 +59,7 @@ class TestSystemManager:
     def test_removing_as_manager_when_not_a_manager(self, db: Session, system, user):
         assert user.systems == []
         assert user.system_ids == []
-        assert system.users == []
+        assert system.data_stewards == []
         with pytest.raises(SystemManagerException) as exc:
             user.remove_as_system_manager(db, system)
 
@@ -75,12 +75,12 @@ class TestSystemManager:
         self, db: Session, user: FidesUser, system: System
     ):
         assert user.systems == []
-        assert system.users == []
+        assert system.data_stewards == []
         assert user.client.systems == []
 
         user.set_as_system_manager(db, system)
         assert user.systems == [system]
-        assert system.users == [user]
+        assert system.data_stewards == [user]
         assert user.client.systems == [system.id]
 
         db.delete(system)
@@ -97,12 +97,12 @@ class TestSystemManager:
         self, db: Session, user: FidesUser, system: System
     ):
         assert user.systems == []
-        assert system.users == []
+        assert system.data_stewards == []
         assert user.client.systems == []
 
         user.set_as_system_manager(db, system)
         assert user.systems == [system]
-        assert system.users == [user]
+        assert system.data_stewards == [user]
         assert user.client.systems == [system.id]
 
         db.delete(user)
@@ -110,4 +110,4 @@ class TestSystemManager:
         db.flush()
 
         db.refresh(system)
-        assert system.users == []
+        assert system.data_stewards == []

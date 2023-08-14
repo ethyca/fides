@@ -3,13 +3,14 @@ saas_config:
   name: Shippo
   type: shippo
   description: A sample schema representing the Shippo connector for Fides
-  version: 0.1.0
+  version: 0.1.1
 
   connector_params:
     - name: domain
       default_value: api.goshippo.com
     - name: api_key
       label: API Key
+      sensitive: True
 
   client_config:
     protocol: https

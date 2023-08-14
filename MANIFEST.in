@@ -4,14 +4,15 @@ include requirements.txt
 include dev-requirements.txt
 include dangerous-requirements.txt
 include versioneer.py
-include src/fides/api/ctl/alembic.ini
+include src/fides/api/alembic/alembic.ini
 include src/fides/_version.py
 include src/fides/py.typed
-include src/fides/templates/fides_datamap_template.xlsx
 
 recursive-include src/fides/data *
 recursive-include src/fides/ui-build *
 
-graft src/fides/api/ops/email_templates/templates
+graft src/fides/api/email_templates/templates
+graft src/fides/api/service/privacy_request/dsr_package/templates
+graft src/fides/api/service/privacy_request/dsr_package/assets
 
 global-exclude *.pyc

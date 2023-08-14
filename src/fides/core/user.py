@@ -5,13 +5,11 @@ from typing import Dict, List, Tuple
 import requests
 from fideslang.validation import FidesKey
 
-from fides.api.ops.cryptography.cryptographic_util import str_to_b64_str
-from fides.cli.utils import handle_cli_response
-from fides.core.config import CONFIG
+from fides.api.cryptography.cryptographic_util import str_to_b64_str
+from fides.common.utils import echo_green, echo_red, handle_cli_response
+from fides.config import CONFIG
 from fides.core.utils import (
     Credentials,
-    echo_green,
-    echo_red,
     get_auth_header,
     get_credentials_path,
     read_credentials_file,

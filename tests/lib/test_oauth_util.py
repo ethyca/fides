@@ -6,25 +6,16 @@ from datetime import datetime
 import pytest
 from fastapi.security import SecurityScopes
 
-from fides.api.ops.api.v1.scope_registry import (
-    DATASET_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_REVIEW,
-    SCOPE_REGISTRY,
-    USER_DELETE,
-    USER_PERMISSION_READ,
-    USER_READ,
-)
-from fides.api.ops.common_exceptions import AuthorizationError
-from fides.api.ops.cryptography.schemas.jwt import (
+from fides.api.common_exceptions import AuthorizationError
+from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.api.ops.models.client import ClientDetail
-from fides.api.ops.oauth.jwt import generate_jwe
-from fides.api.ops.oauth.roles import (
+from fides.api.models.client import ClientDetail
+from fides.api.oauth.jwt import generate_jwe
+from fides.api.oauth.roles import (
     APPROVER,
     CONTRIBUTOR,
     OWNER,
@@ -33,7 +24,7 @@ from fides.api.ops.oauth.roles import (
     VIEWER_AND_APPROVER,
     not_contributor_scopes,
 )
-from fides.api.ops.oauth.utils import (
+from fides.api.oauth.utils import (
     _has_direct_scopes,
     _has_scope_via_role,
     extract_payload,
@@ -43,7 +34,16 @@ from fides.api.ops.oauth.utils import (
     is_token_expired,
     verify_oauth_client,
 )
-from fides.core.config import CONFIG
+from fides.common.api.scope_registry import (
+    DATASET_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
+    SCOPE_REGISTRY,
+    USER_DELETE,
+    USER_PERMISSION_READ,
+    USER_READ,
+)
+from fides.config import CONFIG
 
 
 @pytest.fixture

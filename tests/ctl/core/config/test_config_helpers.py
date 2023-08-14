@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 import toml
 
-from fides.core.config import helpers
+from fides.config import helpers
 
 
 @pytest.mark.unit

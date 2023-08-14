@@ -20,8 +20,22 @@ DOCKERFILE_DATASTORES = [
     "timescale",
 ]
 EXTERNAL_DATASTORE_CONFIG = {
-    "snowflake": ["SNOWFLAKE_TEST_URI"],
-    "redshift": ["REDSHIFT_TEST_URI", "REDSHIFT_TEST_DB_SCHEMA"],
+    "snowflake": [
+        "SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER",
+        "SNOWFLAKE_TEST_USER_LOGIN_NAME",
+        "SNOWFLAKE_TEST_PASSWORD",
+        "SNOWFLAKE_TEST_WAREHOUSE_NAME",
+        "SNOWFLAKE_TEST_DATABASE_NAME",
+        "SNOWFLAKE_TEST_SCHEMA_NAME",
+    ],
+    "redshift": [
+        "REDSHIFT_TEST_HOST",
+        "REDSHIFT_TEST_PORT",
+        "REDSHIFT_TEST_USER",
+        "REDSHIFT_TEST_PASSWORD",
+        "REDSHIFT_TEST_DATABASE",
+        "REDSHIFT_TEST_DB_SCHEMA",
+    ],
     "bigquery": ["BIGQUERY_KEYFILE_CREDS", "BIGQUERY_DATASET"],
     "dynamodb": [
         "DYNAMODB_REGION",

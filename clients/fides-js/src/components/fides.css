@@ -1,0 +1,616 @@
+/**
+* Default CSS styles for the banner
+*/
+:root {
+  /* Colors */
+  --fides-overlay-primary-color: #8243f2;
+  --fides-overlay-background-color: #f7fafc;
+  --fides-overlay-font-color: #4a5568;
+  --fides-overlay-font-color-dark: #2d3748;
+  --fides-overlay-hover-color: #edf2f7;
+  --fides-overlay-gpc-applied-background-color: #38a169;
+  --fides-overlay-gpc-applied-text-color: white;
+  --fides-overlay-gpc-overridden-background-color: #e53e3e;
+  --fides-overlay-gpc-overridden-text-color: white;
+  --fides-overlay-background-dark-color: #e2e8f0;
+  /* Buttons */
+  --fides-overlay-primary-button-background-color: var(
+    --fides-overlay-primary-color
+  );
+  --fides-overlay-primary-button-background-hover-color: #9569f4;
+  --fides-overlay-primary-button-text-color: #ffffff;
+  --fides-overlay-primary-button-border-color: transparent;
+  --fides-overlay-secondary-button-background-color: var(
+    --fides-overlay-background-color
+  );
+  --fides-overlay-secondary-button-background-hover-color: var(
+    --fides-overlay-hover-color
+  );
+  --fides-overlay-secondary-button-text-color: #2d3748;
+  --fides-overlay-secondary-button-border-color: var(
+    --fides-overlay-primary-color
+  );
+  /* Text */
+  --fides-overlay-title-font-color: var(--fides-overlay-font-color);
+  --fides-overlay-body-font-color: var(--fides-overlay-font-color);
+  --fides-overlay-link-font-color: var(--fides-overlay-font-color-dark);
+  /* Switches */
+  --fides-overlay-primary-active-color: var(--fides-overlay-primary-color);
+  --fides-overlay-primary-active-disabled-color: #bda4f7;
+  --fides-overlay-inactive-color: #cbd5e0;
+  --fides-overlay-disabled-color: #e1e7ee;
+  /* Dividers */
+  --fides-overlay-row-divider-color: #e2e8f0;
+  --fides-overlay-row-hover-color: var(--fides-overlay-hover-color);
+  /* Badge */
+  --fides-overlay-badge-background-color: #718096;
+
+  /* Everything else */
+  --fides-overlay-font-family: Inter, sans-serif;
+  --fides-overlay-font-size-body-small: 0.875em;
+  --fides-overlay-font-size-body: 0.95em;
+  --fides-overlay-font-size-title: 1.2em;
+  --fides-overlay-font-size-buttons: 1.05em;
+  --fides-overlay-padding: 1.5em;
+  --fides-overlay-button-border-radius: 4px;
+  --fides-overlay-button-padding: 0.5em 1em;
+  --fides-overlay-component-border-radius: 4px;
+  --fides-overlay-banner-offset: 48px;
+}
+
+div#fides-overlay {
+  font-family: var(--fides-overlay-font-family);
+  font-size: var(--fides-overlay-font-size-body);
+  z-index: 1000;
+  position: fixed;
+  white-space: pre-line;
+
+  /* CSS reset values, adapted from https://www.joshwcomeau.com/css/custom-css-reset/ */
+  line-height: calc(1em + 0.4rem);
+  -webkit-font-smoothing: antialiased;
+}
+
+#fides-modal-link {
+  cursor: pointer;
+  display: none;
+}
+
+#fides-modal-link.fides-modal-link-shown {
+  display: inline;
+}
+
+div#fides-banner-container {
+  position: fixed;
+  z-index: 1;
+  width: 100%;
+  transform: translateY(0%);
+  transition: transform 1s, visibility 1s;
+  display: flex;
+  justify-content: center;
+  visibility: visible;
+  max-height: 100%;
+}
+
+div#fides-banner {
+  font-size: var(--fides-overlay-font-size-body-small);
+  background: var(--fides-overlay-background-color);
+  color: var(--fides-overlay-body-font-color);
+  box-sizing: border-box;
+  padding: var(--fides-overlay-padding);
+  overflow-y: scroll;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+div#fides-banner-inner {
+  width: 100%;
+}
+
+div#fides-banner-container.fides-banner-bottom {
+  bottom: 0;
+  left: 0;
+}
+
+div#fides-banner-container.fides-banner-bottom.fides-banner-hidden {
+  transform: translateY(150%);
+  visibility: hidden;
+}
+
+div#fides-banner-container.fides-banner-top {
+  top: 0;
+  left: 0;
+}
+
+div#fides-banner-container.fides-banner-top.fides-banner-hidden {
+  transform: translateY(-150%);
+  visibility: hidden;
+}
+
+/* Responsive banner */
+@media screen and (min-width: 48em) {
+  div#fides-banner {
+    width: 75%;
+    border-radius: var(--fides-overlay-component-border-radius);
+    border: 1px solid var(--fides-overlay-primary-color);
+  }
+  div#fides-banner-container.fides-banner-bottom {
+    bottom: var(--fides-overlay-banner-offset);
+  }
+  div#fides-banner-container.fides-banner-top {
+    top: var(--fides-overlay-banner-offset);
+  }
+}
+
+@media only screen and (min-width: 80em) {
+  div#fides-banner {
+    width: 60%;
+  }
+}
+
+div#fides-banner-heading {
+  display: flex;
+  margin-right: 0.8em;
+  align-items: center;
+}
+
+div#fides-banner-title {
+  font-size: var(--fides-overlay-font-size-title);
+  font-weight: 600;
+  margin-top: 0.2em;
+  min-width: 33%;
+  flex: 1;
+  color: var(--fides-overlay-title-font-color);
+}
+
+div#fides-banner-description {
+  margin-top: 0.75em;
+  line-height: 1.2em;
+  min-width: 33%;
+  flex: 1;
+}
+
+div#fides-button-group {
+  margin-top: 0.5em;
+  display: flex;
+  justify-content: space-between;
+}
+
+div.fides-acknowledge-button-container {
+  margin-top: 0.5em;
+  display: flex;
+  justify-content: end;
+}
+
+div.fides-banner-acknowledge .fides-banner-button {
+  max-width: 168px;
+}
+
+button.fides-banner-button {
+  font-size: var(--fides-overlay-font-size-buttons);
+  display: inline-block;
+  flex: auto;
+  cursor: pointer;
+  text-align: center;
+  margin: 0;
+  margin-top: 0.25em;
+  margin-right: 0.5em;
+  padding: var(--fides-overlay-button-padding);
+  background: var(--fides-overlay-primary-button-background-color);
+  color: var(--fides-overlay-primary-button-text-color);
+  border: 1px solid;
+
+  font-family: inherit;
+  line-height: 1.15;
+  text-decoration: none;
+}
+
+button.fides-banner-button:hover {
+  background: var(--fides-overlay-primary-button-background-hover-color);
+}
+
+button.fides-banner-button.fides-banner-button-primary {
+  background: var(--fides-overlay-primary-button-background-color);
+  color: var(--fides-overlay-primary-button-text-color);
+  border: none;
+}
+
+button.fides-banner-button.fides-banner-button-primary:hover {
+  background: var(--fides-overlay-primary-button-background-hover-color);
+}
+
+button.fides-banner-button.fides-banner-button-secondary {
+  background: var(--fides-overlay-secondary-button-background-color);
+  color: var(--fides-overlay-secondary-button-text-color);
+  border: 1px solid var(--fides-overlay-primary-button-background-color);
+}
+
+button.fides-banner-button.fides-banner-button-secondary:hover {
+  background: var(--fides-overlay-secondary-button-background-hover-color);
+}
+
+button.fides-banner-button.fides-banner-button-tertiary {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--fides-overlay-link-font-color);
+  text-decoration: underline;
+  cursor: pointer;
+  line-height: 2em;
+}
+
+/** Modal */
+div.fides-modal-content {
+  font-family: var(--fides-overlay-font-family);
+  font-size: var(--fides-overlay-font-size-body);
+  color: var(--fides-overlay-body-font-color);
+  box-sizing: border-box;
+  padding: var(--fides-overlay-padding);
+  border: 1px solid var(--fides-overlay-primary-color);
+  background-color: var(--fides-overlay-background-color);
+  border-radius: var(--fides-overlay-component-border-radius);
+  max-height: 100%;
+  max-width: 100%;
+  overflow-y: scroll;
+
+  z-index: 2;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.fides-modal-container,
+.fides-modal-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.fides-modal-container {
+  z-index: 2;
+  display: flex;
+}
+
+.fides-modal-container[aria-hidden="true"] {
+  display: none;
+}
+
+div#fides-modal .fides-modal-header {
+  text-align: center;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+  font-weight: 600;
+  font-size: var(--fides-overlay-font-size-title);
+  color: var(--fides-overlay-title-font-color);
+}
+
+div#fides-modal .fides-modal-description {
+  margin: 1em 0 1em 0;
+}
+
+div#fides-modal .fides-modal-button-group {
+  display: flex;
+  width: 100%;
+}
+
+.fides-close-button {
+  position: absolute;
+  top: 0.5em;
+  right: 0.2em;
+  cursor: pointer;
+  background: none;
+  border: none;
+  display: flex;
+}
+
+.fides-close-button:hover {
+  background: var(--fides-overlay-hover-color);
+}
+
+.fides-modal-notices {
+  margin-bottom: 1em;
+}
+
+.fides-modal-privacy-policy {
+  display: block;
+  text-align: center;
+  margin-top: 1.5em;
+  color: var(--fides-overlay-primary-color);
+}
+
+/** Toggle, adapted from https://kittygiraudel.com/2021/04/05/an-accessible-toggle/ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fides-toggle-display {
+    transition-duration: 0ms;
+  }
+}
+
+.fides-toggle {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  position: relative;
+  gap: 1ch;
+}
+
+.fides-toggle .fides-toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  cursor: pointer;
+}
+
+.fides-toggle .fides-toggle-display {
+  --offset: 0.1em;
+  --diameter: 1em;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-around;
+
+  width: calc(var(--diameter) * 2 + var(--offset) * 2);
+  height: calc(var(--diameter) + var(--offset) * 2);
+  box-sizing: content-box;
+
+  position: relative;
+  border-radius: 100vw;
+  background-color: var(--fides-overlay-inactive-color);
+  transition: 250ms;
+}
+
+.fides-toggle .fides-toggle-display::before {
+  content: "";
+
+  width: var(--diameter);
+  height: var(--diameter);
+  border-radius: 50%;
+
+  box-sizing: border-box;
+
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: var(--offset);
+  transform: translate(0, -50%);
+
+  background-color: #fff;
+  transition: inherit;
+}
+
+/* Checked/unchecked states */
+.fides-toggle .fides-toggle-input:checked + .fides-toggle-display {
+  background-color: var(--fides-overlay-primary-active-color);
+}
+.fides-toggle .fides-toggle-input:checked + .fides-toggle-display::before {
+  transform: translate(100%, -50%);
+}
+
+/* Disabled state */
+.fides-toggle .fides-toggle-input:disabled {
+  cursor: not-allowed;
+}
+.fides-toggle .fides-toggle-input:disabled + .fides-toggle-display {
+  background-color: var(--fides-overlay-disabled-color);
+}
+.fides-toggle .fides-toggle-input:disabled:checked + .fides-toggle-display {
+  background-color: var(--fides-overlay-primary-active-disabled-color);
+}
+
+/* Focus ring when using keyboard */
+.fides-toggle .fides-toggle-input:focus + .fides-toggle-display {
+  /* Firefox only has Highlight, not -webkit-focus-ring-color */
+  outline: 1px auto Highlight;
+  outline: 1px auto -webkit-focus-ring-color;
+}
+.fides-toggle
+  .fides-toggle-input:focus:not(:focus-visible)
+  + .fides-toggle-display {
+  outline: 0;
+}
+
+/* Divider */
+
+.fides-divider {
+  border-width: 0px 0px 1px;
+  border-color: var(--fides-overlay-row-divider-color);
+  margin: 0;
+}
+
+/* Disclosure */
+
+.fides-disclosure-hidden {
+  visibility: hidden;
+  height: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.fides-notice-toggle .fides-notice-toggle-title {
+  padding-inline: 0.5em 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fides-notice-toggle .fides-notice-toggle-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-right: 0.5em;
+  min-height: 40px;
+  align-items: center;
+}
+
+.fides-notice-toggle .fides-notice-toggle-title:hover {
+  cursor: pointer;
+  background-color: var(--fides-overlay-row-hover-color);
+}
+
+.fides-notice-toggle .disclosure-visible {
+  padding-left: 0.5em;
+}
+
+.fides-notice-toggle-expanded {
+  background-color: var(--fides-overlay-row-hover-color);
+}
+
+/* GPC */
+.fides-gpc-banner {
+  border: 1px solid var(--fides-overlay-primary-color);
+  border-radius: var(--fides-overlay-component-border-radius);
+  display: flex;
+  padding: 1.1em;
+  margin-bottom: 1em;
+}
+
+.fides-gpc-banner p {
+  margin: 0;
+}
+
+.fides-gpc-warning {
+  color: var(--fides-overlay-primary-color);
+  margin-right: 0.5em;
+}
+
+.fides-gpc-header {
+  font-weight: 700;
+}
+
+.fides-gpc-label {
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.fides-gpc-badge {
+  text-transform: uppercase;
+  padding: 0 4px;
+  font-weight: 700;
+  border-radius: var(--fides-overlay-button-border-radius);
+}
+
+.fides-gpc-badge-applied,
+.fides-gpc-badge-detected {
+  background: var(--fides-overlay-gpc-applied-background-color);
+  color: var(--fides-overlay-gpc-applied-text-color);
+}
+
+.fides-gpc-badge-overridden {
+  background: var(--fides-overlay-gpc-overridden-background-color);
+  color: var(--fides-overlay-gpc-overridden-text-color);
+}
+
+/* Tabs */
+
+.fides-tab-list {
+  padding: 0;
+  display: flex;
+  list-style-type: none;
+}
+
+.fides-tab-list > li {
+  width: 100%;
+}
+
+.fides-tab-button {
+  background: none;
+  border-width: 0 0 1px 0;
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+  color: var(--fides-overlay-body-font-color);
+  font-weight: 500;
+  padding: 0.6em 1.2em;
+  cursor: pointer;
+  width: 100%;
+}
+
+.fides-tab-button[aria-selected="true"] {
+  color: var(--fides-overlay-primary-active-color);
+  border-bottom-width: 2px;
+  border-color: var(--fides-overlay-primary-active-color);
+  font-weight: 600;
+}
+
+.fides-tab-button::focus-visible {
+  outline: 1px auto Highlight;
+  outline: 1px auto -webkit-focus-ring-color;
+}
+.fides-tab-button:focus:not(:focus-visible) {
+  outline: 0;
+}
+
+/* GVL Badge */
+
+.fides-notice-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  margin-left: 0.6em;
+  text-transform: uppercase;
+  padding: 0 4px;
+  font-weight: 600;
+  border-radius: var(--fides-overlay-button-border-radius);
+  background: var(--fides-overlay-badge-background-color);
+  color: white;
+  font-size: 0.7em;
+}
+.fides-background-dark {
+  background-color: var(--fides-overlay-background-dark-color);
+}
+
+/* Filter button */
+
+.fides-filter-button-group {
+  background-color: var(
+    --fides-overlay-secondary-button-background-hover-color
+  );
+  border-radius: var(--fides-overlay-button-border-radius);
+  width: fit-content;
+  padding: 0.3em;
+}
+
+.fides-filter-button {
+  background-color: transparent;
+  border: none;
+  padding: 0.3em 1em;
+  cursor: pointer;
+}
+
+.fides-filter-button[aria-checked="true"] {
+  background-color: var(--fides-overlay-primary-button-background-color);
+  color: var(--fides-overlay-primary-button-text-color);
+  border-radius: var(--fides-overlay-button-border-radius);
+}
+
+/* Table */
+
+.fides-cookies-table {
+  border-collapse: collapse;
+  width: 100%;
+  text-align: left;
+}
+
+.fides-cookies-table th {
+  text-transform: uppercase;
+}
+
+.fides-cookies-table td,
+.fides-cookies-table th {
+  border: 1px solid var(--fides-overlay-row-divider-color);
+  padding-left: 1.1em;
+  padding-right: 0.6em;
+}
+
+/* General classes */
+.fides-flex-center {
+  display: flex;
+  align-items: center;
+}

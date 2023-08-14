@@ -3,9 +3,11 @@ import { createSelector, createSlice } from "@reduxjs/toolkit";
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
-  Page_PrivacyExperienceResponse_,
-  PrivacyExperienceCreate,
-  PrivacyExperienceResponse,
+  ExperienceConfigCreate,
+  ExperienceConfigCreateOrUpdateResponse,
+  ExperienceConfigResponse,
+  ExperienceConfigUpdate,
+  Page_ExperienceConfigResponse_,
   PrivacyNoticeRegion,
 } from "~/types/api";
 
@@ -19,94 +21,97 @@ const initialState: State = {
   pageSize: 50,
 };
 
-interface PrivacyExperienceParams {
+interface ExperienceConfigParams {
   show_disabled?: boolean;
   region?: PrivacyNoticeRegion;
   page?: number;
   size?: number;
 }
 
-const privacyExperienceApi = baseApi.injectEndpoints({
+const privacyExperienceConfigApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getAllPrivacyExperiences: build.query<
-      Page_PrivacyExperienceResponse_,
-      PrivacyExperienceParams
+    getAllExperienceConfigs: build.query<
+      Page_ExperienceConfigResponse_,
+      ExperienceConfigParams
     >({
       query: (params) => ({
-        url: `privacy-experience/`,
+        url: `experience-config/`,
         params: { ...params, show_disabled: true },
       }),
-      providesTags: () => ["Privacy Experiences"],
+      providesTags: () => ["Privacy Experience Configs"],
     }),
-    patchPrivacyExperience: build.mutation<
-      PrivacyExperienceResponse[],
-      Partial<PrivacyExperienceResponse>[]
+    patchExperienceConfig: build.mutation<
+      ExperienceConfigCreateOrUpdateResponse,
+      Partial<ExperienceConfigUpdate> & Pick<ExperienceConfigResponse, "id">
     >({
-      query: (payload) => ({
-        method: "PATCH",
-        url: `privacy-experience/`,
-        body: payload,
-      }),
-      invalidatesTags: () => ["Privacy Experiences"],
+      query: (payload) => {
+        const { id, ...body } = payload;
+        return {
+          method: "PATCH",
+          url: `experience-config/${id}`,
+          body,
+        };
+      },
+      invalidatesTags: () => ["Privacy Experience Configs"],
     }),
-    getPrivacyExperienceById: build.query<PrivacyExperienceResponse, string>({
+    getExperienceConfigById: build.query<ExperienceConfigResponse, string>({
       query: (id) => ({
-        url: `privacy-experience/${id}`,
+        url: `experience-config/${id}`,
       }),
       providesTags: (result, error, arg) => [
-        { type: "Privacy Experiences", id: arg },
+        { type: "Privacy Experience Configs", id: arg },
       ],
     }),
-    postPrivacyExperience: build.mutation<
-      PrivacyExperienceResponse[],
-      PrivacyExperienceCreate[]
+    postExperienceConfig: build.mutation<
+      ExperienceConfigCreateOrUpdateResponse,
+      ExperienceConfigCreate
     >({
       query: (payload) => ({
         method: "POST",
-        url: `privacy-experience/`,
+        url: `experience-config/`,
         body: payload,
       }),
-      invalidatesTags: () => ["Privacy Experiences"],
+      invalidatesTags: () => ["Privacy Experience Configs"],
     }),
   }),
 });
 
 export const {
-  useGetAllPrivacyExperiencesQuery,
-  usePatchPrivacyExperienceMutation,
-  useGetPrivacyExperienceByIdQuery,
-  usePostPrivacyExperienceMutation,
-} = privacyExperienceApi;
+  useGetAllExperienceConfigsQuery,
+  usePatchExperienceConfigMutation,
+  useGetExperienceConfigByIdQuery,
+  usePostExperienceConfigMutation,
+} = privacyExperienceConfigApi;
 
-export const privacyExperienceSlice = createSlice({
-  name: "privacyExperience",
+export const privacyExperienceConfigSlice = createSlice({
+  name: "privacyExperienceConfig",
   initialState,
   reducers: {},
 });
 
-export const { reducer } = privacyExperienceSlice;
+export const { reducer } = privacyExperienceConfigSlice;
 
-const selectPrivacyExperiences = (state: RootState) => state.privacyExperience;
+const selectPrivacyExperienceConfig = (state: RootState) =>
+  state.privacyExperienceConfig;
 export const selectPage = createSelector(
-  selectPrivacyExperiences,
+  selectPrivacyExperienceConfig,
   (state) => state.page
 );
 
 export const selectPageSize = createSelector(
-  selectPrivacyExperiences,
+  selectPrivacyExperienceConfig,
   (state) => state.pageSize
 );
 
-const emptyPrivacyExperiences: PrivacyExperienceResponse[] = [];
-export const selectAllPrivacyExperiences = createSelector(
+const emptyExperienceConfigs: ExperienceConfigResponse[] = [];
+export const selectAllExperienceConfigs = createSelector(
   [(RootState) => RootState, selectPage, selectPageSize],
   (RootState, page, pageSize) => {
-    const data = privacyExperienceApi.endpoints.getAllPrivacyExperiences.select(
-      {
+    const data =
+      privacyExperienceConfigApi.endpoints.getAllExperienceConfigs.select({
         page,
         size: pageSize,
-      }
-    )(RootState)?.data;
-    return data ? data.items : emptyPrivacyExperiences;
+      })(RootState)?.data;
+    return data ? data.items : emptyExperienceConfigs;
   }
 );

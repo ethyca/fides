@@ -5,17 +5,16 @@ import pytest
 from fastapi.security import SecurityScopes
 from fideslang.models import System as SystemSchema
 
-from fides.api.ops.api.v1.scope_registry import POLICY_CREATE_OR_UPDATE, SYSTEM_UPDATE
-from fides.api.ops.common_exceptions import AuthorizationError
-from fides.api.ops.cryptography.schemas.jwt import (
+from fides.api.common_exceptions import AuthorizationError
+from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SYSTEMS,
 )
-from fides.api.ops.oauth.jwt import generate_jwe
-from fides.api.ops.oauth.roles import OWNER, VIEWER
-from fides.api.ops.util.system_manager_oauth_util import (
+from fides.api.oauth.jwt import generate_jwe
+from fides.api.oauth.roles import OWNER, VIEWER
+from fides.api.oauth.system_manager_oauth_util import (
     SystemAuthContainer,
     _get_system_from_fides_key,
     _get_system_from_request_body,
@@ -24,7 +23,8 @@ from fides.api.ops.util.system_manager_oauth_util import (
     get_system_schema,
     verify_oauth_client_for_system_from_request_body,
 )
-from fides.core.config import CONFIG
+from fides.common.api.scope_registry import POLICY_CREATE_OR_UPDATE, SYSTEM_UPDATE
+from fides.config import CONFIG
 
 
 class TestHasSystemPermissions:

@@ -3,14 +3,16 @@ saas_config:
   name: Klaviyo
   type: klaviyo
   description: A sample schema representing the Klaviyo connector for Fides
-  version: 0.1.0
+  version: 0.1.1
 
   connector_params:
     - name: domain
       default_value: a.klaviyo.com
     - name: api_key
+      label: API Key
+      sensitive: True
     - name: revision
-      default_value: '2023-02-03'
+      default_value: "2023-02-03"
 
   client_config:
     protocol: https

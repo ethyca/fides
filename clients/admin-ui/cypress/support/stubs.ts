@@ -69,6 +69,9 @@ export const stubDatasetCrud = () => {
   cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
     "getDatasets"
   );
+  cy.intercept("GET", "/api/v1/filter/dataset?only_unlinked_datasets=false", {
+    fixture: "datasets.json",
+  }).as("getFilteredDatasets");
   cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
     "getDataset"
   );
@@ -116,7 +119,7 @@ export const stubPrivacyNoticesCrud = () => {
     fixture: "privacy-notices/list.json",
   }).as("getNotices");
   cy.intercept("GET", "/api/v1/privacy-notice/pri*", {
-    fixture: "privacy-notices/notice_only.json",
+    fixture: "privacy-notices/notice.json",
   }).as("getNoticeDetail");
   cy.intercept("POST", "/api/v1/privacy-notice", {
     fixture: "privacy-notices/list.json",

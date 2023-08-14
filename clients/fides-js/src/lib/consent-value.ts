@@ -1,29 +1,8 @@
 import { ConsentContext } from "./consent-context";
+import { ConsentMechanism, ConsentValue, PrivacyNotice } from "./consent-types";
+import { transformUserPreferenceToBoolean } from "./consent-utils";
 
-export type ConditionalValue = {
-  value: boolean;
-  globalPrivacyControl: boolean;
-};
-
-/**
- * A consent value can be a boolean:
- *  - `true`: consent/opt-in
- *  - `false`: revoke/opt-out
- *
- * A consent value can also be context-dependent, which means it will be decided based on
- * information about the user's environment (browser). The `ConditionalValue` object maps the
- * context conditions to the value that should be used:
- *  - `value`: The default value if no context applies.
- *  - `globalPrivacyControl`: The value to use if the user's browser has Global Privacy Control
- *    enabled.
- */
-export type ConsentValue = boolean | ConditionalValue;
-
-export type ConsentTypeToValue = {
-  [consentType: string]: ConsentValue;
-};
-
-export const resolveConsentValue = (
+export const resolveLegacyConsentValue = (
   value: ConsentValue | undefined,
   context: ConsentContext
 ): boolean => {
@@ -40,4 +19,23 @@ export const resolveConsentValue = (
   }
 
   return value.value;
+};
+
+export const resolveConsentValue = (
+  notice: PrivacyNotice,
+  context: ConsentContext
+): boolean => {
+  if (notice.current_preference) {
+    return transformUserPreferenceToBoolean(notice.current_preference);
+  }
+  if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
+    return true;
+  }
+  const gpcEnabled =
+    !!notice.has_gpc_flag && context.globalPrivacyControl === true;
+  if (gpcEnabled) {
+    return false;
+  }
+
+  return transformUserPreferenceToBoolean(notice.default_preference);
 };

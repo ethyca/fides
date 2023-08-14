@@ -1,0 +1,30 @@
+<html>
+   <head>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600">
+      <link rel="stylesheet" href="../../main.css">
+   </head>
+   <body>
+      <div class="container">
+         <div class="header"></div>
+         <div class="content">
+            <div class="button-container">
+               <a href="../index.html">
+                  <div class="button"><img src="../../back.svg"></div>
+                  <span>Back to collections</span>
+               </a>
+            </div>
+            <h1>{{ heading }}</h1>
+            <div class="table table-hover">
+               <div class="table-row">
+                  <div class="table-cell">Items</div>
+               </div>
+               {% for name, link in data.items() %}
+               <a href="{{ link }}" class="table-row">
+                  <div class="table-cell">{{ name }}</div>
+               </a>
+               {% endfor %}
+            </div>
+         </div>
+      </div>
+   </body>
+</html>

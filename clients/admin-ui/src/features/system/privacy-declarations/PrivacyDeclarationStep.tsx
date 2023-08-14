@@ -1,26 +1,36 @@
 import { Heading, Spinner, Stack, Text } from "@fidesui/react";
 import NextLink from "next/link";
 
-import { useAppDispatch } from "~/app/hooks";
-import { setActiveSystem } from "~/features/system";
-import { System } from "~/types/api";
+import { SystemResponse } from "~/types/api";
 
 import { usePrivacyDeclarationData } from "./hooks";
 import PrivacyDeclarationManager from "./PrivacyDeclarationManager";
 
 interface Props {
-  system: System;
+  system: SystemResponse;
 }
 
 const PrivacyDeclarationStep = ({ system }: Props) => {
-  const dispatch = useAppDispatch();
-
   const { isLoading, ...dataProps } = usePrivacyDeclarationData({
     includeDatasets: true,
+    includeDisabled: false,
   });
 
-  const onSave = (savedSystem: System) => {
-    dispatch(setActiveSystem(savedSystem));
+  const allEnabledDataCategories = dataProps.allDataCategories.filter(
+    (category) => category.active
+  );
+
+  const allEnabledDataUses = dataProps.allDataUses.filter((use) => use.active);
+
+  const allEnabledDataSubjects = dataProps.allDataSubjects.filter(
+    (subject) => subject.active
+  );
+
+  const filteredDataProps = {
+    ...dataProps,
+    allDataCategories: allEnabledDataCategories,
+    allDataUses: allEnabledDataUses,
+    allDataSubject: allEnabledDataSubjects,
   };
 
   return (
@@ -28,7 +38,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
       <Heading as="h3" size="md">
         Data uses
       </Heading>
-      <Text fontSize="sm">
+      <Text fontSize="sm" fontWeight="medium">
         Data Uses describe the business purpose for which the personal data is
         processed or collected. Within a Data Use, you assign which categories
         of personal information are collected for this purpose and for which
@@ -46,9 +56,9 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
       ) : (
         <PrivacyDeclarationManager
           system={system}
-          onSave={onSave}
           includeCustomFields
-          {...dataProps}
+          includeCookies
+          {...filteredDataProps}
         />
       )}
     </Stack>

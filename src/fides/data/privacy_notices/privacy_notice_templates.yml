@@ -1,0 +1,220 @@
+privacy_notices:
+- name: Essential
+  notice_key: essential
+  id: pri_51c85583-40ec-4257-95ef-db3eea860ess
+  description: This website uses essential cookies and services to enable core website features and provide a seamless user experience. These cookies and services are used to facilitate features such as navigation, remember user preferences, and ensure the security of the website.
+  internal_description: Essential cookies and services, also known as strictly necessary, are technologies that are crucial for the proper functioning of a website. These technologies are typically exempt from requiring user consent under privacy regulations because they are essential for the website to deliver its basic functionalities and services.
+  regions:
+    - be
+    - bg
+    - cz
+    - dk
+    - de
+    - ee
+    - ie
+    - gr
+    - es
+    - fr
+    - hr
+    - it
+    - cy
+    - lv
+    - lt
+    - lu
+    - hu
+    - mt
+    - nl
+    - at
+    - pl
+    - pt
+    - ro
+    - si
+    - sk
+    - fi
+    - se
+    - gb_eng
+    - gb_sct
+    - gb_wls
+    - gb_nir
+    - is
+    - "no"
+    - li
+  consent_mechanism: notice_only
+  data_uses:
+    - essential
+  enforcement_level: not_applicable
+  disabled: False
+  has_gpc_flag: False
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: False
+- name: Functional
+  notice_key: functional
+  id: pri_bebf6a65-adfd-4800-89c8-9fbe78a1ffun
+  description: This website uses functional cookies and services to remember your preferences and choices, such as language preferences, font sizes, region selections, and customized layouts. They enable this website to offer enhanced and personalized functionalities.
+  internal_description: Functional cookies and services, also referred to as preferences, are technologies that enhance the usability and personalization of a website. Unlike essential cookies and services, functional technologies are not strictly necessary for the basic operation of the website but provide additional features and improved user experiences. These technologies typically require user consent under privacy regulations.
+  regions:
+    - be
+    - bg
+    - cz
+    - dk
+    - de
+    - ee
+    - ie
+    - gr
+    - es
+    - fr
+    - hr
+    - it
+    - cy
+    - lv
+    - lt
+    - lu
+    - hu
+    - mt
+    - nl
+    - at
+    - pl
+    - pt
+    - ro
+    - si
+    - sk
+    - fi
+    - se
+    - gb_eng
+    - gb_sct
+    - gb_wls
+    - gb_nir
+    - is
+    - "no"
+    - li
+  consent_mechanism: opt_in
+  data_uses:
+    - personalize
+  enforcement_level: frontend
+  disabled: False
+  has_gpc_flag: False
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: False
+- name: Analytics
+  notice_key: analytics
+  id: pri_13b57800-2581-4da9-8aec-7b31e80b3ana
+  description: This website uses analytics cookies and services for collecting aggregated data and statistical information. This data helps us analyze and optimize site performance, identify popular content, detect navigation issues, and make informed decisions to enhance the user experience.
+  internal_description: Analytics cookies and services, also known as performance, are technologies that gather anonymous information about how visitors interact with a website. These technologies provide insights into website usage, visitor behavior, and performance metrics, allowing website owners to understand and improve their site's effectiveness. Analytics technologies typically require user consent under privacy regulations.
+  regions:
+    - be
+    - bg
+    - cz
+    - dk
+    - de
+    - ee
+    - ie
+    - gr
+    - es
+    - fr
+    - hr
+    - it
+    - cy
+    - lv
+    - lt
+    - lu
+    - hu
+    - mt
+    - nl
+    - at
+    - pl
+    - pt
+    - ro
+    - si
+    - sk
+    - fi
+    - se
+    - gb_eng
+    - gb_sct
+    - gb_wls
+    - gb_nir
+    - is
+    - "no"
+    - li
+  consent_mechanism: opt_in
+  data_uses:
+    - analytics
+  enforcement_level: frontend
+  disabled: False
+  has_gpc_flag: False
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: False
+- name: Marketing
+  notice_key: marketing
+  id: pri_890a115e-eb03-4962-9f7d-055933248mar
+  description: This website uses marketing cookies and services to deliver personalized advertisements, promotions, and offers that are relevant to you. They help optimize ad delivery, measure campaign effectiveness, and enable advertisers to reach specific target audiences.
+  internal_description: Marketing cookies and services, also referred to as targeting or advertising, are technologies that tracks users' browsing behavior across websites. These technologies enable targeted advertising and marketing campaigns by collecting information about users' interests, preferences, and online activities. Marketing technologies typically require user consent under privacy regulations.
+  regions:
+    - be
+    - bg
+    - cz
+    - dk
+    - de
+    - ee
+    - ie
+    - gr
+    - es
+    - fr
+    - hr
+    - it
+    - cy
+    - lv
+    - lt
+    - lu
+    - hu
+    - mt
+    - nl
+    - at
+    - pl
+    - pt
+    - ro
+    - si
+    - sk
+    - fi
+    - se
+    - gb_eng
+    - gb_sct
+    - gb_wls
+    - gb_nir
+    - is
+    - "no"
+    - li
+  consent_mechanism: opt_in
+  data_uses:
+    - marketing.advertising.first_party.targeted
+    - marketing.advertising.third_party.targeted
+  enforcement_level: frontend
+  disabled: False
+  has_gpc_flag: True
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: False
+- name: Data Sales and Sharing
+  notice_key: data_sales_and_sharing
+  id: pri_309d287c-b208-4fd1-93b2-7b2ff13eddat
+  description: We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
+  internal_description: “Sale of personal“ data means the exchange of personal data for monetary or other valuable consideration. Data sharing refers to sharing of data with third parties for the purpose of cross contextual behavioral advertising. This is also closely analogous to “Targeted Advertising” as defined in other U.S. state laws and they have been combined here under one notice.
+  regions:
+    - us_ca
+    - us_co
+    - us_ct
+    - us_ia
+    - us_ut
+    - us_va
+  consent_mechanism: opt_out
+  data_uses:
+    - marketing.advertising.first_party.targeted
+    - marketing.advertising.third_party.targeted
+  enforcement_level: frontend
+  disabled: False
+  has_gpc_flag: True
+  displayed_in_privacy_center: True
+  displayed_in_overlay: True
+  displayed_in_api: False

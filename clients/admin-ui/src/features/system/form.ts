@@ -2,6 +2,7 @@ import {
   CustomFieldsFormValues,
   CustomFieldValues,
 } from "~/features/common/custom-fields";
+import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { DataProtectionImpactAssessment, System } from "~/types/api";
 
@@ -27,7 +28,6 @@ export const defaultInitialValues: FormValues = {
   data_responsibility_title: undefined,
   administrating_department: "",
   third_country_transfers: [],
-  system_dependencies: [],
   joint_controller: {
     name: "",
     email: "",
@@ -75,12 +75,11 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
     data_responsibility_title: formValues.data_responsibility_title,
     description: formValues.description,
     egress: formValues.egress,
-    fides_key: formValues.fides_key,
+    fides_key: formatKey(formValues.name!),
     ingress: formValues.ingress,
     name: formValues.name,
     organization_fides_key: formValues.organization_fides_key,
     privacy_declarations: formValues.privacy_declarations,
-    system_dependencies: formValues.system_dependencies,
     system_type: formValues.system_type,
     tags: formValues.tags,
     third_country_transfers: formValues.third_country_transfers,

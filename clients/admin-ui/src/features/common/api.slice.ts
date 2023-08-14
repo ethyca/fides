@@ -37,7 +37,7 @@ export const baseApi = createApi({
     "Notification",
     "Organization",
     "Plus",
-    "Privacy Experiences",
+    "Privacy Experience Configs",
     "Privacy Notices",
     "System",
     "Request",

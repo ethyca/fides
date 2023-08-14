@@ -1,9 +1,10 @@
 {
   "name": "Essential",
+  "notice_key": "essential",
   "description": "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
   "internal_description": null,
   "origin": null,
-  "regions": ["eu_fr", "eu_ie"],
+  "regions": ["fr", "ie"],
   "consent_mechanism": "notice_only",
   "data_uses": ["provide.service"],
   "enforcement_level": "not_applicable",

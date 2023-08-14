@@ -1,6 +1,12 @@
 """
 Entrypoint for the Fides command-line.
 """
+# pylint: disable=wrong-import-position
+import warnings
+
+# Ignore the UserWarning from the Snowflake module to keep CLI output clean
+warnings.filterwarnings("ignore", category=UserWarning, module="snowflake")
+
 from importlib.metadata import version
 from platform import system
 
@@ -9,18 +15,28 @@ from rich_click import Context, echo, group, option, pass_context, secho, versio
 
 import fides
 from fides.cli.utils import check_server
-from fides.core.config import get_config
+from fides.config import get_config
 
 from . import cli_formatting
 from .commands.annotate import annotate
-from .commands.core import evaluate, parse, pull, push
-from .commands.crud import delete, get_resource, list_resources
 from .commands.db import database
-from .commands.export import export
+from .commands.deploy import deploy
 from .commands.generate import generate
 from .commands.scan import scan
+from .commands.ungrouped import (
+    delete,
+    evaluate,
+    get_resource,
+    init,
+    list_resources,
+    parse,
+    pull,
+    push,
+    status,
+    webserver,
+    worker,
+)
 from .commands.user import user
-from .commands.util import deploy, init, status, webserver, worker
 from .commands.view import view
 from .exceptions import LocalModeException
 
@@ -31,7 +47,6 @@ API_COMMANDS = [
     annotate,
     database,
     delete,
-    export,
     get_resource,
     list_resources,
     status,
@@ -49,7 +64,7 @@ APP = fides.__name__
 PACKAGE = "ethyca-fides"
 
 
-@group(
+@group(  # type: ignore
     context_settings=CONTEXT_SETTINGS,
     invoke_without_command=True,
     name="fides",

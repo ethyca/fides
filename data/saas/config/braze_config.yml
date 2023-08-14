@@ -3,11 +3,13 @@ saas_config:
   name: Braze
   type: braze
   description: A sample schema representing the Braze connector for Fides
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
     - name: api_key
+      label: API Key
+      sensitive: True
 
   client_config:
     protocol: https

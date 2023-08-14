@@ -1,13 +1,25 @@
+/* eslint-disable import/no-extraneous-dependencies */
+import alias from "@rollup/plugin-alias";
 import copy from "rollup-plugin-copy";
 import dts from "rollup-plugin-dts";
 import esbuild from "rollup-plugin-esbuild";
 import filesize from "rollup-plugin-filesize";
 import nodeResolve from "@rollup/plugin-node-resolve";
+import postcss from "rollup-plugin-postcss";
 
 const name = "fides";
 const isDev = process.env.NODE_ENV === "development";
 const GZIP_SIZE_ERROR_KB = 20; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
+
+const preactAliases = {
+  entries: [
+    { find: "react", replacement: "preact/compat" },
+    { find: "react-dom/test-utils", replacement: "preact/test-utils" },
+    { find: "react-dom", replacement: "preact/compat" },
+    { find: "react/jsx-runtime", replacement: "preact/jsx-runtime" },
+  ],
+};
 
 /**
  * @type {import('rollup').RollupOptions}
@@ -16,7 +28,11 @@ export default [
   {
     input: `src/${name}.ts`,
     plugins: [
+      alias(preactAliases),
       nodeResolve(),
+      postcss({
+        minimize: !isDev,
+      }),
       esbuild({
         minify: !isDev,
       }),
@@ -33,7 +49,7 @@ export default [
           "boxen", // default reporter, which prints a nice CLI output
 
           // Add a defensive check to fail the build if our bundle size starts getting too big!
-          (options, bundle, { bundleSize, gzipSize, fileName }) => {
+          (options, bundle, { gzipSize, fileName }) => {
             const gzipSizeKb = Number(gzipSize.replace(" KB", ""));
             if (gzipSizeKb > GZIP_SIZE_ERROR_KB) {
               console.error(
@@ -70,7 +86,7 @@ export default [
   },
   {
     input: `src/${name}.ts`,
-    plugins: [nodeResolve(), esbuild()],
+    plugins: [alias(preactAliases), nodeResolve(), postcss(), esbuild()],
     output: [
       {
         // Compatible with ES module imports. Apps in this repo may be able to share the code.
@@ -82,7 +98,7 @@ export default [
   },
   {
     input: `src/${name}.ts`,
-    plugins: [dts()],
+    plugins: [dts(), postcss()],
     output: [
       {
         file: `dist/${name}.d.ts`,

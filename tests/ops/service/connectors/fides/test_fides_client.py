@@ -4,9 +4,9 @@ from unittest import mock
 import pytest
 from httpx import AsyncClient, Client, HTTPStatusError
 
-from fides.api.ctl.utils.errors import FidesError
-from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fides.api.ops.service.connectors.fides.fides_client import FidesClient
+from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.service.connectors.fides.fides_client import FidesClient
+from fides.api.util.errors import FidesError
 
 SAMPLE_TOKEN = "SOME_TOKEN"
 

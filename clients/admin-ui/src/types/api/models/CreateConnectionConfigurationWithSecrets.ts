@@ -3,8 +3,10 @@
 /* eslint-disable */
 
 import type { AccessLevel } from "./AccessLevel";
+import type { ActionType } from "./ActionType";
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { ConnectionType } from "./ConnectionType";
+import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
 import type { FidesDocsSchema } from "./FidesDocsSchema";
 import type { ManualWebhookSchemaforDocs } from "./ManualWebhookSchemaforDocs";
@@ -23,12 +25,13 @@ import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
  * Schema for creating a connection configuration including secrets.
  */
 export type CreateConnectionConfigurationWithSecrets = {
-  name: string;
+  name?: string;
   key?: string;
   connection_type: ConnectionType;
   access: AccessLevel;
   disabled?: boolean;
   description?: string;
+  enabled_actions?: Array<ActionType>;
   secrets?:
     | MongoDBDocsSchema
     | PostgreSQLDocsSchema
@@ -43,6 +46,7 @@ export type CreateConnectionConfigurationWithSecrets = {
     | ManualWebhookSchemaforDocs
     | TimescaleDocsSchema
     | FidesDocsSchema
-    | SovrnDocsSchema;
+    | SovrnDocsSchema
+    | DynamoDBDocsSchema;
   saas_connector_type?: string;
 };

@@ -1,0 +1,60 @@
+<html>
+
+<head>
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600">
+   <link rel="stylesheet" href="data/main.css">
+   <script>
+      // format the "requested at" datetime with the user's local date format
+      // and timezone if the Intl API is available in their browser, otherwise default to UTC
+      window.onload = function () {
+         var requestedAt = document.getElementById('requestedAt');
+         var dateString = requestedAt.textContent;
+
+         if (window.Intl) {
+            var formattedDate = new Intl.DateTimeFormat(navigator.language, {
+               year: 'numeric',
+               month: '2-digit',
+               day: '2-digit',
+               hour: '2-digit',
+               minute: '2-digit',
+               timeZoneName: 'short'
+            }).format(new Date(dateString));
+
+            requestedAt.textContent = formattedDate;
+         }
+      };
+   </script>
+</head>
+
+<body>
+   <div class="container">
+      <div class="header"></div>
+      <div class="content">
+         <h1>Your requested data</h1>
+         <div class="info-grid-container">
+            <div class="info-grid">
+               <div>Request ID:</div>
+               <div>{{ request.id }}</div>
+               <div>Request type:</div>
+               <div>{{ request.type }}</div>
+               <div>Email:</div>
+               <div>{{ request.email }}</div>
+               <div>Requested at:</div>
+               <div id="requestedAt">{{ request.requested_at }}</div>
+            </div>
+         </div>
+         <div class="table table-hover">
+            <div class="table-row">
+               <div class="table-cell">Dataset</div>
+            </div>
+            {% for name, link in data.items() %}
+            <a href="{{ link }}" class="table-row">
+               <div class="table-cell">{{ name }}</div>
+            </a>
+            {% endfor %}
+         </div>
+      </div>
+   </div>
+</body>
+
+</html>

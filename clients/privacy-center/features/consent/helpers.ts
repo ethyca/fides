@@ -1,7 +1,8 @@
 import {
   ConsentContext,
   CookieKeyConsent,
-  resolveConsentValue,
+  resolveLegacyConsentValue,
+  GpcStatus,
 } from "fides-js";
 
 import {
@@ -9,7 +10,7 @@ import {
   LegacyConsentConfig,
   ConsentConfig,
 } from "~/types/config";
-import { FidesKeyToConsent, GpcStatus } from "./types";
+import { FidesKeyToConsent } from "./types";
 
 /**
  * Ascertain whether a consentConfig is V1 or V2 based upon the presence of a `button` key
@@ -60,7 +61,10 @@ export const makeCookieKeyConsent = ({
 }): CookieKeyConsent => {
   const cookieKeyConsent: CookieKeyConsent = {};
   consentOptions.forEach((option) => {
-    const defaultValue = resolveConsentValue(option.default, consentContext);
+    const defaultValue = resolveLegacyConsentValue(
+      option.default,
+      consentContext
+    );
     const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
 
     option.cookieKeys?.forEach((cookieKey) => {

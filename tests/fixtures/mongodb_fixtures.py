@@ -4,19 +4,24 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ops.models.connectionconfig import (
+from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.policy import ActionType
-from fides.api.ops.models.privacy_request import (
+from fides.api.models.policy import ActionType
+from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
 )
 
 from .application_fixtures import integration_secrets
+
+
+@pytest.fixture(scope="function")
+def mongo_example_secrets():
+    return integration_secrets["mongo_example"]
 
 
 @pytest.fixture(scope="function")

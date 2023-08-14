@@ -1,5 +1,7 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 """Integration tests for the API module."""
+import json
+import typing
 from json import loads
 from typing import Dict, List
 
@@ -20,12 +22,21 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.ctl.database.crud import get_resource
-from fides.api.ctl.routes import health
-from fides.api.ctl.routes.util import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
-from fides.api.ctl.schemas.system import PrivacyDeclarationResponse
-from fides.api.ctl.sql_models import Dataset, PrivacyDeclaration, System
-from fides.api.ops.api.v1.scope_registry import (
+from fides.api.api.v1.endpoints import health
+from fides.api.db.crud import get_resource
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
+from fides.api.oauth.roles import OWNER, VIEWER
+from fides.api.schemas.system import PrivacyDeclarationResponse, SystemResponse
+from fides.api.schemas.taxonomy_extensions import (
+    DataCategory,
+    DataQualifier,
+    DataSubject,
+    DataUse,
+)
+from fides.api.util.endpoint_utils import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
+from fides.common.api.scope_registry import (
     CREATE,
     DELETE,
     POLICY_CREATE_OR_UPDATE,
@@ -35,17 +46,23 @@ from fides.api.ops.api.v1.scope_registry import (
     READ,
     SYSTEM_CREATE,
     SYSTEM_DELETE,
+    SYSTEM_READ,
     SYSTEM_UPDATE,
     UPDATE,
 )
-from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
-from fides.api.ops.oauth.roles import OWNER, VIEWER
+from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from fides.config import FidesConfig, get_config
 from fides.core import api as _api
-from fides.core.config import FidesConfig, get_config
 
 CONFIG = get_config()
 
 TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
+TAXONOMY_EXTENSIONS = {
+    "data_category": DataCategory,
+    "data_subject": DataSubject,
+    "data_use": DataUse,
+    "data_qualifier": DataQualifier,
+}
 
 
 # Helper Functions
@@ -440,25 +457,57 @@ class TestSystemCreate:
             system_type="SYSTEM",
             name="Test System",
             description="A Test System",
+            vendor_id="test_vendor",
+            dataset_references=["another_system_reference"],
+            processes_personal_data=True,
+            exempt_from_privacy_regulations=False,
+            reason_for_exemption=None,
+            uses_profiling=True,
+            legal_basis_for_profiling="Authorised by law",
+            does_international_transfers=True,
+            legal_basis_for_transfers="Binding corporate rules",
+            requires_data_protection_assessments=True,
+            dpa_location="https://www.example.com/dpa",
+            dpa_progress="pending",
+            privacy_policy="https://www.example.com/privacy_policy",
+            legal_name="Sunshine Corporation",
+            legal_address="35925 Test Lane, Test Town, TX 24924",
+            responsibility=["Processor"],
+            dpo="John Doe, CIPT",
+            joint_controller_info="Jane Doe",
+            data_security_practices="We encrypt all your data in transit and at rest",
             privacy_declarations=[
                 models.PrivacyDeclaration(
                     name="declaration-name",
                     data_categories=[],
-                    data_use="provide",
+                    data_use="essential",
                     data_subjects=[],
-                    data_qualifier="aggregated_data",
-                    dataset_references=[],
+                    dataset_references=["another_system_reference"],
+                    features=["Link different devices"],
+                    legal_basis_for_processing="Public interest",
+                    impact_assessment_location="https://www.example.com/impact_assessment_location",
+                    retention_period="3-5 years",
+                    processes_special_category_data=True,
+                    special_category_legal_basis="Reasons of substantial public interest (with a basis in law)",
+                    data_shared_with_third_parties=True,
+                    third_parties="Third Party Marketing Dept.",
+                    shared_categories=["user"],
+                    cookies=[
+                        {
+                            "name": "essential_cookie",
+                            "path": "/",
+                            "domain": "example.com",
+                        }
+                    ],
                 ),
                 models.PrivacyDeclaration(
                     name="declaration-name-2",
                     data_categories=[],
-                    data_use="advertising",
+                    data_use="marketing.advertising",
                     data_subjects=[],
-                    data_qualifier="aggregated_data",
                     dataset_references=[],
                 ),
             ],
-            system_dependencies=[],
         )
 
     def test_system_create_not_authenticated(
@@ -550,13 +599,257 @@ class TestSystemCreate:
         )
 
         assert result.status_code == HTTP_201_CREATED
+        json_results = result.json()
+        assert json_results["cookies"] == [
+            {"name": "essential_cookie", "path": "/", "domain": "example.com"}
+        ]
+        assert json_results["privacy_declarations"][0]["cookies"] == [
+            {"name": "essential_cookie", "path": "/", "domain": "example.com"}
+        ]
+        assert json_results["privacy_declarations"][1]["cookies"] == []
+        assert json_results["data_stewards"] == []
+
+        systems = System.all(db)
+        assert len(systems) == 1
+        system = systems[0]
+
+        for field in SystemResponse.__fields__:
+            system_val = getattr(system, field)
+            if isinstance(system_val, typing.Hashable):
+                assert system_val == json_results[field]
+        assert len(json_results["privacy_declarations"]) == 2
+
+        for i, decl in enumerate(system.privacy_declarations):
+            for field in PrivacyDeclarationResponse.__fields__:
+                decl_val = getattr(decl, field)
+                if isinstance(decl_val, typing.Hashable):
+                    assert decl_val == json_results["privacy_declarations"][i][field]
+
+        assert len(system.privacy_declarations) == 2
+
+        assert system.name == "Test System"
+        assert system.vendor_id == "test_vendor"
+        assert system.dataset_references == ["another_system_reference"]
+        assert system.processes_personal_data is True
+        assert system.exempt_from_privacy_regulations is False
+        assert system.reason_for_exemption is None
+        assert system.uses_profiling is True
+        assert system.legal_basis_for_profiling == "Authorised by law"
+        assert system.does_international_transfers is True
+        assert system.legal_basis_for_transfers == "Binding corporate rules"
+        assert system.requires_data_protection_assessments is True
+        assert system.dpa_location == "https://www.example.com/dpa"
+        assert system.dpa_progress == "pending"
+        assert system.privacy_policy == "https://www.example.com/privacy_policy"
+        assert system.legal_name == "Sunshine Corporation"
+        assert system.legal_address == "35925 Test Lane, Test Town, TX 24924"
+        assert system.responsibility == ["Processor"]
+        assert system.dpo == "John Doe, CIPT"
+        assert system.joint_controller_info == "Jane Doe"
+        assert (
+            system.data_security_practices
+            == "We encrypt all your data in transit and at rest"
+        )
+        assert system.data_stewards == []
+        assert [cookie.name for cookie in systems[0].cookies] == ["essential_cookie"]
+        assert [
+            cookie.name for cookie in systems[0].privacy_declarations[0].cookies
+        ] == ["essential_cookie"]
+        assert systems[0].privacy_declarations[1].cookies == []
+
+        privacy_decl = system.privacy_declarations[0]
+        assert privacy_decl.name == "declaration-name"
+        assert privacy_decl.dataset_references == ["another_system_reference"]
+        assert privacy_decl.features == ["Link different devices"]
+        assert privacy_decl.legal_basis_for_processing == "Public interest"
+        assert (
+            privacy_decl.impact_assessment_location
+            == "https://www.example.com/impact_assessment_location"
+        )
+        assert privacy_decl.retention_period == "3-5 years"
+        assert privacy_decl.processes_special_category_data is True
+        assert (
+            privacy_decl.special_category_legal_basis
+            == "Reasons of substantial public interest (with a basis in law)"
+        )
+        assert privacy_decl.data_shared_with_third_parties is True
+        assert privacy_decl.third_parties == "Third Party Marketing Dept."
+        assert privacy_decl.shared_categories == ["user"]
+
+    async def test_system_create_minimal_request_body(
+        self, generate_auth_header, db, test_config, system_create_request_body
+    ):
+        """Assert system default fields are what is expected when a very minimal system request is sent"""
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=json.dumps(
+                {
+                    "fides_key": "system_key",
+                    "system_type": "system",
+                    "privacy_declarations": [
+                        {
+                            "fides_key": "test",
+                            "data_categories": ["user"],
+                            "data_use": "marketing",
+                        }
+                    ],
+                }
+            ),
+        )
+        assert result.status_code == HTTP_201_CREATED
+        systems = System.all(db)
+        assert len(systems) == 1
+        system = systems[0]
+
+        expected_none = [
+            "connection_configs",
+            "data_protection_impact_assessment",
+            "data_responsibility_title",
+            "data_security_practices",
+            "description",
+            "dpa_location",
+            "dpa_progress",
+            "dpo",
+            "egress",
+            "fidesctl_meta",
+            "ingress",
+            "joint_controller",
+            "joint_controller_info",
+            "legal_address",
+            "legal_basis_for_profiling",
+            "legal_basis_for_transfers",
+            "legal_name",
+            "meta",
+            "name",
+            "privacy_policy",
+            "reason_for_exemption",
+            "registry_id",
+            "tags",
+            "third_country_transfers",
+            "vendor_id",
+        ]
+        for field in expected_none:
+            assert getattr(system, field) is None
+
+        assert system.processes_personal_data is True
+
+        expected_false = [
+            "does_international_transfers",
+            "exempt_from_privacy_regulations",
+            "requires_data_protection_assessments",
+            "uses_profiling",
+        ]
+
+        for field in expected_false:
+            assert getattr(system, field) is False
+
+        expected_empty_list = [
+            "cookies",
+            "dataset_references",
+            "data_stewards",
+            "responsibility",
+        ]
+        for field in expected_empty_list:
+            assert getattr(system, field) == []
+
+        privacy_declaration = system.privacy_declarations[0]
+
+        expected_none_privacy_declaration_fields = [
+            "data_qualifier",
+            "dataset_references",
+            "egress",
+            "impact_assessment_location",
+            "ingress",
+            "legal_basis_for_processing",
+            "name",
+            "retention_period",
+            "special_category_legal_basis",
+            "third_parties",
+        ]
+        for field in expected_none_privacy_declaration_fields:
+            assert getattr(privacy_declaration, field) is None
+
+        expected_false_pd_fields = [
+            "data_shared_with_third_parties",
+            "processes_special_category_data",
+        ]
+        for field in expected_false_pd_fields:
+            assert getattr(privacy_declaration, field) is False
+
+        expected_empty_list_pd_fields = [
+            "cookies",
+            "data_subjects",
+            "features",
+            "shared_categories",
+        ]
+        for field in expected_empty_list_pd_fields:
+            assert getattr(privacy_declaration, field) == []
+
+        assert privacy_declaration.system_id == system.id
+        assert privacy_declaration.data_use == "marketing"
+        assert privacy_declaration.data_categories == ["user"]
+
+    async def test_system_create_custom_metadata_saas_config(
+        self,
+        generate_auth_header,
+        db,
+        test_config,
+        system_create_request_body: SystemSchema,
+    ):
+        """Ensure system create works with custom metadata, including tested objects"""
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+        system_create_request_body.meta = {
+            "saas_config": {
+                "type": "stripe",
+                "icon": "test",
+            }
+        }
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+
+        assert result.status_code == HTTP_201_CREATED
         assert result.json()["name"] == "Test System"
         assert len(result.json()["privacy_declarations"]) == 2
+        assert result.json()["meta"] == {
+            "saas_config": {
+                "type": "stripe",
+                "icon": "test",
+            }
+        }
 
         systems = System.all(db)
         assert len(systems) == 1
         assert systems[0].name == "Test System"
         assert len(systems[0].privacy_declarations) == 2
+        assert systems[0].meta == {
+            "saas_config": {
+                "type": "stripe",
+                "icon": "test",
+            }
+        }
+
+        # and assert we can retrieve the custom metadata property via API (`GET`)
+        auth_header = generate_auth_header(scopes=[SYSTEM_READ])
+        get_response = _api.get(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            resource_id=systems[0].fides_key,
+        )
+        assert get_response.json()["meta"] == {
+            "saas_config": {
+                "type": "stripe",
+                "icon": "test",
+            }
+        }
 
     def test_system_create_has_role_that_can_update_all_systems(
         self,
@@ -642,6 +935,49 @@ class TestSystemCreate:
             len(PrivacyDeclaration.all(db)) == 0
         )  # ensure neither of our declarations were created
 
+    async def test_system_create_invalid_legal_basis_for_profiling(
+        self, generate_auth_header, test_config, system_create_request_body
+    ):
+        system_create_request_body.legal_basis_for_profiling = "bad_basis"
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+
+        assert result.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert result.json()["detail"][0]["loc"] == [
+            "body",
+            "legal_basis_for_profiling",
+        ]
+
+
+@pytest.mark.unit
+class TestSystemGet:
+    def test_data_stewards_included_in_response(
+        self, test_config, system, system_manager
+    ):
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            resource_id=system.fides_key,
+        )
+        assert result.status_code == 200
+        assert result.json()["fides_key"] == system.fides_key
+
+        data_stewards = result.json()["data_stewards"]
+        assert len(data_stewards) == 1
+        steward = data_stewards[0]
+
+        assert steward["id"] == system_manager.id
+        assert steward["username"] == system_manager.username
+        assert "first_name" in steward
+        assert "last_name" in steward
+
 
 @pytest.mark.unit
 class TestSystemUpdate:
@@ -668,13 +1004,94 @@ class TestSystemUpdate:
                 models.PrivacyDeclaration(
                     name="declaration-name",
                     data_categories=[],
-                    data_use="provide",
+                    data_use="essential",
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
                 )
             ],
-            system_dependencies=[],
+        )
+
+    @pytest.fixture(scope="function")
+    def system_update_request_body_with_cookies(self, system) -> SystemSchema:
+        return SystemSchema(
+            organization_fides_key=1,
+            registryId=1,
+            fides_key=system.fides_key,
+            system_type="SYSTEM",
+            name=self.updated_system_name,
+            description="Test Policy",
+            privacy_declarations=[
+                models.PrivacyDeclaration(
+                    name="declaration-name",
+                    data_categories=[],
+                    data_use="essential",
+                    data_subjects=[],
+                    data_qualifier="aggregated_data",
+                    dataset_references=[],
+                    cookies=[
+                        {"name": "my_cookie", "domain": "example.com"},
+                        {"name": "my_other_cookie"},
+                    ],
+                )
+            ],
+        )
+
+    @pytest.fixture(scope="function")
+    def system_update_request_body_with_new_dictionary_fields(
+        self, system
+    ) -> SystemSchema:
+        return SystemSchema(
+            organization_fides_key=1,
+            registryId=1,
+            fides_key=system.fides_key,
+            system_type="SYSTEM",
+            name=self.updated_system_name,
+            description="Test Policy",
+            vendor_id="test_vendor",
+            dataset_references=["another_system_reference"],
+            processes_personal_data=True,
+            exempt_from_privacy_regulations=False,
+            reason_for_exemption=None,
+            uses_profiling=True,
+            legal_basis_for_profiling="Authorised by law",
+            does_international_transfers=True,
+            legal_basis_for_transfers="Binding corporate rules",
+            requires_data_protection_assessments=True,
+            dpa_location="https://www.example.com/dpa",
+            dpa_progress="pending",
+            privacy_policy="https://www.example.com/privacy_policy",
+            legal_name="Sunshine Corporation",
+            legal_address="35925 Test Lane, Test Town, TX 24924",
+            responsibility=["Processor"],
+            dpo="John Doe, CIPT",
+            joint_controller_info="Jane Doe",
+            data_security_practices="We encrypt all your data in transit and at rest",
+            privacy_declarations=[
+                models.PrivacyDeclaration(
+                    name="declaration-name",
+                    data_categories=[],
+                    data_use="essential",
+                    data_subjects=[],
+                    dataset_references=["another_system_reference"],
+                    features=["Link different devices"],
+                    legal_basis_for_processing="Public interest",
+                    impact_assessment_location="https://www.example.com/impact_assessment_location",
+                    retention_period="3-5 years",
+                    processes_special_category_data=True,
+                    special_category_legal_basis="Reasons of substantial public interest (with a basis in law)",
+                    data_shared_with_third_parties=True,
+                    third_parties="Third Party Marketing Dept.",
+                    shared_categories=["user"],
+                    cookies=[
+                        {
+                            "name": "essential_cookie",
+                            "path": "/",
+                            "domain": "example.com",
+                        }
+                    ],
+                )
+            ],
         )
 
     def test_system_update_not_authenticated(
@@ -855,7 +1272,7 @@ class TestSystemUpdate:
         assert result.status_code == HTTP_400_BAD_REQUEST
         # assert the system's privacy declaration has not been updated
         db.refresh(system)
-        assert system.privacy_declarations[0].data_use == "advertising"
+        assert system.privacy_declarations[0].data_use == "marketing.advertising"
 
     def test_system_update_privacy_declaration_invalid_duplicate(
         self,
@@ -872,7 +1289,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="declaration-name",  # same as initial PrivacyDeclaration
                 data_categories=["user.payment"],  # other fields can differ
-                data_use="provide",  # same as initial PrivacyDeclaration
+                data_use="essential",  # same as initial PrivacyDeclaration
                 data_subjects=["anonymous_user"],  # other fields can differ
                 data_qualifier="aggregated",  # other fields can differ
                 dataset_references=[],
@@ -887,7 +1304,7 @@ class TestSystemUpdate:
         assert result.status_code == HTTP_400_BAD_REQUEST
         # assert the system's privacy declaration has not been updated
         db.refresh(system)
-        assert system.privacy_declarations[0].data_use == "advertising"
+        assert system.privacy_declarations[0].data_use == "marketing.advertising"
 
         # test that duplicate with no name on either declaration fails
         system_update_request_body.privacy_declarations = []
@@ -895,7 +1312,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="",  # no name specified
                 data_categories=["user.payment"],
-                data_use="provide",  # identical data use
+                data_use="essential",  # identical data use
                 data_subjects=["anonymous_user"],  # other fields can differ
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -905,7 +1322,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="",  # no name specified
                 data_categories=["user.payment"],
-                data_use="provide",  # identicial data use
+                data_use="essential",  # identicial data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -920,7 +1337,7 @@ class TestSystemUpdate:
         assert result.status_code == HTTP_400_BAD_REQUEST
         # assert the system's privacy declaration has not been updated
         db.refresh(system)
-        assert system.privacy_declarations[0].data_use == "advertising"
+        assert system.privacy_declarations[0].data_use == "marketing.advertising"
 
         # test that duplicate data_use with no name on one declaration succeeds
         system_update_request_body.privacy_declarations = []
@@ -928,7 +1345,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="",  # no name specified
                 data_categories=["user.payment"],
-                data_use="provide",  # identical data use
+                data_use="essential",  # identical data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -938,7 +1355,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="new declaration",  # this name distinguishes the declaration from the above
                 data_categories=["user.payment"],
-                data_use="provide",  # identicial data use
+                data_use="essential",  # identicial data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -954,8 +1371,8 @@ class TestSystemUpdate:
         # assert the system's privacy declarations have been updated
         db.refresh(system)
         # both declarations should have 'provide' data_use since the update was allowed
-        assert system.privacy_declarations[0].data_use == "provide"
-        assert system.privacy_declarations[1].data_use == "provide"
+        assert system.privacy_declarations[0].data_use == "essential"
+        assert system.privacy_declarations[1].data_use == "essential"
 
         # test that duplicate data_use with differeing names on declarations succeeds
         system_update_request_body.privacy_declarations = []
@@ -963,7 +1380,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="new declaration 1",  # specify a unique name here
                 data_categories=["user.payment"],
-                data_use="advertising",  # identical data use
+                data_use="marketing.advertising",  # identical data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -973,7 +1390,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="new declaration 2",  # this name distinguishes the declaration from the above
                 data_categories=["user.payment"],
-                data_use="advertising",  # identicial data use
+                data_use="marketing.advertising",  # identicial data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -989,8 +1406,8 @@ class TestSystemUpdate:
         # assert the system's privacy declarations have been updated
         db.refresh(system)
         # both declarations should have 'advertising' data_use since the update was allowed
-        assert system.privacy_declarations[0].data_use == "advertising"
-        assert system.privacy_declarations[1].data_use == "advertising"
+        assert system.privacy_declarations[0].data_use == "marketing.advertising"
+        assert system.privacy_declarations[1].data_use == "marketing.advertising"
 
         # test that differeing data_use with same names on declarations succeeds
         system_update_request_body.privacy_declarations = []
@@ -998,7 +1415,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="new declaration 1",  # identical name
                 data_categories=["user.payment"],
-                data_use="advertising",  # differing data use
+                data_use="marketing.advertising",  # differing data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -1008,7 +1425,7 @@ class TestSystemUpdate:
             models.PrivacyDeclaration(
                 name="new declaration 1",  # identical name
                 data_categories=["user.payment"],
-                data_use="provide",  # differing data use
+                data_use="essential",  # differing data use
                 data_subjects=["anonymous_user"],
                 data_qualifier="aggregated",
                 dataset_references=[],
@@ -1025,16 +1442,132 @@ class TestSystemUpdate:
         db.refresh(system)
         # should be one declaration with advertising, one with provide
         assert (
-            system.privacy_declarations[0].data_use == "advertising"
-            and system.privacy_declarations[1].data_use == "provide"
+            system.privacy_declarations[0].data_use == "marketing.advertising"
+            and system.privacy_declarations[1].data_use == "essential"
         ) or (
-            system.privacy_declarations[1].data_use == "advertising"
-            and system.privacy_declarations[0].data_use == "provide"
+            system.privacy_declarations[1].data_use == "marketing.advertising"
+            and system.privacy_declarations[0].data_use == "essential"
         )
         assert (
             system.privacy_declarations[0].name == "new declaration 1"
             and system.privacy_declarations[1].name == "new declaration 1"
         )
+
+    def test_system_update_dictionary_fields(
+        self,
+        test_config,
+        system_update_request_body_with_new_dictionary_fields,
+        system,
+        db,
+        generate_system_manager_header,
+    ):
+        assert system.name != self.updated_system_name
+
+        auth_header = generate_system_manager_header([system.id])
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body_with_new_dictionary_fields.json(
+                exclude_none=True
+            ),
+        )
+
+        assert result.status_code == HTTP_200_OK
+
+        db.refresh(system)
+
+        assert system.name == self.updated_system_name
+        assert system.vendor_id == "test_vendor"
+        assert system.dataset_references == ["another_system_reference"]
+        assert system.processes_personal_data is True
+        assert system.exempt_from_privacy_regulations is False
+        assert system.reason_for_exemption is None
+        assert system.uses_profiling is True
+        assert system.legal_basis_for_profiling == "Authorised by law"
+        assert system.does_international_transfers is True
+        assert system.legal_basis_for_transfers == "Binding corporate rules"
+        assert system.requires_data_protection_assessments is True
+        assert system.dpa_location == "https://www.example.com/dpa"
+        assert system.dpa_progress == "pending"
+        assert system.privacy_policy == "https://www.example.com/privacy_policy"
+        assert system.legal_name == "Sunshine Corporation"
+        assert system.legal_address == "35925 Test Lane, Test Town, TX 24924"
+        assert system.responsibility == ["Processor"]
+        assert system.dpo == "John Doe, CIPT"
+        assert system.joint_controller_info == "Jane Doe"
+        assert (
+            system.data_security_practices
+            == "We encrypt all your data in transit and at rest"
+        )
+        assert system.data_stewards == []
+
+        privacy_decl = system.privacy_declarations[0]
+        assert privacy_decl.name == "declaration-name"
+        assert privacy_decl.dataset_references == ["another_system_reference"]
+        assert privacy_decl.features == ["Link different devices"]
+        assert privacy_decl.legal_basis_for_processing == "Public interest"
+        assert (
+            privacy_decl.impact_assessment_location
+            == "https://www.example.com/impact_assessment_location"
+        )
+        assert privacy_decl.retention_period == "3-5 years"
+        assert privacy_decl.processes_special_category_data is True
+        assert (
+            privacy_decl.special_category_legal_basis
+            == "Reasons of substantial public interest (with a basis in law)"
+        )
+        assert privacy_decl.data_shared_with_third_parties is True
+        assert privacy_decl.third_parties == "Third Party Marketing Dept."
+        assert privacy_decl.shared_categories == ["user"]
+
+        json_results = result.json()
+        for field in SystemResponse.__fields__:
+            system_val = getattr(system, field)
+            if isinstance(system_val, typing.Hashable):
+                assert system_val == json_results[field]
+        assert len(json_results["privacy_declarations"]) == 1
+        assert json_results["data_stewards"] == []
+
+        for i, decl in enumerate(system.privacy_declarations):
+            for field in PrivacyDeclarationResponse.__fields__:
+                decl_val = getattr(decl, field)
+                if isinstance(decl_val, typing.Hashable):
+                    assert decl_val == json_results["privacy_declarations"][i][field]
+
+    def test_system_update_privacy_declaration_cookies(
+        self,
+        test_config,
+        system_update_request_body_with_cookies,
+        system,
+        db,
+        generate_system_manager_header,
+    ):
+        assert system.name != self.updated_system_name
+
+        auth_header = generate_system_manager_header([system.id])
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body_with_cookies.json(
+                exclude_none=True
+            ),
+        )
+        assert result.status_code == HTTP_200_OK
+        assert result.json()["name"] == self.updated_system_name
+        assert result.json()["cookies"] == [
+            {"name": "my_cookie", "path": None, "domain": "example.com"},
+            {"name": "my_other_cookie", "path": None, "domain": None},
+            {"name": "test_cookie", "path": "/", "domain": None},
+        ]
+
+        db.refresh(system)
+        assert system.name == self.updated_system_name
+        assert (
+            len(system.cookies) == 3
+        )  # Two from the current privacy declaration, one from the previous privacy declaration that was deleted, but still linked to the system
+        assert len(system.privacy_declarations[0].cookies) == 2
 
     @pytest.mark.parametrize(
         "update_declarations",
@@ -1044,10 +1577,11 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name",
                         data_categories=[],
-                        data_use="provide",
+                        data_use="essential",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     )
                 ]
             ),
@@ -1057,10 +1591,11 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name",
                         data_categories=[],
-                        data_use="provide",
+                        data_use="essential",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     ),
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
@@ -1069,6 +1604,7 @@ class TestSystemUpdate:
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     ),
                 ]
             ),
@@ -1082,14 +1618,16 @@ class TestSystemUpdate:
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     ),
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     ),
                 ]
             ),
@@ -1099,18 +1637,20 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     ),
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
+                        cookies=[],
                     ),
                 ]
             ),
@@ -1179,7 +1719,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1191,7 +1731,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name-1",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1203,7 +1743,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1216,7 +1756,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1237,7 +1777,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1258,7 +1798,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1266,7 +1806,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1279,7 +1819,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name-1",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1287,7 +1827,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
                         data_categories=[],
-                        data_use="provide",
+                        data_use="essential",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1300,7 +1840,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name",
                         data_categories=[],
-                        data_use="provide",
+                        data_use="essential",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1321,7 +1861,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="",
                         data_categories=[],
-                        data_use="advertising",
+                        data_use="marketing.advertising",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1500,6 +2040,51 @@ class TestSystemDelete:
         assert result.json()["message"] == "resource deleted"
         assert result.json()["resource"]["fides_key"] == system.fides_key
 
+    def test_delete_system_deletes_connection_config_and_dataset(
+        self,
+        test_config,
+        db,
+        system,
+        generate_auth_header,
+        dataset_config: DatasetConfig,
+    ) -> None:
+        """
+        Ensure that deleting the system also deletes any associated
+        ConnectionConfig and DatasetConfig records
+        """
+        auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+
+        connection_config = dataset_config.connection_config
+        connection_config.system_id = (
+            system.id
+        )  # tie the connectionconfig to the system we will delete
+        connection_config.save(db)
+        # the keys are cached before the delete
+        connection_config_key = connection_config.key
+        dataset_config_key = dataset_config.fides_key
+
+        # delete the system via API
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type="system",
+            resource_id=system.fides_key,
+            headers=auth_header,
+        )
+        assert result.status_code == HTTP_200_OK
+
+        # ensure our system itself was deleted
+        assert db.query(System).filter_by(fides_key=system.fides_key).first() is None
+        # ensure our associated ConnectionConfig was deleted
+        assert (
+            db.query(ConnectionConfig).filter_by(key=connection_config_key).first()
+            is None
+        )
+        # and ensure our associated DatasetConfig was deleted
+        assert (
+            db.query(DatasetConfig).filter_by(fides_key=dataset_config_key).first()
+            is None
+        )
+
     def test_owner_role_gets_404_if_system_not_found(
         self,
         test_config,
@@ -1675,6 +2260,120 @@ class TestDefaultTaxonomyCrud:
 
 
 @pytest.mark.integration
+class TestCrudActiveProperty:
+    """
+    Ensure `active` property is exposed properly via CRUD endpoints.
+    Specific tests for this property since it's a fides-specific
+    extension to the underlying fideslang taxonomy models.
+    """
+
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_can_update_active_on_default(
+        self, test_config: FidesConfig, endpoint: str
+    ) -> None:
+        """Ensure we can toggle `active` property on default taxonomy elements"""
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        resource = TAXONOMY_EXTENSIONS[endpoint](
+            **resource.dict()
+        )  # cast resource to extended model
+        resource.active = False
+        json_resource = resource.json(exclude_none=True)
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 200
+        assert result.json()["active"] is False
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is False
+
+        resource.active = True
+        json_resource = resource.json(exclude_none=True)
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 200
+        assert result.json()["active"] is True
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is True
+
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_can_create_with_active_property(
+        self,
+        test_config: FidesConfig,
+        endpoint: str,
+        generate_auth_header,
+    ) -> None:
+        """Ensure we can create taxonomy elements with `active` property set"""
+        # get a default taxonomy element as a sample resource
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        resource = TAXONOMY_EXTENSIONS[endpoint](
+            **resource.dict()
+        )  # cast resource to extended model
+        resource.fides_key = resource.fides_key + "_test_create_active_false"
+        resource.is_default = False
+        resource.active = False
+        json_resource = resource.json(exclude_none=True)
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 201
+        assert result.json()["active"] is False
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is False
+
+        resource.fides_key = resource.fides_key + "_test_create_active_true"
+        resource.active = True
+        json_resource = resource.json(exclude_none=True)
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 201
+        assert result.json()["active"] is True
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is True
+
+
+@pytest.mark.integration
 def test_static_sink(test_config: FidesConfig) -> None:
     """Make sure we are hosting something at / and not getting a 404"""
     response = requests.get(f"{test_config.cli.server_url}")
@@ -1694,7 +2393,7 @@ def test_404_on_api_routes(test_config: FidesConfig) -> None:
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "database_health, expected_status_code",
-    [("healthy", 200), ("needs migration", 200), ("unhealthy", 503)],
+    [("healthy", 200), ("unhealthy", 503)],
 )
 def test_api_ping(
     test_config: FidesConfig,
@@ -1703,7 +2402,7 @@ def test_api_ping(
     monkeypatch: MonkeyPatch,
     test_client: TestClient,
 ) -> None:
-    def mock_get_db_health(url: str, db) -> str:
+    def mock_get_db_health(url: str) -> str:
         return database_health
 
     monkeypatch.setattr(health, "get_db_health", mock_get_db_health)
