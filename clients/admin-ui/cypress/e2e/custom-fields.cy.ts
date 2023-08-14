@@ -127,7 +127,7 @@ describe("Custom Fields", () => {
           }
         ).as("patchCustomFields");
       });
-      it("should be table to sort", () => {
+      it("should be able to sort", () => {
         cy.get("tbody > tr")
           .first()
           .should("contain", "Taxonomy - Single select");
