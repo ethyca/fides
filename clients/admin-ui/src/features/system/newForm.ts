@@ -40,6 +40,4 @@ export const newDefaultInitialValues: FormValues = {
 
 export const transformNewSystemToFormValues = (
   system: NewSystem
-): FormValues => {
-  return system;
-};
+): FormValues => system;

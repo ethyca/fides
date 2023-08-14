@@ -214,6 +214,7 @@ export const selectActiveClassifySystem = createSelector(
       return undefined;
     }
 
+    // @ts-ignore
     const system = allSystems?.find((s) => s.fides_key === fidesKey);
     return system;
   }

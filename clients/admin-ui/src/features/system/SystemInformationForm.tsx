@@ -39,19 +39,19 @@ import {
   useCreateSystemMutation,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
-import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
-import { ResourceTypes, System } from "~/types/api";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
+import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
+import { ResourceTypes, System, SystemResponse } from "~/types/api";
 
 import { MockSystemData } from "./MockSystemData"; // temp
+import { FormValues,transformNewSystemToFormValues } from "./newForm";
 import { NewSystem } from "./newSystemMockType";
-import { transformNewSystemToFormValues, FormValues } from "./newForm";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
 });
 
-const SystemHeading = ({ system }: { system?: NewSystem }) => {
+const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
   const headingName = isManual
     ? "your new system"
@@ -67,7 +67,7 @@ const SystemHeading = ({ system }: { system?: NewSystem }) => {
 interface Props {
   onSuccess: (system: System) => void;
   abridged?: boolean;
-  system?: NewSystem;
+  system?: SystemResponse;
   withHeader?: boolean;
   children?: React.ReactNode;
 }

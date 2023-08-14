@@ -27,8 +27,7 @@ export const PrivacyDeclarationFormModal: React.FC<DataUseFormModalProps> = ({
   onClose,
   testId = "privacy-declaration-modal",
   children,
-}) => {
-  return (
+}) => (
     <Modal isOpen={isOpen} onClose={onClose} scrollBehavior="inside" size="3xl">
       <ModalOverlay />
       <ModalContent textAlign="left" p={0} data-testid={testId}>
@@ -50,4 +49,3 @@ export const PrivacyDeclarationFormModal: React.FC<DataUseFormModalProps> = ({
       </ModalContent>
     </Modal>
   );
-};

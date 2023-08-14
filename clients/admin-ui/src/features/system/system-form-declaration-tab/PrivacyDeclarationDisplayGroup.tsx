@@ -1,17 +1,19 @@
-import { PrivacyDeclarationResponse } from "~/types/api";
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import {
-  Text,
-  Link,
-  Stack,
   Box,
-  Heading,
   Button,
-  IconButton,
   Divider,
+  Heading,
   HStack,
+  IconButton,
+  Link,
   Spacer,
+  Stack,
+  Text,
 } from "@fidesui/react";
+
+import { PrivacyDeclarationResponse } from "~/types/api";
+
 import { NewDeclaration } from "../newSystemMockType";
 
 const PrivacyDeclarationRow = ({
@@ -19,11 +21,10 @@ const PrivacyDeclarationRow = ({
   handleDelete,
   handleEdit,
 }: {
-  declaration: NewDeclaration;
-  handleDelete: (dec: NewDeclaration) => void;
-  handleEdit: (dec: NewDeclaration) => void;
-}) => {
-  return (
+  declaration: PrivacyDeclarationResponse;
+  handleDelete: (dec: PrivacyDeclarationResponse) => void;
+  handleEdit: (dec: PrivacyDeclarationResponse) => void;
+}) => (
     <Link onClick={() => handleEdit(declaration)}>
       <Box px={6} py={4}>
         <HStack>
@@ -42,7 +43,6 @@ const PrivacyDeclarationRow = ({
       <Divider />
     </Link>
   );
-};
 
 const PrivacyDeclarationDisplayGroup = ({
   heading,
@@ -52,10 +52,10 @@ const PrivacyDeclarationDisplayGroup = ({
   handleEdit,
 }: {
   heading: string;
-  declarations: NewDeclaration[];
+  declarations: PrivacyDeclarationResponse[];
   handleAdd?: () => void;
-  handleDelete: (dec: NewDeclaration) => void;
-  handleEdit: (dec: NewDeclaration) => void;
+  handleDelete: (dec: PrivacyDeclarationResponse) => void;
+  handleEdit: (dec: PrivacyDeclarationResponse) => void;
 }) => (
   <Stack spacing={4}>
     <Box maxWidth="720px" border="1px" borderColor="gray.200" borderRadius={6}>
@@ -76,6 +76,7 @@ const PrivacyDeclarationDisplayGroup = ({
         {declarations.map((pd) => (
           <PrivacyDeclarationRow
             declaration={pd}
+            key={pd.id}
             handleDelete={handleDelete}
             handleEdit={handleEdit}
           />

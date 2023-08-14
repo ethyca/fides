@@ -2,16 +2,16 @@ import {
   Box,
   Button,
   ButtonProps,
+  DeleteIcon,
+  Divider,
+  Heading,
+  HStack,
+  IconButton,
   Stack,
-  Tooltip,
   Text,
+  Tooltip,
   useToast,
   WarningTwoIcon,
-  HStack,
-  Heading,
-  Divider,
-  DeleteIcon,
-  IconButton,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
@@ -19,7 +19,14 @@ import { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import PrivacyDeclarationAccordion from "~/features/system/privacy-declarations/PrivacyDeclarationAccordion";
 import { useUpdateSystemMutation } from "~/features/system/system.slice";
+import PrivacyDeclarationDisplayGroup from "~/features/system/system-form-declaration-tab/PrivacyDeclarationDisplayGroup";
+import {
+  DataProps,
+  PrivacyDeclarationForm,
+} from "~/features/system/system-form-declaration-tab/PrivacyDeclarationForm";
+import { PrivacyDeclarationFormModal } from "~/features/system/system-form-declaration-tab/PrivacyDeclarationFormModal";
 import {
   PrivacyDeclarationResponse,
   System,
@@ -27,19 +34,11 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-import PrivacyDeclarationAccordion from "~/features/system/privacy-declarations/PrivacyDeclarationAccordion";
-import PrivacyDeclarationDisplayGroup from "~/features/system/system-form-declaration-tab/PrivacyDeclarationDisplayGroup";
-import {
-  DataProps,
-  PrivacyDeclarationForm,
-} from "~/features/system/system-form-declaration-tab/PrivacyDeclarationForm";
-import { PrivacyDeclarationFormModal } from "~/features/system/system-form-declaration-tab/PrivacyDeclarationFormModal";
-
 import { MockDeclarationsData } from "../MockSystemData";
 import { NewDeclaration, NewSystem } from "../newSystemMockType";
 
 interface Props {
-  system: NewSystem;
+  system: SystemResponse;
   addButtonProps?: ButtonProps;
   includeCustomFields?: boolean;
   includeCookies?: boolean;
@@ -59,10 +58,10 @@ const PrivacyDeclarationFormTab = ({
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const [showForm, setShowForm] = useState(false);
   const [currentDeclaration, setCurrentDeclaration] = useState<
-    NewDeclaration | undefined
+    PrivacyDeclarationResponse | undefined
   >(undefined);
 
-  const checkAlreadyExists = (values: NewDeclaration) => {
+  const checkAlreadyExists = (values: PrivacyDeclarationResponse) => 
     // if (
     //   system.privacy_declarations.filter(
     //     (d) => d.data_use === values.data_use && d.name === values.name
@@ -75,11 +74,11 @@ const PrivacyDeclarationFormTab = ({
     //   );
     //   return true;
     // }
-    return false;
-  };
+     false
+  ;
 
   const handleSave = async (
-    updatedDeclarations: NewDeclaration[],
+    updatedDeclarations: PrivacyDeclarationResponse[],
     isDelete?: boolean
   ) => {
     console.log("saving declarations...");
@@ -126,8 +125,8 @@ const PrivacyDeclarationFormTab = ({
   };
 
   const handleEditDeclaration = async (
-    oldDeclaration: NewDeclaration,
-    updatedDeclaration: NewDeclaration
+    oldDeclaration: PrivacyDeclarationResponse,
+    updatedDeclaration: PrivacyDeclarationResponse
   ) => {
     // Do not allow editing a privacy declaration to have the same data use as one that already exists
     if (
@@ -144,7 +143,7 @@ const PrivacyDeclarationFormTab = ({
     return handleSave(updatedDeclarations);
   };
 
-  const saveNewDeclaration = async (values: NewDeclaration) => {
+  const saveNewDeclaration = async (values: PrivacyDeclarationResponse) => {
     if (checkAlreadyExists(values)) {
       return undefined;
     }
@@ -168,7 +167,9 @@ const PrivacyDeclarationFormTab = ({
     setCurrentDeclaration(undefined);
   };
 
-  const handleOpenEditForm = (declarationToEdit: NewDeclaration) => {
+  const handleOpenEditForm = (
+    declarationToEdit: PrivacyDeclarationResponse
+  ) => {
     setShowForm(true);
     setCurrentDeclaration(declarationToEdit);
   };
@@ -178,7 +179,9 @@ const PrivacyDeclarationFormTab = ({
     setCurrentDeclaration(undefined);
   };
 
-  const handleDelete = async (declarationToDelete: NewDeclaration) => {
+  const handleDelete = async (
+    declarationToDelete: PrivacyDeclarationResponse
+  ) => {
     const updatedDeclarations = system.privacy_declarations.filter(
       (dec) => dec.id !== declarationToDelete.id
     );
@@ -204,7 +207,7 @@ const PrivacyDeclarationFormTab = ({
           backgroundColor="gray.50"
         >
           <HStack spacing={2} display="flex" alignItems="start">
-            <WarningTwoIcon color="blue.400" boxSize={"18px"} />
+            <WarningTwoIcon color="blue.400" boxSize="18px" />
             <Stack spacing={1}>
               <Heading as="h4" size="md">
                 You don't have a data use set up for this system yet.

@@ -165,6 +165,7 @@ const SystemFormTabs = ({
       content: (
         <>
           <Box px={6} mb={9}>
+            {/* ts-ignore */}
             <SystemInformationForm
               onSuccess={handleSuccess}
               system={activeSystem}

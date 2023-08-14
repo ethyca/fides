@@ -25,8 +25,6 @@ import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
-import { MockDeclarationsData } from "../MockSystemData";
-
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import {
   CustomCreatableSelect,
@@ -44,8 +42,10 @@ import {
   PrivacyDeclarationResponse,
   ResourceTypes,
 } from "~/types/api";
-import SystemFormInputGroup from "../SystemFormInputGroup";
+
+import { MockDeclarationsData } from "../MockSystemData";
 import { NewDeclaration } from "../newSystemMockType";
+import SystemFormInputGroup from "../SystemFormInputGroup";
 
 export const ValidationSchema = Yup.object().shape({
   data_categories: Yup.array(Yup.string())
@@ -57,34 +57,45 @@ export const ValidationSchema = Yup.object().shape({
     .label("Data subjects"),
 });
 
-export type FormValues = Omit<NewDeclaration, "cookies"> & {
+export type FormValues = Omit<PrivacyDeclarationResponse, "cookies"> & {
   // customFieldValues: CustomFieldValues;
   cookies?: string[];
 };
+
+// const defaultInitialValues: FormValues = {
+//   name: "",
+//   data_categories: [],
+//   data_use: "",
+//   data_subjects: [],
+//   egress: "",
+//   ingress: "",
+//   features: [],
+//   legal_basis_for_processing: "",
+//   impact_assessment_location: "",
+//   retention_period: 0,
+//   processes_special_category_data: false,
+//   special_category_legal_basis: "",
+//   data_shared_with_third_parties: false,
+//   third_parties: "",
+//   shared_categories: [],
+//   cookies: [],
+//   id: "",
+// };
 
 const defaultInitialValues: FormValues = {
   name: "",
   data_categories: [],
   data_use: "",
+  data_qualifier: "",
   data_subjects: [],
-  egress: "",
-  ingress: "",
-  features: [],
-  legal_basis_for_processing: "",
-  impact_assessment_location: "",
-  retention_period: 0,
-  processes_special_category_data: false,
-  special_category_legal_basis: "",
-  data_shared_with_third_parties: false,
-  third_parties: "",
-  shared_categories: [],
+  dataset_references: [],
+  egress: [],
+  ingress: [],
   cookies: [],
   id: "",
 };
 
-const transformFormValueToDeclaration = (values: FormValues) => {
-  return values;
-};
+const transformFormValueToDeclaration = (values: FormValues) => values;
 
 export interface DataProps {
   allDataCategories: DataCategory[];
@@ -127,6 +138,11 @@ export const PrivacyDeclarationFormComponents = ({
     value: opt,
     label: opt,
   }));
+
+  const newValues = {
+    processes_special_category_data: false,
+    data_shared_with_third_parties: false,
+  };
 
   return (
     <Stack spacing={4}>
@@ -212,7 +228,10 @@ export const PrivacyDeclarationFormComponents = ({
             tooltip="Is this system processing special category data as defined by GDPR Article 9?"
             variant="stacked"
           />
-          <Collapse in={values.processes_special_category_data} animateOpacity>
+          <Collapse
+            in={newValues.processes_special_category_data}
+            animateOpacity
+          >
             <Box mt={4}>
               <CustomSelect
                 name="legal_basis_for_special_category_processing"
@@ -233,7 +252,10 @@ export const PrivacyDeclarationFormComponents = ({
             tooltip="Does this system disclose, sell, or share personal data collected for this business use with 3rd parties?"
             variant="stacked"
           />
-          <Collapse in={values.data_shared_with_third_parties} animateOpacity>
+          <Collapse
+            in={newValues.data_shared_with_third_parties}
+            animateOpacity
+          >
             <Stack mt={4} spacing={4}>
               <CustomTextInput
                 name="third_parties"
@@ -266,16 +288,16 @@ export const PrivacyDeclarationFormComponents = ({
 };
 
 export const transformPrivacyDeclarationToFormValues = (
-  privacyDeclaration?: NewDeclaration,
+  privacyDeclaration?: PrivacyDeclarationResponse,
   customFieldValues?: CustomFieldValues
-): FormValues =>
-  privacyDeclaration
-    ? {
-        ...privacyDeclaration,
-        // customFieldValues: customFieldValues || {},
-        // cookies: privacyDeclaration.cookies?.map((cookie) => cookie.name) ?? [],
-      }
-    : defaultInitialValues;
+): FormValues => defaultInitialValues;
+// privacyDeclaration
+//   ? {
+//       ...privacyDeclaration,
+//       // customFieldValues: customFieldValues || {},
+//       // cookies: privacyDeclaration.cookies?.map((cookie) => cookie.name) ?? [],
+//     }
+//   : defaultInitialValues;
 
 /**
  * Hook to supply all data needed for the privacy declaration form
@@ -319,7 +341,7 @@ export const usePrivacyDeclarationForm = ({
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    onSubmit();
+    // onSubmit();
     console.log(values);
   };
 
@@ -357,11 +379,11 @@ export const usePrivacyDeclarationForm = ({
 
 interface Props {
   onSubmit: (
-    values: NewDeclaration,
+    values: PrivacyDeclarationResponse,
     formikHelpers: FormikHelpers<FormValues>
-  ) => Promise<NewDeclaration[] | undefined>;
+  ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   onCancel: () => void;
-  initialValues?: NewDeclaration;
+  initialValues?: PrivacyDeclarationResponse;
   privacyDeclarationId?: string;
   includeCustomFields?: boolean;
   includeCookies?: boolean;
