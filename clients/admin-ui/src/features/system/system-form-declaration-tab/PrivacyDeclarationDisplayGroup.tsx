@@ -12,15 +12,16 @@ import {
   HStack,
   Spacer,
 } from "@fidesui/react";
+import { NewDeclaration } from "../newSystemMockType";
 
 const PrivacyDeclarationRow = ({
   declaration,
   handleDelete,
   handleEdit,
 }: {
-  declaration: PrivacyDeclarationResponse;
-  handleDelete: (dec: PrivacyDeclarationResponse) => void;
-  handleEdit: (dec: PrivacyDeclarationResponse) => void;
+  declaration: NewDeclaration;
+  handleDelete: (dec: NewDeclaration) => void;
+  handleEdit: (dec: NewDeclaration) => void;
 }) => {
   return (
     <Link onClick={() => handleEdit(declaration)}>
@@ -51,10 +52,10 @@ const PrivacyDeclarationDisplayGroup = ({
   handleEdit,
 }: {
   heading: string;
-  declarations: PrivacyDeclarationResponse[];
+  declarations: NewDeclaration[];
   handleAdd?: () => void;
-  handleDelete: (dec: PrivacyDeclarationResponse) => void;
-  handleEdit: (dec: PrivacyDeclarationResponse) => void;
+  handleDelete: (dec: NewDeclaration) => void;
+  handleEdit: (dec: NewDeclaration) => void;
 }) => (
   <Stack spacing={4}>
     <Box maxWidth="720px" border="1px" borderColor="gray.200" borderRadius={6}>

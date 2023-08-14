@@ -4,6 +4,8 @@ import NextLink from "next/link";
 import { SystemResponse } from "~/types/api";
 import PrivacyDeclarationFormTab from "../system-form-declaration-tab/PrivacyDeclarationFormTab";
 
+import { MockSystemData } from "../MockSystemData";
+
 import { usePrivacyDeclarationData } from "./hooks";
 import PrivacyDeclarationManager from "./PrivacyDeclarationManager";
 
@@ -56,7 +58,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         <Spinner />
       ) : (
         <PrivacyDeclarationFormTab
-          system={system}
+          system={MockSystemData}
           includeCustomFields
           includeCookies
           {...filteredDataProps}

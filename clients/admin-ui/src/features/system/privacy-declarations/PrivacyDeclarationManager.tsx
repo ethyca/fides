@@ -28,12 +28,12 @@ import {
 import { isErrorResult } from "~/types/errors";
 
 import PrivacyDeclarationAccordion from "~/features/system/privacy-declarations/PrivacyDeclarationAccordion";
-import PrivacyDeclarationDisplayGroup from "~/features/system/privacy-declarations/PrivacyDeclarationDisplayGroup";
+import PrivacyDeclarationDisplayGroup from "~/features/system/system-form-declaration-tab/PrivacyDeclarationDisplayGroup";
 import {
   DataProps,
   PrivacyDeclarationForm,
 } from "~/features/system/privacy-declarations/PrivacyDeclarationForm";
-import { PrivacyDeclarationFormModal } from "~/features/system/privacy-declarations/PrivacyDeclarationFormModal";
+import { PrivacyDeclarationFormModal } from "~/features/system/system-form-declaration-tab/PrivacyDeclarationFormModal";
 
 interface Props {
   system: SystemResponse;

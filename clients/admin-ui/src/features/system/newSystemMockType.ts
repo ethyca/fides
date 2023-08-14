@@ -7,8 +7,8 @@ export type NewDeclaration = {
   ingress?: string;
   features?: string[];
   legal_basis_for_processing?: string;
-  impact_assessment_location: string;
-  retention_period: number;
+  impact_assessment_location?: string;
+  retention_period?: number;
   processes_special_category_data: boolean;
   special_category_legal_basis?: string;
   data_shared_with_third_parties: boolean;
@@ -38,7 +38,7 @@ export type NewSystem = {
     type: string;
     data_categories?: string[];
   }[];
-  privacy_declarations: string[];
+  privacy_declarations: NewDeclaration[];
   administrating_department: string;
   vendor_id: string;
   processes_personal_data: boolean;

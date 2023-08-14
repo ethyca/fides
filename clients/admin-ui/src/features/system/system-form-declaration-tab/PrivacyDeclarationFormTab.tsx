@@ -32,13 +32,14 @@ import PrivacyDeclarationDisplayGroup from "~/features/system/system-form-declar
 import {
   DataProps,
   PrivacyDeclarationForm,
-} from "~/features/system/privacy-declarations/PrivacyDeclarationForm";
-import { PrivacyDeclarationFormModal } from "~/features/system/privacy-declarations/PrivacyDeclarationFormModal";
+} from "~/features/system/system-form-declaration-tab/PrivacyDeclarationForm";
+import { PrivacyDeclarationFormModal } from "~/features/system/system-form-declaration-tab/PrivacyDeclarationFormModal";
 
 import { MockDeclarationsData } from "../MockSystemData";
+import { NewDeclaration, NewSystem } from "../newSystemMockType";
 
 interface Props {
-  system: SystemResponse;
+  system: NewSystem;
   addButtonProps?: ButtonProps;
   includeCustomFields?: boolean;
   includeCookies?: boolean;
@@ -58,43 +59,31 @@ const PrivacyDeclarationFormTab = ({
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const [showForm, setShowForm] = useState(false);
   const [currentDeclaration, setCurrentDeclaration] = useState<
-    PrivacyDeclarationResponse | undefined
-  >(undefined);
-  const [newDeclaration, setNewDeclaration] = useState<
-    PrivacyDeclarationResponse | undefined
+    NewDeclaration | undefined
   >(undefined);
 
-  // Accordion declarations include all declarations but the newly created one (if it exists)
-  //   const accordionDeclarations = useMemo(() => {
-  //     if (!newDeclaration) {
-  //       return system.privacy_declarations;
-  //     }
-
-  //     return system.privacy_declarations.filter(
-  //       (pd) => pd.id !== newDeclaration.id
-  //     );
-  //   }, [newDeclaration, system]);
-
-  const checkAlreadyExists = (values: PrivacyDeclarationResponse) => {
-    if (
-      system.privacy_declarations.filter(
-        (d) => d.data_use === values.data_use && d.name === values.name
-      ).length > 0
-    ) {
-      toast(
-        errorToastParams(
-          "A declaration already exists with that data use in this system. Please supply a different data use."
-        )
-      );
-      return true;
-    }
+  const checkAlreadyExists = (values: NewDeclaration) => {
+    // if (
+    //   system.privacy_declarations.filter(
+    //     (d) => d.data_use === values.data_use && d.name === values.name
+    //   ).length > 0
+    // ) {
+    //   toast(
+    //     errorToastParams(
+    //       "A declaration already exists with that data use in this system. Please supply a different data use."
+    //     )
+    //   );
+    //   return true;
+    // }
     return false;
   };
 
   const handleSave = async (
-    updatedDeclarations: PrivacyDeclarationResponse[],
+    updatedDeclarations: NewDeclaration[],
     isDelete?: boolean
   ) => {
+    console.log("saving declarations...");
+    console.log(updatedDeclarations);
     // The API can return a null name, but cannot receive a null name,
     // so do an additional transform here (fides#3862)
     const transformedDeclarations = updatedDeclarations.map((d) => ({
@@ -137,8 +126,8 @@ const PrivacyDeclarationFormTab = ({
   };
 
   const handleEditDeclaration = async (
-    oldDeclaration: PrivacyDeclarationResponse,
-    updatedDeclaration: PrivacyDeclarationResponse
+    oldDeclaration: NewDeclaration,
+    updatedDeclaration: NewDeclaration
   ) => {
     // Do not allow editing a privacy declaration to have the same data use as one that already exists
     if (
@@ -155,7 +144,7 @@ const PrivacyDeclarationFormTab = ({
     return handleSave(updatedDeclarations);
   };
 
-  const saveNewDeclaration = async (values: PrivacyDeclarationResponse) => {
+  const saveNewDeclaration = async (values: NewDeclaration) => {
     if (checkAlreadyExists(values)) {
       return undefined;
     }
@@ -169,8 +158,8 @@ const PrivacyDeclarationFormTab = ({
           (pd.name ? pd.name === values.name : true) &&
           pd.data_use === values.data_use
       )[0];
-      setNewDeclaration(savedDeclaration);
     }
+    handleCloseForm();
     return res;
   };
 
@@ -179,9 +168,7 @@ const PrivacyDeclarationFormTab = ({
     setCurrentDeclaration(undefined);
   };
 
-  const handleOpenEditForm = (
-    declarationToEdit: PrivacyDeclarationResponse
-  ) => {
+  const handleOpenEditForm = (declarationToEdit: NewDeclaration) => {
     setShowForm(true);
     setCurrentDeclaration(declarationToEdit);
   };
@@ -191,9 +178,7 @@ const PrivacyDeclarationFormTab = ({
     setCurrentDeclaration(undefined);
   };
 
-  const handleDelete = async (
-    declarationToDelete: PrivacyDeclarationResponse
-  ) => {
+  const handleDelete = async (declarationToDelete: NewDeclaration) => {
     const updatedDeclarations = system.privacy_declarations.filter(
       (dec) => dec.id !== declarationToDelete.id
     );
@@ -253,6 +238,7 @@ const PrivacyDeclarationFormTab = ({
         <PrivacyDeclarationForm
           initialValues={currentDeclaration}
           onSubmit={saveNewDeclaration}
+          onCancel={handleCloseForm}
           includeCustomFields={includeCustomFields}
           includeCookies={includeCookies}
           {...dataProps}

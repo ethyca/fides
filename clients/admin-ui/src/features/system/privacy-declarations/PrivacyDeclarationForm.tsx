@@ -7,11 +7,8 @@ import {
   BoxProps,
   Button,
   ButtonGroup,
-  Collapse,
-  Flex,
   GreenCheckCircleIcon,
   Heading,
-  Spacer,
   Stack,
   Text,
   useDisclosure,
@@ -25,14 +22,10 @@ import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
-import { MockDeclarationsData } from "../MockSystemData";
-
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import {
   CustomCreatableSelect,
-  CustomNumberInput,
   CustomSelect,
-  CustomSwitch,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
@@ -44,8 +37,6 @@ import {
   PrivacyDeclarationResponse,
   ResourceTypes,
 } from "~/types/api";
-import SystemFormInputGroup from "../SystemFormInputGroup";
-import { NewDeclaration } from "../newSystemMockType";
 
 export const ValidationSchema = Yup.object().shape({
   data_categories: Yup.array(Yup.string())
@@ -57,33 +48,23 @@ export const ValidationSchema = Yup.object().shape({
     .label("Data subjects"),
 });
 
-export type FormValues = Omit<NewDeclaration, "cookies"> & {
-  // customFieldValues: CustomFieldValues;
+export type FormValues = Omit<PrivacyDeclarationResponse, "cookies"> & {
+  customFieldValues: CustomFieldValues;
   cookies: string[];
 };
 
 const defaultInitialValues: FormValues = {
-  name: "",
   data_categories: [],
-  data_use: "",
   data_subjects: [],
-  egress: "",
-  ingress: "",
-  features: [],
-  legal_basis_for_processing: "",
-  impact_assessment_location: "",
-  retention_period: 0,
-  processes_special_category_data: false,
-  special_category_legal_basis: "",
-  data_shared_with_third_parties: false,
-  third_parties: "",
-  shared_categories: [],
-  cookies: [],
+  data_use: "",
+  dataset_references: [],
+  customFieldValues: {},
   id: "",
+  cookies: [],
 };
 
 const transformFormValueToDeclaration = (values: FormValues) => {
-  const { ...declaration } = values;
+  const { customFieldValues, ...declaration } = values;
 
   return {
     ...declaration,
@@ -106,16 +87,16 @@ export const PrivacyDeclarationFormComponents = ({
   allDataCategories,
   allDataSubjects,
   allDatasets,
-  values,
+  onDelete,
   privacyDeclarationId,
   includeCookies,
   includeCustomFields,
-}: DataProps & {
-  values: FormValues;
-  privacyDeclarationId?: string;
-  includeCookies?: boolean;
-  includeCustomFields?: boolean;
-}) => {
+}: DataProps &
+  Pick<Props, "onDelete"> & {
+    privacyDeclarationId?: string;
+    includeCookies?: boolean;
+    includeCustomFields?: boolean;
+  }) => {
   const { dirty, isSubmitting, isValid, initialValues } =
     useFormikContext<FormValues>();
   const deleteModal = useDisclosure();
@@ -127,149 +108,111 @@ export const PrivacyDeclarationFormComponents = ({
       }))
     : [];
 
-  const testSelectOptions = [
-    "Test option 1",
-    "Test option 2",
-    "Test option 3",
-  ].map((opt) => ({
-    value: opt,
-    label: opt,
-  }));
+  const handleDelete = async () => {
+    await onDelete(transformFormValueToDeclaration(initialValues));
+    deleteModal.onClose();
+  };
+
+  const deleteDisabled = initialValues.data_use === "";
 
   return (
     <Stack spacing={4}>
-      <SystemFormInputGroup heading="Data use declaration">
-        <CustomTextInput
-          id="name"
-          label="Declaration name (optional)"
-          name="name"
-          tooltip="Would you like to append anything to the system name?"
-          variant="stacked"
-        />
-        <CustomSelect
-          id="data_use"
-          label="Data use"
-          name="data_use"
-          options={allDataUses.map((data) => ({
-            value: data.fides_key,
-            label: data.fides_key,
-          }))}
-          tooltip="For which business purposes is this data processed?"
-          variant="stacked"
-          isRequired
-          isDisabled={!!privacyDeclarationId}
-        />
-        <CustomSelect
-          name="data_categories"
-          label="Data categories"
-          options={allDataCategories.map((data) => ({
-            value: data.fides_key,
-            label: data.fides_key,
-          }))}
-          tooltip="Which categories of personal data are collected for this purpose?"
-          isMulti
-          isRequired
-          variant="stacked"
-        />
-        <CustomSelect
-          name="data_subjects"
-          label="Data subjects"
-          options={allDataSubjects.map((data) => ({
-            value: data.fides_key,
-            label: data.fides_key,
-          }))}
-          tooltip="Who are the subjects for this personal data?"
-          isMulti
-          variant="stacked"
-        />
-        <CustomSelect
-          name="data_sources"
-          label="Data sources"
-          options={testSelectOptions}
-          tooltip="Where do these categories of data come from?"
-          isMulti
-          variant="stacked"
-        />
-        <CustomSelect
-          name="legal_basis_for_processing"
-          label="Legal basis for processing"
-          options={testSelectOptions}
-          tooltip="What is the legal basis under which personal data is processed for this purpose?"
-          variant="stacked"
-        />
-        <CustomNumberInput
-          name="data_retention"
-          label="Retention period (days)"
-          tooltip="How long is personal data retained for this purpose?"
-          variant="stacked"
-        />
-        {/* technically supposed to be a numerical input, handle later */}
-      </SystemFormInputGroup>
-      <SystemFormInputGroup heading="Features">
-        <CustomTextInput
-          name="features"
-          label="Features"
-          tooltip="What are some features of how data is processed?"
-          variant="stacked"
-        />
-      </SystemFormInputGroup>
-      <SystemFormInputGroup heading="Special categories of processing">
-        <Stack spacing={0}>
-          <CustomSwitch
-            name="processes_special_category_data"
-            label="This system processes Special Category data"
-            tooltip="Is this system processing special category data as defined by GDPR Article 9?"
-            variant="stacked"
-          />
-          <Collapse in={values.processes_special_category_data} animateOpacity>
-            <Box mt={4}>
-              <CustomSelect
-                name="legal_basis_for_special_category_processing"
-                label="Legal basis for processing"
-                options={testSelectOptions}
-                tooltip="What is the legal basis under which the special category data is processed?"
-                variant="stacked"
-              />
-            </Box>
-          </Collapse>
-        </Stack>
-      </SystemFormInputGroup>
-      <SystemFormInputGroup heading="Third parties">
-        <Stack spacing={0}>
-          <CustomSwitch
-            name="data_shared_with_third_parties"
-            label="This system shares data with 3rd parties for this purpose"
-            tooltip="Does this system disclose, sell, or share personal data collected for this business use with 3rd parties?"
-            variant="stacked"
-          />
-          <Collapse in={values.data_shared_with_third_parties} animateOpacity>
-            <Stack mt={4} spacing={4}>
-              <CustomTextInput
-                name="third_parties"
-                label="Third parties"
-                tooltip="Which type of third parties is the data shared with?"
-                variant="stacked"
-              />
-              <CustomSelect
-                name="shared_categories"
-                label="Shared categories"
-                options={testSelectOptions}
-                tooltip="Which categories of personal data does this system share with third parties?"
-                variant="stacked"
-              />
-            </Stack>
-          </Collapse>
-        </Stack>
-      </SystemFormInputGroup>
-      <SystemFormInputGroup heading="Cookies">
-        <CustomSelect
+      <CustomSelect
+        id="data_use"
+        label="Data use"
+        name="data_use"
+        options={allDataUses.map((data) => ({
+          value: data.fides_key,
+          label: data.fides_key,
+        }))}
+        tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
+        variant="stacked"
+        singleValueBlock
+        isDisabled={!!privacyDeclarationId}
+      />
+      <CustomTextInput
+        id="name"
+        label="Processing Activity"
+        name="name"
+        variant="stacked"
+        tooltip="The personal data processing activity or activities associated with this data use."
+        disabled={!!privacyDeclarationId}
+      />
+      <CustomSelect
+        name="data_categories"
+        label="Data categories"
+        options={allDataCategories.map((data) => ({
+          value: data.fides_key,
+          label: data.fides_key,
+        }))}
+        tooltip="What type of data is your system processing? This could be various types of user or system data."
+        isMulti
+        variant="stacked"
+      />
+      <CustomSelect
+        name="data_subjects"
+        label="Data subjects"
+        options={allDataSubjects.map((data) => ({
+          value: data.fides_key,
+          label: data.fides_key,
+        }))}
+        tooltip="Whose data are you processing? This could be customers, employees or any other type of user in your system."
+        isMulti
+        variant="stacked"
+      />
+      {includeCookies ? (
+        <CustomCreatableSelect
           name="cookies"
           label="Cookies"
-          options={testSelectOptions}
-          tooltip="Which cookies are placed on consumer domains for this purpose?"
+          options={[]}
+          isMulti
+          variant="stacked"
+          isClearable={false}
+        />
+      ) : null}
+      {allDatasets ? (
+        <CustomSelect
+          name="dataset_references"
+          label="Dataset references"
+          options={datasetOptions}
+          tooltip="Referenced Dataset fides keys used by the system."
+          isMulti
           variant="stacked"
         />
-      </SystemFormInputGroup>
+      ) : null}
+      {includeCustomFields ? (
+        <CustomFieldsList
+          resourceType={ResourceTypes.PRIVACY_DECLARATION}
+          resourceFidesKey={privacyDeclarationId}
+        />
+      ) : null}
+      <ButtonGroup size="sm" display="flex" justifyContent="space-between">
+        <Button
+          variant="outline"
+          onClick={deleteModal.onOpen}
+          disabled={deleteDisabled}
+          data-testid="delete-btn"
+        >
+          Delete
+        </Button>
+        <Button
+          type="submit"
+          colorScheme="primary"
+          disabled={!dirty || !isValid}
+          isLoading={isSubmitting}
+          data-testid="save-btn"
+        >
+          Save
+        </Button>
+      </ButtonGroup>
+      <ConfirmationModal
+        onConfirm={handleDelete}
+        title="Delete data use"
+        message="Are you sure you want to delete this data use? This action can't be undone."
+        isOpen={deleteModal.isOpen}
+        onClose={deleteModal.onClose}
+        isCentered
+      />
     </Stack>
   );
 };
@@ -281,8 +224,8 @@ export const transformPrivacyDeclarationToFormValues = (
   privacyDeclaration
     ? {
         ...privacyDeclaration,
-        // customFieldValues: customFieldValues || {},
-        // cookies: privacyDeclaration.cookies?.map((cookie) => cookie.name) ?? [],
+        customFieldValues: customFieldValues || {},
+        cookies: privacyDeclaration.cookies?.map((cookie) => cookie.name) ?? [],
       }
     : defaultInitialValues;
 
@@ -324,12 +267,33 @@ export const usePrivacyDeclarationForm = ({
     return undefined;
   }, [allDataUses, initialValues]);
 
-  const handleSubmit = (
+  const handleSubmit = async (
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    console.log(`submitting ...`);
-    console.log(values);
+    const { customFieldValues: formCustomFieldValues } = values;
+    const declarationToSubmit = transformFormValueToDeclaration(values);
+
+    const success = await onSubmit(declarationToSubmit, formikHelpers);
+    if (success) {
+      // find the matching resource based on data use and name
+      const customFieldResource = success.filter(
+        (pd) =>
+          pd.data_use === values.data_use &&
+          // name can be undefined, so avoid comparing undefined == ""
+          // (which we want to be true) - they both mean the PD has no name
+          (pd.name ? pd.name === values.name : true)
+      );
+      if (customFieldResource.length > 0) {
+        await upsertCustomFields({
+          customFieldValues: formCustomFieldValues,
+          fides_key: customFieldResource[0].id,
+        });
+      }
+      // Reset state such that isDirty will be checked again before next save
+      formikHelpers.resetForm({ values });
+      setShowSaved(true);
+    }
   };
 
   const renderHeader = ({
@@ -369,6 +333,9 @@ interface Props {
     values: PrivacyDeclarationResponse,
     formikHelpers: FormikHelpers<FormValues>
   ) => Promise<PrivacyDeclarationResponse[] | undefined>;
+  onDelete: (
+    declaration: PrivacyDeclarationResponse
+  ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   initialValues?: PrivacyDeclarationResponse;
   privacyDeclarationId?: string;
   includeCustomFields?: boolean;
@@ -378,6 +345,7 @@ interface Props {
 export const PrivacyDeclarationForm = ({
   onSubmit,
   initialValues: passedInInitialValues,
+  onDelete,
   ...dataProps
 }: Props & DataProps) => {
   const { handleSubmit, renderHeader, initialValues } =
@@ -395,30 +363,15 @@ export const PrivacyDeclarationForm = ({
       onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
-      {({ dirty, values }) => (
+      {({ dirty }) => (
         <Form>
           <FormGuard id="PrivacyDeclaration" name="New Privacy Declaration" />
           <Stack spacing={4}>
-            <PrivacyDeclarationFormComponents values={values} {...dataProps} />
-            <Flex w="100%">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => console.log("close modal")}
-                data-testid="cancel-btn"
-              >
-                Cancel
-              </Button>
-              <Spacer />
-              <Button
-                colorScheme="primary"
-                size="sm"
-                type="submit"
-                data-testid="submit-btn"
-              >
-                Save (nothing yet)
-              </Button>
-            </Flex>
+            <Box data-testid="header">{renderHeader({ dirty })}</Box>
+            <PrivacyDeclarationFormComponents
+              onDelete={onDelete}
+              {...dataProps}
+            />
           </Stack>
         </Form>
       )}
