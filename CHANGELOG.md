@@ -23,6 +23,10 @@ The types of changes are:
 - Reduce verbosity of privacy center logging further (#3915)[https://github.com/ethyca/fides/pull/3915]
 - Resolved an issue where the integration dropdown input lost focus during typing. (#3917)[https://github.com/ethyca/fides/pull/3917]
 
+### Changed
+
+- Systems and Privacy Declaration schema and data migration to support the Dictionary [#3901](https://github.com/ethyca/fides/pull/3901)
+
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
 ### Added
