@@ -21,6 +21,10 @@ The types of changes are:
 - Fixed issue when generating masked values for invalid data paths (#3906)[https://github.com/ethyca/fides/pull/3906]
 - Code reload now works when running `nox -s dev` (#3914)[https://github.com/ethyca/fides/pull/3914]
 
+### Changed
+
+- Systems and Privacy Declaration schema and data migration to support the Dictionary [#3901](https://github.com/ethyca/fides/pull/3901)
+
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
 ### Added
