@@ -178,7 +178,7 @@ describe("Custom Fields", () => {
 
         cy.get("tbody > tr").first().should("contain", "Multiple select list");
 
-        // the original mock needs to be brock back
+        // the original mock needs to be brought back
         cy.intercept(
           "GET",
           "/api/v1/plus/custom-metadata/custom-field-definition*",
