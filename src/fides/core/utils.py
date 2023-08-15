@@ -16,6 +16,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from fides.common.utils import echo_red
 from fides.connectors.models import ConnectorAuthFailureException
+from functools import partial
 
 logger.bind(name="server_api")
 
@@ -39,12 +40,18 @@ def get_db_engine(connection_string: str) -> Engine:
     # Pymssql doesn't support this arg
     connect_args = {"connect_timeout": 10} if "pymssql" not in connection_string else {}
     try:
-        engine = sqlalchemy.create_engine(connection_string, connect_args=connect_args)
+        engine = sqlalchemy.create_engine(
+            connection_string,
+            connect_args=connect_args,
+            pool_pre_ping=True,
+            max_overflow=0,
+            pool_size=5,
+        )
     except Exception as err:
         raise Exception("Failed to create engine!") from err
 
     try:
-        with engine.begin() as connection:
+        with engine.connect() as connection:
             connection.execute("SELECT 1")
     except Exception as err:
         raise Exception(f"Database connection failed with engine:\n{engine}!") from err
@@ -53,11 +60,11 @@ def get_db_engine(connection_string: str) -> Engine:
 
 def validate_db_engine(connection_string: str) -> None:
     """
-    Use SQLAlchemy to create a DB engine.
+    Use SQLAlchemy to validate a DB engine.
     """
     try:
-        engine = sqlalchemy.create_engine(connection_string)
-        with engine.begin() as connection:
+        engine = sqlalchemy.create_engine(connection_string, pool_pre_ping=True)
+        with engine.connect() as connection:
             connection.execute("SELECT 1")
     except SQLAlchemyError as error:
         raise ConnectorAuthFailureException(error)
