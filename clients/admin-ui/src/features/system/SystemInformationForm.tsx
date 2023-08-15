@@ -296,6 +296,9 @@ const SystemInformationForm = ({
                     values.processes_personal_data &&
                     !values.exempt_from_privacy_regulations
                   }
+                  style={{
+                    overflow: "visible",
+                  }}
                   animateOpacity
                 >
                   <Stack spacing={4} mt={4}>
@@ -306,7 +309,13 @@ const SystemInformationForm = ({
                         tooltip="Does this system perform profiling that could have a legal effect?"
                         variant="stacked"
                       />
-                      <Collapse in={values.uses_profiling} animateOpacity>
+                      <Collapse
+                        in={values.uses_profiling}
+                        animateOpacity
+                        style={{
+                          overflow: "visible",
+                        }}
+                      >
                         <Box mt={4}>
                           <CustomSelect
                             name="legal_basis_for_profiling"
@@ -330,6 +339,9 @@ const SystemInformationForm = ({
                       <Collapse
                         in={values.does_international_transfers}
                         animateOpacity
+                        style={{
+                          overflow: "visible",
+                        }}
                       >
                         <Box mt={4}>
                           <CustomSelect
