@@ -1,16 +1,13 @@
 from typing import Dict, List, Literal, Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException, status
 from loguru import logger
 from pydantic import BaseModel
 from redis.exceptions import ResponseError
-from sqlalchemy.orm import Session
 
 import fides
-from fides.api.api.deps import get_db
 from fides.api.common_exceptions import RedisConnectionError
 from fides.api.db.database import DatabaseHealth, get_db_health
-from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache
 from fides.api.util.logger import Pii
@@ -92,11 +89,6 @@ async def health() -> Dict:
         workers_enabled=False,
         workers=[],
     ).dict()
-    fides_is_using_workers = not celery_app.conf["task_always_eager"]
-    if fides_is_using_workers:
-        response["workers_enabled"] = True
-        # Figure out a way to make this faster
-        response["workers"] = get_worker_ids()
 
     for _, value in response.items():
         if value == "unhealthy":
