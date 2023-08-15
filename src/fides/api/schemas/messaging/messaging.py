@@ -9,6 +9,7 @@ from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg
+from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
 
@@ -425,3 +426,8 @@ class MessagingTemplateRequest(MessagingTemplateBase):
 
 class MessagingTemplateResponse(MessagingTemplateBase):
     label: str
+
+
+class BulkPutMessagingTemplateResponse(BulkResponse):
+    succeeded: List[MessagingTemplateResponse]
+    failed: List[BulkUpdateFailed]

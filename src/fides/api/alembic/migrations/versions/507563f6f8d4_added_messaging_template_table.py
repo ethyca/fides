@@ -1,7 +1,7 @@
 """Added messaging template table
 
 Revision ID: 507563f6f8d4
-Revises: 3a47ce736a37
+Revises: fd52d5f08c17
 Create Date: 2023-08-05 05:30:52.105840
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "507563f6f8d4"
-down_revision = "3a47ce736a37"
+down_revision = "fd52d5f08c17"
 branch_labels = None
 depends_on = None
 

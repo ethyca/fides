@@ -33,7 +33,9 @@ from fides.api.models.messaging_template import (
     MessagingTemplate,
 )
 from fides.api.oauth.utils import verify_oauth_client
+from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import (
+    BulkPutMessagingTemplateResponse,
     MessagingActionType,
     MessagingConfigRequest,
     MessagingConfigRequestBase,
@@ -508,29 +510,51 @@ def get_messaging_templates(
     ]
 
 
-@router.post(
+@router.put(
     MESSAGING_TEMPLATES,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
 )
 def update_messaging_templates(
     templates: List[MessagingTemplateRequest], *, db: Session = Depends(deps.get_db)
-) -> Dict[str, Any]:
+) -> BulkPutMessagingTemplateResponse:
     """Updates the messaging templates and reverts empty subject or body values to the default values."""
+
+    succeeded = []
+    failed = []
+
     for template in templates:
         key = template.key
         content = template.content
 
-        default_template = DEFAULT_MESSAGING_TEMPLATES.get(key)
-        if default_template:
+        try:
+            default_template = DEFAULT_MESSAGING_TEMPLATES.get(key)
+            if not default_template:
+                raise ValueError("Invalid template key.")
+
             content["subject"] = (
-                content.get("subject") or default_template["content"]["subject"]
+                content["subject"] or default_template["content"]["subject"]
             )
-            content["body"] = content.get("body") or default_template["content"]["body"]
+            content["body"] = content["body"] or default_template["content"]["body"]
 
             MessagingTemplate.create_or_update(
                 db, data={"key": key, "content": content}
             )
-        else:
-            logger.debug("Invalid template key: {}, skipping creation.", key)
 
-    return {"message": "Email templates updated successfully."}
+            succeeded.append(
+                MessagingTemplateResponse(
+                    key=key,
+                    content=content,
+                    label=default_template.get("label"),
+                )
+            )
+
+        except ValueError as e:
+            failed.append(BulkUpdateFailed(message=str(e), data=template))
+        except Exception:
+            failed.append(
+                BulkUpdateFailed(
+                    message="Unexpected error updating template.", data=template
+                )
+            )
+
+    return BulkPutMessagingTemplateResponse(succeeded=succeeded, failed=failed)

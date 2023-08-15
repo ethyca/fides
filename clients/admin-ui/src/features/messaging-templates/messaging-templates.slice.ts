@@ -19,7 +19,7 @@ const messagingTemplatesApi = baseApi.injectEndpoints({
     updateMessagingTemplates: build.mutation<string, MessagingTemplate[]>({
       query: (templates) => ({
         url: `messaging/templates/`,
-        method: "POST",
+        method: "PUT",
         body: templates,
       }),
       invalidatesTags: () => ["Messaging Templates"],

@@ -1915,7 +1915,7 @@ class TestGetMessagingTemplates:
         [MessagingTemplateResponse(**item) for item in response.json()]
 
 
-class TestPostMessagingTemplates:
+class TestPutMessagingTemplates:
     @pytest.fixture
     def url(self) -> str:
         return V1_URL_PREFIX + MESSAGING_TEMPLATES
@@ -1926,47 +1926,59 @@ class TestPostMessagingTemplates:
             {
                 "key": "subject_identity_verification",
                 "content": {
-                    "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. This code will expire in {{minutes}} minutes.",
-                    "subject": "Your one-time code is {{code}}",
+                    "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. You have {{minutes}} minutes.",
+                    "subject": "Your code is {{code}}",
                 },
             },
         ]
 
-    def test_post_messaging_templates_unauthorized(
+    def test_put_messaging_templates_unauthorized(
         self, url, api_client: TestClient, generate_auth_header, payload
     ) -> None:
         auth_header = generate_auth_header(scopes=[])
-        response = api_client.post(url, headers=auth_header, json=payload)
+        response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 403
 
-    def test_post_messaging_templates_wrong_scope(
+    def test_put_messaging_templates_wrong_scope(
         self, url, api_client: TestClient, generate_auth_header, payload
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_READ])
-        response = api_client.post(url, headers=auth_header, json=payload)
+        response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 403
 
-    def test_post_messaging_templates(
-        self, url, api_client: TestClient, generate_auth_header, payload
+    def test_put_messaging_templates(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        payload,
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        response = api_client.post(url, headers=auth_header, json=payload)
+        response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 200
-        assert response.json() == {"message": "Email templates updated successfully."}
+        assert response.json() == {
+            "succeeded": [
+                {
+                    "key": "subject_identity_verification",
+                    "content": {
+                        "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. You have {{minutes}} minutes.",
+                        "subject": "Your code is {{code}}",
+                    },
+                    "label": "Subject identity verification",
+                }
+            ],
+            "failed": [],
+        }
 
-    @mock.patch(
-        "fides.api.api.v1.endpoints.messaging_endpoints.MessagingTemplate.create_or_update"
-    )
-    def test_post_messaging_templates_missing_values(
+    def test_put_messaging_templates_missing_values(
         self,
-        mock_create_or_update,
         url,
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
         """Verify templates with empty subject/body values are reverted to their default values."""
         auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        response = api_client.post(
+        response = api_client.put(
             url,
             headers=auth_header,
             json=[
@@ -1980,28 +1992,28 @@ class TestPostMessagingTemplates:
             ],
         )
         assert response.status_code == 200
-        assert mock_create_or_update.called_once_with(
-            db=mock.ANY,
-            key="subject_identity_verification",
-            content={
-                "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. This code will expire in {{minutes}} minutes.",
-                "subject": "Your one-time code is {{code}}",
-            },
-        )
+        assert response.json() == {
+            "succeeded": [
+                {
+                    "key": "subject_identity_verification",
+                    "content": {
+                        "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. This code will expire in {{minutes}} minutes.",
+                        "subject": "Your one-time code is {{code}}",
+                    },
+                    "label": "Subject identity verification",
+                }
+            ],
+            "failed": [],
+        }
 
-    @mock.patch(
-        "fides.api.api.v1.endpoints.messaging_endpoints.MessagingTemplate.create_or_update"
-    )
-    def test_post_messaging_templates_invalid_key(
+    def test_put_messaging_templates_invalid_key(
         self,
-        mock_create_or_update,
         url,
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        """Invalid keys are silently ignored."""
         auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        response = api_client.post(
+        response = api_client.put(
             url,
             headers=auth_header,
             json=[
@@ -2015,4 +2027,15 @@ class TestPostMessagingTemplates:
             ],
         )
         assert response.status_code == 200
-        mock_create_or_update.assert_not_called()
+        assert response.json() == {
+            "succeeded": [],
+            "failed": [
+                {
+                    "message": "Invalid template key.",
+                    "data": {
+                        "key": "invalid_key",
+                        "content": {"body": None, "subject": None},
+                    },
+                }
+            ],
+        }
