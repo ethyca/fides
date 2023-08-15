@@ -169,7 +169,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
   const handleSearchChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length === 0 || event.target.value.length > 1) {
-        setSearchTerm(event.target.value.toLowerCase());
+        setSearchTerm(event.target.value);
         setTimeout(() => inputRef.current?.focus(), 0);
       }
     },
