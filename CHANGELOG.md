@@ -25,6 +25,7 @@ The types of changes are:
 - Code reload now works when running `nox -s dev` [#3914](https://github.com/ethyca/fides/pull/3914)
 - Reduce verbosity of privacy center logging further [#3915](https://github.com/ethyca/fides/pull/3915)
 - Resolved an issue where the integration dropdown input lost focus during typing. [#3917](https://github.com/ethyca/fides/pull/3917)
+- Fixed dataset issue that was preventing the Vend connector from loading during server startup [#3923](https://github.com/ethyca/fides/pull/3923)
 
 ### Changed
 
