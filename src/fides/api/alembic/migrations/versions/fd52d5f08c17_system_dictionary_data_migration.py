@@ -69,7 +69,7 @@ def _system_transform_joint_controller_info(
             joint_controller_data.get("phone"),
         ]
 
-        # Defaults to None value if the join ends up being an empty string
+        # If data looks like {"name": "N/A", "address": "N/A"...}, return None instead of an empty string
         new_joint_controller_info = (
             "; ".join([elem for elem in separated_fields if elem and elem != "N/A"])
             or None
