@@ -24,6 +24,7 @@ from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnect
 from fides.api.db.database import configure_db
 from fides.api.db.seed import create_or_update_parent_user
 from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.consent_settings import ConsentSettings
 from fides.api.oauth.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
@@ -39,6 +40,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import (
+    create_tcf_experiences_on_startup,
     load_default_experience_configs_on_startup,
     load_default_notices_on_startup,
 )
@@ -191,6 +193,10 @@ async def run_database_startup() -> None:
         # Default notices subject to change, so preventing these from
         # loading in test mode to avoid interfering with unit tests.
         load_default_privacy_notices()
+        load_tcf_experiences()
+
+    create_default_consent_settings()
+
     db.close()
 
 
@@ -226,5 +232,29 @@ def load_default_experience_configs() -> None:
         load_default_experience_configs_on_startup(db, PRIVACY_EXPERIENCE_CONFIGS_PATH)
     except Exception as e:
         logger.error("Skipping loading default privacy experience configs: {}", str(e))
+    finally:
+        db.close()
+
+
+def load_tcf_experiences() -> None:
+    """Load TCF Overlay Experiences if they don't exist"""
+    logger.info("Loading default TCF Overlay Experiences")
+    try:
+        db = get_api_session()
+        create_tcf_experiences_on_startup(db)
+    except Exception as e:
+        logger.error("Skipping loading TCF Overlay Experiences: {}", str(e))
+    finally:
+        db.close()
+
+
+def create_default_consent_settings() -> None:
+    """Load Default Consent Settings if they don't exist"""
+    logger.info("Loading default Consent Settings")
+    try:
+        db = get_api_session()
+        ConsentSettings.get_or_create_with_defaults(db)
+    except Exception as e:
+        logger.error("Skipping loading default consent settings: {}", str(e))
     finally:
         db.close()

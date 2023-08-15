@@ -19,7 +19,10 @@ nav:
           - Development Tips: development/development_tips.md
           - Testing: development/testing.md
           - Code Style: development/code_style.md
-          - UI Development: development/ui.md
+          - UI Development:
+            - Overview: development/ui/overview.md
+            - Privacy Center: development/ui/privacy_center.md
+            - Admin UI: development/ui/admin_ui.md
           - Documentation: development/documentation.md
           - Pull Requests: development/pull_requests.md
           - Releases: development/releases.md

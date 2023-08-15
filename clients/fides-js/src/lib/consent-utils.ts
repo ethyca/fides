@@ -151,6 +151,17 @@ export const experienceIsValid = (
     return false;
   }
   if (
+    effectiveExperience.component !== ComponentType.OVERLAY &&
+    effectiveExperience.component !== ComponentType.TCF_OVERLAY
+  ) {
+    debugLog(
+      options.debug,
+      "No experience found with overlay component. Skipping overlay initialization."
+    );
+    return false;
+  }
+  if (
+    effectiveExperience.component === ComponentType.OVERLAY &&
     !(
       effectiveExperience.privacy_notices &&
       effectiveExperience.privacy_notices.length > 0
@@ -163,13 +174,7 @@ export const experienceIsValid = (
     );
     return false;
   }
-  if (effectiveExperience.component !== ComponentType.OVERLAY) {
-    debugLog(
-      options.debug,
-      "No experience found with overlay component. Skipping overlay initialization."
-    );
-    return false;
-  }
+  // TODO: add condition for not rendering TCF
   if (!effectiveExperience.experience_config) {
     debugLog(
       options.debug,
@@ -184,12 +189,17 @@ export const experienceIsValid = (
 /**
  * Returns true if there are notices in the experience that require a user preference
  */
-export const hasActionNeededNotices = (experience: PrivacyExperience) =>
-  Boolean(
+export const hasActionNeededNotices = (experience: PrivacyExperience) => {
+  if (experience.component === ComponentType.TCF_OVERLAY) {
+    // TODO: determine preferences on TCF fields
+    return true;
+  }
+  return Boolean(
     experience?.privacy_notices?.some(
       (notice) => notice.current_preference == null
     )
   );
+};
 
 export const getGpcStatusFromNotice = ({
   value,

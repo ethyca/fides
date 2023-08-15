@@ -28,7 +28,7 @@ const Toggle = ({
         onChange={() => {
           onChange(id);
         }}
-        defaultChecked={checked}
+        checked={checked}
         role="switch"
         aria-labelledby={labelId}
         disabled={disabled}

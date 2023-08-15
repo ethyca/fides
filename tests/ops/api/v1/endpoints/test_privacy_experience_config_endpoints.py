@@ -76,11 +76,13 @@ class TestGetExperienceConfigList:
         response = api_client.get(url, headers={**auth_header, **unescape_header})
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 4  # Two default configs loaded on startup plus two here
+        assert (
+            resp["total"] == 5
+        )  # Three default configs loaded on startup plus two here
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 4
+        assert len(data) == 5
 
         first_config = data[0]
         assert first_config["id"] == experience_config_overlay.id
@@ -114,20 +116,29 @@ class TestGetExperienceConfigList:
         )
 
         third_config = data[2]
-        assert third_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+        assert third_config["id"] == "a4974670-abad-471f-9084-2cb-tcf-over"
         assert third_config["is_default"] is True
-        assert third_config["component"] == "privacy_center"
+        assert third_config["component"] == "tcf_overlay"
         assert third_config["regions"] == []
         assert third_config["version"] == 1.0
         assert third_config["created_at"] is not None
         assert third_config["updated_at"] is not None
 
         fourth_config = data[3]
-        assert fourth_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        assert fourth_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
         assert fourth_config["is_default"] is True
-        assert fourth_config["disabled"] is False
+        assert fourth_config["component"] == "privacy_center"
         assert fourth_config["regions"] == []
-        assert fourth_config["component"] == "overlay"
+        assert fourth_config["version"] == 1.0
+        assert fourth_config["created_at"] is not None
+        assert fourth_config["updated_at"] is not None
+
+        fifth_config = data[4]
+        assert fifth_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        assert fifth_config["is_default"] is True
+        assert fifth_config["disabled"] is False
+        assert fifth_config["regions"] == []
+        assert fifth_config["component"] == "overlay"
 
     @pytest.mark.usefixtures(
         "privacy_experience_privacy_center",
@@ -171,11 +182,11 @@ class TestGetExperienceConfigList:
         )
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 3
+        assert resp["total"] == 4
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 3
+        assert len(data) == 4
 
         config = data[0]
         assert config["id"] == experience_config_overlay.id
@@ -191,20 +202,29 @@ class TestGetExperienceConfigList:
         )
 
         second_config = data[1]
-        assert second_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+        assert second_config["id"] == "a4974670-abad-471f-9084-2cb-tcf-over"
         assert second_config["is_default"] is True
-        assert second_config["component"] == "privacy_center"
+        assert second_config["component"] == "tcf_overlay"
         assert second_config["disabled"] is False
         assert second_config["version"] == 1.0
         assert second_config["created_at"] is not None
         assert second_config["updated_at"] is not None
 
         third_config = data[2]
-        assert third_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        assert third_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
         assert third_config["is_default"] is True
+        assert third_config["component"] == "privacy_center"
         assert third_config["disabled"] is False
-        assert third_config["regions"] == []
-        assert third_config["component"] == "overlay"
+        assert third_config["version"] == 1.0
+        assert third_config["created_at"] is not None
+        assert third_config["updated_at"] is not None
+
+        fourth_config = data[3]
+        assert fourth_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        assert fourth_config["is_default"] is True
+        assert fourth_config["disabled"] is False
+        assert fourth_config["regions"] == []
+        assert fourth_config["component"] == "overlay"
 
     @pytest.mark.usefixtures(
         "privacy_experience_overlay",

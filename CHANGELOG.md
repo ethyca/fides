@@ -17,6 +17,24 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.17.0...main)
 
+### Added
+- Additional consent reporting calls from `fides-js` [#3845](https://github.com/ethyca/fides/pull/3845)
+- Additional consent reporting calls from privacy center [#3847](https://github.com/ethyca/fides/pull/3847)
+- HTTP Logging for the Privacy Center [#3783](https://github.com/ethyca/fides/pull/3783)
+- Fides-js can now display preliminary TCF data [#3879](https://github.com/ethyca/fides/pull/3879)
+- Fides-js can persist TCF preferences to the backend [#3887](https://github.com/ethyca/fides/pull/3887)
+
+### Fixed
+- Fix datamap zoom for low system counts [#3835](https://github.com/ethyca/fides/pull/3835)
+- Fixed connector forms with external dataset reference fields [#3873](https://github.com/ethyca/fides/pull/3873)
+
+### Changed
+
+- Simplified the file structure for HTML DSR packages [#3848](https://github.com/ethyca/fides/pull/3848)
+- Changed max width of form components in "system information" form tab [#3864](https://github.com/ethyca/fides/pull/3864)
+- Refactored `fides.js` components so that they can take data structures that are not necessarily privacy notices [#3870](https://github.com/ethyca/fides/pull/3870)
+- Remove manual system selection screen [#3865](https://github.com/ethyca/fides/pull/3865)
+
 ## [2.17.0](https://github.com/ethyca/fides/compare/2.16.0...2.17.0)
 
 ### Added
@@ -24,7 +42,7 @@ The types of changes are:
 - Tab component for `fides-js` [#3782](https://github.com/ethyca/fides/pull/3782)
 - Added toast for successfully linking an existing integration to a system [#3826](https://github.com/ethyca/fides/pull/3826)
 - Various other UI components for `fides-js` to support upcoming TCF modal [#3803](https://github.com/ethyca/fides/pull/3803)
-- Prefetches API calls as part of Fides.js [#3698](https://github.com/ethyca/fides/pull/3698)
+- Allow items in taxonomy to be enabled or disabled [#3844](https://github.com/ethyca/fides/pull/3844)
 
 ### Developer Experience
 

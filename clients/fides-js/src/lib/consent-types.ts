@@ -1,3 +1,14 @@
+import type {
+  TCFPurposeRecord,
+  TCFVendorRecord,
+  TCFFeatureRecord,
+  TCFPurposeSave,
+  TCFSpecialPurposeSave,
+  TCFFeatureSave,
+  TCFSpecialFeatureSave,
+  TCFVendorSave,
+} from "./tcf/types";
+
 export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.
   consent?: LegacyConsentConfig;
@@ -60,6 +71,11 @@ export type PrivacyExperience = {
   updated_at: string;
   show_banner?: boolean;
   privacy_notices?: Array<PrivacyNotice>;
+  tcf_purposes?: Array<TCFPurposeRecord>;
+  tcf_special_purposes?: Array<TCFPurposeRecord>;
+  tcf_vendors?: Array<TCFVendorRecord>;
+  tcf_features?: Array<TCFFeatureRecord>;
+  tcf_special_features?: Array<TCFFeatureRecord>;
 };
 
 export type ExperienceConfig = {
@@ -137,6 +153,7 @@ export enum UserConsentPreference {
 export enum ComponentType {
   OVERLAY = "overlay",
   PRIVACY_CENTER = "privacy_center",
+  TCF_OVERLAY = "tcf_overlay",
 }
 
 export enum BannerEnabled {
@@ -173,7 +190,12 @@ export enum ConsentMethod {
 export type PrivacyPreferencesRequest = {
   browser_identity: Identity;
   code?: string;
-  preferences: Array<ConsentOptionCreate>;
+  preferences?: Array<ConsentOptionCreate>;
+  purpose_preferences?: Array<TCFPurposeSave>;
+  special_purpose_preferences?: Array<TCFSpecialPurposeSave>;
+  vendor_preferences?: Array<TCFVendorSave>;
+  feature_preferences?: Array<TCFFeatureSave>;
+  special_feature_preferences?: Array<TCFSpecialFeatureSave>;
   policy_key?: string; // Will use default consent policy if not supplied
   privacy_experience_id?: string;
   user_geography?: string;
@@ -183,6 +205,7 @@ export type PrivacyPreferencesRequest = {
 export type ConsentOptionCreate = {
   privacy_notice_history_id: string;
   preference: UserConsentPreference;
+  served_notice_history_id?: string;
 };
 
 export type Identity = {
@@ -207,6 +230,35 @@ export enum GpcStatus {
   /** GPC is enabled but consent has been set to override the configured default. */
   OVERRIDDEN = "overridden",
 }
+
+// Consent reporting
+export enum ServingComponent {
+  OVERLAY = "overlay",
+  BANNER = "banner",
+  PRIVACY_CENTER = "privacy_center",
+  TCF_OVERLAY = "tcf_overlay",
+}
+/**
+ * Request body when indicating that notices were served in the UI
+ */
+export type NoticesServedRequest = {
+  browser_identity: Identity;
+  code?: string;
+  privacy_notice_history_ids: Array<string>;
+  privacy_experience_id?: string;
+  user_geography?: string;
+  acknowledge_mode?: boolean;
+  serving_component: ServingComponent;
+};
+/**
+ * Schema that surfaces the last version of a notice that was shown to a user
+ */
+export type LastServedNoticeSchema = {
+  id: string;
+  updated_at: string;
+  privacy_notice_history: PrivacyNotice;
+  served_notice_history_id: string;
+};
 
 // ------------------LEGACY TYPES BELOW -------------------
 

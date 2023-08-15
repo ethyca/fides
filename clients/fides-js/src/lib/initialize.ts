@@ -31,7 +31,7 @@ import {
 } from "./consent-utils";
 import { fetchExperience } from "../services/fides/api";
 import { getGeolocation } from "../services/external/geolocation";
-import { OverlayProps } from "../components/Overlay";
+import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 

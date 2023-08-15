@@ -36,4 +36,6 @@ export type PrivacyNoticeResponseWithUserPreferences = {
   default_preference: UserConsentPreference;
   current_preference?: UserConsentPreference;
   outdated_preference?: UserConsentPreference;
+  current_served?: boolean;
+  outdated_served?: boolean;
 };

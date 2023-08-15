@@ -1,6 +1,7 @@
 import {
   ConsentMethod,
   ConsentOptionCreate,
+  LastServedNoticeSchema,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
   UserConsentPreference,
@@ -14,6 +15,7 @@ import {
 } from "./cookie";
 import { dispatchFidesEvent } from "./events";
 import { patchUserPreferenceToFidesServer } from "../services/fides/api";
+import { TcfSavePreferences } from "./tcf/types";
 
 /**
  * Updates the user's consent preferences, going through the following steps:
@@ -31,6 +33,8 @@ export const updateConsentPreferences = ({
   userLocationString,
   cookie,
   debug = false,
+  servedNotices,
+  tcf,
 }: {
   consentPreferencesToSave: Array<SaveConsentPreference>;
   experienceId: string;
@@ -39,6 +43,8 @@ export const updateConsentPreferences = ({
   userLocationString?: string;
   cookie: FidesCookie;
   debug?: boolean;
+  servedNotices?: Array<LastServedNoticeSchema>;
+  tcf?: TcfSavePreferences;
 }) => {
   // Derive the CookieKeyConsent object from privacy notices
   const noticeMap = new Map<string, boolean>(
@@ -51,10 +57,19 @@ export const updateConsentPreferences = ({
 
   // Derive the Fides user preferences array from privacy notices
   const fidesUserPreferences: Array<ConsentOptionCreate> =
-    consentPreferencesToSave.map(({ notice, consentPreference }) => ({
-      privacy_notice_history_id: notice.privacy_notice_history_id,
-      preference: consentPreference,
-    }));
+    consentPreferencesToSave.map(({ notice, consentPreference }) => {
+      const servedNotice = servedNotices
+        ? servedNotices.find(
+            (n) =>
+              n.privacy_notice_history.id === notice.privacy_notice_history_id
+          )
+        : undefined;
+      return {
+        privacy_notice_history_id: notice.privacy_notice_history_id,
+        preference: consentPreference,
+        served_notice_history_id: servedNotice?.served_notice_history_id,
+      };
+    });
 
   // Update the cookie object
   // eslint-disable-next-line no-param-reassign
@@ -68,6 +83,7 @@ export const updateConsentPreferences = ({
     privacy_experience_id: experienceId,
     user_geography: userLocationString,
     method: consentMethod,
+    ...(tcf ?? []),
   };
   patchUserPreferenceToFidesServer(privacyPreferenceCreate, fidesApiUrl, debug);
 

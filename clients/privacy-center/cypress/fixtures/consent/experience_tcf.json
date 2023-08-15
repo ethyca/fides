@@ -1,0 +1,178 @@
+{
+  "items": [
+    {
+      "region": "fr",
+      "component": "tcf_overlay",
+      "experience_config": {
+        "accept_button_label": "Opt in to all",
+        "acknowledge_button_label": "OK",
+        "banner_enabled": "enabled_where_required",
+        "description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.",
+        "disabled": false,
+        "is_default": true,
+        "privacy_policy_link_label": "Privacy Policy",
+        "privacy_policy_url": null,
+        "privacy_preferences_link_label": "Manage preferences",
+        "regions": [
+          "be",
+          "bg",
+          "cz",
+          "dk",
+          "de",
+          "ee",
+          "ie",
+          "gr",
+          "es",
+          "fr",
+          "hr",
+          "it",
+          "cy",
+          "lv",
+          "lt",
+          "lu",
+          "hu",
+          "mt",
+          "nl",
+          "at",
+          "pl",
+          "pt",
+          "ro",
+          "si",
+          "sk",
+          "fi",
+          "se",
+          "gb_eng",
+          "gb_sct",
+          "gb_wls",
+          "gb_nir",
+          "no",
+          "is",
+          "li"
+        ],
+        "reject_button_label": "Opt out of all",
+        "save_button_label": "Save",
+        "title": "Manage your consent preferences",
+        "id": "a4974670-abad-471f-9084-2cb-tcf-over",
+        "component": "tcf_overlay",
+        "experience_config_history_id": "pri_df3b15f3-cb19-43c1-92f0-1d499038cd28",
+        "version": 3.0,
+        "created_at": "2023-07-26T15:00:34.432265+00:00",
+        "updated_at": "2023-07-31T19:39:50.483088+00:00"
+      },
+      "id": "pri_206093e6-ddea-449b-98e5-9f9b41f99eb8",
+      "created_at": "2023-07-26T15:00:34.567951+00:00",
+      "updated_at": "2023-07-26T15:00:34.567951+00:00",
+      "show_banner": true,
+      "privacy_notices": [],
+      "tcf_purposes": [
+        {
+          "default_preference": "opt_out",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "id": 4,
+          "name": "Use profiles to select personalised advertising",
+          "description": "Advertising presented to you on this service can be based on your advertising profiles, which can reflect your activity on this service or other websites or apps (like the forms you submit, content you look at), possible interests and personal aspects.",
+          "illustrations": [
+            "An online retailer wants to advertise a limited sale on running shoes. It wants to target advertising to users who previously looked at running shoes on its mobile app. Tracking technologies might be used to recognise that you have previously used the mobile app to consult running shoes, in order to present you with the corresponding advertisement on the app.",
+            "A profile created for personalised advertising in relation to a person having searched for bike accessories on a website can be used to present the relevant advertisement for bike accessories on a mobile app of another organisation."
+          ],
+          "data_uses": [
+            "marketing.advertising.first_party.targeted",
+            "marketing.advertising.third_party.targeted"
+          ],
+          "vendors": [
+            {
+              "id": "amplitude",
+              "name": "test"
+            }
+          ]
+        },
+        {
+          "default_preference": "opt_out",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "id": 9,
+          "name": "Understand audiences through statistics or combinations of data from different sources",
+          "description": "Reports can be generated based on the combination of data sets (like user profiles, statistics, market research, analytics data) regarding your interactions and those of other users with advertising or (non-advertising) content to identify common characteristics (for instance, to determine which target audiences are more receptive to an ad campaign or to certain contents).",
+          "illustrations": [
+            "The owner of an online bookstore wants commercial reporting showing the proportion of visitors who consulted and left its site without buying, or consulted and bought the last celebrity autobiography of the month, as well as the average age and the male/female distribution of each category. Data relating to your navigation on its site and to your personal characteristics is then used and combined with other such data to produce these statistics.",
+            "An advertiser wants to better understand the type of audience interacting with its adverts. It calls upon a research institute to compare the characteristics of users who interacted with the ad with typical attributes of users of similar platforms, across different devices. This comparison reveals to the advertiser that its ad audience is mainly accessing the adverts through mobile devices and is likely in the 45-60 age range."
+          ],
+          "data_uses": ["analytics.reporting.campaign_insights"],
+          "vendors": [
+            {
+              "id": "amplitude",
+              "name": "test"
+            }
+          ]
+        }
+      ],
+      "tcf_special_purposes": [
+        {
+          "default_preference": "opt_out",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "id": 1,
+          "name": "Ensure security, prevent and detect fraud, and fix errors",
+          "description": "Your data can be used to monitor for and prevent unusual and possibly fraudulent activity (for example, regarding advertising, ad clicks by bots), and ensure systems and processes work properly and securely. It can also be used to correct any problems you, the publisher or the advertiser may encounter in the delivery of content and ads and in your interaction with them.",
+          "illustrations": [
+            "An advertising intermediary delivers ads from various advertisers to its network of partnering websites. It notices a large increase in clicks on ads relating to one advertiser, and uses data regarding the source of the clicks to determine that 80% of the clicks come from bots rather than humans."
+          ],
+          "data_uses": [
+            "essential.fraud_detection",
+            "essential.service.security"
+          ],
+          "vendors": [
+            {
+              "id": "amplitude",
+              "name": "test"
+            }
+          ]
+        }
+      ],
+      "tcf_vendors": [
+        {
+          "default_preference": "opt_out",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "id": "amplitude",
+          "name": "test",
+          "description": "A longer description",
+          "is_gvl": null,
+          "purposes": [
+            {
+              "id": 4,
+              "name": "Use profiles to select personalised advertising"
+            },
+            {
+              "id": 9,
+              "name": "Understand audiences through statistics or combinations of data from different sources"
+            }
+          ],
+          "special_purposes": [
+            {
+              "id": 1,
+              "name": "Ensure security, prevent and detect fraud, and fix errors\n"
+            }
+          ],
+          "data_categories": [],
+          "features": [],
+          "special_features": []
+        }
+      ],
+      "tcf_features": [],
+      "tcf_special_features": []
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "size": 50
+}
